@@ -53,8 +53,15 @@ func (repo *BlockchainStateServerSentEventsDTORepo) SubscribeToBlockchainAuthori
 	modifiedURL := strings.ReplaceAll(blockchainStateServerSentEventsURL, "${CHAIN_ID}", fmt.Sprintf("%v", chainID))
 	httpEndpoint := fmt.Sprintf("%s%s", repo.config.GetAuthorityAddress(), modifiedURL)
 
-	// Create request with context
-	req, err := http.NewRequestWithContext(ctx, "GET", httpEndpoint, nil)
+	repo.logger.Debug("Subscribing to the Authority blockchain state server sent events stream...",
+		slog.Any("http_endpoint", httpEndpoint))
+
+	// DEVELOPERS NOTE: Why are we using `POST` method? We are doing this to
+	// get our app working on DigitalOcean App Platform, see more for details:
+	// "Does App Platform support SSE (Server-Sent Events) application?" via https://www.digitalocean.com/community/questions/does-app-platform-support-sse-server-sent-events-application
+
+	// Create "POST" request (see "DEVELOPERS NOTES" above) with context.
+	req, err := http.NewRequestWithContext(ctx, "POST", httpEndpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -63,6 +70,7 @@ func (repo *BlockchainStateServerSentEventsDTORepo) SubscribeToBlockchainAuthori
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Accept", "text/event-stream")
 	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("X-Accel-Buffering", "no")
 
 	// Create an HTTP client with no timeout
 	client := &http.Client{
@@ -86,6 +94,9 @@ func (repo *BlockchainStateServerSentEventsDTORepo) SubscribeToBlockchainAuthori
 
 	// Start goroutine to read SSE stream
 	go func() {
+		repo.logger.Debug("Successfully connected to the Authority blockchain state server sent events stream",
+			slog.Any("http_endpoint", httpEndpoint))
+
 		defer resp.Body.Close()
 		defer close(hashChan)
 

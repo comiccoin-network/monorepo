@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -76,8 +77,11 @@ func (s *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService) Execut
 	// Note: The authority will only send the latest hash.
 	//
 
+	ipAddress, _ := ctx.Value(constants.SessionIPAddress).(string)
 	s.logger.Debug("Waiting to receive from the global blockchain network...",
-		slog.Any("chain_id", chainID))
+		slog.Any("chain_id", chainID),
+		slog.Any("my_ip", ipAddress),
+	)
 
 	// DEVELOPERS NOTE: Absolutely do not surround this code with a MongoDB
 	// transaction because this code hangs a lot (it's dependent on Authority
@@ -100,10 +104,6 @@ func (s *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService) Execut
 	}
 
 	for blockchainStateLatestHash := range blockchainAuthorityChannel {
-		s.logger.Debug("Received from global blockchain network...",
-			slog.Any("chain_id", chainID),
-			slog.Any("latest_hash", blockchainStateLatestHash))
-
 		// What is the purpose of this? In case our local database is not setup
 		// then we skip handling any Global Blockchain state changes until we
 		// are setup.
@@ -113,6 +113,11 @@ func (s *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService) Execut
 				slog.Any("latest_hash", blockchainStateLatestHash))
 			continue
 		}
+
+		// For debugging purposes only.
+		// s.logger.Debug("Received from global blockchain network...",
+		// 	slog.Any("chain_id", chainID),
+		// 	slog.Any("latest_hash", blockchainStateLatestHash))
 
 		//
 		// STEP 3:

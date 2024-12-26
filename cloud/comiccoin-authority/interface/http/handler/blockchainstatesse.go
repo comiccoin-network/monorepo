@@ -36,6 +36,7 @@ func (h *BlockchainStateServerSentEventsHTTPHandler) Execute(w http.ResponseWrit
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
 
 	chainIDStr := r.URL.Query().Get("chain_id")
 	if chainIDStr == "" || (chainIDStr != "1" && chainIDStr != "2") {
@@ -79,10 +80,11 @@ func (h *BlockchainStateServerSentEventsHTTPHandler) Execute(w http.ResponseWrit
 			}
 
 			if blockchainState.ChainID == chainID {
-				h.logger.Debug("Sending sse to client...",
-					slog.Any("chain_id", chainIDStr),
-					slog.Any("latest_hash", blockchainState.LatestHash),
-					slog.Any("ip_address", ipAddress))
+				// For debugging purposes only.
+				// h.logger.Debug("Sending sse to client...",
+				// 	slog.Any("chain_id", chainIDStr),
+				// 	slog.Any("latest_hash", blockchainState.LatestHash),
+				// 	slog.Any("ip_address", ipAddress))
 
 				// Send an event to the client.
 				fmt.Fprintf(w, "data: %v\n\n", blockchainState.LatestHash)

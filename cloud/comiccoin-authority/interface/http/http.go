@@ -163,7 +163,10 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.getBlockchainStateHTTPHandler.Execute(w, r)
 	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockchain-state" && p[3] == "changes" && r.Method == http.MethodGet:
 		port.blockchainStateChangeEventDTOHTTPHandler.Execute(w, r)
-	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockchain-state" && p[3] == "sse" && r.Method == http.MethodGet:
+
+	// DEVELOPERS NOTE: Using `POST` method to get it working on DigitalOcean App Platform, see more for details:
+	// "Does App Platform support SSE (Server-Sent Events) application?" via https://www.digitalocean.com/community/questions/does-app-platform-support-sse-server-sent-events-application
+	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockchain-state" && p[3] == "sse" && r.Method == http.MethodPost:
 		port.blockchainStateServerSentEventsHTTPHandler.Execute(w, r)
 
 	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockdata" && r.Method == http.MethodGet:
