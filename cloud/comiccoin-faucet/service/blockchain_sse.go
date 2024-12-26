@@ -104,6 +104,16 @@ func (s *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService) Execut
 			slog.Any("chain_id", chainID),
 			slog.Any("latest_hash", blockchainStateLatestHash))
 
+		// What is the purpose of this? In case our local database is not setup
+		// then we skip handling any Global Blockchain state changes until we
+		// are setup.
+		if blockchainState == nil {
+			s.logger.Debug("Received from global blockchain network...skipping for now...",
+				slog.Any("chain_id", chainID),
+				slog.Any("latest_hash", blockchainStateLatestHash))
+			continue
+		}
+
 		//
 		// STEP 3:
 		// Check to see if the local blockchain we have locally is the same with
