@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
@@ -27,27 +28,27 @@ type App struct {
 
 	kmutex kmutexutil.KMutexProvider
 
-	getAccountService                              *service.GetAccountService
-	createAccountService                           *service.CreateAccountService
-	accountListingByLocalWalletsService            *service.AccountListingByLocalWalletsService
-	coinTransferService                            *service.CoinTransferService
-	tokenGetService                                *service.TokenGetService
-	tokenTransferService                           *service.TokenTransferService
-	tokenBurnService                               *service.TokenBurnService
-	getOrDownloadNonFungibleTokenService           *service.GetOrDownloadNonFungibleTokenService
-	listBlockTransactionsByAddressService          *service.ListBlockTransactionsByAddressService
-	listWithLimitBlockTransactionsByAddressService *service.ListWithLimitBlockTransactionsByAddressService
-	getByBlockTransactionTimestampService          *service.GetByBlockTransactionTimestampService
-	blockDataGetByHashService                      *service.BlockDataGetByHashService
-	tokenListByOwnerService                        *service.TokenListByOwnerService
-	tokenCountByOwnerService                       *service.TokenCountByOwnerService
-	blockchainSyncService                          *service.BlockchainSyncWithBlockchainAuthorityService
-	blockchainSyncManagerService                   *service.BlockchainSyncManagerService
-	walletsFilterByLocalService                    *service.WalletsFilterByLocalService
-	listNonFungibleTokensByOwnerService            *service.ListNonFungibleTokensByOwnerService
-	pendingSignedTransactionListService            *service.PendingSignedTransactionListService
-	exportWalletService                            *service.ExportWalletService
-	importWalletService                            *service.ImportWalletService
+	getAccountService                                               *service.GetAccountService
+	createAccountService                                            *service.CreateAccountService
+	accountListingByLocalWalletsService                             *service.AccountListingByLocalWalletsService
+	coinTransferService                                             *service.CoinTransferService
+	tokenGetService                                                 *service.TokenGetService
+	tokenTransferService                                            *service.TokenTransferService
+	tokenBurnService                                                *service.TokenBurnService
+	getOrDownloadNonFungibleTokenService                            *service.GetOrDownloadNonFungibleTokenService
+	listBlockTransactionsByAddressService                           *service.ListBlockTransactionsByAddressService
+	listWithLimitBlockTransactionsByAddressService                  *service.ListWithLimitBlockTransactionsByAddressService
+	getByBlockTransactionTimestampService                           *service.GetByBlockTransactionTimestampService
+	blockDataGetByHashService                                       *service.BlockDataGetByHashService
+	tokenListByOwnerService                                         *service.TokenListByOwnerService
+	tokenCountByOwnerService                                        *service.TokenCountByOwnerService
+	blockchainSyncService                                           *service.BlockchainSyncWithBlockchainAuthorityService
+	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService *service.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService
+	walletsFilterByLocalService                                     *service.WalletsFilterByLocalService
+	listNonFungibleTokensByOwnerService                             *service.ListNonFungibleTokensByOwnerService
+	pendingSignedTransactionListService                             *service.PendingSignedTransactionListService
+	exportWalletService                                             *service.ExportWalletService
+	importWalletService                                             *service.ImportWalletService
 }
 
 // NewApp creates a new App application struct
@@ -110,6 +111,10 @@ func (a *App) startup(ctx context.Context) {
 
 	// ------------ Repo ------------
 
+	blockchainStateServerSentEventsDTOConfigurationProvider := repo.NewBlockchainStateServerSentEventsDTOConfigurationProvider(preferences.AuthorityAddress)
+	blockchainStateServerSentEventsDTORepo := repo.NewBlockchainStateServerSentEventsDTORepository(
+		blockchainStateServerSentEventsDTOConfigurationProvider,
+		logger)
 	accountRepo := repo.NewAccountRepo(
 		logger,
 		accountDB)
@@ -140,16 +145,18 @@ func (a *App) startup(ctx context.Context) {
 	tokRepo := repo.NewTokenRepo(
 		logger,
 		tokDB)
-	blockchainStateChangeEventDTOConfigurationProvider := auth_repo.NewBlockchainStateChangeEventDTOConfigurationProvider(authorityAddress)
-	blockchainStateChangeEventDTORepo := auth_repo.NewBlockchainStateChangeEventDTORepo(
-		blockchainStateChangeEventDTOConfigurationProvider,
-		logger)
 	nftokenRepo := repo.NewNonFungibleTokenRepo(logger, nftokDB)
 	nftAssetRepoConfig := repo.NewNFTAssetRepoConfigurationProvider(nftStorageAddress, "")
 	nftAssetRepo := repo.NewNFTAssetRepo(nftAssetRepoConfig, logger)
 	mempoolTxDTORepoConfig := auth_repo.NewMempoolTransactionDTOConfigurationProvider(authorityAddress)
 	mempoolTxDTORepo := auth_repo.NewMempoolTransactionDTORepo(mempoolTxDTORepoConfig, logger)
 	pstxRepo := repo.NewPendingSignedTransactionRepo(logger, pstxDB)
+
+	// DEPRECATED
+	// blockchainStateChangeEventDTOConfigurationProvider := auth_repo.NewBlockchainStateChangeEventDTOConfigurationProvider(authorityAddress)
+	// blockchainStateChangeEventDTORepo := auth_repo.NewBlockchainStateChangeEventDTORepo(
+	// 	blockchainStateChangeEventDTOConfigurationProvider,
+	// 	logger)
 
 	// ------------ Use-Case ------------
 
@@ -288,10 +295,15 @@ func (a *App) startup(ctx context.Context) {
 		tokRepo,
 	)
 
-	// Blockchain State DTO
-	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase := auth_usecase.NewSubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase(
+	// Blockchain State DTO (DEPRECATED)
+	// subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase := auth_usecase.NewSubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase(
+	// 	logger,
+	// 	blockchainStateChangeEventDTORepo)
+
+	// Blockchain State Server Sent Events DTO
+	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase := usecase.NewSubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase(
 		logger,
-		blockchainStateChangeEventDTORepo)
+		blockchainStateServerSentEventsDTORepo)
 
 	// Token
 	getTokUseCase := usecase.NewGetTokenUseCase(
@@ -413,14 +425,25 @@ func (a *App) startup(ctx context.Context) {
 		deletePendingSignedTransactionUseCase,
 	)
 
-	blockchainSyncManagerService := service.NewBlockchainSyncManagerService(
+	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService := service.NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 		logger,
 		blockchainSyncService,
 		storageTransactionOpenUseCase,
 		storageTransactionCommitUseCase,
 		storageTransactionDiscardUseCase,
-		subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
+		getBlockchainStateUseCase,
+		subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
 	)
+
+	// DEPRECATED
+	// blockchainSyncManagerService := service.NewBlockchainSyncManagerService(
+	// 	logger,
+	// 	blockchainSyncService,
+	// 	storageTransactionOpenUseCase,
+	// 	storageTransactionCommitUseCase,
+	// 	storageTransactionDiscardUseCase,
+	// 	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
+	// )
 
 	getOrDownloadNonFungibleTokenService := service.NewGetOrDownloadNonFungibleTokenService(
 		logger,
@@ -491,7 +514,7 @@ func (a *App) startup(ctx context.Context) {
 	a.tokenTransferService = tokenTransferService
 	a.tokenBurnService = tokenBurnService
 	a.blockchainSyncService = blockchainSyncService
-	a.blockchainSyncManagerService = blockchainSyncManagerService
+	a.blockchainSyncWithBlockchainAuthorityViaServerSentEventsService = blockchainSyncWithBlockchainAuthorityViaServerSentEventsService
 	a.getOrDownloadNonFungibleTokenService = getOrDownloadNonFungibleTokenService
 	a.listBlockTransactionsByAddressService = listBlockTransactionsByAddressService
 	a.listWithLimitBlockTransactionsByAddressService = listWithLimitBlockTransactionsByAddressService
@@ -509,13 +532,27 @@ func (a *App) startup(ctx context.Context) {
 	// Execute.
 	//
 
-	go func(ctx context.Context, cid uint16) {
+	go func(ctx context.Context, chainid uint16) {
+		// When the daemon starts up, the first thing we will do is one-time
+		/// full sync with the Global BlockChain Network to get all / any
+		// missing parts.
+		a.logger.Debug("Starting full-sync...")
+		if err := blockchainSyncService.Execute(context.Background(), chainid); err != nil {
+			logger.Error("Failed to manage syncing", slog.Any("error", err))
+		}
+		a.logger.Debug("Finished full-sync")
+
+		// Once we have successfully made a copy of the Global BlockChain
+		// Network locally, then we will subscribe to waiting and receiving
+		// any new changes that occur to update our local copy.
+
 		for {
-			a.logger.Debug("Starting sync-manager...")
-			if err := blockchainSyncManagerService.Execute(ctx, cid); err != nil {
-				a.logger.Error("Failed to manage syncing", slog.Any("error", err))
+			a.logger.Debug("Starting partial sync via sse...")
+			if err := blockchainSyncWithBlockchainAuthorityViaServerSentEventsService.Execute(context.Background(), chainid); err != nil {
+				logger.Error("Failed to manage syncing", slog.Any("error", err))
 			}
-			a.logger.Debug("Sync-manager will restart again.")
+			a.logger.Debug("Finished partial sync via sse, will restart in 15 seconds...")
+			time.Sleep(15 * time.Second)
 		}
 	}(a.ctx, chainID)
 
@@ -534,7 +571,7 @@ func (a *App) shutdown(ctx context.Context) {
 	// DEVELOPERS NOTE:
 	// Before we startup our app, we need to make sure the `data directory` is
 	// set for this application by the user, else stop the app startup
-	// proceedure. This is done on purpose because we need the user to specify
+	// procedure. This is done on purpose because we need the user to specify
 	// the location they want to store instead of having one automatically set.
 	preferences := PreferencesInstance()
 	dataDir := preferences.DataDirectory

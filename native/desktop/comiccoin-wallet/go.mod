@@ -3,7 +3,7 @@ module comiccoin-wallet
 go 1.23.0
 
 require (
-	github.com/comiccoin-network/monorepo/cloud/comiccoin-authority v0.0.0-00010101000000-000000000000
+	github.com/comiccoin-network/monorepo/cloud/comiccoin-authority v0.0.0-20241226193633-7345b55282a3
 	github.com/comiccoin-network/monorepo/native/desktop/comiccoin v0.0.0-00010101000000-000000000000
 	github.com/ethereum/go-ethereum v1.14.12
 	github.com/wailsapp/wails/v2 v2.9.2
@@ -16,7 +16,6 @@ require (
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/comiccoin-network/monorepo/cloud/comiccoin-authority v0.0.0-20241226193633-7345b55282a3 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/consensys/gnark-crypto v0.12.1 // indirect
 	github.com/crate-crypto/go-ipa v0.0.0-20240223125850-b1e8a79f509c // indirect
