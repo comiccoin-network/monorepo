@@ -6,7 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	sstring "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/security/securestring"
+	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 )
 
 type TokenBurnArgs struct {

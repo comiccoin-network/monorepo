@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
 type DownloadMetadataNonFungibleTokenUseCase struct {

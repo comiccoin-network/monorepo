@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"math/big"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
 type ListNonFungibleTokensWithFilterByTokenIDsyUseCase struct {

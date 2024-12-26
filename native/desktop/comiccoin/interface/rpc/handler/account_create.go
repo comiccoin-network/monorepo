@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
-	sstring "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/security/securestring"
+	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 )
 
 type CreateAccountArgs struct {

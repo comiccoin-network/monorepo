@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/config/constants"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/config/constants"
 )
 
 // Note: This middleware must have `IPAddressMiddleware` executed first before running.

@@ -3,9 +3,9 @@ package jwt
 import (
 	"time"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/jwt_utils"
-	sbytes "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/securebytes"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/config"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/jwt_utils"
+	sbytes "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/securebytes"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/config"
 )
 
 // Provider provides interface for abstracting JWT generation.

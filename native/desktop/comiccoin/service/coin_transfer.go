@@ -8,15 +8,15 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/httperror"
-	sstring "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/security/securestring"
-	auth_domain "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
-	auth_usecase "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/usecase"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
+	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
+	auth_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
+	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 type CoinTransferService struct {

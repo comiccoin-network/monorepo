@@ -10,18 +10,18 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/logger"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/blacklist"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/jwt"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/password"
-	disk "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/storage/disk/leveldb"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/config"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/interface/http"
-	httphandler "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/interface/http/handler"
-	httpmiddle "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/interface/http/middleware"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/repo"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/service"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/logger"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/blacklist"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/jwt"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/password"
+	disk "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/storage/disk/leveldb"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/config"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/interface/http"
+	httphandler "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/interface/http/handler"
+	httpmiddle "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/interface/http/middleware"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/repo"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/service"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/usecase"
 )
 
 func DaemonCmd() *cobra.Command {

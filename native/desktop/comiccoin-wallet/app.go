@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/kmutexutil"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/logger"
-	disk "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
-	auth_repo "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/repo"
-	auth_usecase "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/usecase"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
+	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
+	auth_repo "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
+	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/repo"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/service"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 // App struct

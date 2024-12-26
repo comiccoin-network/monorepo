@@ -4,7 +4,7 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
 type GetTokenArgs struct {

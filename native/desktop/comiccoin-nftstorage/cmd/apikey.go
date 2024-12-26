@@ -6,12 +6,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/logger"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/jwt"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/password"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/config"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/config/constants"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/logger"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/jwt"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/password"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/config"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/config/constants"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/usecase"
 )
 
 func GenerateAPIKeyCmd() *cobra.Command {

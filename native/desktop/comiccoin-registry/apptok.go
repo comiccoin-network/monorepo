@@ -11,10 +11,10 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-registry/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-registry/domain"
 )
 
 // GetTokens returns a list of all Tokens stored in the repository.

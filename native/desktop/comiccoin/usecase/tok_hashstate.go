@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/config"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
 type GetTokensHashStateUseCase struct {

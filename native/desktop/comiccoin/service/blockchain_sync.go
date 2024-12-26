@@ -7,12 +7,12 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/blockchain/signature"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/httperror"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
-	authority_domain "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
-	auth_usecase "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/usecase"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/signature"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
+	authority_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
+	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 type BlockchainSyncWithBlockchainAuthorityService struct {

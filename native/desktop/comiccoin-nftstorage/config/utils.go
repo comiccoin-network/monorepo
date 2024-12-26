@@ -9,8 +9,8 @@ import (
 	"os"
 	"strconv"
 
-	sbytes "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/securebytes"
-	sstring "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/securestring"
+	sbytes "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/securebytes"
+	sstring "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/securestring"
 )
 
 func GetEnvString(key string, required bool) string {

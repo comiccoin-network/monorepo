@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/config/constants"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/config/constants"
 )
 
 func (mid *middleware) IPAddressMiddleware(fn http.HandlerFunc) http.HandlerFunc {

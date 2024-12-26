@@ -3,9 +3,9 @@ package usecase
 import (
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
 type UpsertNonFungibleTokenUseCase struct {

@@ -3,8 +3,8 @@ package usecase
 import (
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
-	ccdomain "github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
+	ccdomain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
 type StorageTransactionDiscardUseCase struct {

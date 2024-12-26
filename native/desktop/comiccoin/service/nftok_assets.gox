@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/config"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 // NonFungibleTokenAssetsService struct represents the service which

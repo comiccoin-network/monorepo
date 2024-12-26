@@ -7,10 +7,10 @@ import (
 	"math/big"
 	"strings"
 
-	auth_domain "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	auth_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 type GetOrDownloadNonFungibleTokenService struct {

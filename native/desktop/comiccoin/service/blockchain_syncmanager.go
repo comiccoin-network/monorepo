@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/httperror"
-	auth_usecase "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/usecase"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
+	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 type BlockchainSyncManagerService struct {

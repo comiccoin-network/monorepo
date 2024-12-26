@@ -4,10 +4,10 @@ import (
 	"log"
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/logger"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	"github.com/spf13/cobra"
 
-	pref "github.com/LuchaComics/monorepo/native/desktop/comiccoin/common/preferences"
+	pref "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/common/preferences"
 )
 
 var (

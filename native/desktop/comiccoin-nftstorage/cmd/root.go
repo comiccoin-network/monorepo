@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/cmd/version"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/cmd/version"
 )
 
 // Initialize function will be called when every command gets called.

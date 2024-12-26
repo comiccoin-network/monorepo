@@ -7,11 +7,11 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/logger"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/repo"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
 )
 
 var (

@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-registry/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-registry/domain"
 )
 
 // Constants defining API endpoint paths
@@ -137,7 +137,7 @@ func (r *NFTAssetRepo) Version(ctx context.Context) (string, error) {
 	var rawJSON bytes.Buffer
 	teeReader := io.TeeReader(resp.Body, &rawJSON) // TeeReader allows you to read the JSON and capture it
 
-	// Copy and pasted from "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstore/interface/http/handler".
+	// Copy and pasted from "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstore/interface/http/handler".
 	type VersionResponseIDO struct {
 		Version string `json:"version"`
 	}
@@ -280,7 +280,7 @@ func (r *NFTAssetRepo) PinAddViaFilepath(ctx context.Context, fullFilePath strin
 	var rawJSON bytes.Buffer
 	teeReader := io.TeeReader(resp.Body, &rawJSON) // TeeReader allows you to read the JSON and capture it
 
-	// Copied from `"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstore/service/ipfs_pinadd.go"`.
+	// Copied from `"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstore/service/ipfs_pinadd.go"`.
 	type IPFSPinAddResponseIDO struct {
 		RequestID uint64            `bson:"requestid" json:"requestid"`
 		Status    string            `bson:"status" json:"status"`

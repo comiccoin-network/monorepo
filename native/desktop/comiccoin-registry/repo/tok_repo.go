@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	disk "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/storage"
+	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-registry/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-registry/domain"
 )
 
 type TokenRepo struct {

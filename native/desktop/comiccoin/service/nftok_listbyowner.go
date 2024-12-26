@@ -5,13 +5,13 @@ import (
 	"log/slog"
 	"math/big"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/httperror"
-	auth_domain "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
+	auth_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/bartmika/arraydiff"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 type ListNonFungibleTokensByOwnerService struct {

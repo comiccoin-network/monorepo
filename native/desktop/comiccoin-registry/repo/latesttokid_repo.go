@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	disk "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/storage"
+	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage"
 )
 
 type LastestTokenIDRepo struct {

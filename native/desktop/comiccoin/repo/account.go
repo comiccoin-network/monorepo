@@ -8,9 +8,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/blockchain/signature"
-	disk "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/storage"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/signature"
+	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
 type AccountRepo struct {

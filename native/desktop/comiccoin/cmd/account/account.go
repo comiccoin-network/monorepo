@@ -3,8 +3,8 @@ package account
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/cmd/account/wallet"
-	pref "github.com/LuchaComics/monorepo/native/desktop/comiccoin/common/preferences"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/cmd/account/wallet"
+	pref "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/common/preferences"
 )
 
 var (

@@ -6,7 +6,7 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 
-	auth_domain "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	auth_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
 // PendingSignedTransaction struct is responsible for storing all the

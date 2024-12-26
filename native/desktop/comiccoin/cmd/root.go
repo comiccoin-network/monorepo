@@ -6,14 +6,14 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/cmd/account"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/cmd/blockchain"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/cmd/coins"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/cmd/daemon"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/cmd/initialize"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/cmd/tokens"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/cmd/version"
-	pref "github.com/LuchaComics/monorepo/native/desktop/comiccoin/common/preferences"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/cmd/account"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/cmd/blockchain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/cmd/coins"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/cmd/daemon"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/cmd/initialize"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/cmd/tokens"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/cmd/version"
+	pref "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/common/preferences"
 )
 
 var (

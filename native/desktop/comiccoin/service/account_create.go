@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/blockchain/signature"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/httperror"
-	sstring "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/security/securestring"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/signature"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
+	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 type CreateAccountService struct {

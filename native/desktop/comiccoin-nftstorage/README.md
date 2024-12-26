@@ -62,7 +62,7 @@ See **Build Instructions (TODO)** for more information on building **NFT Asset S
 
 ## 🤝 Contributing
 
-Found a bug? Want a feature to improve the package? Please create an [issue](https://github.com/LuchaComics/monorepo/issues/new).
+Found a bug? Want a feature to improve the package? Please create an [issue](https://github.com/comiccoin-network/monorepo/issues/new).
 
 ## 📝 License
 

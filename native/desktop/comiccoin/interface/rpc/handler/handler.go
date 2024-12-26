@@ -3,7 +3,7 @@ package handler
 import (
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/service"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 )
 
 type ComicCoinRPCServer struct {

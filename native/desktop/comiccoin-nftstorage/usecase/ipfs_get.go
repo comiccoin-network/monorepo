@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/httperror"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/httperror"
 
-	domain "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/domain"
+	domain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/domain"
 )
 
 type IPFSGetUseCase struct {

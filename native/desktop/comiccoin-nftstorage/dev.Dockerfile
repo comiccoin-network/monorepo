@@ -6,8 +6,8 @@
 # The base go-image
 FROM golang:1.23
 
-COPY . /go/src/github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage
-WORKDIR /go/src/github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage
+COPY . /go/src/github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage
+WORKDIR /go/src/github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage
 
 COPY go.mod ./
 COPY go.sum ./

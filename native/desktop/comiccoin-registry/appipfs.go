@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-registry/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-registry/domain"
 )
 
 func (a *App) GetIsNFTAssetStoreRunning() bool {

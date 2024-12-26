@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"strings"
 
-	sstring "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/security/securestring"
-	comic_domain "github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
+	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
+	comic_domain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 	"github.com/ethereum/go-ethereum/common"
 )
 

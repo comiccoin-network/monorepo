@@ -11,9 +11,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/logger"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/config"
-	httphandler "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/interface/http/handler"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/logger"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/config"
+	httphandler "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/interface/http/handler"
 )
 
 // Command line argument flags

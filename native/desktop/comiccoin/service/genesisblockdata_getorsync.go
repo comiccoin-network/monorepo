@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/httperror"
-	authority_domain "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
-	authority_usecase "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/usecase"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
+	authority_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
+	authority_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 type GenesisBlockDataGetOrSyncService struct {

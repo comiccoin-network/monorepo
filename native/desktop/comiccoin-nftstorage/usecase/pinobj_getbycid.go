@@ -3,7 +3,7 @@ package usecase
 import (
 	"log/slog"
 
-	domain "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/domain"
+	domain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/domain"
 )
 
 type PinObjectGetByCIDUseCase struct {

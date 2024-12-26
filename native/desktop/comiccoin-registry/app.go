@@ -4,12 +4,12 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/kmutexutil"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/logger"
-	disk "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
+	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-registry/domain"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-registry/repo"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-registry/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-registry/repo"
 )
 
 // App struct

@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"net/rpc"
 
-	rpchandler "github.com/LuchaComics/monorepo/native/desktop/comiccoin/interface/rpc/handler"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/service"
+	rpchandler "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/interface/rpc/handler"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 )
 
 // RPCServer represents an RPC server that handles incoming requests.

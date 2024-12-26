@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/blacklist"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/blacklist"
 )
 
 type Middleware interface {

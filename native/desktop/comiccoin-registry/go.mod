@@ -1,9 +1,9 @@
-module github.com/LuchaComics/monorepo/native/desktop/comiccoin-registry
+module github.com/comiccoin-network/monorepo/native/desktop/comiccoin-registry
 
 go 1.23.0
 
 require (
-	github.com/LuchaComics/monorepo/cloud/comiccoin-authority v0.0.0-00010101000000-000000000000
+	github.com/comiccoin-network/monorepo/cloud/comiccoin-authority v0.0.0-00010101000000-000000000000
 	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/wailsapp/wails/v2 v2.9.2
 )
@@ -49,6 +49,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/LuchaComics/monorepo/native/desktop/comiccoin => ../comiccoin
+replace github.com/comiccoin-network/monorepo/native/desktop/comiccoin => ../comiccoin
 
-replace github.com/LuchaComics/monorepo/cloud/comiccoin-authority => ../../../cloud/comiccoin-authority
+replace github.com/comiccoin-network/monorepo/cloud/comiccoin-authority => ../../../cloud/comiccoin-authority

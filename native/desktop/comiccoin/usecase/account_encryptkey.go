@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	pkgkeystore "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/httperror"
-	sstring "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/security/securestring"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	pkgkeystore "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
+	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/ethereum/go-ethereum/common"
 )
 

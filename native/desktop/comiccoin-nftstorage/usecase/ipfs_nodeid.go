@@ -5,7 +5,7 @@ import (
 
 	"github.com/libp2p/go-libp2p/core/peer"
 
-	domain "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/domain"
+	domain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/domain"
 )
 
 type IPFSGetNodeIDUseCase struct {

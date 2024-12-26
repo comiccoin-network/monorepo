@@ -3,8 +3,8 @@ package config
 import (
 	maddr "github.com/multiformats/go-multiaddr"
 
-	sbytes "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/securebytes"
-	sstring "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/securestring"
+	sbytes "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/securebytes"
+	sstring "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/securestring"
 )
 
 // Config represents the configuration for the application.

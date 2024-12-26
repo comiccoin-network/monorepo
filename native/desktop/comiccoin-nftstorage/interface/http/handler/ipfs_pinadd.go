@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/httperror"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/httperror"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/service"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/service"
 )
 
 type IPFSPinAddHTTPHandler struct {

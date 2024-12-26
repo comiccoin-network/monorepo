@@ -3,7 +3,7 @@ package tokens
 import (
 	"github.com/spf13/cobra"
 
-	pref "github.com/LuchaComics/monorepo/native/desktop/comiccoin/common/preferences"
+	pref "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/common/preferences"
 )
 
 // HTTP endpoints

@@ -1,12 +1,12 @@
-module github.com/LuchaComics/monorepo/native/desktop/comiccoin
+module github.com/comiccoin-network/monorepo/native/desktop/comiccoin
 
 go 1.23.0
 
-replace github.com/LuchaComics/monorepo/cloud/comiccoin-authority => ../../../cloud/comiccoin-authority
+replace github.com/comiccoin-network/monorepo/cloud/comiccoin-authority => ../../../cloud/comiccoin-authority
 
 require (
-	github.com/LuchaComics/monorepo/cloud/comiccoin-authority v0.0.0-00010101000000-000000000000
 	github.com/bartmika/arraydiff v0.0.0-20241122202608-c7e5c23decba
+	github.com/comiccoin-network/monorepo/cloud/comiccoin-authority v0.0.0-20241226193633-7345b55282a3
 	github.com/ethereum/go-ethereum v1.14.11
 	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/spf13/cobra v1.8.1
@@ -19,7 +19,6 @@ require (
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/comiccoin-network/monorepo/cloud/comiccoin-authority v0.0.0-20241226193633-7345b55282a3 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/consensys/gnark-crypto v0.12.1 // indirect
 	github.com/crate-crypto/go-ipa v0.0.0-20240223125850-b1e8a79f509c // indirect

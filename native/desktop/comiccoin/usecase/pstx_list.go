@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
 type ListPendingSignedTransactionUseCase struct {

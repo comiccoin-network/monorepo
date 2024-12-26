@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/jwt"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/security/password"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/jwt"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/password"
 )
 
 type GenerateAPIKeyUseCase struct {

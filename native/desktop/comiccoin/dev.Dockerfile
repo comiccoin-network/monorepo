@@ -6,8 +6,8 @@
 # The base go-image
 FROM golang:1.23
 
-COPY . /go/src/github.com/LuchaComics/monorepo/native/destkop/comiccoin
-WORKDIR /go/src/github.com/LuchaComics/monorepo/native/destkop/comiccoin
+COPY . /go/src/github.com/comiccoin-network/monorepo/native/destkop/comiccoin
+WORKDIR /go/src/github.com/comiccoin-network/monorepo/native/destkop/comiccoin
 
 COPY go.mod ./
 COPY go.sum ./

@@ -27,4 +27,4 @@ services:
     ports:
       - "8000:8000"
     volumes: # Connect the local filesystem with the docker filesystem. DO NOT REMOVE.
-      - ./:/go/src/github.com/LuchaComics/monorepo/native/desktop/comiccoin # IMPORTANT: Required for hotreload via `CompileDaemon`.
+      - ./:/go/src/github.com/comiccoin-network/monorepo/native/desktop/comiccoin # IMPORTANT: Required for hotreload via `CompileDaemon`.

@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"math/big"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
 type GetTokenUseCase struct {

@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"math/big"
 
-	disk "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/storage"
+	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
 type PendingSignedTransactionRepo struct {

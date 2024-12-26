@@ -5,10 +5,10 @@ import (
 	"log"
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-registry/repo"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-registry/repo"
 )
 
 func (a *App) GetDataDirectoryFromPreferences() string {

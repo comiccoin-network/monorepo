@@ -3,8 +3,8 @@ module comiccoin-wallet
 go 1.23.0
 
 require (
-	github.com/LuchaComics/monorepo/cloud/comiccoin-authority v0.0.0-00010101000000-000000000000
-	github.com/LuchaComics/monorepo/native/desktop/comiccoin v0.0.0-00010101000000-000000000000
+	github.com/comiccoin-network/monorepo/cloud/comiccoin-authority v0.0.0-00010101000000-000000000000
+	github.com/comiccoin-network/monorepo/native/desktop/comiccoin v0.0.0-00010101000000-000000000000
 	github.com/ethereum/go-ethereum v1.14.12
 	github.com/wailsapp/wails/v2 v2.9.2
 )
@@ -79,6 +79,6 @@ require (
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
 
-replace github.com/LuchaComics/monorepo/native/desktop/comiccoin => ../comiccoin
+replace github.com/comiccoin-network/monorepo/native/desktop/comiccoin => ../comiccoin
 
-replace github.com/LuchaComics/monorepo/cloud/comiccoin-authority => ../../../cloud/comiccoin-authority
+replace github.com/comiccoin-network/monorepo/cloud/comiccoin-authority => ../../../cloud/comiccoin-authority

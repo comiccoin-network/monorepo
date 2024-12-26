@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	disk "github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/common/storage"
+	disk "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/storage"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/domain"
 )
 
 type PinObjectRepo struct {

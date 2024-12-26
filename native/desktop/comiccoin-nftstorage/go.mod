@@ -1,4 +1,4 @@
-module github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage
+module github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage
 
 go 1.23.0
 
@@ -121,4 +121,4 @@ require (
 	lukechampine.com/blake3 v1.3.0 // indirect
 )
 
-replace github.com/LuchaComics/monorepo/native/desktop/comiccoin => ../comiccoin
+replace github.com/comiccoin-network/monorepo/native/desktop/comiccoin => ../comiccoin

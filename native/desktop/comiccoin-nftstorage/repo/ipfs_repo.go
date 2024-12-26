@@ -21,7 +21,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	ma "github.com/multiformats/go-multiaddr"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/domain"
 )
 
 // IPFSRepoConfigurationProvider is an interface for configuration providers

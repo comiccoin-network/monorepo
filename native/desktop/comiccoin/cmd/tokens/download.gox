@@ -7,13 +7,13 @@ import (
 	"log/slog"
 	"math/big"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/logger"
-	disk "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
+	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
 	"github.com/spf13/cobra"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/repo"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/service"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 // Command line argument flags

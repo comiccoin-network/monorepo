@@ -7,18 +7,18 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/logger"
-	disk "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
-	auth_repo "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/repo"
-	auth_usecase "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/usecase"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
+	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
+	auth_repo "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
+	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	"github.com/spf13/cobra"
 
-	pref "github.com/LuchaComics/monorepo/native/desktop/comiccoin/common/preferences"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/interface/rpc"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/repo"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/service"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin/usecase"
+	pref "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/common/preferences"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/interface/rpc"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 var (

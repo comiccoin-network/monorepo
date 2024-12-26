@@ -6,8 +6,8 @@ import (
 	"log"
 	"log/slog"
 
-	disk "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/storage"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
 type BlockchainStateRepo struct {

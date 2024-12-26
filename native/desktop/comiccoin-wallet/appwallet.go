@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"strings"
 
-	sstring "github.com/LuchaComics/monorepo/cloud/comiccoin-authority/common/security/securestring"
-	"github.com/LuchaComics/monorepo/cloud/comiccoin-authority/domain"
+	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )

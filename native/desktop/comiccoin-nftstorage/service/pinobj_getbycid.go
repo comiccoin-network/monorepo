@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/domain"
-	"github.com/LuchaComics/monorepo/native/desktop/comiccoin-nftstorage/usecase"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/usecase"
 )
 
 type PinObjectGetByCIDService struct {
