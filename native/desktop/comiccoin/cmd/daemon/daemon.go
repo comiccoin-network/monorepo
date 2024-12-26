@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
@@ -83,6 +84,11 @@ func doRunDaemonCmd() {
 
 	// ------------ Repo ------------
 
+	blockchainStateServerSentEventsDTOConfigurationProvider := repo.NewBlockchainStateServerSentEventsDTOConfigurationProvider(flagAuthorityAddress)
+	blockchainStateServerSentEventsDTORepo := repo.NewBlockchainStateServerSentEventsDTORepository(
+		blockchainStateServerSentEventsDTOConfigurationProvider,
+		logger)
+
 	accountRepo := repo.NewAccountRepo(
 		logger,
 		accountDB)
@@ -113,10 +119,10 @@ func doRunDaemonCmd() {
 	tokRepo := repo.NewTokenRepo(
 		logger,
 		tokDB)
-	blockchainStateChangeEventDTOConfigurationProvider := auth_repo.NewBlockchainStateChangeEventDTOConfigurationProvider(flagAuthorityAddress)
-	blockchainStateChangeEventDTORepo := auth_repo.NewBlockchainStateChangeEventDTORepo(
-		blockchainStateChangeEventDTOConfigurationProvider,
-		logger)
+	// blockchainStateChangeEventDTOConfigurationProvider := auth_repo.NewBlockchainStateChangeEventDTOConfigurationProvider(flagAuthorityAddress)
+	// blockchainStateChangeEventDTORepo := auth_repo.NewBlockchainStateChangeEventDTORepo(
+	// 	blockchainStateChangeEventDTOConfigurationProvider,
+	// 	logger)
 	nftokenRepo := repo.NewNonFungibleTokenRepo(logger, nftokDB)
 	nftAssetRepoConfig := repo.NewNFTAssetRepoConfigurationProvider(flagNFTStorageAddress, "")
 	nftAssetRepo := repo.NewNFTAssetRepo(nftAssetRepoConfig, logger)
@@ -255,10 +261,15 @@ func doRunDaemonCmd() {
 		tokRepo,
 	)
 
-	// Blockchain State DTO
-	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase := auth_usecase.NewSubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase(
+	// // Blockchain State DTO (DEPRECATED)
+	// subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase := auth_usecase.NewSubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase(
+	// 	logger,
+	// 	blockchainStateChangeEventDTORepo)
+
+	// Blockchain State Server Sent Events DTO
+	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase := usecase.NewSubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase(
 		logger,
-		blockchainStateChangeEventDTORepo)
+		blockchainStateServerSentEventsDTORepo)
 
 	// Token
 	getTokUseCase := usecase.NewGetTokenUseCase(
@@ -377,14 +388,26 @@ func doRunDaemonCmd() {
 		deletePendingSignedTransactionUseCase,
 	)
 
-	blockchainSyncManagerService := service.NewBlockchainSyncManagerService(
+	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService := service.NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 		logger,
 		blockchainSyncService,
 		storageTransactionOpenUseCase,
 		storageTransactionCommitUseCase,
 		storageTransactionDiscardUseCase,
-		subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
+		getBlockchainStateUseCase,
+		subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
 	)
+
+	// DEPRECATED
+	// blockchainSyncManagerService := service.NewBlockchainSyncManagerService(
+	// 	logger,
+	// 	blockchainSyncService,
+	// 	storageTransactionOpenUseCase,
+	// 	storageTransactionCommitUseCase,
+	// 	storageTransactionDiscardUseCase,
+	// 	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
+	// )
+	// _ = blockchainSyncManagerService // DEPRECATED
 
 	getOrDownloadNonFungibleTokenService := service.NewGetOrDownloadNonFungibleTokenService(
 		logger,
@@ -449,12 +472,26 @@ func doRunDaemonCmd() {
 	//
 
 	go func() {
+		// When the daemon starts up, the first thing we will do is one-time
+		/// full sync with the Global BlockChain Network to get all / any
+		// missing parts.
+		logger.Debug("Starting full-sync...")
+		if err := blockchainSyncService.Execute(context.Background(), flagChainID); err != nil {
+			logger.Error("Failed to manage syncing", slog.Any("error", err))
+		}
+		logger.Debug("Finished full-sync")
+
+		// Once we have successfully made a copy of the Global BlockChain
+		// Network locally, then we will subscribe to waiting and receiving
+		// any new changes that occur to update our local copy.
+
 		for {
-			logger.Debug("Starting sync-manager...")
-			if err := blockchainSyncManagerService.Execute(context.Background(), flagChainID); err != nil {
+			logger.Debug("Starting partial sync via sse...")
+			if err := blockchainSyncWithBlockchainAuthorityViaServerSentEventsService.Execute(context.Background(), flagChainID); err != nil {
 				logger.Error("Failed to manage syncing", slog.Any("error", err))
 			}
-			logger.Debug("Sync-manager will restart again.")
+			logger.Debug("Finished partial sync via sse, will restart in 15 seconds...")
+			time.Sleep(15 * time.Second)
 		}
 	}()
 
