@@ -3,11 +3,14 @@ module github.com/comiccoin-network/monorepo/cloud/comiccoin-authority
 go 1.23.0
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/awnumar/memguard v0.22.5
+	github.com/bsm/redislock v0.9.4
 	github.com/ethereum/go-ethereum v1.14.11
+	github.com/faabiosr/cachego v0.22.2
 	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/google/uuid v1.6.0
 	github.com/im7mortal/kmutex v1.0.2
+	github.com/redis/go-redis/v9 v9.7.0
 	github.com/rs/cors v1.7.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.8.1
@@ -20,10 +23,8 @@ require (
 
 require (
 	github.com/awnumar/memcall v0.2.0 // indirect
-	github.com/awnumar/memguard v0.22.5 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
-	github.com/bsm/redislock v0.9.4 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
@@ -47,7 +48,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.20.5 // indirect
 	github.com/prometheus/common v0.60.0 // indirect
-	github.com/redis/go-redis/v9 v9.7.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
