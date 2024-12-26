@@ -114,7 +114,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService) Execut
 			continue
 		}
 
-		// For debugging purposes only.
+		// For debugging purposes only. (Uncommenting will make for noisy console logs)
 		// s.logger.Debug("Received from global blockchain network...",
 		// 	slog.Any("chain_id", chainID),
 		// 	slog.Any("latest_hash", blockchainStateLatestHash))

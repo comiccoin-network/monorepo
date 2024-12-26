@@ -80,7 +80,7 @@ func (h *BlockchainStateServerSentEventsHTTPHandler) Execute(w http.ResponseWrit
 			}
 
 			if blockchainState.ChainID == chainID {
-				// For debugging purposes only.
+				// For debugging purposes only. (Uncommenting will make for noisy console logs)
 				// h.logger.Debug("Sending sse to client...",
 				// 	slog.Any("chain_id", chainIDStr),
 				// 	slog.Any("latest_hash", blockchainState.LatestHash),
