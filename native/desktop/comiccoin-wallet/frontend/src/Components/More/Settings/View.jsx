@@ -12,6 +12,8 @@ import {
 import {
   GetPreferences,
   SavePreferences,
+  DefaultComicCoinNFTStorageAddress,
+  DefaultComicCoinAuthorityAddress
 } from "../../../../wailsjs/go/main/App";
 
 function SettingsView() {
@@ -111,6 +113,36 @@ function SettingsView() {
     }
   };
 
+  const restoreAuthorityAddress = () => {
+    console.log("restoreAuthorityAddress: clicked")
+    DefaultComicCoinAuthorityAddress()
+      .then((urlRes) => {
+        console.log("DefaultComicCoinAuthorityAddress: res:", urlRes);
+        setFormData(prev => ({ ...prev, authority_address: urlRes }))
+      })
+      .catch((errorRes) => {
+        console.log("DefaultComicCoinAuthorityAddress: errors:", errorRes);
+      })
+      .finally(() => {
+          console.log("DefaultComicCoinAuthorityAddress: done");
+      });
+  }
+
+  const restoreNFTStorageAddress = () => {
+    console.log("restoreNFTStorageAddress: clicked")
+    DefaultComicCoinNFTStorageAddress()
+      .then((urlRes) => {
+        console.log("DefaultComicCoinNFTStorageAddress: res:", urlRes);
+        setFormData(prev => ({ ...prev, nft_storage_address: urlRes }))
+      })
+      .catch((errorRes) => {
+        console.log("DefaultComicCoinNFTStorageAddress: errors:", errorRes);
+      })
+      .finally(() => {
+          console.log("DefaultComicCoinNFTStorageAddress: done");
+      });
+  }
+
   if (forceURL !== "") {
     return <Navigate to={forceURL} />;
   }
@@ -192,18 +224,27 @@ function SettingsView() {
                 <span className="text-sm font-medium text-gray-700">
                   Authority Address <span className="text-red-500">*</span>
                 </span>
-                <input
-                  type="text"
-                  name="authority_address"
-                  value={formData.authority_address}
-                  onChange={handleInputChange}
-                  className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.authority_address
-                      ? "border-red-300 bg-red-50"
-                      : "border-gray-200"
-                  }`}
-                  placeholder="Enter blockchain authority address"
-                />
+                <div className="flex gap-2">
+                    <input
+                      type="text"
+                      name="authority_address"
+                      value={formData.authority_address}
+                      onChange={handleInputChange}
+                      className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                        errors.authority_address
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-200"
+                      }`}
+                      placeholder="Enter blockchain authority address"
+                    />
+                    <button
+                      type="button"
+                      onClick={restoreAuthorityAddress}
+                      className="mt-1 px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm whitespace-nowrap"
+                    >
+                      Restore Default
+                    </button>
+                </div>
                 {errors.authority_address && (
                   <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" />
@@ -235,18 +276,27 @@ function SettingsView() {
                 <span className="text-sm font-medium text-gray-700">
                   NFT Storage Address <span className="text-red-500">*</span>
                 </span>
-                <input
-                  type="text"
-                  name="nft_storage_address"
-                  value={formData.nft_storage_address}
-                  onChange={handleInputChange}
-                  className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.nft_storage_address
-                      ? "border-red-300 bg-red-50"
-                      : "border-gray-200"
-                  }`}
-                  placeholder="Enter IPFS gateway address"
-                />
+                <div className="flex gap-2">
+                 <input
+                   type="text"
+                   name="nft_storage_address"
+                   value={formData.nft_storage_address}
+                   onChange={handleInputChange}
+                   className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                     errors.nft_storage_address
+                       ? "border-red-300 bg-red-50"
+                       : "border-gray-200"
+                   }`}
+                   placeholder="Enter IPFS gateway address"
+                 />
+                 <button
+                   type="button"
+                   onClick={restoreNFTStorageAddress}
+                   className="mt-1 px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm whitespace-nowrap"
+                 >
+                   Restore Default
+                 </button>
+               </div>
                 {errors.nft_storage_address && (
                   <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" />

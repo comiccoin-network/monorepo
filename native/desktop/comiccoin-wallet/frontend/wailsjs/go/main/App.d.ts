@@ -8,6 +8,10 @@ export function BurnToken(arg1:big.Int,arg2:string,arg3:string):Promise<void>;
 
 export function CreateWallet(arg1:string,arg2:string,arg3:string):Promise<string>;
 
+export function DefaultComicCoinAuthorityAddress():Promise<string>;
+
+export function DefaultComicCoinNFTStorageAddress():Promise<string>;
+
 export function DefaultWalletAddress():Promise<string>;
 
 export function ExportWalletUsingDialog(arg1:string):Promise<void>;

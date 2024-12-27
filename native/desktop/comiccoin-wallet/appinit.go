@@ -126,3 +126,11 @@ func (a *App) ShutdownApp() {
 func (a *App) GetIsBlockhainNodeRunning() bool {
 	return true //TODO: REMOVE
 }
+
+func (a *App) DefaultComicCoinNFTStorageAddress() string {
+	return ComicCoinNFTStorageAddress
+}
+
+func (a *App) DefaultComicCoinAuthorityAddress() string {
+	return ComicCoinAuthorityAddress
+}

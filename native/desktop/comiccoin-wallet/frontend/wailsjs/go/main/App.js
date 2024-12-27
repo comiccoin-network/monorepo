@@ -10,6 +10,14 @@ export function CreateWallet(arg1, arg2, arg3) {
   return window['go']['main']['App']['CreateWallet'](arg1, arg2, arg3);
 }
 
+export function DefaultComicCoinAuthorityAddress() {
+  return window['go']['main']['App']['DefaultComicCoinAuthorityAddress']();
+}
+
+export function DefaultComicCoinNFTStorageAddress() {
+  return window['go']['main']['App']['DefaultComicCoinNFTStorageAddress']();
+}
+
 export function DefaultWalletAddress() {
   return window['go']['main']['App']['DefaultWalletAddress']();
 }
