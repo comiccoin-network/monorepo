@@ -161,6 +161,10 @@ func (s *GatewayInitService) Execute(
 		CreatedAt:                 time.Now(),
 		ModifiedAt:                time.Now(),
 		ProfileVerificationStatus: domain.UserProfileVerificationStatusApproved,
+		Country:                   "Canada",
+		Timezone:                  "America/Toronto",
+		AgreeTermsOfService:       true,
+		AgreePromotions:           true,
 	}
 
 	if createUserErr := s.userCreate.Execute(sessCtx, user); err != nil {

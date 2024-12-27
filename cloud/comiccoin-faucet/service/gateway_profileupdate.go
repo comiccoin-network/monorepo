@@ -34,6 +34,7 @@ type GatewayProfileUpdateRequestIDO struct {
 	Email                     string `bson:"email" json:"email"`
 	Phone                     string `bson:"phone" json:"phone,omitempty"`
 	Country                   string `bson:"country" json:"country,omitempty"`
+	Timezone                  string `bson:"timezone" json:"timezone"`
 	Region                    string `bson:"region" json:"region,omitempty"`
 	City                      string `bson:"city" json:"city,omitempty"`
 	PostalCode                string `bson:"postal_code" json:"postal_code,omitempty"`
@@ -50,7 +51,7 @@ type GatewayProfileUpdateRequestIDO struct {
 	ShippingAddressLine2      string `bson:"shipping_address_line2" json:"shipping_address_line2,omitempty"`
 	HowDidYouHearAboutUs      int8   `bson:"how_did_you_hear_about_us" json:"how_did_you_hear_about_us,omitempty"`
 	HowDidYouHearAboutUsOther string `bson:"how_did_you_hear_about_us_other" json:"how_did_you_hear_about_us_other,omitempty"`
-	AgreePromotions           bool   `bson:"agree_promotions_email" json:"agree_promotions_email,omitempty"`
+	AgreePromotions           bool   `bson:"agree_promotions" json:"agree_promotions,omitempty"`
 	AgreeTermsOfService       bool   `bson:"agree_terms_of_service" json:"agree_terms_of_service,omitempty"`
 }
 
@@ -77,6 +78,7 @@ func (s *GatewayProfileUpdateService) Execute(sessCtx mongo.SessionContext, nu *
 	ou.Email = nu.Email
 	ou.Phone = nu.Phone
 	ou.Country = nu.Country
+	ou.Timezone = nu.Timezone
 	ou.Region = nu.Region
 	ou.City = nu.City
 	ou.PostalCode = nu.PostalCode
@@ -85,6 +87,7 @@ func (s *GatewayProfileUpdateService) Execute(sessCtx mongo.SessionContext, nu *
 	ou.HowDidYouHearAboutUs = nu.HowDidYouHearAboutUs
 	ou.HowDidYouHearAboutUsOther = nu.HowDidYouHearAboutUsOther
 	ou.AgreePromotions = nu.AgreePromotions
+	ou.AgreeTermsOfService = nu.AgreeTermsOfService
 	ou.HasShippingAddress = nu.HasShippingAddress
 	ou.ShippingName = nu.ShippingName
 	ou.ShippingPhone = nu.ShippingPhone

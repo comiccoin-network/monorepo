@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { ChevronLeft, Mail, Globe, Clock, AlertCircle } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { ChevronLeft, Mail, Globe, Clock, AlertCircle } from "lucide-react";
+import { Navigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 
@@ -8,11 +8,9 @@ import { currentUserState } from "../../../AppState";
 import { putProfileUpdateAPI } from "../../../API/Profile";
 import AdminTopbar from "../../../Components/Navigation/AdminTopbar";
 
-
 const AdminInfoPage = () => {
-
   // Variable controls the global state of the app.
-  const [currentUser] = useRecoilState(currentUserState);
+  const [currentUser, setCurrentUser] = useRecoilState(currentUserState);
 
   const [forceURL, setForceURL] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,17 +21,19 @@ const AdminInfoPage = () => {
     ...allTimezones,
     "America/Toronto": "Toronto",
   };
-  const { options } = useTimezoneSelect({ timezones, });
+  const { options } = useTimezoneSelect({ timezones });
 
   const [formData, setFormData] = useState({
     email: currentUser.email,
     firstName: currentUser.firstName,
     lastName: currentUser.lastName,
-    country: ['United States', 'Canada', 'Mexico'].includes(currentUser.country) ? currentUser.country : 'Other',
+    country: ["United States", "Canada", "Mexico"].includes(currentUser.country)
+      ? currentUser.country
+      : "Other",
     countryOther: currentUser.country,
     timezone: currentUser.timezone,
     agreeTermsOfService: currentUser.agreeTermsOfService,
-    agreePromotional: currentUser.agreePromotional
+    agreePromotions: currentUser.agreePromotions,
   });
 
   const validateField = (name, value) => {
@@ -75,16 +75,16 @@ const AdminInfoPage = () => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: newValue
+      [name]: newValue,
     }));
 
     if (hasSubmitted) {
       const error = validateField(name, newValue);
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: error
+        [name]: error,
       }));
     }
   };
@@ -96,7 +96,7 @@ const AdminInfoPage = () => {
 
     // Validate all fields
     const newErrors = {};
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       const error = validateField(key, formData[key]);
       if (error) newErrors[key] = error;
     });
@@ -107,23 +107,28 @@ const AdminInfoPage = () => {
       return;
     }
 
+    console.log("putProfileUpdateAPI: Submitting...");
+    console.log(formData);
+
     putProfileUpdateAPI(
       formData,
       (resp) => {
         // For debugging purposes only.
-        console.log("onRegisterSuccess: Starting...");
+        console.log("putProfileUpdateAPI: Starting...");
         console.log(resp);
+
+        // Update the current logged in user.
+        setCurrentUser(resp);
 
         // Redirect the user to a new page.
         setForceURL("/admin/settings");
       },
       (apiErr) => {
-        console.log("onRegisterError: apiErr:", apiErr);
+        console.log("putProfileUpdateAPI: apiErr:", apiErr);
         setErrors(apiErr);
       },
       () => {
-        console.log("onRegisterDone: Starting...");
-
+        console.log("putProfileUpdateAPI: Done");
       },
     );
     setHasSubmitted(true);
@@ -150,7 +155,10 @@ const AdminInfoPage = () => {
             </button>
           </nav>
 
-          <h1 className="text-3xl font-bold text-purple-800 mb-8" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+          <h1
+            className="text-3xl font-bold text-purple-800 mb-8"
+            style={{ fontFamily: "Comic Sans MS, cursive" }}
+          >
             Email Settings
           </h1>
         </div>
@@ -181,12 +189,18 @@ const AdminInfoPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-xl p-8 shadow-lg border-2 border-purple-200">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-xl p-8 shadow-lg border-2 border-purple-200"
+          >
             <div className="space-y-6">
               {/* Name fields */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="firstName">
+                  <label
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                    htmlFor="firstName"
+                  >
                     First Name *
                   </label>
                   <input
@@ -200,12 +214,17 @@ const AdminInfoPage = () => {
                     }`}
                   />
                   {errors.firstName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.firstName}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="lastName">
+                  <label
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                    htmlFor="lastName"
+                  >
                     Last Name *
                   </label>
                   <input
@@ -219,14 +238,19 @@ const AdminInfoPage = () => {
                     }`}
                   />
                   {errors.lastName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.lastName}
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Email field */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                  htmlFor="email"
+                >
                   Email Address *
                 </label>
                 <input
@@ -246,7 +270,10 @@ const AdminInfoPage = () => {
 
               {/* Country Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="country">
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                  htmlFor="country"
+                >
                   Country *
                 </label>
                 <select
@@ -257,7 +284,7 @@ const AdminInfoPage = () => {
                   className={`w-full h-11 px-4 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white leading-tight ${
                     errors.country ? "border-red-500" : "border-gray-300"
                   }`}
-                  style={{ paddingTop: '0px', paddingBottom: '0px' }}
+                  style={{ paddingTop: "0px", paddingBottom: "0px" }}
                 >
                   <option value="">Select your country</option>
                   <option value="Canada">Canada</option>
@@ -299,7 +326,10 @@ const AdminInfoPage = () => {
 
               {/* Timezone Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="timezone">
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                  htmlFor="timezone"
+                >
                   Timezone *
                 </label>
                 <select
@@ -308,7 +338,7 @@ const AdminInfoPage = () => {
                   value={formData.timezone}
                   onChange={handleChange}
                   className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white leading-tight"
-                  style={{ paddingTop: '0px', paddingBottom: '0px' }}
+                  style={{ paddingTop: "0px", paddingBottom: "0px" }}
                 >
                   {options.map((option) => (
                     <option
@@ -335,28 +365,39 @@ const AdminInfoPage = () => {
                       errors.agreeTermsOfService ? "border-red-500" : ""
                     }`}
                   />
-                  <label className="ml-2 block text-sm text-gray-700" htmlFor="agreeTermsOfService">
+                  <label
+                    className="ml-2 block text-sm text-gray-700"
+                    htmlFor="agreeTermsOfService"
+                  >
                     I agree to the{" "}
-                    <a href="#" className="text-purple-600 hover:text-purple-500 underline">
+                    <a
+                      href="#"
+                      className="text-purple-600 hover:text-purple-500 underline"
+                    >
                       Terms of Service
                     </a>{" "}
                     *
                   </label>
                 </div>
                 {errors.agreeTermsOfService && (
-                  <p className="mt-1 text-sm text-red-600">{errors.agreeTermsOfService}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.agreeTermsOfService}
+                  </p>
                 )}
 
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    id="agreePromotional"
-                    name="agreePromotional"
-                    checked={formData.agreePromotional}
+                    id="agreePromotions"
+                    name="agreePromotions"
+                    checked={formData.agreePromotions}
                     onChange={handleChange}
                     className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 block text-sm text-gray-700" htmlFor="agreePromotional">
+                  <label
+                    className="ml-2 block text-sm text-gray-700"
+                    htmlFor="agreePromotions"
+                  >
                     I would like to receive promotional communications
                   </label>
                 </div>
