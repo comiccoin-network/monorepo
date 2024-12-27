@@ -162,8 +162,11 @@ func (s *GatewayApplyProfileForVerificationService) Execute(sessCtx mongo.Sessio
 	}
 
 	// Verify profile status.
-	if ou.ProfileVerificationStatus != domain.UserProfileVerificationStatusUnverified {
-		s.logger.Warn("Profile verification status already set")
+	if ou.ProfileVerificationStatus == domain.UserProfileVerificationStatusApproved || ou.ProfileVerificationStatus == domain.UserProfileVerificationStatusRejected {
+		s.logger.Warn("Profile verification status already set",
+			slog.Any("user_id", userID),
+			slog.Any("profile_verification_status", ou.ProfileVerificationStatus),
+		)
 		return nil, httperror.NewForBadRequestWithSingleField("message", "You cannot apply again for verification")
 	}
 
