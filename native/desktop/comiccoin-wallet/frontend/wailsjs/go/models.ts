@@ -34,14 +34,18 @@ export namespace domain {
 	export class BlockTransaction {
 	    chain_id: number;
 	    nonce_bytes: number[];
+	    nonce_string: string;
 	    from?: number[];
 	    to?: number[];
 	    value: number;
 	    data: number[];
+	    data_string: string;
 	    type: string;
 	    token_id_bytes: number[];
+	    token_id_string: string;
 	    token_metadata_uri: string;
 	    token_nonce_bytes: number[];
+	    token_nonce_string: string;
 	    v_bytes: number[];
 	    r_bytes: number[];
 	    s_bytes: number[];
@@ -56,14 +60,18 @@ export namespace domain {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.chain_id = source["chain_id"];
 	        this.nonce_bytes = source["nonce_bytes"];
+	        this.nonce_string = source["nonce_string"];
 	        this.from = source["from"];
 	        this.to = source["to"];
 	        this.value = source["value"];
 	        this.data = source["data"];
+	        this.data_string = source["data_string"];
 	        this.type = source["type"];
 	        this.token_id_bytes = source["token_id_bytes"];
+	        this.token_id_string = source["token_id_string"];
 	        this.token_metadata_uri = source["token_metadata_uri"];
 	        this.token_nonce_bytes = source["token_nonce_bytes"];
+	        this.token_nonce_string = source["token_nonce_string"];
 	        this.v_bytes = source["v_bytes"];
 	        this.r_bytes = source["r_bytes"];
 	        this.s_bytes = source["s_bytes"];
@@ -74,6 +82,7 @@ export namespace domain {
 	export class BlockHeader {
 	    chain_id: number;
 	    number_bytes: number[];
+	    number_string: string;
 	    prev_block_hash: string;
 	    timestamp: number;
 	    difficulty: number;
@@ -82,7 +91,9 @@ export namespace domain {
 	    state_root: string;
 	    trans_root: string;
 	    nonce_bytes: number[];
+	    nonce_string: string;
 	    latest_token_id_bytes: number[];
+	    latest_token_id_string: string;
 	    tokens_root: string;
 	
 	    static createFrom(source: any = {}) {
@@ -93,6 +104,7 @@ export namespace domain {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.chain_id = source["chain_id"];
 	        this.number_bytes = source["number_bytes"];
+	        this.number_string = source["number_string"];
 	        this.prev_block_hash = source["prev_block_hash"];
 	        this.timestamp = source["timestamp"];
 	        this.difficulty = source["difficulty"];
@@ -101,7 +113,9 @@ export namespace domain {
 	        this.state_root = source["state_root"];
 	        this.trans_root = source["trans_root"];
 	        this.nonce_bytes = source["nonce_bytes"];
+	        this.nonce_string = source["nonce_string"];
 	        this.latest_token_id_bytes = source["latest_token_id_bytes"];
+	        this.latest_token_id_string = source["latest_token_id_string"];
 	        this.tokens_root = source["tokens_root"];
 	    }
 	}
@@ -245,14 +259,18 @@ export namespace domain {
 	export class PendingSignedTransaction {
 	    chain_id: number;
 	    nonce_bytes: number[];
+	    nonce_string: string;
 	    from?: number[];
 	    to?: number[];
 	    value: number;
 	    data: number[];
+	    data_string: string;
 	    type: string;
 	    token_id_bytes: number[];
+	    token_id_string: string;
 	    token_metadata_uri: string;
 	    token_nonce_bytes: number[];
+	    token_nonce_string: string;
 	    v_bytes: number[];
 	    r_bytes: number[];
 	    s_bytes: number[];
@@ -265,14 +283,18 @@ export namespace domain {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.chain_id = source["chain_id"];
 	        this.nonce_bytes = source["nonce_bytes"];
+	        this.nonce_string = source["nonce_string"];
 	        this.from = source["from"];
 	        this.to = source["to"];
 	        this.value = source["value"];
 	        this.data = source["data"];
+	        this.data_string = source["data_string"];
 	        this.type = source["type"];
 	        this.token_id_bytes = source["token_id_bytes"];
+	        this.token_id_string = source["token_id_string"];
 	        this.token_metadata_uri = source["token_metadata_uri"];
 	        this.token_nonce_bytes = source["token_nonce_bytes"];
+	        this.token_nonce_string = source["token_nonce_string"];
 	        this.v_bytes = source["v_bytes"];
 	        this.r_bytes = source["r_bytes"];
 	        this.s_bytes = source["s_bytes"];

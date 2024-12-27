@@ -34,8 +34,30 @@ func (uc *ListBlockTransactionsByAddressUseCase) Execute(ctx context.Context, ad
 	}
 
 	//
-	// STEP 2: Insert into database.
+	// STEP 2: List from database.
 	//
 
-	return uc.repo.ListBlockTransactionsByAddress(ctx, address)
+	res, err := uc.repo.ListBlockTransactionsByAddress(ctx, address)
+	if err != nil {
+		uc.logger.Error("failed listing block data by address",
+			slog.Any("address", address),
+			slog.Any("error", err))
+		return nil, err
+	}
+	if res == nil {
+		return nil, nil
+	}
+
+	//
+	// STEP 3: Apply minor changes.
+	//
+
+	for _, tx := range res {
+		tx.DataString = string(tx.Data)
+		tx.NonceString = tx.GetNonce().String()
+		tx.TokenIDString = tx.GetTokenID().String()
+		tx.TokenNonceString = tx.GetTokenNonce().String()
+	}
+
+	return res, nil
 }

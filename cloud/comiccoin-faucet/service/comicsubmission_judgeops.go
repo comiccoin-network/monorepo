@@ -150,7 +150,7 @@ func (s *ComicSubmissionJudgeOperationService) Execute(
 			AccountWalletPassword: s.config.App.WalletPassword,
 			To:                    customerUser.WalletAddress,
 			Value:                 comicSubmission.CoinsReward,
-			Data:                  ([]byte)(s.config.App.FrontendDomain),
+			Data:                  []byte("ComicCoin Faucet - Coins given because of comic submission."),
 			UserID:                customerUser.ID,
 			UserName:              customerUser.Name,
 		}

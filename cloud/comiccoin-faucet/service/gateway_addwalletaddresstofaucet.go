@@ -113,7 +113,7 @@ func (s *GatewayAddWalletAddressToFaucetService) Execute(
 		AccountWalletPassword: s.config.App.WalletPassword,
 		To:                    &walletAddress,
 		Value:                 s.config.App.RegistrationCoinsReward,
-		Data:                  make([]byte, 0),
+		Data:                  []byte("ComicCoin Faucet - Coins given because of account registration."),
 		UserID:                userID,
 		UserName:              userName,
 	}

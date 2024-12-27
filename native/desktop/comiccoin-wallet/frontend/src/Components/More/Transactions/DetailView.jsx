@@ -119,7 +119,7 @@ function TransactionDetailView() {
                         onToggle={() => setShowMoreBlockInfo(!showMoreBlockInfo)}
                     >
                         <InfoRow label="Hash" value={blockData.hash} copyable />
-                        <InfoRow label="Number" value={blockData.header.number} />
+                        <InfoRow label="Number" value={blockData.header.number_string} />
                         <InfoRow
                             label="Timestamp"
                             value={new Date(blockData.header.timestamp).toLocaleString()}
@@ -131,8 +131,7 @@ function TransactionDetailView() {
                                 <InfoRow label="Trans Root" value={blockData.header.trans_root} copyable />
                                 <InfoRow label="Tokens Root" value={blockData.header.tokens_root} copyable />
                                 <InfoRow label="Beneficiary" value={blockData.header.beneficiary} copyable />
-                                <InfoRow label="Nonce" value={blockData.header.nonce} />
-                                <InfoRow label="Mining Reward" value={blockData.header.mining_reward} />
+                                <InfoRow label="Nonce" value={blockData.header.nonce_string} />
                                 <InfoRow label="Difficulty" value={blockData.header.difficulty} />
                                 <InfoRow label="Header Signature" value={blockData.header_signature_bytes} copyable />
                             </>
@@ -164,8 +163,8 @@ function TransactionDetailView() {
 
                                 {showMoreTxInfo && (
                                     <>
-                                        <InfoRow label="Data" value={tx.data} />
-                                        <InfoRow label="Nonce" value={tx.nonce_bytes} />
+                                        <InfoRow label="Data" value={tx.data_string ? tx.data_string : "-"} />
+                                        <InfoRow label="Nonce" value={tx.nonce_string} />
                                         <InfoRow label="Chain ID" value={tx.chain_id} />
                                     </>
                                 )}

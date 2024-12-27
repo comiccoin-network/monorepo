@@ -21,6 +21,7 @@ import (
 type BlockHeader struct {
 	ChainID        uint16         `bson:"chain_id" json:"chain_id"`               // Keep track of which chain this block belongs to.
 	NumberBytes    []byte         `bson:"number_bytes" json:"number_bytes"`       // Ethereum: Block number in the chain.
+	NumberString   string         `bson:"-" json:"number_string"`                 // Read-only response in string format - will not be saved in database, only returned via API.
 	PrevBlockHash  string         `bson:"prev_block_hash" json:"prev_block_hash"` // Bitcoin: Hash of the previous block in the chain.
 	TimeStamp      uint64         `bson:"timestamp" json:"timestamp"`             // Bitcoin: Time the block was mined.
 	Difficulty     uint16         `bson:"difficulty" json:"difficulty"`           // Ethereum: Number of 0's needed to solve the hash solution.
@@ -33,11 +34,13 @@ type BlockHeader struct {
 	// node is exactly the same.
 	StateRoot string `bson:"state_root" json:"state_root"` // Ethereum: Represents a hash of the accounts and their balances.
 
-	TransRoot  string `bson:"trans_root" json:"trans_root"`   // Both: Represents the merkle tree root hash for the transactions in this block.
-	NonceBytes []byte `bson:"nonce_bytes" json:"nonce_bytes"` // Both: Value identified to solve the hash solution.
+	TransRoot   string `bson:"trans_root" json:"trans_root"`   // Both: Represents the merkle tree root hash for the transactions in this block.
+	NonceBytes  []byte `bson:"nonce_bytes" json:"nonce_bytes"` // Both: Value identified to solve the hash solution.
+	NonceString string `bson:"-" json:"nonce_string"`          // Read-only response in string format - will not be saved in database, only returned via API.
 
-	LatestTokenIDBytes []byte `bson:"latest_token_id_bytes" json:"latest_token_id_bytes"` // ComicCoin: The latest token that the blockchain points to.
-	TokensRoot         string `bson:"tokens_root" json:"tokens_root"`                     // ComicCoin: Represents the hash of all the tokens and their owners.
+	LatestTokenIDBytes  []byte `bson:"latest_token_id_bytes" json:"latest_token_id_bytes"` // ComicCoin: The latest token that the blockchain points to.
+	LatestTokenIDString string `bson:"-" json:"latest_token_id_string"`                    // Read-only response in string format - will not be saved in database, only returned via API.
+	TokensRoot          string `bson:"tokens_root" json:"tokens_root"`                     // ComicCoin: Represents the hash of all the tokens and their owners.
 }
 
 func (bh *BlockHeader) GetNumber() *big.Int {

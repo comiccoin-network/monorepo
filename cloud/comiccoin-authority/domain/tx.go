@@ -22,14 +22,18 @@ const (
 type Transaction struct {
 	ChainID          uint16          `bson:"chain_id" json:"chain_id"`                     // Ethereum: The chain id that is listed in the genesis file.
 	NonceBytes       []byte          `bson:"nonce_bytes" json:"nonce_bytes"`               // Ethereum: Unique id for the transaction supplied by the user.
+	NonceString      string          `bson:"-" json:"nonce_string"`                        // Read-only response in string format - will not be saved in database, only returned via API.
 	From             *common.Address `bson:"from" json:"from"`                             // Ethereum: Account sending the transaction. Will be checked against signature.
 	To               *common.Address `bson:"to" json:"to"`                                 // Ethereum: Account receiving the benefit of the transaction.
 	Value            uint64          `bson:"value" json:"value"`                           // Ethereum: Monetary value received from this transaction.
 	Data             []byte          `bson:"data" json:"data"`                             // Ethereum: Extra data related to the transaction.
+	DataString       string          `bson:"-" json:"data_string"`                         // Read-only response in string format - will not be saved in database, only returned via API.
 	Type             string          `bson:"type" json:"type"`                             // ComicCoin: The type of transaction this is, either `coin` or `token`.
 	TokenIDBytes     []byte          `bson:"token_id_bytes" json:"token_id_bytes"`         // ComicCoin: Unique identifier for the Token (if this transaciton is an Token).
+	TokenIDString    string          `bson:"-" json:"token_id_string"`                     // Read-only response in string format - will not be saved in database, only returned via API.
 	TokenMetadataURI string          `bson:"token_metadata_uri" json:"token_metadata_uri"` // ComicCoin: URI pointing to Token metadata file (if this transaciton is an Token).
 	TokenNonceBytes  []byte          `bson:"token_nonce_bytes" json:"token_nonce_bytes"`   // ComicCoin: For every transaction action (mint, transfer, burn, etc), increment token nonce by value of 1.
+	TokenNonceString string          `bson:"-" json:"token_nonce_string"`                  // Read-only response in string format - will not be saved in database, only returned via API.
 }
 
 func (tx *Transaction) GetNonce() *big.Int {

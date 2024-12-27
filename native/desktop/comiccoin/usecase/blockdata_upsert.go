@@ -51,7 +51,7 @@ func (uc *UpsertBlockDataUseCase) Execute(
 	}
 
 	//
-	// STEP 2: Upsert our strucutre.
+	// STEP 2: Upsert our structure.
 	//
 
 	blockData := &domain.BlockData{
