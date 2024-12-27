@@ -268,9 +268,9 @@ const DashboardPage = () => {
                 <Upload className="h-12 w-12 text-purple-600 mb-4" />
                 <h3 className="font-semibold mb-2">1. Submit a Comic</h3>
                 <p className="text-sm text-gray-600 mb-4">Upload photos of your comic book covers to start earning ComicCoins</p>
-                <a href="#" className="text-purple-600 hover:text-purple-700 font-medium flex items-center">
+                <Link to="/submit" className="text-purple-600 hover:text-purple-700 font-medium flex items-center">
                   Start Submission <ArrowRight className="h-4 w-4 ml-1" />
-                </a>
+                </Link>
               </div>
               <div className="flex flex-col items-center text-center p-6 bg-purple-50 rounded-lg">
                 <Clock className="h-12 w-12 text-purple-600 mb-4" />
