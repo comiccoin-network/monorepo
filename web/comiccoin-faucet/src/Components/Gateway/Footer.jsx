@@ -12,7 +12,7 @@ function Footer() {
                 <h3 className="font-bold mb-4">Project Resources</h3>
                 <ul className="space-y-2">
                   <li>
-                    <a href="https://github.com/LuchaComics/monorepo" className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-2">
+                    <a href="https://github.com/comiccoin-network/monorepo" className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-2">
                       <Github className="h-4 w-4" />
                       <span>GitHub Repository</span>
                     </a>

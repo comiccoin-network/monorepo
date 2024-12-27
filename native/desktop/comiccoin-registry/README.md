@@ -12,15 +12,15 @@ Follow these steps to setup the project locally on your development machine.
 
    ```shell
    cd $GOPATH/src/github.com
-   mkdir LuchaComics
-   cd ./LuchaComics
-   git clone git@github.com:LuchaComics/monorepo.git
+   mkdir comiccoin-network
+   cd ./comiccoin-network
+   git clone git@github.com:comiccoin-network/monorepo.git
    ```
 
 2. Go into our monorepo folder.
 
    ```shell
-   cd ./LuchaComics/monorepo
+   cd ./comiccoin-network/monorepo
    ```
 
 3. Activate the golang workspace which is required.

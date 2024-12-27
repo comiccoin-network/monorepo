@@ -50,13 +50,3 @@ EXPOSE 8000
 
 # Run the server executable
 CMD [ "/comiccoin-authority", "daemon"]
-
-# BUILD
-# (Run following from project root directory!)
-# docker build -f Dockerfile -t LuchaComics/comiccoin-authority:latest --platform linux/amd64 .
-
-# EXECUTE
-# docker tag LuchaComics/comiccoin-authority:latest LuchaComics/comiccoin-authority:latest
-
-# UPLOAD
-# docker push LuchaComics/comiccoin-authority:latest

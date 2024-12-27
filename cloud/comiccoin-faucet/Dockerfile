@@ -53,13 +53,3 @@ EXPOSE 8000
 
 # Run the server executable
 CMD [ "/comiccoin-faucet", "daemon"]
-
-# BUILD
-# (Run following from project root directory!)
-# docker build -f Dockerfile -t LuchaComics/comiccoin-faucet:latest --platform linux/amd64 .
-
-# EXECUTE
-# docker tag LuchaComics/comiccoin-faucet:latest LuchaComics/comiccoin-faucet:latest
-
-# UPLOAD
-# docker push LuchaComics/comiccoin-faucet:latest
