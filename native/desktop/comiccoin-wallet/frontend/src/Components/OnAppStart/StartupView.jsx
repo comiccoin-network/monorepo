@@ -49,9 +49,9 @@ function StartupView() {
                             setCurrentOpenWalletAtAddress(defaultWalletAddressResult);
                             setForceURL("/dashboard")
                         }
-                    })
+                    });
                 }
-            })
+            });
       }
 
       return () => {
