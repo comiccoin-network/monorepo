@@ -18,7 +18,7 @@ const RegisterPage = () => {
     password: "",
     passwordConfirm: "",
     agreeTermsOfService: false,
-    agreePromotional: false,
+    agreePromotions: false,
   });
 
   const [errors, setErrors] = useState({});
@@ -131,7 +131,7 @@ const RegisterPage = () => {
       PasswordConfirm: formData.passwordConfirm,
       Country: formData.country,
       AgreeTermsOfService: formData.agreeTermsOfService,
-      AgreePromotional: formData.agreePromotional,
+      AgreePromotions: formData.agreePromotions,
     };
 
     postRegisterAPI(
@@ -443,14 +443,14 @@ const RegisterPage = () => {
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  id="agreePromotional"
-                  name="agreePromotional"
-                  checked={formData.agreePromotional}
+                  id="agreePromotions"
+                  name="agreePromotions"
+                  checked={formData.agreePromotions}
                   onChange={handleChange}
                   className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                 />
                 <label
-                  htmlFor="agreePromotional"
+                  htmlFor="agreePromotions"
                   className="ml-2 block text-sm text-gray-700"
                 >
                   I would like to receive promotional communications
