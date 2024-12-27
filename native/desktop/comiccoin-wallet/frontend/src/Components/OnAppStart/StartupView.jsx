@@ -9,7 +9,7 @@ import { currentOpenWalletAtAddressState } from "../../AppState";
 
 function StartupView() {
     // Global State
-    const [currentOpenWalletAtAddress] = useRecoilState(currentOpenWalletAtAddressState);
+    const [currentOpenWalletAtAddress, setCurrentOpenWalletAtAddress] = useRecoilState(currentOpenWalletAtAddressState);
 
     ////
     //// Component states.
@@ -46,6 +46,7 @@ function StartupView() {
                             setForceURL("/create-your-first-wallet")
                         } else {
                             console.log("DefaultWalletAddress: Redirecting to dashboard.");
+                            setCurrentOpenWalletAtAddress(defaultWalletAddressResult);
                             setForceURL("/dashboard")
                         }
                     })
