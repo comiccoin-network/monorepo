@@ -1,4 +1,4 @@
-# 📚🪙 ComicCoin - Registry (DEPRECATED)
+# 📚🪙 ComicCoin - NFT Minter
 
 **Project still under active development - use at your own risk**
 
@@ -12,15 +12,15 @@ Follow these steps to setup the project locally on your development machine.
 
    ```shell
    cd $GOPATH/src/github.com
-   mkdir LuchaComics
-   cd ./LuchaComics
-   git clone git@github.com:LuchaComics/monorepo.git
+   mkdir comiccoin-network
+   cd ./comiccoin-network
+   git clone git@github.com:comiccoin-network/monorepo.git
    ```
 
 2. Go into our monorepo folder.
 
    ```shell
-   cd ./LuchaComics/monorepo
+   cd ./comiccoin-network/monorepo
    ```
 
 3. Activate the golang workspace which is required.
@@ -47,11 +47,11 @@ Follow these steps to setup the project locally on your development machine.
    wails dev
    ```
 
-7. If the GUI application loads up then you have successfully started running the **ComicCoin Registry**. You may now populate the NFT metadata/assets of the ComicCoin blockchain network!
+7. If the GUI application loads up then you have successfully started running the **ComicCoin NFT Minter**. You may now populate the NFT metadata/assets of the ComicCoin blockchain network!
 
 ## 🛠️ Building
 
-See **Build Instructions (TODO)** for more information on building **ComicCoin Registry** GUI application and working with the source code.
+See **Build Instructions (TODO)** for more information on building **ComicCoin NFT Minter** GUI application and working with the source code.
 
 ## 🤝 Contributing
 
