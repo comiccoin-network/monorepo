@@ -110,12 +110,12 @@ function ReceiveView() {
               <p className="text-center text-sm text-gray-400">
                 Want to earn free ComicCoins? Visit{' '}
                 <a
-                  href="https://faucet.comiccoin.com"
+                  href="https://comiccoinfaucet.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-purple-500 hover:text-purple-600 transition-colors"
                 >
-                  faucet.comiccoin.com
+                  https://comiccoinfaucet.com
                 </a>
               </p>
             </div>
