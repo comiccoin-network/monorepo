@@ -12,6 +12,7 @@ import NotFoundErrorView from "./Components/Other/NotFoundErrorView";
 import PickDataDirectoryView from "./Components/OnAppStart/PickDataDirectoryView";
 import StartupView from "./Components/OnAppStart/StartupView";
 import SetupNFTStorageView from "./Components/OnAppStart/SetupNFTStorageView";
+import SetupAuthorityView from "./Components/OnAppStart/SetupAuthorityView";
 // import DashboardView from "./Components/Dashboard/View";
 // import SendCoinView from "./Components/Send/SendCoinView";
 // import SendCoinProcessingView from "./Components/Send/SendCoinProcessingView";
@@ -52,6 +53,12 @@ function AppRoute() {
               element={<SetupNFTStorageView />}
               exact
             />
+            <Route
+              path="/setup-authority"
+              element={<SetupAuthorityView />}
+              exact
+            />
+
             {/*
             <Route path="/dashboard" element={<DashboardView />} exact />
             <Route path="/send" element={<SendCoinView />} exact />
