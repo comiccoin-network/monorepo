@@ -165,14 +165,8 @@ function TransactionDetailView() {
                                 {showMoreTxInfo && (
                                     <>
                                         <InfoRow label="Data" value={tx.data} />
-                                        <InfoRow label="Nonce" value={tx.nonce} />
+                                        <InfoRow label="Nonce" value={tx.nonce_bytes} />
                                         <InfoRow label="Chain ID" value={tx.chain_id} />
-                                        <InfoRow label="Gas Price" value={tx.gas_price} />
-                                        <InfoRow label="Gas Unit" value={tx.gas_unit} />
-                                        <InfoRow label="R" value={tx.r} />
-                                        <InfoRow label="S" value={tx.s} />
-                                        <InfoRow label="V" value={tx.v} />
-                                        <InfoRow label="Tip" value={tx.tip} />
                                     </>
                                 )}
                             </div>
