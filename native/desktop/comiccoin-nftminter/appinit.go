@@ -8,22 +8,15 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
+func (a *App) GetDefaultDataDirectory() string {
+	return GetDefaultDataDirectory()
+}
+
 func (a *App) GetDataDirectoryFromPreferences() string {
 	preferences := PreferencesInstance()
 	dataDir := preferences.DataDirectory
 	return dataDir
 }
-
-func (a *App) GetDefaultDataDirectory() string {
-	return GetDefaultDataDirectory()
-}
-
-func (a *App) GetNFTStorageAddressFromPreferences() string {
-	preferences := PreferencesInstance()
-	nftStoreRemoteAddress := preferences.NFTStorageAddress
-	return nftStoreRemoteAddress
-}
-
 func (a *App) GetDataDirectoryFromDialog() string {
 	// Initialize Wails runtime
 	result, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
@@ -79,6 +72,12 @@ func (a *App) SaveDataDirectory(newDataDirectory string) error {
 	return nil
 }
 
+func (a *App) GetNFTStorageAddressFromPreferences() string {
+	preferences := PreferencesInstance()
+	nftStoreRemoteAddress := preferences.NFTStorageAddress
+	return nftStoreRemoteAddress
+}
+
 func (a *App) SetNFTStorageAddress(nftStorageAddress string) error {
 	// Defensive code
 	if nftStorageAddress == "" {
@@ -125,4 +124,8 @@ func (a *App) ShutdownApp() {
 
 func (a *App) GetIsBlockhainNodeRunning() bool {
 	return true //TODO: REMOVE
+}
+
+func (a *App) GetPreferences() *Preferences {
+	return PreferencesInstance()
 }

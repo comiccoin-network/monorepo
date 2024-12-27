@@ -42,7 +42,7 @@ func (a *App) startup(ctx context.Context) {
 	// DEVELOPERS NOTE:
 	// Before we startup our app, we need to make sure the `data directory` is
 	// set for this application by the user, else stop the app startup
-	// proceedure. This is done on purpose because we need the user to specify
+	// procedure. This is done on purpose because we need the user to specify
 	// the location they want to store instead of having one automatically set.
 	preferences := PreferencesInstance()
 	dataDir := preferences.DataDirectory

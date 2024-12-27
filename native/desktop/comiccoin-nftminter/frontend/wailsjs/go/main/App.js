@@ -22,6 +22,10 @@ export function GetNFTStorageAddressFromPreferences() {
   return window['go']['main']['App']['GetNFTStorageAddressFromPreferences']();
 }
 
+export function GetPreferences() {
+  return window['go']['main']['App']['GetPreferences']();
+}
+
 export function SaveDataDirectory(arg1) {
   return window['go']['main']['App']['SaveDataDirectory'](arg1);
 }

@@ -20,17 +20,25 @@ type Preferences struct {
 	// by the user.
 	DefaultWalletAddress string `json:"default_wallet_address"`
 
+	// ChainID variable keeps track which blockchain version we are using.
+	ChainID uint16 `json:"chain_id"`
+
 	// NFTStorageAddress variable holds the full address to the location
 	// of the NFTStore on the network. Example: https://example.com or
 	// http://127.0.0.1:8080.
 	NFTStorageAddress string `json:"nft_storage_address"`
 
-	// ChainID variable keeps track which blockchain version we are using.
-	ChainID uint16 `json:"chain_id"`
+	// NFTStorageAPIKey holds the API key necessary to make authenticated api
+	// calls such as posting.
+	NFTStorageAPIKey string `json:"nft_storage_api_key"`
 
 	// AuthorityAddress holds the address of the ComicCoin blockchain authority
 	// address that our client will communicate with.
 	AuthorityAddress string `json:"authority_address"`
+
+	// AuthorityAPIKey holds the API key necessary to make authenticated api
+	// calls such as posting.
+	AuthorityAPIKey string `json:"authority_api_key"`
 }
 
 var (
@@ -110,6 +118,24 @@ func (pref *Preferences) SetChainID(chainID uint16) error {
 	return ioutil.WriteFile(FilePathPreferences, data, 0666)
 }
 
+func (pref *Preferences) SetNFTStorageAddress(remoteAddress string) error {
+	pref.NFTStorageAddress = remoteAddress
+	data, err := json.MarshalIndent(pref, "", "\t")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(FilePathPreferences, data, 0666)
+}
+
+func (pref *Preferences) SetNFTStorageAPIKey(apiKey string) error {
+	pref.NFTStorageAPIKey = apiKey
+	data, err := json.MarshalIndent(pref, "", "\t")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(FilePathPreferences, data, 0666)
+}
+
 func (pref *Preferences) SetAuthorityAddress(authorityAddress string) error {
 	pref.AuthorityAddress = authorityAddress
 	data, err := json.MarshalIndent(pref, "", "\t")
@@ -119,8 +145,8 @@ func (pref *Preferences) SetAuthorityAddress(authorityAddress string) error {
 	return ioutil.WriteFile(FilePathPreferences, data, 0666)
 }
 
-func (pref *Preferences) SetNFTStorageAddress(remoteAddress string) error {
-	pref.NFTStorageAddress = remoteAddress
+func (pref *Preferences) SetAuthorityAPIKey(apiKey string) error {
+	pref.AuthorityAPIKey = apiKey
 	data, err := json.MarshalIndent(pref, "", "\t")
 	if err != nil {
 		return err

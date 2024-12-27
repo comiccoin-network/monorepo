@@ -2,7 +2,9 @@ import {useState, useEffect} from 'react';
 import { Link, Navigate } from "react-router-dom";
 import { Stamp } from 'lucide-react';
 
-import {GetDataDirectoryFromPreferences} from "../../../wailsjs/go/main/App";
+import {
+    GetPreferences
+} from "../../../wailsjs/go/main/App";
 
 
 function InitializeView() {
@@ -26,12 +28,14 @@ function InitializeView() {
 
       if (mounted) {
             window.scrollTo(0, 0); // Start the page at the top of the page.
-            GetDataDirectoryFromPreferences().then( (dataDirResult) => {
-                console.log("dataDirResult:", dataDirResult);
-                if (dataDirResult === "") {
+            GetPreferences().then( (preferencesResult) => {
+                console.log("preferencesResult:", preferencesResult);
+                if (preferencesResult.data_directory === "") {
                     setForceURL("/pick-data-directory")
-                } else {
-                    setForceURL("/startup")
+                } else if (preferencesResult.nft_storage_address === "" || preferencesResult.nft_storage_api_key === "") {
+                    setForceURL("/setup-nft-storage")
+                } else if (preferencesResult.authority_address === "" || preferencesResult.authority_api_key === "") {
+                    setForceURL("/setup-authority")
                 }
             })
       }
@@ -51,8 +55,8 @@ function InitializeView() {
 
     return (
         <div>
-          <main className="flex-grow flex items-center justify-center">
-            <div className="text-center space-y-8 px-6">
+          <main className="flex-grow flex items-center justify-center max-w-2xl mx-auto py-12">
+            <div className="text-center space-y-8 px-6 py-12">
               <div className="flex justify-center">
                 <div className="relative w-20 h-20">
                   <div className="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
