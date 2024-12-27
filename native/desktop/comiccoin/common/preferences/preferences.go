@@ -15,7 +15,9 @@ func init() {
 	if err != nil {
 		log.Fatalf("failed get home dir: %v\n", err)
 	}
-	FilePathPreferences = filepath.Join(homeDir, ".comiccoin")
+
+	// Location of the preferences file.
+	FilePathPreferences = filepath.Join(homeDir, ".comiccoin-cli")
 }
 
 type Preferences struct {

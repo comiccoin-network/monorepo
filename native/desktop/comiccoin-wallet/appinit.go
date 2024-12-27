@@ -42,6 +42,10 @@ func (a *App) SaveDataDirectory(newDataDirectory string) error {
 	if newDataDirectory == "" {
 		return fmt.Errorf("failed saving data directory because: %v", "data directory is empty")
 	}
+
+	a.logger.Debug("User picked directory path",
+		slog.Any("path", newDataDirectory))
+
 	preferences := PreferencesInstance()
 	err := preferences.SetDataDirectory(newDataDirectory)
 	if err != nil {

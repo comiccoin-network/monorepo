@@ -16,7 +16,7 @@ type Preferences struct {
 	DataDirectory string `json:"data_directory"`
 
 	// DefaultWalletAddress holds the address of the wallet that will be
-	// automatically opend every time the application loads up. This is selected
+	// automatically opened every time the application loads up. This is selected
 	// by the user.
 	DefaultWalletAddress string `json:"default_wallet_address"`
 

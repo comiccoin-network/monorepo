@@ -22,10 +22,7 @@ function PickDataDirectoryView() {
     const [errors, setErrors] = useState({});
     const [useDefaultLocation, setUseDefaultLocation] = useState(1);
     const [forceURL, setForceURL] = useState("");
-    const [dataDirectory, setDataDirectory] = useState("./ComicCoin");
     const [showCancelWarning, setShowCancelWarning] = useState(false);
-
-    const defaultPath = "./ComicCoin";
     const [selectedPath, setSelectedPath] = useState('');
     const [locationType, setLocationType] = useState('automatic');
     const [showError, setShowError] = useState(false);
@@ -45,10 +42,10 @@ function PickDataDirectoryView() {
 
         setIsLoading(true);
 
-        console.log("onSubmitClick: dataDirectory:", dataDirectory);
+        console.log("onSubmitClick: selectedPath:", selectedPath);
 
-        // Submit the `dataDirectory` value to our backend.
-        SaveDataDirectory(dataDirectory).then( (result) => {
+        // Submit the `selectedPath` value to our backend.
+        SaveDataDirectory(selectedPath).then( (result) => {
             console.log("result:", result);
             setForceURL("/create-your-first-wallet")
         }).finally(()=>{
@@ -75,7 +72,7 @@ function PickDataDirectoryView() {
       if (mounted) {
             window.scrollTo(0, 0); // Start the page at the top of the page.
             GetDefaultDataDirectory().then( (defaultDataDirResponse)=>{
-                setDataDirectory(defaultDataDirResponse);
+                setSelectedPath(defaultDataDirResponse);
             })
       }
 
@@ -198,9 +195,10 @@ function PickDataDirectoryView() {
                             : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
                         }`}
                         onClick={(e) =>
-                          GetDataDirectoryFromDialog().then((dataDirectoryResult) => {
-                              if (dataDirectoryResult !== "") {
-                                  setDataDirectory(dataDirectoryResult);
+                          GetDataDirectoryFromDialog().then((selectedPathResult) => {
+                              console.log("GetDataDirectoryFromDialog | selectedPathResult:", selectedPathResult);
+                              if (selectedPathResult !== "") {
+                                  setSelectedPath(selectedPathResult);
                               }
                           })
                          }
