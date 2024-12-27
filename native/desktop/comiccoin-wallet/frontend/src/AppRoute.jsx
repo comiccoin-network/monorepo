@@ -106,7 +106,7 @@ function AppRoute() {
               element={<TokenTransferSuccessView />}
               exact
             />
-            <Route path="/more/settings" element={<SettingsView />} exact />
+            <Route path="/more/settings" element={<CreateYourFirstWalletView />} exact />
             <Route path="*" element={<NotFoundErrorView />} />
           </Routes>
 
