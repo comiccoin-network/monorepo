@@ -5,6 +5,37 @@ import { Navigate } from 'react-router-dom';
 import Topbar from "../../../Components/Navigation/Topbar";
 import { putProfileChangePasswordAPI } from "../../../API/Profile";
 
+const PasswordInput = React.memo(({ id, name, value, placeholder, error, show, onChange, onToggleShow }) => {
+  const showPasswordKey = {
+    old_password: 'old',
+    new_password: 'new',
+    new_password_repeated: 'confirm'
+  }[name];
+
+  return (
+    <div className="relative">
+      <input
+        type={show ? "text" : "password"}
+        id={id}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`w-full h-11 px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+          error ? "border-red-500" : "border-gray-300"
+        }`}
+      />
+      <button
+        type="button"
+        onClick={() => onToggleShow(showPasswordKey)}
+        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+      >
+        {show ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+      </button>
+    </div>
+  );
+});
+
 const ChangePasswordPage = () => {
   const [forceURL, setForceURL] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,8 +111,14 @@ const ChangePasswordPage = () => {
     }
   };
 
+  const handleToggleShow = (key) => {
+   setShowPasswords(prev => ({ ...prev, [key]: !prev[key] }));
+ };
+
   const handleSubmit = async (e) => {
   e.preventDefault();
+  console.log("handleSubmit: clicked");
+
   setIsSubmitting(true);
   setHasSubmitted(true);
 
@@ -95,6 +132,7 @@ const ChangePasswordPage = () => {
   if (Object.keys(newErrors).length > 0) {
     setErrors(newErrors);
     setIsSubmitting(false);
+    console.log("handleSubmit: client validation errors terminated submission to server");
     return;
   }
 
@@ -124,29 +162,6 @@ const ChangePasswordPage = () => {
   if (forceURL !== "") {
     return <Navigate to={forceURL} />;
   }
-
-  const PasswordInput = ({ id, name, value, placeholder, error, show }) => (
-    <div className="relative">
-      <input
-        type={show ? "text" : "password"}
-        id={id}
-        name={name}
-        value={value}
-        onChange={handleChange}
-        placeholder={placeholder}
-        className={`w-full h-11 px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-          error ? "border-red-500" : "border-gray-300"
-        }`}
-      />
-      <button
-        type="button"
-        onClick={() => setShowPasswords(prev => ({ ...prev, [name]: !prev[name] }))}
-        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-      >
-        {show ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-      </button>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-purple-50">
@@ -210,6 +225,8 @@ const ChangePasswordPage = () => {
                   placeholder="Enter your current password"
                   error={errors.old_password}
                   show={showPasswords.old}
+                  onChange={handleChange}
+                  onToggleShow={handleToggleShow}
                 />
                 {errors.old_password && (
                   <p className="mt-1 text-sm text-red-600">{errors.old_password}</p>
@@ -228,6 +245,8 @@ const ChangePasswordPage = () => {
                   placeholder="Enter your new password"
                   error={errors.new_password}
                   show={showPasswords.new}
+                  onChange={handleChange}
+                  onToggleShow={handleToggleShow}
                 />
                 {passwordStrength > 0 && (
                   <div className="mt-2">
@@ -262,6 +281,8 @@ const ChangePasswordPage = () => {
                   placeholder="Confirm your new password"
                   error={errors.new_password_repeated}
                   show={showPasswords.confirm}
+                  onChange={handleChange}
+                  onToggleShow={handleToggleShow}
                 />
                 {errors.new_password_repeated && (
                   <p className="mt-1 text-sm text-red-600">{errors.new_password_repeated}</p>
@@ -279,7 +300,8 @@ const ChangePasswordPage = () => {
                 Cancel
               </button>
               <button
-                type="submit"
+                type="button"
+                onClick={handleSubmit}
                 disabled={isSubmitting}
                 className={`w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors ${
                   isSubmitting ? "opacity-50 cursor-not-allowed" : ""
