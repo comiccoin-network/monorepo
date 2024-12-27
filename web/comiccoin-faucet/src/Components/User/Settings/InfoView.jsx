@@ -11,7 +11,7 @@ import { putProfileUpdateAPI } from "../../../API/Profile";
 const EmailSettingsPage = () => {
 
   // Variable controls the global state of the app.
-  const [currentUser] = useRecoilState(currentUserState);
+  const [currentUser, setCurrentUser] = useRecoilState(currentUserState);
 
   const [forceURL, setForceURL] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,7 +26,7 @@ const EmailSettingsPage = () => {
     countryOther: currentUser.country,
     timezone: currentUser.timezone,
     agreeTermsOfService: currentUser.agreeTermsOfService,
-    agreePromotional: currentUser.agreePromotional
+    agreePromotions: currentUser.agreePromotions
   });
 
   const validateField = (name, value) => {
@@ -104,18 +104,21 @@ const EmailSettingsPage = () => {
       formData,
       (resp) => {
         // For debugging purposes only.
-        console.log("onRegisterSuccess: Starting...");
+        console.log("putProfileUpdateAPI: Starting...");
         console.log(resp);
+
+        // Update the current logged in user.
+        setCurrentUser(resp);
 
         // Redirect the user to a new page.
         setForceURL("/settings");
       },
       (apiErr) => {
-        console.log("onRegisterError: apiErr:", apiErr);
+        console.log("putProfileUpdateAPI: apiErr:", apiErr);
         setErrors(apiErr);
       },
       () => {
-        console.log("onRegisterDone: Starting...");
+        console.log("putProfileUpdateAPI: Starting...");
 
       },
     );
@@ -337,13 +340,13 @@ const EmailSettingsPage = () => {
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    id="agreePromotional"
-                    name="agreePromotional"
-                    checked={formData.agreePromotional}
+                    id="agreePromotions"
+                    name="agreePromotions"
+                    checked={formData.agreePromotions}
                     onChange={handleChange}
                     className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 block text-sm text-gray-700" htmlFor="agreePromotional">
+                  <label className="ml-2 block text-sm text-gray-700" htmlFor="agreePromotions">
                     I would like to receive promotional communications
                   </label>
                 </div>
