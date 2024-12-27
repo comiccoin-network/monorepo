@@ -36,12 +36,19 @@ function StartupView() {
                 if (dataDirResult === "") {
                     setForceURL("/pick-data-directory")
                 } else {
-                    if (currentOpenWalletAtAddress) {
-                        console.log("currentOpenWalletAtAddress:", currentOpenWalletAtAddress);
-                        setForceURL("/dashboard")
-                    } else {
-                        setForceURL("/create-your-first-wallet")
-                    }
+                    // Confirm we have the wallet picked and if not then we
+                    // will need to create one, else redirect them to their
+                    // wallet dashboard.
+                    DefaultWalletAddress().then( (defaultWalletAddressResult) => {
+                        console.log("DefaultWalletAddress: Result:", defaultWalletAddressResult);
+                        if (defaultWalletAddressResult === "") {
+                            console.log("DefaultWalletAddress: Redirecting to create / import wallet.");
+                            setForceURL("/create-your-first-wallet")
+                        } else {
+                            console.log("DefaultWalletAddress: Redirecting to dashboard.");
+                            setForceURL("/dashboard")
+                        }
+                    })
                 }
             })
       }
