@@ -36,6 +36,7 @@ import {
 import AdminTopbar from "../Navigation/AdminTopbar";
 import GalleryItem from './GalleryItem';
 import UserDetailModal from "./UserDetailModal";
+import Pagination from "./Pagination";
 
 const AdminDashboard = () => {
   // Global state
@@ -626,29 +627,35 @@ const AdminDashboard = () => {
 
           {/* User Pagination */}
           <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              Showing {((currentUserPage - 1) * usersPerPage) + 1} to {Math.min(currentUserPage * usersPerPage, totalUsers)} of {totalUsers} users
+              <div className="text-sm text-gray-600">
+                {!users || users.length === 0 ? (
+                  "No users to display"
+                ) : (
+                  `Showing ${((currentUserPage - 1) * usersPerPage) + 1} to ${Math.min(currentUserPage * usersPerPage, users.length)} of ${users.length} users`
+                )}
+              </div>
+              {users && users.length > 0 && (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleUserPageChange(currentUserPage - 1)}
+                    disabled={currentUserPage <= 1}
+                    className="p-2 rounded-lg border border-purple-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-50"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-purple-600" />
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    Page {currentUserPage} of {Math.max(1, Math.ceil(users.length / usersPerPage))}
+                  </span>
+                  <button
+                    onClick={() => handleUserPageChange(currentUserPage + 1)}
+                    disabled={currentUserPage >= Math.max(1, Math.ceil(users.length / usersPerPage))}
+                    className="p-2 rounded-lg border border-purple-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-50"
+                  >
+                    <ChevronRight className="w-5 h-5 text-purple-600" />
+                  </button>
+                </div>
+              )}
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => handleUserPageChange(currentUserPage - 1)}
-                disabled={currentUserPage === 1}
-                className="p-2 rounded-lg border border-purple-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-50"
-              >
-                <ChevronLeft className="w-5 h-5 text-purple-600" />
-              </button>
-              <span className="text-sm text-gray-600">
-                Page {currentUserPage} of {Math.ceil(totalUsers / usersPerPage)}
-              </span>
-              <button
-                onClick={() => handleUserPageChange(currentUserPage + 1)}
-                disabled={currentUserPage >= Math.ceil(totalUsers / usersPerPage)}
-                className="p-2 rounded-lg border border-purple-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-50"
-              >
-                <ChevronRight className="w-5 h-5 text-purple-600" />
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Submissions Section */}
@@ -682,15 +689,15 @@ const AdminDashboard = () => {
 
           {/* Submission Pagination */}
           <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-600">
-              {pendingSubmissions.length === 0
-                ? "No submissions to display"
-                : `Showing ${((currentSubmissionPage - 1) * itemsPerPage) + 1} to ${Math.min(
-                    currentSubmissionPage * itemsPerPage,
-                    totalPendingSubmissions
-                  )} of ${totalPendingSubmissions} submissions`}
-            </div>
-            {totalPendingSubmissions > 0 && Math.ceil(totalPendingSubmissions / itemsPerPage) > 1 && (
+          <div className="text-sm text-gray-600">
+           {!totalPendingSubmissions || totalPendingSubmissions === 0
+             ? "No submissions to display"
+             : `Showing ${((currentSubmissionPage - 1) * itemsPerPage) + 1} to ${Math.min(
+                 currentSubmissionPage * itemsPerPage,
+                 totalPendingSubmissions
+               )} of ${totalPendingSubmissions} submissions`}
+         </div>
+         {totalPendingSubmissions > 0 && Number.isFinite(totalPendingSubmissions) && Math.ceil(totalPendingSubmissions / itemsPerPage) > 1 && (
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => handleSubmissionPageChange(currentSubmissionPage - 1)}
