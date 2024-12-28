@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"fmt"
+	"math/big"
 
 	"github.com/fxamacker/cbor/v2"
 )
@@ -24,6 +25,7 @@ func BlockDataDTOToBlockData(bd *BlockDataDTO) *BlockData {
 // handling the Block Data via the network.
 type BlockDataDTORepository interface {
 	GetFromBlockchainAuthorityByHash(ctx context.Context, hash string) (*BlockDataDTO, error)
+	GetFromBlockchainAuthorityByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*BlockDataDTO, error)
 }
 
 // Serialize serializes a block data into a byte array.

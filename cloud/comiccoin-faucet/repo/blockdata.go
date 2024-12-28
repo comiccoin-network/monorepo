@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
@@ -67,6 +68,18 @@ func (r *BlockDataRepo) Upsert(ctx context.Context, blockdata *domain.BlockData)
 func (r *BlockDataRepo) GetByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
 	var blockData domain.BlockData
 	err := r.collection.FindOne(ctx, bson.M{"hash": hash}).Decode(&blockData)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &blockData, nil
+}
+
+func (r *BlockDataRepo) GetByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockData, error) {
+	var blockData domain.BlockData
+	err := r.collection.FindOne(ctx, bson.M{"header.number_bytes": headerNumber.Bytes()}).Decode(&blockData)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil

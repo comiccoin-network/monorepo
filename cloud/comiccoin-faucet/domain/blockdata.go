@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"fmt"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/fxamacker/cbor/v2"
@@ -44,6 +45,8 @@ type BlockDataRepository interface {
 	// GetByHash gets a block data by its hash.
 	// It takes a hash and returns the block data and an error if one occurs.
 	GetByHash(ctx context.Context, hash string) (*BlockData, error)
+
+	GetByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*BlockData, error)
 
 	// ListByChainID lists all block data in the repository for the particular chain.
 	ListByChainID(ctx context.Context, chainID uint16) ([]*BlockData, error)

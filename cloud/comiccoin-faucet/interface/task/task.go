@@ -2,7 +2,6 @@ package task
 
 import (
 	"context"
-	"log"
 	"log/slog"
 	"time"
 
@@ -50,13 +49,18 @@ func (port *taskManagerImpl) Run() {
 	// data in case we are behind. After the successful one-time sync then
 	// the Task Manager will load up another task to continously run in the
 	// background and sync with the Global Blockchain Network.
-	port.logger.Info("Running one-time blockchain sync")
-	if err := port.blockchainSyncWithBlockchainAuthorityTaskHandler.Execute(context.Background()); err != nil {
-		port.logger.Error("Failed executing blockchain sync with the Authority.",
-			slog.Any("error", err))
-		log.Fatal(err)
+
+	for {
+		port.logger.Info("Running one-time blockchain sync")
+		if err := port.blockchainSyncWithBlockchainAuthorityTaskHandler.Execute(context.Background()); err != nil {
+			port.logger.Error("Failed running one-time blockchain sync - Trying again in 10 seconds...",
+				slog.Any("error", err))
+			time.Sleep(10 * time.Second)
+			continue
+		}
+		port.logger.Info("Finished running one-time blockchain sync ")
+		break
 	}
-	port.logger.Info("Finished running one-time blockchain sync ")
 
 	go func(task *taskhandler.AttachmentGarbageCollectorTaskHandler, loggerp *slog.Logger) {
 		loggerp.Info("Starting attachment garbage collector...")

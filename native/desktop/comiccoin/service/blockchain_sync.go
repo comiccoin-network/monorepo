@@ -329,7 +329,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainN
 		slog.String("current_number", number.String()),
 		slog.String("latest_number", latestNumber.String()))
 
-	for number.Cmp(latestNumber) < 0 {
+	for number.Cmp(latestNumber) <= 0 {
 		s.logger.Debug("Fetching block data from global blockchain network...",
 			slog.Any("header_number", number.String()))
 
@@ -340,13 +340,6 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainN
 				slog.Any("header_number", number.String()))
 			return err
 		}
-
-		// Artificial delay as to not overload the network resources. We will
-		// randomly pick an artificial delay between 1 second to 5 seconds.
-		randInt := rand.Intn(5) + 1
-		s.logger.Debug("Applying artificial delay",
-			slog.Any("seconds", randInt))
-		time.Sleep(time.Duration(randInt) * time.Second)
 
 		blockData := authority_domain.BlockDataDTOToBlockData(blockDataDTO)
 
@@ -427,6 +420,13 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainN
 			slog.String("earliest_number", earliestNumber.String()),
 			slog.String("next_number", number.String()),
 			slog.String("latest_number", latestNumber.String()))
+
+		// Artificial delay as to not overload the network resources. We will
+		// randomly pick an artificial delay between 1 second to 2 seconds.
+		randInt := rand.Intn(2) + 1
+		s.logger.Debug("Applying artificial delay",
+			slog.Any("seconds", randInt))
+		time.Sleep(time.Duration(randInt) * time.Second)
 	}
 	s.logger.Debug("Finished syncing with global blockchain network")
 	return nil
