@@ -212,7 +212,7 @@ func (s *FaucetCoinTransferService) Execute(sessCtx mongo.SessionContext, req *F
 	}
 
 	// Defensive Coding.
-	if err := mempoolTx.Validate(req.ChainID, true); err != nil {
+	if err := mempoolTx.Validate(req.ChainID, false); err != nil {
 		s.logger.Debug("Failed to validate signature of mempool transaction",
 			slog.Any("error", signingErr))
 		return signingErr
@@ -220,9 +220,10 @@ func (s *FaucetCoinTransferService) Execute(sessCtx mongo.SessionContext, req *F
 
 	s.logger.Debug("Mempool transaction ready for submission",
 		slog.Any("Transaction", stx.Transaction),
-		slog.Any("tx_sig_v_bytes", stx.VBytes),
-		slog.Any("tx_sig_r_bytes", stx.RBytes),
-		slog.Any("tx_sig_s_bytes", stx.SBytes))
+		// slog.Any("tx_sig_v_bytes", stx.VBytes),
+		// slog.Any("tx_sig_r_bytes", stx.RBytes),
+		// slog.Any("tx_sig_s_bytes", stx.SBytes)
+	)
 
 	dto := mempoolTx.ToDTO()
 

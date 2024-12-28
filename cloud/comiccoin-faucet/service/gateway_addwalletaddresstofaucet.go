@@ -78,6 +78,9 @@ func (s *GatewayAddWalletAddressToFaucetService) Execute(
 	// STEP 2: Validation of input.
 	//
 
+	// Sanitize
+	req.WalletAddress = strings.TrimSpace(req.WalletAddress)
+
 	e := make(map[string]string)
 	if req.WalletAddress == "" {
 		e["wallet_address"] = "Wallet address is required"

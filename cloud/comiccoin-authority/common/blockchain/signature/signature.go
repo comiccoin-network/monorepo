@@ -105,7 +105,7 @@ func FromAddress(value any, v, r, s *big.Int) (string, error) {
 	// Convert the [R|S|V] format into the original 65 bytes.
 	sig := ToSignatureBytes(v, r, s)
 
-	// log.Printf("signature.go -> FromAddress(): ToSignatureBytes sig: %v\n", data)
+	// log.Printf("signature.go -> FromAddress(): ToSignatureBytes sig: %v\n", sig)
 
 	// Capture the public key associated with this data and signature.
 	publicKey, err := crypto.SigToPub(data, sig)
@@ -190,9 +190,23 @@ func ToSignatureBytesWithComicCoinID(v, r, s *big.Int) []byte {
 // stamp returns a hash of 32 bytes that represents this data with
 // the ComicCoin stamp embedded into the final hash.
 func stamp(value any) ([]byte, error) {
-
-	// Marshal the data.
+	// First, marshal to JSON
 	v, err := json.Marshal(value)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal back into a map to normalize the structure
+	var normalized map[string]interface{}
+	if err := json.Unmarshal(v, &normalized); err != nil {
+		return nil, err
+	}
+
+	// Clean up empty strings and null values
+	cleanMap(normalized)
+
+	// Marshal again after normalization
+	v, err = json.Marshal(normalized)
 	if err != nil {
 		return nil, err
 	}
@@ -206,6 +220,35 @@ func stamp(value any) ([]byte, error) {
 	data := crypto.Keccak256(stamp, v)
 
 	return data, nil
+}
+
+// cleanMap removes empty strings and null values from the map recursively
+func cleanMap(m map[string]interface{}) {
+	for k, v := range m {
+		switch v := v.(type) {
+		case string:
+			if v == "" {
+				delete(m, k)
+			}
+		case nil:
+			delete(m, k)
+		case []interface{}:
+			if len(v) == 0 {
+				delete(m, k)
+			} else {
+				for i := range v {
+					if mm, ok := v[i].(map[string]interface{}); ok {
+						cleanMap(mm)
+					}
+				}
+			}
+		case map[string]interface{}:
+			cleanMap(v)
+			if len(v) == 0 {
+				delete(m, k)
+			}
+		}
+	}
 }
 
 // toSignatureValues converts the signature into the r, s, v values.

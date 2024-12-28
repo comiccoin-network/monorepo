@@ -124,8 +124,11 @@ func (s *ProofOfAuthorityConsensusMechanismService) Execute(ctx context.Context)
 		return err
 	}
 	if mempoolTx.SignedTransaction.Transaction.Data != nil {
-		if len(mempoolTx.SignedTransaction.Transaction.Data) > 32 {
-			s.logger.Error("Data is too large.")
+		if len(mempoolTx.SignedTransaction.Transaction.Data) > 16384 {
+			s.logger.Error("Data is too large.",
+				slog.Any("data", mempoolTx.SignedTransaction.Transaction.Data),
+				slog.Any("length", len(mempoolTx.SignedTransaction.Transaction.Data)),
+			)
 			return fmt.Errorf("Data is too large")
 		}
 	}

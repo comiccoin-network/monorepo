@@ -107,7 +107,25 @@ func (stx SignedTransaction) FromAddress() (string, error) {
 	// Note: MongoDB doesn't support `*big.Int` so we are forced to do this.
 	v, r, s := stx.GetBigIntFields()
 
-	return signature.FromAddress(stx.Transaction, v, r, s)
+	// log.Println("tx.go -> FromAddress() -> v:", v)
+	// log.Println("tx.go -> FromAddress() -> r:", r)
+	// log.Println("tx.go -> FromAddress() -> s:", s)
+	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> ChainID:", stx.Transaction.ChainID)
+	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> NonceBytes:", stx.Transaction.NonceBytes)
+	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> From:", stx.Transaction.From)
+	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> To:", stx.Transaction.To)
+	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> Value:", stx.Transaction.Value)
+	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> Data:", stx.Transaction.Data)
+	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> Type:", stx.Transaction.Type)
+	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> TokenIDBytes:", stx.Transaction.TokenIDBytes)
+	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> TokenMetadataURI:", stx.Transaction.TokenMetadataURI)
+	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> TokenNonceBytes:", stx.Transaction.TokenNonceBytes)
+	// log.Println("tx.go -> FromAddress() -> stx -> VBytes:", stx.VBytes)
+	// log.Println("tx.go -> FromAddress() -> stx -> RBytes:", stx.RBytes)
+	// log.Println("tx.go -> FromAddress() -> stx -> SBytes:", stx.SBytes)
+	sig, err := signature.FromAddress(stx.Transaction, v, r, s)
+	// log.Println("tx.go -> FromAddress() -> signature.FromAddress(...) ->:", sig, err)
+	return sig, err
 }
 
 // VerifySignature checks if the signature is valid by ensuring the V value
