@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"log/slog"
 	"time"
 
@@ -74,7 +75,7 @@ func (a *App) startup(ctx context.Context) {
 	// DEVELOPERS NOTE:
 	// Before we startup our app, we need to make sure the `data directory` is
 	// set for this application by the user, else stop the app startup
-	// proceedure. This is done on purpose because we need the user to specify
+	// procedure. This is done on purpose because we need the user to specify
 	// the location they want to store instead of having one automatically set.
 	preferences := PreferencesInstance()
 	dataDir := preferences.DataDirectory
@@ -531,21 +532,27 @@ func (a *App) startup(ctx context.Context) {
 	//
 	// Execute.
 	//
-
 	go func(ctx context.Context, chainid uint16) {
 		// When the daemon starts up, the first thing we will do is one-time
 		/// full sync with the Global BlockChain Network to get all / any
 		// missing parts.
 		a.logger.Debug("Starting full-sync...")
-		if err := blockchainSyncService.Execute(context.Background(), chainid); err != nil {
-			logger.Error("Failed to manage syncing", slog.Any("error", err))
+		if err := storageTransactionOpenUseCase.Execute(); err != nil {
+			log.Fatalf("Failed to open storage transaction: %v\n", err)
+		}
+		if err := blockchainSyncService.Execute(context.Background(), ComicCoinChainID); err != nil {
+			a.logger.Error("Failed full-sync", slog.Any("error", err))
+			storageTransactionDiscardUseCase.Execute()
+			log.Fatalf("Failed full-sync: %v\n", err)
+		}
+		if err := storageTransactionCommitUseCase.Execute(); err != nil {
+			log.Fatalf("Failed to commit storage transaction: %v\n", err)
 		}
 		a.logger.Debug("Finished full-sync")
 
 		// Once we have successfully made a copy of the Global BlockChain
 		// Network locally, then we will subscribe to waiting and receiving
 		// any new changes that occur to update our local copy.
-
 		for {
 			a.logger.Debug("Starting partial sync via sse...")
 			if err := blockchainSyncWithBlockchainAuthorityViaServerSentEventsService.Execute(context.Background(), chainid); err != nil {

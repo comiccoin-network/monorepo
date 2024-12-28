@@ -149,7 +149,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(ctx context.Conte
 	// global blockchain network then we are done synching (because there is
 	// nothin left to sync). If we don't even have a blockchain state then we need to
 	// proceed to download the entire blockchain immediately. If there is any
-	// discrepency between the global and local state then we proceed with
+	// discrepancy between the global and local state then we proceed with
 	// this function and update our local blockchain with the available data
 	// on the global blockchain network.
 	//
@@ -221,6 +221,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(ctx context.Conte
 				slog.Any("chain_id", chainID))
 			return nil
 		}
+		return err
 	}
 
 	//
@@ -269,7 +270,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainN
 			return err
 		}
 
-		// Artifical delay as to not overload the network resources.
+		// Artificial delay as to not overload the network resources.
 		time.Sleep(1 * time.Second)
 
 		blockData := authority_domain.BlockDataDTOToBlockData(blockDataDTO)
@@ -305,6 +306,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainN
 			if err := s.processAccountForTransaction(ctx, blockData, &blockTx); err != nil {
 				s.logger.Error("Failed processing transaction",
 					slog.Any("error", err))
+				//TODO: IMPL FIX - Failed processing transaction" error="The `From` account does not exist in our database for hash: 0xBfd4C6DBF0e34e7f2D3c06fafF1F5bDE296FD547"
 				return err
 			}
 

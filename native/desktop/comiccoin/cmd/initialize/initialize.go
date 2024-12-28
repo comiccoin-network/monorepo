@@ -38,13 +38,6 @@ func InitializeCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := logger.NewProvider()
 
-			logger.Debug("Configured ComicCoin...",
-				slog.Any("DataDirectory", preferences.DataDirectory),
-				slog.Any("ChainID", preferences.ChainID),
-				slog.Any("AuthorityAddress", preferences.AuthorityAddress),
-				slog.Any("NFTStorageAddress", preferences.NFTStorageAddress),
-				slog.Any("FilePathPreferences", preferences.GetFilePathOfPreferencesFile()))
-
 			if preferences.DataDirectory != "" {
 				log.Fatalf("You have already configured ComicCoin: DataDirectory was set with: %v\n", preferences.DataDirectory)
 			}

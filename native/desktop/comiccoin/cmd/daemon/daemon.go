@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"context"
+	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -471,16 +472,24 @@ func doRunDaemonCmd() {
 	// Execute.
 	//
 
-	go func() {
-		// When the daemon starts up, the first thing we will do is one-time
-		/// full sync with the Global BlockChain Network to get all / any
-		// missing parts.
-		logger.Debug("Starting full-sync...")
-		if err := blockchainSyncService.Execute(context.Background(), flagChainID); err != nil {
-			logger.Error("Failed to manage syncing", slog.Any("error", err))
-		}
-		logger.Debug("Finished full-sync")
+	// When the daemon starts up, the first thing we will do is one-time
+	/// full sync with the Global BlockChain Network to get all / any
+	// missing parts.
+	logger.Debug("Starting full-sync...")
+	if err := storageTransactionOpenUseCase.Execute(); err != nil {
+		log.Fatalf("Failed to open storage transaction: %v\n", err)
+	}
+	if err := blockchainSyncService.Execute(context.Background(), flagChainID); err != nil {
+		logger.Error("Failed full-sync", slog.Any("error", err))
+		storageTransactionDiscardUseCase.Execute()
+		log.Fatalf("Failed full-sync: %v\n", err)
+	}
+	if err := storageTransactionCommitUseCase.Execute(); err != nil {
+		log.Fatalf("Failed to commit storage transaction: %v\n", err)
+	}
+	logger.Debug("Finished full-sync")
 
+	go func() {
 		// Once we have successfully made a copy of the Global BlockChain
 		// Network locally, then we will subscribe to waiting and receiving
 		// any new changes that occur to update our local copy.
