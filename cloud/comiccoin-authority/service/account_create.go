@@ -85,16 +85,24 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletPassword *sstr
 		return nil, fmt.Errorf("failed getting wallet key: %s", err)
 	}
 
-	val := "ComicCoin Blockchain"
+	val := struct {
+		name string
+	}{
+		name: "ComicCoin Blockchain",
+	}
 
 	// Break the signature into the 3 parts: R, S, and V.
 	v1, r1, s1, err := signature.Sign(val, walletKey.PrivateKey)
 	if err != nil {
+		s.logger.Error("failed signing",
+			slog.Any("error", err))
 		return nil, err
 	}
 	// Recombine and get our address from the signature.
 	addressFromSig, err := signature.FromAddress(val, v1, r1, s1)
 	if err != nil {
+		s.logger.Error("failed getting from address",
+			slog.Any("error", err))
 		return nil, err
 	}
 

@@ -127,17 +127,23 @@ func doRunNewAccount() {
 		// Execution
 		account, err := createAccountService.Execute(sessCtx, pass, passRepeated, flagLabel)
 		if err != nil {
+			logger.Error("Failed creating account",
+				slog.Any("error", err))
 			sessCtx.AbortTransaction(ctx)
 			return nil, err
 		}
 		if account == nil {
 			err := errors.New("Account does not exist")
+			logger.Error("Failed creating account",
+				slog.Any("error", err))
 			sessCtx.AbortTransaction(ctx)
 			return nil, err
 		}
 
 		logger.Debug("Committing transaction")
 		if err := sessCtx.CommitTransaction(ctx); err != nil {
+			logger.Error("Commit error",
+				slog.Any("error", err))
 			return nil, err
 		}
 		logger.Debug("Transaction committed")
