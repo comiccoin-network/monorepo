@@ -28,10 +28,10 @@ func (uc *DeletePendingSignedTransactionUseCase) Execute(ctx context.Context, no
 	if nonce == nil {
 		e["nonce"] = "missing value"
 	} else {
-		// Special thanks to "Is there another way of testing if a big.Int is 0?" via https://stackoverflow.com/a/64257532
-		if len(nonce.Bits()) == 0 {
-			e["nonce"] = "missing value"
-		}
+		// // Special thanks to "Is there another way of testing if a big.Int is 0?" via https://stackoverflow.com/a/64257532
+		// if len(nonce.Bits()) == 0 {
+		// 	e["nonce"] = "missing value"
+		// }
 	}
 	if len(e) != 0 {
 		uc.logger.Warn("Failed validating",

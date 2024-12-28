@@ -101,7 +101,13 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(sessCtx mongo.Ses
 
 		// Save the genesis block data to local database.
 		if err := s.upsertGenesisBlockDataUseCase.Execute(sessCtx, genesis.Hash, genesis.Header, genesis.HeaderSignatureBytes, genesis.Trans, genesis.Validator); err != nil {
-			s.logger.Error("Failed upserting genesis",
+			s.logger.Error("Failed upserting genesis (pure)",
+				slog.Any("chain_id", chainID),
+				slog.Any("error", err))
+			return err
+		}
+		if err := s.upsertBlockDataUseCase.Execute(sessCtx, genesis.Hash, genesis.Header, genesis.HeaderSignatureBytes, genesis.Trans, genesis.Validator); err != nil {
+			s.logger.Error("Failed upserting genesis (block data)",
 				slog.Any("chain_id", chainID),
 				slog.Any("error", err))
 			return err

@@ -2,7 +2,9 @@ package repo
 
 import (
 	"context"
+	"log"
 	"log/slog"
+	"math/big"
 	"sort"
 	"strings"
 
@@ -46,6 +48,27 @@ func (r *BlockDataRepo) GetByHash(ctx context.Context, hash string) (*domain.Blo
 		return nil, err
 	}
 	return b, nil
+}
+
+func (r *BlockDataRepo) GetByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockData, error) {
+	// DEVELOPERS NOTE:
+	// We implement to support interface but we do not support in this codebase.
+	log.Fatalf("Unsupported `GetByHeaderNumber` for: %v", headerNumber.String())
+	return nil, nil
+
+	// bBytes, err := r.dbClient.Get(hash)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// b, err := domain.NewBlockDataFromDeserialize(bBytes)
+	// if err != nil {
+	// 	r.logger.Error("failed to deserialize",
+	// 		slog.String("hash", hash),
+	// 		slog.String("bin", string(bBytes)),
+	// 		slog.Any("error", err))
+	// 	return nil, err
+	// }
+	// return b, nil
 }
 
 func (r *BlockDataRepo) ListByChainID(ctx context.Context, chainID uint16) ([]*domain.BlockData, error) {

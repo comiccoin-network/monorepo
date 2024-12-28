@@ -170,7 +170,9 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.blockchainStateServerSentEventsHTTPHandler.Execute(w, r)
 
 	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockdata" && r.Method == http.MethodGet:
-		port.getBlockDataHTTPHandler.Execute(w, r, p[3])
+		port.getBlockDataHTTPHandler.ExecuteByHash(w, r, p[3])
+	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockdata-via-header-number" && r.Method == http.MethodGet: // NEW API ENDPOINT
+		port.getBlockDataHTTPHandler.ExecuteByHeaderNumber(w, r, p[3])
 
 	case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "block-transactions" && r.Method == http.MethodGet:
 		port.listBlockTransactionsByAddressHTTPHandler.Execute(w, r)

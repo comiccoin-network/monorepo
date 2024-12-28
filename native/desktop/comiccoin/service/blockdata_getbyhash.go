@@ -42,7 +42,7 @@ func (s *BlockDataGetByHashService) Execute(ctx context.Context, hash string) (*
 	// STEP 2: Get
 	//
 
-	blockData, err := s.GetBlockDataUseCase.Execute(ctx, hash)
+	blockData, err := s.GetBlockDataUseCase.ExecuteByHash(ctx, hash)
 	if err != nil {
 		if !strings.Contains(err.Error(), "does not exist") {
 			s.logger.Error("failed getting block data",

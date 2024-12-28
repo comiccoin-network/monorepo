@@ -1,3 +1,4 @@
+// Copy of old implementation of `blockchain_sync.go` for reference purposes only.
 package service
 
 import (
@@ -5,9 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 	"math/big"
-	"math/rand"
 	"time"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/signature"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	authority_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
@@ -72,12 +73,74 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(ctx context.Conte
 	// from the blockchain authority for the particular `chainID`.
 	//
 
-	genesis, err := s.getGenesisLocallyOrDownloadGenesisFromGlobalBlockchainNetwork(ctx, chainID)
+	genesis, err := s.getGenesisBlockDataUseCase.Execute(ctx, chainID)
 	if err != nil {
-		s.logger.Error("Failed getting or downloading genesis from global blockchain network",
+		s.logger.Error("Failed getting genesis block locally",
 			slog.Any("chain_id", chainID),
 			slog.Any("error", err))
 		return err
+	}
+	if genesis == nil {
+		s.logger.Debug("Genesis block d.n.e, fetching it now ...")
+		genesisDTO, err := s.getGenesisBlockDataDTOFromBlockchainAuthorityUseCase.Execute(ctx, chainID)
+		if err != nil {
+			s.logger.Error("Failed getting genesis block remotely",
+				slog.Any("chain_id", chainID),
+				slog.Any("error", err))
+			return err
+		}
+		if genesisDTO == nil {
+			err := fmt.Errorf("Genesis block data does not exist for `chain_id`: %v", chainID)
+			s.logger.Error("Failed getting genesis block remotely",
+				slog.Any("chain_id", chainID),
+				slog.Any("error", err))
+			return err
+		}
+
+		// Convert from network format data to our local format.
+		genesis = authority_domain.GenesisBlockDataDTOToGenesisBlockData(genesisDTO)
+
+		// Save the genesis block data to local database.
+		if err := s.upsertGenesisBlockDataUseCase.Execute(ctx, genesis.Hash, genesis.Header, genesis.HeaderSignatureBytes, genesis.Trans, genesis.Validator); err != nil {
+			s.logger.Error("Failed upserting genesis",
+				slog.Any("chain_id", chainID),
+				slog.Any("error", err))
+			return err
+		}
+
+		// Process transactions for the genesis block.
+		genesisCoinTx := genesis.Trans[0]
+		genesisTokenTx := genesis.Trans[1]
+
+		if err := s.upsertAccountUseCase.Execute(ctx, genesisCoinTx.From, genesisCoinTx.Value, big.NewInt(0)); err != nil {
+			s.logger.Error("Failed upserting coinbase account.",
+				slog.Any("error", err))
+			return err
+		}
+
+		// Save our token to the local database ONLY if this transaction
+		// is the most recent one. We track "most recent" transaction by
+		// the nonce value in the token.
+		upsertTokenErr := s.upsertTokenIfPreviousTokenNonceGTEUseCase.Execute(
+			ctx,
+			genesisTokenTx.GetTokenID(),
+			genesisTokenTx.To,
+			genesisTokenTx.TokenMetadataURI,
+			genesisTokenTx.GetTokenNonce())
+		if upsertTokenErr != nil {
+			s.logger.Error("Failed upserting genesis block token",
+				slog.Any("type", genesisTokenTx.Type),
+				slog.Any("token_id", genesisTokenTx.GetTokenID()),
+				slog.Any("owner", genesisTokenTx.To),
+				slog.Any("metadataURI", genesisTokenTx.TokenMetadataURI),
+				slog.Any("nonce", genesisTokenTx.GetTokenNonce()),
+				slog.Any("error", upsertTokenErr))
+			return upsertTokenErr
+		}
+
+		s.logger.Debug("Genesis block saved to local database from global blockchain network",
+			slog.Any("chain_id", chainID),
+			slog.Any("coinbase_address", genesisCoinTx.From.Hex()))
 	}
 
 	//
@@ -180,190 +243,61 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(ctx context.Conte
 	return nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) getGenesisLocallyOrDownloadGenesisFromGlobalBlockchainNetwork(ctx context.Context, chainID uint16) (*domain.GenesisBlockData, error) {
-	genesis, err := s.getGenesisBlockDataUseCase.Execute(ctx, chainID)
-	if err != nil {
-		s.logger.Error("Failed getting genesis block locally",
-			slog.Any("chain_id", chainID),
-			slog.Any("error", err))
-		return nil, err
-	}
-	if genesis == nil {
-		s.logger.Debug("Genesis block d.n.e, fetching it now ...")
-		genesisDTO, err := s.getGenesisBlockDataDTOFromBlockchainAuthorityUseCase.Execute(ctx, chainID)
-		if err != nil {
-			s.logger.Error("Failed getting genesis block remotely",
-				slog.Any("chain_id", chainID),
-				slog.Any("error", err))
-			return nil, err
-		}
-		if genesisDTO == nil {
-			err := fmt.Errorf("Genesis block data does not exist for `chain_id`: %v", chainID)
-			s.logger.Error("Failed getting genesis block remotely",
-				slog.Any("chain_id", chainID),
-				slog.Any("error", err))
-			return nil, err
-		}
-
-		// Convert from network format data to our local format.
-		genesis = authority_domain.GenesisBlockDataDTOToGenesisBlockData(genesisDTO)
-
-		// Save the genesis block data to local database.
-		if err := s.upsertGenesisBlockDataUseCase.Execute(ctx, genesis.Hash, genesis.Header, genesis.HeaderSignatureBytes, genesis.Trans, genesis.Validator); err != nil {
-			s.logger.Error("Failed upserting genesis (pure)",
-				slog.Any("chain_id", chainID),
-				slog.Any("error", err))
-			return nil, err
-		}
-		if err := s.upsertBlockDataUseCase.Execute(ctx, genesis.Hash, genesis.Header, genesis.HeaderSignatureBytes, genesis.Trans, genesis.Validator); err != nil {
-			s.logger.Error("Failed upserting genesis (block data)",
-				slog.Any("chain_id", chainID),
-				slog.Any("error", err))
-			return nil, err
-		}
-
-		s.logger.Debug("Genesis block saved to local database from global blockchain network",
-			slog.Any("chain_id", chainID),
-			slog.Any("hash", genesis.Hash),
-			slog.Any("header_number", genesis.Header.GetNumber().String()),
-		)
-
-		// Process transactions for the genesis block.
-		genesisCoinTx := genesis.Trans[0]
-		genesisTokenTx := genesis.Trans[1]
-
-		if err := s.upsertAccountUseCase.Execute(ctx, genesisCoinTx.From, genesisCoinTx.Value, big.NewInt(0)); err != nil {
-			s.logger.Error("Failed upserting coinbase account.",
-				slog.Any("error", err))
-			return nil, err
-		}
-
-		s.logger.Debug("Coinbase setup from Genesis",
-			slog.Any("chain_id", chainID),
-			slog.Any("coinbase_address", genesisCoinTx.From.Hex()))
-
-		// Save our token to the local database ONLY if this transaction
-		// is the most recent one. We track "most recent" transaction by
-		// the nonce value in the token.
-		upsertTokenErr := s.upsertTokenIfPreviousTokenNonceGTEUseCase.Execute(
-			ctx,
-			genesisTokenTx.GetTokenID(),
-			genesisTokenTx.To,
-			genesisTokenTx.TokenMetadataURI,
-			genesisTokenTx.GetTokenNonce())
-		if upsertTokenErr != nil {
-			s.logger.Error("Failed upserting genesis block token",
-				slog.Any("type", genesisTokenTx.Type),
-				slog.Any("token_id", genesisTokenTx.GetTokenID()),
-				slog.Any("owner", genesisTokenTx.To),
-				slog.Any("metadataURI", genesisTokenTx.TokenMetadataURI),
-				slog.Any("nonce", genesisTokenTx.GetTokenNonce()),
-				slog.Any("error", upsertTokenErr))
-			return nil, upsertTokenErr
-		}
-
-		s.logger.Debug("Initial token setup from Genesis",
-			slog.Any("chain_id", chainID),
-			slog.Any("token_id", genesisTokenTx.GetTokenID()),
-		)
-	}
-	return genesis, nil
-}
-
 func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainNetwork(ctx context.Context, localBlockchainState, globalBlockchainState *domain.BlockchainState) error {
-	//
-	// Algorithm:
-	// (1) Download the most recent block from the Global Blockchain. Please
-	//     note this block will contain the most recent `number` that it is in
-	//     the chain.
-	// (2) Get our recent block from our local Blockchain. Please note our
-	//     block will contain the earliest `number` we have of the chain
-	// (3) Iterate from the earliest `number` to the most recent `number` by
-	//     downloading all the blocks for the missing blocks and save them to
-	//     our local blockchain.
-	// (4) When our local Blockchain and Global Blockchain have the same
-	//     `number` then that means we have successfully synchronized; therefore,
-	//     stop the synching.
-	//
-
 	s.logger.Debug("Beginning to sync with global blockchain network...")
 
-	//
-	// STEP 1
-	//
+	// Variable holds the position of the block data we are looking at in
+	// the global blockchain network.
+	currentHashIterator := globalBlockchainState.LatestHash
 
-	latestBlockDataDTO, err := s.getBlockDataDTOFromBlockchainAuthorityUseCase.ExecuteByHash(ctx, globalBlockchainState.LatestHash)
-	if err != nil {
-		s.logger.Debug("Failed to get latest block data from global blockchain network")
-		return err
-	}
+	// Variable used to trigger the sync operation.
+	var isSyncOperationRunning bool = true
 
-	// Convert from network transfer data-structure to our application data-structure.
-	latestBlockData := authority_domain.BlockDataDTOToBlockData(latestBlockDataDTO)
+	// Continue to sync with global blockchain network until our
+	// sync operation finishes.
+	for isSyncOperationRunning {
 
-	//
-	// STEP 2
-	//
+		//
+		// STEP 1: Fetch from the global blockchain network.
+		//
 
-	earliestBlockData, err := s.getBlockDataUseCase.ExecuteByHash(ctx, localBlockchainState.LatestHash)
-	if err != nil {
-		s.logger.Debug("Failed to get earliest block data from local blockchain")
-		return err
-	}
-	if earliestBlockData == nil {
-		err := fmt.Errorf("Earliest block data does not exist for hash: %v", localBlockchainState.LatestHash)
-		s.logger.Error("Database does not exist", slog.Any("err", err))
-		return err
-	}
-
-	//
-	// STEP 3
-	//
-
-	earliestNumber := earliestBlockData.Header.GetNumber()
-	number := earliestNumber
-	latestNumber := latestBlockData.Header.GetNumber()
-
-	s.logger.Debug("Processed block data",
-		slog.String("earliest_number", earliestNumber.String()),
-		slog.String("current_number", number.String()),
-		slog.String("latest_number", latestNumber.String()))
-
-	for number.Cmp(latestNumber) < 0 {
 		s.logger.Debug("Fetching block data from global blockchain network...",
-			slog.Any("header_number", number.String()))
+			slog.Any("hash", currentHashIterator))
 
-		// Fetch from the global blockchain network.
-		blockDataDTO, err := s.getBlockDataDTOFromBlockchainAuthorityUseCase.ExecuteByHeaderNumber(ctx, number)
+		blockDataDTO, err := s.getBlockDataDTOFromBlockchainAuthorityUseCase.Execute(ctx, currentHashIterator)
 		if err != nil {
 			s.logger.Debug("Failed to get block data from global blockchain network",
-				slog.Any("header_number", number.String()))
+				slog.Any("hash", currentHashIterator))
 			return err
 		}
 
-		// Artificial delay as to not overload the network resources. We will
-		// randomly pick an artificial delay between 1 second to 5 seconds.
-		randInt := rand.Intn(5) + 1
-		s.logger.Debug("Applying artificial delay",
-			slog.Any("seconds", randInt))
-		time.Sleep(time.Duration(randInt) * time.Second)
+		// Artificial delay as to not overload the network resources.
+		time.Sleep(1 * time.Second)
 
 		blockData := authority_domain.BlockDataDTOToBlockData(blockDataDTO)
 
-		s.logger.Debug("Downloaded block data from global blockchain network and saving to local database...",
-			slog.Any("header_number", number.String()))
+		//
+		// STEP 2: Save it to the local database.
+		//
 
-		// Save it to the local database.
+		s.logger.Debug("Downloaded block data from global blockchain network and saving to local database...",
+			slog.Any("hash", currentHashIterator))
+
 		if err := s.upsertBlockDataUseCase.Execute(ctx, blockData.Hash, blockData.Header, blockData.HeaderSignatureBytes, blockData.Trans, blockData.Validator); err != nil {
 			s.logger.Debug("Failed to upsert block data ",
-				slog.Any("header_number", number.String()))
+				slog.Any("hash", currentHashIterator))
 			return err
 		}
 
+		//
+		// STEP 3:
 		// Process account coins and tokens from the transactions.
+		//
+
 		for _, blockTx := range blockData.Trans {
-			//
-			// Process 🪪 accounts.
+
+			// STEP 4:
+			// Process accounts.
 			//
 
 			s.logger.Debug("Processing block tx...",
@@ -373,13 +307,14 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainN
 			if err := s.processAccountForTransaction(ctx, blockData, &blockTx); err != nil {
 				s.logger.Error("Failed processing transaction",
 					slog.Any("error", err))
+				//TODO: IMPL FIX - Failed processing transaction" error="The `From` account does not exist in our database for hash: 0xBfd4C6DBF0e34e7f2D3c06fafF1F5bDE296FD547"
 				return err
 			}
 
 			//
-			// Process 🎟️ tokens.
+			// STEP 5:
+			// Process tokens.
 			//
-
 			if blockTx.Type == domain.TransactionTypeToken {
 				// Save our token to the local database ONLY if this transaction
 				// is the most recent one. We track "most recent" transaction by
@@ -408,25 +343,29 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainN
 				slog.Any("timestamp", blockTx.TimeStamp))
 
 			//
+			// STEP 6:
 			// Delete any local pending signed transactions (if there are any).
 			//
 
 			// Note: Do not handle errors.
 			delErr := s.deletePendingSignedTransactionUseCase.Execute(ctx, blockTx.GetNonce())
-			if delErr != nil {
-				s.logger.Debug("Delete pending signed transaction",
-					slog.Any("err", delErr))
-			}
+			s.logger.Debug("Delete pending signed transaction",
+				slog.Any("err", delErr))
 		}
 
-		// IMPORTANT: Increment our header number to the next value.
-		number = blockData.Header.GetNumber()
-		number = number.Add(number, big.NewInt(1))
+		//
+		// STEP 7:
+		// Check to see if we haven't reached the last block data we have
+		// in our local blockchain.
+		//
+
+		currentHashIterator = blockData.Header.PrevBlockHash
+		isSyncOperationRunning = localBlockchainState.LatestHash != currentHashIterator
+		isSyncOperationRunning = isSyncOperationRunning && (currentHashIterator != signature.ZeroHash) // consensus mechanism reached genesis block data, sync completed
 
 		s.logger.Debug("Processed block data",
-			slog.String("earliest_number", earliestNumber.String()),
-			slog.String("next_number", number.String()),
-			slog.String("latest_number", latestNumber.String()))
+			slog.String("currentHashIterator", currentHashIterator),
+			slog.Bool("isSyncOperationRunning", isSyncOperationRunning))
 	}
 	s.logger.Debug("Finished syncing with global blockchain network")
 	return nil
@@ -587,7 +526,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForTokenTra
 	//
 	// STEP 2:
 	// Check to see if we have an account for this particular token, if not
-	// then create it.  Do this from the `To` side of the transaction.
+	// then create it.  Do thise from the `To` side of the transaction.
 	//
 
 	if blockTx.To != nil {

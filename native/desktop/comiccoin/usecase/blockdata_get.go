@@ -17,7 +17,7 @@ func NewGetBlockDataUseCase(logger *slog.Logger, repo domain.BlockDataRepository
 	return &GetBlockDataUseCase{logger, repo}
 }
 
-func (uc *GetBlockDataUseCase) Execute(ctx context.Context, hash string) (*domain.BlockData, error) {
+func (uc *GetBlockDataUseCase) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
 	//
 	// STEP 1: Validation.
 	//

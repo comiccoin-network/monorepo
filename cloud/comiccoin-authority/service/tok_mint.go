@@ -108,7 +108,7 @@ func (s *TokenMintService) Execute(
 			return nil, fmt.Errorf("Proof of authority private keydoes not exist")
 		}
 
-		recentBlockData, err := s.getBlockDataUseCase.Execute(sessCtx, blockchainState.LatestHash)
+		recentBlockData, err := s.getBlockDataUseCase.ExecuteByHash(sessCtx, blockchainState.LatestHash)
 		if err != nil {
 			s.logger.Error("Failed getting latest block block.",
 				slog.Any("error", err))

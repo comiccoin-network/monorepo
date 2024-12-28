@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"log"
 	"log/slog"
 	"time"
 
@@ -53,6 +54,7 @@ func (port *taskManagerImpl) Run() {
 	if err := port.blockchainSyncWithBlockchainAuthorityTaskHandler.Execute(context.Background()); err != nil {
 		port.logger.Error("Failed executing blockchain sync with the Authority.",
 			slog.Any("error", err))
+		log.Fatal(err)
 	}
 	port.logger.Info("Finished running one-time blockchain sync ")
 

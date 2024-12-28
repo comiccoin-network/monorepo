@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"math/big"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
@@ -25,14 +26,28 @@ func NewGetBlockDataService(
 	return &GetBlockDataService{cfg, logger, uc}
 }
 
-func (s *GetBlockDataService) Execute(ctx context.Context, hash string) (*domain.BlockData, error) {
-	data, err := s.GetBlockDataUseCase.Execute(ctx, hash)
+func (s *GetBlockDataService) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
+	data, err := s.GetBlockDataUseCase.ExecuteByHash(ctx, hash)
 	if err != nil {
 		s.logger.Error("Failed getting block data", slog.Any("error", err))
 		return nil, err
 	}
 	if data == nil {
 		errStr := fmt.Sprintf("Block data does not exist for hash: %v", hash)
+		s.logger.Error("Failed getting block data", slog.Any("error", errStr))
+		return nil, httperror.NewForNotFoundWithSingleField("hash", errStr)
+	}
+	return data, nil
+}
+
+func (s *GetBlockDataService) ExecuteByHeaderNumber(ctx context.Context, blockHeader *big.Int) (*domain.BlockData, error) {
+	data, err := s.GetBlockDataUseCase.ExecuteByHeaderNumber(ctx, blockHeader)
+	if err != nil {
+		s.logger.Error("Failed getting block data", slog.Any("error", err))
+		return nil, err
+	}
+	if data == nil {
+		errStr := fmt.Sprintf("Block data does not exist for block header: %v", blockHeader.String())
 		s.logger.Error("Failed getting block data", slog.Any("error", errStr))
 		return nil, httperror.NewForNotFoundWithSingleField("hash", errStr)
 	}
