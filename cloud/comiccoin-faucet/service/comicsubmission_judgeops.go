@@ -21,6 +21,7 @@ type ComicSubmissionJudgeOperationService struct {
 	cloudStorageDeleteUseCase     *usecase.CloudStorageDeleteUseCase
 	userGetByIDUseCase            *usecase.UserGetByIDUseCase
 	userUpdateUseCase             *usecase.UserUpdateUseCase
+	createBannedIPAddressUseCase  *usecase.CreateBannedIPAddressUseCase
 	comicSubmissionGetByIDUseCase *usecase.ComicSubmissionGetByIDUseCase
 	comicSubmissionUpdateUseCase  *usecase.ComicSubmissionUpdateUseCase
 }
@@ -32,10 +33,11 @@ func NewComicSubmissionJudgeOperationService(
 	uc1 *usecase.CloudStorageDeleteUseCase,
 	uc2 *usecase.UserGetByIDUseCase,
 	uc3 *usecase.UserUpdateUseCase,
-	uc4 *usecase.ComicSubmissionGetByIDUseCase,
-	uc5 *usecase.ComicSubmissionUpdateUseCase,
+	uc4 *usecase.CreateBannedIPAddressUseCase,
+	uc5 *usecase.ComicSubmissionGetByIDUseCase,
+	uc6 *usecase.ComicSubmissionUpdateUseCase,
 ) *ComicSubmissionJudgeOperationService {
-	return &ComicSubmissionJudgeOperationService{cfg, logger, s1, uc1, uc2, uc3, uc4, uc5}
+	return &ComicSubmissionJudgeOperationService{cfg, logger, s1, uc1, uc2, uc3, uc4, uc5, uc6}
 }
 
 type ComicSubmissionJudgeVerdictRequestIDO struct {
@@ -178,7 +180,7 @@ func (s *ComicSubmissionJudgeOperationService) Execute(
 			slog.Any("flag_issue", req.FlagIssue),
 		)
 
-		if req.FlagAction == domain.ComicSubmissionFlagActionLockoutUser {
+		if req.FlagAction == domain.ComicSubmissionFlagActionLockoutUser || req.FlagAction == domain.ComicSubmissionFlagActionLockoutUserAndBanIPAddress {
 			customerUser.Status = domain.UserStatusLocked
 			customerUser.ModifiedByUserID = req.AdminUserID
 			customerUser.ModifiedFromIPAddress = req.AdminUserIPAddress
@@ -189,6 +191,22 @@ func (s *ComicSubmissionJudgeOperationService) Execute(
 			}
 			s.logger.Debug("Locked user out",
 				slog.Any("user_id", customerUser.ID))
+		}
+
+		if req.FlagAction == domain.ComicSubmissionFlagActionLockoutUserAndBanIPAddress {
+			banIPAddr := &domain.BannedIPAddress{
+				ID:        primitive.NewObjectID(),
+				UserID:    customerUser.ID,
+				Value:     customerUser.CreatedFromIPAddress,
+				CreatedAt: time.Now(),
+			}
+			if err := s.createBannedIPAddressUseCase.Execute(sessCtx, banIPAddr); err != nil {
+				s.logger.Error("Failed banning ip address",
+					slog.Any("err", err))
+				return nil, err
+			}
+			s.logger.Debug("Banned IP address",
+				slog.Any("ip_address", banIPAddr))
 		}
 
 		// TODO: Save the hash value to block future images by

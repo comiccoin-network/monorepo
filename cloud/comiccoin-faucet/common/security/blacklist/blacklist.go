@@ -41,7 +41,7 @@ func readBlacklistFileContent(filePath string) ([]string, error) {
 	return ips, nil
 }
 
-// NewProvider Provider contructor that returns the default time provider.
+// NewProvider Provider constructor that returns the default time provider.
 func NewProvider() Provider {
 	bannedIPAddresses := make(map[string]bool)
 	bannedIPAddressesFilePath := "static/blacklist/ips.json"

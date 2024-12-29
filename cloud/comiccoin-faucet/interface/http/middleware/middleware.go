@@ -14,10 +14,11 @@ type Middleware interface {
 }
 
 type middleware struct {
-	logger                    *slog.Logger
-	blacklist                 blacklist.Provider
-	jwt                       jwt.Provider
-	userGetBySessionIDUseCase *usecase.UserGetBySessionIDUseCase
+	logger                              *slog.Logger
+	blacklist                           blacklist.Provider
+	jwt                                 jwt.Provider
+	userGetBySessionIDUseCase           *usecase.UserGetBySessionIDUseCase
+	bannedIPAddressListAllValuesUseCase *usecase.BannedIPAddressListAllValuesUseCase
 }
 
 func NewMiddleware(
@@ -25,12 +26,14 @@ func NewMiddleware(
 	blp blacklist.Provider,
 	jwtp jwt.Provider,
 	uc1 *usecase.UserGetBySessionIDUseCase,
+	uc2 *usecase.BannedIPAddressListAllValuesUseCase,
 ) Middleware {
 	return &middleware{
-		logger:                    loggerp,
-		blacklist:                 blp,
-		jwt:                       jwtp,
-		userGetBySessionIDUseCase: uc1,
+		logger:                              loggerp,
+		blacklist:                           blp,
+		jwt:                                 jwtp,
+		userGetBySessionIDUseCase:           uc1,
+		bannedIPAddressListAllValuesUseCase: uc2,
 	}
 }
 

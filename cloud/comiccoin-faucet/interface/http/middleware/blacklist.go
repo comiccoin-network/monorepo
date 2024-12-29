@@ -17,7 +17,7 @@ func (mid *middleware) EnforceBlacklistMiddleware(next http.HandlerFunc) http.Ha
 		ipAddress, _ := ctx.Value(constants.SessionIPAddress).(string)
 		proxies, _ := ctx.Value(constants.SessionProxies).(string)
 
-		// Case 1 of 2: Check banned IP addresses.
+		// Case 1 of 3: Check banned IP addresses.
 		if mid.blacklist.IsBannedIPAddress(ipAddress) {
 
 			// If the client IP address is banned, check to see if the client
@@ -37,7 +37,7 @@ func (mid *middleware) EnforceBlacklistMiddleware(next http.HandlerFunc) http.Ha
 			return
 		}
 
-		// Case 2 of 2: Check banned URL.
+		// Case 2 of 3: Check banned URL.
 		if mid.blacklist.IsBannedURL(r.URL.Path) {
 
 			// If the URL is banned, check to see if the client IP address is
@@ -58,6 +58,28 @@ func (mid *middleware) EnforceBlacklistMiddleware(next http.HandlerFunc) http.Ha
 			// address whom made this call.
 			http.Error(w, "does not exist at this time", http.StatusNotFound)
 			return
+		}
+
+		// Case 3 of 3: Check banned IP via flagged content.
+		bannedIPAddresses, err := mid.bannedIPAddressListAllValuesUseCase.Execute(ctx)
+		if err != nil {
+			mid.logger.Error("Failed listing all banned IP addresses",
+				slog.Any("error", err),
+				slog.Any("middleware", "EnforceBlacklistMiddleware"))
+			http.Error(w, "forbidden at this time", http.StatusForbidden)
+			return
+		}
+		for _, bannedIP := range bannedIPAddresses {
+			if bannedIP == ipAddress {
+				mid.logger.Warn("rejected request by banned IP address for flagged content",
+					slog.Any("url", r.URL.Path),
+					slog.String("ip_address", ipAddress),
+					slog.String("proxies", proxies),
+					slog.Any("middleware", "EnforceBlacklistMiddleware"))
+				http.Error(w, "forbidden at this time", http.StatusForbidden)
+				return
+			}
+
 		}
 
 		next(w, r.WithContext(ctx))

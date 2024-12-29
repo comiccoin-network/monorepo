@@ -68,6 +68,7 @@ func doRunDaemon() {
 	// Repository
 	//
 
+	banIPAddrRepo := repo.NewBannedIPAddressRepository(cfg, logger, dbClient)
 	walletRepo := repo.NewWalletRepository(cfg, logger, dbClient)
 	accountRepo := repo.NewAccountRepository(cfg, logger, dbClient)
 	tenantRepo := repo.NewTenantRepository(cfg, logger, dbClient)
@@ -119,6 +120,10 @@ func doRunDaemon() {
 
 	// Email
 	sendUserVerificationEmailUseCase := usecase.NewSendUserVerificationEmailUseCase(cfg, logger, templatedEmailer)
+
+	// Banned IP Addresses
+	bannedIPAddressListAllValuesUseCase := usecase.NewBannedIPAddressListAllValuesUseCase(cfg, logger, banIPAddrRepo)
+	createBannedIPAddressUseCase := usecase.NewCreateBannedIPAddressUseCase(cfg, logger, banIPAddrRepo)
 
 	// Attachment
 	createAttachmentUseCase := usecase.NewCreateAttachmentUseCase(cfg, logger, attachmentRepo)
@@ -547,6 +552,7 @@ func doRunDaemon() {
 		cloudStorageDeleteUseCase,
 		userGetByIDUseCase,
 		userUpdateUseCase,
+		createBannedIPAddressUseCase,
 		comicSubmissionGetByIDUseCase,
 		comicSubmissionUpdateUseCase,
 	)
@@ -745,6 +751,7 @@ func doRunDaemon() {
 		blackp,
 		jwtp,
 		userGetBySessionIDUseCase,
+		bannedIPAddressListAllValuesUseCase,
 	)
 	httpServ := http.NewHTTPServer(
 		cfg,
