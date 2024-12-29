@@ -23,9 +23,8 @@ function SetupNFTStorageView() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
-        label: '',
-        password: '',
-        repeatPassword: ''
+        remoteAddress: '',
+        apiKey: '',
     });
     const [errors, setErrors] = useState({});
     const [showErrorBox, setShowErrorBox] = useState(false);
@@ -155,11 +154,12 @@ function SetupNFTStorageView() {
                 <div className="p-2 bg-purple-100 rounded-xl">
                   <KeyRound className="w-5 h-5 text-purple-600" aria-hidden="true" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">Create Your First Wallet</h2>
+                <h2 className="text-xl font-bold text-gray-900">Setup your NFT Storage</h2>
               </div>
             </div>
             <p className="text-sm text-gray-500">
-              Set up your first ComicCoin wallet by providing a label and secure password.
+              Next you will need to configure how to connect to the <b>NFT Store</b>.<br />
+              ComicCoin Registry requires the following fields to be filled out.
             </p>
           </div>
 
@@ -182,61 +182,42 @@ function SetupNFTStorageView() {
             <div className="space-y-6">
               <div className="space-y-4">
                 <label className="block">
-                  <span className="text-sm font-medium text-gray-700">Wallet Label</span>
+                  <span className="text-sm font-medium text-gray-700">Remote Address</span>
                   <input
                     type="text"
-                    name="label"
-                    value={formData.label}
+                    name="remoteAddress"
+                    value={formData.remoteAddress}
                     onChange={handleInputChange}
                     className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                      errors.label ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                      errors.remoteAddress ? 'border-red-300 bg-red-50' : 'border-gray-200'
                     }`}
                     placeholder="Enter a name for your wallet"
                   />
-                  {errors.label && (
+                  {errors.remoteAddress && (
                     <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" />
-                      {errors.label}
+                      {errors.remoteAddress}
                     </p>
                   )}
                 </label>
 
-                <label className="block">
-                  <span className="text-sm font-medium text-gray-700">Password</span>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                      errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                    }`}
-                    placeholder="Enter your password"
-                  />
-                  {errors.password && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.password}
-                    </p>
-                  )}
-                </label>
 
                 <label className="block">
-                  <span className="text-sm font-medium text-gray-700">Repeat Password</span>
+                  <span className="text-sm font-medium text-gray-700">API Key</span>
                   <input
-                    type="password"
-                    name="repeatPassword"
-                    value={formData.repeatPassword}
+                    type="text"
+                    name="apiKey"
+                    value={formData.apiKey}
                     onChange={handleInputChange}
                     className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                      errors.repeatPassword ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                      errors.apiKey ? 'border-red-300 bg-red-50' : 'border-gray-200'
                     }`}
-                    placeholder="Repeat your password"
+                    placeholder="Enter a name for your wallet"
                   />
-                  {errors.repeatPassword && (
+                  {errors.apiKey && (
                     <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" />
-                      {errors.repeatPassword}
+                      {errors.apiKey}
                     </p>
                   )}
                 </label>

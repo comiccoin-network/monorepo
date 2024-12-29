@@ -67,7 +67,7 @@ function CreateYourFirstWalletView() {
 
     const handleSubmit = () => {
         if (validateForm()) {
-          console.log('Form submitted');
+          console.log('handleSubmit -> Form submitted:', formData);
 
           // Update the GUI to let user know that the operation is under way.
           setIsLoading(true);
