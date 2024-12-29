@@ -12,6 +12,7 @@ import (
 
 const (
 	UserStatusActive                                = 1
+	UserStatusLocked                                = 50
 	UserStatusArchived                              = 100
 	UserRoleRoot                                    = 1
 	UserRoleRetailer                                = 2

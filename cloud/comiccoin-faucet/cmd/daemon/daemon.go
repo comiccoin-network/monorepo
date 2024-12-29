@@ -546,6 +546,7 @@ func doRunDaemon() {
 		faucetCoinTransferService,
 		cloudStorageDeleteUseCase,
 		userGetByIDUseCase,
+		userUpdateUseCase,
 		comicSubmissionGetByIDUseCase,
 		comicSubmissionUpdateUseCase,
 	)

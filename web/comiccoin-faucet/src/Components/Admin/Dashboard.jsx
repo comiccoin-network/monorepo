@@ -478,7 +478,7 @@ const AdminDashboard = () => {
         comic_submission_id: submissionId,
         status: 6, // Flagged
         flag_issue: flagData.flagIssue,
-        flag_issue_other: flagData.flagIssue === "other" ? flagData.flagIssueOther : "",
+        flag_issue_other: flagData.flagIssueOther,
         flag_action: flagData.flagAction,
       };
 

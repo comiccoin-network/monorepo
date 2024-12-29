@@ -96,16 +96,18 @@ const GalleryItem = ({ submission, onFlag, handleApproveSubmission, handleReject
 export default GalleryItem;
 
 
- const FlagModal = ({ isOpen, onClose, onSubmit, submissionId }) => {
+const FlagModal = ({ isOpen, onClose, onSubmit, submissionId }) => {
    const [flagIssue, setFlagIssue] = useState("");
+   const [flagIssueOther, setFlagIssueOther] = useState("");
    const [flagAction, setFlagAction] = useState("");
 
    if (!isOpen) return null;
 
    const handleSubmit = () => {
-     onSubmit(submissionId, { flagIssue, flagAction });
+     onSubmit(submissionId, { flagIssue, flagIssueOther, flagAction });
      onClose();
      setFlagIssue("");
+     setFlagIssueOther("");
      setFlagAction("");
    };
 
@@ -168,6 +170,17 @@ export default GalleryItem;
                      </label>
                    </div>
                  ))}
+                 {flagIssue === 1 && (
+                  <div className="mt-3 ml-6">
+                    <input
+                      type="text"
+                      value={flagIssueOther}
+                      onChange={(e) => setFlagIssueOther(e.target.value)}
+                      placeholder="Please specify the issue"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-sm"
+                    />
+                  </div>
+                )}
                </div>
              </div>
 
@@ -209,10 +222,10 @@ export default GalleryItem;
              </button>
              <button
                onClick={handleSubmit}
-               disabled={!flagIssue || !flagAction}
+               disabled={!flagIssue || !flagAction || (flagIssue === 1 && !flagIssueOther)}
                className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500
                    ${
-                     !flagIssue || !flagAction
+                     !flagIssue || !flagAction || (flagIssue === 1 && !flagIssueOther)
                        ? "bg-red-300 cursor-not-allowed"
                        : "bg-red-600 hover:bg-red-700"
                    }`}

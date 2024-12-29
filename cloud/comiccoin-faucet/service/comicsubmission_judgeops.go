@@ -20,6 +20,7 @@ type ComicSubmissionJudgeOperationService struct {
 	faucetCoinTransferService     *FaucetCoinTransferService
 	cloudStorageDeleteUseCase     *usecase.CloudStorageDeleteUseCase
 	userGetByIDUseCase            *usecase.UserGetByIDUseCase
+	userUpdateUseCase             *usecase.UserUpdateUseCase
 	comicSubmissionGetByIDUseCase *usecase.ComicSubmissionGetByIDUseCase
 	comicSubmissionUpdateUseCase  *usecase.ComicSubmissionUpdateUseCase
 }
@@ -30,10 +31,11 @@ func NewComicSubmissionJudgeOperationService(
 	s1 *FaucetCoinTransferService,
 	uc1 *usecase.CloudStorageDeleteUseCase,
 	uc2 *usecase.UserGetByIDUseCase,
-	uc3 *usecase.ComicSubmissionGetByIDUseCase,
-	uc4 *usecase.ComicSubmissionUpdateUseCase,
+	uc3 *usecase.UserUpdateUseCase,
+	uc4 *usecase.ComicSubmissionGetByIDUseCase,
+	uc5 *usecase.ComicSubmissionUpdateUseCase,
 ) *ComicSubmissionJudgeOperationService {
-	return &ComicSubmissionJudgeOperationService{cfg, logger, s1, uc1, uc2, uc3, uc4}
+	return &ComicSubmissionJudgeOperationService{cfg, logger, s1, uc1, uc2, uc3, uc4, uc5}
 }
 
 type ComicSubmissionJudgeVerdictRequestIDO struct {
@@ -175,6 +177,19 @@ func (s *ComicSubmissionJudgeOperationService) Execute(
 		s.logger.Debug("Executing flag issue",
 			slog.Any("flag_issue", req.FlagIssue),
 		)
+
+		if req.FlagAction == domain.ComicSubmissionFlagActionLockoutUser {
+			customerUser.Status = domain.UserStatusLocked
+			customerUser.ModifiedByUserID = req.AdminUserID
+			customerUser.ModifiedFromIPAddress = req.AdminUserIPAddress
+			if err := s.userUpdateUseCase.Execute(sessCtx, customerUser); err != nil {
+				s.logger.Error("Failed updating user of submission",
+					slog.Any("err", err))
+				return nil, err
+			}
+			s.logger.Debug("Locked user out",
+				slog.Any("user_id", customerUser.ID))
+		}
 
 		// TODO: Save the hash value to block future images by
 
