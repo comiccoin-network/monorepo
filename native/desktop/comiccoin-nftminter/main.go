@@ -61,7 +61,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "comiccoin-nftminter",
+		Title:  "ComicCoin NFT Minter",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{

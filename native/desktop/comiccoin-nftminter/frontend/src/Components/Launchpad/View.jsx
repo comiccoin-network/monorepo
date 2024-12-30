@@ -7,7 +7,7 @@ function LaunchpadView() {
     const [forceURL, setForceURL] = React.useState("");
 
     const handleStart = () => {
-        setForceURL("/mint-wizard/step-1");
+        setForceURL("/minting-wizard-step1");
     };
 
     if (forceURL !== "") {

@@ -262,7 +262,7 @@ function PickDataDirectoryView() {
                     onSubmitClick();
                 }}
               >
-                Save
+                Save & Continue
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
