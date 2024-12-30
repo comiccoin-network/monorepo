@@ -36,6 +36,8 @@ function InitializeView() {
                     setForceURL("/setup-nft-storage")
                 } else if (preferencesResult.authority_address === "" || preferencesResult.authority_api_key === "") {
                     setForceURL("/setup-authority")
+                } else {
+                    setForceURL("/launchpad");
                 }
             })
       }

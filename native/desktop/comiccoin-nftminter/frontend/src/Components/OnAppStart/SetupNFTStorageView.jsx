@@ -156,7 +156,7 @@ function SetupNFTStorageView() {
             </div>
             <p className="text-sm text-gray-500">
               Next you will need to configure how to connect to the <b>NFT Store</b>.<br />
-              ComicCoin Registry requires the following fields to be filled out.
+              ComicCoin NFTMinter requires the following fields to be filled out.
             </p>
           </div>
 

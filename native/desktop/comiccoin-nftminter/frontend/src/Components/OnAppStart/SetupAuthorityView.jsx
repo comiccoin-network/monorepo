@@ -4,8 +4,8 @@ import { useRecoilState } from "recoil";
 import { WalletMinimal, KeyRound, Info, ChevronRight, AlertCircle, XCircle } from 'lucide-react';
 
 import {
-    ShutdownApp,
-    // CreateWallet
+    SaveAuthorityStoreConfigVariables,
+    ShutdownApp
 } from "../../../wailsjs/go/main/App";
 // import { currentOpenWalletAtAddressState } from "../../AppState";
 
@@ -20,15 +20,14 @@ function SetupAuthorityView() {
 
     // const [dataDirectory] = useState("");
     const [forceURL, setForceURL] = useState("");
-
-    const [isLoading, setIsLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        label: '',
-        password: '',
-        repeatPassword: ''
-    });
     const [errors, setErrors] = useState({});
     const [showErrorBox, setShowErrorBox] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const [formData, setFormData] = useState({
+        remoteAddress: 'https://comiccoinauthority.com',
+        apiKey: '',
+    });
 
 
     ////
@@ -60,49 +59,44 @@ function SetupAuthorityView() {
     // };
     //
     //
-    const handleSubmit = () => {
-    //     if (validateForm()) {
-    //       console.log('Form submitted');
-    //
-    //       // Update the GUI to let user know that the operation is under way.
-    //       setIsLoading(true);
-    //
-    //       CreateWallet(formData.password, formData.repeatPassword, formData.label).then((addressRes)=>{
-    //           console.log("address:", addressRes);
-    //           console.log("currentOpenWalletAtAddress:", currentOpenWalletAtAddress);
-    //           setCurrentOpenWalletAtAddress(addressRes);
-    //           setForceURL("/dashboard");
-    //       }).catch((errorJsonString)=>{
-    //           console.log("errRes:", errorJsonString);
-    //           const errorObject = JSON.parse(errorJsonString);
-    //           let err = {};
-    //           if (errorObject.wallet_password != "") {
-    //               err.password = errorObject.wallet_password;
-    //           }
-    //           if (errorObject.wallet_password_repeated != "") {
-    //               err.repeatPassword = errorObject.wallet_password_repeated;
-    //           }
-    //           setErrors(err);
-    //       }).finally(() => {
-    //           // this will be executed after then or catch has been executed
-    //           console.log("CreateWallet promise has been resolved or rejected");
-    //
-    //           // Update the GUI to let user know that the operation is completed.
-    //           setIsLoading(false);
-    //       });
-    //
-    //     } else {
-    //       window.scrollTo({ top: 0, behavior: 'smooth' });
-    //     }
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setErrors({});
+
+        // Update the GUI to let user know that the operation is under way.
+        setIsLoading(true);
+
+          SaveAuthorityStoreConfigVariables(formData.apiKey, formData.remoteAddress).then(()=>{
+              console.log("SaveAuthorityStoreConfigVariables: Success");
+              setForceURL("/launchpad");
+          }).catch((errorJsonString)=>{
+              console.log("SaveAuthorityStoreConfigVariables: errRes", errorJsonString);
+              const errorObject = JSON.parse(errorJsonString);
+              let err = {};
+              if (errorObject.authorityAPIKey != "") {
+                  err.apiKey = errorObject.authorityAPIKey;
+              }
+              if (errorObject.authorityRemoteAddress != "") {
+                  err.remoteAddress = errorObject.authorityRemoteAddress;
+              }
+              setErrors(err);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+          }).finally(() => {
+              // this will be executed after then or catch has been executed
+              console.log("SaveAuthorityStoreConfigVariables promise has been resolved or rejected");
+
+              // Update the GUI to let user know that the operation is completed.
+              setIsLoading(false);
+          });
     };
 
     const handleInputChange = (e) => {
-    //     const { name, value } = e.target;
-    //     setFormData(prev => ({ ...prev, [name]: value }));
-    //     if (errors[name]) {
-    //       setErrors(prev => ({ ...prev, [name]: '' }));
-    //       setShowErrorBox(false);
-    //     }
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        if (errors[name]) {
+          setErrors(prev => ({ ...prev, [name]: '' }));
+          setShowErrorBox(false);
+        }
     };
 
 
@@ -155,93 +149,61 @@ function SetupAuthorityView() {
                 <div className="p-2 bg-purple-100 rounded-xl">
                   <KeyRound className="w-5 h-5 text-purple-600" aria-hidden="true" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">Create Your First Wallet</h2>
+                <h2 className="text-xl font-bold text-gray-900">Setup your Authoriy Credentials</h2>
               </div>
             </div>
             <p className="text-sm text-gray-500">
-              Set up your first ComicCoin wallet by providing a label and secure password.
+              Next you will need to configure how to connect to the <b>ComicCoin Blockchain Authority</b> web-service.<br /><br />
+              ComicCoin NFT Minter requires the following fields to be filled out.
             </p>
           </div>
 
           <div className="p-6 space-y-8">
-            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl">
-              <div className="p-6 flex gap-4">
-                <Info className="w-5 h-5 text-purple-600 flex-shrink-0 mt-1" />
-                <div className="text-sm text-gray-700">
-                  <p className="mb-3">Choose a strong password that:</p>
-                  <ul className="list-disc pl-4 space-y-1">
-                    <li>Is at least 12 characters long</li>
-                    <li>Contains uppercase and lowercase letters</li>
-                    <li>Includes numbers and special characters</li>
-                    <li>Is not used for any other accounts</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
             <div className="space-y-6">
               <div className="space-y-4">
                 <label className="block">
-                  <span className="text-sm font-medium text-gray-700">Wallet Label</span>
+                  <span className="text-sm font-medium text-gray-700">Remote Address</span>
                   <input
                     type="text"
-                    name="label"
-                    value={formData.label}
+                    name="remoteAddress"
+                    value={formData.remoteAddress}
                     onChange={handleInputChange}
                     className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                      errors.label ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                      errors.remoteAddress ? 'border-red-300 bg-red-50' : 'border-gray-200'
                     }`}
                     placeholder="Enter a name for your wallet"
                   />
-                  {errors.label && (
+                  {errors.remoteAddress && (
                     <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" />
-                      {errors.label}
+                      {errors.remoteAddress}
                     </p>
                   )}
                 </label>
 
-                <label className="block">
-                  <span className="text-sm font-medium text-gray-700">Password</span>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                      errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                    }`}
-                    placeholder="Enter your password"
-                  />
-                  {errors.password && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.password}
-                    </p>
-                  )}
-                </label>
 
                 <label className="block">
-                  <span className="text-sm font-medium text-gray-700">Repeat Password</span>
+                  <span className="text-sm font-medium text-gray-700">API Key</span>
                   <input
-                    type="password"
-                    name="repeatPassword"
-                    value={formData.repeatPassword}
+                    type="text"
+                    name="apiKey"
+                    value={formData.apiKey}
                     onChange={handleInputChange}
                     className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                      errors.repeatPassword ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                      errors.apiKey ? 'border-red-300 bg-red-50' : 'border-gray-200'
                     }`}
-                    placeholder="Repeat your password"
+                    placeholder="Enter a name for your wallet"
                   />
-                  {errors.repeatPassword && (
+                  {errors.apiKey && (
                     <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" />
-                      {errors.repeatPassword}
+                      {errors.apiKey}
                     </p>
                   )}
                 </label>
               </div>
 
+             {/*
               <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-100 rounded-xl">
                 <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800">
@@ -249,6 +211,7 @@ function SetupAuthorityView() {
                   you will not be able to access your wallet and your funds will be lost forever.
                 </p>
               </div>
+              */}
             </div>
 
             <div className="flex justify-end gap-4 pt-4">
@@ -258,13 +221,13 @@ function SetupAuthorityView() {
                     ShutdownApp();
                 }}
               >
-                Cancel & Close Wallet
+                Cancel & Close App
               </button>
               <button
                 onClick={handleSubmit}
                 className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2"
               >
-                Submit
+                Save & Continue
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

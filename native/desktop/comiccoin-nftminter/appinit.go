@@ -145,6 +145,26 @@ func (a *App) SetAuthorityAddress(authorityAddress string) error {
 	return nil
 }
 
+func (a *App) SetAuthorityAPIKey(authorityAPIKey string) error {
+	// Defensive code
+	if authorityAPIKey == "" {
+		return fmt.Errorf("failed saving authority API Key because: %v", "value is empty")
+	}
+	preferences := PreferencesInstance()
+	err := preferences.SetAuthorityAPIKey(authorityAPIKey)
+	if err != nil {
+		a.logger.Error("Failed setting authority address",
+			slog.Any("authority_api_key", authorityAPIKey),
+			slog.Any("error", err))
+		return err
+	}
+
+	// Re-attempt the startup now that we have value set.
+	a.logger.Debug("Authority address was set by user",
+		slog.Any("authority_api_key", authorityAPIKey))
+	return nil
+}
+
 func (a *App) ShutdownApp() {
 	runtime.Quit(a.ctx)
 }
@@ -203,6 +223,44 @@ func (a *App) SaveNFTStoreConfigVariables(nftStoreAPIKey string, nftStoreRemoteA
 	}
 	if err := a.SetNFTStorageAPIKey(nftStoreAPIKey); err != nil {
 		a.logger.Error("Failed setting nft storage api key",
+			slog.Any("error", err))
+		return err
+	}
+	return nil
+
+}
+
+func (a *App) SaveAuthorityStoreConfigVariables(authorityAPIKey string, authorityRemoteAddress string) error {
+	//
+	// STEP 1:
+	// Validation.
+	//
+
+	e := make(map[string]string)
+	if authorityAPIKey == "" {
+		e["authorityAPIKey"] = "missing value"
+	}
+	if authorityRemoteAddress == "" {
+		e["authorityRemoteAddress"] = "missing value"
+	}
+	if len(e) != 0 {
+		// If any fields are missing, log an error and return a bad request error.
+		a.logger.Warn("Failed validating",
+			slog.Any("error", e))
+		return httperror.NewForBadRequest(&e)
+	}
+
+	// STEP 2:
+	// Save to preferences.
+	//
+
+	if err := a.SetAuthorityAddress(authorityRemoteAddress); err != nil {
+		a.logger.Error("Failed setting authority remote address",
+			slog.Any("error", err))
+		return err
+	}
+	if err := a.SetAuthorityAPIKey(authorityAPIKey); err != nil {
+		a.logger.Error("Failed setting authority api key",
 			slog.Any("error", err))
 		return err
 	}

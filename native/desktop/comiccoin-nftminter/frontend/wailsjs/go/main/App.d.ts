@@ -16,9 +16,13 @@ export function GetNFTStorageAddressFromPreferences():Promise<string>;
 
 export function GetPreferences():Promise<main.Preferences>;
 
+export function SaveAuthorityStoreConfigVariables(arg1:string,arg2:string):Promise<void>;
+
 export function SaveDataDirectory(arg1:string):Promise<void>;
 
 export function SaveNFTStoreConfigVariables(arg1:string,arg2:string):Promise<void>;
+
+export function SetAuthorityAPIKey(arg1:string):Promise<void>;
 
 export function SetAuthorityAddress(arg1:string):Promise<void>;
 

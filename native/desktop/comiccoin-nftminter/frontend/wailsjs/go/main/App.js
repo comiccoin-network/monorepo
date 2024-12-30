@@ -30,12 +30,20 @@ export function GetPreferences() {
   return window['go']['main']['App']['GetPreferences']();
 }
 
+export function SaveAuthorityStoreConfigVariables(arg1, arg2) {
+  return window['go']['main']['App']['SaveAuthorityStoreConfigVariables'](arg1, arg2);
+}
+
 export function SaveDataDirectory(arg1) {
   return window['go']['main']['App']['SaveDataDirectory'](arg1);
 }
 
 export function SaveNFTStoreConfigVariables(arg1, arg2) {
   return window['go']['main']['App']['SaveNFTStoreConfigVariables'](arg1, arg2);
+}
+
+export function SetAuthorityAPIKey(arg1) {
+  return window['go']['main']['App']['SetAuthorityAPIKey'](arg1);
 }
 
 export function SetAuthorityAddress(arg1) {
