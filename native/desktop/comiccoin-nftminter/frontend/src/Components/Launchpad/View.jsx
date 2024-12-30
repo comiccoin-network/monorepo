@@ -7,7 +7,7 @@ function LaunchpadView() {
     const [forceURL, setForceURL] = React.useState("");
 
     const handleStart = () => {
-        setForceURL("/upload-assets");
+        setForceURL("/mint-wizard/step-1");
     };
 
     if (forceURL !== "") {
@@ -46,8 +46,8 @@ function LaunchpadView() {
                             <div className="space-y-2 text-gray-600">
                                 <p className="text-sm">During this process, you will:</p>
                                 <ul className="list-disc list-inside space-y-1 text-sm ml-4">
-                                    <li>Upload your NFT assets</li>
                                     <li>Select the destination wallet</li>
+                                    <li>Upload your NFT assets</li>
                                     <li>Review your submission</li>
                                     <li>Confirm and mint your NFT</li>
                                 </ul>

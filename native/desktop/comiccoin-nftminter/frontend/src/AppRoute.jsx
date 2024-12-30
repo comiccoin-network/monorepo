@@ -13,6 +13,8 @@ import StartupView from "./Components/OnAppStart/StartupView";
 import SetupNFTStorageView from "./Components/OnAppStart/SetupNFTStorageView";
 import SetupAuthorityView from "./Components/OnAppStart/SetupAuthorityView";
 import LaunchpadView from "./Components/Launchpad/View";
+import MintingWizardStep1View from "./Components/MintingWizard/Step1View";
+
 
 function AppRoute() {
   return (
@@ -45,6 +47,11 @@ function AppRoute() {
             <Route
               path="/launchpad"
               element={<LaunchpadView />}
+              exact
+            />
+            <Route
+              path="/mint-wizard/step-1"
+              element={<MintingWizardStep1View />}
               exact
             />
             <Route path="*" element={<NotFoundErrorView />} />
