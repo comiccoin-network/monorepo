@@ -157,3 +157,11 @@ func (pref *Preferences) SetAuthorityAPIKey(apiKey string) error {
 func (pref *Preferences) GetFilePathOfPreferencesFile() string {
 	return FilePathPreferences
 }
+
+func (pref *Preferences) GetDefaultDataDirectory() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalf("failed get home dir: %v\n", err)
+	}
+	return filepath.Join(homeDir, "ComicCoinNFTStorage")
+}

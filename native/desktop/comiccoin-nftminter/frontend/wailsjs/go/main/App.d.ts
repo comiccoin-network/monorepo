@@ -10,13 +10,19 @@ export function GetDefaultDataDirectory():Promise<string>;
 
 export function GetIsBlockhainNodeRunning():Promise<boolean>;
 
+export function GetNFTStorageAPIKeyFromPreferences():Promise<string>;
+
 export function GetNFTStorageAddressFromPreferences():Promise<string>;
 
 export function GetPreferences():Promise<main.Preferences>;
 
 export function SaveDataDirectory(arg1:string):Promise<void>;
 
+export function SaveNFTStoreConfigVariables(arg1:string,arg2:string):Promise<void>;
+
 export function SetAuthorityAddress(arg1:string):Promise<void>;
+
+export function SetNFTStorageAPIKey(arg1:string):Promise<void>;
 
 export function SetNFTStorageAddress(arg1:string):Promise<void>;
 

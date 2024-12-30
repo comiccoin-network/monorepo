@@ -18,6 +18,10 @@ export function GetIsBlockhainNodeRunning() {
   return window['go']['main']['App']['GetIsBlockhainNodeRunning']();
 }
 
+export function GetNFTStorageAPIKeyFromPreferences() {
+  return window['go']['main']['App']['GetNFTStorageAPIKeyFromPreferences']();
+}
+
 export function GetNFTStorageAddressFromPreferences() {
   return window['go']['main']['App']['GetNFTStorageAddressFromPreferences']();
 }
@@ -30,8 +34,16 @@ export function SaveDataDirectory(arg1) {
   return window['go']['main']['App']['SaveDataDirectory'](arg1);
 }
 
+export function SaveNFTStoreConfigVariables(arg1, arg2) {
+  return window['go']['main']['App']['SaveNFTStoreConfigVariables'](arg1, arg2);
+}
+
 export function SetAuthorityAddress(arg1) {
   return window['go']['main']['App']['SetAuthorityAddress'](arg1);
+}
+
+export function SetNFTStorageAPIKey(arg1) {
+  return window['go']['main']['App']['SetNFTStorageAPIKey'](arg1);
 }
 
 export function SetNFTStorageAddress(arg1) {

@@ -17,6 +17,10 @@ type App struct {
 	logger *slog.Logger
 
 	kmutex kmutexutil.KMutexProvider
+
+	tokenRepo         TokenRepository
+	nftAssetRepo      NFTAssetRepository
+	latestTokenIDRepo *LastestTokenIDRepo
 }
 
 // NewApp creates a new App application struct

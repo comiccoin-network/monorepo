@@ -39,3 +39,13 @@ tasks:
       - docker build -f Dockerfile --rm -t registry.digitalocean.com/ssp/comiccoin-authority:qa --platform linux/amd64 .
       - docker tag registry.digitalocean.com/ssp/comiccoin-authority:qa registry.digitalocean.com/ssp/comiccoin-authority:qa
       - docker push registry.digitalocean.com/ssp/comiccoin-authority:qa
+
+  clean:
+    cmds:
+      - go clean -cache
+      - go clean -modcache
+
+  osxlisten:
+    desc: "See what apps apps are running and listing to what ports. Aftwords use for example: kill -9 4097"
+    cmds:
+      - sudo lsof -nPi -sTCP:LISTEN

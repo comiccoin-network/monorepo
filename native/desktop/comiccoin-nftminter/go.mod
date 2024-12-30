@@ -4,6 +4,7 @@ go 1.23.0
 
 require (
 	github.com/comiccoin-network/monorepo/cloud/comiccoin-authority v0.0.0-20241226193633-7345b55282a3
+	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/wailsapp/wails/v2 v2.9.2
 )
 
@@ -36,6 +37,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/wailsapp/go-webview2 v1.0.16 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
+	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
 	golang.org/x/net v0.30.0 // indirect

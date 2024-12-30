@@ -4,8 +4,10 @@ import { useRecoilState } from "recoil";
 import { WalletMinimal, KeyRound, Info, ChevronRight, AlertCircle, XCircle } from 'lucide-react';
 
 import {
-    ShutdownApp,
-    // CreateWallet
+    GetNFTStorageAddressFromPreferences,
+    GetNFTStorageAPIKeyFromPreferences,
+    SaveNFTStoreConfigVariables,
+    ShutdownApp
 } from "../../../wailsjs/go/main/App";
 // import { currentOpenWalletAtAddressState } from "../../AppState";
 
@@ -20,14 +22,14 @@ function SetupNFTStorageView() {
 
     // const [dataDirectory] = useState("");
     const [forceURL, setForceURL] = useState("");
-
-    const [isLoading, setIsLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        remoteAddress: '',
-        apiKey: '',
-    });
     const [errors, setErrors] = useState({});
     const [showErrorBox, setShowErrorBox] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const [formData, setFormData] = useState({
+        remoteAddress: 'https://comiccoinnftstorage.com',
+        apiKey: '',
+    });
 
 
     ////
@@ -59,49 +61,44 @@ function SetupNFTStorageView() {
     // };
     //
     //
-    const handleSubmit = () => {
-    //     if (validateForm()) {
-    //       console.log('Form submitted');
-    //
-    //       // Update the GUI to let user know that the operation is under way.
-    //       setIsLoading(true);
-    //
-    //       CreateWallet(formData.password, formData.repeatPassword, formData.label).then((addressRes)=>{
-    //           console.log("address:", addressRes);
-    //           console.log("currentOpenWalletAtAddress:", currentOpenWalletAtAddress);
-    //           setCurrentOpenWalletAtAddress(addressRes);
-    //           setForceURL("/dashboard");
-    //       }).catch((errorJsonString)=>{
-    //           console.log("errRes:", errorJsonString);
-    //           const errorObject = JSON.parse(errorJsonString);
-    //           let err = {};
-    //           if (errorObject.wallet_password != "") {
-    //               err.password = errorObject.wallet_password;
-    //           }
-    //           if (errorObject.wallet_password_repeated != "") {
-    //               err.repeatPassword = errorObject.wallet_password_repeated;
-    //           }
-    //           setErrors(err);
-    //       }).finally(() => {
-    //           // this will be executed after then or catch has been executed
-    //           console.log("CreateWallet promise has been resolved or rejected");
-    //
-    //           // Update the GUI to let user know that the operation is completed.
-    //           setIsLoading(false);
-    //       });
-    //
-    //     } else {
-    //       window.scrollTo({ top: 0, behavior: 'smooth' });
-    //     }
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setErrors({});
+
+        // Update the GUI to let user know that the operation is under way.
+        setIsLoading(true);
+
+          SaveNFTStoreConfigVariables(formData.apiKey, formData.remoteAddress).then(()=>{
+              console.log("SaveNFTStoreConfigVariables: Success");
+              setForceURL("/setup-authority");
+          }).catch((errorJsonString)=>{
+              console.log("SaveNFTStoreConfigVariables: errRes", errorJsonString);
+              const errorObject = JSON.parse(errorJsonString);
+              let err = {};
+              if (errorObject.nftStoreAPIKey != "") {
+                  err.apiKey = errorObject.nftStoreAPIKey;
+              }
+              if (errorObject.nftStoreRemoteAddress != "") {
+                  err.remoteAddress = errorObject.nftStoreRemoteAddress;
+              }
+              setErrors(err);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+          }).finally(() => {
+              // this will be executed after then or catch has been executed
+              console.log("SaveNFTStoreConfigVariables promise has been resolved or rejected");
+
+              // Update the GUI to let user know that the operation is completed.
+              setIsLoading(false);
+          });
     };
 
     const handleInputChange = (e) => {
-    //     const { name, value } = e.target;
-    //     setFormData(prev => ({ ...prev, [name]: value }));
-    //     if (errors[name]) {
-    //       setErrors(prev => ({ ...prev, [name]: '' }));
-    //       setShowErrorBox(false);
-    //     }
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        if (errors[name]) {
+          setErrors(prev => ({ ...prev, [name]: '' }));
+          setShowErrorBox(false);
+        }
     };
 
 
@@ -164,21 +161,6 @@ function SetupNFTStorageView() {
           </div>
 
           <div className="p-6 space-y-8">
-            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl">
-              <div className="p-6 flex gap-4">
-                <Info className="w-5 h-5 text-purple-600 flex-shrink-0 mt-1" />
-                <div className="text-sm text-gray-700">
-                  <p className="mb-3">Choose a strong password that:</p>
-                  <ul className="list-disc pl-4 space-y-1">
-                    <li>Is at least 12 characters long</li>
-                    <li>Contains uppercase and lowercase letters</li>
-                    <li>Includes numbers and special characters</li>
-                    <li>Is not used for any other accounts</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
             <div className="space-y-6">
               <div className="space-y-4">
                 <label className="block">
@@ -223,6 +205,7 @@ function SetupNFTStorageView() {
                 </label>
               </div>
 
+             {/*
               <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-100 rounded-xl">
                 <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800">
@@ -230,6 +213,7 @@ function SetupNFTStorageView() {
                   you will not be able to access your wallet and your funds will be lost forever.
                 </p>
               </div>
+              */}
             </div>
 
             <div className="flex justify-end gap-4 pt-4">
@@ -239,13 +223,13 @@ function SetupNFTStorageView() {
                     ShutdownApp();
                 }}
               >
-                Cancel & Close Wallet
+                Cancel & Close App
               </button>
               <button
                 onClick={handleSubmit}
                 className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2"
               >
-                Submit
+                Save & Continue
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

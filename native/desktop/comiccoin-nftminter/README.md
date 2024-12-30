@@ -2,7 +2,7 @@
 
 **Project still under active development - use at your own risk**
 
-The purpose of this GUI application is provide the ComicCoin authority the ability to create NFT metadata (along with the digital assets associated with the NFT) and submit it to the IPFS network to be shared; in addition, submit the NFT metadata/assets to [`comiccoin-nftstorage`](../comiccoin-nftstorage) server to provide exclusive hosting of the said assets.
+The purpose of this GUI application is provide the ComicCoin authority the ability to create NFT metadata (along with the digital assets associated with the NFT) and submit it to the IPFS network to be shared; in addition, submit the NFT metadata/assets to [`comiccoin-nftminter`](../comiccoin-nftminter) server to provide exclusive hosting of the said assets.
 
 ## 👐 Installation
 
@@ -26,13 +26,13 @@ Follow these steps to setup the project locally on your development machine.
 3. Activate the golang workspace which is required.
 
     ```shell
-    go work use ./native/desktop/comiccoin-nftstorage
+    go work use ./native/desktop/comiccoin-nftminter
     ```
 
-4. Go into our `comiccoin-nftstorage` folder
+4. Go into our `comiccoin-nftminter` folder
 
     ```shell
-    cd ./native/desktop/comiccoin-nftstorage
+    cd ./native/desktop/comiccoin-nftminter
     ```
 
 5. Install our dependencies.
@@ -41,7 +41,7 @@ Follow these steps to setup the project locally on your development machine.
    go mod tidy
    ```
 
-6. Start the GUI application (in developer mode). Please note that you will need the **Remote Address** and **API Key** of the [NFT Asset Store servers](../comiccoin-nftstorage) you have concurrently running for this GUI application.
+6. Start the GUI application (in developer mode). Please note that you will need the **Remote Address** and **API Key** of the [NFT Asset Store servers](../comiccoin-nftminter) you have concurrently running for this GUI application.
 
    ```shell
    wails dev
