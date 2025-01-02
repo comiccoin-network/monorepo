@@ -21,6 +21,7 @@ function MintingWizardStep3View() {
     e.preventDefault();
     setIsLoading(true);
     // TODO: Add your blockchain submission logic here
+    setForceURL("/minting-wizard-step3-submitting"); // TODO: Change up.
     setIsLoading(false);
   };
 
