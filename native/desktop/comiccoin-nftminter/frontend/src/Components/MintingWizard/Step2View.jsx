@@ -19,21 +19,30 @@ import { nftState } from "../../AppState";
 import FormTokenMetadataAttributesField from "./FormTokenMetadataAttributesField.jsx";
 
 function MintingWizardStep2View() {
+  // Global State
+  const [nft, setNft] = useRecoilState(nftState);
+
+  ////
+  //// Component states.
+  ////
+
   const [forceURL, setForceURL] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   // Form fields
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [image, setImage] = useState("");
-  const [animation, setAnimation] = useState("");
-  const [youtubeURL, setYoutubeURL] = useState("");
-  const [externalURL, setExternalURL] = useState("");
-  const [attributes, setAttributes] = useState([]);
-  const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+  const [name, setName] = useState(nft ? nft.name : "");
+  const [description, setDescription] = useState(nft ? nft.description : "");
+  const [image, setImage] = useState(nft ? nft.image : "");
+  const [animation, setAnimation] = useState(nft ? nft.animation : "");
+  const [youtubeURL, setYoutubeURL] = useState(nft ? nft.youtubeURL : "");
+  const [externalURL, setExternalURL] = useState(nft ? nft.externalURL : "");
+  const [attributes, setAttributes] = useState(nft ? nft.attributes : []);
+  const [backgroundColor, setBackgroundColor] = useState(
+    nft ? nft.backgroundColor : "#ffffff",
+  );
 
-  const handleSubmit = (e) => {
+  const handleContinue = (e) => {
     e.preventDefault();
 
     // Reset the errors.
@@ -42,7 +51,7 @@ function MintingWizardStep2View() {
     // Update the GUI to let user know that the operation is under way.
     setIsLoading(true);
 
-    // Validation.
+    // STEP 1: Client side validation.
     let err = {};
     if (name === "") {
       err.name = "Name is required";
@@ -60,19 +69,32 @@ function MintingWizardStep2View() {
       err.backgroundColor = "Background colour is required";
     }
     if (Object.keys(err).length > 0) {
-      console.log("handleSubmit | errors detected", err);
+      console.log("handleContinue | errors detected", err);
       setIsLoading(false);
       setErrors(err);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
     }
 
-    return;
+    // STEP 2: Save state and redirect to next step.
+    console.log("handleContinue: Saving NFT...", updatedNFT);
+    let updatedNFT = { ...nft };
+    updatedNFT.name = name;
+    updatedNFT.description = description;
+    updatedNFT.image = image;
+    updatedNFT.animation = animation;
+    updatedNFT.backgroundColor = backgroundColor;
+    updatedNFT.attributes = attributes;
+    updatedNFT.youtubeURL = youtubeURL;
+    updatedNFT.externalURL = externalURL;
+    setNft(updatedNFT);
+    console.log("handleContinue: Done saving NFT:", updatedNFT);
 
-    // // Simulate API call
-    // setTimeout(() => {
-    //   setIsLoading(false);
-    //   setForceURL("/minting-wizard-step3");
-    // }, 1000);
+    // Add artificial delay.
+    setTimeout(() => {
+      setIsLoading(false);
+      setForceURL("/minting-wizard-step3");
+    }, 250);
   };
 
   if (forceURL !== "") {
@@ -330,7 +352,7 @@ function MintingWizardStep2View() {
                 Back
               </button>
               <button
-                onClick={handleSubmit}
+                onClick={handleContinue}
                 disabled={isLoading}
                 className={`px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               >

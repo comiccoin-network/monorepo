@@ -43,7 +43,6 @@ function MintingWizardStep1View() {
     setNft(updatedNFT);
     console.log("handleContinue: Done saving NFT.");
 
-    // TODO: Add additional wallet address validation if needed
     setForceURL("/minting-wizard-step2"); // Navigate to next step
   };
 

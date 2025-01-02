@@ -42,9 +42,21 @@ export const currentOpenWalletAtAddressState = atom({
   effects_UNSTABLE: [persistAtom],
 });
 
+export const DEFAULT_NFT_STATE = {
+  walletAddress: "",
+  name: "",
+  description: "",
+  image: "",
+  animation: "",
+  youtubeURL: "",
+  externalURL: "",
+  attributes: [],
+  backgroundColor: "#ffffff",
+};
+
 // Variable used store the NFT that the user is creating via 3-step wizard.
 export const nftState = atom({
   key: "nft",
-  default: null,
+  default: DEFAULT_NFT_STATE,
   effects_UNSTABLE: [persistAtom],
 });
