@@ -17,13 +17,14 @@ import (
 )
 
 type IPFSPinAddService struct {
-	config                 *config.Config
-	logger                 *slog.Logger
-	jwtProvider            jwt.Provider
-	passwordProvider       password.Provider
-	ipfsGetNodeIDUseCase   *usecase.IPFSGetNodeIDUseCase
-	ipfsPinAddUsecase      *usecase.IPFSPinAddUseCase
-	upsertPinObjectUseCase *usecase.UpsertPinObjectUseCase
+	config                   *config.Config
+	logger                   *slog.Logger
+	jwtProvider              jwt.Provider
+	passwordProvider         password.Provider
+	ipfsGetNodeIDUseCase     *usecase.IPFSGetNodeIDUseCase
+	pinObjectGetByCIDUseCase *usecase.PinObjectGetByCIDUseCase
+	ipfsPinAddUsecase        *usecase.IPFSPinAddUseCase
+	upsertPinObjectUseCase   *usecase.UpsertPinObjectUseCase
 }
 
 func NewIPFSPinAddService(
@@ -32,10 +33,11 @@ func NewIPFSPinAddService(
 	jwtp jwt.Provider,
 	passp password.Provider,
 	uc1 *usecase.IPFSGetNodeIDUseCase,
-	uc2 *usecase.IPFSPinAddUseCase,
-	uc3 *usecase.UpsertPinObjectUseCase,
+	uc2 *usecase.PinObjectGetByCIDUseCase,
+	uc3 *usecase.IPFSPinAddUseCase,
+	uc4 *usecase.UpsertPinObjectUseCase,
 ) *IPFSPinAddService {
-	return &IPFSPinAddService{cfg, logger, jwtp, passp, uc1, uc2, uc3}
+	return &IPFSPinAddService{cfg, logger, jwtp, passp, uc1, uc2, uc3, uc4}
 }
 
 type IPFSPinAddRequestIDO struct {
@@ -138,7 +140,8 @@ func (s *IPFSPinAddService) Execute(ctx context.Context, req *IPFSPinAddRequestI
 
 	//
 	// STEP 3:
-	// Submit to IPFS and get CID.
+	// Submit to IPFS and get CID. Note: IPFS takes duplicates and returns the
+	// same CID every-time, no additional file is saved.
 	//
 
 	cid, err := s.ipfsPinAddUsecase.Execute(req.Data)
@@ -146,6 +149,47 @@ func (s *IPFSPinAddService) Execute(ctx context.Context, req *IPFSPinAddRequestI
 		s.logger.Error("Failed pin adding to IPFS.",
 			slog.Any("error", err))
 		return nil, err
+	}
+
+	//
+	// STEP 4:
+	// Check to see if we already have this CID in our database and if we do
+	// then we can abort this function and simply return the existing pinned
+	// object.
+	//
+
+	existingPinObj, err := s.pinObjectGetByCIDUseCase.Execute(cid)
+	if err != nil {
+		s.logger.Error("Failed getting pinobject locally",
+			slog.Any("cid", cid),
+			slog.Any("error", err))
+		return nil, err
+	}
+	if existingPinObj != nil {
+		res := &IPFSPinAddResponseIDO{
+			RequestID: existingPinObj.RequestID,
+			Status:    existingPinObj.Status,
+			Created:   existingPinObj.Created,
+			Delegates: existingPinObj.Delegates,
+			Info:      existingPinObj.Info,
+			CID:       existingPinObj.CID,
+			Name:      existingPinObj.Name,
+			Origins:   existingPinObj.Origins,
+			Meta:      existingPinObj.Meta,
+		}
+
+		s.logger.Warn("Sending existing pinobj with OK response back",
+			slog.Any("RequestID", existingPinObj.RequestID),
+			slog.Any("Status", existingPinObj.Status),
+			slog.Any("Created", existingPinObj.Created),
+			slog.Any("Delegates", existingPinObj.Delegates),
+			slog.Any("Info", existingPinObj.Info),
+			slog.Any("CID", existingPinObj.CID),
+			slog.Any("Name", existingPinObj.Name),
+			slog.Any("Origins", existingPinObj.Origins),
+			slog.Any("Meta", existingPinObj.Meta))
+
+		return res, nil
 	}
 
 	//

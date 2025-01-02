@@ -1,14 +1,17 @@
 import {useState, useEffect} from 'react';
 import { Loader2 } from "lucide-react";
 import { useRecoilState } from "recoil";
+import { Navigate } from "react-router-dom";
 
 
-import { nftState } from "../../AppState";
+import { nftState, nftSubmissionErrorResponseState, nftSubmissionSuccessResponseState } from "../../AppState";
 import { CreateToken } from "../../../wailsjs/go/main/App";
 
 function MintingWizardSubmittingView() {
   // --- Global State ---
   const [nft] = useRecoilState(nftState);
+  const [nftSubmissionErrorResponse, setNftSubmissionErrorResponse] = useRecoilState(nftSubmissionErrorResponseState);
+  const [nftSubmissionSuccessResponse, setNftSubmissionSuccessResponse] = useRecoilState(nftSubmissionSuccessResponseState);
 
   // --- GUI States ---
   const [forceURL, setForceURL] = useState("");
@@ -33,12 +36,14 @@ function MintingWizardSubmittingView() {
       // Submit the `dataDirectory` value to our backend.
       CreateToken(nft.name, nft.description, nft.image, nft.animation, nft.youtubeURL, nft.externalURL, attributesJSONString, nft.backgroundColor).then( (resp) => {
           console.log("onExecuteSubmissionInBackground | Success response | result:", resp);
+          setNftSubmissionSuccessResponse(resp);
           setForceURL("/minting-wizard-step3-success");
       }).catch((errorJsonString)=>{
           console.log("onExecuteSubmissionInBackground | Error response | errRes:", errorJsonString);
           let err = {};
           try {
               const errorObject = JSON.parse(errorJsonString);
+              console.log("onExecuteSubmissionInBackground | errorObject:", errorObject);
               if (errorObject.name != "") {
                   err.name = errorObject.name;
               }
@@ -58,8 +63,10 @@ function MintingWizardSubmittingView() {
               console.log("onExecuteSubmissionInBackground | CreateToken:err:", e);
               err.message = errorJsonString;
           } finally {
+              console.log("onExecuteSubmissionInBackground | err:", err);
               setErrors(err);
-              window.scrollTo(0, 0); // Start the page at the top of the page.
+              setNftSubmissionErrorResponse(err);
+              setForceURL("/minting-wizard-step3-error");
           }
       }).finally(() => {
           // this will be executed after then or catch has been executed
@@ -82,6 +89,10 @@ function MintingWizardSubmittingView() {
         mounted = false;
     };
   }, []);
+
+  if (forceURL !== "") {
+    return <Navigate to={forceURL} />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center">

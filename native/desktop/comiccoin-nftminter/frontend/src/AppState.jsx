@@ -60,3 +60,16 @@ export const nftState = atom({
   default: DEFAULT_NFT_STATE,
   effects_UNSTABLE: [persistAtom],
 });
+
+
+export const nftSubmissionErrorResponseState = atom({
+  key: "nftSubmissionErrorResponse",
+  default: DEFAULT_NFT_STATE,
+  effects_UNSTABLE: [persistAtom],
+});
+
+export const nftSubmissionSuccessResponseState = atom({
+  key: "nftSubmissionSuccessResponse",
+  default: DEFAULT_NFT_STATE,
+  effects_UNSTABLE: [persistAtom],
+});

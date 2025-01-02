@@ -30,8 +30,10 @@ func NewApp() *App {
 	logger := logger.NewProvider()
 	kmutex := kmutexutil.NewKMutexProvider()
 	return &App{
-		logger: logger,
-		kmutex: kmutex,
+		logger:       logger,
+		kmutex:       kmutex,
+		tokenRepo:    nil,
+		nftAssetRepo: nil,
 	}
 }
 
@@ -62,22 +64,40 @@ func (a *App) startup(ctx context.Context) {
 	// preferences.RunFatalIfHasAnyMissingFields() // ONLY USE IN CLI, NOT GUI WALLET!
 
 	nftStorageAddress := preferences.NFTStorageAddress
+	nftStorageAPIKey := preferences.NFTStorageAPIKey
 	chainID := preferences.ChainID
 	authorityAddress := preferences.AuthorityAddress
+	authorityAPIKey := preferences.AuthorityAPIKey
 
-	_ = nftStorageAddress
-	_ = chainID
-	_ = authorityAddress
+	a.logger.Debug("Preferences load via local environment variables file",
+		slog.Any("nftStorageAddress", nftStorageAddress),
+		slog.Any("nftStorageAddress", nftStorageAPIKey),
+		slog.Any("chainID", chainID),
+		slog.Any("authorityAddress", authorityAddress),
+		slog.Any("authorityAPIKey", authorityAPIKey),
+	)
 
-	blockchainStateDTORepoConfig := auth_repo.NewBlockchainStateDTOConfigurationProvider(authorityAddress)
-	blockchainStateDTORepo := auth_repo.NewBlockchainStateDTORepo(
-		blockchainStateDTORepoConfig,
-		a.logger)
+	if a.getBlockchainStateDTOFromBlockchainAuthorityUseCase == nil {
+		blockchainStateDTORepoConfig := auth_repo.NewBlockchainStateDTOConfigurationProvider(authorityAddress)
+		blockchainStateDTORepo := auth_repo.NewBlockchainStateDTORepo(
+			blockchainStateDTORepoConfig,
+			a.logger)
 
-	// Blockchain State DTO
-	a.getBlockchainStateDTOFromBlockchainAuthorityUseCase = auth_usecase.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
-		a.logger,
-		blockchainStateDTORepo)
+		// Blockchain State DTO
+		a.getBlockchainStateDTOFromBlockchainAuthorityUseCase = auth_usecase.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
+			a.logger,
+			blockchainStateDTORepo)
+
+		a.logger.Debug("getBlockchainStateDTOFromBlockchainAuthorityUseCase ready")
+	}
+
+	if a.nftAssetRepo == nil {
+		nftAssetRepoConfig := NewNFTAssetRepoConfigurationProvider(nftStorageAddress, nftStorageAPIKey)
+		nftAssetRepo := NewNFTAssetRepo(nftAssetRepoConfig, a.logger)
+		a.nftAssetRepo = nftAssetRepo
+		a.logger.Debug("nftAssetRepo ready")
+	}
+
 }
 
 func (a *App) shutdown(ctx context.Context) {

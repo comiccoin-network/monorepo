@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
@@ -222,13 +222,6 @@ func (a *App) CreateToken(
 		slog.Any("latest_token_id", latestTokenID),
 		slog.String("new_token_id", tokenID.String()),
 	)
-
-	//TODO: CONTINUE THIS WHEN READY.
-	errHalt := errors.New("Halt by programmer")
-	a.logger.Error("Failed",
-		slog.Any("error", errHalt))
-	return nil, errHalt
-
 	// Get our data directory from our app preferences.
 	dataDir := preferences.DataDirectory
 
@@ -295,7 +288,7 @@ func (a *App) CreateToken(
 		return nil, err
 	}
 
-	metadataFilepath := filepath.Join(dataDir, "token_assets", fmt.Sprintf("%v", tokenID), "metadata.json")
+	metadataFilepath := filepath.Join(dataDir, "token_assets", fmt.Sprintf("%v", tokenID.String()), "metadata.json")
 
 	// Create the directories recursively.
 	if err := os.MkdirAll(filepath.Dir(metadataFilepath), 0755); err != nil {
@@ -321,7 +314,7 @@ func (a *App) CreateToken(
 	imageFilename := filepath.Base(image)
 
 	// Create new filepath of where to consolidate our file to.
-	consolidatedImage := filepath.Join(dataDir, "token_assets", fmt.Sprintf("%v", tokenID), imageFilename)
+	consolidatedImage := filepath.Join(dataDir, "token_assets", fmt.Sprintf("%v", tokenID.String()), imageFilename)
 
 	// Create the directories recursively.
 	if err := os.MkdirAll(filepath.Dir(consolidatedImage), 0755); err != nil {
@@ -332,12 +325,19 @@ func (a *App) CreateToken(
 	}
 
 	if err := CopyFile(image, consolidatedImage); err != nil {
-		a.logger.Error("Failed consolidating image.",
-			slog.Any("tokenID", tokenID),
-			slog.Any("dataDir", dataDir),
-			slog.Any("consolidatedImage", consolidatedImage),
-			slog.Any("error", err))
-		return nil, err
+		if strings.Contains(err.Error(), "destination file already exists") {
+			a.logger.Debug("Skipping consolidating image because destination file already exists.",
+				slog.String("tokenID", tokenID.String()),
+				slog.Any("dataDir", dataDir),
+				slog.Any("consolidatedImage", consolidatedImage))
+		} else {
+			a.logger.Error("Failed consolidating image.",
+				slog.String("tokenID", tokenID.String()),
+				slog.Any("dataDir", dataDir),
+				slog.Any("consolidatedImage", consolidatedImage),
+				slog.Any("error", err))
+			return nil, err
+		}
 	}
 
 	//
@@ -348,7 +348,7 @@ func (a *App) CreateToken(
 	animationFilename := filepath.Base(animation)
 
 	// Create new filepath of where to consolidate our file to.
-	consolidatedAnimation := filepath.Join(dataDir, "token_assets", fmt.Sprintf("%v", tokenID), animationFilename)
+	consolidatedAnimation := filepath.Join(dataDir, "token_assets", fmt.Sprintf("%v", tokenID.String()), animationFilename)
 
 	// Create the directories recursively.
 	if err := os.MkdirAll(filepath.Dir(consolidatedAnimation), 0755); err != nil {
@@ -359,12 +359,19 @@ func (a *App) CreateToken(
 	}
 
 	if err := CopyFile(animation, consolidatedAnimation); err != nil {
-		a.logger.Error("Failed consolidating animation.",
-			slog.Any("tokenID", tokenID),
-			slog.Any("dataDir", dataDir),
-			slog.Any("consolidatedImage", consolidatedImage),
-			slog.Any("error", err))
-		return nil, err
+		if strings.Contains(err.Error(), "destination file already exists") {
+			a.logger.Debug("Skipping consolidating animation because destination file already exists.",
+				slog.String("tokenID", tokenID.String()),
+				slog.Any("dataDir", dataDir),
+				slog.Any("consolidatedAnimation", consolidatedAnimation))
+		} else {
+			a.logger.Error("Failed consolidating animation.",
+				slog.String("tokenID", tokenID.String()),
+				slog.Any("dataDir", dataDir),
+				slog.Any("consolidatedAnimation", consolidatedAnimation),
+				slog.Any("error", err))
+			return nil, err
+		}
 	}
 
 	//
@@ -376,13 +383,13 @@ func (a *App) CreateToken(
 	if err != nil {
 		// If an error occurs, log an error and return an error.
 		a.logger.Error("Failed adding metadata to IPFs.",
-			slog.Any("token_id", tokenID),
+			slog.String("tokenID", tokenID.String()),
 			slog.Any("filepath", metadataFilepath),
 			slog.Any("error", err))
 		return nil, err
 	}
 	a.logger.Debug("Metadata uploaded to ipfs.",
-		slog.Any("token_id", tokenID),
+		slog.String("tokenID", tokenID.String()),
 		slog.Any("local", metadataFilepath),
 		slog.Any("cid", metadataCID))
 
@@ -398,12 +405,7 @@ func (a *App) CreateToken(
 		Timestamp:   uint64(time.Now().UTC().UnixMilli()),
 	}
 
-	if err := a.tokenRepo.Upsert(token); err != nil {
-		// If an error occurs, log an error and return an error.
-		a.logger.Error("Failed save to database the new token.",
-			slog.Any("error", err))
-		return nil, err
-	}
+	//TODO: Send NFT to wallet address via Blockchain Authority.
 
 	return token, nil
 }

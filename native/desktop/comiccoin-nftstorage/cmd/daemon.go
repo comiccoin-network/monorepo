@@ -117,6 +117,7 @@ func doDaemonCmd() {
 		jwtp,
 		passp,
 		ipfsGetNodeIDUseCase,
+		pinObjectGetByCIDUseCase,
 		ipfsPinAddUsecase,
 		upsertPinObjectUseCase,
 	)

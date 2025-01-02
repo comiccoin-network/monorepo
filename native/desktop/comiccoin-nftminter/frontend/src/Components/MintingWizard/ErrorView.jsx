@@ -1,10 +1,39 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Navigate } from "react-router-dom";
+import { useRecoilState } from "recoil";
 import { XCircle, RotateCcw, ChevronLeft } from "lucide-react";
 
-function MintingWizardErrorView() {
-  const navigate = useNavigate();
+import { nftState, nftSubmissionErrorResponseState, DEFAULT_NFT_STATE } from "../../AppState";
 
+
+function MintingWizardErrorView() {
+  // --- Global State ---
+  const [nft, setNft] = useRecoilState(nftState);
+  const [nftSubmissionErrorResponse, setNftSubmissionErrorResponse] = useRecoilState(nftSubmissionErrorResponseState);
+
+  // For debugging purposes only.
+  console.log("nft:", nft);
+  console.log("nftSubmissionErrorResponse:", nftSubmissionErrorResponse);
+
+  // --- GUI States ---
+  const [forceURL, setForceURL] = useState("");
+
+  const onNewMintButtonClick = () => {
+      console.log("onNewMintButtonClick | Starting...");
+
+      // Reset the NFT to empty state.
+      setNft(DEFAULT_NFT_STATE);
+      setNftSubmissionErrorResponse(DEFAULT_NFT_STATE);
+
+      console.log("onNewMintButtonClick | Redirecting shortly...");
+      setForceURL("/launchpad");
+  }
+
+  if (forceURL !== "") {
+    return <Navigate to={forceURL} />;
+  }
+
+  // Render the GUI to the user.
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-lg mx-auto px-6">
@@ -29,9 +58,9 @@ function MintingWizardErrorView() {
               </div>
               <div className="text-sm text-red-700">
                 <ul className="space-y-1 text-left list-disc list-inside">
-                  <li>Invalid wallet address format</li>
-                  <li>Image file size exceeds maximum limit (50MB)</li>
-                  <li>Missing required field: Description</li>
+                  {Object.entries(nftSubmissionErrorResponse).map(([key, value]) => (
+                    <li key={key}>{key}: {value}</li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -44,7 +73,7 @@ function MintingWizardErrorView() {
 
           <div className="px-6 pb-6 flex gap-3">
             <button
-              onClick={() => navigate("/minting-wizard-step3")}
+              onClick={() => setForceURL("/minting-wizard-step3")}
               className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -52,7 +81,7 @@ function MintingWizardErrorView() {
             </button>
 
             <button
-              onClick={() => navigate("/minting-wizard-step1")}
+              onClick={onNewMintButtonClick}
               className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
             >
               <RotateCcw className="w-4 h-4" />
