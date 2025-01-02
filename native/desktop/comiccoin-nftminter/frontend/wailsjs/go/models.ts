@@ -103,7 +103,8 @@ export namespace main {
 		}
 	}
 	export class Token {
-	    token_id: number;
+	    // Go type: big
+	    token_id?: any;
 	    metadata_uri: string;
 	    metadata?: TokenMetadata;
 	    timestamp: number;
@@ -114,7 +115,7 @@ export namespace main {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.token_id = source["token_id"];
+	        this.token_id = this.convertValues(source["token_id"], null);
 	        this.metadata_uri = source["metadata_uri"];
 	        this.metadata = this.convertValues(source["metadata"], TokenMetadata);
 	        this.timestamp = source["timestamp"];

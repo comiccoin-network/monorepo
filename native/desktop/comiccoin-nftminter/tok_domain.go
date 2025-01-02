@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/fxamacker/cbor/v2"
 )
 
 type Token struct {
-	TokenID     uint64         `json:"token_id"`
+	TokenID     *big.Int       `json:"token_id"`
 	MetadataURI string         `json:"metadata_uri"`
 	Metadata    *TokenMetadata `json:"metadata"`
 	Timestamp   uint64         `json:"timestamp"` // The datetime of when this token was created.

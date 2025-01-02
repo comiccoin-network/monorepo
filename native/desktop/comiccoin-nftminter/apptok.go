@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"log/slog"
+	"math/big"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -14,6 +15,8 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+
+	auth_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
 // GetTokens returns a list of all Tokens stored in the repository.
@@ -186,29 +189,47 @@ func (a *App) CreateToken(
 		}
 	}
 
+	//
+	// STEP 3: Get related data.
+	//
+
+	preferences := PreferencesInstance()
+	blockchainStateDTO, err := a.getBlockchainStateDTOFromBlockchainAuthorityUseCase.Execute(a.ctx, preferences.ChainID)
+	if err != nil {
+		a.logger.Error("Failed getting latest blockchain state from the Authority",
+			slog.Any("error", err))
+		return nil, err
+	}
+	a.logger.Debug("Returned from authority latest blockchain state",
+		slog.Any("dto", blockchainStateDTO),
+	)
+	if blockchainStateDTO == nil {
+		err := fmt.Errorf("No blockchain state received from ChainID: %v", preferences.ChainID)
+		a.logger.Error("Failed getting latest blockchain state from the Authority",
+			slog.Any("error", err))
+		return nil, err
+	}
+
+	blockchainState := auth_domain.BlockchainStateDTOToBlockchainState(blockchainStateDTO)
+	latestTokenID := blockchainState.GetLatestTokenID()
+
+	// Please note that in ComicCoin genesis block, we already have a token set
+	// at zero. Therefore this increment will work well.
+	var tokenID big.Int
+	tokenID.Add(big.NewInt(1), latestTokenID)
+
+	a.logger.Debug("Returned latest token from the Authority",
+		slog.Any("latest_token_id", latestTokenID),
+		slog.String("new_token_id", tokenID.String()),
+	)
+
 	//TODO: CONTINUE THIS WHEN READY.
 	errHalt := errors.New("Halt by programmer")
 	a.logger.Error("Failed",
 		slog.Any("error", errHalt))
 	return nil, errHalt
 
-	//
-	// STEP 3: Get related data.
-	//
-
-	tokenID, err := a.latestTokenIDRepo.Get()
-	if err != nil {
-		a.logger.Error("Failed getting latest token ID.",
-			slog.Any("error", err))
-		return nil, err
-	}
-
-	// Please note that in ComicCoin genesis block, we already have a token set
-	// at zero. Therefore this increment will work well.
-	tokenID++
-
 	// Get our data directory from our app preferences.
-	preferences := PreferencesInstance()
 	dataDir := preferences.DataDirectory
 
 	//
@@ -371,7 +392,7 @@ func (a *App) CreateToken(
 	//
 
 	token := &Token{
-		TokenID:     tokenID,
+		TokenID:     &tokenID,
 		MetadataURI: fmt.Sprintf("ipfs://%v", metadataCID),
 		Metadata:    metadata,
 		Timestamp:   uint64(time.Now().UTC().UnixMilli()),
@@ -380,13 +401,6 @@ func (a *App) CreateToken(
 	if err := a.tokenRepo.Upsert(token); err != nil {
 		// If an error occurs, log an error and return an error.
 		a.logger.Error("Failed save to database the new token.",
-			slog.Any("error", err))
-		return nil, err
-	}
-
-	if err := a.latestTokenIDRepo.Set(tokenID); err != nil {
-		// If an error occurs, log an error and return an error.
-		a.logger.Error("Failed save to database the latest token ID.",
 			slog.Any("error", err))
 		return nil, err
 	}

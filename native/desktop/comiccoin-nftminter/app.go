@@ -6,6 +6,8 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
+	auth_repo "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
+	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 )
 
 // App struct
@@ -18,9 +20,9 @@ type App struct {
 
 	kmutex kmutexutil.KMutexProvider
 
-	tokenRepo         TokenRepository
-	nftAssetRepo      NFTAssetRepository
-	latestTokenIDRepo *LastestTokenIDRepo
+	tokenRepo                                           TokenRepository
+	nftAssetRepo                                        NFTAssetRepository
+	getBlockchainStateDTOFromBlockchainAuthorityUseCase *auth_usecase.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
 }
 
 // NewApp creates a new App application struct
@@ -66,6 +68,16 @@ func (a *App) startup(ctx context.Context) {
 	_ = nftStorageAddress
 	_ = chainID
 	_ = authorityAddress
+
+	blockchainStateDTORepoConfig := auth_repo.NewBlockchainStateDTOConfigurationProvider(authorityAddress)
+	blockchainStateDTORepo := auth_repo.NewBlockchainStateDTORepo(
+		blockchainStateDTORepoConfig,
+		a.logger)
+
+	// Blockchain State DTO
+	a.getBlockchainStateDTOFromBlockchainAuthorityUseCase = auth_usecase.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
+		a.logger,
+		blockchainStateDTORepo)
 }
 
 func (a *App) shutdown(ctx context.Context) {
