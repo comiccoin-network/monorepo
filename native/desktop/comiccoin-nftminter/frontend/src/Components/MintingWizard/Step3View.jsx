@@ -147,13 +147,37 @@ function MintingWizardStep3View() {
                   <dd className="text-sm text-gray-900 col-span-2">{nft.description}</dd>
                 </div>
                 <div className="px-6 py-4 grid grid-cols-3 gap-4">
-                  <dt className="text-sm font-medium text-gray-500">Image File</dt>
-                  <dd className="text-sm text-gray-900 col-span-2 font-mono">{nft.image}</dd>
-                </div>
-                <div className="px-6 py-4 grid grid-cols-3 gap-4">
-                  <dt className="text-sm font-medium text-gray-500">Animation File</dt>
-                  <dd className="text-sm text-gray-900 col-span-2 font-mono">{nft.animation}</dd>
-                </div>
+                 <dt className="text-sm font-medium text-gray-500">Image File</dt>
+                 <dd className="text-sm text-gray-900 col-span-2 font-mono">
+                   <div className="flex items-center">
+                     <div className="flex-shrink-0 text-gray-400">.../{String(nft.image).split('/').slice(-1)}</div>
+                     {/*}
+                     <button
+                       onClick={() => alert(nft.image)}
+                       className="ml-2 text-xs text-purple-600 hover:text-purple-700"
+                     >
+                       View Full Path
+                     </button>
+                     */}
+                   </div>
+                 </dd>
+               </div>
+               <div className="px-6 py-4 grid grid-cols-3 gap-4">
+                 <dt className="text-sm font-medium text-gray-500">Animation File</dt>
+                 <dd className="text-sm text-gray-900 col-span-2 font-mono">
+                   <div className="flex items-center">
+                     <div className="flex-shrink-0 text-gray-400">.../{String(nft.animation).split('/').slice(-1)}</div>
+                     {/*
+                     <button
+                       onClick={() => alert(nft.animation)}
+                       className="ml-2 text-xs text-purple-600 hover:text-purple-700"
+                     >
+                       View Full Path
+                     </button>
+                     */}
+                   </div>
+                 </dd>
+               </div>
                 <div className="px-6 py-4 grid grid-cols-3 gap-4">
                   <dt className="text-sm font-medium text-gray-500">YouTube URL</dt>
                   <dd className="text-sm text-gray-900 col-span-2">{nft.youtubeURL || '-'}</dd>
