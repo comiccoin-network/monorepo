@@ -77,7 +77,7 @@ function MintingWizardStep2View() {
     }
 
     // STEP 2: Save state and redirect to next step.
-    console.log("handleContinue: Saving NFT...", updatedNFT);
+    console.log("handleContinue: Saving NFT...", nft);
     let updatedNFT = { ...nft };
     updatedNFT.name = name;
     updatedNFT.description = description;
@@ -90,11 +90,9 @@ function MintingWizardStep2View() {
     setNft(updatedNFT);
     console.log("handleContinue: Done saving NFT:", updatedNFT);
 
-    // Add artificial delay.
-    setTimeout(() => {
-      setIsLoading(false);
-      setForceURL("/minting-wizard-step3");
-    }, 250);
+    console.log("handleContinue: Will be redirecting shortly...");
+    setIsLoading(false);
+    setForceURL("/minting-wizard-step3");
   };
 
   if (forceURL !== "") {
@@ -246,7 +244,13 @@ function MintingWizardStep2View() {
                     disabled
                   />
                   <button
-                    onClick={() => {}}
+                    onClick={(e) =>
+                      GetImageFilePathFromDialog().then((imageRes) => {
+                        if (imageRes !== "") {
+                          setImage(imageRes);
+                        }
+                      })
+                    }
                     className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors flex items-center gap-2"
                   >
                     <MoreHorizontal className="w-5 h-5" />
@@ -280,7 +284,13 @@ function MintingWizardStep2View() {
                     disabled
                   />
                   <button
-                    onClick={() => {}}
+                    onClick={(e) =>
+                      GetVideoFilePathFromDialog().then((animationRes) => {
+                        if (animationRes !== "") {
+                          setAnimation(animationRes);
+                        }
+                      })
+                    }
                     className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors flex items-center gap-2"
                   >
                     <MoreHorizontal className="w-5 h-5" />
