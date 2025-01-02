@@ -17,6 +17,7 @@ import MintingWizardStep1View from "./Components/MintingWizard/Step1View";
 import MintingWizardStep2View from "./Components/MintingWizard/Step2View";
 import MintingWizardStep3View from "./Components/MintingWizard/Step3View";
 import MintingWizardSubmittingView from "./Components/MintingWizard/SubmittingView";
+import MintingWizardSuccessView from "./Components/MintingWizard/SuccessView";
 
 
 function AppRoute() {
@@ -70,6 +71,11 @@ function AppRoute() {
             <Route
               path="/minting-wizard-step3-submitting"
               element={<MintingWizardSubmittingView />}
+              exact
+            />
+            <Route
+              path="/minting-wizard-step3-success"
+              element={<MintingWizardSuccessView />}
               exact
             />
 
