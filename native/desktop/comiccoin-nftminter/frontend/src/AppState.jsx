@@ -41,3 +41,10 @@ export const currentOpenWalletAtAddressState = atom({
   default: "",
   effects_UNSTABLE: [persistAtom],
 });
+
+// Variable used store the NFT that the user is creating via 3-step wizard.
+export const nftState = atom({
+  key: "nft",
+  default: null,
+  effects_UNSTABLE: [persistAtom],
+});
