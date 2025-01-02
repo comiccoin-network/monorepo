@@ -16,6 +16,7 @@ import {
   GetVideoFilePathFromDialog,
 } from "../../../wailsjs/go/main/App";
 import { nftState } from "../../AppState";
+import FormTokenMetadataAttributesField from "./FormTokenMetadataAttributesField.jsx";
 
 function MintingWizardStep2View() {
   const [forceURL, setForceURL] = useState("");
@@ -57,9 +58,6 @@ function MintingWizardStep2View() {
     }
     if (backgroundColor === "") {
       err.backgroundColor = "Background colour is required";
-    }
-    if (attributes.length === 0) {
-      err.animation = "Attributes are required";
     }
     if (Object.keys(err).length > 0) {
       console.log("handleSubmit | errors detected", err);
@@ -318,6 +316,10 @@ function MintingWizardStep2View() {
             </div>
 
             {/* TODO: Add atributes GUI here. */}
+            <FormTokenMetadataAttributesField
+              data={attributes}
+              onDataChange={setAttributes}
+            />
 
             <div className="flex justify-between pt-4">
               <button
