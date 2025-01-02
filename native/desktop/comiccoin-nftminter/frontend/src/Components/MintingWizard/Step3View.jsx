@@ -111,7 +111,7 @@ function MintingWizardStep3View() {
                 </button>
               </div>
               <div className="mt-4 text-sm text-gray-600 font-mono bg-gray-50 p-3 rounded-lg">
-                {nft.destinationWallet}
+                {nft.walletAddress}
               </div>
             </div>
           </div>
