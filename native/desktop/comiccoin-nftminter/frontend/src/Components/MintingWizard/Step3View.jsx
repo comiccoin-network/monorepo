@@ -20,8 +20,10 @@ function MintingWizardStep3View() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Add your blockchain submission logic here
-    setForceURL("/minting-wizard-step3-submitting"); // TODO: Change up.
+
+    // Developers Note: By redirecting the user to a different page, that page will handle the submission logic.
+    setForceURL("/minting-wizard-step3-submitting");
+
     setIsLoading(false);
   };
 

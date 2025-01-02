@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -184,6 +185,12 @@ func (a *App) CreateToken(
 				slog.Any("value", atr.Value))
 		}
 	}
+
+	//TODO: CONTINUE THIS WHEN READY.
+	errHalt := errors.New("Halt by programmer")
+	a.logger.Error("Failed",
+		slog.Any("error", errHalt))
+	return nil, errHalt
 
 	//
 	// STEP 3: Get related data.
