@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from 'react';
 import { Navigate } from "react-router-dom";
 import { Rocket, AlertTriangle, XCircle, ChevronRight } from "lucide-react";
 import { useRecoilState } from "recoil";
@@ -23,6 +23,25 @@ function LaunchpadView() {
     // Redirect the user to the beginning of the NFT mintring wizard.
     setForceURL("/minting-wizard-step1");
   };
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (mounted) {
+        console.log("useEffect | nft:", nft);
+        if (nft) {
+            if (nft.walletAddress !== "") {
+                console.log("useEffect | Will be redirecting shortly...");
+                setForceURL("/minting-wizard-step3");
+            }
+        }
+        window.scrollTo(0, 0); // Start the page at the top of the page.
+    }
+
+    return () => {
+        mounted = false;
+    };
+  }, []);
 
   if (forceURL !== "") {
     return <Navigate to={forceURL} />;
