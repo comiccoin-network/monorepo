@@ -20,7 +20,7 @@ function LaunchpadView() {
 
     console.log("handleStart | Will redirect...");
 
-    // Redirect the user to the beginning of the NFT mintring wizard.
+    // Redirect the user to the beginning of the NFT minting wizard.
     setForceURL("/minting-wizard-step1");
   };
 
