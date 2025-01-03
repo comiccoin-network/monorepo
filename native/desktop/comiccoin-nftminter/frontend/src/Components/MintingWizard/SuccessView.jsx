@@ -32,7 +32,10 @@ function MintingWizardSuccessView() {
   };
 
   const handleExit = () => {
-    console.log("Exit application");
+    setNftSubmissionErrorResponse(DEFAULT_NFT_STATE);
+    setNftSubmissionSuccessResponse(DEFAULT_NFT_STATE);
+
+    console.log("Exiting application...");
     ShutdownApp();
   };
 
