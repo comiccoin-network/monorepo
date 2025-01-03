@@ -15,6 +15,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 )
 
 // ProofOfAuthorityConsensusMechanismService represents the service which
@@ -34,9 +35,9 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	upsertBlockchainStateUseCase               *usecase.UpsertBlockchainStateUseCase
 	getGenesisBlockDataUseCase                 *usecase.GetGenesisBlockDataUseCase
 	getBlockDataUseCase                        *usecase.GetBlockDataUseCase
-	getAccountUseCase                          *usecase.GetAccountUseCase
-	getAccountsHashStateUseCase                *usecase.GetAccountsHashStateUseCase
-	upsertAccountUseCase                       *usecase.UpsertAccountUseCase
+	getAccountUseCase                          *uc_account.GetAccountUseCase
+	getAccountsHashStateUseCase                *uc_account.GetAccountsHashStateUseCase
+	upsertAccountUseCase                       *uc_account.UpsertAccountUseCase
 	getTokenUseCase                            *usecase.GetTokenUseCase
 	getTokensHashStateUseCase                  *usecase.GetTokensHashStateUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase  *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase
@@ -57,9 +58,9 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc4 *usecase.UpsertBlockchainStateUseCase,
 	uc5 *usecase.GetGenesisBlockDataUseCase,
 	uc6 *usecase.GetBlockDataUseCase,
-	uc7 *usecase.GetAccountUseCase,
-	uc8 *usecase.GetAccountsHashStateUseCase,
-	uc9 *usecase.UpsertAccountUseCase,
+	uc7 *uc_account.GetAccountUseCase,
+	uc8 *uc_account.GetAccountsHashStateUseCase,
+	uc9 *uc_account.UpsertAccountUseCase,
 	uc10 *usecase.GetTokenUseCase,
 	uc11 *usecase.GetTokensHashStateUseCase,
 	uc12 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,

@@ -19,16 +19,17 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 )
 
 type CreateGenesisBlockDataService struct {
 	config                                    *config.Configuration
 	logger                                    *slog.Logger
 	getProofOfAuthorityPrivateKeyService      *GetProofOfAuthorityPrivateKeyService
-	getAccountUseCase                         *usecase.GetAccountUseCase
-	upsertAccountUseCase                      *usecase.UpsertAccountUseCase
+	getAccountUseCase                         *uc_account.GetAccountUseCase
+	upsertAccountUseCase                      *uc_account.UpsertAccountUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase
-	getAccountsHashStateUseCase               *usecase.GetAccountsHashStateUseCase
+	getAccountsHashStateUseCase               *uc_account.GetAccountsHashStateUseCase
 	getTokensHashStateUseCase                 *usecase.GetTokensHashStateUseCase
 	proofOfWorkUseCase                        *usecase.ProofOfWorkUseCase
 	upsertGenesisBlockDataUseCase             *usecase.UpsertGenesisBlockDataUseCase
@@ -41,10 +42,10 @@ func NewCreateGenesisBlockDataService(
 	config *config.Configuration,
 	logger *slog.Logger,
 	s1 *GetProofOfAuthorityPrivateKeyService,
-	uc1 *usecase.GetAccountUseCase,
-	uc2 *usecase.UpsertAccountUseCase,
+	uc1 *uc_account.GetAccountUseCase,
+	uc2 *uc_account.UpsertAccountUseCase,
 	uc3 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,
-	uc4 *usecase.GetAccountsHashStateUseCase,
+	uc4 *uc_account.GetAccountsHashStateUseCase,
 	uc5 *usecase.GetTokensHashStateUseCase,
 	uc6 *usecase.ProofOfWorkUseCase,
 	uc7 *usecase.UpsertGenesisBlockDataUseCase,

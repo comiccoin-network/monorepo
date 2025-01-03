@@ -17,6 +17,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 )
 
 func NewGenesistCmd() *cobra.Command {
@@ -78,23 +79,23 @@ func doRunNewAccount() {
 	_ = createWalletUseCase
 
 	// Account
-	createAccountUseCase := usecase.NewCreateAccountUseCase(
+	createAccountUseCase := uc_account.NewCreateAccountUseCase(
 		cfg,
 		logger,
 		accountRepo,
 	)
 	_ = createAccountUseCase
-	getAccountUseCase := usecase.NewGetAccountUseCase(
+	getAccountUseCase := uc_account.NewGetAccountUseCase(
 		cfg,
 		logger,
 		accountRepo,
 	)
-	upsertAccountUseCase := usecase.NewUpsertAccountUseCase(
+	upsertAccountUseCase := uc_account.NewUpsertAccountUseCase(
 		cfg,
 		logger,
 		accountRepo,
 	)
-	getAccountsHashStateUseCase := usecase.NewGetAccountsHashStateUseCase(
+	getAccountsHashStateUseCase := uc_account.NewGetAccountsHashStateUseCase(
 		cfg,
 		logger,
 		accountRepo,

@@ -11,6 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 )
 
 type CreateAccountService struct {
@@ -19,8 +20,8 @@ type CreateAccountService struct {
 	walletEncryptKeyUseCase *usecase.WalletEncryptKeyUseCase
 	walletDecryptKeyUseCase *usecase.WalletDecryptKeyUseCase
 	createWalletUseCase     *usecase.CreateWalletUseCase
-	createAccountUseCase    *usecase.CreateAccountUseCase
-	getAccountUseCase       *usecase.GetAccountUseCase
+	createAccountUseCase    *uc_account.CreateAccountUseCase
+	getAccountUseCase       *uc_account.GetAccountUseCase
 }
 
 func NewCreateAccountService(
@@ -29,8 +30,8 @@ func NewCreateAccountService(
 	uc1 *usecase.WalletEncryptKeyUseCase,
 	uc2 *usecase.WalletDecryptKeyUseCase,
 	uc3 *usecase.CreateWalletUseCase,
-	uc4 *usecase.CreateAccountUseCase,
-	uc5 *usecase.GetAccountUseCase,
+	uc4 *uc_account.CreateAccountUseCase,
+	uc5 *uc_account.GetAccountUseCase,
 ) *CreateAccountService {
 	return &CreateAccountService{cfg, logger, uc1, uc2, uc3, uc4, uc5}
 }

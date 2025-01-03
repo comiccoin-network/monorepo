@@ -15,12 +15,13 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 )
 
 type CoinTransferService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
-	getAccountUseCase               *usecase.GetAccountUseCase
+	getAccountUseCase               *uc_account.GetAccountUseCase
 	getWalletUseCase                *usecase.GetWalletUseCase
 	walletDecryptKeyUseCase         *usecase.WalletDecryptKeyUseCase
 	mempoolTransactionCreateUseCase *usecase.MempoolTransactionCreateUseCase
@@ -29,7 +30,7 @@ type CoinTransferService struct {
 func NewCoinTransferService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc1 *usecase.GetAccountUseCase,
+	uc1 *uc_account.GetAccountUseCase,
 	uc2 *usecase.GetWalletUseCase,
 	uc3 *usecase.WalletDecryptKeyUseCase,
 	uc4 *usecase.MempoolTransactionCreateUseCase,

@@ -9,17 +9,17 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 )
 
 type GetAccountService struct {
 	logger            *slog.Logger
-	getAccountUseCase *usecase.GetAccountUseCase
+	getAccountUseCase *uc_account.GetAccountUseCase
 }
 
 func NewGetAccountService(
 	logger *slog.Logger,
-	uc1 *usecase.GetAccountUseCase,
+	uc1 *uc_account.GetAccountUseCase,
 ) *GetAccountService {
 	return &GetAccountService{logger, uc1}
 }

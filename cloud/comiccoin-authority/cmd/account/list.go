@@ -15,6 +15,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 )
 
 func ListAccountCmd() *cobra.Command {
@@ -44,7 +45,7 @@ func doRunListAccount() {
 		logger,
 		walletRepo,
 	)
-	accountsFilterByAddressesUseCase := usecase.NewAccountsFilterByAddressesUseCase(
+	accountsFilterByAddressesUseCase := uc_account.NewAccountsFilterByAddressesUseCase(
 		logger,
 		accountRepo,
 	)

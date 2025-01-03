@@ -1,27 +1,32 @@
-package usecase
+package account
 
 import (
 	"context"
 	"log/slog"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/ethereum/go-ethereum/common"
 )
 
-type UpsertAccountUseCase struct {
+type CreateAccountUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AccountRepository
 }
 
-func NewUpsertAccountUseCase(config *config.Configuration, logger *slog.Logger, repo domain.AccountRepository) *UpsertAccountUseCase {
-	return &UpsertAccountUseCase{config, logger, repo}
+func NewCreateAccountUseCase(
+	config *config.Configuration,
+	logger *slog.Logger,
+	repo domain.AccountRepository,
+) *CreateAccountUseCase {
+	return &CreateAccountUseCase{config, logger, repo}
 }
 
-func (uc *UpsertAccountUseCase) Execute(ctx context.Context, address *common.Address, balance uint64, nonce *big.Int) error {
+func (uc *CreateAccountUseCase) Execute(ctx context.Context, address *common.Address) error {
 	//
 	// STEP 1: Validation.
 	//
@@ -31,20 +36,20 @@ func (uc *UpsertAccountUseCase) Execute(ctx context.Context, address *common.Add
 		e["address"] = "missing value"
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("Validation failed for upsert",
+		uc.logger.Warn("Failed creating new account",
 			slog.Any("error", e))
 		return httperror.NewForBadRequest(&e)
 	}
 
 	//
-	// STEP 2: Upsert our strucutre.
+	// STEP 2: Create our strucutre.
 	//
 
 	account := &domain.Account{
 		ChainID:    uc.config.Blockchain.ChainID,
 		Address:    address,
-		NonceBytes: nonce.Bytes(),
-		Balance:    balance,
+		NonceBytes: big.NewInt(0).Bytes(),
+		Balance:    0,
 	}
 
 	//

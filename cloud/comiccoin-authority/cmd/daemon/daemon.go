@@ -27,6 +27,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -135,17 +136,17 @@ func doRunDaemon() {
 	)
 
 	// Account
-	getAccountUseCase := usecase.NewGetAccountUseCase(
+	getAccountUseCase := uc_account.NewGetAccountUseCase(
 		cfg,
 		logger,
 		accountRepo,
 	)
-	getAccountsHashStateUseCase := usecase.NewGetAccountsHashStateUseCase(
+	getAccountsHashStateUseCase := uc_account.NewGetAccountsHashStateUseCase(
 		cfg,
 		logger,
 		accountRepo,
 	)
-	upsertAccountUseCase := usecase.NewUpsertAccountUseCase(
+	upsertAccountUseCase := uc_account.NewUpsertAccountUseCase(
 		cfg,
 		logger,
 		accountRepo,

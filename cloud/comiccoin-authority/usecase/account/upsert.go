@@ -1,4 +1,4 @@
-package usecase
+package account
 
 import (
 	"context"
@@ -11,23 +11,23 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type GetOrCreateAccountUseCase struct {
+type UpsertAccountUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AccountRepository
 }
 
-func NewGetOrCreateAccountUseCase(config *config.Configuration, logger *slog.Logger, repo domain.AccountRepository) *GetOrCreateAccountUseCase {
-	return &GetOrCreateAccountUseCase{config, logger, repo}
+func NewUpsertAccountUseCase(config *config.Configuration, logger *slog.Logger, repo domain.AccountRepository) *UpsertAccountUseCase {
+	return &UpsertAccountUseCase{config, logger, repo}
 }
 
-func (uc *GetOrCreateAccountUseCase) Execute(ctx context.Context, walletAddress *common.Address, balance uint64, nonce *big.Int) error {
+func (uc *UpsertAccountUseCase) Execute(ctx context.Context, address *common.Address, balance uint64, nonce *big.Int) error {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if walletAddress == nil {
+	if address == nil {
 		e["address"] = "missing value"
 	}
 	if len(e) != 0 {
@@ -37,25 +37,19 @@ func (uc *GetOrCreateAccountUseCase) Execute(ctx context.Context, walletAddress 
 	}
 
 	//
-	// STEP 2: Attempt to get from database.
-	//
-
-	// Skip error handling
-	getAcc, _ := uc.repo.GetByAddress(ctx, walletAddress)
-	if getAcc != nil {
-		return nil
-	}
-
-	//
-	// STEP 2: Create our record and save to database.
+	// STEP 2: Upsert our strucutre.
 	//
 
 	account := &domain.Account{
 		ChainID:    uc.config.Blockchain.ChainID,
-		Address:    walletAddress,
+		Address:    address,
 		NonceBytes: nonce.Bytes(),
 		Balance:    balance,
 	}
+
+	//
+	// STEP 3: Insert into database.
+	//
 
 	return uc.repo.Upsert(ctx, account)
 }
