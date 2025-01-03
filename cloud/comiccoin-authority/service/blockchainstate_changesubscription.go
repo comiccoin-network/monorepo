@@ -8,7 +8,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/memory/redis"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 )
 
 // BlockchainStateChangeSubscriptionService is responsible for subscribing to our
@@ -19,13 +19,13 @@ import (
 // then returning latest blockchain states.
 type BlockchainStateChangeSubscriptionService struct {
 	logger                          *slog.Logger
-	blockchainStateSubscribeUseCase *usecase.BlockchainStateSubscribeUseCase
+	blockchainStateSubscribeUseCase *uc_blockchainstate.BlockchainStateSubscribeUseCase
 	blockchainStateSubscriber       redis.RedisSubscriber
 }
 
 func NewBlockchainStateChangeSubscriptionService(
 	logger *slog.Logger,
-	uc1 *usecase.BlockchainStateSubscribeUseCase,
+	uc1 *uc_blockchainstate.BlockchainStateSubscribeUseCase,
 ) *BlockchainStateChangeSubscriptionService {
 	subscriber := uc1.Execute(context.Background())
 	return &BlockchainStateChangeSubscriptionService{logger, uc1, subscriber}

@@ -20,6 +20,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 )
 
 type CreateGenesisBlockDataService struct {
@@ -34,8 +35,8 @@ type CreateGenesisBlockDataService struct {
 	proofOfWorkUseCase                        *usecase.ProofOfWorkUseCase
 	upsertGenesisBlockDataUseCase             *usecase.UpsertGenesisBlockDataUseCase
 	upsertBlockDataUseCase                    *usecase.UpsertBlockDataUseCase
-	upsertBlockchainStateUseCase              *usecase.UpsertBlockchainStateUseCase
-	getBlockchainStateUseCase                 *usecase.GetBlockchainStateUseCase
+	upsertBlockchainStateUseCase              *uc_blockchainstate.UpsertBlockchainStateUseCase
+	getBlockchainStateUseCase                 *uc_blockchainstate.GetBlockchainStateUseCase
 }
 
 func NewCreateGenesisBlockDataService(
@@ -50,8 +51,8 @@ func NewCreateGenesisBlockDataService(
 	uc6 *usecase.ProofOfWorkUseCase,
 	uc7 *usecase.UpsertGenesisBlockDataUseCase,
 	uc8 *usecase.UpsertBlockDataUseCase,
-	uc9 *usecase.UpsertBlockchainStateUseCase,
-	uc10 *usecase.GetBlockchainStateUseCase,
+	uc9 *uc_blockchainstate.UpsertBlockchainStateUseCase,
+	uc10 *uc_blockchainstate.GetBlockchainStateUseCase,
 ) *CreateGenesisBlockDataService {
 	return &CreateGenesisBlockDataService{config, logger, s1, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10}
 }

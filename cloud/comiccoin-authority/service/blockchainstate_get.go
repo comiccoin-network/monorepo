@@ -8,19 +8,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 )
 
 type GetBlockchainStateService struct {
 	config                    *config.Configuration
 	logger                    *slog.Logger
-	getBlockchainStateUseCase *usecase.GetBlockchainStateUseCase
+	getBlockchainStateUseCase *uc_blockchainstate.GetBlockchainStateUseCase
 }
 
 func NewGetBlockchainStateService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *usecase.GetBlockchainStateUseCase,
+	uc *uc_blockchainstate.GetBlockchainStateUseCase,
 ) *GetBlockchainStateService {
 	return &GetBlockchainStateService{cfg, logger, uc}
 }

@@ -5,10 +5,11 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type TokenListByOwnerService struct {

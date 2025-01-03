@@ -28,6 +28,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -77,17 +78,17 @@ func doRunDaemon() {
 	)
 
 	// Blockchain State
-	getBlockchainStateUseCase := usecase.NewGetBlockchainStateUseCase(
+	getBlockchainStateUseCase := uc_blockchainstate.NewGetBlockchainStateUseCase(
 		cfg,
 		logger,
 		bcStateRepo,
 	)
-	upsertBlockchainStateUseCase := usecase.NewUpsertBlockchainStateUseCase(
+	upsertBlockchainStateUseCase := uc_blockchainstate.NewUpsertBlockchainStateUseCase(
 		cfg,
 		logger,
 		bcStateRepo,
 	)
-	blockchainStateUpdateDetectorUseCase := usecase.NewBlockchainStateUpdateDetectorUseCase(
+	blockchainStateUpdateDetectorUseCase := uc_blockchainstate.NewBlockchainStateUpdateDetectorUseCase(
 		cfg,
 		logger,
 		bcStateRepo,
@@ -96,11 +97,11 @@ func doRunDaemon() {
 		// When we are done, we will need to terminate our access to this resource.
 		blockchainStateUpdateDetectorUseCase.Terminate()
 	}()
-	blockchainStatePublishUseCase := usecase.NewBlockchainStatePublishUseCase(
+	blockchainStatePublishUseCase := uc_blockchainstate.NewBlockchainStatePublishUseCase(
 		logger,
 		cachep,
 	)
-	blockchainStateSubscribeUseCase := usecase.NewBlockchainStateSubscribeUseCase(
+	blockchainStateSubscribeUseCase := uc_blockchainstate.NewBlockchainStateSubscribeUseCase(
 		logger,
 		cachep,
 	)

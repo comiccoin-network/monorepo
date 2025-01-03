@@ -16,6 +16,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 )
 
 type TokenMintService struct {
@@ -24,8 +25,8 @@ type TokenMintService struct {
 	dmutex                               distributedmutex.Adapter
 	dbClient                             *mongo.Client
 	getProofOfAuthorityPrivateKeyService *GetProofOfAuthorityPrivateKeyService
-	getBlockchainStateUseCase            *usecase.GetBlockchainStateUseCase
-	upsertBlockchainStateUseCase         *usecase.UpsertBlockchainStateUseCase
+	getBlockchainStateUseCase            *uc_blockchainstate.GetBlockchainStateUseCase
+	upsertBlockchainStateUseCase         *uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockDataUseCase                  *usecase.GetBlockDataUseCase
 	mempoolTransactionCreateUseCase      *usecase.MempoolTransactionCreateUseCase
 }
@@ -36,8 +37,8 @@ func NewTokenMintService(
 	dmutex distributedmutex.Adapter,
 	client *mongo.Client,
 	s1 *GetProofOfAuthorityPrivateKeyService,
-	uc1 *usecase.GetBlockchainStateUseCase,
-	uc2 *usecase.UpsertBlockchainStateUseCase,
+	uc1 *uc_blockchainstate.GetBlockchainStateUseCase,
+	uc2 *uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc3 *usecase.GetBlockDataUseCase,
 	uc4 *usecase.MempoolTransactionCreateUseCase,
 ) *TokenMintService {

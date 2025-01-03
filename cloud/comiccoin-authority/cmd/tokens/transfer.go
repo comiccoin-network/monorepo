@@ -18,6 +18,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 )
 
 func TransferTokenCmd() *cobra.Command {
@@ -110,12 +111,12 @@ func doRunTransferToken() {
 	// )
 	//
 	// Blockchain State
-	getBlockchainStateUseCase := usecase.NewGetBlockchainStateUseCase(
+	getBlockchainStateUseCase := uc_blockchainstate.NewGetBlockchainStateUseCase(
 		cfg,
 		logger,
 		blockchainStateRepo,
 	)
-	upsertBlockchainStateUseCase := usecase.NewUpsertBlockchainStateUseCase(
+	upsertBlockchainStateUseCase := uc_blockchainstate.NewUpsertBlockchainStateUseCase(
 		cfg,
 		logger,
 		blockchainStateRepo,
