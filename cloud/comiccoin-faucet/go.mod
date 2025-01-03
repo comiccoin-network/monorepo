@@ -17,6 +17,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/im7mortal/kmutex v1.0.2
 	github.com/mailgun/mailgun-go/v4 v4.18.5
+	github.com/oschwald/geoip2-golang v1.11.0
 	github.com/rs/cors v1.11.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.8.1
@@ -68,6 +69,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
+	github.com/oschwald/maxminddb-golang v1.13.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/relvacode/iso8601 v1.3.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect

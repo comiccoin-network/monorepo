@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -36,6 +37,8 @@ type serverConf struct {
 	HMACSecret                 *sbytes.SecureBytes
 	RegistrationCoinsReward    uint64
 	ComicSubmissionCoinsReward uint64
+	GeoLiteDBPath              string
+	BannedCountries            []string
 }
 
 type awsConfig struct {
@@ -102,6 +105,8 @@ func NewProviderUsingEnvironmentVariables() *Configuration {
 	c.App.AuthorityHTTPAddress = getEnv("COMICCOIN_FAUCET_AUTHORITY_HTTP_ADDRESS", true)
 	c.App.NFTStorageHTTPAddress = getEnv("COMICCOIN_FAUCET_NFTSTORAGE_HTTP_ADDRESS", true)
 	c.App.HMACSecret = getSecureBytesEnv("COMICCOIN_FAUCET_HMAC_SECRET", true)
+	c.App.GeoLiteDBPath = getEnv("COMICCOIN_FAUCET_APP_GEOLITE_DB_PATH", false)
+	c.App.BannedCountries = getStringsArrEnv("COMICCOIN_FAUCET_APP_BANNED_COUNTRIES", false)
 
 	// Amazon Web-Services Technology
 	c.AWS.AccessKey = getEnv("COMICCOIN_FAUCET_AWS_ACCESS_KEY", true)
@@ -192,4 +197,12 @@ func getUint64Env(key string, required bool) uint64 {
 		log.Fatalf("Failed to parse environment variable as uint64: %s = %q, error: %v", key, value, err)
 	}
 	return uintValue
+}
+
+func getStringsArrEnv(key string, required bool) []string {
+	value := os.Getenv(key)
+	if required && value == "" {
+		log.Fatalf("Environment variable not found: %s", key)
+	}
+	return strings.Split(value, ",")
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/blacklist"
+	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/password"
 	cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/storage/cloud/s3"
@@ -63,6 +64,7 @@ func doRunDaemon() {
 	emailer := mailgun.NewEmailer(cfg, logger)
 	templatedEmailer := templatedemailer.NewTemplatedEmailer(logger, emailer)
 	cloudstore := cloudstorage.NewCloudStorage(cfg, logger)
+	ipcbp := ipcb.NewProvider(cfg, logger)
 
 	//
 	// Repository
@@ -749,6 +751,7 @@ func doRunDaemon() {
 	httpMiddleware := httpmiddle.NewMiddleware(
 		logger,
 		blackp,
+		ipcbp,
 		jwtp,
 		userGetBySessionIDUseCase,
 		bannedIPAddressListAllValuesUseCase,

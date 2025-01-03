@@ -5,12 +5,14 @@ import (
 	"net/http"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/blacklist"
+	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 )
 
 type Middleware interface {
 	Attach(fn http.HandlerFunc) http.HandlerFunc
+	Shutdown()
 }
 
 type middleware struct {
@@ -19,11 +21,13 @@ type middleware struct {
 	jwt                                 jwt.Provider
 	userGetBySessionIDUseCase           *usecase.UserGetBySessionIDUseCase
 	bannedIPAddressListAllValuesUseCase *usecase.BannedIPAddressListAllValuesUseCase
+	IPCountryBlocker                    ipcb.Provider
 }
 
 func NewMiddleware(
 	loggerp *slog.Logger,
 	blp blacklist.Provider,
+	ipcountryblocker ipcb.Provider,
 	jwtp jwt.Provider,
 	uc1 *usecase.UserGetBySessionIDUseCase,
 	uc2 *usecase.BannedIPAddressListAllValuesUseCase,
@@ -31,6 +35,7 @@ func NewMiddleware(
 	return &middleware{
 		logger:                              loggerp,
 		blacklist:                           blp,
+		IPCountryBlocker:                    ipcountryblocker,
 		jwt:                                 jwtp,
 		userGetBySessionIDUseCase:           uc1,
 		bannedIPAddressListAllValuesUseCase: uc2,
@@ -48,6 +53,7 @@ func (mid *middleware) Attach(fn http.HandlerFunc) http.HandlerFunc {
 	fn = mid.PostJWTProcessorMiddleware(fn) // Note: Must be above `JWTProcessorMiddleware`.
 	fn = mid.JWTProcessorMiddleware(fn)     // Note: Must be above `PreJWTProcessorMiddleware`.
 	fn = mid.PreJWTProcessorMiddleware(fn)  // Note: Must be above `URLProcessorMiddleware` and `IPAddressMiddleware`.
+	fn = mid.EnforceRestrictCountryIPsMiddleware(fn)
 	fn = mid.EnforceBlacklistMiddleware(fn)
 	fn = mid.IPAddressMiddleware(fn)
 	fn = mid.URLProcessorMiddleware(fn)
@@ -57,4 +63,11 @@ func (mid *middleware) Attach(fn http.HandlerFunc) http.HandlerFunc {
 		// Flow to the next middleware.
 		fn(w, r)
 	}
+}
+
+// Shutdown shuts down the middleware.
+func (mid *middleware) Shutdown() {
+	// Log a message to indicate that the HTTP server is shutting down.
+	mid.logger.Info("Gracefully shutting down HTTP middleware")
+	mid.IPCountryBlocker.Close()
 }
