@@ -15,14 +15,14 @@ import (
 )
 
 type Configuration struct {
-	App        serverConf
-	AWS        awsConfig
+	App        AppConfig
+	AWS        AWSConfig
 	Blockchain BlockchainConfig
-	DB         dbConfig
-	Emailer    mailgunConfig
+	DB         DBConfig
+	Emailer    MailgunConfig
 }
 
-type serverConf struct {
+type AppConfig struct {
 	DataDirectory              string
 	FrontendDomain             string
 	BackendDomain              string
@@ -41,7 +41,7 @@ type serverConf struct {
 	BannedCountries            []string
 }
 
-type awsConfig struct {
+type AWSConfig struct {
 	AccessKey  string
 	SecretKey  string
 	Endpoint   string
@@ -65,12 +65,12 @@ type BlockchainConfig struct {
 	TransactionFee uint64 `bson:"transaction_fee" json:"transaction_fee"`
 }
 
-type dbConfig struct {
+type DBConfig struct {
 	URI  string
 	Name string
 }
 
-type mailgunConfig struct {
+type MailgunConfig struct {
 	APIKey           string
 	Domain           string
 	APIBase          string
