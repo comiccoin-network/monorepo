@@ -10,10 +10,10 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.71.0
 	github.com/aws/smithy-go v1.22.1
 	github.com/bartmika/timekit v0.0.0-20240130035202-cad2325dfd57
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ethereum/go-ethereum v1.14.12
 	github.com/faabiosr/cachego v0.22.2
 	github.com/fxamacker/cbor/v2 v2.7.0
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/im7mortal/kmutex v1.0.2
 	github.com/mailgun/mailgun-go/v4 v4.18.5

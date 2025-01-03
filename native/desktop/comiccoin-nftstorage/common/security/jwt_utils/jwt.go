@@ -3,7 +3,7 @@ package jwt_utils
 import (
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 // GenerateJWTToken Generate the `access token` for the secret key.
