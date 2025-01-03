@@ -84,9 +84,19 @@ func (p *provider) IsBlockedIP(ctx context.Context, ip net.IP) bool {
 
 	code, err := p.GetCountryCode(ctx, ip)
 	if err != nil {
-		p.logger.WarnContext(ctx, "failed to get country code",
-			slog.Any("ip", ip),
-			slog.Any("error", err))
+		// Developers Note:
+		// Comment this console log as it contributes a `noisy` server log.
+		// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		// p.logger.WarnContext(ctx, "failed to get country code",
+		// 	slog.Any("ip", ip),
+		// 	slog.Any("error", err))
+		// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+		// Developers Note:
+		// If the country d.n.e. exist that means we will return with `false`
+		// indicating this IP address is allowed to access our server. If this
+		// is concerning then you might set this to `true` to block on all
+		// IP address which are not categorized by country.
 		return false
 	}
 
