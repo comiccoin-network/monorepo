@@ -26,13 +26,13 @@ func NewUserTransactionRepository(appCfg *config.Configuration, loggerp *slog.Lo
 	// ctx := context.Background()
 	uc := client.Database(appCfg.DB.Name).Collection("user_transactions")
 
-	// For debugging purposes only or if you are going to recreate new indexes.
-	if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
-		loggerp.Warn("failed deleting all indexes",
-			slog.Any("err", err))
-
-		// Do not crash app, just continue.
-	}
+	// // For debugging purposes only or if you are going to recreate new indexes.
+	// if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
+	// 	loggerp.Warn("failed deleting all indexes",
+	// 		slog.Any("err", err))
+	//
+	// 	// Do not crash app, just continue.
+	// }
 
 	// Note:
 	// * 1 for ascending
