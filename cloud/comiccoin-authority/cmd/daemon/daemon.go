@@ -11,9 +11,9 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/distributedmutex"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/blacklist"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/password"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/database/mongodb"
 	cache "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/memory/redis"
@@ -48,17 +48,14 @@ func doRunDaemon() {
 
 	// Common
 	logger := logger.NewProvider()
-	kmutex := kmutexutil.NewKMutexProvider()
 	cfg := config.NewProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
 	keystore := keystore.NewAdapter()
 	passp := password.NewProvider()
+	jwtp := jwt.NewProvider(cfg)
 	blackp := blacklist.NewProvider()
 	cachep := cache.NewCache(cfg, logger)
 	dmutex := distributedmutex.NewAdapter(logger, cachep.GetRedisClient())
-
-	_ = kmutex
-	_ = passp
 
 	// Repository
 	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
@@ -285,6 +282,17 @@ func doRunDaemon() {
 		logger,
 		listTokensByOwnerUseCase,
 	)
+	tokenMintService := service.NewTokenMintService(
+		cfg,
+		logger,
+		dmutex,
+		dbClient, // Note: Used for mongoDB transaction handling.
+		getProofOfAuthorityPrivateKeyService,
+		getBlockchainStateUseCase,
+		upsertBlockchainStateUseCase,
+		getBlockDataUseCase,
+		mempoolTransactionCreateUseCase,
+	)
 
 	// Stream Latest Blockchain State Change
 
@@ -347,6 +355,13 @@ func doRunDaemon() {
 		logger,
 		tokenListByOwnerService,
 	)
+	tokenMintServiceHTTPHandler := httphandler.NewTokenMintServiceHTTPHandler(
+		cfg,
+		logger,
+		jwtp,
+		passp,
+		tokenMintService,
+	)
 	httpMiddleware := httpmiddle.NewMiddleware(
 		logger,
 		blackp)
@@ -365,6 +380,7 @@ func doRunDaemon() {
 		signedTransactionSubmissionHTTPHandler,
 		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
 		tokenListByOwnerHTTPHandler,
+		tokenMintServiceHTTPHandler,
 	)
 
 	//

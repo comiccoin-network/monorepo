@@ -44,6 +44,7 @@ type httpServerImpl struct {
 	blockchainStateChangeEventDTOHTTPHandler                  *handler.BlockchainStateChangeEventDTOHTTPHandler
 	blockchainStateServerSentEventsHTTPHandler                *handler.BlockchainStateServerSentEventsHTTPHandler
 	tokenListByOwnerHTTPHandler                               *handler.TokenListByOwnerHTTPHandler
+	tokenMintServiceHTTPHandler                               *handler.TokenMintServiceHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -62,6 +63,7 @@ func NewHTTPServer(
 	http9 *handler.SignedTransactionSubmissionHTTPHandler,
 	http10 *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
 	http11 *handler.TokenListByOwnerHTTPHandler,
+	http12 *handler.TokenMintServiceHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.IP == "" {
@@ -99,6 +101,7 @@ func NewHTTPServer(
 		signedTransactionSubmissionHTTPHandler:                    http9,
 		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler: http10,
 		tokenListByOwnerHTTPHandler:                               http11,
+		tokenMintServiceHTTPHandler:                               http12,
 	}
 
 	// Attach the HTTP server controller to the ServeMux.
@@ -185,6 +188,9 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "tokens" && r.Method == http.MethodGet:
 		port.tokenListByOwnerHTTPHandler.Execute(w, r)
+
+	case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "tokens" && r.Method == http.MethodPost:
+		port.tokenMintServiceHTTPHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:

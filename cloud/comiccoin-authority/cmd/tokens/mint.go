@@ -9,9 +9,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/distributedmutex"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/database/mongodb"
+	cache "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/memory/redis"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
@@ -43,7 +44,8 @@ func doRunMintToken() {
 	cfg := config.NewProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
 	keystore := keystore.NewAdapter()
-	kmutex := kmutexutil.NewKMutexProvider()
+	cachep := cache.NewCache(cfg, logger)
+	dmutex := distributedmutex.NewAdapter(logger, cachep.GetRedisClient())
 
 	// ------ Repository ------
 	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
@@ -171,7 +173,7 @@ func doRunMintToken() {
 	tokenMintService := service.NewTokenMintService(
 		cfg,
 		logger,
-		kmutex,
+		dmutex,
 		dbClient, // Note: Used for mongoDB transaction handling.
 		getProofOfAuthorityPrivateKeyService,
 		getBlockchainStateUseCase,
@@ -182,7 +184,7 @@ func doRunMintToken() {
 
 	// Execution
 	ctx := context.Background()
-	newTokID, err := tokenMintService.Execute(ctx, flagTokenMetadataURI)
+	newTokID, err := tokenMintService.Execute(ctx, cfg.Blockchain.ProofOfAuthorityAccountAddress, flagTokenMetadataURI)
 	if err != nil {
 		logger.Error("Failed executing",
 			slog.Any("error", err))

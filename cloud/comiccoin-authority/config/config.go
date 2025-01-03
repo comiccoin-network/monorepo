@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
+	sbytes "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securebytes"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 )
 
@@ -22,9 +23,11 @@ type cacheConf struct {
 }
 
 type serverConf struct {
-	DataDirectory string
-	Port          string
-	IP            string
+	DataDirectory            string
+	Port                     string
+	IP                       string
+	AdministrationHMACSecret *sbytes.SecureBytes
+	AdministrationSecretKey  *sstring.SecureString
 }
 
 // BlockchainConfig represents the configuration for the blockchain.
@@ -61,6 +64,8 @@ func NewProvider() *Configuration {
 	c.App.DataDirectory = getEnv("COMICCOIN_AUTHORITY_APP_DATA_DIRECTORY", true)
 	c.App.Port = getEnv("COMICCOIN_AUTHORITY_PORT", true)
 	c.App.IP = getEnv("COMICCOIN_AUTHORITY_IP", false)
+	c.App.AdministrationHMACSecret = getSecureBytesEnv("COMICCOIN_AUTHORITY_APP_ADMINISTRATION_HMAC_SECRET", false)
+	c.App.AdministrationSecretKey = getSecureStringEnv("COMICCOIN_AUTHORITY_APP_ADMINISTRATION_SECRET_KEY", false)
 
 	// Blockchain section.
 	chainID, _ := strconv.ParseUint(getEnv("COMICCOIN_AUTHORITY_BLOCKCHAIN_CHAIN_ID", true), 10, 16)
@@ -100,10 +105,33 @@ func getSecureStringEnv(key string, required bool) *sstring.SecureString {
 		log.Fatalf("Environment variable not found: %s", key)
 	}
 	ss, err := sstring.NewSecureString(value)
+	if ss == nil && required == false {
+		return nil
+	}
 	if err != nil {
 		log.Fatalf("Environment variable failed to secure: %v", err)
 	}
 	return ss
+}
+
+func getBytesEnv(key string, required bool) []byte {
+	value := os.Getenv(key)
+	if required && value == "" {
+		log.Fatalf("Environment variable not found: %s", key)
+	}
+	return []byte(value)
+}
+
+func getSecureBytesEnv(key string, required bool) *sbytes.SecureBytes {
+	value := getBytesEnv(key, required)
+	sb, err := sbytes.NewSecureBytes(value)
+	if sb == nil && required == false {
+		return nil
+	}
+	if err != nil {
+		log.Fatalf("Environment variable failed to secure: %v", err)
+	}
+	return sb
 }
 
 func getEnvBool(key string, required bool, defaultValue bool) bool {

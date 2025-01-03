@@ -7,11 +7,12 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/distributedmutex"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
@@ -20,7 +21,7 @@ import (
 type TokenMintService struct {
 	config                               *config.Configuration
 	logger                               *slog.Logger
-	kmutex                               kmutexutil.KMutexProvider
+	dmutex                               distributedmutex.Adapter
 	dbClient                             *mongo.Client
 	getProofOfAuthorityPrivateKeyService *GetProofOfAuthorityPrivateKeyService
 	getBlockchainStateUseCase            *usecase.GetBlockchainStateUseCase
@@ -32,7 +33,7 @@ type TokenMintService struct {
 func NewTokenMintService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	kmutex kmutexutil.KMutexProvider,
+	dmutex distributedmutex.Adapter,
 	client *mongo.Client,
 	s1 *GetProofOfAuthorityPrivateKeyService,
 	uc1 *usecase.GetBlockchainStateUseCase,
@@ -40,16 +41,17 @@ func NewTokenMintService(
 	uc3 *usecase.GetBlockDataUseCase,
 	uc4 *usecase.MempoolTransactionCreateUseCase,
 ) *TokenMintService {
-	return &TokenMintService{cfg, logger, kmutex, client, s1, uc1, uc2, uc3, uc4}
+	return &TokenMintService{cfg, logger, dmutex, client, s1, uc1, uc2, uc3, uc4}
 }
 
 func (s *TokenMintService) Execute(
 	ctx context.Context,
+	walletAddress *common.Address,
 	metadataURI string,
 ) (*big.Int, error) {
 	// Lock the mining service until it has completed executing (or errored).
-	s.kmutex.Acquire("token-services")
-	defer s.kmutex.Release("token-services")
+	s.dmutex.Acquire(ctx, "TokenMintService")
+	defer s.dmutex.Release(ctx, "TokenMintService")
 
 	//
 	// STEP 1: Validation.
@@ -147,7 +149,7 @@ func (s *TokenMintService) Execute(
 			ChainID:          s.config.Blockchain.ChainID,
 			NonceBytes:       big.NewInt(time.Now().Unix()).Bytes(),
 			From:             s.config.Blockchain.ProofOfAuthorityAccountAddress,
-			To:               s.config.Blockchain.ProofOfAuthorityAccountAddress,
+			To:               walletAddress,
 			Value:            s.config.Blockchain.TransactionFee, // Note: This value gets reclaimed by the us, so it's fully recirculating when authority calls this.
 			Data:             make([]byte, 0),
 			Type:             domain.TransactionTypeToken,

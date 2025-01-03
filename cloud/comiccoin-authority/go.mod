@@ -8,10 +8,11 @@ require (
 	github.com/ethereum/go-ethereum v1.14.11
 	github.com/faabiosr/cachego v0.22.2
 	github.com/fxamacker/cbor/v2 v2.7.0
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/im7mortal/kmutex v1.0.2
 	github.com/redis/go-redis/v9 v9.7.0
-	github.com/rs/cors v1.7.0
+	github.com/rs/cors v1.11.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
@@ -62,6 +63,7 @@ require (
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
