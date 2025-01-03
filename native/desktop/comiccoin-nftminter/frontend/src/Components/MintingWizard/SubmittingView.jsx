@@ -31,19 +31,25 @@ function MintingWizardSubmittingView() {
       // Update the GUI to let user know that the operation is under way.
       setIsLoading(true);
 
+      console.log("onExecuteSubmissionInBackground | nft:", nft);
+
       const attributesJSONString = JSON.stringify(nft.attributes);
 
+      console.log("onExecuteSubmissionInBackground | attributesJSONString:", attributesJSONString);
+
+      console.log("onExecuteSubmissionInBackground | CreateToken | Executing...");
+
       // Submit the `dataDirectory` value to our backend.
-      CreateToken(nft.name, nft.description, nft.image, nft.animation, nft.youtubeURL, nft.externalURL, attributesJSONString, nft.backgroundColor).then( (resp) => {
-          console.log("onExecuteSubmissionInBackground | Success response | result:", resp);
+      CreateToken(nft.walletAddress, nft.name, nft.description, nft.image, nft.animation, nft.youtubeURL, nft.externalURL, attributesJSONString, nft.backgroundColor).then( (resp) => {
+          console.log("onExecuteSubmissionInBackground | CreateToken | Success response | result:", resp);
           setNftSubmissionSuccessResponse(resp);
           setForceURL("/minting-wizard-step3-success");
       }).catch((errorJsonString)=>{
-          console.log("onExecuteSubmissionInBackground | Error response | errRes:", errorJsonString);
+          console.log("onExecuteSubmissionInBackground | CreateToken | Error response | errRes:", errorJsonString);
           let err = {};
           try {
               const errorObject = JSON.parse(errorJsonString);
-              console.log("onExecuteSubmissionInBackground | errorObject:", errorObject);
+              console.log("onExecuteSubmissionInBackground | CreateToken | errorObject:", errorObject);
               if (errorObject.name != "") {
                   err.name = errorObject.name;
               }
@@ -60,17 +66,17 @@ function MintingWizardSubmittingView() {
                   err.backgroundColor = errorObject.background_color;
               }
           } catch (e) {
-              console.log("onExecuteSubmissionInBackground | CreateToken:err:", e);
+              console.log("onExecuteSubmissionInBackground | CreateToken | err:", e);
               err.message = errorJsonString;
           } finally {
-              console.log("onExecuteSubmissionInBackground | err:", err);
+              console.log("onExecuteSubmissionInBackground | CreateToken | err:", err);
               setErrors(err);
               setNftSubmissionErrorResponse(err);
               setForceURL("/minting-wizard-step3-error");
           }
       }).finally(() => {
           // this will be executed after then or catch has been executed
-          console.log("onExecuteSubmissionInBackground | promise has been resolved or rejected");
+          console.log("onExecuteSubmissionInBackground | CreateToken | promise has been resolved or rejected");
 
           // Update the GUI to let user know that the operation is completed.
           setIsLoading(false);

@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"errors"
 	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/jwt_utils"
@@ -37,5 +38,8 @@ func (p jwtProvider) GenerateJWTTokenPair(uuid string, ad time.Duration, rd time
 }
 
 func (p jwtProvider) ProcessJWTToken(reqToken string) (string, error) {
+	if p.hmacSecret == nil {
+		return "", errors.New("HMAC secret is required")
+	}
 	return jwt_utils.ProcessJWTToken(p.hmacSecret.Bytes(), reqToken)
 }

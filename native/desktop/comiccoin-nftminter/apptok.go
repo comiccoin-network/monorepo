@@ -112,6 +112,7 @@ func isValidHexColor(color string) bool {
 
 // CreateToken creates a new Token with the given metadata and uploads it to IPFS.
 func (a *App) CreateToken(
+	walletAddress string,
 	name string,
 	description string,
 	image string,
@@ -127,6 +128,7 @@ func (a *App) CreateToken(
 
 	// Log the input values for debugging purposes.
 	a.logger.Debug("received",
+		slog.String("walletAddress", walletAddress),
 		slog.String("name", name),
 		slog.String("image", image),
 		slog.String("animation", animation),
@@ -138,6 +140,9 @@ func (a *App) CreateToken(
 
 	// Check if any of the required fields are missing.
 	e := make(map[string]string)
+	if walletAddress == "" {
+		e["wallet_address"] = "missing value"
+	}
 	if name == "" {
 		e["name"] = "missing value"
 	}
@@ -395,17 +400,50 @@ func (a *App) CreateToken(
 
 	//
 	// STEP 10:
-	// Update our database.
+	// Send NFT to wallet address via Blockchain Authority.
+	//
+
+	// Define our token's URI.
+	metadataURI := fmt.Sprintf("ipfs://%v", metadataCID)
+
+	// Get our credentials for the ComicCoin Authority.
+	authorityAddress := preferences.AuthorityAddress
+	authorityAPIKey := preferences.AuthorityAPIKey
+
+	// Setup our API caller.
+	provider := NewTokenMintDTOConfigurationProvider(authorityAddress, authorityAPIKey)
+	tokenMintDTORepo := NewTokenMintDTORepo(provider, a.logger)
+
+	// Setup our API payload.
+	dto := &TokenMintDTO{
+		WalletAddress: walletAddress,
+		MetadataURI:   metadataURI,
+	}
+
+	a.logger.Debug("Submitting to ComicCoin Authority our newly minted NFT.",
+		slog.Any("dto", dto))
+
+	// Submit the token mint to the ComicCoin Authority.
+	if err := tokenMintDTORepo.SubmitToBlockchainAuthority(a.ctx, dto); err != nil {
+		a.logger.Error("Failed submitting to blockchain authority",
+			slog.Any("error", err))
+		return nil, err
+	}
+
+	//
+	// STEP 11:
+	// Return our token to the GUI.
 	//
 
 	token := &Token{
 		TokenID:     &tokenID,
-		MetadataURI: fmt.Sprintf("ipfs://%v", metadataCID),
+		MetadataURI: metadataURI,
 		Metadata:    metadata,
 		Timestamp:   uint64(time.Now().UTC().UnixMilli()),
 	}
 
-	//TODO: Send NFT to wallet address via Blockchain Authority.
+	a.logger.Debug("Created token",
+		slog.Any("token", token))
 
 	return token, nil
 }
