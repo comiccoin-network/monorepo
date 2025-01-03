@@ -1,265 +1,74 @@
-// Package signature provides helper functions for handling the blockchain
-// signature needs.
-// Special thanks: https://raw.githubusercontent.com/ardanlabs/blockchain/refs/heads/main/foundation/blockchain/signature/signature.go
-package signature
+package signature_test
 
 import (
-	"crypto/ecdsa"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"math/big"
+	"testing"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/blockchain/signature"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// ZeroHash represents a hash code of zeros.
-const ZeroHash string = "0x0000000000000000000000000000000000000000000000000000000000000000"
+const (
+	pkHexKey = "fae85851bdf5c9f49923722ce38f3c1defcfd3619ef5453230a58ad805499959"
+	from     = "0xdd6B972ffcc631a62CAE1BB9d80b7ff429c8ebA4"
+	sigStr   = "0x3fc1a5adca72b01479c92856f2498296975448a208413c8f5a66a79ac75503d4434bac60b5fd40ac51ad61235b208a8d52c6a615c7f9ee92b2d8ce2fbb855a7c1e"
+)
 
-// comicCoinID is an arbitrary number for signing messages. This will make it
-// clear that the signature comes from the ComicCoin blockchain.
-// Ethereum and Bitcoin do this as well, but they use the value of 27.
-const comicCoinID = 29
-
-// =============================================================================
-
-// Hash returns a unique string for the value.
-func Hash(value any) string {
-	data, err := json.Marshal(value)
-	if err != nil {
-		return ZeroHash
-	}
-
-	hash := sha256.Sum256(data)
-	return hexutil.Encode(hash[:])
+type TestData struct {
+	Name string
 }
 
-// Sign uses the specified private key to sign the data.
-func Sign(value any, privateKey *ecdsa.PrivateKey) (v, r, s *big.Int, err error) {
+func TestSign(t *testing.T) {
+	pk, err := crypto.HexToECDSA(pkHexKey)
+	require.NoError(t, err)
 
-	// Prepare the data for signing.
-	data, err := stamp(value)
-	if err != nil {
-		return nil, nil, nil, err
-	}
+	value := TestData{Name: "Bill"}
 
-	// Sign the hash with the private key to produce a signature.
-	sig, err := crypto.Sign(data, privateKey)
-	if err != nil {
-		return nil, nil, nil, err
-	}
+	v, r, s, err := signature.Sign(value, pk)
+	require.NoError(t, err)
 
-	// Extract the bytes for the original public key.
-	publicKeyOrg := privateKey.Public()
-	publicKeyECDSA, ok := publicKeyOrg.(*ecdsa.PublicKey)
-	if !ok {
-		return nil, nil, nil, errors.New("error casting public key to ECDSA")
-	}
-	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+	err = signature.VerifySignature(v, r, s)
+	require.NoError(t, err)
 
-	// Check the public key validates the data and signature.
-	rs := sig[:crypto.RecoveryIDOffset]
-	if !crypto.VerifySignature(publicKeyBytes, data, rs) {
-		return nil, nil, nil, errors.New("invalid signature produced")
-	}
+	addr, err := signature.FromAddress(value, v, r, s)
+	require.NoError(t, err)
+	assert.Equal(t, from, addr)
 
-	// Convert the 65 byte signature into the [R|S|V] format.
-	v, r, s = toSignatureValues(sig)
-
-	return v, r, s, nil
+	str := signature.SignatureString(v, r, s)
+	assert.NotEmpty(t, str)
 }
 
-// VerifySignature verifies the signature conforms to our standards.
-func VerifySignature(v, r, s *big.Int) error {
+func TestHash(t *testing.T) {
+	value := TestData{Name: "Bill"}
+	expectedHash := "0x0f6887ac85101d6d6425a617edf35bd721b5f619fb92c36c3d2224e3bdb0ee5a"
 
-	// Check the recovery id is either 0 or 1.
-	uintV := v.Uint64() - comicCoinID
-	if uintV != 0 && uintV != 1 {
-		return errors.New("invalid recovery id")
-	}
+	hash := signature.Hash(value)
+	assert.Equal(t, expectedHash, hash)
 
-	// Check the signature values are valid.
-	if !crypto.ValidateSignatureValues(byte(uintV), r, s, false) {
-		return errors.New("invalid signature values")
-	}
-
-	return nil
+	// Test hash consistency
+	hash2 := signature.Hash(value)
+	assert.Equal(t, hash, hash2)
 }
 
-// FromAddress extracts the address for the account that signed the data.
-func FromAddress(value any, v, r, s *big.Int) (string, error) {
-	// log.Printf("signature.go -> FromAddress(): value: %v\n", value)
+func TestSignConsistency(t *testing.T) {
+	value1 := TestData{Name: "Bill"}
+	value2 := TestData{Name: "Jill"}
 
-	// Prepare the data for public key extraction.
-	data, err := stamp(value)
-	if err != nil {
-		// log.Printf("signature.go -> FromAddress(): stamp error: %v\n", err)
-		return "", err
-	}
+	pk, err := crypto.HexToECDSA(pkHexKey)
+	require.NoError(t, err)
 
-	// log.Printf("signature.go -> FromAddress(): stamp data: %v\n", data)
+	v1, r1, s1, err := signature.Sign(value1, pk)
+	require.NoError(t, err)
 
-	// Convert the [R|S|V] format into the original 65 bytes.
-	sig := ToSignatureBytes(v, r, s)
+	addr1, err := signature.FromAddress(value1, v1, r1, s1)
+	require.NoError(t, err)
 
-	// log.Printf("signature.go -> FromAddress(): ToSignatureBytes sig: %v\n", data)
+	v2, r2, s2, err := signature.Sign(value2, pk)
+	require.NoError(t, err)
 
-	// Capture the public key associated with this data and signature.
-	publicKey, err := crypto.SigToPub(data, sig)
-	if err != nil {
-		// log.Printf("signature.go -> FromAddress(): crypto.SigToPub error: %v\n", err)
-		return "", err
-	}
+	addr2, err := signature.FromAddress(value2, v2, r2, s2)
+	require.NoError(t, err)
 
-	// Extract the account address from the public key.
-	return crypto.PubkeyToAddress(*publicKey).String(), nil
-}
-
-// GetPublicKeyFromSignature extracts the public key for the account that signed the data.
-func GetPublicKeyFromSignature(value any, v, r, s *big.Int) (*ecdsa.PublicKey, error) {
-
-	// Prepare the data for public key extraction.
-	data, err := stamp(value)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert the [R|S|V] format into the original 65 bytes.
-	sig := ToSignatureBytes(v, r, s)
-
-	// Capture the public key associated with this data and signature.
-	publicKey, err := crypto.SigToPub(data, sig)
-	if err != nil {
-		return nil, err
-	}
-	return publicKey, nil
-}
-
-// SignatureString returns the signature as a string.
-func SignatureString(v, r, s *big.Int) string {
-	return hexutil.Encode(ToSignatureBytesWithComicCoinID(v, r, s))
-}
-
-// ToVRSFromHexSignature converts a hex representation of the signature into
-// its R, S and V parts.
-func ToVRSFromHexSignature(sigStr string) (v, r, s *big.Int, err error) {
-	sig, err := hex.DecodeString(sigStr[2:])
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	r = big.NewInt(0).SetBytes(sig[:32])
-	s = big.NewInt(0).SetBytes(sig[32:64])
-	v = big.NewInt(0).SetBytes([]byte{sig[64]})
-
-	return v, r, s, nil
-}
-
-// ToSignatureBytes converts the r, s, v values into a slice of bytes
-// with the removal of the comicCoinID.
-func ToSignatureBytes(v, r, s *big.Int) []byte {
-	sig := make([]byte, crypto.SignatureLength)
-
-	rBytes := make([]byte, 32)
-	r.FillBytes(rBytes)
-	copy(sig, rBytes)
-
-	sBytes := make([]byte, 32)
-	s.FillBytes(sBytes)
-	copy(sig[32:], sBytes)
-
-	sig[64] = byte(v.Uint64() - comicCoinID)
-
-	return sig
-}
-
-// ToSignatureBytesWithComicCoinID converts the r, s, v values into a slice of bytes
-// keeping the ComicCoin id.
-func ToSignatureBytesWithComicCoinID(v, r, s *big.Int) []byte {
-	sig := ToSignatureBytes(v, r, s)
-	sig[64] = byte(v.Uint64())
-
-	return sig
-}
-
-// =============================================================================
-
-// stamp returns a hash of 32 bytes that represents this data with
-// the ComicCoin stamp embedded into the final hash.
-func stamp(value any) ([]byte, error) {
-	// First, marshal to JSON
-	v, err := json.Marshal(value)
-	if err != nil {
-		return nil, err
-	}
-
-	// Unmarshal back into a map to normalize the structure
-	var normalized map[string]interface{}
-	if err := json.Unmarshal(v, &normalized); err != nil {
-		return nil, err
-	}
-
-	// Clean up empty strings and null values
-	cleanMap(normalized)
-
-	// Marshal again after normalization
-	v, err = json.Marshal(normalized)
-	if err != nil {
-		return nil, err
-	}
-
-	// This stamp is used so signatures we produce when signing data
-	// are always unique to the ComicCoin blockchain.
-	stamp := []byte(fmt.Sprintf("\x19ComicCoin Signed Message:\n%d", len(v)))
-
-	// Hash the stamp and txHash together in a final 32 byte array
-	// that represents the data.
-	data := crypto.Keccak256(stamp, v)
-
-	return data, nil
-}
-
-// cleanMap removes empty strings and null values from the map recursively
-func cleanMap(m map[string]interface{}) {
-	for k, v := range m {
-		switch v := v.(type) {
-		case string:
-			if v == "" {
-				delete(m, k)
-			}
-		case nil:
-			delete(m, k)
-		case []interface{}:
-			if len(v) == 0 {
-				delete(m, k)
-			} else {
-				for i := range v {
-					if mm, ok := v[i].(map[string]interface{}); ok {
-						cleanMap(mm)
-					}
-				}
-			}
-		case map[string]interface{}:
-			cleanMap(v)
-			if len(v) == 0 {
-				delete(m, k)
-			}
-		}
-	}
-}
-
-// toSignatureValues converts the signature into the r, s, v values.
-func toSignatureValues(sig []byte) (v, r, s *big.Int) {
-	r = big.NewInt(0).SetBytes(sig[:32])
-	s = big.NewInt(0).SetBytes(sig[32:64])
-	v = big.NewInt(0).SetBytes([]byte{sig[64] + comicCoinID})
-
-	return v, r, s
-}
-
-func HashWithComicCoinStamp(value any) ([]byte, error) {
-	return stamp(value)
+	assert.Equal(t, addr1, addr2)
 }
