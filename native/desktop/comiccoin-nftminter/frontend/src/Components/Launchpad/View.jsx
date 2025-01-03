@@ -9,7 +9,15 @@ import { nftState, DEFAULT_NFT_STATE } from "../../AppState";
 function LaunchpadView() {
   // Global State
   const [nft, setNft] = useRecoilState(nftState);
+  const [nftSubmissionErrorResponse, setNftSubmissionErrorResponse] = useRecoilState(nftSubmissionErrorResponseState);
+  const [nftSubmissionSuccessResponse, setNftSubmissionSuccessResponse] = useRecoilState(nftSubmissionSuccessResponseState);
 
+  // For debugging purposes only.
+  console.log("nft:", nft);
+  console.log("nftSubmissionErrorResponse:", nftSubmissionErrorResponse);
+  console.log("nftSubmissionSuccessResponse:", nftSubmissionSuccessResponse);
+
+   // --- GUI States ---
   const [forceURL, setForceURL] = React.useState("");
 
   const handleStart = () => {
@@ -17,6 +25,8 @@ function LaunchpadView() {
 
     // Reset the NFT to empty state.
     setNft(DEFAULT_NFT_STATE);
+    setNftSubmissionErrorResponse(DEFAULT_NFT_STATE);
+    setNftSubmissionSuccessResponse(DEFAULT_NFT_STATE);
 
     console.log("handleStart | Will redirect...");
 
