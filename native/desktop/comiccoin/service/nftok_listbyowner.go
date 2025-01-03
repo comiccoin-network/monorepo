@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"math/big"
 
+	"github.com/bartmika/arraydiff"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	auth_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/bartmika/arraydiff"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
@@ -99,7 +99,7 @@ func (s *ListNonFungibleTokensByOwnerService) Execute(ctx context.Context, addre
 
 	for _, missingTokID := range missingInNFTokIDsArr {
 		if missingTokID.Cmp(big.NewInt(0)) != 0 { // Skip genesis token...
-			s.logger.Debug("creating non-fungible tokens...",
+			s.logger.Debug("Getting or downloading non-fungible token...",
 				slog.Any("missing_nft_id", missingTokID))
 
 			nftok, err := s.getOrDownloadNonFungibleTokenService.Execute(ctx, missingTokID, dirPath)

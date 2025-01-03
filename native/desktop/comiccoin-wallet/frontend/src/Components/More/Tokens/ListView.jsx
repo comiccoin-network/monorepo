@@ -125,7 +125,7 @@ function ListTokensView() {
                        <div className="p-4">
                          <div className="aspect-square relative mb-4">
                            <img
-                             src={`/${token.metadata.image}`}
+                             src={token.metadata.image}
                              alt={token.metadata.name}
                              className="rounded-lg object-cover w-full h-full"
                            />
