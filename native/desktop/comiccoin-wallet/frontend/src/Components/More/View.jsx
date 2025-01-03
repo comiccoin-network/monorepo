@@ -74,6 +74,7 @@ function MoreView() {
             </div>
           </Link>
 
+          {/*
           <Link
             className="bg-white p-6 rounded-xl border-2 border-gray-100 hover:border-purple-200 transition-colors flex items-start gap-4 text-left"
             to={`/more/settings`}
@@ -88,6 +89,7 @@ function MoreView() {
               </p>
             </div>
           </Link>
+          */}
         </div>
       </main>
     </div>
