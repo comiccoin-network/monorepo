@@ -6,6 +6,5 @@ use (
 	./native/desktop/comiccoin
 	./native/desktop/comiccoin-nftminter
 	./native/desktop/comiccoin-nftstorage
-	./native/desktop/comiccoin-registry
 	./native/desktop/comiccoin-wallet
 )
