@@ -31,23 +31,11 @@ func (mid *middleware) EnforceRestrictCountryIPsMiddleware(next http.HandlerFunc
 			return
 		}
 
-		// Look up country
-		isoCodeOfCountry, err := mid.IPCountryBlocker.ISOCountryCodeOfIPAddress(ip)
-		if err != nil {
-			mid.Logger.Warn("failed looking up country by ip address",
-				slog.Any("url", r.URL.Path),
-				slog.Any("ip_address", ip),
-				slog.Any("middleware", "EnforceRestrictCountryIPsMiddleware"))
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		// Check if country is blocked
-		if mid.IPCountryBlocker.IsAllowedCountry(isoCodeOfCountry) {
+		// Perform enforcement of country-wide blocking.
+		if mid.IPCountryBlocker.IsBlockedIP(ctx, ip) {
 			mid.Logger.Warn("rejected request by country ip address",
 				slog.Any("url", r.URL.Path),
 				slog.Any("ip_address", ip),
-				slog.Any("country", isoCodeOfCountry),
 				slog.Any("middleware", "EnforceRestrictCountryIPsMiddleware"))
 			http.Error(w, "Access denied from your country", http.StatusForbidden)
 			return

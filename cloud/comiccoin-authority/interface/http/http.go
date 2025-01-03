@@ -30,6 +30,8 @@ type httpServerImpl struct {
 	// logger is the logger for the HTTP server.
 	logger *slog.Logger
 
+	middleware mid.Middleware
+
 	// server is the underlying HTTP server.
 	server *http.Server
 
@@ -89,6 +91,7 @@ func NewHTTPServer(
 	port := &httpServerImpl{
 		cfg:                            cfg,
 		logger:                         logger,
+		middleware:                     mid,
 		server:                         srv,
 		getVersionHTTPHandler:          http1,
 		getHealthCheckHTTPHandler:      http2,
@@ -130,6 +133,8 @@ func (port *httpServerImpl) Run() {
 func (port *httpServerImpl) Shutdown() {
 	// Log a message to indicate that the HTTP server is shutting down.
 	port.logger.Info("Gracefully shutting down HTTP JSON API")
+
+	port.middleware.Shutdown()
 }
 
 // HandleRequests handles incoming HTTP requests.

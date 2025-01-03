@@ -13,17 +13,17 @@ import (
 )
 
 type Configuration struct {
-	App        serverConf
+	App        AppConfig
 	Blockchain BlockchainConfig
-	Cache      cacheConf
-	DB         dbConfig
+	Cache      CacheConf
+	DB         DBConfig
 }
 
-type cacheConf struct {
+type CacheConf struct {
 	URI string
 }
 
-type serverConf struct {
+type AppConfig struct {
 	DataDirectory            string
 	Port                     string
 	IP                       string
@@ -55,7 +55,7 @@ type BlockchainConfig struct {
 	ProofOfAuthorityWalletPassword *sstring.SecureString
 }
 
-type dbConfig struct {
+type DBConfig struct {
 	URI  string
 	Name string
 }

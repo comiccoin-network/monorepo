@@ -10,6 +10,7 @@ import (
 
 type Middleware interface {
 	Attach(fn http.HandlerFunc) http.HandlerFunc
+	Shutdown()
 }
 
 type middleware struct {
@@ -47,4 +48,11 @@ func (mid *middleware) Attach(fn http.HandlerFunc) http.HandlerFunc {
 		// Flow to the next middleware.
 		fn(w, r)
 	}
+}
+
+// Shutdown shuts down the middleware.
+func (mid *middleware) Shutdown() {
+	// Log a message to indicate that the HTTP server is shutting down.
+	mid.Logger.Info("Gracefully shutting down HTTP middleware")
+	mid.IPCountryBlocker.Close()
 }
