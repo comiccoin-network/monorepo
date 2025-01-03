@@ -12,6 +12,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/logger"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/blacklist"
+	ipcb "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/password"
 	disk "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/storage/disk/leveldb"
@@ -47,6 +48,8 @@ func doDaemonCmd() {
 	listenHTTPAddress := config.GetEnvString("COMICCOIN_NFTSTORAGE_ADDRESS", true)
 	appSecretKey := config.GetSecureStringEnv("COMICCOIN_NFTSTORAGE_APP_SECRET_KEY", true)
 	hmacSecretKey := config.GetSecureBytesEnv("COMICCOIN_NFTSTORAGE_APP_HMAC_SECRET", true)
+	geoLiteDBPath := config.GetEnvString("COMICCOIN_NFTSTORAGE_APP_GEOLITE_DB_PATH", false)
+	bannedCountries := config.GetEnvStringsArray("COMICCOIN_NFTSTORAGE_APP_BANNED_COUNTRIES", false)
 	ipfsIP := config.GetEnvString("COMICCOIN_NFTSTORAGE_IPFS_IP", true)
 	ipfsPort := config.GetEnvString("COMICCOIN_NFTSTORAGE_IPFS_PORT", true)
 	ipfsPublicGatewayAddress := config.GetEnvString("COMICCOIN_NFTSTORAGE_IPFS_PUBLIC_GATEWAY", true)
@@ -73,10 +76,12 @@ func doDaemonCmd() {
 
 	config := &config.Config{
 		App: config.AppConfig{
-			DirPath:     dataDir,
-			HTTPAddress: listenHTTPAddress,
-			HMACSecret:  hmacSecretKey,
-			AppSecret:   appSecretKey,
+			DirPath:         dataDir,
+			HTTPAddress:     listenHTTPAddress,
+			HMACSecret:      hmacSecretKey,
+			AppSecret:       appSecretKey,
+			GeoLiteDBPath:   geoLiteDBPath,
+			BannedCountries: bannedCountries,
 		},
 		DB: config.DBConfig{
 			DataDir: dataDir,
@@ -86,6 +91,7 @@ func doDaemonCmd() {
 	passp := password.NewProvider()
 	jwtp := jwt.NewProvider(config)
 	blackp := blacklist.NewProvider()
+	ipcbp := ipcb.NewProvider(config, logger)
 
 	// --- Disk --- //
 
@@ -144,7 +150,8 @@ func doDaemonCmd() {
 		ipfsPinAddService)
 	httpMiddleware := httpmiddle.NewMiddleware(
 		logger,
-		blackp)
+		blackp,
+		ipcbp)
 	httpServ := http.NewHTTPServer(
 		config,
 		logger,

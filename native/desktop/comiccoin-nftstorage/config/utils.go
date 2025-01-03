@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	sbytes "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/securebytes"
 	sstring "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-nftstorage/common/security/securestring"
@@ -60,4 +61,12 @@ func GetSecureBytesEnv(key string, required bool) *sbytes.SecureBytes {
 		log.Fatalf("Environment variable failed to secure: %v", err)
 	}
 	return ss
+}
+
+func GetEnvStringsArray(key string, required bool) []string {
+	value := os.Getenv(key)
+	if required && value == "" {
+		log.Fatalf("Environment variable not found: %s", key)
+	}
+	return strings.Split(value, ",")
 }
