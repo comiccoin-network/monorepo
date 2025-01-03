@@ -13,6 +13,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/distributedmutex"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/blacklist"
+	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/password"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/database/mongodb"
@@ -56,6 +57,7 @@ func doRunDaemon() {
 	blackp := blacklist.NewProvider()
 	cachep := cache.NewCache(cfg, logger)
 	dmutex := distributedmutex.NewAdapter(logger, cachep.GetRedisClient())
+	ipcbp := ipcb.NewProvider(cfg, logger)
 
 	// Repository
 	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
@@ -364,7 +366,9 @@ func doRunDaemon() {
 	)
 	httpMiddleware := httpmiddle.NewMiddleware(
 		logger,
-		blackp)
+		blackp,
+		ipcbp,
+	)
 	httpServ := http.NewHTTPServer(
 		cfg,
 		logger,

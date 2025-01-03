@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -28,6 +29,8 @@ type serverConf struct {
 	IP                       string
 	AdministrationHMACSecret *sbytes.SecureBytes
 	AdministrationSecretKey  *sstring.SecureString
+	GeoLiteDBPath            string
+	BannedCountries          []string
 }
 
 // BlockchainConfig represents the configuration for the blockchain.
@@ -66,6 +69,8 @@ func NewProvider() *Configuration {
 	c.App.IP = getEnv("COMICCOIN_AUTHORITY_IP", false)
 	c.App.AdministrationHMACSecret = getSecureBytesEnv("COMICCOIN_AUTHORITY_APP_ADMINISTRATION_HMAC_SECRET", false)
 	c.App.AdministrationSecretKey = getSecureStringEnv("COMICCOIN_AUTHORITY_APP_ADMINISTRATION_SECRET_KEY", false)
+	c.App.GeoLiteDBPath = getEnv("COMICCOIN_AUTHORITY_APP_GEOLITE_DB_PATH", false)
+	c.App.BannedCountries = getStringsArrEnv("COMICCOIN_AUTHORITY_APP_BANNED_COUNTRIES", false)
 
 	// Blockchain section.
 	chainID, _ := strconv.ParseUint(getEnv("COMICCOIN_AUTHORITY_BLOCKCHAIN_CHAIN_ID", true), 10, 16)
@@ -144,4 +149,12 @@ func getEnvBool(key string, required bool, defaultValue bool) bool {
 		log.Fatalf("Invalid boolean value for environment variable %s", key)
 	}
 	return value
+}
+
+func getStringsArrEnv(key string, required bool) []string {
+	value := os.Getenv(key)
+	if required && value == "" {
+		log.Fatalf("Environment variable not found: %s", key)
+	}
+	return strings.Split(value, ",")
 }

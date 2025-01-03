@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/blacklist"
+	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/ipcountryblocker"
 )
 
 type Middleware interface {
@@ -12,17 +13,20 @@ type Middleware interface {
 }
 
 type middleware struct {
-	Logger    *slog.Logger
-	Blacklist blacklist.Provider
+	Logger           *slog.Logger
+	Blacklist        blacklist.Provider
+	IPCountryBlocker ipcb.Provider
 }
 
 func NewMiddleware(
 	loggerp *slog.Logger,
 	blp blacklist.Provider,
+	ipcountryblocker ipcb.Provider,
 ) Middleware {
 	return &middleware{
-		Logger:    loggerp,
-		Blacklist: blp,
+		Logger:           loggerp,
+		Blacklist:        blp,
+		IPCountryBlocker: ipcountryblocker,
 	}
 }
 
@@ -33,6 +37,7 @@ func (mid *middleware) Attach(fn http.HandlerFunc) http.HandlerFunc {
 	// will start from the bottom and proceed upwards.
 	// Ex: `RateLimitMiddleware` will be executed first and
 	//     `ProtectedURLsMiddleware` will be executed last.
+	fn = mid.EnforceRestrictCountryIPsMiddleware(fn)
 	fn = mid.EnforceBlacklistMiddleware(fn)
 	fn = mid.IPAddressMiddleware(fn)
 	fn = mid.URLProcessorMiddleware(fn)
