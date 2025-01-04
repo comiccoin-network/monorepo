@@ -41,6 +41,7 @@ import (
 	uc_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blocktx"
 	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/token"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -241,22 +242,22 @@ func doRunDaemon() {
 		blockDataDTORepo)
 
 	// Token
-	getTokenUseCase := usecase.NewGetTokenUseCase(
+	getTokenUseCase := uc_token.NewGetTokenUseCase(
 		logger,
 		tokRepo,
 	)
 	_ = getTokenUseCase
-	getTokensHashStateUseCase := usecase.NewGetTokensHashStateUseCase(
+	getTokensHashStateUseCase := uc_token.NewGetTokensHashStateUseCase(
 		logger,
 		tokRepo,
 	)
 	_ = getTokensHashStateUseCase
-	upsertTokenIfPreviousTokenNonceGTEUseCase := usecase.NewUpsertTokenIfPreviousTokenNonceGTEUseCase(
+	upsertTokenIfPreviousTokenNonceGTEUseCase := uc_token.NewUpsertTokenIfPreviousTokenNonceGTEUseCase(
 		cfg,
 		logger,
 		tokRepo,
 	)
-	listTokensByOwnerUseCase := usecase.NewListTokensByOwnerUseCase(
+	listTokensByOwnerUseCase := uc_token.NewListTokensByOwnerUseCase(
 		logger,
 		tokRepo,
 	)

@@ -17,6 +17,7 @@ import (
 	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatedto"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockdata"
 	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockdatadto"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/token"
 )
 
 type BlockchainSyncWithBlockchainAuthorityService struct {
@@ -33,7 +34,7 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	getBlockDataDTOFromBlockchainAuthorityUseCase        *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase
 	getAccountUseCase                                    *uc_account.GetAccountUseCase
 	upsertAccountUseCase                                 *uc_account.UpsertAccountUseCase
-	upsertTokenIfPreviousTokenNonceGTEUseCase            *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase
+	upsertTokenIfPreviousTokenNonceGTEUseCase            *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
 	tenantGetByIDUseCase                                 *usecase.TenantGetByIDUseCase
 	tenantUpdateUseCase                                  *usecase.TenantUpdateUseCase
 	userTransactionGetUseCase                            *usecase.UserTransactionGetUseCase
@@ -54,7 +55,7 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc9 *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
 	uc10 *uc_account.GetAccountUseCase,
 	uc11 *uc_account.UpsertAccountUseCase,
-	uc12 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,
+	uc12 *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
 	uc13 *usecase.TenantGetByIDUseCase,
 	uc14 *usecase.TenantUpdateUseCase,
 	uc15 *usecase.UserTransactionGetUseCase,
