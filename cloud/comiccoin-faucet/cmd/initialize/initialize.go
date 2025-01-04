@@ -17,8 +17,8 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
+	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/wallet"
 )
@@ -107,12 +107,12 @@ func doRunGatewayInit() {
 	)
 
 	// Tenant
-	tenantGetByNameUseCase := usecase.NewTenantGetByNameUseCase(
+	tenantGetByNameUseCase := uc_tenant.NewTenantGetByNameUseCase(
 		cfg,
 		logger,
 		tenantRepo,
 	)
-	tenantCreate := usecase.NewTenantCreateUseCase(
+	tenantCreate := uc_tenant.NewTenantCreateUseCase(
 		cfg,
 		logger,
 		tenantRepo,

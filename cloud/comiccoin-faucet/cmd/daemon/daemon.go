@@ -41,6 +41,7 @@ import (
 	uc_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blocktx"
 	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
+	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/token"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
@@ -284,11 +285,11 @@ func doRunDaemon() {
 	)
 
 	// Tenant
-	tenantGetByIDUseCase := usecase.NewTenantGetByIDUseCase(
+	tenantGetByIDUseCase := uc_tenant.NewTenantGetByIDUseCase(
 		cfg,
 		logger,
 		tenantRepo)
-	tenantUpdateUseCase := usecase.NewTenantUpdateUseCase(
+	tenantUpdateUseCase := uc_tenant.NewTenantUpdateUseCase(
 		cfg,
 		logger,
 		tenantRepo)

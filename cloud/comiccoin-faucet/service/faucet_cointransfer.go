@@ -18,6 +18,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
+	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
 	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/wallet"
 )
@@ -26,8 +27,8 @@ type FaucetCoinTransferService struct {
 	config                                                  *config.Configuration
 	logger                                                  *slog.Logger
 	kmutex                                                  kmutexutil.KMutexProvider
-	tenantGetByIDUseCase                                    *usecase.TenantGetByIDUseCase
-	tenantUpdateUseCase                                     *usecase.TenantUpdateUseCase
+	tenantGetByIDUseCase                                    *uc_tenant.TenantGetByIDUseCase
+	tenantUpdateUseCase                                     *uc_tenant.TenantUpdateUseCase
 	getAccountUseCase                                       *uc_account.GetAccountUseCase
 	upsertAccountUseCase                                    *uc_account.UpsertAccountUseCase
 	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
@@ -40,8 +41,8 @@ func NewFaucetCoinTransferService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
-	uc1 *usecase.TenantGetByIDUseCase,
-	uc2 *usecase.TenantUpdateUseCase,
+	uc1 *uc_tenant.TenantGetByIDUseCase,
+	uc2 *uc_tenant.TenantUpdateUseCase,
 	uc3 *uc_account.GetAccountUseCase,
 	uc4 *uc_account.UpsertAccountUseCase,
 	uc5 *uc_wallet.GetWalletUseCase,

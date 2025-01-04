@@ -20,6 +20,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
@@ -29,7 +30,7 @@ type GatewayUserRegisterService struct {
 	passwordProvider                 password.Provider
 	cache                            mongodbcache.Cacher
 	jwtProvider                      jwt.Provider
-	tenantGetByIDUseCase             *usecase.TenantGetByIDUseCase
+	tenantGetByIDUseCase             *uc_tenant.TenantGetByIDUseCase
 	userGetByEmailUseCase            *uc_user.UserGetByEmailUseCase
 	userCreateUseCase                *uc_user.UserCreateUseCase
 	userUpdateUseCase                *uc_user.UserUpdateUseCase
@@ -42,7 +43,7 @@ func NewGatewayUserRegisterService(
 	pp password.Provider,
 	cach mongodbcache.Cacher,
 	jwtp jwt.Provider,
-	uc1 *usecase.TenantGetByIDUseCase,
+	uc1 *uc_tenant.TenantGetByIDUseCase,
 	uc2 *uc_user.UserGetByEmailUseCase,
 	uc3 *uc_user.UserCreateUseCase,
 	uc4 *uc_user.UserUpdateUseCase,

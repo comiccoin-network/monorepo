@@ -13,7 +13,7 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
@@ -22,8 +22,8 @@ type GatewayInitService struct {
 	logger                 *slog.Logger
 	passwordProvider       password.Provider
 	createAccountService   *CreateAccountService
-	tenantGetByNameUseCase *usecase.TenantGetByNameUseCase
-	tenantCreate           *usecase.TenantCreateUseCase
+	tenantGetByNameUseCase *uc_tenant.TenantGetByNameUseCase
+	tenantCreate           *uc_tenant.TenantCreateUseCase
 	userGet                *uc_user.UserGetByEmailUseCase
 	userCreate             *uc_user.UserCreateUseCase
 }
@@ -33,8 +33,8 @@ func NewGatewayInitService(
 	logger *slog.Logger,
 	pp password.Provider,
 	s1 *CreateAccountService,
-	uc1 *usecase.TenantGetByNameUseCase,
-	uc2 *usecase.TenantCreateUseCase,
+	uc1 *uc_tenant.TenantGetByNameUseCase,
+	uc2 *uc_tenant.TenantCreateUseCase,
 	uc3 *uc_user.UserGetByEmailUseCase,
 	uc4 *uc_user.UserCreateUseCase,
 ) *GatewayInitService {

@@ -19,7 +19,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
@@ -105,7 +105,7 @@ func doRunNewAccount() {
 	//
 
 	// Tenant
-	tenantGetByIDUseCase := usecase.NewTenantGetByIDUseCase(
+	tenantGetByIDUseCase := uc_tenant.NewTenantGetByIDUseCase(
 		cfg,
 		logger,
 		tenantRepo)
