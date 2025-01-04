@@ -7,20 +7,20 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blocktx"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 type ListBlockTransactionsByAddressService struct {
 	config                                *config.Configuration
 	logger                                *slog.Logger
-	listBlockTransactionsByAddressUseCase *usecase.ListBlockTransactionsByAddressUseCase
+	listBlockTransactionsByAddressUseCase *uc_blocktx.ListBlockTransactionsByAddressUseCase
 }
 
 func NewListBlockTransactionsByAddressService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *usecase.ListBlockTransactionsByAddressUseCase,
+	uc *uc_blocktx.ListBlockTransactionsByAddressUseCase,
 ) *ListBlockTransactionsByAddressService {
 	return &ListBlockTransactionsByAddressService{cfg, logger, uc}
 }

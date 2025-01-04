@@ -9,19 +9,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 )
 
 type GetBlockDataService struct {
 	config              *config.Configuration
 	logger              *slog.Logger
-	GetBlockDataUseCase *usecase.GetBlockDataUseCase
+	GetBlockDataUseCase *uc_blockdata.GetBlockDataUseCase
 }
 
 func NewGetBlockDataService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *usecase.GetBlockDataUseCase,
+	uc *uc_blockdata.GetBlockDataUseCase,
 ) *GetBlockDataService {
 	return &GetBlockDataService{cfg, logger, uc}
 }

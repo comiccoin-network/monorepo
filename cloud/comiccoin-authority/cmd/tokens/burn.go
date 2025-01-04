@@ -19,6 +19,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
+	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 )
 
 func BurnTokenCmd() *cobra.Command {
@@ -145,7 +146,7 @@ func doRunBurnToken() {
 	// )
 	//
 	// BlockData
-	getBlockDataUseCase := usecase.NewGetBlockDataUseCase(
+	getBlockDataUseCase := uc_blockdata.NewGetBlockDataUseCase(
 		cfg,
 		logger,
 		bdRepo,

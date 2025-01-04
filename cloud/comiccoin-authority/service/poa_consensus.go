@@ -17,6 +17,8 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
+	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
+	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
 )
 
 // ProofOfAuthorityConsensusMechanismService represents the service which
@@ -34,8 +36,8 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	mempoolTransactionDeleteByIDUseCase        *usecase.MempoolTransactionDeleteByIDUseCase
 	getBlockchainStateUseCase                  *uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase               *uc_blockchainstate.UpsertBlockchainStateUseCase
-	getGenesisBlockDataUseCase                 *usecase.GetGenesisBlockDataUseCase
-	getBlockDataUseCase                        *usecase.GetBlockDataUseCase
+	getGenesisBlockDataUseCase                 *uc_genesisblockdata.GetGenesisBlockDataUseCase
+	getBlockDataUseCase                        *uc_blockdata.GetBlockDataUseCase
 	getAccountUseCase                          *uc_account.GetAccountUseCase
 	getAccountsHashStateUseCase                *uc_account.GetAccountsHashStateUseCase
 	upsertAccountUseCase                       *uc_account.UpsertAccountUseCase
@@ -43,7 +45,7 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	getTokensHashStateUseCase                  *usecase.GetTokensHashStateUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase  *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase
 	proofOfWorkUseCase                         *usecase.ProofOfWorkUseCase
-	upsertBlockDataUseCase                     *usecase.UpsertBlockDataUseCase
+	upsertBlockDataUseCase                     *uc_blockdata.UpsertBlockDataUseCase
 	blockchainStatePublishUseCase              *uc_blockchainstate.BlockchainStatePublishUseCase
 }
 
@@ -57,8 +59,8 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc2 *usecase.MempoolTransactionDeleteByIDUseCase,
 	uc3 *uc_blockchainstate.GetBlockchainStateUseCase,
 	uc4 *uc_blockchainstate.UpsertBlockchainStateUseCase,
-	uc5 *usecase.GetGenesisBlockDataUseCase,
-	uc6 *usecase.GetBlockDataUseCase,
+	uc5 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
+	uc6 *uc_blockdata.GetBlockDataUseCase,
 	uc7 *uc_account.GetAccountUseCase,
 	uc8 *uc_account.GetAccountsHashStateUseCase,
 	uc9 *uc_account.UpsertAccountUseCase,
@@ -66,7 +68,7 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc11 *usecase.GetTokensHashStateUseCase,
 	uc12 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,
 	uc13 *usecase.ProofOfWorkUseCase,
-	uc14 *usecase.UpsertBlockDataUseCase,
+	uc14 *uc_blockdata.UpsertBlockDataUseCase,
 	uc15 *uc_blockchainstate.BlockchainStatePublishUseCase,
 ) *ProofOfAuthorityConsensusMechanismService {
 	return &ProofOfAuthorityConsensusMechanismService{config, logger, dmutex, client, s1, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15}
