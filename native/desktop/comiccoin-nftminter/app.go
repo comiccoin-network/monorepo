@@ -7,7 +7,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	auth_repo "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstatedto"
 )
 
 // App struct
@@ -22,7 +22,7 @@ type App struct {
 
 	tokenRepo                                           TokenRepository
 	nftAssetRepo                                        NFTAssetRepository
-	getBlockchainStateDTOFromBlockchainAuthorityUseCase *auth_usecase.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
+	getBlockchainStateDTOFromBlockchainAuthorityUseCase *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
 }
 
 // NewApp creates a new App application struct
@@ -69,6 +69,11 @@ func (a *App) startup(ctx context.Context) {
 	authorityAddress := preferences.AuthorityAddress
 	authorityAPIKey := preferences.AuthorityAPIKey
 
+	if nftStorageAddress == "" || nftStorageAPIKey == "" || authorityAddress == "" || authorityAPIKey == "" {
+		a.logger.Debug("startup skipping because missing variables")
+		return
+	}
+
 	a.logger.Debug("Preferences load via local environment variables file",
 		slog.Any("nftStorageAddress", nftStorageAddress),
 		slog.Any("nftStorageAddress", nftStorageAPIKey),
@@ -78,13 +83,14 @@ func (a *App) startup(ctx context.Context) {
 	)
 
 	if a.getBlockchainStateDTOFromBlockchainAuthorityUseCase == nil {
+		a.logger.Debug("getBlockchainStateDTOFromBlockchainAuthorityUseCase starting...")
 		blockchainStateDTORepoConfig := auth_repo.NewBlockchainStateDTOConfigurationProvider(authorityAddress)
 		blockchainStateDTORepo := auth_repo.NewBlockchainStateDTORepo(
 			blockchainStateDTORepoConfig,
 			a.logger)
 
 		// Blockchain State DTO
-		a.getBlockchainStateDTOFromBlockchainAuthorityUseCase = auth_usecase.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
+		a.getBlockchainStateDTOFromBlockchainAuthorityUseCase = uc_blockchainstatedto.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
 			a.logger,
 			blockchainStateDTORepo)
 
@@ -92,12 +98,12 @@ func (a *App) startup(ctx context.Context) {
 	}
 
 	if a.nftAssetRepo == nil {
+		a.logger.Debug("nftAssetRepo starting...")
 		nftAssetRepoConfig := NewNFTAssetRepoConfigurationProvider(nftStorageAddress, nftStorageAPIKey)
 		nftAssetRepo := NewNFTAssetRepo(nftAssetRepoConfig, a.logger)
 		a.nftAssetRepo = nftAssetRepo
 		a.logger.Debug("nftAssetRepo ready")
 	}
-
 }
 
 func (a *App) shutdown(ctx context.Context) {

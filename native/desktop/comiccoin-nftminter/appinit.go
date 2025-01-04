@@ -226,6 +226,12 @@ func (a *App) SaveNFTStoreConfigVariables(nftStoreAPIKey string, nftStoreRemoteA
 			slog.Any("error", err))
 		return err
 	}
+
+	//
+	// STEP 4: Startup...
+	//
+
+	a.startup(a.ctx)
 	return nil
 
 }
@@ -264,6 +270,12 @@ func (a *App) SaveAuthorityStoreConfigVariables(authorityAPIKey string, authorit
 			slog.Any("error", err))
 		return err
 	}
+
+	//
+	// STEP 4: Startup...
+	//
+
+	a.startup(a.ctx)
 	return nil
 
 }

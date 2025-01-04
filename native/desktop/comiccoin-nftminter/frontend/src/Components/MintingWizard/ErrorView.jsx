@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { XCircle, RotateCcw, ChevronLeft } from "lucide-react";
 
-import { nftState, nftSubmissionErrorResponseState, DEFAULT_NFT_STATE } from "../../AppState";
+import { nftState, nftSubmissionErrorResponseState, nftSubmissionSuccessResponseState, DEFAULT_NFT_STATE } from "../../AppState";
 
 
 function MintingWizardErrorView() {

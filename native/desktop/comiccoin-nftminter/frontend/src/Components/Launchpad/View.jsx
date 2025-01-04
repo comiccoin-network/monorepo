@@ -4,7 +4,7 @@ import { Rocket, AlertTriangle, XCircle, ChevronRight } from "lucide-react";
 import { useRecoilState } from "recoil";
 import { ShutdownApp } from "../../../wailsjs/go/main/App";
 
-import { nftState, DEFAULT_NFT_STATE } from "../../AppState";
+import { nftState, nftSubmissionErrorResponseState, nftSubmissionSuccessResponseState, DEFAULT_NFT_STATE } from "../../AppState";
 
 function LaunchpadView() {
   // Global State
