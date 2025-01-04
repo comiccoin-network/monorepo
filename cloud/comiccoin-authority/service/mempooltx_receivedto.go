@@ -7,19 +7,19 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 )
 
 type MempoolTransactionReceiveDTOFromNetworkService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
-	mempoolTransactionCreateUseCase *usecase.MempoolTransactionCreateUseCase
+	mempoolTransactionCreateUseCase *uc_mempooltx.MempoolTransactionCreateUseCase
 }
 
 func NewMempoolTransactionReceiveDTOFromNetworkService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *usecase.MempoolTransactionCreateUseCase,
+	uc *uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *MempoolTransactionReceiveDTOFromNetworkService {
 	return &MempoolTransactionReceiveDTOFromNetworkService{cfg, logger, uc}
 }

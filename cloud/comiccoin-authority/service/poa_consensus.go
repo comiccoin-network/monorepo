@@ -19,6 +19,8 @@ import (
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
+	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
+	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
 )
 
 // ProofOfAuthorityConsensusMechanismService represents the service which
@@ -32,8 +34,8 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	dmutex                                     distributedmutex.Adapter
 	dbClient                                   *mongo.Client
 	getProofOfAuthorityPrivateKeyService       *GetProofOfAuthorityPrivateKeyService
-	mempoolTransactionInsertionDetectorUseCase *usecase.MempoolTransactionInsertionDetectorUseCase
-	mempoolTransactionDeleteByIDUseCase        *usecase.MempoolTransactionDeleteByIDUseCase
+	mempoolTransactionInsertionDetectorUseCase *uc_mempooltx.MempoolTransactionInsertionDetectorUseCase
+	mempoolTransactionDeleteByIDUseCase        *uc_mempooltx.MempoolTransactionDeleteByIDUseCase
 	getBlockchainStateUseCase                  *uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase               *uc_blockchainstate.UpsertBlockchainStateUseCase
 	getGenesisBlockDataUseCase                 *uc_genesisblockdata.GetGenesisBlockDataUseCase
@@ -44,7 +46,7 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	getTokenUseCase                            *usecase.GetTokenUseCase
 	getTokensHashStateUseCase                  *usecase.GetTokensHashStateUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase  *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase
-	proofOfWorkUseCase                         *usecase.ProofOfWorkUseCase
+	proofOfWorkUseCase                         *uc_pow.ProofOfWorkUseCase
 	upsertBlockDataUseCase                     *uc_blockdata.UpsertBlockDataUseCase
 	blockchainStatePublishUseCase              *uc_blockchainstate.BlockchainStatePublishUseCase
 }
@@ -55,8 +57,8 @@ func NewProofOfAuthorityConsensusMechanismService(
 	dmutex distributedmutex.Adapter,
 	client *mongo.Client,
 	s1 *GetProofOfAuthorityPrivateKeyService,
-	uc1 *usecase.MempoolTransactionInsertionDetectorUseCase,
-	uc2 *usecase.MempoolTransactionDeleteByIDUseCase,
+	uc1 *uc_mempooltx.MempoolTransactionInsertionDetectorUseCase,
+	uc2 *uc_mempooltx.MempoolTransactionDeleteByIDUseCase,
 	uc3 *uc_blockchainstate.GetBlockchainStateUseCase,
 	uc4 *uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc5 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
@@ -67,7 +69,7 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc10 *usecase.GetTokenUseCase,
 	uc11 *usecase.GetTokensHashStateUseCase,
 	uc12 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,
-	uc13 *usecase.ProofOfWorkUseCase,
+	uc13 *uc_pow.ProofOfWorkUseCase,
 	uc14 *uc_blockdata.UpsertBlockDataUseCase,
 	uc15 *uc_blockchainstate.BlockchainStatePublishUseCase,
 ) *ProofOfAuthorityConsensusMechanismService {

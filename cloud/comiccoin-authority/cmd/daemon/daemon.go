@@ -32,6 +32,8 @@ import (
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blocktx"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
+	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
+	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -179,23 +181,23 @@ func doRunDaemon() {
 	)
 
 	// Mempool Transaction
-	mempoolTransactionCreateUseCase := usecase.NewMempoolTransactionCreateUseCase(
+	mempoolTransactionCreateUseCase := uc_mempooltx.NewMempoolTransactionCreateUseCase(
 		cfg,
 		logger,
 		mempoolTxRepo,
 	)
-	mempoolTransactionListByChainIDUseCase := usecase.NewMempoolTransactionListByChainIDUseCase(
+	mempoolTransactionListByChainIDUseCase := uc_mempooltx.NewMempoolTransactionListByChainIDUseCase(
 		cfg,
 		logger,
 		mempoolTxRepo,
 	)
 	_ = mempoolTransactionListByChainIDUseCase
-	mempoolTransactionDeleteByIDUseCase := usecase.NewMempoolTransactionDeleteByIDUseCase(
+	mempoolTransactionDeleteByIDUseCase := uc_mempooltx.NewMempoolTransactionDeleteByIDUseCase(
 		cfg,
 		logger,
 		mempoolTxRepo,
 	)
-	mempoolTransactionInsertionDetectorUseCase := usecase.NewMempoolTransactionInsertionDetectorUseCase(
+	mempoolTransactionInsertionDetectorUseCase := uc_mempooltx.NewMempoolTransactionInsertionDetectorUseCase(
 		cfg,
 		logger,
 		mempoolTxRepo,
@@ -206,7 +208,7 @@ func doRunDaemon() {
 	}()
 
 	// Proof of Work
-	proofOfWorkUseCase := usecase.NewProofOfWorkUseCase(
+	proofOfWorkUseCase := uc_pow.NewProofOfWorkUseCase(
 		cfg,
 		logger,
 	)

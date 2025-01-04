@@ -20,6 +20,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
+	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 )
 
 func BurnTokenCmd() *cobra.Command {
@@ -164,7 +165,7 @@ func doRunBurnToken() {
 	// )
 
 	// Mempool Transaction
-	mempoolTransactionCreateUseCase := usecase.NewMempoolTransactionCreateUseCase(
+	mempoolTransactionCreateUseCase := uc_mempooltx.NewMempoolTransactionCreateUseCase(
 		cfg,
 		logger,
 		mempoolTxRepo,

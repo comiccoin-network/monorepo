@@ -18,6 +18,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
+	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 )
 
 // Command line argument flags
@@ -112,7 +113,7 @@ func doRunTransferCoinsCommand() {
 	)
 
 	// Mempool Transaction
-	mempoolTransactionCreateUseCase := usecase.NewMempoolTransactionCreateUseCase(
+	mempoolTransactionCreateUseCase := uc_mempooltx.NewMempoolTransactionCreateUseCase(
 		cfg,
 		logger,
 		mempoolTxRepo,
