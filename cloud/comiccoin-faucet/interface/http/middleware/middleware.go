@@ -8,6 +8,7 @@ import (
 	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/bannedipaddress"
 )
 
 type Middleware interface {
@@ -20,7 +21,7 @@ type middleware struct {
 	blacklist                           blacklist.Provider
 	jwt                                 jwt.Provider
 	userGetBySessionIDUseCase           *usecase.UserGetBySessionIDUseCase
-	bannedIPAddressListAllValuesUseCase *usecase.BannedIPAddressListAllValuesUseCase
+	bannedIPAddressListAllValuesUseCase *uc_bannedipaddress.BannedIPAddressListAllValuesUseCase
 	IPCountryBlocker                    ipcb.Provider
 }
 
@@ -30,7 +31,7 @@ func NewMiddleware(
 	ipcountryblocker ipcb.Provider,
 	jwtp jwt.Provider,
 	uc1 *usecase.UserGetBySessionIDUseCase,
-	uc2 *usecase.BannedIPAddressListAllValuesUseCase,
+	uc2 *uc_bannedipaddress.BannedIPAddressListAllValuesUseCase,
 ) Middleware {
 	return &middleware{
 		logger:                              loggerp,

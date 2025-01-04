@@ -31,6 +31,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 	uc_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/attachment"
+	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/bannedipaddress"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -126,8 +127,8 @@ func doRunDaemon() {
 	sendUserVerificationEmailUseCase := usecase.NewSendUserVerificationEmailUseCase(cfg, logger, templatedEmailer)
 
 	// Banned IP Addresses
-	bannedIPAddressListAllValuesUseCase := usecase.NewBannedIPAddressListAllValuesUseCase(cfg, logger, banIPAddrRepo)
-	createBannedIPAddressUseCase := usecase.NewCreateBannedIPAddressUseCase(cfg, logger, banIPAddrRepo)
+	bannedIPAddressListAllValuesUseCase := uc_bannedipaddress.NewBannedIPAddressListAllValuesUseCase(cfg, logger, banIPAddrRepo)
+	createBannedIPAddressUseCase := uc_bannedipaddress.NewCreateBannedIPAddressUseCase(cfg, logger, banIPAddrRepo)
 
 	// Attachment
 	createAttachmentUseCase := uc_attachment.NewCreateAttachmentUseCase(cfg, logger, attachmentRepo)
