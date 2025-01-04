@@ -43,6 +43,7 @@ import (
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/token"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
+	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -326,23 +327,23 @@ func doRunDaemon() {
 		userRepo)
 
 	// User Transaction
-	createUserTransactionUseCase := usecase.NewCreateUserTransactionUseCase(
+	createUserTransactionUseCase := uc_usertx.NewCreateUserTransactionUseCase(
 		cfg,
 		logger,
 		userTransactionRepo,
 	)
-	userTransactionDeleteUseCase := usecase.NewUserTransactionDeleteUseCase(
+	userTransactionDeleteUseCase := uc_usertx.NewUserTransactionDeleteUseCase(
 		cfg,
 		logger,
 		userTransactionRepo,
 	)
 	_ = userTransactionDeleteUseCase
-	userTransactionGetUseCase := usecase.NewUserTransactionGetUseCase(
+	userTransactionGetUseCase := uc_usertx.NewUserTransactionGetUseCase(
 		cfg,
 		logger,
 		userTransactionRepo,
 	)
-	userTransactionUpdateUseCase := usecase.NewUserTransactionUpdateUseCase(
+	userTransactionUpdateUseCase := uc_usertx.NewUserTransactionUpdateUseCase(
 		cfg,
 		logger,
 		userTransactionRepo,

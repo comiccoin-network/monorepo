@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -17,7 +18,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
-	"github.com/ethereum/go-ethereum/common"
+	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
 )
 
 type FaucetCoinTransferService struct {
@@ -31,7 +32,7 @@ type FaucetCoinTransferService struct {
 	getWalletUseCase                                        *usecase.GetWalletUseCase
 	walletDecryptKeyUseCase                                 *usecase.WalletDecryptKeyUseCase
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *usecase.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
-	createUserTransactionUseCase                            *usecase.CreateUserTransactionUseCase
+	createUserTransactionUseCase                            *uc_usertx.CreateUserTransactionUseCase
 }
 
 func NewFaucetCoinTransferService(
@@ -45,7 +46,7 @@ func NewFaucetCoinTransferService(
 	uc5 *usecase.GetWalletUseCase,
 	uc6 *usecase.WalletDecryptKeyUseCase,
 	uc7 *usecase.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
-	uc8 *usecase.CreateUserTransactionUseCase,
+	uc8 *uc_usertx.CreateUserTransactionUseCase,
 ) *FaucetCoinTransferService {
 	return &FaucetCoinTransferService{cfg, logger, kmutex, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8}
 }

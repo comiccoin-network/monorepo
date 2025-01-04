@@ -1,4 +1,4 @@
-package usecase
+package usertx
 
 import (
 	"context"
@@ -7,31 +7,30 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type UserTransactionDeleteUseCase struct {
+type CreateUserTransactionUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.UserTransactionRepository
 }
 
-func NewUserTransactionDeleteUseCase(
+func NewCreateUserTransactionUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.UserTransactionRepository,
-) *UserTransactionDeleteUseCase {
-	return &UserTransactionDeleteUseCase{config, logger, repo}
+) *CreateUserTransactionUseCase {
+	return &CreateUserTransactionUseCase{config, logger, repo}
 }
 
-func (uc *UserTransactionDeleteUseCase) Execute(ctx context.Context, id primitive.ObjectID) error {
+func (uc *CreateUserTransactionUseCase) Execute(ctx context.Context, userTransaction *domain.UserTransaction) error {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if id.IsZero() {
-		e["id"] = "UserTransaction ID is required"
+	if userTransaction == nil {
+		e["userTransaction"] = "User transaction is required"
 	} else {
 
 	}
@@ -45,5 +44,5 @@ func (uc *UserTransactionDeleteUseCase) Execute(ctx context.Context, id primitiv
 	// STEP 2: Insert into database.
 	//
 
-	return uc.repo.DeleteByID(ctx, id)
+	return uc.repo.Create(ctx, userTransaction)
 }

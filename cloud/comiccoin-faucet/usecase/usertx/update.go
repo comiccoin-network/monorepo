@@ -1,4 +1,4 @@
-package usecase
+package usertx
 
 import (
 	"context"
@@ -9,28 +9,28 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type CreateUserTransactionUseCase struct {
+type UserTransactionUpdateUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.UserTransactionRepository
 }
 
-func NewCreateUserTransactionUseCase(
+func NewUserTransactionUpdateUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.UserTransactionRepository,
-) *CreateUserTransactionUseCase {
-	return &CreateUserTransactionUseCase{config, logger, repo}
+) *UserTransactionUpdateUseCase {
+	return &UserTransactionUpdateUseCase{config, logger, repo}
 }
 
-func (uc *CreateUserTransactionUseCase) Execute(ctx context.Context, userTransaction *domain.UserTransaction) error {
+func (uc *UserTransactionUpdateUseCase) Execute(ctx context.Context, userTransaction *domain.UserTransaction) error {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
 	if userTransaction == nil {
-		e["userTransaction"] = "User transaction is required"
+		e["user_transaction"] = "User transaction is required"
 	} else {
 
 	}
@@ -41,8 +41,8 @@ func (uc *CreateUserTransactionUseCase) Execute(ctx context.Context, userTransac
 	}
 
 	//
-	// STEP 2: Insert into database.
+	// STEP 2: Update in our database.
 	//
 
-	return uc.repo.Create(ctx, userTransaction)
+	return uc.repo.UpdateByID(ctx, userTransaction)
 }
