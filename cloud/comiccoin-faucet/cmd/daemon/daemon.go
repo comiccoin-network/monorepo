@@ -42,6 +42,7 @@ import (
 	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/token"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -291,35 +292,35 @@ func doRunDaemon() {
 		tenantRepo)
 
 	// User
-	userGetByEmailUseCase := usecase.NewUserGetByEmailUseCase(
+	userGetByEmailUseCase := uc_user.NewUserGetByEmailUseCase(
 		cfg,
 		logger,
 		userRepo)
-	userCreateUseCase := usecase.NewUserCreateUseCase(
+	userCreateUseCase := uc_user.NewUserCreateUseCase(
 		cfg,
 		logger,
 		userRepo)
-	userUpdateUseCase := usecase.NewUserUpdateUseCase(
+	userUpdateUseCase := uc_user.NewUserUpdateUseCase(
 		cfg,
 		logger,
 		userRepo)
-	userGetBySessionIDUseCase := usecase.NewUserGetBySessionIDUseCase(
+	userGetBySessionIDUseCase := uc_user.NewUserGetBySessionIDUseCase(
 		cfg,
 		logger,
 		cache)
-	userGetByIDUseCase := usecase.NewUserGetByIDUseCase(
+	userGetByIDUseCase := uc_user.NewUserGetByIDUseCase(
 		cfg,
 		logger,
 		userRepo)
-	userGetByVerificationCodeUseCase := usecase.NewUserGetByVerificationCodeUseCase(
+	userGetByVerificationCodeUseCase := uc_user.NewUserGetByVerificationCodeUseCase(
 		cfg,
 		logger,
 		userRepo)
-	userCountByFilterUseCase := usecase.NewUserCountByFilterUseCase(
+	userCountByFilterUseCase := uc_user.NewUserCountByFilterUseCase(
 		cfg,
 		logger,
 		userRepo)
-	userListByFilterUseCase := usecase.NewUserListByFilterUseCase(
+	userListByFilterUseCase := uc_user.NewUserListByFilterUseCase(
 		cfg,
 		logger,
 		userRepo)

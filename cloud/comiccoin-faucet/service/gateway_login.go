@@ -17,6 +17,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type GatewayLoginService struct {
@@ -25,8 +26,8 @@ type GatewayLoginService struct {
 	cache                 mongodbcache.Cacher
 	jwtProvider           jwt.Provider
 	tenantGetByIDUseCase  *usecase.TenantGetByIDUseCase
-	userGetByEmailUseCase *usecase.UserGetByEmailUseCase
-	userUpdateUseCase     *usecase.UserUpdateUseCase
+	userGetByEmailUseCase *uc_user.UserGetByEmailUseCase
+	userUpdateUseCase     *uc_user.UserUpdateUseCase
 }
 
 func NewGatewayLoginService(
@@ -35,8 +36,8 @@ func NewGatewayLoginService(
 	cach mongodbcache.Cacher,
 	jwtp jwt.Provider,
 	uc1 *usecase.TenantGetByIDUseCase,
-	uc2 *usecase.UserGetByEmailUseCase,
-	uc3 *usecase.UserUpdateUseCase,
+	uc2 *uc_user.UserGetByEmailUseCase,
+	uc3 *uc_user.UserUpdateUseCase,
 ) *GatewayLoginService {
 	return &GatewayLoginService{logger, pp, cach, jwtp, uc1, uc2, uc3}
 }

@@ -9,17 +9,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type UserCountJoinedThisWeekService struct {
 	logger                              *slog.Logger
-	comicSubmissionCountByFilterUseCase *usecase.UserCountByFilterUseCase
+	comicSubmissionCountByFilterUseCase *uc_user.UserCountByFilterUseCase
 }
 
 func NewUserCountJoinedThisWeekService(
 	logger *slog.Logger,
-	uc1 *usecase.UserCountByFilterUseCase,
+	uc1 *uc_user.UserCountByFilterUseCase,
 ) *UserCountJoinedThisWeekService {
 	return &UserCountJoinedThisWeekService{logger, uc1}
 }

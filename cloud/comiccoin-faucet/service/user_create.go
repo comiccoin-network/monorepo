@@ -19,6 +19,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type UserCreateService struct {
@@ -28,9 +29,9 @@ type UserCreateService struct {
 	cache                 mongodbcache.Cacher
 	jwtProvider           jwt.Provider
 	tenantGetByIDUseCase  *usecase.TenantGetByIDUseCase
-	userGetByEmailUseCase *usecase.UserGetByEmailUseCase
-	userCreateUseCase     *usecase.UserCreateUseCase
-	userUpdateUseCase     *usecase.UserUpdateUseCase
+	userGetByEmailUseCase *uc_user.UserGetByEmailUseCase
+	userCreateUseCase     *uc_user.UserCreateUseCase
+	userUpdateUseCase     *uc_user.UserUpdateUseCase
 }
 
 func NewUserCreateService(
@@ -40,9 +41,9 @@ func NewUserCreateService(
 	cach mongodbcache.Cacher,
 	jwtp jwt.Provider,
 	uc1 *usecase.TenantGetByIDUseCase,
-	uc2 *usecase.UserGetByEmailUseCase,
-	uc3 *usecase.UserCreateUseCase,
-	uc4 *usecase.UserUpdateUseCase,
+	uc2 *uc_user.UserGetByEmailUseCase,
+	uc3 *uc_user.UserCreateUseCase,
+	uc4 *uc_user.UserUpdateUseCase,
 ) *UserCreateService {
 	return &UserCreateService{cfg, logger, pp, cach, jwtp, uc1, uc2, uc3, uc4}
 }

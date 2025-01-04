@@ -11,10 +11,10 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/bannedipaddress"
 	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type ComicSubmissionJudgeOperationService struct {
@@ -22,8 +22,8 @@ type ComicSubmissionJudgeOperationService struct {
 	logger                        *slog.Logger
 	faucetCoinTransferService     *FaucetCoinTransferService
 	cloudStorageDeleteUseCase     *uc_cloudstorage.CloudStorageDeleteUseCase
-	userGetByIDUseCase            *usecase.UserGetByIDUseCase
-	userUpdateUseCase             *usecase.UserUpdateUseCase
+	userGetByIDUseCase            *uc_user.UserGetByIDUseCase
+	userUpdateUseCase             *uc_user.UserUpdateUseCase
 	createBannedIPAddressUseCase  *uc_bannedipaddress.CreateBannedIPAddressUseCase
 	comicSubmissionGetByIDUseCase *uc_comicsubmission.ComicSubmissionGetByIDUseCase
 	comicSubmissionUpdateUseCase  *uc_comicsubmission.ComicSubmissionUpdateUseCase
@@ -34,8 +34,8 @@ func NewComicSubmissionJudgeOperationService(
 	logger *slog.Logger,
 	s1 *FaucetCoinTransferService,
 	uc1 *uc_cloudstorage.CloudStorageDeleteUseCase,
-	uc2 *usecase.UserGetByIDUseCase,
-	uc3 *usecase.UserUpdateUseCase,
+	uc2 *uc_user.UserGetByIDUseCase,
+	uc3 *uc_user.UserUpdateUseCase,
 	uc4 *uc_bannedipaddress.CreateBannedIPAddressUseCase,
 	uc5 *uc_comicsubmission.ComicSubmissionGetByIDUseCase,
 	uc6 *uc_comicsubmission.ComicSubmissionUpdateUseCase,

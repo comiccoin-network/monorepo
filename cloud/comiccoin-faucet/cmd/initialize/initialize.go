@@ -19,6 +19,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 var (
@@ -117,12 +118,12 @@ func doRunGatewayInit() {
 	)
 
 	// User
-	userGetByEmailUseCase := usecase.NewUserGetByEmailUseCase(
+	userGetByEmailUseCase := uc_user.NewUserGetByEmailUseCase(
 		cfg,
 		logger,
 		userRepo,
 	)
-	userCreateUseCase := usecase.NewUserCreateUseCase(
+	userCreateUseCase := uc_user.NewUserCreateUseCase(
 		cfg,
 		logger,
 		userRepo,

@@ -14,6 +14,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type GatewayInitService struct {
@@ -23,8 +24,8 @@ type GatewayInitService struct {
 	createAccountService   *CreateAccountService
 	tenantGetByNameUseCase *usecase.TenantGetByNameUseCase
 	tenantCreate           *usecase.TenantCreateUseCase
-	userGet                *usecase.UserGetByEmailUseCase
-	userCreate             *usecase.UserCreateUseCase
+	userGet                *uc_user.UserGetByEmailUseCase
+	userCreate             *uc_user.UserCreateUseCase
 }
 
 func NewGatewayInitService(
@@ -34,8 +35,8 @@ func NewGatewayInitService(
 	s1 *CreateAccountService,
 	uc1 *usecase.TenantGetByNameUseCase,
 	uc2 *usecase.TenantCreateUseCase,
-	uc3 *usecase.UserGetByEmailUseCase,
-	uc4 *usecase.UserCreateUseCase,
+	uc3 *uc_user.UserGetByEmailUseCase,
+	uc4 *uc_user.UserCreateUseCase,
 ) *GatewayInitService {
 	return &GatewayInitService{config, logger, pp, s1, uc1, uc2, uc3, uc4}
 }

@@ -15,14 +15,15 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type GatewayAddWalletAddressToFaucetService struct {
 	config                    *config.Configuration
 	logger                    *slog.Logger
 	tenantGetByIDUseCase      *usecase.TenantGetByIDUseCase
-	userGetByIDUseCase        *usecase.UserGetByIDUseCase
-	userUpdateUseCase         *usecase.UserUpdateUseCase
+	userGetByIDUseCase        *uc_user.UserGetByIDUseCase
+	userUpdateUseCase         *uc_user.UserUpdateUseCase
 	faucetCoinTransferService *FaucetCoinTransferService
 }
 
@@ -30,8 +31,8 @@ func NewGatewayAddWalletAddressToFaucetService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc1 *usecase.TenantGetByIDUseCase,
-	uc2 *usecase.UserGetByIDUseCase,
-	uc3 *usecase.UserUpdateUseCase,
+	uc2 *uc_user.UserGetByIDUseCase,
+	uc3 *uc_user.UserUpdateUseCase,
 	s1 *FaucetCoinTransferService,
 ) *GatewayAddWalletAddressToFaucetService {
 	return &GatewayAddWalletAddressToFaucetService{cfg, logger, uc1, uc2, uc3, s1}

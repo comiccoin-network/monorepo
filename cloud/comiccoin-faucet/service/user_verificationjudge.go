@@ -12,19 +12,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type UserProfileVerificationJudgeOperationService struct {
 	logger             *slog.Logger
-	userGetByIDUseCase *usecase.UserGetByIDUseCase
-	userUpdateUseCase  *usecase.UserUpdateUseCase
+	userGetByIDUseCase *uc_user.UserGetByIDUseCase
+	userUpdateUseCase  *uc_user.UserUpdateUseCase
 }
 
 func NewUserProfileVerificationJudgeOperationService(
 	logger *slog.Logger,
-	uc1 *usecase.UserGetByIDUseCase,
-	uc2 *usecase.UserUpdateUseCase,
+	uc1 *uc_user.UserGetByIDUseCase,
+	uc2 *uc_user.UserUpdateUseCase,
 ) *UserProfileVerificationJudgeOperationService {
 	return &UserProfileVerificationJudgeOperationService{logger, uc1, uc2}
 }

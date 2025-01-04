@@ -12,21 +12,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type GatewayRefreshTokenService struct {
 	logger                *slog.Logger
 	cache                 mongodbcache.Cacher
 	jwtProvider           jwt.Provider
-	userGetByEmailUseCase *usecase.UserGetByEmailUseCase
+	userGetByEmailUseCase *uc_user.UserGetByEmailUseCase
 }
 
 func NewGatewayRefreshTokenService(
 	logger *slog.Logger,
 	cach mongodbcache.Cacher,
 	jwtp jwt.Provider,
-	uc1 *usecase.UserGetByEmailUseCase,
+	uc1 *uc_user.UserGetByEmailUseCase,
 ) *GatewayRefreshTokenService {
 	return &GatewayRefreshTokenService{logger, cach, jwtp, uc1}
 }

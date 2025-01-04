@@ -10,21 +10,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type GatewayVerifyEmailService struct {
 	logger                           *slog.Logger
 	kmutex                           kmutexutil.KMutexProvider
-	userGetByVerificationCodeUseCase *usecase.UserGetByVerificationCodeUseCase
-	userUpdateUseCase                *usecase.UserUpdateUseCase
+	userGetByVerificationCodeUseCase *uc_user.UserGetByVerificationCodeUseCase
+	userUpdateUseCase                *uc_user.UserUpdateUseCase
 }
 
 func NewGatewayVerifyEmailService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
-	uc1 *usecase.UserGetByVerificationCodeUseCase,
-	uc2 *usecase.UserUpdateUseCase,
+	uc1 *uc_user.UserGetByVerificationCodeUseCase,
+	uc2 *uc_user.UserUpdateUseCase,
 ) *GatewayVerifyEmailService {
 	return &GatewayVerifyEmailService{logger, kmutex, uc1, uc2}
 }

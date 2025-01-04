@@ -13,15 +13,15 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/attachment"
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type ComicSubmissionCreateService struct {
 	config                                             *config.Configuration
 	logger                                             *slog.Logger
-	userGetByIDUseCase                                 *usecase.UserGetByIDUseCase
+	userGetByIDUseCase                                 *uc_user.UserGetByIDUseCase
 	comicSubmissionCountTotalCreatedTodayByUserUseCase *uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase
 	attachmentGetUseCase                               *uc_attachment.AttachmentGetUseCase
 	attachmentUpdateUseCase                            *uc_attachment.AttachmentUpdateUseCase
@@ -31,7 +31,7 @@ type ComicSubmissionCreateService struct {
 func NewComicSubmissionCreateService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc1 *usecase.UserGetByIDUseCase,
+	uc1 *uc_user.UserGetByIDUseCase,
 	uc2 *uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase,
 	uc3 *uc_attachment.AttachmentGetUseCase,
 	uc4 *uc_attachment.AttachmentUpdateUseCase,

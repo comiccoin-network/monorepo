@@ -7,8 +7,8 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/blacklist"
 	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/jwt"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/bannedipaddress"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type Middleware interface {
@@ -20,7 +20,7 @@ type middleware struct {
 	logger                              *slog.Logger
 	blacklist                           blacklist.Provider
 	jwt                                 jwt.Provider
-	userGetBySessionIDUseCase           *usecase.UserGetBySessionIDUseCase
+	userGetBySessionIDUseCase           *uc_user.UserGetBySessionIDUseCase
 	bannedIPAddressListAllValuesUseCase *uc_bannedipaddress.BannedIPAddressListAllValuesUseCase
 	IPCountryBlocker                    ipcb.Provider
 }
@@ -30,7 +30,7 @@ func NewMiddleware(
 	blp blacklist.Provider,
 	ipcountryblocker ipcb.Provider,
 	jwtp jwt.Provider,
-	uc1 *usecase.UserGetBySessionIDUseCase,
+	uc1 *uc_user.UserGetBySessionIDUseCase,
 	uc2 *uc_bannedipaddress.BannedIPAddressListAllValuesUseCase,
 ) Middleware {
 	return &middleware{

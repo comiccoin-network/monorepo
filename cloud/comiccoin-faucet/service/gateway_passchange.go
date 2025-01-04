@@ -13,23 +13,23 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/password"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type GatewayChangePasswordService struct {
 	logger             *slog.Logger
 	kmutex             kmutexutil.KMutexProvider
 	passwordProvider   password.Provider
-	userGetByIDUseCase *usecase.UserGetByIDUseCase
-	userUpdateUseCase  *usecase.UserUpdateUseCase
+	userGetByIDUseCase *uc_user.UserGetByIDUseCase
+	userUpdateUseCase  *uc_user.UserUpdateUseCase
 }
 
 func NewGatewayChangePasswordService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
 	passwordProvider password.Provider,
-	uc1 *usecase.UserGetByIDUseCase,
-	uc2 *usecase.UserUpdateUseCase,
+	uc1 *uc_user.UserGetByIDUseCase,
+	uc2 *uc_user.UserUpdateUseCase,
 ) *GatewayChangePasswordService {
 	return &GatewayChangePasswordService{logger, kmutex, passwordProvider, uc1, uc2}
 }

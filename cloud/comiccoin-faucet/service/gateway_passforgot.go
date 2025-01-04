@@ -8,21 +8,21 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/templatedemailer"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 type GatewayForgotPasswordService struct {
 	logger                *slog.Logger
 	templatedEmailer      templatedemailer.TemplatedEmailer
-	userGetByEmailUseCase *usecase.UserGetByEmailUseCase
-	userUpdateUseCase     *usecase.UserUpdateUseCase
+	userGetByEmailUseCase *uc_user.UserGetByEmailUseCase
+	userUpdateUseCase     *uc_user.UserUpdateUseCase
 }
 
 func NewGatewayForgotPasswordService(
 	logger *slog.Logger,
 	templatedEmailer templatedemailer.TemplatedEmailer,
-	uc1 *usecase.UserGetByEmailUseCase,
-	uc2 *usecase.UserUpdateUseCase,
+	uc1 *uc_user.UserGetByEmailUseCase,
+	uc2 *uc_user.UserUpdateUseCase,
 ) *GatewayForgotPasswordService {
 	return &GatewayForgotPasswordService{logger, templatedEmailer, uc1, uc2}
 }

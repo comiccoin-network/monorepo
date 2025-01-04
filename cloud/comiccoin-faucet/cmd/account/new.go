@@ -20,6 +20,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
 var (
@@ -110,15 +111,15 @@ func doRunNewAccount() {
 		tenantRepo)
 
 	// User
-	userGetByEmailUseCase := usecase.NewUserGetByEmailUseCase(
+	userGetByEmailUseCase := uc_user.NewUserGetByEmailUseCase(
 		cfg,
 		logger,
 		userRepo)
-	userCreateUseCase := usecase.NewUserCreateUseCase(
+	userCreateUseCase := uc_user.NewUserCreateUseCase(
 		cfg,
 		logger,
 		userRepo)
-	userUpdateUseCase := usecase.NewUserUpdateUseCase(
+	userUpdateUseCase := uc_user.NewUserUpdateUseCase(
 		cfg,
 		logger,
 		userRepo)
