@@ -1,11 +1,11 @@
-package usecase
+package account
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
 
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 
 	pkgkeystore "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/blockchain/keystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
@@ -18,30 +18,30 @@ import (
 // Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
 //
 
-type AccountEncryptKeyUseCase struct {
+type AccountDecryptKeyUseCase struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	keystore pkgkeystore.KeystoreAdapter
 	repo     domain.AccountRepository
 }
 
-func NewAccountEncryptKeyUseCase(
+func NewAccountDecryptKeyUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	keystore pkgkeystore.KeystoreAdapter,
 	repo domain.AccountRepository,
-) *AccountEncryptKeyUseCase {
-	return &AccountEncryptKeyUseCase{config, logger, keystore, repo}
+) *AccountDecryptKeyUseCase {
+	return &AccountDecryptKeyUseCase{config, logger, keystore, repo}
 }
 
-func (uc *AccountEncryptKeyUseCase) Execute(ctx context.Context, dataDir string, walletPassword *sstring.SecureString) (*common.Address, []byte, error) {
+func (uc *AccountDecryptKeyUseCase) Execute(ctx context.Context, walletKeystoreBytes []byte, walletPassword *sstring.SecureString) (*keystore.Key, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if dataDir == "" {
-		e["data_dir"] = "missing value"
+	if walletKeystoreBytes == nil {
+		e["wallet_keystore_bytes"] = "missing value"
 	}
 	if walletPassword == nil {
 		e["wallet_password"] = "missing value"
@@ -49,19 +49,19 @@ func (uc *AccountEncryptKeyUseCase) Execute(ctx context.Context, dataDir string,
 	if len(e) != 0 {
 		uc.logger.Warn("Failed reading account key",
 			slog.Any("error", e))
-		return nil, nil, httperror.NewForBadRequest(&e)
+		return nil, httperror.NewForBadRequest(&e)
 	}
 
 	//
-	// STEP 2: Create the encryted physical wallet on file.
+	// STEP 2: Decrypt key
 	//
 
-	walletAddress, walletKeystoreBytes, err := uc.keystore.CreateWallet(walletPassword)
+	key, err := uc.keystore.OpenWallet(walletKeystoreBytes, walletPassword)
 	if err != nil {
-		uc.logger.Error("failed creating new keystore",
+		uc.logger.Warn("Failed getting account",
 			slog.Any("error", err))
-		return nil, nil, fmt.Errorf("failed creating new keystore: %s", err)
+		return nil, httperror.NewForBadRequestWithSingleField("message", fmt.Sprintf("failed getting wallet: %v", err))
 	}
 
-	return &walletAddress, walletKeystoreBytes, nil
+	return key, nil
 }

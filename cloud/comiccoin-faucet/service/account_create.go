@@ -10,6 +10,7 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 )
 
 type CreateAccountService struct {
@@ -17,7 +18,7 @@ type CreateAccountService struct {
 	walletEncryptKeyUseCase *usecase.WalletEncryptKeyUseCase
 	walletDecryptKeyUseCase *usecase.WalletDecryptKeyUseCase
 	createWalletUseCase     *usecase.CreateWalletUseCase
-	createAccountUseCase    *usecase.CreateAccountUseCase
+	createAccountUseCase    *uc_account.CreateAccountUseCase
 	getAccountUseCase       *usecase.GetAccountUseCase
 }
 
@@ -26,7 +27,7 @@ func NewCreateAccountService(
 	uc1 *usecase.WalletEncryptKeyUseCase,
 	uc2 *usecase.WalletDecryptKeyUseCase,
 	uc3 *usecase.CreateWalletUseCase,
-	uc4 *usecase.CreateAccountUseCase,
+	uc4 *uc_account.CreateAccountUseCase,
 	uc5 *usecase.GetAccountUseCase,
 ) *CreateAccountService {
 	return &CreateAccountService{logger, uc1, uc2, uc3, uc4, uc5}
