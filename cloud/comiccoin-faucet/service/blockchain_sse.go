@@ -6,11 +6,13 @@ import (
 	"strings"
 	"time"
 
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
-	"go.mongodb.org/mongo-driver/mongo"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstate"
+	uc_blockchainstatesse "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatesse"
 )
 
 type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
@@ -18,8 +20,8 @@ type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
 	logger                                                                   *slog.Logger
 	dbClient                                                                 *mongo.Client
 	blockchainSyncWithBlockchainAuthorityService                             *BlockchainSyncWithBlockchainAuthorityService
-	getBlockchainStateUseCase                                                *usecase.GetBlockchainStateUseCase
-	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase *usecase.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase
+	getBlockchainStateUseCase                                                *uc_blockchainstate.GetBlockchainStateUseCase
+	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase *uc_blockchainstatesse.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase
 }
 
 func NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
@@ -27,8 +29,8 @@ func NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
 	s1 *BlockchainSyncWithBlockchainAuthorityService,
-	uc1 *usecase.GetBlockchainStateUseCase,
-	uc2 *usecase.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
+	uc1 *uc_blockchainstate.GetBlockchainStateUseCase,
+	uc2 *uc_blockchainstatesse.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService {
 	return &BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService{cfg, logger, dbClient, s1, uc1, uc2}
 }

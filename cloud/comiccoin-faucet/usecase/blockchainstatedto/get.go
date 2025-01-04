@@ -1,11 +1,10 @@
-package usecase
+package blockchainstatedto
 
 import (
 	"context"
 	"log/slog"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
@@ -13,21 +12,16 @@ import (
 // Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
 //
 
-type GetBlockchainStateUseCase struct {
-	config *config.Configuration
+type GetBlockchainStateDTOFromBlockchainAuthorityUseCase struct {
 	logger *slog.Logger
-	repo   domain.BlockchainStateRepository
+	repo   domain.BlockchainStateDTORepository
 }
 
-func NewGetBlockchainStateUseCase(
-	config *config.Configuration,
-	logger *slog.Logger,
-	repo domain.BlockchainStateRepository,
-) *GetBlockchainStateUseCase {
-	return &GetBlockchainStateUseCase{config, logger, repo}
+func NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(logger *slog.Logger, repo domain.BlockchainStateDTORepository) *GetBlockchainStateDTOFromBlockchainAuthorityUseCase {
+	return &GetBlockchainStateDTOFromBlockchainAuthorityUseCase{logger, repo}
 }
 
-func (uc *GetBlockchainStateUseCase) Execute(ctx context.Context, chainID uint16) (*domain.BlockchainState, error) {
+func (uc *GetBlockchainStateDTOFromBlockchainAuthorityUseCase) Execute(ctx context.Context, chainID uint16) (*domain.BlockchainStateDTO, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -46,5 +40,5 @@ func (uc *GetBlockchainStateUseCase) Execute(ctx context.Context, chainID uint16
 	// STEP 2: Insert into database.
 	//
 
-	return uc.repo.GetByChainID(ctx, chainID)
+	return uc.repo.GetFromBlockchainAuthorityByChainID(ctx, chainID)
 }

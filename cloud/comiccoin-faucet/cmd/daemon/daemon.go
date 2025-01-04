@@ -32,6 +32,10 @@ import (
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 	uc_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/attachment"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/bannedipaddress"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstate"
+	uc_blockchainstatechangeeventdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatechangeeventdto"
+	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatedto"
+	uc_blockchainstatesse "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatesse"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -190,12 +194,12 @@ func doRunDaemon() {
 		genesisBlockDataDTORepo)
 
 	// Blockchain State
-	getBlockchainStateUseCase := usecase.NewGetBlockchainStateUseCase(
+	getBlockchainStateUseCase := uc_blockchainstate.NewGetBlockchainStateUseCase(
 		cfg,
 		logger,
 		blockchainStateRepo,
 	)
-	upsertBlockchainStateUseCase := usecase.NewUpsertBlockchainStateUseCase(
+	upsertBlockchainStateUseCase := uc_blockchainstate.NewUpsertBlockchainStateUseCase(
 		cfg,
 		logger,
 		blockchainStateRepo,
@@ -203,7 +207,7 @@ func doRunDaemon() {
 	_ = upsertBlockchainStateUseCase
 
 	// Blockchain State DTO
-	getBlockchainStateDTOFromBlockchainAuthorityUseCase := usecase.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
+	getBlockchainStateDTOFromBlockchainAuthorityUseCase := uc_blockchainstatedto.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
 		logger,
 		blockchainStateDTORepo,
 	)
@@ -254,13 +258,13 @@ func doRunDaemon() {
 	_ = listTokensByOwnerUseCase
 
 	// Blockchain State DTO
-	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase := usecase.NewSubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase(
+	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase := uc_blockchainstatechangeeventdto.NewSubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase(
 		logger,
 		blockchainStateChangeEventDTORepo)
 	_ = subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase
 
 	// Blockchain State Server Sent Events DTO
-	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase := usecase.NewSubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase(
+	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase := uc_blockchainstatesse.NewSubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase(
 		logger,
 		blockchainStateServerSentEventsDTORepo)
 
