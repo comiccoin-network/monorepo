@@ -19,6 +19,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/wallet"
 )
 
 type FaucetCoinTransferService struct {
@@ -29,8 +30,8 @@ type FaucetCoinTransferService struct {
 	tenantUpdateUseCase                                     *usecase.TenantUpdateUseCase
 	getAccountUseCase                                       *uc_account.GetAccountUseCase
 	upsertAccountUseCase                                    *uc_account.UpsertAccountUseCase
-	getWalletUseCase                                        *usecase.GetWalletUseCase
-	walletDecryptKeyUseCase                                 *usecase.WalletDecryptKeyUseCase
+	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
+	walletDecryptKeyUseCase                                 *uc_wallet.WalletDecryptKeyUseCase
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *usecase.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 	createUserTransactionUseCase                            *uc_usertx.CreateUserTransactionUseCase
 }
@@ -43,8 +44,8 @@ func NewFaucetCoinTransferService(
 	uc2 *usecase.TenantUpdateUseCase,
 	uc3 *uc_account.GetAccountUseCase,
 	uc4 *uc_account.UpsertAccountUseCase,
-	uc5 *usecase.GetWalletUseCase,
-	uc6 *usecase.WalletDecryptKeyUseCase,
+	uc5 *uc_wallet.GetWalletUseCase,
+	uc6 *uc_wallet.WalletDecryptKeyUseCase,
 	uc7 *usecase.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	uc8 *uc_usertx.CreateUserTransactionUseCase,
 ) *FaucetCoinTransferService {

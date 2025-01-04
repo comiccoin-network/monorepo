@@ -44,6 +44,7 @@ import (
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/token"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/wallet"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -150,13 +151,13 @@ func doRunDaemon() {
 	attachmentDeleteUseCase := uc_attachment.NewAttachmentDeleteUseCase(cfg, logger, attachmentRepo)
 
 	// Wallet
-	walletDecryptKeyUseCase := usecase.NewWalletDecryptKeyUseCase(
+	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
 		cfg,
 		logger,
 		keystore,
 		walletRepo,
 	)
-	getWalletUseCase := usecase.NewGetWalletUseCase(
+	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
 		cfg,
 		logger,
 		walletRepo,

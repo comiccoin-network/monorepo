@@ -20,6 +20,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/wallet"
 )
 
 var (
@@ -81,25 +82,25 @@ func doRunGatewayInit() {
 	//
 
 	// Wallet
-	walletDecryptKeyUseCase := usecase.NewWalletDecryptKeyUseCase(
+	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
 		cfg,
 		logger,
 		keystore,
 		walletRepo,
 	)
-	walletEncryptKeyUseCase := usecase.NewWalletEncryptKeyUseCase(
+	walletEncryptKeyUseCase := uc_wallet.NewWalletEncryptKeyUseCase(
 		cfg,
 		logger,
 		keystore,
 		walletRepo,
 	)
-	getWalletUseCase := usecase.NewGetWalletUseCase(
+	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
 		cfg,
 		logger,
 		walletRepo,
 	)
 	_ = getWalletUseCase
-	createWalletUseCase := usecase.NewCreateWalletUseCase(
+	createWalletUseCase := uc_wallet.NewCreateWalletUseCase(
 		cfg,
 		logger,
 		walletRepo,
