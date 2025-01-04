@@ -16,13 +16,13 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
 	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
 )
 
 func NewGenesistCmd() *cobra.Command {
@@ -57,26 +57,26 @@ func doRunNewAccount() {
 
 	// ------ Use-case ------
 	// Wallet
-	walletEncryptKeyUseCase := usecase.NewWalletEncryptKeyUseCase(
+	walletEncryptKeyUseCase := uc_wallet.NewWalletEncryptKeyUseCase(
 		cfg,
 		logger,
 		keystore,
 		walletRepo,
 	)
 	_ = walletEncryptKeyUseCase
-	walletDecryptKeyUseCase := usecase.NewWalletDecryptKeyUseCase(
+	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
 		cfg,
 		logger,
 		keystore,
 		walletRepo,
 	)
 	_ = walletDecryptKeyUseCase
-	createWalletUseCase := usecase.NewCreateWalletUseCase(
+	createWalletUseCase := uc_wallet.NewCreateWalletUseCase(
 		cfg,
 		logger,
 		walletRepo,
 	)
-	getWalletUseCase := usecase.NewGetWalletUseCase(
+	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
 		cfg,
 		logger,
 		walletRepo,

@@ -26,7 +26,6 @@ import (
 	taskhandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/interface/task/handler"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
@@ -35,6 +34,7 @@ import (
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -130,13 +130,13 @@ func doRunDaemon() {
 	)
 
 	// Wallet
-	walletDecryptKeyUseCase := usecase.NewWalletDecryptKeyUseCase(
+	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
 		cfg,
 		logger,
 		keystore,
 		walletRepo,
 	)
-	getWalletUseCase := usecase.NewGetWalletUseCase(
+	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
 		cfg,
 		logger,
 		walletRepo,

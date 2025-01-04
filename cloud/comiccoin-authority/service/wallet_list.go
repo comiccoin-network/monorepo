@@ -6,19 +6,19 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
 )
 
 type WalletListService struct {
 	config               *config.Configuration
 	logger               *slog.Logger
-	listAllWalletUseCase *usecase.ListAllWalletUseCase
+	listAllWalletUseCase *uc_wallet.ListAllWalletUseCase
 }
 
 func NewWalletListService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *usecase.ListAllWalletUseCase,
+	uc *uc_wallet.ListAllWalletUseCase,
 ) *WalletListService {
 	return &WalletListService{cfg, logger, uc}
 }

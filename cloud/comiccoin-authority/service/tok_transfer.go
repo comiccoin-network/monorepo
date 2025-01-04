@@ -17,11 +17,11 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
 )
 
 type TokenTransferService struct {
@@ -29,8 +29,8 @@ type TokenTransferService struct {
 	logger                          *slog.Logger
 	kmutex                          kmutexutil.KMutexProvider
 	dbClient                        *mongo.Client
-	getWalletUseCase                *usecase.GetWalletUseCase
-	walletDecryptKeyUseCase         *usecase.WalletDecryptKeyUseCase
+	getWalletUseCase                *uc_wallet.GetWalletUseCase
+	walletDecryptKeyUseCase         *uc_wallet.WalletDecryptKeyUseCase
 	getBlockchainStateUseCase       *uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase    *uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockDataUseCase             *uc_blockdata.GetBlockDataUseCase
@@ -43,8 +43,8 @@ func NewTokenTransferService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
 	client *mongo.Client,
-	uc1 *usecase.GetWalletUseCase,
-	uc2 *usecase.WalletDecryptKeyUseCase,
+	uc1 *uc_wallet.GetWalletUseCase,
+	uc2 *uc_wallet.WalletDecryptKeyUseCase,
 	uc3 *uc_blockchainstate.GetBlockchainStateUseCase,
 	uc4 *uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc5 *uc_blockdata.GetBlockDataUseCase,

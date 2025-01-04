@@ -5,19 +5,19 @@ import (
 	"log/slog"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
 )
 
 type AccountListingByLocalWalletsService struct {
 	logger                           *slog.Logger
-	listAllAddressesWalletUseCase    *usecase.ListAllAddressesWalletUseCase
+	listAllAddressesWalletUseCase    *uc_wallet.ListAllAddressesWalletUseCase
 	accountsFilterByAddressesUseCase *uc_account.AccountsFilterByAddressesUseCase
 }
 
 func NewAccountListingByLocalWalletsService(
 	logger *slog.Logger,
-	uc1 *usecase.ListAllAddressesWalletUseCase,
+	uc1 *uc_wallet.ListAllAddressesWalletUseCase,
 	uc2 *uc_account.AccountsFilterByAddressesUseCase,
 ) *AccountListingByLocalWalletsService {
 	return &AccountListingByLocalWalletsService{logger, uc1, uc2}

@@ -18,8 +18,8 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
 )
 
 func NewAccountCmd() *cobra.Command {
@@ -52,19 +52,19 @@ func doRunNewAccount() {
 	accountRepo := repo.NewAccountRepo(cfg, logger, dbClient)
 
 	// Use-case
-	walletEncryptKeyUseCase := usecase.NewWalletEncryptKeyUseCase(
+	walletEncryptKeyUseCase := uc_wallet.NewWalletEncryptKeyUseCase(
 		cfg,
 		logger,
 		keystore,
 		walletRepo,
 	)
-	walletDecryptKeyUseCase := usecase.NewWalletDecryptKeyUseCase(
+	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
 		cfg,
 		logger,
 		keystore,
 		walletRepo,
 	)
-	createWalletUseCase := usecase.NewCreateWalletUseCase(
+	createWalletUseCase := uc_wallet.NewCreateWalletUseCase(
 		cfg,
 		logger,
 		walletRepo,

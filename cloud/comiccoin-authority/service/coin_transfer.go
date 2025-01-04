@@ -14,17 +14,17 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
 )
 
 type CoinTransferService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	getAccountUseCase               *uc_account.GetAccountUseCase
-	getWalletUseCase                *usecase.GetWalletUseCase
-	walletDecryptKeyUseCase         *usecase.WalletDecryptKeyUseCase
+	getWalletUseCase                *uc_wallet.GetWalletUseCase
+	walletDecryptKeyUseCase         *uc_wallet.WalletDecryptKeyUseCase
 	mempoolTransactionCreateUseCase *uc_mempooltx.MempoolTransactionCreateUseCase
 }
 
@@ -32,8 +32,8 @@ func NewCoinTransferService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc1 *uc_account.GetAccountUseCase,
-	uc2 *usecase.GetWalletUseCase,
-	uc3 *usecase.WalletDecryptKeyUseCase,
+	uc2 *uc_wallet.GetWalletUseCase,
+	uc3 *uc_wallet.WalletDecryptKeyUseCase,
 	uc4 *uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *CoinTransferService {
 	return &CoinTransferService{cfg, logger, uc1, uc2, uc3, uc4}

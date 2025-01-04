@@ -9,21 +9,21 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
 )
 
 type GetProofOfAuthorityPrivateKeyService struct {
 	config                  *config.Configuration
 	logger                  *slog.Logger
-	getWalletUseCase        *usecase.GetWalletUseCase
-	walletDecryptKeyUseCase *usecase.WalletDecryptKeyUseCase
+	getWalletUseCase        *uc_wallet.GetWalletUseCase
+	walletDecryptKeyUseCase *uc_wallet.WalletDecryptKeyUseCase
 }
 
 func NewGetProofOfAuthorityPrivateKeyService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc1 *usecase.GetWalletUseCase,
-	uc2 *usecase.WalletDecryptKeyUseCase,
+	uc1 *uc_wallet.GetWalletUseCase,
+	uc2 *uc_wallet.WalletDecryptKeyUseCase,
 ) *GetProofOfAuthorityPrivateKeyService {
 	return &GetProofOfAuthorityPrivateKeyService{cfg, logger, uc1, uc2}
 }
