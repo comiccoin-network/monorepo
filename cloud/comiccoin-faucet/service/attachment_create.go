@@ -16,13 +16,14 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/attachment"
 )
 
 type AttachmentCreateService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	cloudStorageSyncUploadUseCase   *usecase.CloudStorageSyncUploadUseCase
-	createAttachmentUseCase         *usecase.CreateAttachmentUseCase
+	createAttachmentUseCase         *uc_attachment.CreateAttachmentUseCase
 	cloudStoragePresignedURLUseCase *usecase.CloudStoragePresignedURLUseCase
 }
 
@@ -30,7 +31,7 @@ func NewAttachmentCreateService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc1 *usecase.CloudStorageSyncUploadUseCase,
-	uc2 *usecase.CreateAttachmentUseCase,
+	uc2 *uc_attachment.CreateAttachmentUseCase,
 	uc3 *usecase.CloudStoragePresignedURLUseCase,
 ) *AttachmentCreateService {
 	return &AttachmentCreateService{cfg, logger, uc1, uc2, uc3}

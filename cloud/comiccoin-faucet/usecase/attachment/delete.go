@@ -1,4 +1,4 @@
-package usecase
+package attachment
 
 import (
 	"context"
@@ -7,30 +7,31 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type AttachmentUpdateUseCase struct {
+type AttachmentDeleteUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AttachmentRepository
 }
 
-func NewAttachmentUpdateUseCase(
+func NewAttachmentDeleteUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.AttachmentRepository,
-) *AttachmentUpdateUseCase {
-	return &AttachmentUpdateUseCase{config, logger, repo}
+) *AttachmentDeleteUseCase {
+	return &AttachmentDeleteUseCase{config, logger, repo}
 }
 
-func (uc *AttachmentUpdateUseCase) Execute(ctx context.Context, attachment *domain.Attachment) error {
+func (uc *AttachmentDeleteUseCase) Execute(ctx context.Context, id primitive.ObjectID) error {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if attachment == nil {
-		e["attachment"] = "Attachment is required"
+	if id.IsZero() {
+		e["id"] = "Attachment ID is required"
 	} else {
 
 	}
@@ -41,8 +42,8 @@ func (uc *AttachmentUpdateUseCase) Execute(ctx context.Context, attachment *doma
 	}
 
 	//
-	// STEP 2: Update in our database.
+	// STEP 2: Insert into database.
 	//
 
-	return uc.repo.UpdateByID(ctx, attachment)
+	return uc.repo.DeleteByID(ctx, id)
 }

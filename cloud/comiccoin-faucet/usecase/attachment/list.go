@@ -1,4 +1,4 @@
-package usecase
+package attachment
 
 import (
 	"context"
@@ -7,33 +7,34 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type AttachmentGetUseCase struct {
+type AttachmentListByFilterUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AttachmentRepository
 }
 
-func NewAttachmentGetUseCase(
+func NewAttachmentListByFilterUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.AttachmentRepository,
-) *AttachmentGetUseCase {
-	return &AttachmentGetUseCase{config, logger, repo}
+) *AttachmentListByFilterUseCase {
+	return &AttachmentListByFilterUseCase{config, logger, repo}
 }
 
-func (uc *AttachmentGetUseCase) Execute(ctx context.Context, id primitive.ObjectID) (*domain.Attachment, error) {
+func (uc *AttachmentListByFilterUseCase) Execute(ctx context.Context, filter *domain.AttachmentFilter) (*domain.AttachmentFilterResult, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if id.IsZero() {
-		e["id"] = "Attachment is required"
+	if filter == nil {
+		e["filter"] = "Attachment is required"
 	} else {
-
+		if filter.TenantID.IsZero() {
+			e["tenant_id"] = "Tenant ID is required"
+		}
 	}
 	if len(e) != 0 {
 		uc.logger.Warn("Failed validating",
@@ -45,5 +46,5 @@ func (uc *AttachmentGetUseCase) Execute(ctx context.Context, id primitive.Object
 	// STEP 2: Insert into database.
 	//
 
-	return uc.repo.GetByID(ctx, id)
+	return uc.repo.ListByFilter(ctx, filter)
 }

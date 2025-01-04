@@ -1,4 +1,4 @@
-package usecase
+package attachment
 
 import (
 	"context"
@@ -10,40 +10,40 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type AttachmentDeleteUseCase struct {
+type AttachmentGetUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AttachmentRepository
 }
 
-func NewAttachmentDeleteUseCase(
+func NewAttachmentGetUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.AttachmentRepository,
-) *AttachmentDeleteUseCase {
-	return &AttachmentDeleteUseCase{config, logger, repo}
+) *AttachmentGetUseCase {
+	return &AttachmentGetUseCase{config, logger, repo}
 }
 
-func (uc *AttachmentDeleteUseCase) Execute(ctx context.Context, id primitive.ObjectID) error {
+func (uc *AttachmentGetUseCase) Execute(ctx context.Context, id primitive.ObjectID) (*domain.Attachment, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
 	if id.IsZero() {
-		e["id"] = "Attachment ID is required"
+		e["id"] = "Attachment is required"
 	} else {
 
 	}
 	if len(e) != 0 {
 		uc.logger.Warn("Failed validating",
 			slog.Any("error", e))
-		return httperror.NewForBadRequest(&e)
+		return nil, httperror.NewForBadRequest(&e)
 	}
 
 	//
 	// STEP 2: Insert into database.
 	//
 
-	return uc.repo.DeleteByID(ctx, id)
+	return uc.repo.GetByID(ctx, id)
 }

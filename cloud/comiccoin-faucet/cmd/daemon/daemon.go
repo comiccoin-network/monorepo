@@ -30,6 +30,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
+	uc_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/attachment"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -129,11 +130,11 @@ func doRunDaemon() {
 	createBannedIPAddressUseCase := usecase.NewCreateBannedIPAddressUseCase(cfg, logger, banIPAddrRepo)
 
 	// Attachment
-	createAttachmentUseCase := usecase.NewCreateAttachmentUseCase(cfg, logger, attachmentRepo)
-	attachmentGetUseCase := usecase.NewAttachmentGetUseCase(cfg, logger, attachmentRepo)
-	attachmentUpdateUseCase := usecase.NewAttachmentUpdateUseCase(cfg, logger, attachmentRepo)
-	attachmentListByFilterUseCase := usecase.NewAttachmentListByFilterUseCase(cfg, logger, attachmentRepo)
-	attachmentDeleteUseCase := usecase.NewAttachmentDeleteUseCase(cfg, logger, attachmentRepo)
+	createAttachmentUseCase := uc_attachment.NewCreateAttachmentUseCase(cfg, logger, attachmentRepo)
+	attachmentGetUseCase := uc_attachment.NewAttachmentGetUseCase(cfg, logger, attachmentRepo)
+	attachmentUpdateUseCase := uc_attachment.NewAttachmentUpdateUseCase(cfg, logger, attachmentRepo)
+	attachmentListByFilterUseCase := uc_attachment.NewAttachmentListByFilterUseCase(cfg, logger, attachmentRepo)
+	attachmentDeleteUseCase := uc_attachment.NewAttachmentDeleteUseCase(cfg, logger, attachmentRepo)
 
 	// Wallet
 	walletDecryptKeyUseCase := usecase.NewWalletDecryptKeyUseCase(

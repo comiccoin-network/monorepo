@@ -1,4 +1,4 @@
-package usecase
+package attachment
 
 import (
 	"context"
@@ -9,21 +9,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type CreateAttachmentUseCase struct {
+type AttachmentUpdateUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AttachmentRepository
 }
 
-func NewCreateAttachmentUseCase(
+func NewAttachmentUpdateUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.AttachmentRepository,
-) *CreateAttachmentUseCase {
-	return &CreateAttachmentUseCase{config, logger, repo}
+) *AttachmentUpdateUseCase {
+	return &AttachmentUpdateUseCase{config, logger, repo}
 }
 
-func (uc *CreateAttachmentUseCase) Execute(ctx context.Context, attachment *domain.Attachment) error {
+func (uc *AttachmentUpdateUseCase) Execute(ctx context.Context, attachment *domain.Attachment) error {
 	//
 	// STEP 1: Validation.
 	//
@@ -41,8 +41,8 @@ func (uc *CreateAttachmentUseCase) Execute(ctx context.Context, attachment *doma
 	}
 
 	//
-	// STEP 2: Insert into database.
+	// STEP 2: Update in our database.
 	//
 
-	return uc.repo.Create(ctx, attachment)
+	return uc.repo.UpdateByID(ctx, attachment)
 }

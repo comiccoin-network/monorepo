@@ -10,19 +10,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/attachment"
 )
 
 type AttachmentGarbageCollectorService struct {
 	logger                        *slog.Logger
-	attachmentListByFilterUseCase *usecase.AttachmentListByFilterUseCase
-	attachmentDeleteUseCase       *usecase.AttachmentDeleteUseCase
+	attachmentListByFilterUseCase *uc_attachment.AttachmentListByFilterUseCase
+	attachmentDeleteUseCase       *uc_attachment.AttachmentDeleteUseCase
 	cloudStorageDeleteUseCase     *usecase.CloudStorageDeleteUseCase
 }
 
 func NewAttachmentGarbageCollectorService(
 	logger *slog.Logger,
-	uc1 *usecase.AttachmentListByFilterUseCase,
-	uc2 *usecase.AttachmentDeleteUseCase,
+	uc1 *uc_attachment.AttachmentListByFilterUseCase,
+	uc2 *uc_attachment.AttachmentDeleteUseCase,
 	uc3 *usecase.CloudStorageDeleteUseCase,
 ) *AttachmentGarbageCollectorService {
 	return &AttachmentGarbageCollectorService{logger, uc1, uc2, uc3}

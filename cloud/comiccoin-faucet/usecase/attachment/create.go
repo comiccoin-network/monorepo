@@ -1,4 +1,4 @@
-package usecase
+package attachment
 
 import (
 	"context"
@@ -9,42 +9,40 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type AttachmentListByFilterUseCase struct {
+type CreateAttachmentUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AttachmentRepository
 }
 
-func NewAttachmentListByFilterUseCase(
+func NewCreateAttachmentUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.AttachmentRepository,
-) *AttachmentListByFilterUseCase {
-	return &AttachmentListByFilterUseCase{config, logger, repo}
+) *CreateAttachmentUseCase {
+	return &CreateAttachmentUseCase{config, logger, repo}
 }
 
-func (uc *AttachmentListByFilterUseCase) Execute(ctx context.Context, filter *domain.AttachmentFilter) (*domain.AttachmentFilterResult, error) {
+func (uc *CreateAttachmentUseCase) Execute(ctx context.Context, attachment *domain.Attachment) error {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if filter == nil {
-		e["filter"] = "Attachment is required"
+	if attachment == nil {
+		e["attachment"] = "Attachment is required"
 	} else {
-		if filter.TenantID.IsZero() {
-			e["tenant_id"] = "Tenant ID is required"
-		}
+
 	}
 	if len(e) != 0 {
 		uc.logger.Warn("Failed validating",
 			slog.Any("error", e))
-		return nil, httperror.NewForBadRequest(&e)
+		return httperror.NewForBadRequest(&e)
 	}
 
 	//
 	// STEP 2: Insert into database.
 	//
 
-	return uc.repo.ListByFilter(ctx, filter)
+	return uc.repo.Create(ctx, attachment)
 }

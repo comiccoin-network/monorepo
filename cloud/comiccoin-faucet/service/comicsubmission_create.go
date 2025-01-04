@@ -14,6 +14,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/attachment"
 )
 
 type ComicSubmissionCreateService struct {
@@ -21,8 +22,8 @@ type ComicSubmissionCreateService struct {
 	logger                                             *slog.Logger
 	userGetByIDUseCase                                 *usecase.UserGetByIDUseCase
 	comicSubmissionCountTotalCreatedTodayByUserUseCase *usecase.ComicSubmissionCountTotalCreatedTodayByUserUseCase
-	attachmentGetUseCase                               *usecase.AttachmentGetUseCase
-	attachmentUpdateUseCase                            *usecase.AttachmentUpdateUseCase
+	attachmentGetUseCase                               *uc_attachment.AttachmentGetUseCase
+	attachmentUpdateUseCase                            *uc_attachment.AttachmentUpdateUseCase
 	comicSubmissionCreateUseCase                       *usecase.ComicSubmissionCreateUseCase
 }
 
@@ -31,8 +32,8 @@ func NewComicSubmissionCreateService(
 	logger *slog.Logger,
 	uc1 *usecase.UserGetByIDUseCase,
 	uc2 *usecase.ComicSubmissionCountTotalCreatedTodayByUserUseCase,
-	uc3 *usecase.AttachmentGetUseCase,
-	uc4 *usecase.AttachmentUpdateUseCase,
+	uc3 *uc_attachment.AttachmentGetUseCase,
+	uc4 *uc_attachment.AttachmentUpdateUseCase,
 	uc5 *usecase.ComicSubmissionCreateUseCase,
 ) *ComicSubmissionCreateService {
 	return &ComicSubmissionCreateService{cfg, logger, uc1, uc2, uc3, uc4, uc5}
