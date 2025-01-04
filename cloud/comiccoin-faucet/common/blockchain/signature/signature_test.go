@@ -1,10 +1,9 @@
 // Special thanks: https://raw.githubusercontent.com/ardanlabs/blockchain/refs/heads/main/foundation/blockchain/signature/signature.go
-package signature_test
+package signature
 
 import (
 	"testing"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/blockchain/signature"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -28,16 +27,16 @@ func Test_Signing(t *testing.T) {
 		t.Fatalf("Should be able to generate a private key: %s", err)
 	}
 
-	v, r, s, err := signature.Sign(value, pk)
+	v, r, s, err := Sign(value, pk)
 	if err != nil {
 		t.Fatalf("Should be able to sign data: %s", err)
 	}
 
-	if err := signature.VerifySignature(v, r, s); err != nil {
+	if err := VerifySignature(v, r, s); err != nil {
 		t.Fatalf("Should be able to verify the signature: %s", err)
 	}
 
-	addr, err := signature.FromAddress(value, v, r, s)
+	addr, err := FromAddress(value, v, r, s)
 	if err != nil {
 		t.Fatalf("Should be able to generate from address: %s", err)
 	}
@@ -48,7 +47,7 @@ func Test_Signing(t *testing.T) {
 		t.Fatalf("Should get back the right address.")
 	}
 
-	str := signature.SignatureString(v, r, s)
+	str := SignatureString(v, r, s)
 	if from != addr {
 		t.Logf("got: %s", str[:10])
 		t.Logf("exp: %s", sigStr[:10])
@@ -64,14 +63,14 @@ func Test_Hash(t *testing.T) {
 	}
 	hash := "0x0f6887ac85101d6d6425a617edf35bd721b5f619fb92c36c3d2224e3bdb0ee5a"
 
-	h := signature.Hash(value)
+	h := Hash(value)
 	if h != hash {
 		t.Logf("got: %s", h)
 		t.Logf("exp: %s", hash)
 		t.Fatalf("Should get back the right hash: %s", h[:6])
 	}
 
-	h = signature.Hash(value)
+	h = Hash(value)
 	if h != hash {
 		t.Logf("got: %s", h)
 		t.Logf("exp: %s", hash)
@@ -96,22 +95,22 @@ func Test_SignConsistency(t *testing.T) {
 		t.Fatalf("Should be able to generate a private key: %s", err)
 	}
 
-	v1, r1, s1, err := signature.Sign(value1, pk)
+	v1, r1, s1, err := Sign(value1, pk)
 	if err != nil {
 		t.Fatalf("Should be able to sign data: %s", err)
 	}
 
-	addr1, err := signature.FromAddress(value1, v1, r1, s1)
+	addr1, err := FromAddress(value1, v1, r1, s1)
 	if err != nil {
 		t.Fatalf("Should be able to generate an address: %s", err)
 	}
 
-	v2, r2, s2, err := signature.Sign(value2, pk)
+	v2, r2, s2, err := Sign(value2, pk)
 	if err != nil {
 		t.Fatalf("Should be able to sign data: %s", err)
 	}
 
-	addr2, err := signature.FromAddress(value2, v2, r2, s2)
+	addr2, err := FromAddress(value2, v2, r2, s2)
 	if err != nil {
 		t.Fatalf("Should be able to generate an address: %s", err)
 	}
