@@ -40,6 +40,7 @@ import (
 	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockdatadto"
 	uc_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blocktx"
 	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
+	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -346,35 +347,35 @@ func doRunDaemon() {
 	)
 
 	// Comic Submission.
-	comicSubmissionCreateUseCase := usecase.NewComicSubmissionCreateUseCase(
+	comicSubmissionCreateUseCase := uc_comicsubmission.NewComicSubmissionCreateUseCase(
 		cfg,
 		logger,
 		comicSubmissionRepo)
-	comicSubmissionGetByIDUseCase := usecase.NewComicSubmissionGetByIDUseCase(
+	comicSubmissionGetByIDUseCase := uc_comicsubmission.NewComicSubmissionGetByIDUseCase(
 		cfg,
 		logger,
 		comicSubmissionRepo)
-	comicSubmissionListByFilterUseCase := usecase.NewComicSubmissionListByFilterUseCase(
+	comicSubmissionListByFilterUseCase := uc_comicsubmission.NewComicSubmissionListByFilterUseCase(
 		cfg,
 		logger,
 		comicSubmissionRepo)
-	comicSubmissionCountByFilterUseCase := usecase.NewComicSubmissionCountByFilterUseCase(
+	comicSubmissionCountByFilterUseCase := uc_comicsubmission.NewComicSubmissionCountByFilterUseCase(
 		cfg,
 		logger,
 		comicSubmissionRepo)
-	comicSubmissionCountTotalCreatedTodayByUserUseCase := usecase.NewComicSubmissionCountTotalCreatedTodayByUserUseCase(
+	comicSubmissionCountTotalCreatedTodayByUserUseCase := uc_comicsubmission.NewComicSubmissionCountTotalCreatedTodayByUserUseCase(
 		cfg,
 		logger,
 		comicSubmissionRepo)
-	comicSubmissionCountCoinsRewardByFilterUseCase := usecase.NewComicSubmissionCountCoinsRewardByFilterUseCase(
+	comicSubmissionCountCoinsRewardByFilterUseCase := uc_comicsubmission.NewComicSubmissionCountCoinsRewardByFilterUseCase(
 		cfg,
 		logger,
 		comicSubmissionRepo)
-	comicSubmissionUpdateUseCase := usecase.NewComicSubmissionUpdateUseCase(
+	comicSubmissionUpdateUseCase := uc_comicsubmission.NewComicSubmissionUpdateUseCase(
 		cfg,
 		logger,
 		comicSubmissionRepo)
-	comicSubmissionTotalCoinsAwardedUseCase := usecase.NewComicSubmissionTotalCoinsAwardedUseCase(
+	comicSubmissionTotalCoinsAwardedUseCase := uc_comicsubmission.NewComicSubmissionTotalCoinsAwardedUseCase(
 		cfg,
 		logger,
 		comicSubmissionRepo)

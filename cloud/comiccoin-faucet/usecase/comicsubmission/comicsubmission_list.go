@@ -1,4 +1,4 @@
-package usecase
+package comicsubmission
 
 import (
 	"context"
@@ -9,21 +9,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type ComicSubmissionCountByFilterUseCase struct {
+type ComicSubmissionListByFilterUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.ComicSubmissionRepository
 }
 
-func NewComicSubmissionCountByFilterUseCase(
+func NewComicSubmissionListByFilterUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.ComicSubmissionRepository,
-) *ComicSubmissionCountByFilterUseCase {
-	return &ComicSubmissionCountByFilterUseCase{config, logger, repo}
+) *ComicSubmissionListByFilterUseCase {
+	return &ComicSubmissionListByFilterUseCase{config, logger, repo}
 }
 
-func (uc *ComicSubmissionCountByFilterUseCase) Execute(ctx context.Context, filter *domain.ComicSubmissionFilter) (uint64, error) {
+func (uc *ComicSubmissionListByFilterUseCase) Execute(ctx context.Context, filter *domain.ComicSubmissionFilter) (*domain.ComicSubmissionFilterResult, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -35,12 +35,12 @@ func (uc *ComicSubmissionCountByFilterUseCase) Execute(ctx context.Context, filt
 	if len(e) != 0 {
 		uc.logger.Warn("Failed validating",
 			slog.Any("error", e))
-		return 0, httperror.NewForBadRequest(&e)
+		return nil, httperror.NewForBadRequest(&e)
 	}
 
 	//
 	// STEP 2: Count in database.
 	//
 
-	return uc.repo.CountByFilter(ctx, filter)
+	return uc.repo.ListByFilter(ctx, filter)
 }

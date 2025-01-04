@@ -7,17 +7,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
 type ComicSubmissionCountTotalCreatedTodayByUserService struct {
 	logger                                             *slog.Logger
-	comicSubmissionCountTotalCreatedTodayByUserUseCase *usecase.ComicSubmissionCountTotalCreatedTodayByUserUseCase
+	comicSubmissionCountTotalCreatedTodayByUserUseCase *uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase
 }
 
 func NewComicSubmissionCountTotalCreatedTodayByUserService(
 	logger *slog.Logger,
-	uc1 *usecase.ComicSubmissionCountTotalCreatedTodayByUserUseCase,
+	uc1 *uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase,
 ) *ComicSubmissionCountTotalCreatedTodayByUserService {
 	return &ComicSubmissionCountTotalCreatedTodayByUserService{logger, uc1}
 }

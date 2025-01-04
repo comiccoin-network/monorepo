@@ -1,4 +1,4 @@
-package usecase
+package comicsubmission
 
 import (
 	"context"
@@ -10,21 +10,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type ComicSubmissionCountTotalCreatedTodayByUserUseCase struct {
+type ComicSubmissionCountByStatusAndByUserUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.ComicSubmissionRepository
 }
 
-func NewComicSubmissionCountTotalCreatedTodayByUserUseCase(
+func NewComicSubmissionCountByStatusAndByUserUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.ComicSubmissionRepository,
-) *ComicSubmissionCountTotalCreatedTodayByUserUseCase {
-	return &ComicSubmissionCountTotalCreatedTodayByUserUseCase{config, logger, repo}
+) *ComicSubmissionCountByStatusAndByUserUseCase {
+	return &ComicSubmissionCountByStatusAndByUserUseCase{config, logger, repo}
 }
 
-func (uc *ComicSubmissionCountTotalCreatedTodayByUserUseCase) Execute(ctx context.Context, userID primitive.ObjectID, userTimezone string) (uint64, error) {
+func (uc *ComicSubmissionCountByStatusAndByUserUseCase) Execute(ctx context.Context, status int8, userID primitive.ObjectID) (uint64, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -43,5 +43,5 @@ func (uc *ComicSubmissionCountTotalCreatedTodayByUserUseCase) Execute(ctx contex
 	// STEP 2: Count in database.
 	//
 
-	return uc.repo.CountTotalCreatedTodayByUserID(ctx, userID, userTimezone)
+	return uc.repo.CountByStatusAndByUserID(ctx, status, userID)
 }

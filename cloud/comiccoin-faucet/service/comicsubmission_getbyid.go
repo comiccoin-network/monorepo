@@ -8,17 +8,17 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
 type ComicSubmissionGetService struct {
 	logger                        *slog.Logger
-	comicSubmissionGetByIDUseCase *usecase.ComicSubmissionGetByIDUseCase
+	comicSubmissionGetByIDUseCase *uc_comicsubmission.ComicSubmissionGetByIDUseCase
 }
 
 func NewComicSubmissionGetService(
 	logger *slog.Logger,
-	uc1 *usecase.ComicSubmissionGetByIDUseCase,
+	uc1 *uc_comicsubmission.ComicSubmissionGetByIDUseCase,
 ) *ComicSubmissionGetService {
 	return &ComicSubmissionGetService{logger, uc1}
 }

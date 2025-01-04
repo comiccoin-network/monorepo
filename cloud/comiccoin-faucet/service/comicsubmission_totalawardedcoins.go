@@ -5,17 +5,17 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
 type ComicSubmissionTotalCoinsAwardedService struct {
 	logger                                  *slog.Logger
-	comicSubmissionTotalCoinsAwardedUseCase *usecase.ComicSubmissionTotalCoinsAwardedUseCase
+	comicSubmissionTotalCoinsAwardedUseCase *uc_comicsubmission.ComicSubmissionTotalCoinsAwardedUseCase
 }
 
 func NewComicSubmissionTotalCoinsAwardedService(
 	logger *slog.Logger,
-	uc1 *usecase.ComicSubmissionTotalCoinsAwardedUseCase,
+	uc1 *uc_comicsubmission.ComicSubmissionTotalCoinsAwardedUseCase,
 ) *ComicSubmissionTotalCoinsAwardedService {
 	return &ComicSubmissionTotalCoinsAwardedService{logger, uc1}
 }

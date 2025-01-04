@@ -7,17 +7,17 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
 type ComicSubmissionCountByFilterService struct {
 	logger                              *slog.Logger
-	comicSubmissionCountByFilterUseCase *usecase.ComicSubmissionCountByFilterUseCase
+	comicSubmissionCountByFilterUseCase *uc_comicsubmission.ComicSubmissionCountByFilterUseCase
 }
 
 func NewComicSubmissionCountByFilterService(
 	logger *slog.Logger,
-	uc1 *usecase.ComicSubmissionCountByFilterUseCase,
+	uc1 *uc_comicsubmission.ComicSubmissionCountByFilterUseCase,
 ) *ComicSubmissionCountByFilterService {
 	return &ComicSubmissionCountByFilterService{logger, uc1}
 }

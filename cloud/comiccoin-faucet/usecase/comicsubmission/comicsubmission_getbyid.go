@@ -1,4 +1,4 @@
-package usecase
+package comicsubmission
 
 import (
 	"context"
@@ -7,30 +7,31 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type ComicSubmissionListByFilterUseCase struct {
+type ComicSubmissionGetByIDUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.ComicSubmissionRepository
 }
 
-func NewComicSubmissionListByFilterUseCase(
+func NewComicSubmissionGetByIDUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.ComicSubmissionRepository,
-) *ComicSubmissionListByFilterUseCase {
-	return &ComicSubmissionListByFilterUseCase{config, logger, repo}
+) *ComicSubmissionGetByIDUseCase {
+	return &ComicSubmissionGetByIDUseCase{config, logger, repo}
 }
 
-func (uc *ComicSubmissionListByFilterUseCase) Execute(ctx context.Context, filter *domain.ComicSubmissionFilter) (*domain.ComicSubmissionFilterResult, error) {
+func (uc *ComicSubmissionGetByIDUseCase) Execute(ctx context.Context, id primitive.ObjectID) (*domain.ComicSubmission, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if filter == nil {
-		e["filter"] = "Comic submission is required"
+	if id.IsZero() {
+		e["id"] = "Comic submission is required"
 	}
 	if len(e) != 0 {
 		uc.logger.Warn("Failed validating",
@@ -42,5 +43,5 @@ func (uc *ComicSubmissionListByFilterUseCase) Execute(ctx context.Context, filte
 	// STEP 2: Count in database.
 	//
 
-	return uc.repo.ListByFilter(ctx, filter)
+	return uc.repo.GetByID(ctx, id)
 }

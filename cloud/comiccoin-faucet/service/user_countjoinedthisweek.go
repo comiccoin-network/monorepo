@@ -4,12 +4,12 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/bartmika/timekit"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
-	"github.com/bartmika/timekit"
 )
 
 type UserCountJoinedThisWeekService struct {

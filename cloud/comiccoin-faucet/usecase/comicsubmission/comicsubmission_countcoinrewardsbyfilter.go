@@ -1,4 +1,4 @@
-package usecase
+package comicsubmission
 
 import (
 	"context"
@@ -9,40 +9,38 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type ComicSubmissionCreateUseCase struct {
+type ComicSubmissionCountCoinsRewardByFilterUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.ComicSubmissionRepository
 }
 
-func NewComicSubmissionCreateUseCase(
+func NewComicSubmissionCountCoinsRewardByFilterUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.ComicSubmissionRepository,
-) *ComicSubmissionCreateUseCase {
-	return &ComicSubmissionCreateUseCase{config, logger, repo}
+) *ComicSubmissionCountCoinsRewardByFilterUseCase {
+	return &ComicSubmissionCountCoinsRewardByFilterUseCase{config, logger, repo}
 }
 
-func (uc *ComicSubmissionCreateUseCase) Execute(ctx context.Context, comicSubmission *domain.ComicSubmission) error {
+func (uc *ComicSubmissionCountCoinsRewardByFilterUseCase) Execute(ctx context.Context, filter *domain.ComicSubmissionFilter) (uint64, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if comicSubmission == nil {
-		e["comic_submission"] = "Comic submission is required"
-	} else {
-
+	if filter == nil {
+		e["filter"] = "Comic submission is required"
 	}
 	if len(e) != 0 {
 		uc.logger.Warn("Failed validating",
 			slog.Any("error", e))
-		return httperror.NewForBadRequest(&e)
+		return 0, httperror.NewForBadRequest(&e)
 	}
 
 	//
-	// STEP 2: Insert into database.
+	// STEP 2: Count in database.
 	//
 
-	return uc.repo.Create(ctx, comicSubmission)
+	return uc.repo.CountCoinsRewardByFilter(ctx, filter)
 }

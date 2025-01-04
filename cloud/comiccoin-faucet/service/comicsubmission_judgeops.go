@@ -14,6 +14,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/bannedipaddress"
 	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
+	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
 type ComicSubmissionJudgeOperationService struct {
@@ -24,8 +25,8 @@ type ComicSubmissionJudgeOperationService struct {
 	userGetByIDUseCase            *usecase.UserGetByIDUseCase
 	userUpdateUseCase             *usecase.UserUpdateUseCase
 	createBannedIPAddressUseCase  *uc_bannedipaddress.CreateBannedIPAddressUseCase
-	comicSubmissionGetByIDUseCase *usecase.ComicSubmissionGetByIDUseCase
-	comicSubmissionUpdateUseCase  *usecase.ComicSubmissionUpdateUseCase
+	comicSubmissionGetByIDUseCase *uc_comicsubmission.ComicSubmissionGetByIDUseCase
+	comicSubmissionUpdateUseCase  *uc_comicsubmission.ComicSubmissionUpdateUseCase
 }
 
 func NewComicSubmissionJudgeOperationService(
@@ -36,8 +37,8 @@ func NewComicSubmissionJudgeOperationService(
 	uc2 *usecase.UserGetByIDUseCase,
 	uc3 *usecase.UserUpdateUseCase,
 	uc4 *uc_bannedipaddress.CreateBannedIPAddressUseCase,
-	uc5 *usecase.ComicSubmissionGetByIDUseCase,
-	uc6 *usecase.ComicSubmissionUpdateUseCase,
+	uc5 *uc_comicsubmission.ComicSubmissionGetByIDUseCase,
+	uc6 *uc_comicsubmission.ComicSubmissionUpdateUseCase,
 ) *ComicSubmissionJudgeOperationService {
 	return &ComicSubmissionJudgeOperationService{cfg, logger, s1, uc1, uc2, uc3, uc4, uc5, uc6}
 }
