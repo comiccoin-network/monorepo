@@ -19,6 +19,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
+	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 )
 
 type TokenBurnService struct {
@@ -30,7 +31,7 @@ type TokenBurnService struct {
 	walletDecryptKeyUseCase         *usecase.WalletDecryptKeyUseCase
 	getBlockchainStateUseCase       *uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase    *uc_blockchainstate.UpsertBlockchainStateUseCase
-	getBlockDataUseCase             *usecase.GetBlockDataUseCase
+	getBlockDataUseCase             *uc_blockdata.GetBlockDataUseCase
 	getTokenUseCase                 *usecase.GetTokenUseCase
 	mempoolTransactionCreateUseCase *usecase.MempoolTransactionCreateUseCase
 }
@@ -44,7 +45,7 @@ func NewTokenBurnService(
 	uc2 *usecase.WalletDecryptKeyUseCase,
 	uc3 *uc_blockchainstate.GetBlockchainStateUseCase,
 	uc4 *uc_blockchainstate.UpsertBlockchainStateUseCase,
-	uc5 *usecase.GetBlockDataUseCase,
+	uc5 *uc_blockdata.GetBlockDataUseCase,
 	uc6 *usecase.GetTokenUseCase,
 	uc7 *usecase.MempoolTransactionCreateUseCase,
 ) *TokenBurnService {

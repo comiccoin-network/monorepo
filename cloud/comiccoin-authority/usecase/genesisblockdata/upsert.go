@@ -1,4 +1,4 @@
-package usecase
+package genesisblockdata
 
 import (
 	"context"
@@ -9,17 +9,17 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type UpsertBlockDataUseCase struct {
+type UpsertGenesisBlockDataUseCase struct {
 	config *config.Configuration
 	logger *slog.Logger
-	repo   domain.BlockDataRepository
+	repo   domain.GenesisBlockDataRepository
 }
 
-func NewUpsertBlockDataUseCase(config *config.Configuration, logger *slog.Logger, repo domain.BlockDataRepository) *UpsertBlockDataUseCase {
-	return &UpsertBlockDataUseCase{config, logger, repo}
+func NewUpsertGenesisBlockDataUseCase(config *config.Configuration, logger *slog.Logger, repo domain.GenesisBlockDataRepository) *UpsertGenesisBlockDataUseCase {
+	return &UpsertGenesisBlockDataUseCase{config, logger, repo}
 }
 
-func (uc *UpsertBlockDataUseCase) Execute(ctx context.Context, hash string, header *domain.BlockHeader, headerSignature []byte, trans []domain.BlockTransaction, validator *domain.Validator) error {
+func (uc *UpsertGenesisBlockDataUseCase) Execute(ctx context.Context, hash string, header *domain.BlockHeader, headerSignature []byte, trans []domain.BlockTransaction, validator *domain.Validator) error {
 	//
 	// STEP 1: Validation.
 	// Note: `headerSignature` is optional since PoW algorithm does not require it
@@ -49,7 +49,7 @@ func (uc *UpsertBlockDataUseCase) Execute(ctx context.Context, hash string, head
 	// STEP 2: Upsert our strucutre.
 	//
 
-	blockData := &domain.BlockData{
+	blockData := &domain.GenesisBlockData{
 		Hash:                 hash,
 		Header:               header,
 		HeaderSignatureBytes: headerSignature,
@@ -61,5 +61,5 @@ func (uc *UpsertBlockDataUseCase) Execute(ctx context.Context, hash string, head
 	// STEP 3: Insert into database.
 	//
 
-	return uc.repo.Upsert(ctx, blockData)
+	return uc.repo.UpsertByChainID(ctx, blockData)
 }

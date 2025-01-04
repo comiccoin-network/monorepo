@@ -29,6 +29,9 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
+	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
+	uc_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blocktx"
+	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -71,7 +74,7 @@ func doRunDaemon() {
 	tokenRepo := repo.NewTokenRepo(cfg, logger, dbClient)
 
 	// Genesis Block Data
-	getGenesisBlockDataUseCase := usecase.NewGetGenesisBlockDataUseCase(
+	getGenesisBlockDataUseCase := uc_genesisblockdata.NewGetGenesisBlockDataUseCase(
 		cfg,
 		logger,
 		gbdRepo,
@@ -107,17 +110,17 @@ func doRunDaemon() {
 	)
 
 	// Block Data
-	getBlockDataUseCase := usecase.NewGetBlockDataUseCase(
+	getBlockDataUseCase := uc_blockdata.NewGetBlockDataUseCase(
 		cfg,
 		logger,
 		bdRepo,
 	)
-	upsertBlockDataUseCase := usecase.NewUpsertBlockDataUseCase(
+	upsertBlockDataUseCase := uc_blockdata.NewUpsertBlockDataUseCase(
 		cfg,
 		logger,
 		bdRepo,
 	)
-	listBlockTransactionsByAddressUseCase := usecase.NewListBlockTransactionsByAddressUseCase(
+	listBlockTransactionsByAddressUseCase := uc_blocktx.NewListBlockTransactionsByAddressUseCase(
 		cfg,
 		logger,
 		bdRepo,
