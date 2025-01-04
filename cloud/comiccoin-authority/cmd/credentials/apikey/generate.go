@@ -12,7 +12,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/password"
 	sbytes "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securebytes"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_apikey "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/apikey"
 )
 
 var (
@@ -59,7 +59,7 @@ func doGenerateAPIKeyCmd() {
 	blackp := blacklist.NewProvider()
 	_ = blackp
 
-	apiKeyGenUseCase := usecase.NewGenerateAPIKeyUseCase(logger, passp, jwtp)
+	apiKeyGenUseCase := uc_apikey.NewGenerateAPIKeyUseCase(logger, passp, jwtp)
 
 	//
 	// STEP 2

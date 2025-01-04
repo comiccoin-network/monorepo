@@ -1,4 +1,4 @@
-package usecase
+package apikey
 
 import (
 	"fmt"
