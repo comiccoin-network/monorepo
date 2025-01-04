@@ -19,7 +19,7 @@ type CreateAccountService struct {
 	walletDecryptKeyUseCase *usecase.WalletDecryptKeyUseCase
 	createWalletUseCase     *usecase.CreateWalletUseCase
 	createAccountUseCase    *uc_account.CreateAccountUseCase
-	getAccountUseCase       *usecase.GetAccountUseCase
+	getAccountUseCase       *uc_account.GetAccountUseCase
 }
 
 func NewCreateAccountService(
@@ -28,7 +28,7 @@ func NewCreateAccountService(
 	uc2 *usecase.WalletDecryptKeyUseCase,
 	uc3 *usecase.CreateWalletUseCase,
 	uc4 *uc_account.CreateAccountUseCase,
-	uc5 *usecase.GetAccountUseCase,
+	uc5 *uc_account.GetAccountUseCase,
 ) *CreateAccountService {
 	return &CreateAccountService{logger, uc1, uc2, uc3, uc4, uc5}
 }

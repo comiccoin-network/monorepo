@@ -154,18 +154,18 @@ func doRunDaemon() {
 		logger,
 		accountRepo)
 	_ = createAccountUseCase
-	getAccountUseCase := usecase.NewGetAccountUseCase(
+	getAccountUseCase := uc_account.NewGetAccountUseCase(
 		logger,
 		accountRepo)
-	getAccountsHashStateUseCase := usecase.NewGetAccountsHashStateUseCase(
+	getAccountsHashStateUseCase := uc_account.NewGetAccountsHashStateUseCase(
 		logger,
 		accountRepo)
 	_ = getAccountsHashStateUseCase
-	upsertAccountUseCase := usecase.NewUpsertAccountUseCase(
+	upsertAccountUseCase := uc_account.NewUpsertAccountUseCase(
 		cfg,
 		logger,
 		accountRepo)
-	accountsFilterByAddressesUseCase := usecase.NewAccountsFilterByAddressesUseCase(
+	accountsFilterByAddressesUseCase := uc_account.NewAccountsFilterByAddressesUseCase(
 		logger,
 		accountRepo,
 	)

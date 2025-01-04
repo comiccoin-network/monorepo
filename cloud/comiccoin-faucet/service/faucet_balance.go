@@ -8,21 +8,21 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 )
 
 type FaucetBalanceService struct {
 	config            *config.Configuration
 	logger            *slog.Logger
 	kmutex            kmutexutil.KMutexProvider
-	getAccountUseCase *usecase.GetAccountUseCase
+	getAccountUseCase *uc_account.GetAccountUseCase
 }
 
 func NewFaucetBalanceService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
-	uc1 *usecase.GetAccountUseCase,
+	uc1 *uc_account.GetAccountUseCase,
 ) *FaucetBalanceService {
 	return &FaucetBalanceService{cfg, logger, kmutex, uc1}
 }
