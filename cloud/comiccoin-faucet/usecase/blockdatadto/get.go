@@ -1,4 +1,4 @@
-package usecase
+package blockdatadto
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
@@ -14,17 +13,16 @@ import (
 // Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
 //
 
-type GetBlockDataUseCase struct {
-	config *config.Configuration
+type GetBlockDataDTOFromBlockchainAuthorityUseCase struct {
 	logger *slog.Logger
-	repo   domain.BlockDataRepository
+	repo   domain.BlockDataDTORepository
 }
 
-func NewGetBlockDataUseCase(config *config.Configuration, logger *slog.Logger, repo domain.BlockDataRepository) *GetBlockDataUseCase {
-	return &GetBlockDataUseCase{config, logger, repo}
+func NewGetBlockDataDTOFromBlockchainAuthorityUseCase(logger *slog.Logger, repo domain.BlockDataDTORepository) *GetBlockDataDTOFromBlockchainAuthorityUseCase {
+	return &GetBlockDataDTOFromBlockchainAuthorityUseCase{logger, repo}
 }
 
-func (uc *GetBlockDataUseCase) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
+func (uc *GetBlockDataDTOFromBlockchainAuthorityUseCase) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockDataDTO, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -34,7 +32,7 @@ func (uc *GetBlockDataUseCase) ExecuteByHash(ctx context.Context, hash string) (
 		e["hash"] = "missing value"
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("Failed getting account",
+		uc.logger.Warn("Validation failed.",
 			slog.Any("error", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
@@ -43,16 +41,15 @@ func (uc *GetBlockDataUseCase) ExecuteByHash(ctx context.Context, hash string) (
 	// STEP 2: Get from database.
 	//
 
-	return uc.repo.GetByHash(ctx, hash)
+	return uc.repo.GetFromBlockchainAuthorityByHash(ctx, hash)
 }
 
-func (uc *GetBlockDataUseCase) ExecuteByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockData, error) {
+func (uc *GetBlockDataDTOFromBlockchainAuthorityUseCase) ExecuteByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockDataDTO, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-
 	if headerNumber == nil {
 		e["header_number"] = "Header number is required"
 	} else {
@@ -62,7 +59,7 @@ func (uc *GetBlockDataUseCase) ExecuteByHeaderNumber(ctx context.Context, header
 		// }
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("Failed getting account",
+		uc.logger.Warn("Validation failed.",
 			slog.Any("error", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
@@ -71,5 +68,5 @@ func (uc *GetBlockDataUseCase) ExecuteByHeaderNumber(ctx context.Context, header
 	// STEP 2: Get from database.
 	//
 
-	return uc.repo.GetByHeaderNumber(ctx, headerNumber)
+	return uc.repo.GetFromBlockchainAuthorityByHeaderNumber(ctx, headerNumber)
 }

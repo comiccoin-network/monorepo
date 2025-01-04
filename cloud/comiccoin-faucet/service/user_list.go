@@ -8,17 +8,18 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
+	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
 )
 
 type UserListByFilterService struct {
 	logger                             *slog.Logger
-	cloudStoragePresignedURLUseCase    *usecase.CloudStoragePresignedURLUseCase
+	cloudStoragePresignedURLUseCase    *uc_cloudstorage.CloudStoragePresignedURLUseCase
 	comicSubmissionListByFilterUseCase *usecase.UserListByFilterUseCase
 }
 
 func NewUserListByFilterService(
 	logger *slog.Logger,
-	uc1 *usecase.CloudStoragePresignedURLUseCase,
+	uc1 *uc_cloudstorage.CloudStoragePresignedURLUseCase,
 	uc2 *usecase.UserListByFilterUseCase,
 ) *UserListByFilterService {
 	return &UserListByFilterService{logger, uc1, uc2}

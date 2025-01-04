@@ -15,6 +15,8 @@ import (
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstate"
 	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatedto"
+	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockdata"
+	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockdatadto"
 )
 
 type BlockchainSyncWithBlockchainAuthorityService struct {
@@ -26,9 +28,9 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	getBlockchainStateUseCase                            *uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase                         *uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockchainStateDTOFromBlockchainAuthorityUseCase  *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
-	getBlockDataUseCase                                  *usecase.GetBlockDataUseCase
-	upsertBlockDataUseCase                               *usecase.UpsertBlockDataUseCase
-	getBlockDataDTOFromBlockchainAuthorityUseCase        *usecase.GetBlockDataDTOFromBlockchainAuthorityUseCase
+	getBlockDataUseCase                                  *uc_blockdata.GetBlockDataUseCase
+	upsertBlockDataUseCase                               *uc_blockdata.UpsertBlockDataUseCase
+	getBlockDataDTOFromBlockchainAuthorityUseCase        *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase
 	getAccountUseCase                                    *uc_account.GetAccountUseCase
 	upsertAccountUseCase                                 *uc_account.UpsertAccountUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase            *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase
@@ -47,9 +49,9 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc4 *uc_blockchainstate.GetBlockchainStateUseCase,
 	uc5 *uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc6 *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
-	uc7 *usecase.GetBlockDataUseCase,
-	uc8 *usecase.UpsertBlockDataUseCase,
-	uc9 *usecase.GetBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc7 *uc_blockdata.GetBlockDataUseCase,
+	uc8 *uc_blockdata.UpsertBlockDataUseCase,
+	uc9 *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
 	uc10 *uc_account.GetAccountUseCase,
 	uc11 *uc_account.UpsertAccountUseCase,
 	uc12 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,

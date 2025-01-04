@@ -36,6 +36,10 @@ import (
 	uc_blockchainstatechangeeventdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatechangeeventdto"
 	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatedto"
 	uc_blockchainstatesse "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatesse"
+	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockdata"
+	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockdatadto"
+	uc_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blocktx"
+	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -123,9 +127,9 @@ func doRunDaemon() {
 	//
 
 	// Cloud storage
-	cloudStorageSyncUploadUseCase := usecase.NewCloudStorageSyncUploadUseCase(cfg, logger, cloudstore)
-	cloudStoragePresignedURLUseCase := usecase.NewCloudStoragePresignedURLUseCase(cfg, logger, cloudstore)
-	cloudStorageDeleteUseCase := usecase.NewCloudStorageDeleteUseCase(cfg, logger, cloudstore)
+	cloudStorageSyncUploadUseCase := uc_cloudstorage.NewCloudStorageSyncUploadUseCase(cfg, logger, cloudstore)
+	cloudStoragePresignedURLUseCase := uc_cloudstorage.NewCloudStoragePresignedURLUseCase(cfg, logger, cloudstore)
+	cloudStorageDeleteUseCase := uc_cloudstorage.NewCloudStorageDeleteUseCase(cfg, logger, cloudstore)
 
 	// Email
 	sendUserVerificationEmailUseCase := usecase.NewSendUserVerificationEmailUseCase(cfg, logger, templatedEmailer)
@@ -213,17 +217,17 @@ func doRunDaemon() {
 	)
 
 	// Block Data
-	getBlockDataUseCase := usecase.NewGetBlockDataUseCase(
+	getBlockDataUseCase := uc_blockdata.NewGetBlockDataUseCase(
 		cfg,
 		logger,
 		blockDataRepo,
 	)
-	upsertBlockDataUseCase := usecase.NewUpsertBlockDataUseCase(
+	upsertBlockDataUseCase := uc_blockdata.NewUpsertBlockDataUseCase(
 		cfg,
 		logger,
 		blockDataRepo,
 	)
-	listBlockTransactionsByAddressUseCase := usecase.NewListBlockTransactionsByAddressUseCase(
+	listBlockTransactionsByAddressUseCase := uc_blocktx.NewListBlockTransactionsByAddressUseCase(
 		cfg,
 		logger,
 		blockDataRepo,
@@ -231,7 +235,7 @@ func doRunDaemon() {
 	_ = listBlockTransactionsByAddressUseCase
 
 	// Block Data DTO
-	getBlockDataDTOFromBlockchainAuthorityUseCase := usecase.NewGetBlockDataDTOFromBlockchainAuthorityUseCase(
+	getBlockDataDTOFromBlockchainAuthorityUseCase := uc_blockdatadto.NewGetBlockDataDTOFromBlockchainAuthorityUseCase(
 		logger,
 		blockDataDTORepo)
 

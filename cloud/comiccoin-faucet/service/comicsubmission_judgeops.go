@@ -13,13 +13,14 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/bannedipaddress"
+	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
 )
 
 type ComicSubmissionJudgeOperationService struct {
 	config                        *config.Configuration
 	logger                        *slog.Logger
 	faucetCoinTransferService     *FaucetCoinTransferService
-	cloudStorageDeleteUseCase     *usecase.CloudStorageDeleteUseCase
+	cloudStorageDeleteUseCase     *uc_cloudstorage.CloudStorageDeleteUseCase
 	userGetByIDUseCase            *usecase.UserGetByIDUseCase
 	userUpdateUseCase             *usecase.UserUpdateUseCase
 	createBannedIPAddressUseCase  *uc_bannedipaddress.CreateBannedIPAddressUseCase
@@ -31,7 +32,7 @@ func NewComicSubmissionJudgeOperationService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	s1 *FaucetCoinTransferService,
-	uc1 *usecase.CloudStorageDeleteUseCase,
+	uc1 *uc_cloudstorage.CloudStorageDeleteUseCase,
 	uc2 *usecase.UserGetByIDUseCase,
 	uc3 *usecase.UserUpdateUseCase,
 	uc4 *uc_bannedipaddress.CreateBannedIPAddressUseCase,
