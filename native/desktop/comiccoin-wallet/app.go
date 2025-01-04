@@ -12,7 +12,10 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
 	auth_repo "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstatedto"
+	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdatadto"
+	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
+	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltxdto"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
@@ -241,7 +244,7 @@ func (a *App) startup(ctx context.Context) {
 		blockchainStateRepo)
 
 	// Blockchain State DTO
-	getBlockchainStateDTOFromBlockchainAuthorityUseCase := auth_usecase.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
+	getBlockchainStateDTOFromBlockchainAuthorityUseCase := uc_blockchainstatedto.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
 		logger,
 		blockchainStateDTORepo)
 
@@ -254,7 +257,7 @@ func (a *App) startup(ctx context.Context) {
 		genesisBlockDataRepo)
 
 	// Genesis Block Data DTO
-	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase := auth_usecase.NewGetGenesisBlockDataDTOFromBlockchainAuthorityUseCase(
+	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase := uc_genesisblockdatadto.NewGetGenesisBlockDataDTOFromBlockchainAuthorityUseCase(
 		logger,
 		genesisBlockDataDTORepo)
 
@@ -278,7 +281,7 @@ func (a *App) startup(ctx context.Context) {
 		blockDataRepo)
 
 	// Block Data DTO
-	getBlockDataDTOFromBlockchainAuthorityUseCase := auth_usecase.NewGetBlockDataDTOFromBlockchainAuthorityUseCase(
+	getBlockDataDTOFromBlockchainAuthorityUseCase := uc_blockdatadto.NewGetBlockDataDTOFromBlockchainAuthorityUseCase(
 		logger,
 		blockDataDTORepo)
 
@@ -295,11 +298,6 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		tokRepo,
 	)
-
-	// Blockchain State DTO (DEPRECATED)
-	// subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase := auth_usecase.NewSubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase(
-	// 	logger,
-	// 	blockchainStateChangeEventDTORepo)
 
 	// Blockchain State Server Sent Events DTO
 	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase := usecase.NewSubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase(
@@ -329,7 +327,7 @@ func (a *App) startup(ctx context.Context) {
 		nftokenRepo)
 
 	// Mempool Transaction DTO
-	submitMempoolTransactionDTOToBlockchainAuthorityUseCase := auth_usecase.NewSubmitMempoolTransactionDTOToBlockchainAuthorityUseCase(
+	submitMempoolTransactionDTOToBlockchainAuthorityUseCase := uc_mempooltxdto.NewSubmitMempoolTransactionDTOToBlockchainAuthorityUseCase(
 		logger,
 		mempoolTxDTORepo,
 	)

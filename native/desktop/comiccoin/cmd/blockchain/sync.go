@@ -8,7 +8,9 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
 	auth_repo "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstatedto"
+	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdatadto"
+	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
 	"github.com/spf13/cobra"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
@@ -133,7 +135,7 @@ func doRunBlockchainSyncCmd() error {
 		blockchainStateRepo)
 
 	// Blockchain State DTO
-	getBlockchainStateDTOFromBlockchainAuthorityUseCase := auth_usecase.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
+	getBlockchainStateDTOFromBlockchainAuthorityUseCase := uc_blockchainstatedto.NewGetBlockchainStateDTOFromBlockchainAuthorityUseCase(
 		logger,
 		blockchainStateDTORepo)
 
@@ -146,7 +148,7 @@ func doRunBlockchainSyncCmd() error {
 		genesisBlockDataRepo)
 
 	// Genesis Block Data DTO
-	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase := auth_usecase.NewGetGenesisBlockDataDTOFromBlockchainAuthorityUseCase(
+	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase := uc_genesisblockdatadto.NewGetGenesisBlockDataDTOFromBlockchainAuthorityUseCase(
 		logger,
 		genesisBlockDataDTORepo)
 
@@ -159,7 +161,7 @@ func doRunBlockchainSyncCmd() error {
 		blockDataRepo)
 
 	// Block Data DTO
-	getBlockDataDTOFromBlockchainAuthorityUseCase := auth_usecase.NewGetBlockDataDTOFromBlockchainAuthorityUseCase(
+	getBlockDataDTOFromBlockchainAuthorityUseCase := uc_blockdatadto.NewGetBlockDataDTOFromBlockchainAuthorityUseCase(
 		logger,
 		blockDataDTORepo)
 

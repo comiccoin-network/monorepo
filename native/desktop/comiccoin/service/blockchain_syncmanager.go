@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
-	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockchainstatechangeeventdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstatechangeeventdto"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
@@ -20,7 +20,7 @@ type BlockchainSyncManagerService struct {
 	storageTransactionOpenUseCase                                        *usecase.StorageTransactionOpenUseCase
 	storageTransactionCommitUseCase                                      *usecase.StorageTransactionCommitUseCase
 	storageTransactionDiscardUseCase                                     *usecase.StorageTransactionDiscardUseCase
-	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase *auth_usecase.SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase
+	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase *uc_blockchainstatechangeeventdto.SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase
 }
 
 func NewBlockchainSyncManagerService(
@@ -29,7 +29,7 @@ func NewBlockchainSyncManagerService(
 	uc1 *usecase.StorageTransactionOpenUseCase,
 	uc2 *usecase.StorageTransactionCommitUseCase,
 	uc3 *usecase.StorageTransactionDiscardUseCase,
-	uc4 *auth_usecase.SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
+	uc4 *uc_blockchainstatechangeeventdto.SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
 ) *BlockchainSyncManagerService {
 	return &BlockchainSyncManagerService{logger, s1, uc1, uc2, uc3, uc4}
 }

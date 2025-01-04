@@ -7,7 +7,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	authority_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	authority_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
@@ -16,14 +16,14 @@ type GenesisBlockDataGetOrSyncService struct {
 	logger                                               *slog.Logger
 	getGenesisBlockDataUseCase                           *usecase.GetGenesisBlockDataUseCase
 	upsertGenesisBlockDataUseCase                        *usecase.UpsertGenesisBlockDataUseCase
-	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *authority_usecase.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
+	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
 }
 
 func NewGenesisBlockDataGetOrSyncService(
 	logger *slog.Logger,
 	uc1 *usecase.GetGenesisBlockDataUseCase,
 	uc2 *usecase.UpsertGenesisBlockDataUseCase,
-	uc3 *authority_usecase.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc3 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
 ) *GenesisBlockDataGetOrSyncService {
 	return &GenesisBlockDataGetOrSyncService{logger, uc1, uc2, uc3}
 }

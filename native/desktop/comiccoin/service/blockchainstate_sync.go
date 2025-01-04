@@ -7,20 +7,20 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	authority_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	authority_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstatedto"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
 type BlockchainStateSyncService struct {
 	logger                                              *slog.Logger
-	getBlockchainStateDTOFromBlockchainAuthorityUseCase *authority_usecase.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
+	getBlockchainStateDTOFromBlockchainAuthorityUseCase *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
 	upsertBlockchainStateUseCase                        *usecase.UpsertBlockchainStateUseCase
 }
 
 func NewBlockchainStateSyncService(
 	logger *slog.Logger,
-	uc1 *authority_usecase.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
+	uc1 *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
 	uc2 *usecase.UpsertBlockchainStateUseCase,
 ) *BlockchainStateSyncService {
 	return &BlockchainStateSyncService{logger, uc1, uc2}

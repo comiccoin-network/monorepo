@@ -11,7 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 	auth_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltxdto"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -30,7 +30,7 @@ type CoinTransferService struct {
 	getAccountUseCase                                       *usecase.GetAccountUseCase
 	getWalletUseCase                                        *usecase.GetWalletUseCase
 	walletDecryptKeyUseCase                                 *usecase.WalletDecryptKeyUseCase
-	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *auth_usecase.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
+	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }
 
 func NewCoinTransferService(
@@ -44,7 +44,7 @@ func NewCoinTransferService(
 	uc7 *usecase.GetAccountUseCase,
 	uc8 *usecase.GetWalletUseCase,
 	uc9 *usecase.WalletDecryptKeyUseCase,
-	uc10 *auth_usecase.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
+	uc10 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 ) *CoinTransferService {
 	return &CoinTransferService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10}
 }

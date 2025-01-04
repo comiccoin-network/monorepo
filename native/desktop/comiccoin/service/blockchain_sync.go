@@ -11,7 +11,10 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	authority_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	auth_usecase "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstatedto"
+	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdatadto"
+	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
+
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 )
 
@@ -19,13 +22,13 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	logger                                               *slog.Logger
 	getGenesisBlockDataUseCase                           *usecase.GetGenesisBlockDataUseCase
 	upsertGenesisBlockDataUseCase                        *usecase.UpsertGenesisBlockDataUseCase
-	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *auth_usecase.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
+	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
 	getBlockchainStateUseCase                            *usecase.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase                         *usecase.UpsertBlockchainStateUseCase
-	getBlockchainStateDTOFromBlockchainAuthorityUseCase  *auth_usecase.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
+	getBlockchainStateDTOFromBlockchainAuthorityUseCase  *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
 	getBlockDataUseCase                                  *usecase.GetBlockDataUseCase
 	upsertBlockDataUseCase                               *usecase.UpsertBlockDataUseCase
-	getBlockDataDTOFromBlockchainAuthorityUseCase        *auth_usecase.GetBlockDataDTOFromBlockchainAuthorityUseCase
+	getBlockDataDTOFromBlockchainAuthorityUseCase        *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase
 	getAccountUseCase                                    *usecase.GetAccountUseCase
 	upsertAccountUseCase                                 *usecase.UpsertAccountUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase            *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase
@@ -36,13 +39,13 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	logger *slog.Logger,
 	uc1 *usecase.GetGenesisBlockDataUseCase,
 	uc2 *usecase.UpsertGenesisBlockDataUseCase,
-	uc3 *auth_usecase.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc3 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
 	uc4 *usecase.GetBlockchainStateUseCase,
 	uc5 *usecase.UpsertBlockchainStateUseCase,
-	uc6 *auth_usecase.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
+	uc6 *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
 	uc7 *usecase.GetBlockDataUseCase,
 	uc8 *usecase.UpsertBlockDataUseCase,
-	uc9 *auth_usecase.GetBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc9 *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
 	uc10 *usecase.GetAccountUseCase,
 	uc11 *usecase.UpsertAccountUseCase,
 	uc12 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,
