@@ -21,6 +21,7 @@ import (
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
 func TransferTokenCmd() *cobra.Command {
@@ -125,7 +126,7 @@ func doRunTransferToken() {
 	)
 
 	// Token
-	getTokenUseCase := usecase.NewGetTokenUseCase(
+	getTokenUseCase := uc_token.NewGetTokenUseCase(
 		cfg,
 		logger,
 		tokRepo,

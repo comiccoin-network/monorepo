@@ -21,6 +21,7 @@ import (
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
 type TokenTransferService struct {
@@ -33,7 +34,7 @@ type TokenTransferService struct {
 	getBlockchainStateUseCase       *uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase    *uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockDataUseCase             *uc_blockdata.GetBlockDataUseCase
-	getTokenUseCase                 *usecase.GetTokenUseCase
+	getTokenUseCase                 *uc_token.GetTokenUseCase
 	mempoolTransactionCreateUseCase *uc_mempooltx.MempoolTransactionCreateUseCase
 }
 
@@ -47,7 +48,7 @@ func NewTokenTransferService(
 	uc3 *uc_blockchainstate.GetBlockchainStateUseCase,
 	uc4 *uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc5 *uc_blockdata.GetBlockDataUseCase,
-	uc6 *usecase.GetTokenUseCase,
+	uc6 *uc_token.GetTokenUseCase,
 	uc7 *uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *TokenTransferService {
 	return &TokenTransferService{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6, uc7}

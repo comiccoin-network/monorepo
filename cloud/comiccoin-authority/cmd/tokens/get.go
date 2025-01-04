@@ -17,7 +17,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
 func GetTokenCmd() *cobra.Command {
@@ -45,7 +45,7 @@ func doRunGetToken() {
 	tokRepo := repo.NewTokenRepo(cfg, logger, dbClient)
 
 	// // Use-case
-	getTokenUseCase := usecase.NewGetTokenUseCase(
+	getTokenUseCase := uc_token.NewGetTokenUseCase(
 		cfg,
 		logger,
 		tokRepo,

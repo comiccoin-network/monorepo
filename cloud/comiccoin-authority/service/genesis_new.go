@@ -18,12 +18,12 @@ import (
 	// "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
 	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
 type CreateGenesisBlockDataService struct {
@@ -32,9 +32,9 @@ type CreateGenesisBlockDataService struct {
 	getProofOfAuthorityPrivateKeyService      *GetProofOfAuthorityPrivateKeyService
 	getAccountUseCase                         *uc_account.GetAccountUseCase
 	upsertAccountUseCase                      *uc_account.UpsertAccountUseCase
-	upsertTokenIfPreviousTokenNonceGTEUseCase *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase
+	upsertTokenIfPreviousTokenNonceGTEUseCase *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
 	getAccountsHashStateUseCase               *uc_account.GetAccountsHashStateUseCase
-	getTokensHashStateUseCase                 *usecase.GetTokensHashStateUseCase
+	getTokensHashStateUseCase                 *uc_token.GetTokensHashStateUseCase
 	proofOfWorkUseCase                        *uc_pow.ProofOfWorkUseCase
 	upsertGenesisBlockDataUseCase             *uc_genesisblockdata.UpsertGenesisBlockDataUseCase
 	upsertBlockDataUseCase                    *uc_blockdata.UpsertBlockDataUseCase
@@ -48,9 +48,9 @@ func NewCreateGenesisBlockDataService(
 	s1 *GetProofOfAuthorityPrivateKeyService,
 	uc1 *uc_account.GetAccountUseCase,
 	uc2 *uc_account.UpsertAccountUseCase,
-	uc3 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,
+	uc3 *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
 	uc4 *uc_account.GetAccountsHashStateUseCase,
-	uc5 *usecase.GetTokensHashStateUseCase,
+	uc5 *uc_token.GetTokensHashStateUseCase,
 	uc6 *uc_pow.ProofOfWorkUseCase,
 	uc7 *uc_genesisblockdata.UpsertGenesisBlockDataUseCase,
 	uc8 *uc_blockdata.UpsertBlockDataUseCase,

@@ -9,17 +9,17 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
 type TokenListByOwnerService struct {
 	logger                   *slog.Logger
-	listTokensByOwnerUseCase *usecase.ListTokensByOwnerUseCase
+	listTokensByOwnerUseCase *uc_token.ListTokensByOwnerUseCase
 }
 
 func NewTokenListByOwnerService(
 	logger *slog.Logger,
-	uc1 *usecase.ListTokensByOwnerUseCase,
+	uc1 *uc_token.ListTokensByOwnerUseCase,
 ) *TokenListByOwnerService {
 	return &TokenListByOwnerService{logger, uc1}
 }

@@ -14,13 +14,13 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/distributedmutex"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
 // ProofOfAuthorityConsensusMechanismService represents the service which
@@ -43,9 +43,9 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	getAccountUseCase                          *uc_account.GetAccountUseCase
 	getAccountsHashStateUseCase                *uc_account.GetAccountsHashStateUseCase
 	upsertAccountUseCase                       *uc_account.UpsertAccountUseCase
-	getTokenUseCase                            *usecase.GetTokenUseCase
-	getTokensHashStateUseCase                  *usecase.GetTokensHashStateUseCase
-	upsertTokenIfPreviousTokenNonceGTEUseCase  *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase
+	getTokenUseCase                            *uc_token.GetTokenUseCase
+	getTokensHashStateUseCase                  *uc_token.GetTokensHashStateUseCase
+	upsertTokenIfPreviousTokenNonceGTEUseCase  *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
 	proofOfWorkUseCase                         *uc_pow.ProofOfWorkUseCase
 	upsertBlockDataUseCase                     *uc_blockdata.UpsertBlockDataUseCase
 	blockchainStatePublishUseCase              *uc_blockchainstate.BlockchainStatePublishUseCase
@@ -66,9 +66,9 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc7 *uc_account.GetAccountUseCase,
 	uc8 *uc_account.GetAccountsHashStateUseCase,
 	uc9 *uc_account.UpsertAccountUseCase,
-	uc10 *usecase.GetTokenUseCase,
-	uc11 *usecase.GetTokensHashStateUseCase,
-	uc12 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,
+	uc10 *uc_token.GetTokenUseCase,
+	uc11 *uc_token.GetTokensHashStateUseCase,
+	uc12 *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
 	uc13 *uc_pow.ProofOfWorkUseCase,
 	uc14 *uc_blockdata.UpsertBlockDataUseCase,
 	uc15 *uc_blockchainstate.BlockchainStatePublishUseCase,

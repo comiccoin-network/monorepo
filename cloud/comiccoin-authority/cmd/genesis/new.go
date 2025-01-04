@@ -22,6 +22,7 @@ import (
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
 	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
 func NewGenesistCmd() *cobra.Command {
@@ -118,12 +119,12 @@ func doRunNewAccount() {
 	)
 
 	// Token
-	upsertTokenIfPreviousTokenNonceGTEUseCase := usecase.NewUpsertTokenIfPreviousTokenNonceGTEUseCase(
+	upsertTokenIfPreviousTokenNonceGTEUseCase := uc_token.NewUpsertTokenIfPreviousTokenNonceGTEUseCase(
 		cfg,
 		logger,
 		tokRepo,
 	)
-	getTokensHashStateUseCase := usecase.NewGetTokensHashStateUseCase(
+	getTokensHashStateUseCase := uc_token.NewGetTokensHashStateUseCase(
 		cfg,
 		logger,
 		tokRepo,

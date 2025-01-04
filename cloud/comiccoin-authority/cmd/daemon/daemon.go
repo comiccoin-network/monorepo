@@ -34,6 +34,7 @@ import (
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -159,22 +160,22 @@ func doRunDaemon() {
 	)
 
 	// Token
-	getTokenUseCase := usecase.NewGetTokenUseCase(
+	getTokenUseCase := uc_token.NewGetTokenUseCase(
 		cfg,
 		logger,
 		tokenRepo,
 	)
-	getTokensHashStateUseCase := usecase.NewGetTokensHashStateUseCase(
+	getTokensHashStateUseCase := uc_token.NewGetTokensHashStateUseCase(
 		cfg,
 		logger,
 		tokenRepo,
 	)
-	upsertTokenIfPreviousTokenNonceGTEUseCase := usecase.NewUpsertTokenIfPreviousTokenNonceGTEUseCase(
+	upsertTokenIfPreviousTokenNonceGTEUseCase := uc_token.NewUpsertTokenIfPreviousTokenNonceGTEUseCase(
 		cfg,
 		logger,
 		tokenRepo,
 	)
-	listTokensByOwnerUseCase := usecase.NewListTokensByOwnerUseCase(
+	listTokensByOwnerUseCase := uc_token.NewListTokensByOwnerUseCase(
 		cfg,
 		logger,
 		tokenRepo,
