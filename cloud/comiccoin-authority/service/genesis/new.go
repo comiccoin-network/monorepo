@@ -1,4 +1,4 @@
-package service
+package genesis
 
 import (
 	"crypto/ecdsa"
@@ -18,6 +18,7 @@ import (
 	// "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
+	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
@@ -29,7 +30,7 @@ import (
 type CreateGenesisBlockDataService struct {
 	config                                    *config.Configuration
 	logger                                    *slog.Logger
-	getProofOfAuthorityPrivateKeyService      *GetProofOfAuthorityPrivateKeyService
+	getProofOfAuthorityPrivateKeyService      *s_poa.GetProofOfAuthorityPrivateKeyService
 	getAccountUseCase                         *uc_account.GetAccountUseCase
 	upsertAccountUseCase                      *uc_account.UpsertAccountUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
@@ -45,7 +46,7 @@ type CreateGenesisBlockDataService struct {
 func NewCreateGenesisBlockDataService(
 	config *config.Configuration,
 	logger *slog.Logger,
-	s1 *GetProofOfAuthorityPrivateKeyService,
+	s1 *s_poa.GetProofOfAuthorityPrivateKeyService,
 	uc1 *uc_account.GetAccountUseCase,
 	uc2 *uc_account.UpsertAccountUseCase,
 	uc3 *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,

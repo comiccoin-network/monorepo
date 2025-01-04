@@ -7,17 +7,17 @@ import (
 	"strconv"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockchainstate"
 )
 
 type GetBlockchainStateHTTPHandler struct {
 	logger  *slog.Logger
-	service *service.GetBlockchainStateService
+	service *s_blockchainstate.GetBlockchainStateService
 }
 
 func NewGetBlockchainStateHTTPHandler(
 	logger *slog.Logger,
-	s1 *service.GetBlockchainStateService,
+	s1 *s_blockchainstate.GetBlockchainStateService,
 ) *GetBlockchainStateHTTPHandler {
 	return &GetBlockchainStateHTTPHandler{logger, s1}
 }

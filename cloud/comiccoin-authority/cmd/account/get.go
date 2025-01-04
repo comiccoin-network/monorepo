@@ -16,7 +16,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/account"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 )
 
@@ -52,7 +52,7 @@ func doRunGetAccount() {
 	)
 
 	// Service
-	getAccountService := service.NewGetAccountService(
+	getAccountService := s_account.NewGetAccountService(
 		logger,
 		getAccountUseCase,
 	)

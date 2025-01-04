@@ -10,17 +10,17 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config/constants"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockchainstate"
 )
 
 type BlockchainStateServerSentEventsHTTPHandler struct {
 	logger  *slog.Logger
-	service *service.GetBlockchainStateService
+	service *s_blockchainstate.GetBlockchainStateService
 }
 
 func NewBlockchainStateServerSentEventsHTTPHandler(
 	logger *slog.Logger,
-	s *service.GetBlockchainStateService,
+	s *s_blockchainstate.GetBlockchainStateService,
 ) *BlockchainStateServerSentEventsHTTPHandler {
 	return &BlockchainStateServerSentEventsHTTPHandler{logger, s}
 }

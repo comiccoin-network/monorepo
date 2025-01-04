@@ -7,18 +7,18 @@ import (
 	"strings"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 type TokenListByOwnerHTTPHandler struct {
 	logger  *slog.Logger
-	service *service.TokenListByOwnerService
+	service *s_token.TokenListByOwnerService
 }
 
 func NewTokenListByOwnerHTTPHandler(
 	logger *slog.Logger,
-	s1 *service.TokenListByOwnerService,
+	s1 *s_token.TokenListByOwnerService,
 ) *TokenListByOwnerHTTPHandler {
 	return &TokenListByOwnerHTTPHandler{logger, s1}
 }

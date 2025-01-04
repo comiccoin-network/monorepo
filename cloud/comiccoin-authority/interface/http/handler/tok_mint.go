@@ -15,7 +15,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/password"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config/constants"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
 )
 
 type TokenMintServiceHTTPHandler struct {
@@ -23,7 +23,7 @@ type TokenMintServiceHTTPHandler struct {
 	logger           *slog.Logger
 	jwtProvider      jwt.Provider
 	passwordProvider password.Provider
-	service          *service.TokenMintService
+	service          *s_token.TokenMintService
 }
 
 func NewTokenMintServiceHTTPHandler(
@@ -31,7 +31,7 @@ func NewTokenMintServiceHTTPHandler(
 	logger *slog.Logger,
 	jwtp jwt.Provider,
 	passp password.Provider,
-	tokenMintService *service.TokenMintService,
+	tokenMintService *s_token.TokenMintService,
 ) *TokenMintServiceHTTPHandler {
 	return &TokenMintServiceHTTPHandler{cfg, logger, jwtp, passp, tokenMintService}
 }

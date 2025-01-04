@@ -1,4 +1,4 @@
-package service
+package token
 
 import (
 	"context"
@@ -24,7 +24,7 @@ import (
 	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
 )
 
-type TokenTransferService struct {
+type TokenBurnService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	kmutex                          kmutexutil.KMutexProvider
@@ -38,7 +38,7 @@ type TokenTransferService struct {
 	mempoolTransactionCreateUseCase *uc_mempooltx.MempoolTransactionCreateUseCase
 }
 
-func NewTokenTransferService(
+func NewTokenBurnService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
@@ -50,16 +50,15 @@ func NewTokenTransferService(
 	uc5 *uc_blockdata.GetBlockDataUseCase,
 	uc6 *uc_token.GetTokenUseCase,
 	uc7 *uc_mempooltx.MempoolTransactionCreateUseCase,
-) *TokenTransferService {
-	return &TokenTransferService{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6, uc7}
+) *TokenBurnService {
+	return &TokenBurnService{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6, uc7}
 }
 
-func (s *TokenTransferService) Execute(
+func (s *TokenBurnService) Execute(
 	ctx context.Context,
 	tokenID *big.Int,
 	tokenOwnerAddress *common.Address,
-	tokenOwnerWalletPassword *sstring.SecureString,
-	recipientAddress *common.Address) error {
+	tokenOwnerWalletPassword *sstring.SecureString) error {
 	// Lock the mining service until it has completed executing (or errored).
 	s.kmutex.Acquire("token-services")
 	defer s.kmutex.Release("token-services")
@@ -75,11 +74,11 @@ func (s *TokenTransferService) Execute(
 	if tokenOwnerAddress == nil {
 		e["token_owner_address"] = "missing value"
 	}
-	if recipientAddress == nil {
-		e["recipient_address"] = "missing value"
+	if tokenOwnerWalletPassword == nil {
+		e["token_owner_wallet_password"] = "missing value"
 	}
 	if len(e) != 0 {
-		s.logger.Warn("Failed validating token transfer parameters",
+		s.logger.Warn("Failed validating token burn parameters",
 			slog.Any("error", e))
 		return httperror.NewForBadRequest(&e)
 	}
@@ -178,7 +177,7 @@ func (s *TokenTransferService) Execute(
 		// STEP 4:
 		// Increment token `nonce` - this is very important as it tells the
 		// blockchain that we are commiting a transaction and hence the miner will
-		// execute the transfer. If we do not increment the nonce then no
+		// execute the burn. If we do not increment the nonce then no
 		// transaction happens!
 		//
 
@@ -191,22 +190,25 @@ func (s *TokenTransferService) Execute(
 		// Create our pending transaction and sign it with the accounts private key.
 		//
 
+		// Burn an NFT by setting its owner to the burn address
+		burnAddress := common.HexToAddress("0x0000000000000000000000000000000000000000")
+
 		tx := &domain.Transaction{
 			ChainID:          s.config.Blockchain.ChainID,
 			NonceBytes:       big.NewInt(time.Now().Unix()).Bytes(),
 			From:             tokenOwnerAddress,
-			To:               recipientAddress,
+			To:               &burnAddress,
 			Value:            s.config.Blockchain.TransactionFee, // Note: This value gets reclaimed by the us, so it's fully recirculating when authority calls this.
 			Data:             make([]byte, 0),
 			Type:             domain.TransactionTypeToken,
 			TokenIDBytes:     token.IDBytes,
 			TokenMetadataURI: token.MetadataURI,
-			TokenNonceBytes:  nonce.Bytes(), // Transfered tokens must increment nonce.
+			TokenNonceBytes:  nonce.Bytes(), // Burned tokens must increment nonce.
 		}
 
 		stx, signingErr := tx.Sign(key.PrivateKey)
 		if signingErr != nil {
-			s.logger.Debug("Failed to sign the token transfer transaction",
+			s.logger.Debug("Failed to sign the token burn transaction",
 				slog.Any("error", signingErr))
 			return nil, signingErr
 		}
@@ -218,7 +220,7 @@ func (s *TokenTransferService) Execute(
 			return nil, signingErr
 		}
 
-		s.logger.Debug("Pending token transfer transaction signed successfully",
+		s.logger.Debug("Pending token burn transaction signed successfully",
 			slog.Any("tx_token_id", stx.GetTokenID()))
 
 		mempoolTx := &domain.MempoolTransaction{
@@ -251,7 +253,7 @@ func (s *TokenTransferService) Execute(
 			return nil, err
 		}
 
-		s.logger.Info("Pending signed transaction for coin transfer submitted to the authority",
+		s.logger.Info("Pending signed transaction for coin burn submitted to the authority",
 			slog.Any("tx_nonce", stx.GetNonce()))
 
 		s.logger.Debug("Committing transaction")

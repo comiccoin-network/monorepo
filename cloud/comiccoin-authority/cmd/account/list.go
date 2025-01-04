@@ -13,7 +13,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/account"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
 )
@@ -51,7 +51,7 @@ func doRunListAccount() {
 	)
 
 	// Service
-	accountListingByLocalWalletsService := service.NewAccountListingByLocalWalletsService(
+	accountListingByLocalWalletsService := s_account.NewAccountListingByLocalWalletsService(
 		logger,
 		listAllAddressesWalletUseCase,
 		accountsFilterByAddressesUseCase,

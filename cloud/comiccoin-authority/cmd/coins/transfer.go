@@ -15,7 +15,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_coin "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/coin"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
@@ -120,7 +120,7 @@ func doRunTransferCoinsCommand() {
 	)
 
 	// ------ Service ------
-	coinTransferService := service.NewCoinTransferService(
+	coinTransferService := s_coin.NewCoinTransferService(
 		cfg,
 		logger,
 		getAccountUseCase,

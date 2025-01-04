@@ -15,7 +15,8 @@ import (
 	cache "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/memory/redis"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
+	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
@@ -167,13 +168,13 @@ func doRunMintToken() {
 	)
 
 	// ------ Service ------
-	getProofOfAuthorityPrivateKeyService := service.NewGetProofOfAuthorityPrivateKeyService(
+	getProofOfAuthorityPrivateKeyService := s_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
 		getWalletUseCase,
 		walletDecryptKeyUseCase,
 	)
-	tokenMintService := service.NewTokenMintService(
+	tokenMintService := s_token.NewTokenMintService(
 		cfg,
 		logger,
 		dmutex,

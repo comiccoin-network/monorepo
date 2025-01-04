@@ -8,17 +8,17 @@ import (
 	"net/http"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockdata"
 )
 
 type GetBlockDataHTTPHandler struct {
 	logger  *slog.Logger
-	service *service.GetBlockDataService
+	service *s_blockdata.GetBlockDataService
 }
 
 func NewGetBlockDataHTTPHandler(
 	logger *slog.Logger,
-	s1 *service.GetBlockDataService,
+	s1 *s_blockdata.GetBlockDataService,
 ) *GetBlockDataHTTPHandler {
 	return &GetBlockDataHTTPHandler{logger, s1}
 }

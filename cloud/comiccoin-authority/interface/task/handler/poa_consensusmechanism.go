@@ -5,19 +5,19 @@ import (
 	"log/slog"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
 )
 
 type ProofOfAuthorityConsensusMechanismTaskHandler struct {
 	config                                    *config.Configuration
 	logger                                    *slog.Logger
-	proofOfAuthorityConsensusMechanismService *service.ProofOfAuthorityConsensusMechanismService
+	proofOfAuthorityConsensusMechanismService *s_poa.ProofOfAuthorityConsensusMechanismService
 }
 
 func NewProofOfAuthorityConsensusMechanismTaskHandler(
 	config *config.Configuration,
 	logger *slog.Logger,
-	s1 *service.ProofOfAuthorityConsensusMechanismService,
+	s1 *s_poa.ProofOfAuthorityConsensusMechanismService,
 ) *ProofOfAuthorityConsensusMechanismTaskHandler {
 	return &ProofOfAuthorityConsensusMechanismTaskHandler{config, logger, s1}
 }

@@ -25,7 +25,14 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/interface/task"
 	taskhandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/interface/task/handler"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service"
+	s_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockchainstate"
+	s_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockdata"
+	s_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blocktx"
+	s_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
+	s_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
+	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
+	s_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/signedtx"
+	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
@@ -217,54 +224,54 @@ func doRunDaemon() {
 	// --- Service
 
 	// Genesis
-	getGenesisBlockDataService := service.NewGetGenesisBlockDataService(
+	getGenesisBlockDataService := s_genesis.NewGetGenesisBlockDataService(
 		cfg,
 		logger,
 		getGenesisBlockDataUseCase,
 	)
 
 	// Blockchain State
-	getBlockchainStateService := service.NewGetBlockchainStateService(
+	getBlockchainStateService := s_blockchainstate.NewGetBlockchainStateService(
 		cfg,
 		logger,
 		getBlockchainStateUseCase,
 	)
 
 	// Block Data
-	getBlockDataService := service.NewGetBlockDataService(
+	getBlockDataService := s_blockdata.NewGetBlockDataService(
 		cfg,
 		logger,
 		getBlockDataUseCase,
 	)
 
 	// Block Transaction
-	listBlockTransactionsByAddressService := service.NewListBlockTransactionsByAddressService(
+	listBlockTransactionsByAddressService := s_blocktx.NewListBlockTransactionsByAddressService(
 		cfg,
 		logger,
 		listBlockTransactionsByAddressUseCase,
 	)
 
 	// Coins
-	signedTransactionSubmissionService := service.NewSignedTransactionSubmissionService(
+	signedTransactionSubmissionService := s_signedtx.NewSignedTransactionSubmissionService(
 		cfg,
 		logger,
 	)
 
 	// MempoolTransaction
-	mempoolTransactionReceiveDTOFromNetworkService := service.NewMempoolTransactionReceiveDTOFromNetworkService(
+	mempoolTransactionReceiveDTOFromNetworkService := s_mempooltx.NewMempoolTransactionReceiveDTOFromNetworkService(
 		cfg,
 		logger,
 		mempoolTransactionCreateUseCase,
 	)
 
 	// Proof of Authority Consensus Mechanism
-	getProofOfAuthorityPrivateKeyService := service.NewGetProofOfAuthorityPrivateKeyService(
+	getProofOfAuthorityPrivateKeyService := s_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
 		getWalletUseCase,
 		walletDecryptKeyUseCase,
 	)
-	proofOfAuthorityConsensusMechanismService := service.NewProofOfAuthorityConsensusMechanismService(
+	proofOfAuthorityConsensusMechanismService := s_poa.NewProofOfAuthorityConsensusMechanismService(
 		cfg,
 		logger,
 		dmutex,
@@ -288,11 +295,11 @@ func doRunDaemon() {
 	)
 
 	// Tokens
-	tokenListByOwnerService := service.NewTokenListByOwnerService(
+	tokenListByOwnerService := s_token.NewTokenListByOwnerService(
 		logger,
 		listTokensByOwnerUseCase,
 	)
-	tokenMintService := service.NewTokenMintService(
+	tokenMintService := s_token.NewTokenMintService(
 		cfg,
 		logger,
 		dmutex,
@@ -306,7 +313,7 @@ func doRunDaemon() {
 
 	// Stream Latest Blockchain State Change
 
-	blockchainStateChangeSubscriptionService := service.NewBlockchainStateChangeSubscriptionService(
+	blockchainStateChangeSubscriptionService := s_blockchainstate.NewBlockchainStateChangeSubscriptionService(
 		logger,
 		blockchainStateSubscribeUseCase,
 	)
