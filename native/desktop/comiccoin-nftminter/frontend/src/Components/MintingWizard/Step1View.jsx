@@ -27,24 +27,35 @@ function MintingWizardStep1View() {
   const [error, setError] = useState("");
   const [showErrorBox, setShowErrorBox] = useState(false);
 
-  const handleContinue = (e) => {
-    e.preventDefault();
-
-    if (!walletAddress.trim()) {
-      setError("Wallet address is required");
-      setShowErrorBox(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
-    console.log("handleContinue: Saving NFT...");
-    let updatedNFT = { ...nft };
-    updatedNFT.walletAddress = walletAddress;
-    setNft(updatedNFT);
-    console.log("handleContinue: Done saving NFT.");
-
-    setForceURL("/minting-wizard-step2"); // Navigate to next step
+  const isValidEthereumAddress = (address) => {
+      return /^0x[a-fA-F0-9]{40}$/.test(address);
   };
+
+  const handleContinue = (e) => {
+  e.preventDefault();
+
+  const trimmedAddress = walletAddress.trim();
+  if (!trimmedAddress) {
+    setError("Wallet address is required");
+    setShowErrorBox(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (!isValidEthereumAddress(trimmedAddress)) {
+    setError("Invalid Ethereum address format");
+    setShowErrorBox(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  console.log("handleContinue: Saving NFT...");
+  let updatedNFT = { ...nft };
+  updatedNFT.walletAddress = trimmedAddress;
+  setNft(updatedNFT);
+  console.log("handleContinue: Done saving NFT.");
+  setForceURL("/minting-wizard-step2");
+};
 
   const handleAbandonMint = () => {
     setShowAbandonModal(true);
