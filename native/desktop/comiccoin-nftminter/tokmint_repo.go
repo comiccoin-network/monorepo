@@ -67,6 +67,7 @@ func (repo *TokenMintDTORepo) SubmitToBlockchainAuthority(ctx context.Context, d
 
 	repo.logger.Debug("Submitting to HTTP JSON API",
 		slog.String("url", httpEndpoint),
+		slog.Any("data", dto),
 		slog.String("method", "POST"))
 
 	// Create a new request

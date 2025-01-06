@@ -99,6 +99,10 @@ func (h *TokenMintServiceHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 	if passwordMatch == false {
 		err := httperror.NewForUnauthorizedWithSingleField("api_key", "unauthorized")
 		h.logger.Error("password - does not match")
+		// h.logger.Error("password - does not match",
+		// 	slog.Any("password", apiKeyPayload[1]),
+		// 	slog.Any("encodedHash", h.config.App.AdministrationSecretKey.String()),
+		// )
 		httperror.ResponseError(w, err)
 		return
 	}
