@@ -146,10 +146,12 @@ function ListTransactionsView() {
   //   }
   // ];
 
+  // For developer purposes only.
+  console.log("transactions: ", transactions);
+
   return (
     <div>
       <main className="max-w-2xl mx-auto px-6 py-12 mb-24">
-        {/* Transactions List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-center gap-3">
@@ -162,76 +164,65 @@ function ListTransactionsView() {
             </div>
           </div>
 
-          <div className="divide-y divide-gray-100">
-            {transactions.map((tx) => {
-              const isReceived =
-                tx.to.toLowerCase() ===
-                currentOpenWalletAtAddress.toLowerCase();
+          {transactions.length === 0 ? (
+            <div className="p-12 text-center">
+              <Wallet className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No transactions yet</h3>
+              <p className="text-gray-500">Your transaction history will appear here once you start sending or receiving CC.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {transactions.map((tx) => {
+                const isReceived = tx.to.toLowerCase() === currentOpenWalletAtAddress.toLowerCase();
+                const totalValue = parseFloat(tx.value) - (isReceived ? parseFloat(tx.fee) : 0);
 
-              // What's going on here? If we received coins/token then the transactional
-              // fee was paid by the sender, so remove fee. If we are sender then show the
-              // transactional fee we paid.
-              const totalValue =
-                parseFloat(tx.value) - (isReceived ? parseFloat(tx.fee) : 0);
-
-              return (
-                <button
-                  key={`${tx.timestamp}-${tx.value}`}
-                  onClick={() => handleTransactionClick(tx)}
-                  className="w-full p-4 hover:bg-slate-50 transition-colors text-left"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`p-3 rounded-xl ${
-                          isReceived ? "bg-green-100" : "bg-red-100"
-                        }`}
-                      >
-                        {isReceived ? (
-                          <ArrowDownLeft className="w-5 h-5 text-green-600" />
-                        ) : (
-                          <ArrowUpRight className="w-5 h-5 text-red-600" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p
-                            className={`font-semibold ${
-                              isReceived ? "text-green-600" : "text-red-600"
-                            }`}
-                          >
-                            {isReceived ? "+" : "-"}
-                            {totalValue} CC
-                          </p>
-                          <span className="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">
-                            {tx.type.toUpperCase()}
-                          </span>
-                          {!isReceived && (
-                            <span className="text-xs text-gray-500">
-                              (Fee: {tx.fee} CC)
-                            </span>
+                return (
+                  <button
+                    key={`${tx.timestamp}-${tx.value}`}
+                    onClick={() => handleTransactionClick(tx)}
+                    className="w-full p-4 hover:bg-slate-50 transition-colors text-left"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-xl ${isReceived ? "bg-green-100" : "bg-red-100"}`}>
+                          {isReceived ? (
+                            <ArrowDownLeft className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <ArrowUpRight className="w-5 h-5 text-red-600" />
                           )}
                         </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
-                          <p className="text-sm text-gray-600">
-                            {isReceived ? "From:" : "To:"}{" "}
-                            {formatAddress(isReceived ? tx.from : tx.to)}
-                          </p>
-                          <span className="hidden sm:inline text-gray-400">
-                            •
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            {formatDate(tx.timestamp)}
-                          </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className={`font-semibold ${isReceived ? "text-green-600" : "text-red-600"}`}>
+                              {isReceived ? "+" : "-"}{totalValue} CC
+                            </p>
+                            <span className="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">
+                              {tx.type.toUpperCase()}
+                            </span>
+                            {!isReceived && (
+                              <span className="text-xs text-gray-500">
+                                (Fee: {tx.fee} CC)
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
+                            <p className="text-sm text-gray-600">
+                              {isReceived ? "From:" : "To:"} {formatAddress(isReceived ? tx.from : tx.to)}
+                            </p>
+                            <span className="hidden sm:inline text-gray-400">•</span>
+                            <span className="text-sm text-gray-500">
+                              {formatDate(tx.timestamp)}
+                            </span>
+                          </div>
                         </div>
                       </div>
+                      <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     </div>
-                    <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </main>
     </div>
