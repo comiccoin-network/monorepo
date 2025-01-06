@@ -177,7 +177,15 @@ func (s *GetOrDownloadNonFungibleTokenService) getOrDownload(ctx context.Context
 	s.logger.Debug("Downloaded NFT successfully.",
 		slog.Any("token_id", nftok.TokenID),
 		slog.Any("metadata_uri", nftok.MetadataURI),
-		slog.Any("metadata", nftok.Metadata),
+		slog.Any("MetadataURI", nftok.MetadataURI),
+		slog.Any("Metadata.Image", nftok.Metadata.Image),
+		slog.Any("Metadata.AnimationURL", nftok.Metadata.AnimationURL),
+		slog.Any("Metadata.Name", nftok.Metadata.Name),
+		slog.Any("Metadata.Description", nftok.Metadata.Description),
+		slog.Any("Metadata.ExternalURL", nftok.Metadata.ExternalURL),
+		slog.Any("Metadata.YoutubeURL", nftok.Metadata.YoutubeURL),
+		slog.Any("Metadata.BackgroundColor", nftok.Metadata.BackgroundColor),
+		slog.Any("Metadata.Attributes", nftok.Metadata.Attributes),
 	)
 	return nftok, nil
 }

@@ -111,9 +111,25 @@ func (a *App) GetNonFungibleToken(tokenID *big.Int) (*comic_domain.NonFungibleTo
 			slog.Any("error", err))
 		return nil, err
 	}
+	if nftok == nil {
+		err := fmt.Errorf("No nft returned for token ID: %v", tokenID)
+		a.logger.Error("Failed getting non-fungible token by token ID.",
+			slog.Any("error", err))
+		return nil, err
+	}
 
-	a.logger.Debug("",
-		slog.Any("nftok", nftok))
+	a.logger.Debug("NFT",
+		slog.Any("TokenID", nftok.TokenID),
+		slog.Any("MetadataURI", nftok.MetadataURI),
+		slog.Any("Metadata.Image", nftok.Metadata.Image),
+		slog.Any("Metadata.AnimationURL", nftok.Metadata.AnimationURL),
+		slog.Any("Metadata.Name", nftok.Metadata.Name),
+		slog.Any("Metadata.Description", nftok.Metadata.Description),
+		slog.Any("Metadata.ExternalURL", nftok.Metadata.ExternalURL),
+		slog.Any("Metadata.YoutubeURL", nftok.Metadata.YoutubeURL),
+		slog.Any("Metadata.BackgroundColor", nftok.Metadata.BackgroundColor),
+		slog.Any("Metadata.Attributes", nftok.Metadata.Attributes),
+		slog.Any("State", nftok.State))
 
 	return nftok, nil
 }
