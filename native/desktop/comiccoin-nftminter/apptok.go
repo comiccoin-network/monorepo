@@ -152,9 +152,6 @@ func (a *App) CreateToken(
 	if image == "" {
 		e["image"] = "missing value"
 	}
-	if animation == "" {
-		e["animation"] = "missing value"
-	}
 	if backgroundColor == "" {
 		e["background_color"] = "missing value"
 	} else {
@@ -254,20 +251,30 @@ func (a *App) CreateToken(
 		slog.Any("cid", imageCID))
 
 	//
-	// STEP 5: Upload `animation` file to IPFs.
+	// STEP 5: Upload (optional) `animation` file to IPFs.
 	//
 
-	animationCID, err := a.nftAssetRepo.PinAddViaFilepath(a.ctx, animation)
-	if err != nil {
-		// If an error occurs, log an error and return an error.
-		a.logger.Error("Failed adding animation to IPFs.",
-			slog.Any("filepath", animation),
-			slog.Any("error", err))
-		return nil, err
+	// Developers Note:
+	// Because the animation is optional, we need to handle checking if
+	// the user included an optional animation or not and then load up our
+	// variables.
+	var animationCID string
+
+	if animation != "" {
+		animationCID, err = a.nftAssetRepo.PinAddViaFilepath(a.ctx, animation)
+		if err != nil {
+			// If an error occurs, log an error and return an error.
+			a.logger.Error("Failed adding animation to IPFs.",
+				slog.Any("filepath", animation),
+				slog.Any("error", err))
+			return nil, err
+		}
+		a.logger.Debug("Animation uploaded to ipfs.",
+			slog.Any("local", animation),
+			slog.Any("cid", animationCID))
+	} else {
+		a.logger.Debug("Skipping animation uploaded to ipfs.")
 	}
-	a.logger.Debug("Animation uploaded to ipfs.",
-		slog.Any("local", animation),
-		slog.Any("cid", animationCID))
 
 	//
 	// STEP 6:
@@ -347,35 +354,45 @@ func (a *App) CreateToken(
 
 	//
 	// STEP 8
-	// Copy `image` file so we can consolidate our token assets.
+	// Copy `animation` file so we can consolidate our token assets if it was uploaded.
 	//
-	// Get the base name of the file
-	animationFilename := filepath.Base(animation)
 
-	// Create new filepath of where to consolidate our file to.
-	consolidatedAnimation := filepath.Join(dataDir, "token_assets", fmt.Sprintf("%v", tokenID.String()), animationFilename)
+	// Developers Note:
+	// Because the animation is optional, we need to handle checking if
+	// the user included an optional animation or not and then load up our
+	// variables.
+	var animationFilename string
+	var consolidatedAnimation string
 
-	// Create the directories recursively.
-	if err := os.MkdirAll(filepath.Dir(consolidatedAnimation), 0755); err != nil {
-		// If an error occurs, log an error and return an error.
-		a.logger.Error("Failed create directories",
-			slog.Any("error", err))
-		return nil, err
-	}
+	if animation != "" {
+		// Get the base name of the file
+		animationFilename = filepath.Base(animation)
 
-	if err := CopyFile(animation, consolidatedAnimation); err != nil {
-		if strings.Contains(err.Error(), "destination file already exists") {
-			a.logger.Debug("Skipping consolidating animation because destination file already exists.",
-				slog.String("tokenID", tokenID.String()),
-				slog.Any("dataDir", dataDir),
-				slog.Any("consolidatedAnimation", consolidatedAnimation))
-		} else {
-			a.logger.Error("Failed consolidating animation.",
-				slog.String("tokenID", tokenID.String()),
-				slog.Any("dataDir", dataDir),
-				slog.Any("consolidatedAnimation", consolidatedAnimation),
+		// Create new filepath of where to consolidate our file to.
+		consolidatedAnimation = filepath.Join(dataDir, "token_assets", fmt.Sprintf("%v", tokenID.String()), animationFilename)
+
+		// Create the directories recursively.
+		if err := os.MkdirAll(filepath.Dir(consolidatedAnimation), 0755); err != nil {
+			// If an error occurs, log an error and return an error.
+			a.logger.Error("Failed create directories",
 				slog.Any("error", err))
 			return nil, err
+		}
+
+		if err := CopyFile(animation, consolidatedAnimation); err != nil {
+			if strings.Contains(err.Error(), "destination file already exists") {
+				a.logger.Debug("Skipping consolidating animation because destination file already exists.",
+					slog.String("tokenID", tokenID.String()),
+					slog.Any("dataDir", dataDir),
+					slog.Any("consolidatedAnimation", consolidatedAnimation))
+			} else {
+				a.logger.Error("Failed consolidating animation.",
+					slog.String("tokenID", tokenID.String()),
+					slog.Any("dataDir", dataDir),
+					slog.Any("consolidatedAnimation", consolidatedAnimation),
+					slog.Any("error", err))
+				return nil, err
+			}
 		}
 	}
 

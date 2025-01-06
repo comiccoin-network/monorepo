@@ -62,9 +62,6 @@ function MintingWizardStep2View() {
     if (image === "") {
       err.image = "Image is required";
     }
-    if (animation === "") {
-      err.animation = "Animation is required";
-    }
     if (backgroundColor === "") {
       err.backgroundColor = "Background colour is required";
     }
@@ -268,7 +265,7 @@ function MintingWizardStep2View() {
               {/* Animation Upload */}
               <div className="space-y-2">
                 <span className="text-sm font-medium text-gray-700">
-                  Animation File
+                  Animation File (Optional)
                 </span>
                 <div className="flex gap-2">
                   <input
@@ -308,7 +305,7 @@ function MintingWizardStep2View() {
               {/* YouTube URL */}
               <label className="block">
                 <span className="text-sm font-medium text-gray-700">
-                  YouTube URL
+                  YouTube URL (Optional)
                 </span>
                 <input
                   type="url"
@@ -322,7 +319,7 @@ function MintingWizardStep2View() {
               {/* External URL */}
               <label className="block">
                 <span className="text-sm font-medium text-gray-700">
-                  External URL
+                  External URL (Optional)
                 </span>
                 <input
                   type="url"
@@ -336,7 +333,7 @@ function MintingWizardStep2View() {
               {/* Background Color */}
               <label className="block">
                 <span className="text-sm font-medium text-gray-700">
-                  Background Color
+                  Background Color *
                 </span>
                 <input
                   type="text"
@@ -347,7 +344,6 @@ function MintingWizardStep2View() {
               </label>
             </div>
 
-            {/* TODO: Add atributes GUI here. */}
             <FormTokenMetadataAttributesField
               data={attributes}
               onDataChange={setAttributes}
