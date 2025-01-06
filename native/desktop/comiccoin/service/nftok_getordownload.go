@@ -134,20 +134,27 @@ func (s *GetOrDownloadNonFungibleTokenService) getOrDownload(ctx context.Context
 
 	//
 	// STEP 5
-	// Download the animation file from IPFS and save locally.
+	// Download the animation file from IPFS and save locally if this token has an animation included.
 	//
 
-	animationFilepath, err := s.downloadNFTokAssetUsecase.Execute(tok.GetID(), metadata.AnimationURL, dirPath)
-	if err != nil {
-		s.logger.Error("Failed downloading nft animation asset.",
-			slog.Any("tokenID", tok.GetID()),
-			slog.Any("AnimationURL", metadata.AnimationURL),
-			slog.Any("err", err))
-		return nil, fmt.Errorf("Failed downloading nft animation asset: %v\n", err)
-	}
+	// Developers Note:
+	// Why "8" because if we count "https://" string, there are 8 characters there.
+	// Also "7" is count when "ipfs://".
 
-	// Replace the IPFS path with our local systems filepath.
-	metadata.AnimationURL = animationFilepath
+	if metadata.AnimationURL != "" && len(metadata.AnimationURL) > 8 {
+		animationFilepath, err := s.downloadNFTokAssetUsecase.Execute(tok.GetID(), metadata.AnimationURL, dirPath)
+		if err != nil {
+			s.logger.Error("Failed downloading nft animation asset.",
+				slog.Any("tokenID", tok.GetID()),
+				slog.Any("AnimationURL", metadata.AnimationURL),
+				slog.Any("AnimationURL Length", len(metadata.AnimationURL)),
+				slog.Any("err", err))
+			return nil, fmt.Errorf("Failed downloading nft animation asset: %v\n", err)
+		}
+
+		// Replace the IPFS path with our local systems filepath.
+		metadata.AnimationURL = animationFilepath
+	}
 
 	//
 	// STEP 6

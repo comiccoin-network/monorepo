@@ -33,6 +33,17 @@ func (uc *DownloadNonFungibleTokenAssetUseCase) Execute(tokenID *big.Int, assetU
 			slog.Any("tokenID", tokenID),
 			slog.Any("asset_uri", assetURI))
 		return "", nil
+	} else {
+		// Developers Note:
+		// Why "8" because if we count "https://" string, there are 8 characters there.
+		// Also "7" is count when "ipfs://".
+
+		if len(assetURI) < 8 {
+			uc.logger.Warn("Invalid asset URI to download, skipping function...",
+				slog.Any("tokenID", tokenID),
+				slog.Any("asset_uri", assetURI))
+			return "", nil
+		}
 	}
 
 	// Confirm URI is using protocol our app supports.
