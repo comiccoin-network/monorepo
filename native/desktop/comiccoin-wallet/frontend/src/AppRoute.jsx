@@ -31,6 +31,7 @@ import TokenDetailView from "./Components/More/Tokens/DetailView";
 import TokenTransferView from "./Components/More/Tokens/TransferView";
 import TokenTransferSuccessView from "./Components/More/Tokens/TransferSuccessView";
 import TokenBurnView from "./Components/More/Tokens/BurnView";
+import TokenBurnSuccessView from "./Components/More/Tokens/BurnSuccessView";
 import SettingsView from "./Components/More/Settings/View";
 
 function AppRoute() {
@@ -48,7 +49,7 @@ function AppRoute() {
             </div>
           </div>
         )}
-        
+
         <HashRouter basename={"/"}>
           {/* <TopAlertBanner /> */}
 
@@ -107,6 +108,11 @@ function AppRoute() {
             <Route
               path="/more/token/:tokenID/burn"
               element={<TokenBurnView />}
+              exact
+            />
+            <Route
+              path="/more/token/:tokenID/burn-success"
+              element={<TokenBurnSuccessView />}
               exact
             />
             <Route

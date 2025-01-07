@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { toLower } from "lodash";
-import { AlertCircle, Info, Trash2, ArrowLeft } from "lucide-react";
+import { AlertCircle, Info, Trash2, ArrowLeft, Loader2 } from "lucide-react";
 
 import {
   GetNonFungibleToken,
@@ -76,34 +76,43 @@ function TokenBurnView() {
    * Validates the form data, then sends a burn request to the backend.
    * Updates the UI to reflect loading and success/failure states.
    */
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      // Form is valid, proceed with submission
-      console.log("Form submitted:", formData);
+   const handleSubmit = (e) => {
+     e.preventDefault();
+     if (validateForm()) {
+       // Form is valid, proceed with submission
+       console.log("Form submitted:", formData);
 
-      // Update the GUI to let user know that the operation is under way.
-      setIsLoading(true);
+       // Update the GUI to let user know that the operation is under way.
+       setIsLoading(true);
+       setErrors({}); // Clear any previous errors
+       setShowErrorBox(false);
 
-      BurnToken(parseInt(tokenID), currentOpenWalletAtAddress, password)
-        .then(() => {
-          console.log("BurnToken: Success");
-          setForceURL("/more/tokens");
-        })
-        .catch((errorRes) => {
-          console.log("GetNonFungibleToken: errorRes:", errorRes);
-        })
-        .finally((errorRes) => {
-          // Update the GUI to let user know that the operation is completed.
-          setIsLoading(false);
-        });
-    } else {
-      // Show error message
-      setShowError(true);
-      // Auto-hide error after 5 seconds
-      setTimeout(() => setShowError(false), 5000);
-    }
-  };
+       BurnToken(parseInt(tokenID), currentOpenWalletAtAddress, formData.password)
+         .then(() => {
+            console.log("TokenBurnView: Success");
+            setForceURL("/more/token/" + tokenID + "/burn-success");
+         })
+         .catch((errorRes) => {
+           console.log("GetNonFungibleToken: errorRes:", errorRes);
+           // Set the error message from the API
+           setErrors({ api: errorRes.toString() });
+           setShowErrorBox(true);
+           // Show error message
+           setShowError(true);
+           // Auto-hide error after 5 seconds
+           setTimeout(() => setShowError(false), 5000);
+         })
+         .finally(() => {
+           // Update the GUI to let user know that the operation is completed.
+           setIsLoading(false);
+         });
+     } else {
+       // Show error message for form validation
+       setShowError(true);
+       // Auto-hide error after 5 seconds
+       setTimeout(() => setShowError(false), 5000);
+     }
+   };
 
   ////
   //// Misc.
@@ -147,7 +156,17 @@ function TokenBurnView() {
   }
 
   if (isLoading) {
-    return "------";
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-12 h-12 text-red-600 animate-spin mx-auto" />
+          <h2 className="text-xl font-semibold text-gray-900">
+            Processing request
+          </h2>
+          <p className="text-sm text-gray-600">Please wait while we process the token request...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
