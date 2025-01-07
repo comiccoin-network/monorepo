@@ -11,7 +11,8 @@ import (
 type CoinTransferArgs struct {
 	ChainID               uint16
 	FromAccountAddress    *common.Address
-	AccountWalletPassword string
+	AccountWalletMnemonic string
+	AccountWalletPath     string
 	To                    *common.Address
 	Value                 uint64
 	Data                  []byte
@@ -21,7 +22,7 @@ type CoinTransferReply struct {
 }
 
 func (impl *ComicCoinRPCServer) CoinTransfer(args *CoinTransferArgs, reply *CoinTransferReply) error {
-	pass, secureErr := sstring.NewSecureString(args.AccountWalletPassword)
+	mnemonic, secureErr := sstring.NewSecureString(args.AccountWalletMnemonic)
 	if secureErr != nil {
 		return secureErr
 	}
@@ -29,7 +30,8 @@ func (impl *ComicCoinRPCServer) CoinTransfer(args *CoinTransferArgs, reply *Coin
 		context.Background(),
 		args.ChainID,
 		args.FromAccountAddress,
-		pass,
+		mnemonic,
+		args.AccountWalletPath,
 		args.To,
 		args.Value,
 		args.Data,

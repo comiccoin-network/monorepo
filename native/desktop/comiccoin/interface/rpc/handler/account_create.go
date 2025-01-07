@@ -9,9 +9,9 @@ import (
 )
 
 type CreateAccountArgs struct {
-	Password         string
-	PasswordRepeated string
-	Label            string
+	WalletMnemonic string
+	WalletPath     string
+	Label          string
 }
 
 type CreateAccountReply struct {
@@ -19,16 +19,11 @@ type CreateAccountReply struct {
 }
 
 func (impl *ComicCoinRPCServer) CreateAccount(args *CreateAccountArgs, reply *CreateAccountReply) error {
-	pass, err := sstring.NewSecureString(args.Password)
+	mnem, err := sstring.NewSecureString(args.WalletMnemonic)
 	if err != nil {
 		return err
 	}
-	passRepeated, err := sstring.NewSecureString(args.PasswordRepeated)
-	if err != nil {
-		return err
-	}
-
-	account, err := impl.createAccountService.Execute(context.Background(), pass, passRepeated, args.Label)
+	account, err := impl.createAccountService.Execute(context.Background(), mnem, args.WalletPath, args.Label)
 	if err != nil {
 		return err
 	}

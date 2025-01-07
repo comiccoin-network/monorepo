@@ -7,6 +7,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
+	inmemory "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/memory/inmemory"
 	auth_repo "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstatedto"
 	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdatadto"
@@ -53,6 +54,7 @@ func doRunBlockchainSyncCmd() error {
 		slog.Any("authority_address", flagAuthorityAddress))
 
 	// ------ Database -----
+	memDB := inmemory.NewInMemoryStorage(logger)
 	walletDB := disk.NewDiskStorage(flagDataDirectory, "wallet", logger)
 	accountDB := disk.NewDiskStorage(flagDataDirectory, "account", logger)
 	genesisBlockDataDB := disk.NewDiskStorage(flagDataDirectory, "genesis_block_data", logger)
@@ -94,6 +96,7 @@ func doRunBlockchainSyncCmd() error {
 		logger,
 		tokenRepo)
 	pstxRepo := repo.NewPendingSignedTransactionRepo(logger, pstxDB)
+	blockchainSyncStatusRepo := repo.NewBlockchainSyncStatusRepo(logger, memDB)
 
 	// ------------ Use-Case ------------
 
@@ -194,10 +197,20 @@ func doRunBlockchainSyncCmd() error {
 		logger,
 		pstxRepo)
 
+	// Blockchain Sync Status
+	setBlockchainSyncStatusUseCase := usecase.NewSetBlockchainSyncStatusUseCase(
+		logger,
+		blockchainSyncStatusRepo)
+	getBlockchainSyncStatusUseCase := usecase.NewGetBlockchainSyncStatusUseCase(
+		logger,
+		blockchainSyncStatusRepo)
+
 	// ------------ Service ------------
 
 	blockchainSyncService := service.NewBlockchainSyncWithBlockchainAuthorityService(
 		logger,
+		getBlockchainSyncStatusUseCase,
+		setBlockchainSyncStatusUseCase,
 		getGenesisBlockDataUseCase,
 		upsertGenesisBlockDataUseCase,
 		getGenesisBlockDataDTOFromBlockchainAuthorityUseCase,

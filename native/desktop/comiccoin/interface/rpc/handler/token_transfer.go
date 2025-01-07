@@ -12,7 +12,8 @@ import (
 type TokenTransferArgs struct {
 	ChainID               uint16
 	FromAccountAddress    *common.Address
-	AccountWalletPassword string
+	AccountWalletMnemonic string
+	AccountWalletPath     string
 	To                    *common.Address
 	TokenID               *big.Int
 }
@@ -21,7 +22,7 @@ type TokenTransferReply struct {
 }
 
 func (impl *ComicCoinRPCServer) TokenTransfer(args *TokenTransferArgs, reply *TokenTransferReply) error {
-	pass, secureErr := sstring.NewSecureString(args.AccountWalletPassword)
+	mnemonic, secureErr := sstring.NewSecureString(args.AccountWalletMnemonic)
 	if secureErr != nil {
 		return secureErr
 	}
@@ -29,7 +30,8 @@ func (impl *ComicCoinRPCServer) TokenTransfer(args *TokenTransferArgs, reply *To
 		context.Background(),
 		args.ChainID,
 		args.FromAccountAddress,
-		pass,
+		mnemonic,
+		args.AccountWalletPath,
 		args.To,
 		args.TokenID,
 	)

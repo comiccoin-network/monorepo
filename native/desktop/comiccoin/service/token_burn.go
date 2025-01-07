@@ -56,13 +56,15 @@ func (s *TokenBurnService) Execute(
 	ctx context.Context,
 	chainID uint16,
 	fromAccountAddress *common.Address,
-	accountWalletPassword *sstring.SecureString,
+	accountWalletMnemonic *sstring.SecureString,
+	accountWalletPath string,
 	tokenID *big.Int,
 ) error {
 	s.logger.Debug("Validating...",
 		slog.Any("chain_id", chainID),
 		slog.Any("from_account_address", fromAccountAddress),
-		slog.Any("account_wallet_password", accountWalletPassword),
+		slog.Any("account_wallet_mnemonic", accountWalletMnemonic),
+		slog.Any("account_wallet_path", accountWalletPath),
 		slog.Any("tokenID", tokenID),
 	)
 
@@ -74,8 +76,11 @@ func (s *TokenBurnService) Execute(
 	if fromAccountAddress == nil {
 		e["from_account_address"] = "missing value"
 	}
-	if accountWalletPassword == nil {
-		e["account_wallet_password"] = "missing value"
+	if accountWalletMnemonic == nil {
+		e["token_owner_wallet_mnemonic"] = "missing value"
+	}
+	if accountWalletPath == "" {
+		e["token_owner_wallet_path"] = "missing value"
 	}
 	if tokenID == nil {
 		e["token_id"] = "missing value"
@@ -123,33 +128,26 @@ func (s *TokenBurnService) Execute(
 	}
 	txFee := genesis.Header.TransactionFee
 
-	wallet, err := s.getWalletUseCase.Execute(ctx, fromAccountAddress)
+	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
 	if err != nil {
-		s.logger.Error("failed getting from database",
-			slog.Any("from_account_address", fromAccountAddress),
+		s.logger.Error("failed decrypting wallet",
 			slog.Any("error", err))
 		s.storageTransactionDiscardUseCase.Execute()
-		return fmt.Errorf("failed getting from database: %s", err)
+		return fmt.Errorf("failed decrypting wallet: %s", err)
 	}
 	if wallet == nil {
-		s.logger.Error("failed getting from database",
-			slog.Any("from_account_address", fromAccountAddress),
-			slog.Any("error", "d.n.e."))
-		s.storageTransactionDiscardUseCase.Execute()
-		return fmt.Errorf("failed getting from database: %s", "wallet d.n.e.")
+		return fmt.Errorf("failed decrypting wallet: %s", "d.n.e.")
 	}
-
-	key, err := s.walletDecryptKeyUseCase.Execute(ctx, wallet.KeystoreBytes, accountWalletPassword)
+	privateKey, err := wallet.PrivateKey(*ethAccount)
 	if err != nil {
-		s.logger.Error("failed getting key",
-			slog.Any("from_account_address", fromAccountAddress),
+		s.logger.Error("failed getting wallet private key",
 			slog.Any("error", err))
 		s.storageTransactionDiscardUseCase.Execute()
-		return fmt.Errorf("failed getting key: %s", err)
+		return fmt.Errorf("failed getting wallet private key: %s", err)
 	}
-	if key == nil {
+	if privateKey == nil {
 		s.storageTransactionDiscardUseCase.Execute()
-		return fmt.Errorf("failed getting key: %s", "d.n.e.")
+		return fmt.Errorf("failed getting wallet private key: %s", "d.n.e.")
 	}
 
 	tok, err := s.getTokenUseCase.Execute(ctx, tokenID)
@@ -218,7 +216,7 @@ func (s *TokenBurnService) Execute(
 	tx := &auth_domain.Transaction{
 		ChainID:          chainID,
 		NonceBytes:       big.NewInt(time.Now().Unix()).Bytes(),
-		From:             wallet.Address,
+		From:             fromAccountAddress,
 		To:               &burnAddress,
 		Value:            txFee, // Users pay transaction fee for transfering NFTs.
 		Data:             []byte{},
@@ -228,7 +226,7 @@ func (s *TokenBurnService) Execute(
 		TokenNonceBytes:  tok.NonceBytes,
 	}
 
-	stx, signingErr := tx.Sign(key.PrivateKey)
+	stx, signingErr := tx.Sign(privateKey)
 	if signingErr != nil {
 		s.logger.Debug("Failed to sign the transaction",
 			slog.Any("error", signingErr))

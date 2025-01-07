@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
 	inmemory "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/memory/inmemory"
@@ -77,7 +77,7 @@ func doRunDaemonCmd() {
 	// ------ Common ------
 
 	logger := logger.NewProvider()
-	keystore := keystore.NewAdapter()
+	keystore := hdkeystore.NewAdapter()
 	memDB := inmemory.NewInMemoryStorage(logger)
 	walletDB := disk.NewDiskStorage(flagDataDirectory, "wallet", logger)
 	accountDB := disk.NewDiskStorage(flagDataDirectory, "account", logger)
