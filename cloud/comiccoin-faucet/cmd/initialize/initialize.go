@@ -11,7 +11,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/logger"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/mnemonic"
+	passwordp "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/password"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
@@ -65,7 +65,7 @@ func doRunGatewayInit() {
 	cfg := config.NewProviderUsingEnvironmentVariables()
 	dbClient := mongodb.NewProvider(cfg, logger)
 	keystore := hdkeystore.NewAdapter()
-	passp := mnemonic.NewProvider()
+	passp := passwordp.NewProvider()
 	// blackp := blacklist.NewProvider()
 
 	//
