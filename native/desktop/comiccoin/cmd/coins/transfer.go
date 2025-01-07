@@ -16,17 +16,17 @@ import (
 
 // Command line argument flags
 var (
-	flagKeystoreFile                  string // Location of the wallet keystore
-	flagDataDir                       string // Location of the database directory
-	flagLabel                         string
-	flagSenderAccountAddress          string
-	flagSenderAccountPassword         string
-	flagSenderAccountPasswordRepeated string
-	flagCoinbaseAddress               string
-	flagRecipientAddress              string
-	flagQuantity                      uint64
-	flagKeypairName                   string
-	flagData                          string
+	flagKeystoreFile          string // Location of the wallet keystore
+	flagDataDir               string // Location of the database directory
+	flagLabel                 string
+	flagSenderAccountAddress  string
+	flagSenderAccountMnemonic string
+	flagSenderAccountPath     string
+	flagCoinbaseAddress       string
+	flagRecipientAddress      string
+	flagQuantity              uint64
+	flagKeypairName           string
+	flagData                  string
 
 	flagRendezvousString string
 	flagBootstrapPeers   string
@@ -63,8 +63,11 @@ func TransferCoinsCmd() *cobra.Command {
 	cmd.Flags().StringVar(&flagSenderAccountAddress, "sender-account-address", "", "The address of the account we will use in our coin transfer")
 	cmd.MarkFlagRequired("sender-account-address")
 
-	cmd.Flags().StringVar(&flagSenderAccountPassword, "sender-account-password", "", "The password to unlock the account which will transfer the coin")
-	cmd.MarkFlagRequired("sender-account-password")
+	cmd.Flags().StringVar(&flagSenderAccountMnemonic, "sender-account-mnemonic", "", "The mnemonic phrase to derive the account wallet which will transfer the coin")
+	cmd.MarkFlagRequired("sender-account-mnemonic")
+
+	cmd.Flags().StringVar(&flagSenderAccountPath, "sender-account-path", "", "The path to use when deriving the wallet from mnemonic phrase")
+	cmd.MarkFlagRequired("sender-account-path")
 
 	cmd.Flags().Uint64Var(&flagQuantity, "value", 0, "The amount of coins to send")
 	cmd.MarkFlagRequired("value")
@@ -86,16 +89,17 @@ func doRunTransferCoinsCommand() {
 	ctx := context.Background()
 	recAddr := common.HexToAddress(strings.ToLower(flagRecipientAddress))
 	sendAddr := common.HexToAddress(strings.ToLower(flagSenderAccountAddress))
-	pass, err := sstring.NewSecureString(flagSenderAccountPassword)
+	mnemonic, err := sstring.NewSecureString(flagSenderAccountMnemonic)
 	if err != nil {
-		log.Fatalf("Failed secure password: %v", err)
+		log.Fatalf("Failed secure mnemonic: %v", err)
 	}
 
 	coinTransferServiceErr := rpcClient.CoinTransfer(
 		ctx,
 		flagChainID,
 		&sendAddr,
-		pass,
+		mnemonic,
+		flagSenderAccountPath,
 		&recAddr,
 		flagQuantity, // A.k.a. `value`.
 		[]byte(flagData),
@@ -109,7 +113,8 @@ func doRunTransferCoinsCommand() {
 		slog.Any("chain-id", flagChainID),
 		slog.Any("nftstorage-address", flagNFTStorageAddress),
 		slog.Any("sender-account-address", flagSenderAccountAddress),
-		slog.Any("sender-account-password", flagSenderAccountPassword),
+		slog.Any("sender-account-mnemonic", flagSenderAccountMnemonic),
+		slog.Any("sender-account-path", flagSenderAccountPath),
 		slog.Any("value", flagQuantity),
 		slog.Any("data", flagData),
 		slog.Any("recipient-address", flagRecipientAddress),

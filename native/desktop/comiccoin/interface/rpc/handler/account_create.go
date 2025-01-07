@@ -11,7 +11,7 @@ import (
 type CreateAccountArgs struct {
 	WalletMnemonic string
 	WalletPath     string
-	Label          string
+	WalletLabel    string
 }
 
 type CreateAccountReply struct {
@@ -23,7 +23,7 @@ func (impl *ComicCoinRPCServer) CreateAccount(args *CreateAccountArgs, reply *Cr
 	if err != nil {
 		return err
 	}
-	account, err := impl.createAccountService.Execute(context.Background(), mnem, args.WalletPath, args.Label)
+	account, err := impl.createAccountService.Execute(context.Background(), mnem, args.WalletPath, args.WalletLabel)
 	if err != nil {
 		return err
 	}

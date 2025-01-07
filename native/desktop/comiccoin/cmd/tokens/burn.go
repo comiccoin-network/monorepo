@@ -32,8 +32,11 @@ func BurnTokensCmd() *cobra.Command {
 	cmd.Flags().StringVar(&flagSenderAccountAddress, "sender-account-address", "", "The address of the account we will use in our token transfer")
 	cmd.MarkFlagRequired("sender-account-address")
 
-	cmd.Flags().StringVar(&flagSenderAccountPassword, "sender-account-password", "", "The password to unlock the account which will transfer the token")
-	cmd.MarkFlagRequired("sender-account-password")
+	cmd.Flags().StringVar(&flagSenderAccountMnemonic, "sender-account-mnemonic", "", "The mnemonic phrase to derive the account wallet which will transfer the coin")
+	cmd.MarkFlagRequired("sender-account-mnemonic")
+
+	cmd.Flags().StringVar(&flagSenderAccountPath, "sender-account-path", "", "The path to use when deriving the wallet from mnemonic phrase")
+	cmd.MarkFlagRequired("sender-account-path")
 
 	cmd.Flags().StringVar(&flagTokenID, "token-id", "", "The unique token identification to use to lookup the token")
 	cmd.MarkFlagRequired("token-id")
@@ -53,9 +56,9 @@ func doRunBurnTokensCommand() {
 	if !ok {
 		log.Fatal("Failed convert `token_id` to big.Int")
 	}
-	pass, err := sstring.NewSecureString(flagSenderAccountPassword)
+	mnemonic, err := sstring.NewSecureString(flagSenderAccountMnemonic)
 	if err != nil {
-		log.Fatalf("Failed secure password: %v", err)
+		log.Fatalf("Failed secure mnemonic: %v", err)
 	}
 
 	logger.Debug("Transfering Token...",
@@ -65,7 +68,8 @@ func doRunBurnTokensCommand() {
 		ctx,
 		flagChainID,
 		&sendAddr,
-		pass,
+		mnemonic,
+		flagSenderAccountPath,
 		tokenID,
 	)
 	if tokenBurnServiceErr != nil {
@@ -77,7 +81,8 @@ func doRunBurnTokensCommand() {
 		slog.Any("chain-id", flagChainID),
 		slog.Any("nftstorage-address", flagNFTStorageAddress),
 		slog.Any("sender-account-address", flagSenderAccountAddress),
-		slog.Any("sender-account-password", flagSenderAccountPassword),
+		slog.Any("sender-account-mnemonic", flagSenderAccountMnemonic),
+		slog.Any("sender-account-path", flagSenderAccountPath),
 		slog.Any("token-id", flagTokenID),
 		slog.Any("recipient-address", flagRecipientAddress),
 		slog.Any("authority-address", flagAuthorityAddress))

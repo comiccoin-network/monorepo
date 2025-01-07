@@ -23,8 +23,8 @@ type ComicCoincRPCClientRepository interface {
 
 	CreateAccount(
 		ctx context.Context,
-		password *sstring.SecureString,
-		passwordRepeated *sstring.SecureString,
+		accountWalletMnemonic *sstring.SecureString,
+		accountWalletPath string,
 		label string,
 	) (*auth_domain.Account, error)
 	AccountListingByLocalWallets(ctx context.Context) ([]*auth_domain.Account, error)
@@ -33,7 +33,8 @@ type ComicCoincRPCClientRepository interface {
 		ctx context.Context,
 		chainID uint16,
 		fromAccountAddress *common.Address,
-		accountWalletPassword *sstring.SecureString,
+		accountWalletMnemonic *sstring.SecureString,
+		accountWalletPath string,
 		to *common.Address,
 		value uint64,
 		data []byte,
@@ -45,7 +46,8 @@ type ComicCoincRPCClientRepository interface {
 		ctx context.Context,
 		chainID uint16,
 		fromAccountAddress *common.Address,
-		accountWalletPassword *sstring.SecureString,
+		accountWalletMnemonic *sstring.SecureString,
+		accountWalletPath string,
 		to *common.Address,
 		tokenID *big.Int,
 	) error
@@ -54,7 +56,8 @@ type ComicCoincRPCClientRepository interface {
 		ctx context.Context,
 		chainID uint16,
 		fromAccountAddress *common.Address,
-		accountWalletPassword *sstring.SecureString,
+		accountWalletMnemonic *sstring.SecureString,
+		accountWalletPath string,
 		tokenID *big.Int,
 	) error
 

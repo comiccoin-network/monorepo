@@ -14,10 +14,10 @@ import (
 )
 
 var (
-	flagDataDirectory    string
-	flagLabel            string
-	flagPassword         string
-	flagPasswordRepeated string
+	flagDataDirectory string
+	flagLabel         string
+	flagMnemonic      string
+	flagPath          string
 )
 
 func NewAccountCmd() *cobra.Command {
@@ -32,10 +32,10 @@ func NewAccountCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&flagDataDirectory, "data-directory", preferences.DataDirectory, "The data directory to save to")
-	cmd.Flags().StringVar(&flagPassword, "wallet-password", "", "The password to encrypt the new wallet with")
-	cmd.MarkFlagRequired("wallet-password")
-	cmd.Flags().StringVar(&flagPasswordRepeated, "wallet-password-repeated", "", "The password repeated to verify your password is correct")
-	cmd.MarkFlagRequired("wallet-password-repeated")
+	cmd.Flags().StringVar(&flagMnemonic, "wallet-mnemonic", "", "The mnemonic phrase to derive the wallet with")
+	cmd.MarkFlagRequired("wallet-mnemonic")
+	cmd.Flags().StringVar(&flagPath, "wallet-path", "", "The path to use when deriving the wallet from the mnemonic phrase")
+	cmd.MarkFlagRequired("wallet-path")
 	cmd.Flags().StringVar(&flagLabel, "wallet-label", "", "The (optional) label to describe the new wallet with")
 
 	return cmd
@@ -46,8 +46,8 @@ func doRunNewAccountCmd() error {
 
 	// logger := logger.NewProvider()
 	logger.Debug("Creating new account...",
-		slog.Any("wallet_password", flagPassword),
-		slog.Any("wallet_password_repeated", flagPasswordRepeated),
+		slog.Any("wallet_mnemonic", flagMnemonic),
+		slog.Any("wallet_path", flagPath),
 		slog.Any("wallet_label", flagLabel),
 	)
 
@@ -55,16 +55,12 @@ func doRunNewAccountCmd() error {
 	rpcClient := repo.NewComicCoincRPCClientRepo(comicCoincRPCClientRepoConfigurationProvider, logger)
 
 	ctx := context.Background()
-	pass, err := sstring.NewSecureString(flagPassword)
+	mnemonic, err := sstring.NewSecureString(flagMnemonic)
 	if err != nil {
-		log.Fatalf("Failed secure password: %v", err)
-	}
-	passRepeated, err := sstring.NewSecureString(flagPasswordRepeated)
-	if err != nil {
-		log.Fatalf("Failed secure password repeated: %v", err)
+		log.Fatalf("Failed secure mnemonic phrase: %v", err)
 	}
 
-	account, err := rpcClient.CreateAccount(ctx, pass, passRepeated, flagLabel)
+	account, err := rpcClient.CreateAccount(ctx, mnemonic, flagPath, flagLabel)
 	if err != nil {
 		log.Fatalf("Failed creating account: %v\n", err)
 	}

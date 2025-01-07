@@ -133,15 +133,15 @@ func (r *ComicCoincRPCClientRepo) GetAccount(ctx context.Context, accountAddress
 
 func (r *ComicCoincRPCClientRepo) CreateAccount(
 	ctx context.Context,
-	password *sstring.SecureString,
-	passwordRepeated *sstring.SecureString,
-	label string,
+	walletMnemonic *sstring.SecureString,
+	walletPath string,
+	walletLabel string,
 ) (*auth_domain.Account, error) {
 	// Define our request / response here by copy and pasting from the server codebase.
 	type CreateAccountArgs struct {
-		Password         string
-		PasswordRepeated string
-		Label            string
+		WalletMnemonic string
+		WalletPath     string
+		WalletLabel    string
 	}
 
 	type CreateAccountReply struct {
@@ -150,9 +150,9 @@ func (r *ComicCoincRPCClientRepo) CreateAccount(
 
 	// Construct our request / response.
 	args := CreateAccountArgs{
-		Label:            label,
-		Password:         password.String(),
-		PasswordRepeated: passwordRepeated.String(),
+		WalletLabel:    walletLabel,
+		WalletMnemonic: walletMnemonic.String(),
+		WalletPath:     walletPath,
 	}
 	var reply CreateAccountReply
 
@@ -191,7 +191,8 @@ func (r *ComicCoincRPCClientRepo) CoinTransfer(
 	ctx context.Context,
 	chainID uint16,
 	fromAccountAddress *common.Address,
-	accountWalletPassword *sstring.SecureString,
+	accountWalletMnemonic *sstring.SecureString,
+	accountWalletPath string,
 	to *common.Address,
 	value uint64,
 	data []byte,
@@ -200,7 +201,8 @@ func (r *ComicCoincRPCClientRepo) CoinTransfer(
 	type CoinTransferArgs struct {
 		ChainID               uint16
 		FromAccountAddress    *common.Address
-		AccountWalletPassword string
+		accountWalletMnemonic string
+		accountWalletPath     string
 		To                    *common.Address
 		Value                 uint64
 		Data                  []byte
@@ -213,7 +215,8 @@ func (r *ComicCoincRPCClientRepo) CoinTransfer(
 	args := CoinTransferArgs{
 		ChainID:               chainID,
 		FromAccountAddress:    fromAccountAddress,
-		AccountWalletPassword: accountWalletPassword.String(),
+		accountWalletMnemonic: accountWalletMnemonic.String(),
+		accountWalletPath:     accountWalletPath,
 		To:                    to,
 		Value:                 value,
 		Data:                  data,
@@ -258,7 +261,8 @@ func (r *ComicCoincRPCClientRepo) TokenTransfer(
 	ctx context.Context,
 	chainID uint16,
 	fromAccountAddress *common.Address,
-	accountWalletPassword *sstring.SecureString,
+	accountWalletMnemonic *sstring.SecureString,
+	accountWalletPath string,
 	to *common.Address,
 	tokenID *big.Int,
 ) error {
@@ -266,7 +270,8 @@ func (r *ComicCoincRPCClientRepo) TokenTransfer(
 	type TokenTransferArgs struct {
 		ChainID               uint16
 		FromAccountAddress    *common.Address
-		AccountWalletPassword string
+		accountWalletMnemonic string
+		accountWalletPath     string
 		To                    *common.Address
 		TokenID               *big.Int
 	}
@@ -278,7 +283,8 @@ func (r *ComicCoincRPCClientRepo) TokenTransfer(
 	args := TokenTransferArgs{
 		ChainID:               chainID,
 		FromAccountAddress:    fromAccountAddress,
-		AccountWalletPassword: accountWalletPassword.String(),
+		accountWalletMnemonic: accountWalletMnemonic.String(),
+		accountWalletPath:     accountWalletPath,
 		To:                    to,
 		TokenID:               tokenID,
 	}
@@ -297,14 +303,16 @@ func (r *ComicCoincRPCClientRepo) TokenBurn(
 	ctx context.Context,
 	chainID uint16,
 	fromAccountAddress *common.Address,
-	accountWalletPassword *sstring.SecureString,
+	accountWalletMnemonic *sstring.SecureString,
+	accountWalletPath string,
 	tokenID *big.Int,
 ) error {
 	// Define our request / response here by copy and pasting from the server codebase.
 	type TokenBurnArgs struct {
 		ChainID               uint16
 		FromAccountAddress    *common.Address
-		AccountWalletPassword string
+		accountWalletMnemonic string
+		accountWalletPath     string
 		TokenID               *big.Int
 	}
 
@@ -315,7 +323,8 @@ func (r *ComicCoincRPCClientRepo) TokenBurn(
 	args := TokenBurnArgs{
 		ChainID:               chainID,
 		FromAccountAddress:    fromAccountAddress,
-		AccountWalletPassword: accountWalletPassword.String(),
+		accountWalletMnemonic: accountWalletMnemonic.String(),
+		accountWalletPath:     accountWalletPath,
 		TokenID:               tokenID,
 	}
 	var reply TokenBurnReply
