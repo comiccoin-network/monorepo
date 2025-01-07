@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/common"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"github.com/tyler-smith/go-bip39"
 
@@ -14,8 +13,7 @@ import (
 type KeystoreAdapter interface {
 	GenerateMnemonic() (string, error)
 	OpenWallet(mnemonic *sstring.SecureString, path string) (accounts.Account, *hdwallet.Wallet, error)
-	DeriveAddress(wallet *hdwallet.Wallet, path string) (common.Address, error)
-	DeriveAccount(wallet *hdwallet.Wallet, path string) (accounts.Account, error)
+	OpenWalletWithPassphrase(mnemonic *sstring.SecureString, passphrase *sstring.SecureString, path string) (accounts.Account, *hdwallet.Wallet, error)
 }
 
 type keystoreAdapterImpl struct{}
@@ -53,20 +51,17 @@ func (impl *keystoreAdapterImpl) OpenWallet(mnemonic *sstring.SecureString, path
 	return account, wallet, nil
 }
 
-func (impl *keystoreAdapterImpl) DeriveAddress(wallet *hdwallet.Wallet, path string) (common.Address, error) {
-	derivationPath := hdwallet.MustParseDerivationPath(path)
-	account, err := wallet.Derive(derivationPath, true)
+func (impl *keystoreAdapterImpl) OpenWalletWithPassphrase(mnemonic *sstring.SecureString, passphrase *sstring.SecureString, path string) (accounts.Account, *hdwallet.Wallet, error) {
+	wallet, err := hdwallet.NewFromMnemonic(mnemonic.String(), passphrase.String())
 	if err != nil {
-		return common.Address{}, fmt.Errorf("failed to derive account: %v", err)
+		return accounts.Account{}, nil, fmt.Errorf("failed to open wallet with passphrase: %v", err)
 	}
-	return account.Address, nil
-}
 
-func (impl *keystoreAdapterImpl) DeriveAccount(wallet *hdwallet.Wallet, path string) (accounts.Account, error) {
 	derivationPath := hdwallet.MustParseDerivationPath(path)
 	account, err := wallet.Derive(derivationPath, true)
 	if err != nil {
-		return accounts.Account{}, fmt.Errorf("failed to derive account: %v", err)
+		return accounts.Account{}, nil, fmt.Errorf("failed to derive account: %v", err)
 	}
-	return account, nil
+
+	return account, wallet, nil
 }
