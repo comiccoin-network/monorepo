@@ -56,7 +56,8 @@ func NewFaucetCoinTransferService(
 type FaucetCoinTransferRequestIDO struct {
 	ChainID               uint16                `json:"chain_id"`
 	FromAccountAddress    *common.Address       `json:"from_account_address"`
-	AccountWalletPassword *sstring.SecureString `json:"account_wallet_password"`
+	AccountWalletMnemonic *sstring.SecureString `json:"account_wallet_mnemonic"`
+	AccountWalletPath     string                `json:"account_wallet_path"`
 	To                    *common.Address       `json:"to"`
 	Value                 uint64                `json:"value"`
 	Data                  []byte                `json:"data"`
@@ -79,7 +80,6 @@ func (s *FaucetCoinTransferService) Execute(sessCtx mongo.SessionContext, req *F
 	s.logger.Debug("Validating...",
 		slog.Any("chain_id", req.ChainID),
 		slog.Any("from_account_address", req.FromAccountAddress),
-		slog.Any("account_wallet_password", req.AccountWalletPassword),
 		slog.Any("to", req.To),
 		slog.Any("value", req.Value),
 		slog.Any("data", req.Data),
@@ -89,8 +89,11 @@ func (s *FaucetCoinTransferService) Execute(sessCtx mongo.SessionContext, req *F
 	if req.FromAccountAddress == nil {
 		e["from_account_address"] = "missing value"
 	}
-	if req.AccountWalletPassword == nil {
-		e["account_wallet_password"] = "missing value"
+	if req.AccountWalletMnemonic == nil {
+		e["account_wallet_mnemonic"] = "missing value"
+	}
+	if req.AccountWalletPath == "" {
+		e["account_wallet_path"] = "missing value"
 	}
 	if req.To == nil {
 		e["to"] = "missing value"
@@ -108,29 +111,20 @@ func (s *FaucetCoinTransferService) Execute(sessCtx mongo.SessionContext, req *F
 	// STEP 2: Get the account and extract the wallet private/public key.
 	//
 
-	wallet, err := s.getWalletUseCase.Execute(sessCtx, req.FromAccountAddress)
+	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(sessCtx, req.AccountWalletMnemonic, req.AccountWalletPath)
 	if err != nil {
-		s.logger.Error("failed getting from database",
-			slog.Any("from_account_address", req.FromAccountAddress),
+		s.logger.Error("failed decrypting wallet",
 			slog.Any("error", err))
-		return fmt.Errorf("failed getting from database: %s", err)
+		return fmt.Errorf("failed decrypting wallet: %s", err)
 	}
 	if wallet == nil {
-		s.logger.Error("failed getting from database",
-			slog.Any("from_account_address", req.FromAccountAddress),
-			slog.Any("error", "d.n.e."))
-		return fmt.Errorf("failed getting from database: %s", "wallet d.n.e.")
+		return fmt.Errorf("failed decrypting wallet: %s", "d.n.e.")
 	}
-
-	key, err := s.walletDecryptKeyUseCase.Execute(sessCtx, wallet.KeystoreBytes, req.AccountWalletPassword)
+	privateKey, err := wallet.PrivateKey(*ethAccount)
 	if err != nil {
-		s.logger.Error("failed getting key",
-			slog.Any("from_account_address", req.FromAccountAddress),
+		s.logger.Error("failed getting wallet private key",
 			slog.Any("error", err))
-		return fmt.Errorf("failed getting key: %s", err)
-	}
-	if key == nil {
-		return fmt.Errorf("failed getting key: %s", "d.n.e.")
+		return fmt.Errorf("failed getting wallet private key: %s", err)
 	}
 
 	//
@@ -166,14 +160,14 @@ func (s *FaucetCoinTransferService) Execute(sessCtx mongo.SessionContext, req *F
 	tx := &domain.Transaction{
 		ChainID:    req.ChainID,
 		NonceBytes: big.NewInt(time.Now().Unix()).Bytes(),
-		From:       wallet.Address,
+		From:       req.FromAccountAddress,
 		To:         req.To,
 		Value:      req.Value + s.config.Blockchain.TransactionFee, // Note: The transaction fee gets reclaimed by the Authority, so it's fully recirculating when authority calls this.
 		Data:       req.Data,
 		Type:       domain.TransactionTypeCoin,
 	}
 
-	stx, signingErr := tx.Sign(key.PrivateKey)
+	stx, signingErr := tx.Sign(privateKey)
 	if signingErr != nil {
 		s.logger.Debug("Failed to sign the transaction",
 			slog.Any("error", signingErr))

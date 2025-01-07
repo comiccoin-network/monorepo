@@ -46,8 +46,8 @@ func (s *GatewayInitService) Execute(
 	tenantName string,
 	chainID uint16,
 	email string,
-	walletPassword *sstring.SecureString,
-	walletPasswordRepeated *sstring.SecureString,
+	walletMnemonic *sstring.SecureString,
+	walletPath string,
 ) error {
 	//
 	// STEP 1: Validation.
@@ -76,12 +76,11 @@ func (s *GatewayInitService) Execute(
 	} else {
 		//TODO
 	}
-	if walletPasswordRepeated == nil {
-		e["wallet_password_repeated"] = "missing value"
+	if walletPath == "" {
+		e["wallet_path"] = "missing value"
 	}
-	if walletPassword.String() != walletPasswordRepeated.String() {
-		e["wallet_password"] = "do not match"
-		e["wallet_password_repeated"] = "do not match"
+	if walletMnemonic == nil {
+		e["wallet_mnemonic"] = "missing value"
 	}
 	if len(e) != 0 {
 		s.logger.Warn("Validation failed for upsert",
@@ -101,7 +100,7 @@ func (s *GatewayInitService) Execute(
 	// Create the encryted physical wallet on file and our account.
 	//
 
-	account, err := s.createAccountService.Execute(sessCtx, walletPassword, walletPasswordRepeated, tenantID.Hex())
+	account, err := s.createAccountService.Execute(sessCtx, walletMnemonic, walletPath, tenantID.Hex())
 	if err != nil {
 		s.logger.Error("Failed creating account",
 			slog.Any("error", err))
@@ -138,7 +137,7 @@ func (s *GatewayInitService) Execute(
 	// STEP 5: Create our administrator user account.
 	//
 
-	passwordHash, err := s.passwordProvider.GenerateHashFromPassword(walletPassword)
+	passwordHash, err := s.passwordProvider.GenerateHashFromPassword(walletMnemonic)
 	if err != nil {
 		s.logger.Error("Failed hashing password",
 			slog.Any("error", err))
@@ -175,7 +174,7 @@ func (s *GatewayInitService) Execute(
 	}
 
 	//
-	// Step 6: For debugging puprposes only.
+	// Step 6: For debugging purposes only.
 	//
 	s.logger.Info("Gateway initialized",
 		slog.Any("tenant_id", tenantID.Hex()),

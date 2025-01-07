@@ -33,26 +33,17 @@ func NewCreateAccountService(
 	return &CreateAccountService{logger, uc1, uc2, uc3, uc4, uc5}
 }
 
-func (s *CreateAccountService) Execute(
-	ctx context.Context,
-	walletPassword *sstring.SecureString,
-	walletPasswordRepeated *sstring.SecureString,
-	walletLabel string,
-) (*domain.Account, error) {
+func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstring.SecureString, walletPath string, walletLabel string) (*domain.Account, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if walletPassword == nil {
-		e["wallet_password"] = "missing value"
+	if walletMnemonic == nil {
+		e["wallet_mnemonic"] = "Wallet mnemonic is required"
 	}
-	if walletPasswordRepeated == nil {
-		e["wallet_password_repeated"] = "missing value"
-	}
-	if walletPassword.String() != walletPasswordRepeated.String() {
-		e["wallet_password"] = "do not match"
-		e["wallet_password_repeated"] = "do not match"
+	if walletPath == "" {
+		e["wallet_path"] = "Wallet path is required"
 	}
 	if len(e) != 0 {
 		s.logger.Warn("Failed creating new account",
@@ -62,10 +53,10 @@ func (s *CreateAccountService) Execute(
 
 	//
 	// STEP 2:
-	// Create the encryted physical wallet on file.
+	// Create the encrypted physical wallet on file.
 	//
 
-	walletAddress, walletBytes, err := s.walletEncryptKeyUseCase.Execute(ctx, walletPassword)
+	walletAddress, _, err := s.walletEncryptKeyUseCase.Execute(ctx, walletMnemonic, walletPath)
 	if err != nil {
 		s.logger.Error("failed creating new keystore",
 			slog.Any("error", err))
@@ -73,15 +64,14 @@ func (s *CreateAccountService) Execute(
 	}
 
 	s.logger.Debug("Created new wallet for account",
-		slog.Any("wallet_address", walletAddress),
-		slog.Any("wallet_bytes", walletBytes))
+		slog.Any("wallet_address", walletAddress))
 
 	//
 	// STEP 3:
 	// Decrypt the wallet so we can extract data from it.
 	//
 
-	walletKey, err := s.walletDecryptKeyUseCase.Execute(ctx, walletBytes, walletPassword)
+	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(ctx, walletMnemonic, walletPath)
 	if err != nil {
 		s.logger.Error("failed getting wallet key",
 			slog.Any("error", err))
@@ -94,8 +84,15 @@ func (s *CreateAccountService) Execute(
 		name: "ComicCoin Blockchain",
 	}
 
+	privateKey, err := wallet.PrivateKey(*ethAccount)
+	if err != nil {
+		s.logger.Error("failed getting wallet private key",
+			slog.Any("error", err))
+		return nil, fmt.Errorf("failed getting wallet private key: %s", err)
+	}
+
 	// Break the signature into the 3 parts: R, S, and V.
-	v1, r1, s1, err := signature.Sign(val, walletKey.PrivateKey)
+	v1, r1, s1, err := signature.Sign(val, privateKey)
 	if err != nil {
 		s.logger.Error("failed signing",
 			slog.Any("error", err))
@@ -110,11 +107,11 @@ func (s *CreateAccountService) Execute(
 	}
 
 	// Defensive Code: Do a check to ensure our signer to be working correctly.
-	if walletAddress.Hex() != addressFromSig {
+	if ethAccount.Address.Hex() != addressFromSig {
 		s.logger.Error("address from signature does not match the wallet address",
 			slog.Any("addressFromSig", addressFromSig),
-			slog.Any("walletAddress", walletAddress.Hex()))
-		return nil, fmt.Errorf("address from signature at %v does not match the wallet address of %v", addressFromSig, walletAddress.Hex())
+			slog.Any("walletAddress", walletAddress.Address.Hex()))
+		return nil, fmt.Errorf("address from signature at %v does not match the wallet address of %v", addressFromSig, ethAccount.Address.Hex())
 	}
 
 	//
@@ -131,27 +128,13 @@ func (s *CreateAccountService) Execute(
 	// accountID := crypto.PubkeyToAddress(publicKey).String()
 
 	//
-	// STEP 3:
-	// Save wallet to our database.
-	//
-
-	s.logger.Debug("Saving new (encrypted) wallet to database",
-		slog.Any("wallet_address", walletAddress))
-
-	if err := s.createWalletUseCase.Execute(ctx, walletAddress, walletBytes, walletLabel); err != nil {
-		s.logger.Error("failed saving to database",
-			slog.Any("error", err))
-		return nil, fmt.Errorf("failed saving wallet to database: %s", err)
-	}
-
-	//
 	// STEP 4: Create the account.
 	//
 
-	s.logger.Debug("Saving new account to database for the (encrypted) wallet",
-		slog.Any("wallet_address", walletAddress))
+	s.logger.Debug("Saving new account to database for the wallet",
+		slog.Any("wallet_address", ethAccount.Address.Hex()))
 
-	if err := s.createAccountUseCase.Execute(ctx, walletAddress); err != nil {
+	if err := s.createAccountUseCase.Execute(ctx, &ethAccount.Address); err != nil {
 		s.logger.Error("failed saving to database",
 			slog.Any("error", err))
 		return nil, fmt.Errorf("failed saving account to database: %s", err)
@@ -164,7 +147,7 @@ func (s *CreateAccountService) Execute(
 	s.logger.Debug("Finished creating new account",
 		slog.Any("address", walletAddress))
 
-	acc, err := s.getAccountUseCase.Execute(ctx, walletAddress)
+	acc, err := s.getAccountUseCase.Execute(ctx, &ethAccount.Address)
 	if err != nil {
 		s.logger.Error("Failed getting newly created account from database",
 			slog.Any("error", err))

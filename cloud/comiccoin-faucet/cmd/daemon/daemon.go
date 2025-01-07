@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/emailer/mailgun"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/logger"
@@ -73,7 +73,7 @@ func doRunDaemon() {
 		slog.Any("wallet_address", cfg.App.WalletAddress))
 	kmutex := kmutexutil.NewKMutexProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
-	keystore := keystore.NewAdapter()
+	keystore := hdkeystore.NewAdapter()
 	passp := password.NewProvider()
 	blackp := blacklist.NewProvider()
 	jwtp := jwt.NewProvider(cfg)

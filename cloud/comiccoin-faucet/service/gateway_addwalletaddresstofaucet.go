@@ -114,7 +114,8 @@ func (s *GatewayAddWalletAddressToFaucetService) Execute(
 	idoReq := &FaucetCoinTransferRequestIDO{
 		ChainID:               s.config.Blockchain.ChainID,
 		FromAccountAddress:    s.config.App.WalletAddress,
-		AccountWalletPassword: s.config.App.WalletPassword,
+		AccountWalletMnemonic: s.config.App.WalletMnemonic,
+		AccountWalletPath:     s.config.App.WalletPath,
 		To:                    &walletAddress,
 		Value:                 s.config.App.RegistrationCoinsReward,
 		Data:                  []byte("ComicCoin Faucet - Coins given because of account registration."),

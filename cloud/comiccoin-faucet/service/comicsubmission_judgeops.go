@@ -154,7 +154,8 @@ func (s *ComicSubmissionJudgeOperationService) Execute(
 		req := &FaucetCoinTransferRequestIDO{
 			ChainID:               s.config.Blockchain.ChainID,
 			FromAccountAddress:    s.config.App.WalletAddress,
-			AccountWalletPassword: s.config.App.WalletPassword,
+			AccountWalletMnemonic: s.config.App.WalletMnemonic,
+			AccountWalletPath:     s.config.App.WalletPath,
 			To:                    customerUser.WalletAddress,
 			Value:                 comicSubmission.CoinsReward,
 			Data:                  []byte("ComicCoin Faucet - Coins given because of comic submission."),

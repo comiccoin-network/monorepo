@@ -31,7 +31,8 @@ type AppConfig struct {
 	HTTPAddress                string
 	TenantID                   primitive.ObjectID
 	WalletAddress              *common.Address
-	WalletPassword             *sstring.SecureString
+	WalletMnemonic             *sstring.SecureString
+	WalletPath                 string
 	AuthorityHTTPAddress       string
 	NFTStorageHTTPAddress      string
 	HMACSecret                 *sbytes.SecureBytes
@@ -101,7 +102,8 @@ func NewProviderUsingEnvironmentVariables() *Configuration {
 		address := common.HexToAddress(walletAddress)
 		c.App.WalletAddress = &address
 	}
-	c.App.WalletPassword = getSecureStringEnv("COMICCOIN_FAUCET_WALLET_PASSWORD", false)
+	c.App.WalletMnemonic = getSecureStringEnv("COMICCOIN_FAUCET_WALLET_MNEMONIC", false)
+	c.App.WalletPath = getEnv("COMICCOIN_FAUCET_WALLET_PATH", true)
 	c.App.AuthorityHTTPAddress = getEnv("COMICCOIN_FAUCET_AUTHORITY_HTTP_ADDRESS", true)
 	c.App.NFTStorageHTTPAddress = getEnv("COMICCOIN_FAUCET_NFTSTORAGE_HTTP_ADDRESS", true)
 	c.App.HMACSecret = getSecureBytesEnv("COMICCOIN_FAUCET_HMAC_SECRET", true)

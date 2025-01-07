@@ -9,9 +9,9 @@ import (
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/logger"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/password"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/mnemonic"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
@@ -24,11 +24,11 @@ import (
 )
 
 var (
-	flagTenantName       string
-	flagChainID          uint16
-	flagEmail            string
-	flagPassword         string
-	flagPasswordRepeated string
+	flagTenantName string
+	flagChainID    uint16
+	flagEmail      string
+	flagMnemonic   string
+	flagPath       string
 )
 
 func InitCmd() *cobra.Command {
@@ -45,10 +45,10 @@ func InitCmd() *cobra.Command {
 	cmd.MarkFlagRequired("chain-id")
 	cmd.Flags().StringVar(&flagEmail, "email", "", "The email of the administrator")
 	cmd.MarkFlagRequired("email")
-	cmd.Flags().StringVar(&flagPassword, "wallet-password", "", "The password to encrypt the new wallet with")
-	cmd.MarkFlagRequired("wallet-password")
-	cmd.Flags().StringVar(&flagPasswordRepeated, "wallet-password-repeated", "", "The password repeated to verify your password is correct")
-	cmd.MarkFlagRequired("wallet-password-repeated")
+	cmd.Flags().StringVar(&flagMnemonic, "wallet-mnemonic", "", "The mnemonic to derive our wallet with")
+	cmd.MarkFlagRequired("wallet-mnemonic")
+	cmd.Flags().StringVar(&flagPath, "wallet-path", "", "The path to apply in our wallet derivation process")
+	cmd.MarkFlagRequired("wallet-path")
 
 	return cmd
 }
@@ -64,8 +64,8 @@ func doRunGatewayInit() {
 	// kmutex := kmutexutil.NewKMutexProvider()
 	cfg := config.NewProviderUsingEnvironmentVariables()
 	dbClient := mongodb.NewProvider(cfg, logger)
-	keystore := keystore.NewAdapter()
-	passp := password.NewProvider()
+	keystore := hdkeystore.NewAdapter()
+	passp := mnemonic.NewProvider()
 	// blackp := blacklist.NewProvider()
 
 	//
@@ -176,16 +176,11 @@ func doRunGatewayInit() {
 	//
 
 	// Minor formatting of input.
-	pass, err := sstring.NewSecureString(flagPassword)
+	mnemonic, err := sstring.NewSecureString(flagMnemonic)
 	if err != nil {
-		log.Fatalf("Failed securing flagPassword: %v\n", err)
+		log.Fatalf("Failed securing flagMnemonic: %v\n", err)
 	}
-	// defer pass.Wipe() // Developers Note: Commented out b/c they are causing the hang in the program to exit?
-	passRepeated, err := sstring.NewSecureString(flagPasswordRepeated)
-	if err != nil {
-		log.Fatalf("Failed securing flagPasswordRepeated: %v\n", err)
-	}
-	// defer passRepeated.Wipe() // Developers Note: Commented out b/c they are causing the hang in the program to exit?
+	// defer mnemonic.Wipe() // Developers Note: Commented out b/c they are causing the hang in the program to exit?
 
 	////
 	//// Start the transaction.
@@ -206,7 +201,7 @@ func doRunGatewayInit() {
 	// Define a transaction function with a series of operations
 	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
 		logger.Debug("Transaction started")
-		err := initService.Execute(sessCtx, flagTenantName, flagChainID, flagEmail, pass, passRepeated)
+		err := initService.Execute(sessCtx, flagTenantName, flagChainID, flagEmail, mnemonic, flagPath)
 		if err != nil {
 			return nil, err
 		}
