@@ -1,100 +1,76 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import { Loader2 } from "lucide-react";
 import { useRecoilState } from "recoil";
 import { Navigate } from "react-router-dom";
-
 
 import { nftState, nftSubmissionErrorResponseState, nftSubmissionSuccessResponseState } from "../../AppState";
 import { CreateToken } from "../../../wailsjs/go/main/App";
 
 function MintingWizardSubmittingView() {
-  // --- Global State ---
+  const hasExecutedRef = useRef(false);
   const [nft] = useRecoilState(nftState);
   const [nftSubmissionErrorResponse, setNftSubmissionErrorResponse] = useRecoilState(nftSubmissionErrorResponseState);
   const [nftSubmissionSuccessResponse, setNftSubmissionSuccessResponse] = useRecoilState(nftSubmissionSuccessResponseState);
-
-  // --- GUI States ---
   const [forceURL, setForceURL] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const onExecuteSubmissionInBackground = () => {
-      // Defensive Code: Do not submit if already submitted.
-      if (isLoading) {
-          console.log("onSubmit | Already submitting, exiting func.");
-          return;
+  useEffect(() => {
+    const executeSubmission = async () => {
+      // Check if we've already executed
+      if (hasExecutedRef.current || isLoading) {
+        console.log("Submission already executed or loading, skipping");
+        return;
       }
 
-      // Reset the errors.
-      setErrors({});
-
-      // Update the GUI to let user know that the operation is under way.
+      // Mark as executed immediately
+      hasExecutedRef.current = true;
       setIsLoading(true);
 
-      console.log("onExecuteSubmissionInBackground | nft:", nft);
-
+      console.log("Executing submission | nft:", nft);
       const attributesJSONString = JSON.stringify(nft.attributes);
 
-      console.log("onExecuteSubmissionInBackground | attributesJSONString:", attributesJSONString);
+      try {
+        const resp = await CreateToken(
+          nft.walletAddress,
+          nft.name,
+          nft.description,
+          nft.image,
+          nft.animation,
+          nft.youtubeURL,
+          nft.externalURL,
+          attributesJSONString,
+          nft.backgroundColor
+        );
 
-      console.log("onExecuteSubmissionInBackground | CreateToken | Executing...");
+        console.log("CreateToken | Success response:", resp);
+        setNftSubmissionSuccessResponse(resp);
+        setForceURL("/minting-wizard-step3-success");
+      } catch (errorJsonString) {
+        console.log("CreateToken | Error response:", errorJsonString);
+        let err = {};
+        try {
+          const errorObject = JSON.parse(errorJsonString);
+          if (errorObject.name) err.name = errorObject.name;
+          if (errorObject.description) err.description = errorObject.description;
+          if (errorObject.image) err.image = errorObject.image;
+          if (errorObject.animation) err.animation = errorObject.animation;
+          if (errorObject.background_color) err.backgroundColor = errorObject.background_color;
+        } catch (e) {
+          console.log("Error parsing error response:", e);
+          err.message = errorJsonString;
+        }
 
-      // Submit the `dataDirectory` value to our backend.
-      CreateToken(nft.walletAddress, nft.name, nft.description, nft.image, nft.animation, nft.youtubeURL, nft.externalURL, attributesJSONString, nft.backgroundColor).then( (resp) => {
-          console.log("onExecuteSubmissionInBackground | CreateToken | Success response | result:", resp);
-          setNftSubmissionSuccessResponse(resp);
-          setForceURL("/minting-wizard-step3-success");
-      }).catch((errorJsonString)=>{
-          console.log("onExecuteSubmissionInBackground | CreateToken | Error response | errRes:", errorJsonString);
-          let err = {};
-          try {
-              const errorObject = JSON.parse(errorJsonString);
-              console.log("onExecuteSubmissionInBackground | CreateToken | errorObject:", errorObject);
-              if (errorObject.name != "") {
-                  err.name = errorObject.name;
-              }
-              if (errorObject.description != "") {
-                  err.description = errorObject.description;
-              }
-              if (errorObject.image != "") {
-                  err.image = errorObject.image;
-              }
-              if (errorObject.animation != "") {
-                  err.animation = errorObject.animation;
-              }
-              if (errorObject.background_color != "") {
-                  err.backgroundColor = errorObject.background_color;
-              }
-          } catch (e) {
-              console.log("onExecuteSubmissionInBackground | CreateToken | err:", e);
-              err.message = errorJsonString;
-          } finally {
-              console.log("onExecuteSubmissionInBackground | CreateToken | err:", err);
-              setErrors(err);
-              setNftSubmissionErrorResponse(err);
-              setForceURL("/minting-wizard-step3-error");
-          }
-      }).finally(() => {
-          // this will be executed after then or catch has been executed
-          console.log("onExecuteSubmissionInBackground | CreateToken | promise has been resolved or rejected");
-
-          // Update the GUI to let user know that the operation is completed.
-          setIsLoading(false);
-      });
-  }
-
-  useEffect(() => {
-    let mounted = true;
-
-    if (mounted) {
-        onExecuteSubmissionInBackground()
-        window.scrollTo(0, 0); // Start the page at the top of the page.
-    }
-
-    return () => {
-        mounted = false;
+        setErrors(err);
+        setNftSubmissionErrorResponse(err);
+        setForceURL("/minting-wizard-step3-error");
+      } finally {
+        setIsLoading(false);
+      }
     };
-  }, []);
+
+    executeSubmission();
+  }, []); // Empty dependency array means this effect runs once on mount
 
   if (forceURL !== "") {
     return <Navigate to={forceURL} />;
