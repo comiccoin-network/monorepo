@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/accounts"
+	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
@@ -17,27 +18,30 @@ import (
 type WalletEncryptKeyUseCase struct {
 	config   *config.Configuration
 	logger   *slog.Logger
-	keystore keystore.KeystoreAdapter
+	keystore hdkeystore.KeystoreAdapter
 	repo     domain.WalletRepository
 }
 
 func NewWalletEncryptKeyUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
-	keystore keystore.KeystoreAdapter,
+	keystore hdkeystore.KeystoreAdapter,
 	repo domain.WalletRepository,
 ) *WalletEncryptKeyUseCase {
 	return &WalletEncryptKeyUseCase{config, logger, keystore, repo}
 }
 
-func (uc *WalletEncryptKeyUseCase) Execute(ctx context.Context, password *sstring.SecureString) (*common.Address, []byte, error) {
+func (uc *WalletEncryptKeyUseCase) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if password == nil {
-		e["password"] = "missing value"
+	if mnemonic == nil {
+		e["mnemonic"] = "Mnemonic is required"
+	}
+	if path == "" {
+		e["path"] = "Path is required"
 	}
 	if len(e) != 0 {
 		uc.logger.Warn("Failed reading wallet key",
@@ -46,19 +50,19 @@ func (uc *WalletEncryptKeyUseCase) Execute(ctx context.Context, password *sstrin
 	}
 
 	//
-	// STEP 2: Create the encryted physical wallet on file.
+	// STEP 2: Create the wallet from mnemonic phrase.
 	//
 
 	uc.logger.Debug("Creating wallet...")
 
-	walletAddress, walletKeystoreBytes, err := uc.keystore.CreateWallet(password)
+	ethereumAccount, wallet, err := uc.keystore.OpenWallet(mnemonic, path)
 	if err != nil {
 		uc.logger.Error("failed creating new keystore",
 			slog.Any("error", err))
 		return nil, nil, fmt.Errorf("failed creating new keystore: %s", err)
 	}
 
-	uc.logger.Debug("New wallet created", slog.Any("address", walletAddress))
+	uc.logger.Debug("New wallet created", slog.Any("ethereum_account", ethereumAccount))
 
-	return &walletAddress, walletKeystoreBytes, nil
+	return &ethereumAccount, wallet, nil
 }

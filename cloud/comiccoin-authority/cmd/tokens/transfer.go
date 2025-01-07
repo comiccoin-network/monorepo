@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/database/mongodb"
@@ -50,7 +50,7 @@ func doRunTransferToken() {
 	logger := logger.NewProvider()
 	cfg := config.NewProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
-	keystore := keystore.NewAdapter()
+	keystore := hdkeystore.NewAdapter()
 	kmutex := kmutexutil.NewKMutexProvider()
 
 	// ------ Repository ------
@@ -83,11 +83,11 @@ func doRunTransferToken() {
 	// 	walletRepo,
 	// )
 	// _ = createWalletUseCase
-	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
-		cfg,
-		logger,
-		walletRepo,
-	)
+	// getWalletUseCase := uc_wallet.NewGetWalletUseCase(
+	// 	cfg,
+	// 	logger,
+	// 	walletRepo,
+	// )
 
 	// // Account
 	// createAccountUseCase := usecase.NewCreateAccountUseCase(
@@ -180,7 +180,6 @@ func doRunTransferToken() {
 		logger,
 		kmutex,
 		dbClient, // Note: Used for mongoDB transaction handling.
-		getWalletUseCase,
 		walletDecryptKeyUseCase,
 		getBlockchainStateUseCase,
 		upsertBlockchainStateUseCase,
@@ -204,7 +203,8 @@ func doRunTransferToken() {
 		ctx,
 		tokenID,
 		cfg.Blockchain.ProofOfAuthorityAccountAddress,
-		cfg.Blockchain.ProofOfAuthorityWalletPassword,
+		cfg.Blockchain.ProofOfAuthorityWalletMnemonic,
+		cfg.Blockchain.ProofOfAuthorityWalletPath,
 		&transferRecipientAddress)
 	if err != nil {
 		logger.Error("Failed executing",

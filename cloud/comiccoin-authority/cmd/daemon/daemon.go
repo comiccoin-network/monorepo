@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/distributedmutex"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/blacklist"
@@ -66,7 +66,7 @@ func doRunDaemon() {
 	logger := logger.NewProvider()
 	cfg := config.NewProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
-	keystore := keystore.NewAdapter()
+	keystore := hdkeystore.NewAdapter()
 	passp := password.NewProvider()
 	jwtp := jwt.NewProvider(cfg)
 	blackp := blacklist.NewProvider()
@@ -143,11 +143,11 @@ func doRunDaemon() {
 		keystore,
 		walletRepo,
 	)
-	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
-		cfg,
-		logger,
-		walletRepo,
-	)
+	// getWalletUseCase := uc_wallet.NewGetWalletUseCase(
+	// 	cfg,
+	// 	logger,
+	// 	walletRepo,
+	// )
 
 	// Account
 	getAccountUseCase := uc_account.NewGetAccountUseCase(
@@ -268,7 +268,6 @@ func doRunDaemon() {
 	getProofOfAuthorityPrivateKeyService := s_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
-		getWalletUseCase,
 		walletDecryptKeyUseCase,
 	)
 	proofOfAuthorityConsensusMechanismService := s_poa.NewProofOfAuthorityConsensusMechanismService(

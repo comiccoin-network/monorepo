@@ -161,7 +161,7 @@ func (s *TokenMintService) Execute(
 			TokenNonceBytes:  big.NewInt(0).Bytes(), // Newly minted tokens always have their nonce start at value of zero.
 		}
 
-		stx, signingErr := tx.Sign(proofOfAuthorityPrivateKey.PrivateKey)
+		stx, signingErr := tx.Sign(proofOfAuthorityPrivateKey)
 		if signingErr != nil {
 			s.logger.Debug("Failed to sign the token mint transaction",
 				slog.Any("error", signingErr))

@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/distributedmutex"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/database/mongodb"
@@ -47,7 +47,7 @@ func doRunMintToken() {
 	logger := logger.NewProvider()
 	cfg := config.NewProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
-	keystore := keystore.NewAdapter()
+	keystore := hdkeystore.NewAdapter()
 	cachep := cache.NewCache(cfg, logger)
 	dmutex := distributedmutex.NewAdapter(logger, cachep.GetRedisClient())
 
@@ -81,11 +81,11 @@ func doRunMintToken() {
 	// 	walletRepo,
 	// )
 	// _ = createWalletUseCase
-	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
-		cfg,
-		logger,
-		walletRepo,
-	)
+	// getWalletUseCase := uc_wallet.NewGetWalletUseCase(
+	// 	cfg,
+	// 	logger,
+	// 	walletRepo,
+	// )
 
 	// // Account
 	// createAccountUseCase := usecase.NewCreateAccountUseCase(
@@ -171,7 +171,6 @@ func doRunMintToken() {
 	getProofOfAuthorityPrivateKeyService := s_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
-		getWalletUseCase,
 		walletDecryptKeyUseCase,
 	)
 	tokenMintService := s_token.NewTokenMintService(

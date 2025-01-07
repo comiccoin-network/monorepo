@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
@@ -46,7 +46,7 @@ func doRunNewAccount() {
 	logger := logger.NewProvider()
 	cfg := config.NewProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
-	keystore := keystore.NewAdapter()
+	keystore := hdkeystore.NewAdapter()
 
 	// ------ Repository ------
 	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
@@ -73,11 +73,6 @@ func doRunNewAccount() {
 	)
 	_ = walletDecryptKeyUseCase
 	createWalletUseCase := uc_wallet.NewCreateWalletUseCase(
-		cfg,
-		logger,
-		walletRepo,
-	)
-	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
 		cfg,
 		logger,
 		walletRepo,
@@ -155,7 +150,6 @@ func doRunNewAccount() {
 	getProofOfAuthorityPrivateKeyService := s_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
-		getWalletUseCase,
 		walletDecryptKeyUseCase,
 	)
 	createGenesisBlockDataService := s_genesis.NewCreateGenesisBlockDataService(

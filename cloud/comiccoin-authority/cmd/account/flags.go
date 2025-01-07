@@ -1,9 +1,9 @@
 package account
 
 var (
-	flagLabel            string
-	flagPassword         string
-	flagPasswordRepeated string
+	flagLabel    string
+	flagMnemonic string
+	flagPath     string
 
 	flagAccountAddress string
 )

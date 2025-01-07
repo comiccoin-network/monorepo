@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/cmd/credentials/apikey"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/cmd/credentials/mnemonic"
 )
 
 func CredentialsCmd() *cobra.Command {
@@ -17,6 +18,7 @@ func CredentialsCmd() *cobra.Command {
 
 	// Attach our sub-commands for `credentials`
 	cmd.AddCommand(apikey.APIKeyCmd())
+	cmd.AddCommand(mnemonic.MnemonicCmd())
 
 	return cmd
 }

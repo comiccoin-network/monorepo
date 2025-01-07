@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/database/mongodb"
@@ -31,10 +31,10 @@ func NewAccountCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&flagPassword, "wallet-password", "", "The password to encrypt the new wallet with")
-	cmd.MarkFlagRequired("wallet-password")
-	cmd.Flags().StringVar(&flagPasswordRepeated, "wallet-password-repeated", "", "The password repeated to verify your password is correct")
-	cmd.MarkFlagRequired("wallet-password-repeated")
+	cmd.Flags().StringVar(&flagMnemonic, "wallet-mnemonic", "", "The mnemonic phrase to derive the new wallet from")
+	cmd.MarkFlagRequired("wallet-mnemonic")
+	cmd.Flags().StringVar(&flagPath, "wallet-path", "m/44'/60'/0'/0/0", "The path to use when deriving the wallet from the mnemonic phrase")
+	cmd.MarkFlagRequired("wallet-path")
 	cmd.Flags().StringVar(&flagLabel, "wallet-label", "", "The (optional) label to describe the new wallet with")
 
 	return cmd
@@ -45,7 +45,7 @@ func doRunNewAccount() {
 	logger := logger.NewProvider()
 	cfg := config.NewProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
-	keystore := keystore.NewAdapter()
+	hdkeystore := hdkeystore.NewAdapter()
 
 	// Repository
 	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
@@ -55,13 +55,13 @@ func doRunNewAccount() {
 	walletEncryptKeyUseCase := uc_wallet.NewWalletEncryptKeyUseCase(
 		cfg,
 		logger,
-		keystore,
+		hdkeystore,
 		walletRepo,
 	)
 	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
 		cfg,
 		logger,
-		keystore,
+		hdkeystore,
 		walletRepo,
 	)
 	createWalletUseCase := uc_wallet.NewCreateWalletUseCase(
@@ -92,16 +92,11 @@ func doRunNewAccount() {
 	)
 
 	// Minor formatting of input.
-	pass, err := sstring.NewSecureString(flagPassword)
+	mnemonic, err := sstring.NewSecureString(flagMnemonic)
 	if err != nil {
 		log.Fatalf("Failed securing: %v\n", err)
 	}
-	// defer pass.Wipe() // Developers Note: Commented out b/c they are causing the hang in the program to exit?
-	passRepeated, err := sstring.NewSecureString(flagPasswordRepeated)
-	if err != nil {
-		log.Fatalf("Failed securing: %v\n", err)
-	}
-	// defer passRepeated.Wipe() // Developers Note: Commented out b/c they are causing the hang in the program to exit?
+	// defer mnemonic.Wipe() // Developers Note: Commented out b/c they are causing the hang in the program to exit?
 
 	////
 	//// Start the transaction.
@@ -126,7 +121,7 @@ func doRunNewAccount() {
 		logger.Debug("Transaction started")
 
 		// Execution
-		account, err := createAccountService.Execute(sessCtx, pass, passRepeated, flagLabel)
+		account, err := createAccountService.Execute(sessCtx, mnemonic, flagPath, flagLabel)
 		if err != nil {
 			logger.Error("Failed creating account",
 				slog.Any("error", err))

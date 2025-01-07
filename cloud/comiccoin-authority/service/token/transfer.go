@@ -29,7 +29,6 @@ type TokenTransferService struct {
 	logger                          *slog.Logger
 	kmutex                          kmutexutil.KMutexProvider
 	dbClient                        *mongo.Client
-	getWalletUseCase                *uc_wallet.GetWalletUseCase
 	walletDecryptKeyUseCase         *uc_wallet.WalletDecryptKeyUseCase
 	getBlockchainStateUseCase       *uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase    *uc_blockchainstate.UpsertBlockchainStateUseCase
@@ -43,22 +42,22 @@ func NewTokenTransferService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
 	client *mongo.Client,
-	uc1 *uc_wallet.GetWalletUseCase,
-	uc2 *uc_wallet.WalletDecryptKeyUseCase,
-	uc3 *uc_blockchainstate.GetBlockchainStateUseCase,
-	uc4 *uc_blockchainstate.UpsertBlockchainStateUseCase,
-	uc5 *uc_blockdata.GetBlockDataUseCase,
-	uc6 *uc_token.GetTokenUseCase,
-	uc7 *uc_mempooltx.MempoolTransactionCreateUseCase,
+	uc1 *uc_wallet.WalletDecryptKeyUseCase,
+	uc2 *uc_blockchainstate.GetBlockchainStateUseCase,
+	uc3 *uc_blockchainstate.UpsertBlockchainStateUseCase,
+	uc4 *uc_blockdata.GetBlockDataUseCase,
+	uc5 *uc_token.GetTokenUseCase,
+	uc6 *uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *TokenTransferService {
-	return &TokenTransferService{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6, uc7}
+	return &TokenTransferService{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6}
 }
 
 func (s *TokenTransferService) Execute(
 	ctx context.Context,
 	tokenID *big.Int,
 	tokenOwnerAddress *common.Address,
-	tokenOwnerWalletPassword *sstring.SecureString,
+	tokenOwnerWalletMnemonic *sstring.SecureString,
+	tokenOwnerWalletPath string,
 	recipientAddress *common.Address) error {
 	// Lock the mining service until it has completed executing (or errored).
 	s.kmutex.Acquire("token-services")
@@ -74,6 +73,12 @@ func (s *TokenTransferService) Execute(
 	}
 	if tokenOwnerAddress == nil {
 		e["token_owner_address"] = "missing value"
+	}
+	if tokenOwnerWalletMnemonic == nil {
+		e["token_owner_wallet_mnemonic"] = "missing value"
+	}
+	if tokenOwnerWalletPath == "" {
+		e["token_owner_wallet_path"] = "missing value"
 	}
 	if recipientAddress == nil {
 		e["recipient_address"] = "missing value"
@@ -116,24 +121,20 @@ func (s *TokenTransferService) Execute(
 			return nil, fmt.Errorf("Blockchain state does not exist")
 		}
 
-		wallet, err := s.getWalletUseCase.Execute(sessCtx, tokenOwnerAddress)
+		ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(sessCtx, tokenOwnerWalletMnemonic, tokenOwnerWalletPath)
 		if err != nil {
-			s.logger.Error("failed getting wallet from database",
+			s.logger.Error("failed deriving wallet from mnemonic phrase",
 				slog.Any("error", err))
-			return nil, fmt.Errorf("failed getting wallet from database: %s", err)
+			return nil, fmt.Errorf("failed deriving wallet from mnemonic phrase: %s", err)
 		}
 		if wallet == nil {
-			return nil, fmt.Errorf("failed getting wallet from database: %s", "d.n.e.")
+			return nil, fmt.Errorf("failed deriving wallet from mnemonic phrase: %s", "d.n.e.")
 		}
-
-		key, err := s.walletDecryptKeyUseCase.Execute(sessCtx, wallet.KeystoreBytes, tokenOwnerWalletPassword)
+		privateKey, err := wallet.PrivateKey(*ethAccount)
 		if err != nil {
-			s.logger.Error("failed getting key",
+			s.logger.Error("failed getting wallet private key",
 				slog.Any("error", err))
-			return nil, fmt.Errorf("failed getting key: %s", err)
-		}
-		if key == nil {
-			return nil, fmt.Errorf("failed getting key: %s", "d.n.e.")
+			return nil, fmt.Errorf("failed getting wallet private key: %s", err)
 		}
 
 		recentBlockData, err := s.getBlockDataUseCase.ExecuteByHash(sessCtx, blockchainState.LatestHash)
@@ -204,7 +205,7 @@ func (s *TokenTransferService) Execute(
 			TokenNonceBytes:  nonce.Bytes(), // Transfered tokens must increment nonce.
 		}
 
-		stx, signingErr := tx.Sign(key.PrivateKey)
+		stx, signingErr := tx.Sign(privateKey)
 		if signingErr != nil {
 			s.logger.Debug("Failed to sign the token transfer transaction",
 				slog.Any("error", signingErr))

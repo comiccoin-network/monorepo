@@ -23,7 +23,6 @@ type CoinTransferService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	getAccountUseCase               *uc_account.GetAccountUseCase
-	getWalletUseCase                *uc_wallet.GetWalletUseCase
 	walletDecryptKeyUseCase         *uc_wallet.WalletDecryptKeyUseCase
 	mempoolTransactionCreateUseCase *uc_mempooltx.MempoolTransactionCreateUseCase
 }
@@ -32,24 +31,25 @@ func NewCoinTransferService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc1 *uc_account.GetAccountUseCase,
-	uc2 *uc_wallet.GetWalletUseCase,
-	uc3 *uc_wallet.WalletDecryptKeyUseCase,
-	uc4 *uc_mempooltx.MempoolTransactionCreateUseCase,
+	uc2 *uc_wallet.WalletDecryptKeyUseCase,
+	uc3 *uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *CoinTransferService {
-	return &CoinTransferService{cfg, logger, uc1, uc2, uc3, uc4}
+	return &CoinTransferService{cfg, logger, uc1, uc2, uc3}
 }
 
 func (s *CoinTransferService) Execute(
 	ctx context.Context,
 	fromAccountAddress *common.Address,
-	accountWalletPassword *sstring.SecureString,
+	accountWalletMnemonic *sstring.SecureString,
+	accountWalletPath string,
 	to *common.Address,
 	value uint64,
 	data []byte,
 ) error {
 	s.logger.Debug("Validating...",
 		slog.Any("from_account_address", fromAccountAddress),
-		slog.Any("account_wallet_password", accountWalletPassword),
+		slog.Any("account_wallet_mnemonic", accountWalletMnemonic),
+		slog.Any("account_wallet_path", accountWalletPath),
 		slog.Any("to", to),
 		slog.Any("value", value),
 		slog.Any("data", data),
@@ -63,8 +63,11 @@ func (s *CoinTransferService) Execute(
 	if fromAccountAddress == nil {
 		e["from_account_address"] = "missing value"
 	}
-	if accountWalletPassword == nil {
-		e["account_wallet_password"] = "missing value"
+	if accountWalletMnemonic == nil {
+		e["account_wallet_mnemonic"] = "missing value"
+	}
+	if accountWalletPath == "" {
+		e["account_wallet_path"] = "missing value"
 	}
 	if to == nil {
 		e["to"] = "missing value"
@@ -82,29 +85,20 @@ func (s *CoinTransferService) Execute(
 	// STEP 2: Get the account and extract the wallet private/public key.
 	//
 
-	wallet, err := s.getWalletUseCase.Execute(ctx, fromAccountAddress)
+	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
 	if err != nil {
-		s.logger.Error("failed getting from database",
-			slog.Any("from_account_address", fromAccountAddress),
+		s.logger.Error("failed decrypting wallet",
 			slog.Any("error", err))
-		return fmt.Errorf("failed getting from database: %s", err)
+		return fmt.Errorf("failed decrypting wallet: %s", err)
 	}
 	if wallet == nil {
-		s.logger.Error("failed getting from database",
-			slog.Any("from_account_address", fromAccountAddress),
-			slog.Any("error", "d.n.e."))
-		return fmt.Errorf("failed getting from database: %s", "wallet d.n.e.")
+		return fmt.Errorf("failed decrypting wallet: %s", "d.n.e.")
 	}
-
-	key, err := s.walletDecryptKeyUseCase.Execute(ctx, wallet.KeystoreBytes, accountWalletPassword)
+	privateKey, err := wallet.PrivateKey(*ethAccount)
 	if err != nil {
-		s.logger.Error("failed getting key",
-			slog.Any("from_account_address", fromAccountAddress),
+		s.logger.Error("failed getting wallet private key",
 			slog.Any("error", err))
-		return fmt.Errorf("failed getting key: %s", err)
-	}
-	if key == nil {
-		return fmt.Errorf("failed getting key: %s", "d.n.e.")
+		return fmt.Errorf("failed getting wallet private key: %s", err)
 	}
 
 	//
@@ -140,14 +134,14 @@ func (s *CoinTransferService) Execute(
 	tx := &domain.Transaction{
 		ChainID:    s.config.Blockchain.ChainID,
 		NonceBytes: big.NewInt(time.Now().Unix()).Bytes(),
-		From:       wallet.Address,
+		From:       fromAccountAddress,
 		To:         to,
 		Value:      value + s.config.Blockchain.TransactionFee, // Note: The transanction fee gets reclaimed by the us, so it's fully recirculating when authority calls this.
 		Data:       data,
 		Type:       domain.TransactionTypeCoin,
 	}
 
-	stx, signingErr := tx.Sign(key.PrivateKey)
+	stx, signingErr := tx.Sign(privateKey)
 	if signingErr != nil {
 		s.logger.Debug("Failed to sign the transaction",
 			slog.Any("error", signingErr))

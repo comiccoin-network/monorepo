@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	github.com/awnumar/memguard v0.22.5
 	github.com/bsm/redislock v0.9.4
-	github.com/ethereum/go-ethereum v1.14.11
+	github.com/ethereum/go-ethereum v1.14.12
 	github.com/faabiosr/cachego v0.22.2
 	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
@@ -26,7 +26,10 @@ require (
 	github.com/awnumar/memcall v0.2.0 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
+	github.com/btcsuite/btcd v0.22.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
+	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
+	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/consensys/gnark-crypto v0.12.1 // indirect
@@ -43,6 +46,7 @@ require (
 	github.com/holiman/uint256 v1.3.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
+	github.com/miguelmota/go-ethereum-hdwallet v0.1.2 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
 	github.com/nxadm/tail v1.4.11 // indirect
@@ -55,6 +59,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/supranational/blst v0.3.13 // indirect
+	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect

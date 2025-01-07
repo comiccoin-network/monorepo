@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
@@ -23,17 +23,15 @@ import (
 
 // Command line argument flags
 var (
-	flagKeystoreFile                  string // Location of the wallet keystore
-	flagDataDir                       string // Location of the database directory
-	flagLabel                         string
-	flagSenderAccountPassword         string
-	flagSenderAccountPasswordRepeated string
-	flagCoinbaseAddress               string
-	flagRecipientAddress              string
-	flagQuantity                      uint64
-	flagKeypairName                   string
-	flagSenderAccountAddress          string
-	flagData                          string
+	flagKeystoreFile         string // Location of the wallet keystore
+	flagDataDir              string // Location of the database directory
+	flagLabel                string
+	flagCoinbaseAddress      string
+	flagRecipientAddress     string
+	flagQuantity             uint64
+	flagKeypairName          string
+	flagSenderAccountAddress string
+	flagData                 string
 
 	flagRendezvousString string
 	flagBootstrapPeers   string
@@ -80,7 +78,7 @@ func doRunTransferCoinsCommand() {
 	logger := logger.NewProvider()
 	cfg := config.NewProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
-	keystore := keystore.NewAdapter()
+	keystore := hdkeystore.NewAdapter()
 
 	// ------ Repository ------
 	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
@@ -97,11 +95,6 @@ func doRunTransferCoinsCommand() {
 		cfg,
 		logger,
 		keystore,
-		walletRepo,
-	)
-	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
-		cfg,
-		logger,
 		walletRepo,
 	)
 
@@ -124,7 +117,6 @@ func doRunTransferCoinsCommand() {
 		cfg,
 		logger,
 		getAccountUseCase,
-		getWalletUseCase,
 		walletDecryptKeyUseCase,
 		mempoolTransactionCreateUseCase,
 	)
@@ -151,7 +143,8 @@ func doRunTransferCoinsCommand() {
 		err := coinTransferService.Execute(
 			sessCtx,
 			cfg.Blockchain.ProofOfAuthorityAccountAddress,
-			cfg.Blockchain.ProofOfAuthorityWalletPassword,
+			cfg.Blockchain.ProofOfAuthorityWalletMnemonic,
+			cfg.Blockchain.ProofOfAuthorityWalletPath,
 			&recAddr,
 			flagQuantity,
 			[]byte(flagData),

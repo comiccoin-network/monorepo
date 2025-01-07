@@ -69,7 +69,7 @@ func (s *CreateGenesisBlockDataService) Execute(sessCtx mongo.SessionContext) (*
 	// Get our coinbase account and private key.
 	//
 
-	coinbaseKey, err := s.getProofOfAuthorityPrivateKeyService.Execute(sessCtx)
+	coinbasePrivateKey, err := s.getProofOfAuthorityPrivateKeyService.Execute(sessCtx)
 	if err != nil {
 		s.logger.Error("Failed getting proof of authority private key", slog.Any("error", err))
 		return nil, err
@@ -155,7 +155,7 @@ func (s *CreateGenesisBlockDataService) Execute(sessCtx mongo.SessionContext) (*
 		Data:       make([]byte, 0),
 		Type:       domain.TransactionTypeCoin,
 	}
-	signedCoinTx, err := coinTx.Sign(coinbaseKey.PrivateKey)
+	signedCoinTx, err := coinTx.Sign(coinbasePrivateKey)
 	if err != nil {
 		s.logger.Error("Failed signing coin transaction", slog.Any("error", err))
 		return nil, err
@@ -178,7 +178,7 @@ func (s *CreateGenesisBlockDataService) Execute(sessCtx mongo.SessionContext) (*
 		TokenMetadataURI: "https://cpscapsule.com/comiccoin/tokens/0/metadata.json",
 		TokenNonceBytes:  big.NewInt(0).Bytes(), // Newly minted tokens always have their nonce start at value of zero.
 	}
-	signedTokenTx, err := tokenTx.Sign(coinbaseKey.PrivateKey)
+	signedTokenTx, err := tokenTx.Sign(coinbasePrivateKey)
 	if err != nil {
 		s.logger.Error("Failed signing token transaction", slog.Any("error", err))
 		return nil, err
@@ -303,7 +303,6 @@ func (s *CreateGenesisBlockDataService) Execute(sessCtx mongo.SessionContext) (*
 	// Create our single proof-of-authority validator via coinbase account.
 	//
 
-	coinbasePrivateKey := coinbaseKey.PrivateKey
 	// Extract the bytes for the original public key.
 	coinbasePublicKey := coinbasePrivateKey.Public()
 	publicKeyECDSA, ok := coinbasePublicKey.(*ecdsa.PublicKey)

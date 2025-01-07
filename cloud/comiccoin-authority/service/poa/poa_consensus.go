@@ -393,7 +393,7 @@ func (s *ProofOfAuthorityConsensusMechanismService) Execute(ctx context.Context)
 		// Our proof-of-authority signs this block data's header.
 		//
 
-		coinbasePrivateKey := proofOfAuthorityPrivateKey.PrivateKey
+		coinbasePrivateKey := proofOfAuthorityPrivateKey
 		blockDataHeaderSignatureBytes, err := poaValidator.Sign(coinbasePrivateKey, blockData.Header)
 		if err != nil {
 			s.logger.Error("Failed to sign block header",

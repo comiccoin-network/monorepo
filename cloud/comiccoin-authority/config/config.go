@@ -50,9 +50,8 @@ type BlockchainConfig struct {
 
 	// (Only set by PoA node)
 	ProofOfAuthorityAccountAddress *common.Address
-
-	// (Only set by PoA node)
-	ProofOfAuthorityWalletPassword *sstring.SecureString
+	ProofOfAuthorityWalletMnemonic *sstring.SecureString
+	ProofOfAuthorityWalletPath     string
 }
 
 type DBConfig struct {
@@ -85,7 +84,8 @@ func NewProvider() *Configuration {
 		address := common.HexToAddress(proofOfAuthorityAccountAddress)
 		c.Blockchain.ProofOfAuthorityAccountAddress = &address
 	}
-	c.Blockchain.ProofOfAuthorityWalletPassword = getSecureStringEnv("COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PASSWORD", false)
+	c.Blockchain.ProofOfAuthorityWalletMnemonic = getSecureStringEnv("COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC", false)
+	c.Blockchain.ProofOfAuthorityWalletPath = getEnv("COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PATH", false)
 	// Database section.
 	c.DB.URI = getEnv("COMICCOIN_AUTHORITY_DB_URI", true)
 	c.DB.Name = getEnv("COMICCOIN_AUTHORITY_DB_NAME", true)
