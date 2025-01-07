@@ -14,6 +14,7 @@ import { useRecoilState } from "recoil";
 
 import { TransferCoin } from "../../../wailsjs/go/main/App";
 import { currentOpenWalletAtAddressState } from "../../AppState";
+import useTotalCoins from "../../Hooks/totalcoins";
 
 function SendCoinView() {
   ////
@@ -33,7 +34,7 @@ function SendCoinView() {
   const [errors, setErrors] = useState({});
   const [forceURL, setForceURL] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const currentBalance = 1337.42;
+  const currentBalance = useTotalCoins(currentOpenWalletAtAddress, setForceURL);
 
   // Form Submission States.
   const [formData, setFormData] = useState({
