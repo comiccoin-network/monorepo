@@ -608,6 +608,11 @@ func (a *App) shutdown(ctx context.Context) {
 
 // IsSyncing returns true or false depending on if the wallet is synching with the current blockchain.
 func (a *App) IsSyncing() bool {
+	// Defensive code
+	if a.getBlockchainSyncStatusService == nil {
+		return false
+	}
+
 	blockchainSyncStatus, err := a.getBlockchainSyncStatusService.Execute(a.ctx)
 	if err != nil {
 		log.Fatalf("Failed to get blockchain sync status: %v\n", err)

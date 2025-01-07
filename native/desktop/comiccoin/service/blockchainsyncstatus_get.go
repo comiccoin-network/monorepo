@@ -10,8 +10,8 @@ import (
 )
 
 type GetBlockchainSyncStatusService struct {
-	logger            *slog.Logger
-	getAccountUseCase *usecase.GetBlockchainSyncStatusUseCase
+	logger                         *slog.Logger
+	getBlockchainSyncStatusUseCase *usecase.GetBlockchainSyncStatusUseCase
 }
 
 func NewGetBlockchainSyncStatusService(
@@ -22,7 +22,7 @@ func NewGetBlockchainSyncStatusService(
 }
 
 func (s *GetBlockchainSyncStatusService) Execute(ctx context.Context) (*domain.BlockchainSyncStatus, error) {
-	blockchainSyncStatus, err := s.getAccountUseCase.Execute(ctx)
+	blockchainSyncStatus, err := s.getBlockchainSyncStatusUseCase.Execute(ctx)
 	if err != nil {
 		s.logger.Error("failed getting blockchain sync status",
 			slog.Any("error", err))
