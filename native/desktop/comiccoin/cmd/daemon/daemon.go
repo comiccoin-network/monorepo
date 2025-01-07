@@ -12,10 +12,12 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
+	inmemory "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/memory/inmemory"
 	auth_repo "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstatedto"
 	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdatadto"
 	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
+	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltxdto"
 	"github.com/spf13/cobra"
 
 	pref "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/common/preferences"
@@ -76,6 +78,7 @@ func doRunDaemonCmd() {
 
 	logger := logger.NewProvider()
 	keystore := keystore.NewAdapter()
+	memDB := inmemory.NewInMemoryStorage(logger)
 	walletDB := disk.NewDiskStorage(flagDataDirectory, "wallet", logger)
 	accountDB := disk.NewDiskStorage(flagDataDirectory, "account", logger)
 	genesisBlockDataDB := disk.NewDiskStorage(flagDataDirectory, "genesis_block_data", logger)
@@ -132,6 +135,7 @@ func doRunDaemonCmd() {
 	mempoolTxDTORepoConfig := auth_repo.NewMempoolTransactionDTOConfigurationProvider(flagAuthorityAddress)
 	mempoolTxDTORepo := auth_repo.NewMempoolTransactionDTORepo(mempoolTxDTORepoConfig, logger)
 	pstxRepo := repo.NewPendingSignedTransactionRepo(logger, pstxDB)
+	blockchainSyncStatusRepo := repo.NewBlockchainSyncStatusRepo(logger, memDB)
 
 	// ------------ Use-Case ------------
 
@@ -305,6 +309,14 @@ func doRunDaemonCmd() {
 		logger,
 		pstxRepo)
 
+	// Blockchain Sync Status
+	setBlockchainSyncStatusUseCase := usecase.NewSetBlockchainSyncStatusUseCase(
+		logger,
+		blockchainSyncStatusRepo)
+	getBlockchainSyncStatusUseCase := usecase.NewGetBlockchainSyncStatusUseCase(
+		logger,
+		blockchainSyncStatusRepo)
+
 	// ------------ Service ------------
 
 	getAccountService := service.NewGetAccountService(
@@ -371,6 +383,8 @@ func doRunDaemonCmd() {
 	)
 	blockchainSyncService := service.NewBlockchainSyncWithBlockchainAuthorityService(
 		logger,
+		getBlockchainSyncStatusUseCase,
+		setBlockchainSyncStatusUseCase,
 		getGenesisBlockDataUseCase,
 		upsertGenesisBlockDataUseCase,
 		getGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
@@ -385,7 +399,6 @@ func doRunDaemonCmd() {
 		upsertTokenIfPreviousTokenNonceGTEUseCase,
 		deletePendingSignedTransactionUseCase,
 	)
-
 	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService := service.NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 		logger,
 		blockchainSyncService,

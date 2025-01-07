@@ -8,6 +8,7 @@ import "./App.css";
 // MENU
 import Topbar from "./Components/Menu/Top";
 import BottomTabBar from "./Components/Menu/BottomBar";
+import useSyncStatus from "./Hooks/syncstatus";
 
 // CORE VIEWS
 import InitializeView from "./Components/OnAppStart/InitializeView";
@@ -33,9 +34,21 @@ import TokenBurnView from "./Components/More/Tokens/BurnView";
 import SettingsView from "./Components/More/Settings/View";
 
 function AppRoute() {
+  const isSyncing = useSyncStatus(); // Set based on your sync status
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <RecoilRoot>
+
+        {isSyncing && (
+          <div className="bg-yellow-50 p-4 border-b border-yellow-200">
+            <div className="max-w-2xl mx-auto flex items-center gap-3">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-yellow-600 border-t-transparent"></div>
+              <p className="text-yellow-700">Blockchain syncing in progress. Some features may be limited.</p>
+            </div>
+          </div>
+        )}
+        
         <HashRouter basename={"/"}>
           {/* <TopAlertBanner /> */}
 

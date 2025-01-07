@@ -46,6 +46,8 @@ export function Greet(arg1:string):Promise<string>;
 
 export function ImportWalletUsingDialog():Promise<void>;
 
+export function IsSyncing():Promise<boolean>;
+
 export function ListAllPendingSignedTransactions():Promise<Array<domain.PendingSignedTransaction>>;
 
 export function ListWallets():Promise<Array<domain.Wallet>>;

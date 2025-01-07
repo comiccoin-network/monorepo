@@ -11,6 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
+	inmemory "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/memory/inmemory"
 	auth_repo "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstatedto"
 	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdatadto"
@@ -32,6 +33,7 @@ type App struct {
 
 	kmutex kmutexutil.KMutexProvider
 
+	getBlockchainSyncStatusService                                  *service.GetBlockchainSyncStatusService
 	getAccountService                                               *service.GetAccountService
 	createAccountService                                            *service.CreateAccountService
 	accountListingByLocalWalletsService                             *service.AccountListingByLocalWalletsService
@@ -104,6 +106,7 @@ func (a *App) startup(ctx context.Context) {
 
 	logger := logger.NewProvider()
 	keystore := keystore.NewAdapter()
+	memDB := inmemory.NewInMemoryStorage(logger)
 	walletDB := disk.NewDiskStorage(dataDir, "wallet", logger)
 	accountDB := disk.NewDiskStorage(dataDir, "account", logger)
 	genesisBlockDataDB := disk.NewDiskStorage(dataDir, "genesis_block_data", logger)
@@ -155,6 +158,7 @@ func (a *App) startup(ctx context.Context) {
 	mempoolTxDTORepoConfig := auth_repo.NewMempoolTransactionDTOConfigurationProvider(authorityAddress)
 	mempoolTxDTORepo := auth_repo.NewMempoolTransactionDTORepo(mempoolTxDTORepoConfig, logger)
 	pstxRepo := repo.NewPendingSignedTransactionRepo(logger, pstxDB)
+	blockchainSyncStatusRepo := repo.NewBlockchainSyncStatusRepo(logger, memDB)
 
 	// DEPRECATED
 	// blockchainStateChangeEventDTOConfigurationProvider := auth_repo.NewBlockchainStateChangeEventDTOConfigurationProvider(authorityAddress)
@@ -343,8 +347,20 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		pstxRepo)
 
+	// Blockchain Sync Status
+	setBlockchainSyncStatusUseCase := usecase.NewSetBlockchainSyncStatusUseCase(
+		logger,
+		blockchainSyncStatusRepo)
+	getBlockchainSyncStatusUseCase := usecase.NewGetBlockchainSyncStatusUseCase(
+		logger,
+		blockchainSyncStatusRepo)
+
 	// ------------ Service ------------
 
+	getBlockchainSyncStatusService := service.NewGetBlockchainSyncStatusService(
+		logger,
+		getBlockchainSyncStatusUseCase,
+	)
 	getAccountService := service.NewGetAccountService(
 		logger,
 		getAccountUseCase,
@@ -407,8 +423,11 @@ func (a *App) startup(ctx context.Context) {
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
+
 	blockchainSyncService := service.NewBlockchainSyncWithBlockchainAuthorityService(
 		logger,
+		getBlockchainSyncStatusUseCase,
+		setBlockchainSyncStatusUseCase,
 		getGenesisBlockDataUseCase,
 		upsertGenesisBlockDataUseCase,
 		getGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
@@ -505,6 +524,7 @@ func (a *App) startup(ctx context.Context) {
 
 	// ------------ Interfaces ------------
 
+	a.getBlockchainSyncStatusService = getBlockchainSyncStatusService
 	a.getAccountService = getAccountService
 	a.createAccountService = createAccountService
 	a.accountListingByLocalWalletsService = accountListingByLocalWalletsService
@@ -584,4 +604,13 @@ func (a *App) shutdown(ctx context.Context) {
 		return
 	}
 
+}
+
+// IsSyncing returns true or false depending on if the wallet is synching with the current blockchain.
+func (a *App) IsSyncing() bool {
+	blockchainSyncStatus, err := a.getBlockchainSyncStatusService.Execute(a.ctx)
+	if err != nil {
+		log.Fatalf("Failed to get blockchain sync status: %v\n", err)
+	}
+	return blockchainSyncStatus.IsSynching
 }

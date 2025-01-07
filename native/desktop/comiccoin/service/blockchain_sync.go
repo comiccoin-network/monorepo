@@ -20,6 +20,8 @@ import (
 
 type BlockchainSyncWithBlockchainAuthorityService struct {
 	logger                                               *slog.Logger
+	getBlockchainSyncStatusUseCase                       *usecase.GetBlockchainSyncStatusUseCase
+	setBlockchainSyncStatusUseCase                       *usecase.SetBlockchainSyncStatusUseCase
 	getGenesisBlockDataUseCase                           *usecase.GetGenesisBlockDataUseCase
 	upsertGenesisBlockDataUseCase                        *usecase.UpsertGenesisBlockDataUseCase
 	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
@@ -37,21 +39,23 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 
 func NewBlockchainSyncWithBlockchainAuthorityService(
 	logger *slog.Logger,
-	uc1 *usecase.GetGenesisBlockDataUseCase,
-	uc2 *usecase.UpsertGenesisBlockDataUseCase,
-	uc3 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
-	uc4 *usecase.GetBlockchainStateUseCase,
-	uc5 *usecase.UpsertBlockchainStateUseCase,
-	uc6 *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
-	uc7 *usecase.GetBlockDataUseCase,
-	uc8 *usecase.UpsertBlockDataUseCase,
-	uc9 *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
-	uc10 *usecase.GetAccountUseCase,
-	uc11 *usecase.UpsertAccountUseCase,
-	uc12 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,
-	uc13 *usecase.DeletePendingSignedTransactionUseCase,
+	uc1 *usecase.GetBlockchainSyncStatusUseCase,
+	uc2 *usecase.SetBlockchainSyncStatusUseCase,
+	uc3 *usecase.GetGenesisBlockDataUseCase,
+	uc4 *usecase.UpsertGenesisBlockDataUseCase,
+	uc5 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc6 *usecase.GetBlockchainStateUseCase,
+	uc7 *usecase.UpsertBlockchainStateUseCase,
+	uc8 *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
+	uc9 *usecase.GetBlockDataUseCase,
+	uc10 *usecase.UpsertBlockDataUseCase,
+	uc11 *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc12 *usecase.GetAccountUseCase,
+	uc13 *usecase.UpsertAccountUseCase,
+	uc14 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,
+	uc15 *usecase.DeletePendingSignedTransactionUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityService {
-	return &BlockchainSyncWithBlockchainAuthorityService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13}
+	return &BlockchainSyncWithBlockchainAuthorityService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15}
 }
 
 func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(ctx context.Context, chainID uint16) error {
@@ -156,6 +160,14 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(ctx context.Conte
 	// network so our local blockchain will be in-sync.
 	//
 
+	if err := s.setBlockchainSyncStatusUseCase.Execute(ctx, true); err != nil {
+		s.logger.Error("Failed blockchain sync status setting",
+			slog.Any("chain_id", chainID),
+			slog.Any("error", err))
+		return err
+	}
+	defer s.setBlockchainSyncStatusUseCase.Execute(ctx, false)
+
 	if err := s.syncWithGlobalBlockchainNetwork(ctx, localBlockchainState, globalBlockchainState); err != nil {
 		if localBlockchainState.LatestHash == globalBlockchainState.LatestHash {
 			s.logger.Debug("Failed to sync with the global blockchain network",
@@ -193,6 +205,14 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) getGenesisLocallyOrDownlo
 	}
 	if genesis == nil {
 		s.logger.Debug("Genesis block d.n.e, fetching it now ...")
+		if err := s.setBlockchainSyncStatusUseCase.Execute(ctx, true); err != nil {
+			s.logger.Error("Failed blockchain sync status setting",
+				slog.Any("chain_id", chainID),
+				slog.Any("error", err))
+			return nil, err
+		}
+		defer s.setBlockchainSyncStatusUseCase.Execute(ctx, false)
+
 		genesisDTO, err := s.getGenesisBlockDataDTOFromBlockchainAuthorityUseCase.Execute(ctx, chainID)
 		if err != nil {
 			s.logger.Error("Failed getting genesis block remotely",

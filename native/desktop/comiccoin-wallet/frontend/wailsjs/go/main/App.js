@@ -86,6 +86,10 @@ export function ImportWalletUsingDialog() {
   return window['go']['main']['App']['ImportWalletUsingDialog']();
 }
 
+export function IsSyncing() {
+  return window['go']['main']['App']['IsSyncing']();
+}
+
 export function ListAllPendingSignedTransactions() {
   return window['go']['main']['App']['ListAllPendingSignedTransactions']();
 }
