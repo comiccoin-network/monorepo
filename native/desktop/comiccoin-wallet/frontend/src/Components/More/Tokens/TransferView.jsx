@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { toLower } from "lodash";
-import { AlertCircle, Info, Send, ArrowLeft } from "lucide-react";
+import { AlertCircle, Info, Send, ArrowLeft, Loader2 } from "lucide-react";
 
 import {
   GetNonFungibleToken,
@@ -171,9 +171,18 @@ function TokenTransferView() {
   }
 
   if (isLoading) {
-    return "------";
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-12 h-12 text-red-600 animate-spin mx-auto" />
+          <h2 className="text-xl font-semibold text-gray-900">
+            Processing request
+          </h2>
+          <p className="text-sm text-gray-600">Please wait while we process the token request...</p>
+        </div>
+      </div>
+    );
   }
-
   console.log("showErrorBox:", showErrorBox);
   console.log("errors:", errors);
 
