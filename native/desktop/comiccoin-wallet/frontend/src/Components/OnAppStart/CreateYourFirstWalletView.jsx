@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react';
 import { Link, Navigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
-import { WalletMinimal, KeyRound, Info, ChevronRight, AlertCircle, XCircle } from 'lucide-react';
+import { WalletMinimal, KeyRound, Info, ChevronRight, AlertCircle, XCircle, Loader2 } from 'lucide-react';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 
@@ -420,52 +420,152 @@ function CreateYourFirstWalletView() {
          // Import wallet form
          <div className="p-8">
            <div className="text-center space-y-4 max-w-xl mx-auto">
-             <div className="bg-purple-100 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
-               <WalletMinimal className="w-8 h-8 text-purple-600" aria-hidden="true" />
-             </div>
-             <h2 className="text-2xl font-bold text-gray-900">Import Your Existing Wallet</h2>
-             <p className="text-gray-600">
-               Have a ComicCoin wallet already? Simply select your wallet file to continue.
-             </p>
-           </div>
+    <div className="bg-purple-100 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
+      <WalletMinimal className="w-8 h-8 text-purple-600" aria-hidden="true" />
+    </div>
+    <h2 className="text-2xl font-bold text-gray-900">Import Your Existing Wallet</h2>
+    <p className="text-gray-600">
+      Have a ComicCoin wallet already? Enter your recovery phrase and set up your imported wallet.
+    </p>
+  </div>
 
-           <div className="mt-8 max-w-md mx-auto">
-             <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6">
-               <div className="flex gap-4">
-                 <Info className="w-5 h-5 text-purple-600 flex-shrink-0 mt-1" />
-                 <div className="text-sm text-gray-700 space-y-2">
-                   <p>Once you select your wallet file:</p>
-                   <ol className="list-decimal ml-4 space-y-1">
-                     <li>Click the <b>Choose File</b> button</li>
-                     <li>Select the wallet you want to import</li>
-                     <li>Your wallet will be imported</li>
-                     <li>You'll be redirected to your wallet list</li>
-                   </ol>
-                 </div>
-               </div>
-             </div>
 
-             <div className="mt-8">
-               <input
-                 type="file"
-                 onClick={onImportWallet}
-                 className="block w-full text-sm text-gray-500
-                   file:mr-4 file:py-3 file:px-6
-                   file:rounded-lg file:border-0
-                   file:text-sm file:font-semibold
-                   file:bg-purple-600 file:text-white
-                   hover:file:bg-purple-700
-                   cursor-pointer"
-               />
-             </div>
+  <div className="mt-8 max-w-md mx-auto">
+      {/* Info Box */}
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 mb-8">
+        <div className="flex gap-4">
+          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-1" />
+          <div className="text-sm text-gray-700 space-y-2">
+            <p className="font-medium text-amber-800">Important Information:</p>
+            <ul className="list-disc ml-4 space-y-2 text-amber-800">
+              <li>Your recovery phrase must match exactly with your original wallet</li>
+              <li>You can choose a new name for this wallet</li>
+              <li>You can set a new password - it doesn't have to match your original password</li>
+              <li>Double-check your recovery phrase before submitting</li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
-             <button
-               onClick={() => ShutdownApp()}
-               className="mt-6 w-full px-6 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors text-center"
-             >
-               Cancel & Close
-             </button>
-           </div>
+      </div>
+
+      {/* Form Fields */}
+   <div className="space-y-6">
+     <div className="space-y-4">
+       <label className="block">
+         <span className="text-sm font-medium text-gray-700">Wallet Label</span>
+         <p className="text-xs text-gray-500 mt-1">Choose any name that helps you identify this wallet</p>
+         <input
+           type="text"
+           name="label"
+           value={formData.label}
+           onChange={handleInputChange}
+           className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
+             errors.label ? 'border-red-300 bg-red-50' : 'border-gray-200'
+           }`}
+           placeholder="Example: 'My Trading Wallet' or 'Main Wallet'"
+         />
+         {errors.label && (
+           <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
+             <AlertCircle className="w-4 h-4" />
+             {errors.label}
+           </p>
+         )}
+       </label>
+
+       <label className="block">
+         <span className="text-sm font-medium text-gray-700">Recovery Phrase</span>
+         <p className="text-xs text-gray-500 mt-1">Enter your original wallet's recovery phrase exactly as it was given to you</p>
+         <textarea
+           name="mnemonic"
+           value={formData.mnemonic}
+           onChange={handleInputChange}
+           rows={3}
+           className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
+             errors.mnemonic ? 'border-red-300 bg-red-50' : 'border-gray-200'
+           }`}
+           placeholder="Enter your 12 or 24 word recovery phrase, with words separated by spaces"
+         />
+         {errors.mnemonic && (
+           <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
+             <AlertCircle className="w-4 h-4" />
+             {errors.mnemonic}
+           </p>
+         )}
+       </label>
+
+       <label className="block">
+         <span className="text-sm font-medium text-gray-700">New Password</span>
+         <p className="text-xs text-gray-500 mt-1">Create a new password for this wallet - it doesn't need to match your original</p>
+         <input
+           type="password"
+           name="password"
+           value={formData.password}
+           onChange={handleInputChange}
+           className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
+             errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
+           }`}
+           placeholder="Enter your new password"
+         />
+         {errors.password && (
+           <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
+             <AlertCircle className="w-4 h-4" />
+             {errors.password}
+           </p>
+         )}
+       </label>
+
+       <label className="block">
+         <span className="text-sm font-medium text-gray-700">Repeat New Password</span>
+         <p className="text-xs text-gray-500 mt-1">Repeat your new password to confirm</p>
+         <input
+           type="password"
+           name="repeatPassword"
+           value={formData.repeatPassword}
+           onChange={handleInputChange}
+           className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
+             errors.repeatPassword ? 'border-red-300 bg-red-50' : 'border-gray-200'
+           }`}
+           placeholder="Repeat your new password"
+         />
+         {errors.repeatPassword && (
+           <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
+             <AlertCircle className="w-4 h-4" />
+             {errors.repeatPassword}
+           </p>
+         )}
+       </label>
+     </div>
+   </div>
+
+   <div className="flex justify-end gap-4 pt-8">
+     <button
+       className="px-6 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+       onClick={(e) => {
+         ShutdownApp();
+       }}
+     >
+       Cancel & Close Wallet
+     </button>
+     <button
+       onClick={handleSubmit}
+       disabled={isLoading}
+       className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2"
+     >
+       {isLoading ? (
+         <>
+           <Loader2 className="w-4 h-4 animate-spin" />
+           Importing...
+         </>
+       ) : (
+         <>
+           Import Wallet
+           <ChevronRight className="w-4 h-4" />
+         </>
+       )}
+     </button>
+   </div>
+
          </div>
        )}
      </div>
