@@ -8,7 +8,7 @@ import {
     ListWallets,
     SetDefaultWalletAddress,
     ExportWalletUsingDialog,
-    ImportWalletUsingDialog
+    CreateWallet
 } from "../../../../wailsjs/go/main/App";
 import WalletImportModal from "./ImportWalletModal";
 
@@ -60,30 +60,6 @@ const ListWalletsView = () => {
         });
     };
 
-    // const onImportWallet = (e) => {
-    //     e.preventDefault();
-    //     console.log("onImportWallet: Beginning...");
-    //     ImportWalletUsingDialog()
-    //         .then(() => {
-    //             console.log("ImportWalletUsingDialog: Successfully imported wallet");
-    //             loadWallets(); // Reload the wallet list after import
-    //         })
-    //         .catch((errorJsonString) => {
-    //             console.error("ImportWalletUsingDialog: Error importing wallet:", errorJsonString);
-    //             try {
-    //                 const errorObject = JSON.parse(errorJsonString);
-    //                 let err = {};
-    //                 if (errorObject.filepath !== "") {
-    //                     err.filepath = errorObject.filepath;
-    //                 }
-    //                 setErrors(err);
-    //             } catch (e) {
-    //                 console.error("Error parsing error response:", e);
-    //             }
-    //         });
-    // };
-
-
     const onImportWallet = (e) => {
         e.preventDefault();
         setIsImportModalOpen(true);
@@ -92,8 +68,6 @@ const ListWalletsView = () => {
     const handleImportSubmit = async ({ label, mnemonic, password }) => {
         console.log("onImportWallet: Beginning...");
         try {
-            // Here you would call your actual API instead of ImportWalletUsingDialog
-            // For now, we'll keep using the existing function
             await CreateWallet(mnemonic, password, label);
             console.log("Successfully imported wallet");
             loadWallets();
