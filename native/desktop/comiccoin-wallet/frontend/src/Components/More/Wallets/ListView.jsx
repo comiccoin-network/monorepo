@@ -10,6 +10,7 @@ import {
     ExportWalletUsingDialog,
     ImportWalletUsingDialog
 } from "../../../../wailsjs/go/main/App";
+import WalletImportModal from "./ImportWalletModal";
 
 const ListWalletsView = () => {
     const [currentOpenWalletAtAddress, setCurrentOpenWalletAtAddress] = useRecoilState(currentOpenWalletAtAddressState);
@@ -17,6 +18,7 @@ const ListWalletsView = () => {
     const [wallets, setWallets] = useState([]);
     const [errors, setErrors] = useState({});
     const [forceURL, setForceURL] = useState("");
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
     const loadWallets = () => {
         setIsLoading(true);
@@ -58,27 +60,55 @@ const ListWalletsView = () => {
         });
     };
 
+    // const onImportWallet = (e) => {
+    //     e.preventDefault();
+    //     console.log("onImportWallet: Beginning...");
+    //     ImportWalletUsingDialog()
+    //         .then(() => {
+    //             console.log("ImportWalletUsingDialog: Successfully imported wallet");
+    //             loadWallets(); // Reload the wallet list after import
+    //         })
+    //         .catch((errorJsonString) => {
+    //             console.error("ImportWalletUsingDialog: Error importing wallet:", errorJsonString);
+    //             try {
+    //                 const errorObject = JSON.parse(errorJsonString);
+    //                 let err = {};
+    //                 if (errorObject.filepath !== "") {
+    //                     err.filepath = errorObject.filepath;
+    //                 }
+    //                 setErrors(err);
+    //             } catch (e) {
+    //                 console.error("Error parsing error response:", e);
+    //             }
+    //         });
+    // };
+
+
     const onImportWallet = (e) => {
         e.preventDefault();
+        setIsImportModalOpen(true);
+    };
+
+    const handleImportSubmit = async ({ label, mnemonic, password }) => {
         console.log("onImportWallet: Beginning...");
-        ImportWalletUsingDialog()
-            .then(() => {
-                console.log("ImportWalletUsingDialog: Successfully imported wallet");
-                loadWallets(); // Reload the wallet list after import
-            })
-            .catch((errorJsonString) => {
-                console.error("ImportWalletUsingDialog: Error importing wallet:", errorJsonString);
-                try {
-                    const errorObject = JSON.parse(errorJsonString);
-                    let err = {};
-                    if (errorObject.filepath !== "") {
-                        err.filepath = errorObject.filepath;
-                    }
-                    setErrors(err);
-                } catch (e) {
-                    console.error("Error parsing error response:", e);
+        try {
+            // Here you would call your actual API instead of ImportWalletUsingDialog
+            // For now, we'll keep using the existing function
+            await CreateWallet(mnemonic, password, label);
+            console.log("Successfully imported wallet");
+            loadWallets();
+        } catch (errorJsonString) {
+            console.error("Error importing wallet:", errorJsonString);
+            try {
+                const errorObject = JSON.parse(errorJsonString);
+                if (errorObject.filepath !== "") {
+                    throw new Error(errorObject.filepath);
                 }
-            });
+                throw new Error("Failed to import wallet");
+            } catch (e) {
+                throw new Error(e.message || "Failed to import wallet");
+            }
+        }
     };
 
     if (forceURL !== "") {
@@ -224,6 +254,13 @@ const ListWalletsView = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Modals go here */}
+            <WalletImportModal
+               isOpen={isImportModalOpen}
+               onClose={() => setIsImportModalOpen(false)}
+               onImport={handleImportSubmit}
+           />
         </div>
     );
 };
