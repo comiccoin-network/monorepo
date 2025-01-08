@@ -2,6 +2,8 @@ import {useState, useEffect} from 'react';
 import { Link, Navigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { WalletMinimal, KeyRound, Info, ChevronRight, AlertCircle, XCircle } from 'lucide-react';
+import * as bip39 from '@scure/bip39';
+import { wordlist } from '@scure/bip39/wordlists/english';
 
 import {
     GetDataDirectoryFromPreferences,
@@ -23,10 +25,11 @@ function CreateWalletView() {
 
     const [dataDirectory] = useState("");
     const [forceURL, setForceURL] = useState("");
-
+    const [infoTab, setInfoTab] = useState('password');
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         label: '',
+        mnemonic: '',
         password: '',
         repeatPassword: ''
     });
@@ -43,6 +46,10 @@ function CreateWalletView() {
 
         if (!formData.label.trim()) {
             newErrors.label = 'Wallet label is required';
+        }
+
+        if (!formData.mnemonic.trim()) {
+            newErrors.mnemonic = 'Mnemonic phrase is required';
         }
 
         if (!formData.password) {
@@ -70,7 +77,7 @@ function CreateWalletView() {
           // Update the GUI to let user know that the operation is under way.
           setIsLoading(true);
 
-          CreateWallet(formData.password, formData.repeatPassword, formData.label).then((addressRes)=>{
+          CreateWallet(formData.mnemonic, formData.password, formData.label).then((addressRes)=>{
               console.log("address:", addressRes);
               console.log("currentOpenWalletAtAddress:", currentOpenWalletAtAddress);
               setCurrentOpenWalletAtAddress(addressRes);
@@ -108,6 +115,16 @@ function CreateWalletView() {
         }
     };
 
+    const onGenerateMnemonic = (e) => {
+        e.preventDefault();
+
+        // Generate x random words. Uses Cryptographically-Secure Random Number Generator.
+        const mnemonic = bip39.generateMnemonic(wordlist); // Special thanks to: https://github.com/paulmillr/scure-bip39
+
+        console.log("onGenerateMnemonic: mnemonic:", mnemonic);
+
+        setFormData(prev => ({ ...prev, mnemonic }));
+    }
 
     ////
     //// Misc.
@@ -167,18 +184,60 @@ function CreateWalletView() {
           </div>
 
           <div className="p-6 space-y-8">
+            {/* Combined Info Box with Tabs */}
             <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl">
-              <div className="p-6 flex gap-4">
-                <Info className="w-5 h-5 text-purple-600 flex-shrink-0 mt-1" />
-                <div className="text-sm text-gray-700">
-                  <p className="mb-3">Choose a strong password that:</p>
-                  <ul className="list-disc pl-4 space-y-1">
-                    <li>Is at least 12 characters long</li>
-                    <li>Contains uppercase and lowercase letters</li>
-                    <li>Includes numbers and special characters</li>
-                    <li>Is not used for any other accounts</li>
-                  </ul>
+              <div className="border-b border-purple-100">
+                <div className="flex">
+                  <button
+                    onClick={() => setInfoTab('password')}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 ${
+                      infoTab === 'password'
+                        ? 'border-purple-500 text-purple-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Password Guide
+                  </button>
+                  <button
+                    onClick={() => setInfoTab('mnemonic')}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 ${
+                      infoTab === 'mnemonic'
+                        ? 'border-purple-500 text-purple-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Mnemonic Guide
+                  </button>
                 </div>
+              </div>
+              <div className="p-6">
+                {infoTab === 'password' ? (
+                  <div className="flex gap-4">
+                    <Info className="w-5 h-5 text-purple-600 flex-shrink-0 mt-1" />
+                    <div className="text-sm text-gray-700">
+                      <p className="mb-3">Choose a strong password that:</p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Is at least 12 characters long</li>
+                        <li>Contains uppercase and lowercase letters</li>
+                        <li>Includes numbers and special characters</li>
+                        <li>Is not used for any other accounts</li>
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-4">
+                    <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-1" />
+                    <div className="text-sm text-amber-800">
+                      <p className="mb-3">Important information about your mnemonic phrase:</p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Write down your phrase and keep it safe</li>
+                        <li>Never share it with anyone</li>
+                        <li>Lost phrases cannot be recovered</li>
+                        <li>All funds will be lost if you lose the phrase</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -200,6 +259,35 @@ function CreateWalletView() {
                     <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" />
                       {errors.label}
+                    </p>
+                  )}
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-medium text-gray-700">Mnemonic Phrase</span>
+                  <div className="mt-1 flex gap-2">
+                    <textarea
+                      name="mnemonic"
+                      value={formData.mnemonic}
+                      readOnly
+                      rows={2}
+                      className={`block w-full px-4 py-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors resize-none ${
+                        errors.mnemonic ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                      }`}
+                      placeholder="Your mnemonic phrase will appear here"
+                    />
+                    <button
+                      onClick={onGenerateMnemonic}
+                      type="button"
+                      className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Generate
+                    </button>
+                  </div>
+                  {errors.mnemonic && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.mnemonic}
                     </p>
                   )}
                 </label>
@@ -243,14 +331,6 @@ function CreateWalletView() {
                     </p>
                   )}
                 </label>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-100 rounded-xl">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800">
-                  Write down your password and keep it safe. If you lose your password,
-                  you will not be able to access your wallet and your funds will be lost forever.
-                </p>
               </div>
             </div>
 
