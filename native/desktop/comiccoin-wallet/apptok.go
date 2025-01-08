@@ -46,14 +46,11 @@ func (a *App) TransferToken(
 	}
 	// defer password.Wipe() // Developers Note: Commented out b/c they are causing problems with our app.
 
-	path := "m/44'/60'/0'/0/0" //TODO: Impl.
-
 	tokenTransferErr := a.tokenTransferService.Execute(
 		a.ctx,
 		preferences.ChainID,
 		senderAccountAddr,
 		password,
-		path,
 		toRecipientAddr,
 		tokenID,
 	)
@@ -163,14 +160,11 @@ func (a *App) BurnToken(
 	}
 	// defer password.Wipe() // Developers Note: Commented out b/c they are causing problems with our app.
 
-	path := "m/44'/60'/0'/0/0" //TODO: Impl.
-
 	tokenBurnErr := a.tokenBurnService.Execute(
 		a.ctx,
 		preferences.ChainID,
 		senderAccountAddr,
 		password,
-		path,
 		tokenID,
 	)
 	if tokenBurnErr != nil {

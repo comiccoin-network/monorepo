@@ -30,7 +30,7 @@ type TokenBurnService struct {
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *usecase.GetAccountUseCase
 	getWalletUseCase                                        *usecase.GetWalletUseCase
-	openWalletFromMnemonicUseCase                           *usecase.OpenWalletFromMnemonicUseCase //TODO: Replace
+	decryptWalletUseCase                                    *usecase.DecryptWalletUseCase
 	getTokenUseCase                                         *usecase.GetTokenUseCase
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }
@@ -45,7 +45,7 @@ func NewTokenBurnService(
 	uc6 *usecase.UpsertPendingSignedTransactionUseCase,
 	uc7 *usecase.GetAccountUseCase,
 	uc8 *usecase.GetWalletUseCase,
-	uc9 *usecase.OpenWalletFromMnemonicUseCase,
+	uc9 *usecase.DecryptWalletUseCase,
 	uc10 *usecase.GetTokenUseCase,
 	uc11 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 ) *TokenBurnService {
@@ -56,15 +56,13 @@ func (s *TokenBurnService) Execute(
 	ctx context.Context,
 	chainID uint16,
 	fromAccountAddress *common.Address,
-	accountWalletMnemonic *sstring.SecureString,
-	accountWalletPath string,
+	accountWalletPassword *sstring.SecureString,
 	tokenID *big.Int,
 ) error {
 	s.logger.Debug("Validating...",
 		slog.Any("chain_id", chainID),
 		slog.Any("from_account_address", fromAccountAddress),
-		slog.Any("account_wallet_mnemonic", accountWalletMnemonic),
-		slog.Any("account_wallet_path", accountWalletPath),
+		slog.Any("account_wallet_password", accountWalletPassword),
 		slog.Any("tokenID", tokenID),
 	)
 
@@ -76,11 +74,8 @@ func (s *TokenBurnService) Execute(
 	if fromAccountAddress == nil {
 		e["from_account_address"] = "missing value"
 	}
-	if accountWalletMnemonic == nil {
-		e["token_owner_wallet_mnemonic"] = "missing value"
-	}
-	if accountWalletPath == "" {
-		e["token_owner_wallet_path"] = "missing value"
+	if accountWalletPassword == nil {
+		e["account_wallet_password"] = "missing value"
 	}
 	if tokenID == nil {
 		e["token_id"] = "missing value"
@@ -128,7 +123,14 @@ func (s *TokenBurnService) Execute(
 	}
 	txFee := genesis.Header.TransactionFee
 
-	ethAccount, wallet, err := s.openWalletFromMnemonicUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
+	encryptedWallet, err := s.getWalletUseCase.Execute(ctx, fromAccountAddress)
+	if err != nil {
+		s.logger.Error("failed getting encrypted wallet",
+			slog.Any("error", err))
+		return fmt.Errorf("failed getting encrypted wallet: %s", err)
+	}
+
+	ethAccount, wallet, err := s.decryptWalletUseCase.Execute(ctx, encryptedWallet.KeystoreBytes, accountWalletPassword)
 	if err != nil {
 		s.logger.Error("failed decrypting wallet",
 			slog.Any("error", err))
@@ -138,7 +140,7 @@ func (s *TokenBurnService) Execute(
 	if wallet == nil {
 		return fmt.Errorf("failed decrypting wallet: %s", "d.n.e.")
 	}
-	privateKey, err := wallet.PrivateKey(*ethAccount)
+	privateKey, err := wallet.PrivateKey(ethAccount)
 	if err != nil {
 		s.logger.Error("failed getting wallet private key",
 			slog.Any("error", err))

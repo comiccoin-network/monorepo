@@ -71,14 +71,11 @@ func (a *App) TransferCoin(
 	}
 	// defer password.Wipe()  Developers Note: Commented out b/c they are causing problems with our app.
 
-	path := "m/44'/60'/0'/0/0" //TODO: Impl.
-
 	coinTransferErr := a.coinTransferService.Execute(
 		a.ctx,
 		preferences.ChainID,
 		senderAccountAddr,
 		password,
-		path,
 		toRecipientAddr,
 		coins,
 		[]byte(message),

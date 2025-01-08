@@ -12,8 +12,7 @@ import (
 type TokenBurnArgs struct {
 	ChainID               uint16
 	FromAccountAddress    *common.Address
-	AccountWalletMnemonic string
-	AccountWalletPath     string
+	AccountWalletPassword string
 	TokenID               *big.Int
 }
 
@@ -21,7 +20,7 @@ type TokenBurnReply struct {
 }
 
 func (impl *ComicCoinRPCServer) TokenBurn(args *TokenBurnArgs, reply *TokenBurnReply) error {
-	mnemonic, secureErr := sstring.NewSecureString(args.AccountWalletMnemonic)
+	pass, secureErr := sstring.NewSecureString(args.AccountWalletPassword)
 	if secureErr != nil {
 		return secureErr
 	}
@@ -29,8 +28,7 @@ func (impl *ComicCoinRPCServer) TokenBurn(args *TokenBurnArgs, reply *TokenBurnR
 		context.Background(),
 		args.ChainID,
 		args.FromAccountAddress,
-		mnemonic,
-		args.AccountWalletPath,
+		pass,
 		args.TokenID,
 	)
 	if err != nil {

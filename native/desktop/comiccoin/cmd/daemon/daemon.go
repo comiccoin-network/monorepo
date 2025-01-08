@@ -178,7 +178,6 @@ func doRunDaemonCmd() {
 	decryptWalletUseCase := usecase.NewDecryptWalletUseCase(
 		logger,
 		keystore)
-	_ = decryptWalletUseCase
 
 	// Wallet
 	createWalletUseCase := usecase.NewCreateWalletUseCase(
@@ -350,7 +349,7 @@ func doRunDaemonCmd() {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		openWalletFromMnemonicUseCase,
+		decryptWalletUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
 	tokenGetService := service.NewTokenGetService(
@@ -367,7 +366,7 @@ func doRunDaemonCmd() {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		openWalletFromMnemonicUseCase,
+		decryptWalletUseCase,
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
@@ -381,7 +380,7 @@ func doRunDaemonCmd() {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		openWalletFromMnemonicUseCase,
+		decryptWalletUseCase,
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)

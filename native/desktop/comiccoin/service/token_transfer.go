@@ -30,7 +30,7 @@ type TokenTransferService struct {
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *usecase.GetAccountUseCase
 	getWalletUseCase                                        *usecase.GetWalletUseCase
-	openWalletFromMnemonicUseCase                           *usecase.OpenWalletFromMnemonicUseCase //TODO: Replace
+	decryptWalletUseCase                                    *usecase.DecryptWalletUseCase
 	getTokenUseCase                                         *usecase.GetTokenUseCase
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }
@@ -45,7 +45,7 @@ func NewTokenTransferService(
 	uc6 *usecase.UpsertPendingSignedTransactionUseCase,
 	uc7 *usecase.GetAccountUseCase,
 	uc8 *usecase.GetWalletUseCase,
-	uc9 *usecase.OpenWalletFromMnemonicUseCase,
+	uc9 *usecase.DecryptWalletUseCase,
 	uc10 *usecase.GetTokenUseCase,
 	uc11 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 ) *TokenTransferService {
@@ -56,16 +56,14 @@ func (s *TokenTransferService) Execute(
 	ctx context.Context,
 	chainID uint16,
 	fromAccountAddress *common.Address,
-	accountWalletMnemonic *sstring.SecureString,
-	accountWalletPath string,
+	accountWalletPassword *sstring.SecureString,
 	to *common.Address,
 	tokenID *big.Int,
 ) error {
 	s.logger.Debug("Validating...",
 		slog.Any("chain_id", chainID),
 		slog.Any("from_account_address", fromAccountAddress),
-		slog.Any("account_wallet_mnemonic", accountWalletMnemonic),
-		slog.Any("account_wallet_path", accountWalletPath),
+		slog.Any("account_wallet_password", accountWalletPassword),
 		slog.Any("to", to),
 		slog.Any("tokenID", tokenID),
 	)
@@ -78,11 +76,8 @@ func (s *TokenTransferService) Execute(
 	if fromAccountAddress == nil {
 		e["from_account_address"] = "missing value"
 	}
-	if accountWalletMnemonic == nil {
-		e["account_wallet_mnemonic"] = "missing value"
-	}
-	if accountWalletPath == "" {
-		e["account_wallet_path"] = "missing value"
+	if accountWalletPassword == nil {
+		e["account_wallet_password"] = "missing value"
 	}
 	if to == nil {
 		e["to"] = "missing value"
@@ -130,7 +125,15 @@ func (s *TokenTransferService) Execute(
 	// STEP 2: Get the account and extract the wallet private/public key.
 	//
 
-	ethAccount, wallet, err := s.openWalletFromMnemonicUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
+	encryptedWallet, err := s.getWalletUseCase.Execute(ctx, fromAccountAddress)
+	if err != nil {
+		s.logger.Error("failed getting encrypted wallet",
+			slog.Any("error", err))
+		s.storageTransactionDiscardUseCase.Execute()
+		return fmt.Errorf("failed getting encrypted wallet: %s", err)
+	}
+
+	ethAccount, wallet, err := s.decryptWalletUseCase.Execute(ctx, encryptedWallet.KeystoreBytes, accountWalletPassword)
 	if err != nil {
 		s.logger.Error("failed decrypting wallet",
 			slog.Any("error", err))
@@ -141,7 +144,7 @@ func (s *TokenTransferService) Execute(
 		s.storageTransactionDiscardUseCase.Execute()
 		return fmt.Errorf("failed decrypting wallet: %s", "d.n.e.")
 	}
-	privateKey, err := wallet.PrivateKey(*ethAccount)
+	privateKey, err := wallet.PrivateKey(ethAccount)
 	if err != nil {
 		s.logger.Error("failed getting wallet private key",
 			slog.Any("error", err))
