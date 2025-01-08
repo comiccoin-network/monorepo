@@ -97,3 +97,7 @@ func (a *App) ImportWalletUsingDialog() error {
 
 	return a.importWalletService.Execute(a.ctx, filepath)
 }
+
+func (a *App) ExportWalletMnemonicPhrase(walletAddressStr string, walletPassword string) (string, error) {
+	return "lalalalala", nil //TODO: Implement.
+}

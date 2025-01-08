@@ -7,10 +7,11 @@ import { currentOpenWalletAtAddressState } from "../../../AppState";
 import {
     ListWallets,
     SetDefaultWalletAddress,
-    ExportWalletUsingDialog,
+    ExportWalletMnemonicPhrase,
     CreateWallet
 } from "../../../../wailsjs/go/main/App";
 import WalletImportModal from "./ImportWalletModal";
+import ExportWalletModal from "./ExportWalletModal";
 
 const ListWalletsView = () => {
     const [currentOpenWalletAtAddress, setCurrentOpenWalletAtAddress] = useRecoilState(currentOpenWalletAtAddressState);
@@ -19,6 +20,9 @@ const ListWalletsView = () => {
     const [errors, setErrors] = useState({});
     const [forceURL, setForceURL] = useState("");
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [selectedWalletAddress, setSelectedWalletAddress] = useState(null);
 
     const loadWallets = () => {
         setIsLoading(true);
@@ -52,14 +56,6 @@ const ListWalletsView = () => {
         });
     };
 
-    const onExportWallet = (walletAddress, e) => {
-        e.preventDefault(); // Prevent navigation
-        console.log("Exporting wallet:", walletAddress);
-        ExportWalletUsingDialog(walletAddress).catch((error) => {
-            console.error("Error exporting wallet:", error);
-        });
-    };
-
     const onImportWallet = (e) => {
         e.preventDefault();
         setIsImportModalOpen(true);
@@ -82,6 +78,25 @@ const ListWalletsView = () => {
             } catch (e) {
                 throw new Error(e.message || "Failed to import wallet");
             }
+        }
+    };
+
+    const onExportWallet = (walletAddress, e) => {
+        e.preventDefault();
+        console.log("onExportWallet: walletAddress:", walletAddress);
+        setSelectedWalletAddress(walletAddress);
+        setIsExportModalOpen(true);
+    };
+
+    const handleExportSubmit = async ({ password }) => {
+        try {
+            console.log("handleExportSubmit: submitting", selectedWalletAddress, password);
+            const response = await ExportWalletMnemonicPhrase(selectedWalletAddress, password);
+            console.log("handleExportSubmit: response", response);
+            return { mnemonic: response }; // Adjust based on your API response
+        } catch (error) {
+            console.error("handleExportSubmit: Error exporting wallet:", error);
+            throw new Error('Invalid password');
         }
     };
 
@@ -235,6 +250,12 @@ const ListWalletsView = () => {
                onClose={() => setIsImportModalOpen(false)}
                onImport={handleImportSubmit}
            />
+           <ExportWalletModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                onExport={handleExportSubmit}
+                walletLabel={selectedWalletAddress}
+            />
         </div>
     );
 };

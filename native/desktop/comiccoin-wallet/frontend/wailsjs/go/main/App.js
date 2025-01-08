@@ -22,6 +22,10 @@ export function DefaultWalletAddress() {
   return window['go']['main']['App']['DefaultWalletAddress']();
 }
 
+export function ExportWalletMnemonicPhrase(arg1, arg2) {
+  return window['go']['main']['App']['ExportWalletMnemonicPhrase'](arg1, arg2);
+}
+
 export function ExportWalletUsingDialog(arg1) {
   return window['go']['main']['App']['ExportWalletUsingDialog'](arg1);
 }
