@@ -197,15 +197,20 @@ func (a *App) startup(ctx context.Context) {
 		tokRepo,
 		pstxRepo)
 
-	// Wallet
-	walletDecryptKeyUseCase := usecase.NewWalletDecryptKeyUseCase(
+	// Wallet Utility
+	openWalletFromMnemonicUseCase := usecase.NewOpenWalletFromMnemonicUseCase(
 		logger,
-		keystore,
-		walletRepo)
-	walletEncryptKeyUseCase := usecase.NewWalletEncryptKeyUseCase(
-		logger,
-		keystore,
-		walletRepo)
+		keystore)
+
+	// // Wallet
+	// walletDecryptKeyUseCase := usecase.NewWalletDecryptKeyUseCase(
+	// 	logger,
+	// 	keystore,
+	// 	walletRepo)
+	// walletEncryptKeyUseCase := usecase.NewWalletEncryptKeyUseCase(
+	// 	logger,
+	// 	keystore,
+	// 	walletRepo)
 	createWalletUseCase := usecase.NewCreateWalletUseCase(
 		logger,
 		walletRepo)
@@ -367,8 +372,7 @@ func (a *App) startup(ctx context.Context) {
 	)
 	createAccountService := service.NewCreateAccountService(
 		logger,
-		walletEncryptKeyUseCase,
-		walletDecryptKeyUseCase,
+		openWalletFromMnemonicUseCase,
 		createWalletUseCase,
 		createAccountUseCase,
 		getAccountUseCase,
@@ -388,7 +392,7 @@ func (a *App) startup(ctx context.Context) {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		walletDecryptKeyUseCase,
+		openWalletFromMnemonicUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
 	tokenGetService := service.NewTokenGetService(
@@ -405,7 +409,7 @@ func (a *App) startup(ctx context.Context) {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		walletDecryptKeyUseCase,
+		openWalletFromMnemonicUseCase,
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
@@ -419,7 +423,7 @@ func (a *App) startup(ctx context.Context) {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		walletDecryptKeyUseCase,
+		openWalletFromMnemonicUseCase,
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
