@@ -30,7 +30,7 @@ type TokenBurnService struct {
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *usecase.GetAccountUseCase
 	getWalletUseCase                                        *usecase.GetWalletUseCase
-	walletDecryptKeyUseCase                                 *usecase.WalletDecryptKeyUseCase
+	openWalletFromMnemonicUseCase                           *usecase.OpenWalletFromMnemonicUseCase
 	getTokenUseCase                                         *usecase.GetTokenUseCase
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }
@@ -45,7 +45,7 @@ func NewTokenBurnService(
 	uc6 *usecase.UpsertPendingSignedTransactionUseCase,
 	uc7 *usecase.GetAccountUseCase,
 	uc8 *usecase.GetWalletUseCase,
-	uc9 *usecase.WalletDecryptKeyUseCase,
+	uc9 *usecase.OpenWalletFromMnemonicUseCase,
 	uc10 *usecase.GetTokenUseCase,
 	uc11 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 ) *TokenBurnService {
@@ -128,7 +128,7 @@ func (s *TokenBurnService) Execute(
 	}
 	txFee := genesis.Header.TransactionFee
 
-	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
+	ethAccount, wallet, err := s.openWalletFromMnemonicUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
 	if err != nil {
 		s.logger.Error("failed decrypting wallet",
 			slog.Any("error", err))

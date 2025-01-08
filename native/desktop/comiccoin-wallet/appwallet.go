@@ -22,22 +22,17 @@ func (a *App) ListWallets() ([]*domain.Wallet, error) {
 }
 
 func (a *App) CreateWallet(walletPassword, walletPasswordRepeated, walletLabel string) (string, error) {
-	pass, err := sstring.NewSecureString(walletPassword)
+	pass, err := sstring.NewSecureString(walletPassword) //TODO: IMPL.
 	if err != nil {
 		a.logger.Error("Failed securing password",
 			slog.Any("error", err))
 		return "", err
 	}
 	// defer pass.Wipe() // Developers Note: Commented out b/c they are causing problems with our app.
-	passRepeated, err := sstring.NewSecureString(walletPasswordRepeated)
-	if err != nil {
-		a.logger.Error("Failed securing password repeated",
-			slog.Any("error", err))
-		return "", err
-	}
-	// defer passRepeated.Wipe() // Developers Note: Commented out b/c they are causing problems with our app.
 
-	account, err := a.createAccountService.Execute(a.ctx, pass, passRepeated, walletLabel)
+	path := "m/44'/60'/0'/0/0" //TODO: Impl.
+
+	account, err := a.createAccountService.Execute(a.ctx, pass, path, walletLabel)
 	if err != nil {
 		a.logger.Error("failed creating wallet", slog.Any("error", err))
 		return "", err

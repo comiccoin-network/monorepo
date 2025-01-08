@@ -61,7 +61,7 @@ func (a *App) TransferCoin(
 
 	preferences := PreferencesInstance()
 
-	password, err := sstring.NewSecureString(senderAccountPassword)
+	password, err := sstring.NewSecureString(senderAccountPassword) //TODO: IMPL.
 	if err != nil {
 		e := make(map[string]string)
 		e["senderAccountPassword"] = "missing value"
@@ -71,11 +71,14 @@ func (a *App) TransferCoin(
 	}
 	// defer password.Wipe()  Developers Note: Commented out b/c they are causing problems with our app.
 
+	path := "m/44'/60'/0'/0/0" //TODO: Impl.
+
 	coinTransferErr := a.coinTransferService.Execute(
 		a.ctx,
 		preferences.ChainID,
 		senderAccountAddr,
 		password,
+		path,
 		toRecipientAddr,
 		coins,
 		[]byte(message),

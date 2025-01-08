@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
@@ -105,7 +105,7 @@ func (a *App) startup(ctx context.Context) {
 	// ------ Common ------
 
 	logger := logger.NewProvider()
-	keystore := keystore.NewAdapter()
+	keystore := hdkeystore.NewAdapter()
 	memDB := inmemory.NewInMemoryStorage(logger)
 	walletDB := disk.NewDiskStorage(dataDir, "wallet", logger)
 	accountDB := disk.NewDiskStorage(dataDir, "account", logger)

@@ -1,11 +1,18 @@
 package hdkeystore
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"github.com/tyler-smith/go-bip39"
+	"golang.org/x/crypto/pbkdf2"
 
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 )
@@ -14,6 +21,8 @@ type KeystoreAdapter interface {
 	GenerateMnemonic() (string, error)
 	OpenWallet(mnemonic *sstring.SecureString, path string) (accounts.Account, *hdwallet.Wallet, error)
 	OpenWalletWithPassphrase(mnemonic *sstring.SecureString, passphrase *sstring.SecureString, path string) (accounts.Account, *hdwallet.Wallet, error)
+	EncryptWallet(mnemonic *sstring.SecureString, path string, password string) ([]byte, error)
+	DecryptWallet(cryptData []byte, password string) (accounts.Account, *hdwallet.Wallet, error)
 }
 
 type keystoreAdapterImpl struct{}
@@ -64,4 +73,100 @@ func (impl *keystoreAdapterImpl) OpenWalletWithPassphrase(mnemonic *sstring.Secu
 	}
 
 	return account, wallet, nil
+}
+
+type encryptedWallet struct {
+	Salt          []byte `json:"salt"`
+	EncryptedData []byte `json:"encrypted_data"`
+	Nonce         []byte `json:"nonce"`
+}
+
+type walletData struct {
+	Mnemonic string `json:"mnemonic"`
+	Path     string `json:"path"`
+}
+
+const (
+	keySize    = 32
+	saltSize   = 32
+	iterations = 100000
+)
+
+func (impl *keystoreAdapterImpl) EncryptWallet(mnemonic *sstring.SecureString, path string, password string) ([]byte, error) {
+	salt := make([]byte, saltSize)
+	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
+		return nil, fmt.Errorf("failed to generate salt: %v", err)
+	}
+
+	key := pbkdf2.Key([]byte(password), salt, iterations, keySize, sha256.New)
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create cipher: %v", err)
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create GCM: %v", err)
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return nil, fmt.Errorf("failed to generate nonce: %v", err)
+	}
+
+	data := walletData{
+		Mnemonic: mnemonic.String(),
+		Path:     path,
+	}
+
+	plaintext, err := json.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal wallet data: %v", err)
+	}
+
+	ciphertext := gcm.Seal(nil, nonce, plaintext, nil)
+
+	encWallet := encryptedWallet{
+		Salt:          salt,
+		EncryptedData: ciphertext,
+		Nonce:         nonce,
+	}
+
+	return json.Marshal(encWallet)
+}
+
+func (impl *keystoreAdapterImpl) DecryptWallet(cryptData []byte, password string) (accounts.Account, *hdwallet.Wallet, error) {
+	var encWallet encryptedWallet
+	if err := json.Unmarshal(cryptData, &encWallet); err != nil {
+		return accounts.Account{}, nil, fmt.Errorf("failed to unmarshal encrypted wallet: %v", err)
+	}
+
+	key := pbkdf2.Key([]byte(password), encWallet.Salt, iterations, keySize, sha256.New)
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return accounts.Account{}, nil, fmt.Errorf("failed to create cipher: %v", err)
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return accounts.Account{}, nil, fmt.Errorf("failed to create GCM: %v", err)
+	}
+
+	plaintext, err := gcm.Open(nil, encWallet.Nonce, encWallet.EncryptedData, nil)
+	if err != nil {
+		return accounts.Account{}, nil, fmt.Errorf("failed to decrypt wallet: %v", err)
+	}
+
+	var walletData walletData
+	if err := json.Unmarshal(plaintext, &walletData); err != nil {
+		return accounts.Account{}, nil, fmt.Errorf("failed to unmarshal wallet data: %v", err)
+	}
+
+	secureMnemonic, err := sstring.NewSecureString(walletData.Mnemonic)
+	if err != nil {
+		return accounts.Account{}, nil, fmt.Errorf("failed to secure mnemonic: %v", err)
+	}
+	return impl.OpenWallet(secureMnemonic, walletData.Path)
 }

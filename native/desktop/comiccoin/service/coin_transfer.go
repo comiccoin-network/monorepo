@@ -29,7 +29,7 @@ type CoinTransferService struct {
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *usecase.GetAccountUseCase
 	getWalletUseCase                                        *usecase.GetWalletUseCase
-	walletDecryptKeyUseCase                                 *usecase.WalletDecryptKeyUseCase
+	openWalletFromMnemonicUseCase                           *usecase.OpenWalletFromMnemonicUseCase
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }
 
@@ -43,7 +43,7 @@ func NewCoinTransferService(
 	uc6 *usecase.UpsertPendingSignedTransactionUseCase,
 	uc7 *usecase.GetAccountUseCase,
 	uc8 *usecase.GetWalletUseCase,
-	uc9 *usecase.WalletDecryptKeyUseCase,
+	uc9 *usecase.OpenWalletFromMnemonicUseCase,
 	uc10 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 ) *CoinTransferService {
 	return &CoinTransferService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10}
@@ -136,7 +136,7 @@ func (s *CoinTransferService) Execute(
 	// STEP 2: Get the account and extract the wallet private/public key.
 	//
 
-	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
+	ethAccount, wallet, err := s.openWalletFromMnemonicUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
 	if err != nil {
 		s.logger.Error("failed decrypting wallet",
 			slog.Any("error", err))

@@ -136,3 +136,52 @@ func TestOpenWalletWithPassphrase(t *testing.T) {
 		assert.NotEqual(t, account1.Address, account2.Address)
 	})
 }
+
+func TestEncryptDecryptWallet(t *testing.T) {
+	adapter := NewAdapter()
+	validPath := "m/44'/60'/0'/0/0"
+	password := "testPassword123"
+
+	t.Run("successful encrypt and decrypt", func(t *testing.T) {
+		// Generate mnemonic and create original wallet
+		mnemonic, err := adapter.GenerateMnemonic()
+		assert.NoError(t, err)
+		secureMnemonic, err := sstring.NewSecureString(mnemonic)
+		assert.NoError(t, err)
+
+		originalAccount, _, err := adapter.OpenWallet(secureMnemonic, validPath)
+		assert.NoError(t, err)
+
+		// Encrypt the wallet
+		encryptedData, err := adapter.EncryptWallet(secureMnemonic, validPath, password)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, encryptedData)
+
+		// Decrypt the wallet
+		decryptedAccount, decryptedWallet, err := adapter.DecryptWallet(encryptedData, password)
+		assert.NoError(t, err)
+		assert.NotNil(t, decryptedWallet)
+
+		// Verify decrypted wallet matches original
+		assert.Equal(t, originalAccount.Address, decryptedAccount.Address)
+	})
+
+	t.Run("decrypt with wrong password", func(t *testing.T) {
+		mnemonic, err := adapter.GenerateMnemonic()
+		assert.NoError(t, err)
+		secureMnemonic, err := sstring.NewSecureString(mnemonic)
+		assert.NoError(t, err)
+
+		encryptedData, err := adapter.EncryptWallet(secureMnemonic, validPath, password)
+		assert.NoError(t, err)
+
+		// Try to decrypt with wrong password
+		_, _, err = adapter.DecryptWallet(encryptedData, "wrongpassword")
+		assert.Error(t, err)
+	})
+
+	t.Run("decrypt corrupted data", func(t *testing.T) {
+		_, _, err := adapter.DecryptWallet([]byte("corrupted data"), password)
+		assert.Error(t, err)
+	})
+}

@@ -14,23 +14,21 @@ import (
 )
 
 type CreateAccountService struct {
-	logger                  *slog.Logger
-	walletEncryptKeyUseCase *usecase.WalletEncryptKeyUseCase
-	walletDecryptKeyUseCase *usecase.WalletDecryptKeyUseCase
-	createWalletUseCase     *usecase.CreateWalletUseCase
-	createAccountUseCase    *usecase.CreateAccountUseCase
-	getAccountUseCase       *usecase.GetAccountUseCase
+	logger                        *slog.Logger
+	openWalletFromMnemonicUseCase *usecase.OpenWalletFromMnemonicUseCase
+	createWalletUseCase           *usecase.CreateWalletUseCase
+	createAccountUseCase          *usecase.CreateAccountUseCase
+	getAccountUseCase             *usecase.GetAccountUseCase
 }
 
 func NewCreateAccountService(
 	logger *slog.Logger,
-	uc1 *usecase.WalletEncryptKeyUseCase,
-	uc2 *usecase.WalletDecryptKeyUseCase,
-	uc3 *usecase.CreateWalletUseCase,
-	uc4 *usecase.CreateAccountUseCase,
-	uc5 *usecase.GetAccountUseCase,
+	uc1 *usecase.OpenWalletFromMnemonicUseCase,
+	uc2 *usecase.CreateWalletUseCase,
+	uc3 *usecase.CreateAccountUseCase,
+	uc4 *usecase.GetAccountUseCase,
 ) *CreateAccountService {
-	return &CreateAccountService{logger, uc1, uc2, uc3, uc4, uc5}
+	return &CreateAccountService{logger, uc1, uc2, uc3, uc4}
 }
 
 func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstring.SecureString, walletPath string, walletLabel string) (*domain.Account, error) {
@@ -52,31 +50,19 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 	}
 
 	//
-	// STEP 2:
-	// Create the encrypted physical wallet on file.
-	//
-
-	walletAddress, _, err := s.walletEncryptKeyUseCase.Execute(ctx, walletMnemonic, walletPath)
-	if err != nil {
-		s.logger.Error("failed creating new keystore",
-			slog.Any("error", err))
-		return nil, fmt.Errorf("failed creating new keystore: %s", err)
-	}
-
-	s.logger.Debug("Created new wallet for account",
-		slog.Any("wallet_address", walletAddress))
-
-	//
 	// STEP 3:
 	// Decrypt the wallet so we can extract data from it.
 	//
 
-	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(ctx, walletMnemonic, walletPath)
+	ethAccount, wallet, err := s.openWalletFromMnemonicUseCase.Execute(ctx, walletMnemonic, walletPath)
 	if err != nil {
 		s.logger.Error("failed getting wallet key",
 			slog.Any("error", err))
 		return nil, fmt.Errorf("failed getting wallet key: %s", err)
 	}
+
+	s.logger.Debug("Created new wallet for account",
+		slog.Any("wallet_address", ethAccount.Address.Hex()))
 
 	val := struct {
 		name string
@@ -110,7 +96,7 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 	if ethAccount.Address.Hex() != addressFromSig {
 		s.logger.Error("address from signature does not match the wallet address",
 			slog.Any("addressFromSig", addressFromSig),
-			slog.Any("walletAddress", walletAddress.Address.Hex()))
+			slog.Any("walletAddress", ethAccount.Address.Hex()))
 		return nil, fmt.Errorf("address from signature at %v does not match the wallet address of %v", addressFromSig, ethAccount.Address.Hex())
 	}
 
@@ -145,7 +131,7 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 	//
 
 	s.logger.Debug("Finished creating new account",
-		slog.Any("address", walletAddress))
+		slog.Any("address", ethAccount.Address.Hex()))
 
 	acc, err := s.getAccountUseCase.Execute(ctx, &ethAccount.Address)
 	if err != nil {

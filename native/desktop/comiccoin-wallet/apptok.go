@@ -38,7 +38,7 @@ func (a *App) TransferToken(
 		senderAccountAddr = &sender
 	}
 
-	password, err := sstring.NewSecureString(senderAccountPassword)
+	password, err := sstring.NewSecureString(senderAccountPassword) //TODO: IMPL.
 	if err != nil {
 		a.logger.Error("Failed securing password",
 			slog.Any("error", err))
@@ -46,11 +46,14 @@ func (a *App) TransferToken(
 	}
 	// defer password.Wipe() // Developers Note: Commented out b/c they are causing problems with our app.
 
+	path := "m/44'/60'/0'/0/0" //TODO: Impl.
+
 	tokenTransferErr := a.tokenTransferService.Execute(
 		a.ctx,
 		preferences.ChainID,
 		senderAccountAddr,
 		password,
+		path,
 		toRecipientAddr,
 		tokenID,
 	)
@@ -160,11 +163,14 @@ func (a *App) BurnToken(
 	}
 	// defer password.Wipe() // Developers Note: Commented out b/c they are causing problems with our app.
 
+	path := "m/44'/60'/0'/0/0" //TODO: Impl.
+
 	tokenBurnErr := a.tokenBurnService.Execute(
 		a.ctx,
 		preferences.ChainID,
 		senderAccountAddr,
 		password,
+		path,
 		tokenID,
 	)
 	if tokenBurnErr != nil {
