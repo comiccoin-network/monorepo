@@ -5,56 +5,53 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/ethereum/go-ethereum/accounts/keystore"
-
-	pkgkeystore "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/keystore"
+	hdkeystore "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/ethereum/go-ethereum/accounts"
+	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 )
 
 type AccountDecryptKeyUseCase struct {
 	logger   *slog.Logger
-	keystore pkgkeystore.KeystoreAdapter
+	keystore hdkeystore.KeystoreAdapter
 	repo     domain.AccountRepository
 }
 
 func NewAccountDecryptKeyUseCase(
 	logger *slog.Logger,
-	keystore pkgkeystore.KeystoreAdapter,
+	keystore hdkeystore.KeystoreAdapter,
 	repo domain.AccountRepository,
 ) *AccountDecryptKeyUseCase {
 	return &AccountDecryptKeyUseCase{logger, keystore, repo}
 }
 
-func (uc *AccountDecryptKeyUseCase) Execute(ctx context.Context, walletKeystoreBytes []byte, walletPassword *sstring.SecureString) (*keystore.Key, error) {
+func (uc *AccountDecryptKeyUseCase) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if walletKeystoreBytes == nil {
-		e["wallet_keystore_bytes"] = "missing value"
-	}
-	if walletPassword == nil {
-		e["wallet_password"] = "missing value"
+	if mnemonic == nil {
+		e["mnemonic"] = "missing value"
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("Failed reading account key",
+		uc.logger.Warn("Failed reading wallet key",
 			slog.Any("error", e))
-		return nil, httperror.NewForBadRequest(&e)
+		return nil, nil, httperror.NewForBadRequest(&e)
 	}
 
 	//
 	// STEP 2: Decrypt key
 	//
 
-	key, err := uc.keystore.OpenWallet(walletKeystoreBytes, walletPassword)
+	ethereumAccount, wallet, err := uc.keystore.OpenWallet(mnemonic, path)
 	if err != nil {
-		uc.logger.Warn("Failed getting account",
+		uc.logger.Warn("Failed getting wallet key",
 			slog.Any("error", err))
-		return nil, httperror.NewForBadRequestWithSingleField("message", fmt.Sprintf("failed getting wallet: %v", err))
+		return nil, nil, httperror.NewForBadRequestWithSingleField("message", fmt.Sprintf("failed getting wallet key: %v", err))
 	}
 
-	return key, nil
+	return &ethereumAccount, wallet, nil
 }
