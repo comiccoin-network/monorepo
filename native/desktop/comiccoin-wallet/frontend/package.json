@@ -11,6 +11,7 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@scure/bip39": "^1.5.1",
     "bulma": "^1.0.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.468.0",
