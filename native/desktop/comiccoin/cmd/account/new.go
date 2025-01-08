@@ -18,6 +18,7 @@ var (
 	flagLabel         string
 	flagMnemonic      string
 	flagPath          string
+	flagPassword      string
 )
 
 func NewAccountCmd() *cobra.Command {
@@ -37,6 +38,9 @@ func NewAccountCmd() *cobra.Command {
 	cmd.Flags().StringVar(&flagPath, "wallet-path", "", "The path to use when deriving the wallet from the mnemonic phrase")
 	cmd.MarkFlagRequired("wallet-path")
 	cmd.Flags().StringVar(&flagLabel, "wallet-label", "", "The (optional) label to describe the new wallet with")
+	cmd.MarkFlagRequired("wallet-label")
+	cmd.Flags().StringVar(&flagPassword, "wallet-password", "", "The password to encrypt the wallet at rest with")
+	cmd.MarkFlagRequired("wallet-password")
 
 	return cmd
 }
@@ -59,8 +63,12 @@ func doRunNewAccountCmd() error {
 	if err != nil {
 		log.Fatalf("Failed secure mnemonic phrase: %v", err)
 	}
+	pass, err := sstring.NewSecureString(flagPassword)
+	if err != nil {
+		log.Fatalf("Failed secure password: %v", err)
+	}
 
-	account, err := rpcClient.CreateAccount(ctx, mnemonic, flagPath, flagLabel)
+	account, err := rpcClient.CreateAccount(ctx, mnemonic, flagPath, pass, flagLabel)
 	if err != nil {
 		log.Fatalf("Failed creating account: %v\n", err)
 	}

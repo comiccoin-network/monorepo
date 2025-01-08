@@ -11,6 +11,7 @@ import (
 type CreateAccountArgs struct {
 	WalletMnemonic string
 	WalletPath     string
+	WalletPassword string
 	WalletLabel    string
 }
 
@@ -23,7 +24,11 @@ func (impl *ComicCoinRPCServer) CreateAccount(args *CreateAccountArgs, reply *Cr
 	if err != nil {
 		return err
 	}
-	account, err := impl.createAccountService.Execute(context.Background(), mnem, args.WalletPath, args.WalletLabel)
+	pass, err := sstring.NewSecureString(args.WalletPassword)
+	if err != nil {
+		return err
+	}
+	account, err := impl.createAccountService.Execute(context.Background(), mnem, args.WalletPath, pass, args.WalletLabel)
 	if err != nil {
 		return err
 	}

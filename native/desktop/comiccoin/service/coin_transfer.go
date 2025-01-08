@@ -29,7 +29,7 @@ type CoinTransferService struct {
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *usecase.GetAccountUseCase
 	getWalletUseCase                                        *usecase.GetWalletUseCase
-	openWalletFromMnemonicUseCase                           *usecase.OpenWalletFromMnemonicUseCase
+	openWalletFromMnemonicUseCase                           *usecase.OpenWalletFromMnemonicUseCase //TODO: Replace
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }
 

@@ -30,7 +30,7 @@ type TokenBurnService struct {
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *usecase.GetAccountUseCase
 	getWalletUseCase                                        *usecase.GetWalletUseCase
-	openWalletFromMnemonicUseCase                           *usecase.OpenWalletFromMnemonicUseCase
+	openWalletFromMnemonicUseCase                           *usecase.OpenWalletFromMnemonicUseCase //TODO: Replace
 	getTokenUseCase                                         *usecase.GetTokenUseCase
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }

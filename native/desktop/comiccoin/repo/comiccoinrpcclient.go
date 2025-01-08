@@ -135,12 +135,14 @@ func (r *ComicCoincRPCClientRepo) CreateAccount(
 	ctx context.Context,
 	walletMnemonic *sstring.SecureString,
 	walletPath string,
+	walletPassword *sstring.SecureString,
 	walletLabel string,
 ) (*auth_domain.Account, error) {
 	// Define our request / response here by copy and pasting from the server codebase.
 	type CreateAccountArgs struct {
 		WalletMnemonic string
 		WalletPath     string
+		WalletPassword string
 		WalletLabel    string
 	}
 
@@ -153,6 +155,7 @@ func (r *ComicCoincRPCClientRepo) CreateAccount(
 		WalletLabel:    walletLabel,
 		WalletMnemonic: walletMnemonic.String(),
 		WalletPath:     walletPath,
+		WalletPassword: walletPassword.String(),
 	}
 	var reply CreateAccountReply
 

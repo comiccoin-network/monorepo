@@ -143,26 +143,24 @@ func TestEncryptDecryptWallet(t *testing.T) {
 	password := "testPassword123"
 
 	t.Run("successful encrypt and decrypt", func(t *testing.T) {
-		// Generate mnemonic and create original wallet
 		mnemonic, err := adapter.GenerateMnemonic()
 		assert.NoError(t, err)
 		secureMnemonic, err := sstring.NewSecureString(mnemonic)
+		assert.NoError(t, err)
+		securePassword, err := sstring.NewSecureString(password)
 		assert.NoError(t, err)
 
 		originalAccount, _, err := adapter.OpenWallet(secureMnemonic, validPath)
 		assert.NoError(t, err)
 
-		// Encrypt the wallet
-		encryptedData, err := adapter.EncryptWallet(secureMnemonic, validPath, password)
+		encryptedData, err := adapter.EncryptWallet(secureMnemonic, validPath, securePassword)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, encryptedData)
 
-		// Decrypt the wallet
-		decryptedAccount, decryptedWallet, err := adapter.DecryptWallet(encryptedData, password)
+		decryptedAccount, decryptedWallet, err := adapter.DecryptWallet(encryptedData, securePassword)
 		assert.NoError(t, err)
 		assert.NotNil(t, decryptedWallet)
 
-		// Verify decrypted wallet matches original
 		assert.Equal(t, originalAccount.Address, decryptedAccount.Address)
 	})
 
@@ -171,17 +169,22 @@ func TestEncryptDecryptWallet(t *testing.T) {
 		assert.NoError(t, err)
 		secureMnemonic, err := sstring.NewSecureString(mnemonic)
 		assert.NoError(t, err)
-
-		encryptedData, err := adapter.EncryptWallet(secureMnemonic, validPath, password)
+		securePassword, err := sstring.NewSecureString(password)
 		assert.NoError(t, err)
 
-		// Try to decrypt with wrong password
-		_, _, err = adapter.DecryptWallet(encryptedData, "wrongpassword")
+		encryptedData, err := adapter.EncryptWallet(secureMnemonic, validPath, securePassword)
+		assert.NoError(t, err)
+
+		wrongPassword, err := sstring.NewSecureString("wrongpassword")
+		assert.NoError(t, err)
+		_, _, err = adapter.DecryptWallet(encryptedData, wrongPassword)
 		assert.Error(t, err)
 	})
 
 	t.Run("decrypt corrupted data", func(t *testing.T) {
-		_, _, err := adapter.DecryptWallet([]byte("corrupted data"), password)
+		securePassword, err := sstring.NewSecureString(password)
+		assert.NoError(t, err)
+		_, _, err = adapter.DecryptWallet([]byte("corrupted data"), securePassword)
 		assert.Error(t, err)
 	})
 }

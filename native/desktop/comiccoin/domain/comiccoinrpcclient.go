@@ -25,6 +25,7 @@ type ComicCoincRPCClientRepository interface {
 		ctx context.Context,
 		accountWalletMnemonic *sstring.SecureString,
 		accountWalletPath string,
+		accountWalletPassword *sstring.SecureString,
 		label string,
 	) (*auth_domain.Account, error)
 	AccountListingByLocalWallets(ctx context.Context) ([]*auth_domain.Account, error)

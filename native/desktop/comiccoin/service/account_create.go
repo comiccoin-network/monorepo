@@ -16,6 +16,7 @@ import (
 type CreateAccountService struct {
 	logger                        *slog.Logger
 	openWalletFromMnemonicUseCase *usecase.OpenWalletFromMnemonicUseCase
+	encryptWalletUseCase          *usecase.EncryptWalletUseCase
 	createWalletUseCase           *usecase.CreateWalletUseCase
 	createAccountUseCase          *usecase.CreateAccountUseCase
 	getAccountUseCase             *usecase.GetAccountUseCase
@@ -24,14 +25,15 @@ type CreateAccountService struct {
 func NewCreateAccountService(
 	logger *slog.Logger,
 	uc1 *usecase.OpenWalletFromMnemonicUseCase,
-	uc2 *usecase.CreateWalletUseCase,
-	uc3 *usecase.CreateAccountUseCase,
-	uc4 *usecase.GetAccountUseCase,
+	uc2 *usecase.EncryptWalletUseCase,
+	uc3 *usecase.CreateWalletUseCase,
+	uc4 *usecase.CreateAccountUseCase,
+	uc5 *usecase.GetAccountUseCase,
 ) *CreateAccountService {
-	return &CreateAccountService{logger, uc1, uc2, uc3, uc4}
+	return &CreateAccountService{logger, uc1, uc2, uc3, uc4, uc5}
 }
 
-func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstring.SecureString, walletPath string, walletLabel string) (*domain.Account, error) {
+func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstring.SecureString, walletPath string, walletPassword *sstring.SecureString, walletLabel string) (*domain.Account, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -43,6 +45,9 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 	if walletPath == "" {
 		e["wallet_path"] = "Wallet path is required"
 	}
+	if walletPassword == nil {
+		e["wallet_password"] = "Wallet password is required"
+	}
 	if len(e) != 0 {
 		s.logger.Warn("Failed creating new account",
 			slog.Any("error", e))
@@ -50,8 +55,8 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 	}
 
 	//
-	// STEP 3:
-	// Decrypt the wallet so we can extract data from it.
+	// STEP 2:
+	// Derive wallet from mnemonic phrase and path.
 	//
 
 	ethAccount, wallet, err := s.openWalletFromMnemonicUseCase.Execute(ctx, walletMnemonic, walletPath)
@@ -63,6 +68,11 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 
 	s.logger.Debug("Created new wallet for account",
 		slog.Any("wallet_address", ethAccount.Address.Hex()))
+
+	//
+	// STEP 3:
+	// Generate a signature and confirm it works.
+	//
 
 	val := struct {
 		name string
@@ -102,29 +112,37 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 
 	//
 	// STEP 4:
-	// Converts the wallet's public key to an account value.
+	// Create our wallet which will remain encrypted at rest.
 	//
 
-	// // DEVELOPERS NOTE:
-	// // AccountID represents an account id that is used to sign transactions and is
-	// // associated with transactions on the blockchain. This will be the last 20
-	// // bytes of the public key.
-	// privateKey := walletKey.PrivateKey
-	// publicKey := privateKey.PublicKey
-	// accountID := crypto.PubkeyToAddress(publicKey).String()
+	encryptedWalletBytes, err := s.encryptWalletUseCase.Execute(ctx, walletMnemonic, walletPath, walletPassword)
+	if err != nil {
+		s.logger.Error("failed encrypting wallet",
+			slog.Any("error", err))
+		return nil, err
+	}
+
+	if err := s.createWalletUseCase.Execute(ctx, &ethAccount.Address, encryptedWalletBytes, walletLabel); err != nil {
+		s.logger.Error("failed saving encrypted wallet",
+			slog.Any("error", err))
+		return nil, err
+	}
+
+	s.logger.Debug("Saving new wallet to database",
+		slog.Any("wallet_address", ethAccount.Address.Hex()))
 
 	//
 	// STEP 4: Create the account.
 	//
-
-	s.logger.Debug("Saving new account to database for the wallet",
-		slog.Any("wallet_address", ethAccount.Address.Hex()))
 
 	if err := s.createAccountUseCase.Execute(ctx, &ethAccount.Address); err != nil {
 		s.logger.Error("failed saving to database",
 			slog.Any("error", err))
 		return nil, fmt.Errorf("failed saving account to database: %s", err)
 	}
+
+	s.logger.Debug("Saving new account to database",
+		slog.Any("wallet_address", ethAccount.Address.Hex()))
 
 	//
 	// STEP 5: Return the saved account.

@@ -21,8 +21,8 @@ type KeystoreAdapter interface {
 	GenerateMnemonic() (string, error)
 	OpenWallet(mnemonic *sstring.SecureString, path string) (accounts.Account, *hdwallet.Wallet, error)
 	OpenWalletWithPassphrase(mnemonic *sstring.SecureString, passphrase *sstring.SecureString, path string) (accounts.Account, *hdwallet.Wallet, error)
-	EncryptWallet(mnemonic *sstring.SecureString, path string, password string) ([]byte, error)
-	DecryptWallet(cryptData []byte, password string) (accounts.Account, *hdwallet.Wallet, error)
+	EncryptWallet(mnemonic *sstring.SecureString, path string, password *sstring.SecureString) ([]byte, error)
+	DecryptWallet(cryptData []byte, password *sstring.SecureString) (accounts.Account, *hdwallet.Wallet, error)
 }
 
 type keystoreAdapterImpl struct{}
@@ -92,13 +92,13 @@ const (
 	iterations = 100000
 )
 
-func (impl *keystoreAdapterImpl) EncryptWallet(mnemonic *sstring.SecureString, path string, password string) ([]byte, error) {
+func (impl *keystoreAdapterImpl) EncryptWallet(mnemonic *sstring.SecureString, path string, password *sstring.SecureString) ([]byte, error) {
 	salt := make([]byte, saltSize)
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
 		return nil, fmt.Errorf("failed to generate salt: %v", err)
 	}
 
-	key := pbkdf2.Key([]byte(password), salt, iterations, keySize, sha256.New)
+	key := pbkdf2.Key([]byte(password.String()), salt, iterations, keySize, sha256.New)
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -136,13 +136,13 @@ func (impl *keystoreAdapterImpl) EncryptWallet(mnemonic *sstring.SecureString, p
 	return json.Marshal(encWallet)
 }
 
-func (impl *keystoreAdapterImpl) DecryptWallet(cryptData []byte, password string) (accounts.Account, *hdwallet.Wallet, error) {
+func (impl *keystoreAdapterImpl) DecryptWallet(cryptData []byte, password *sstring.SecureString) (accounts.Account, *hdwallet.Wallet, error) {
 	var encWallet encryptedWallet
 	if err := json.Unmarshal(cryptData, &encWallet); err != nil {
 		return accounts.Account{}, nil, fmt.Errorf("failed to unmarshal encrypted wallet: %v", err)
 	}
 
-	key := pbkdf2.Key([]byte(password), encWallet.Salt, iterations, keySize, sha256.New)
+	key := pbkdf2.Key([]byte(password.String()), encWallet.Salt, iterations, keySize, sha256.New)
 
 	block, err := aes.NewCipher(key)
 	if err != nil {

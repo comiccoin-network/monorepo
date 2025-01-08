@@ -172,16 +172,15 @@ func doRunDaemonCmd() {
 	openWalletFromMnemonicUseCase := usecase.NewOpenWalletFromMnemonicUseCase(
 		logger,
 		keystore)
+	encryptWalletUseCase := usecase.NewEncryptWalletUseCase(
+		logger,
+		keystore)
+	decryptWalletUseCase := usecase.NewDecryptWalletUseCase(
+		logger,
+		keystore)
+	_ = decryptWalletUseCase
 
 	// Wallet
-	// walletDecryptKeyUseCase := usecase.NewWalletDecryptKeyUseCase(
-	// 	logger,
-	// 	keystore,
-	// 	walletRepo)
-	// walletEncryptKeyUseCase := usecase.NewWalletEncryptKeyUseCase(
-	// 	logger,
-	// 	keystore,
-	// 	walletRepo)
 	createWalletUseCase := usecase.NewCreateWalletUseCase(
 		logger,
 		walletRepo)
@@ -331,6 +330,7 @@ func doRunDaemonCmd() {
 	createAccountService := service.NewCreateAccountService(
 		logger,
 		openWalletFromMnemonicUseCase,
+		encryptWalletUseCase,
 		createWalletUseCase,
 		createAccountUseCase,
 		getAccountUseCase,
