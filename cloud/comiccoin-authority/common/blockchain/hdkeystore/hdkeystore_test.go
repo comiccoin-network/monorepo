@@ -188,3 +188,59 @@ func TestEncryptDecryptWallet(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestDecryptMnemonicPhrase(t *testing.T) {
+	adapter := NewAdapter()
+	validPath := "m/44'/60'/0'/0/0"
+	password := "testPassword123"
+
+	t.Run("successful decrypt mnemonic", func(t *testing.T) {
+		// Generate original mnemonic and encrypt it
+		originalMnemonic, err := adapter.GenerateMnemonic()
+		assert.NoError(t, err)
+		secureMnemonic, err := sstring.NewSecureString(originalMnemonic)
+		assert.NoError(t, err)
+		securePassword, err := sstring.NewSecureString(password)
+		assert.NoError(t, err)
+
+		// Encrypt the wallet data
+		encryptedData, err := adapter.EncryptWallet(secureMnemonic, validPath, securePassword)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, encryptedData)
+
+		// Decrypt and verify mnemonic and path
+		decryptedMnemonic, decryptedPath, err := adapter.DecryptMnemonicPhrase(encryptedData, securePassword)
+		assert.NoError(t, err)
+		assert.NotNil(t, decryptedMnemonic)
+		assert.Equal(t, originalMnemonic, decryptedMnemonic.String())
+		assert.Equal(t, validPath, decryptedPath)
+	})
+
+	t.Run("decrypt with wrong password", func(t *testing.T) {
+		originalMnemonic, err := adapter.GenerateMnemonic()
+		assert.NoError(t, err)
+		secureMnemonic, err := sstring.NewSecureString(originalMnemonic)
+		assert.NoError(t, err)
+		securePassword, err := sstring.NewSecureString(password)
+		assert.NoError(t, err)
+
+		encryptedData, err := adapter.EncryptWallet(secureMnemonic, validPath, securePassword)
+		assert.NoError(t, err)
+
+		wrongPassword, err := sstring.NewSecureString("wrongpassword")
+		assert.NoError(t, err)
+		decryptedMnemonic, decryptedPath, err := adapter.DecryptMnemonicPhrase(encryptedData, wrongPassword)
+		assert.Error(t, err)
+		assert.Nil(t, decryptedMnemonic)
+		assert.Empty(t, decryptedPath)
+	})
+
+	t.Run("decrypt corrupted data", func(t *testing.T) {
+		securePassword, err := sstring.NewSecureString(password)
+		assert.NoError(t, err)
+		decryptedMnemonic, decryptedPath, err := adapter.DecryptMnemonicPhrase([]byte("corrupted data"), securePassword)
+		assert.Error(t, err)
+		assert.Nil(t, decryptedMnemonic)
+		assert.Empty(t, decryptedPath)
+	})
+}

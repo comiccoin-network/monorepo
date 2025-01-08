@@ -23,6 +23,7 @@ type KeystoreAdapter interface {
 	OpenWalletWithPassphrase(mnemonic *sstring.SecureString, passphrase *sstring.SecureString, path string) (accounts.Account, *hdwallet.Wallet, error)
 	EncryptWallet(mnemonic *sstring.SecureString, path string, password *sstring.SecureString) ([]byte, error)
 	DecryptWallet(cryptData []byte, password *sstring.SecureString) (accounts.Account, *hdwallet.Wallet, error)
+	DecryptMnemonicPhrase(cryptData []byte, password *sstring.SecureString) (*sstring.SecureString, string, error)
 }
 
 type keystoreAdapterImpl struct{}
@@ -169,4 +170,40 @@ func (impl *keystoreAdapterImpl) DecryptWallet(cryptData []byte, password *sstri
 		return accounts.Account{}, nil, fmt.Errorf("failed to secure mnemonic: %v", err)
 	}
 	return impl.OpenWallet(secureMnemonic, walletData.Path)
+}
+
+func (impl *keystoreAdapterImpl) DecryptMnemonicPhrase(cryptData []byte, password *sstring.SecureString) (*sstring.SecureString, string, error) {
+	var encWallet encryptedWallet
+	if err := json.Unmarshal(cryptData, &encWallet); err != nil {
+		return nil, "", fmt.Errorf("failed to unmarshal encrypted wallet: %v", err)
+	}
+
+	key := pbkdf2.Key([]byte(password.String()), encWallet.Salt, iterations, keySize, sha256.New)
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to create cipher: %v", err)
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to create GCM: %v", err)
+	}
+
+	plaintext, err := gcm.Open(nil, encWallet.Nonce, encWallet.EncryptedData, nil)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to decrypt wallet: %v", err)
+	}
+
+	var walletData walletData
+	if err := json.Unmarshal(plaintext, &walletData); err != nil {
+		return nil, "", fmt.Errorf("failed to unmarshal wallet data: %v", err)
+	}
+
+	secureMnemonic, err := sstring.NewSecureString(walletData.Mnemonic)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to secure mnemonic: %v", err)
+	}
+
+	return secureMnemonic, walletData.Path, nil
 }

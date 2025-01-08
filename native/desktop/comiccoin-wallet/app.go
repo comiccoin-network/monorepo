@@ -55,6 +55,7 @@ type App struct {
 	pendingSignedTransactionListService                             *service.PendingSignedTransactionListService
 	exportWalletService                                             *service.ExportWalletService
 	importWalletService                                             *service.ImportWalletService
+	walletRecoveryService                                           *service.WalletRecoveryService
 }
 
 // NewApp creates a new App application struct
@@ -205,6 +206,9 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		keystore)
 	decryptWalletUseCase := usecase.NewDecryptWalletUseCase(
+		logger,
+		keystore)
+	decryptWalletMnemonicPhraseUseCase := usecase.NewDecryptWalletMnemonicPhraseUseCase(
 		logger,
 		keystore)
 
@@ -524,6 +528,11 @@ func (a *App) startup(ctx context.Context) {
 		upsertAccountUseCase,
 		createWalletUseCase,
 	)
+	walletRecoveryService := service.NewWalletRecoveryService(
+		logger,
+		getWalletUseCase,
+		decryptWalletMnemonicPhraseUseCase,
+	)
 
 	// ------------ Interfaces ------------
 
@@ -549,6 +558,7 @@ func (a *App) startup(ctx context.Context) {
 	a.pendingSignedTransactionListService = pendingSignedTransactionListService
 	a.exportWalletService = exportWalletService
 	a.importWalletService = importWalletService
+	a.walletRecoveryService = walletRecoveryService
 
 	//
 	// Execute.

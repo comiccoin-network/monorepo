@@ -99,5 +99,25 @@ func (a *App) ImportWalletUsingDialog() error {
 }
 
 func (a *App) ExportWalletMnemonicPhrase(walletAddressStr string, walletPassword string) (string, error) {
-	return "lalalalala", nil //TODO: Implement.
+
+	var walletAddress *common.Address = nil
+	if walletAddressStr != "" {
+		walletAddr := common.HexToAddress(walletAddressStr)
+		walletAddress = &walletAddr
+	}
+
+	password, err := sstring.NewSecureString(walletPassword)
+	if err != nil {
+		a.logger.Error("Failed securing password",
+			slog.Any("error", err))
+		return "", err
+	}
+
+	mn, _, err := a.walletRecoveryService.Execute(a.ctx, walletAddress, password)
+	if err != nil {
+		a.logger.Error("Failed recovering",
+			slog.Any("error", err))
+		return "", err
+	}
+	return mn.String(), nil
 }
