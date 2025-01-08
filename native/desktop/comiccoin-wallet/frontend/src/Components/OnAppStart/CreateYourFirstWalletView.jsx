@@ -80,7 +80,7 @@ function CreateYourFirstWalletView() {
           // Update the GUI to let user know that the operation is under way.
           setIsLoading(true);
 
-          CreateWallet(formData.mnemonic, formData.password, formData.repeatPassword, formData.label).then((addressRes)=>{
+          CreateWallet(formData.mnemonic, formData.password, formData.label).then((addressRes)=>{
               console.log("address:", addressRes);
               console.log("currentOpenWalletAtAddress:", currentOpenWalletAtAddress);
               setCurrentOpenWalletAtAddress(addressRes);
