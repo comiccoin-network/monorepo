@@ -16,11 +16,12 @@ import (
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
 	uc_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockdata"
+	uc_genesisblockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/genesisblockdata"
+	uc_pstx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/pstx"
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
@@ -149,10 +150,10 @@ func doRunBlockchainSyncCmd() error {
 		blockchainStateDTORepo)
 
 	// Genesis Block Data
-	upsertGenesisBlockDataUseCase := usecase.NewUpsertGenesisBlockDataUseCase(
+	upsertGenesisBlockDataUseCase := uc_genesisblockdata.NewUpsertGenesisBlockDataUseCase(
 		logger,
 		genesisBlockDataRepo)
-	getGenesisBlockDataUseCase := usecase.NewGetGenesisBlockDataUseCase(
+	getGenesisBlockDataUseCase := uc_genesisblockdata.NewGetGenesisBlockDataUseCase(
 		logger,
 		genesisBlockDataRepo)
 
@@ -191,15 +192,15 @@ func doRunBlockchainSyncCmd() error {
 	)
 
 	// Pending Signed Transaction
-	upsertPendingSignedTransactionUseCase := usecase.NewUpsertPendingSignedTransactionUseCase(
+	upsertPendingSignedTransactionUseCase := uc_pstx.NewUpsertPendingSignedTransactionUseCase(
 		logger,
 		pstxRepo)
 	_ = upsertPendingSignedTransactionUseCase
-	listPendingSignedTransactionUseCase := usecase.NewListPendingSignedTransactionUseCase(
+	listPendingSignedTransactionUseCase := uc_pstx.NewListPendingSignedTransactionUseCase(
 		logger,
 		pstxRepo)
 	_ = listPendingSignedTransactionUseCase
-	deletePendingSignedTransactionUseCase := usecase.NewDeletePendingSignedTransactionUseCase(
+	deletePendingSignedTransactionUseCase := uc_pstx.NewDeletePendingSignedTransactionUseCase(
 		logger,
 		pstxRepo)
 

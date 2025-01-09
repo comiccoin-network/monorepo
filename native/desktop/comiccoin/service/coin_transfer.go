@@ -16,9 +16,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/genesisblockdata"
+	uc_pstx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/pstx"
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
@@ -29,9 +29,9 @@ type CoinTransferService struct {
 	storageTransactionOpenUseCase                           *uc_storagetransaction.StorageTransactionOpenUseCase
 	storageTransactionCommitUseCase                         *uc_storagetransaction.StorageTransactionCommitUseCase
 	storageTransactionDiscardUseCase                        *uc_storagetransaction.StorageTransactionDiscardUseCase
-	listPendingSignedTransactionUseCase                     *usecase.ListPendingSignedTransactionUseCase
+	listPendingSignedTransactionUseCase                     *uc_pstx.ListPendingSignedTransactionUseCase
 	getGenesisBlockDataUseCase                              *uc_genesisblockdata.GetGenesisBlockDataUseCase
-	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
+	upsertPendingSignedTransactionUseCase                   *uc_pstx.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *uc_account.GetAccountUseCase
 	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
 	mnemonicFromEncryptedHDWalletUseCase                    *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
@@ -44,9 +44,9 @@ func NewCoinTransferService(
 	uc1 *uc_storagetransaction.StorageTransactionOpenUseCase,
 	uc2 *uc_storagetransaction.StorageTransactionCommitUseCase,
 	uc3 *uc_storagetransaction.StorageTransactionDiscardUseCase,
-	uc4 *usecase.ListPendingSignedTransactionUseCase,
+	uc4 *uc_pstx.ListPendingSignedTransactionUseCase,
 	uc5 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
-	uc6 *usecase.UpsertPendingSignedTransactionUseCase,
+	uc6 *uc_pstx.UpsertPendingSignedTransactionUseCase,
 	uc7 *uc_account.GetAccountUseCase,
 	uc8 *uc_wallet.GetWalletUseCase,
 	uc9 *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,

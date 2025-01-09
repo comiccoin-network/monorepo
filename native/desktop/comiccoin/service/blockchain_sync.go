@@ -15,12 +15,12 @@ import (
 	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdatadto"
 	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
 	uc_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockdata"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/genesisblockdata"
+	uc_pstx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/pstx"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
@@ -40,7 +40,7 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	getAccountUseCase                                    *uc_account.GetAccountUseCase
 	upsertAccountUseCase                                 *uc_account.UpsertAccountUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase            *uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase
-	deletePendingSignedTransactionUseCase                *usecase.DeletePendingSignedTransactionUseCase
+	deletePendingSignedTransactionUseCase                *uc_pstx.DeletePendingSignedTransactionUseCase
 }
 
 func NewBlockchainSyncWithBlockchainAuthorityService(
@@ -59,7 +59,7 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc12 *uc_account.GetAccountUseCase,
 	uc13 *uc_account.UpsertAccountUseCase,
 	uc14 *uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase,
-	uc15 *usecase.DeletePendingSignedTransactionUseCase,
+	uc15 *uc_pstx.DeletePendingSignedTransactionUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityService {
 	return &BlockchainSyncWithBlockchainAuthorityService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15}
 }

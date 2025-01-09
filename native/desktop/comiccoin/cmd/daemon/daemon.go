@@ -24,7 +24,6 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/interface/rpc"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -32,6 +31,7 @@ import (
 	uc_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blocktx"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/genesisblockdata"
 	uc_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/nftok"
+	uc_pstx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/pstx"
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
@@ -318,13 +318,13 @@ func doRunDaemonCmd() {
 	)
 
 	// Pending Signed Transaction
-	upsertPendingSignedTransactionUseCase := usecase.NewUpsertPendingSignedTransactionUseCase(
+	upsertPendingSignedTransactionUseCase := uc_pstx.NewUpsertPendingSignedTransactionUseCase(
 		logger,
 		pstxRepo)
-	listPendingSignedTransactionUseCase := usecase.NewListPendingSignedTransactionUseCase(
+	listPendingSignedTransactionUseCase := uc_pstx.NewListPendingSignedTransactionUseCase(
 		logger,
 		pstxRepo)
-	deletePendingSignedTransactionUseCase := usecase.NewDeletePendingSignedTransactionUseCase(
+	deletePendingSignedTransactionUseCase := uc_pstx.NewDeletePendingSignedTransactionUseCase(
 		logger,
 		pstxRepo)
 
