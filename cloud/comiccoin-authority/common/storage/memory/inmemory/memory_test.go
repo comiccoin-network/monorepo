@@ -1,304 +1,288 @@
-package mongodbcache
+package inmemory
 
 import (
-	"context"
-	"errors"
 	"log/slog"
+	"reflect"
 	"testing"
-	"time"
-
-	c "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	mongo_client "go.mongodb.org/mongo-driver/mongo"
 )
 
-// MockCache is a mock implementation of cachego.Cache
-type MockCache struct {
-	mock.Mock
-}
-
-func (m *MockCache) Save(key string, value interface{}, lifeTime time.Duration) error {
-	args := m.Called(key, value, lifeTime)
-	return args.Error(0)
-}
-
-func (m *MockCache) Fetch(key string) (string, error) {
-	args := m.Called(key)
-	if args.Get(0) == nil {
-		return "", args.Error(1)
-	}
-	return args.String(0), args.Error(1)
-}
-
-// Fixed FetchMulti to match cachego.Cache interface
-func (m *MockCache) FetchMulti(keys []string) map[string]string {
-	args := m.Called(keys)
-	if args.Get(0) == nil {
-		return map[string]string{}
-	}
-	return args.Get(0).(map[string]string)
-}
-
-func (m *MockCache) Contains(key string) bool {
-	args := m.Called(key)
-	return args.Bool(0)
-}
-
-func (m *MockCache) Delete(key string) error {
-	args := m.Called(key)
-	return args.Error(0)
-}
-
-func (m *MockCache) Flush() error {
-	args := m.Called()
-	return args.Error(0)
-}
-
-// Setup function to create a new cache instance with mocked dependencies
-func setupTestCache() (Cacher, *MockCache) {
-	mockCache := new(MockCache)
+// TestNewInMemoryStorage verifies that the NewInMemoryStorage function
+// correctly initializes a new storage instance
+func TestNewInMemoryStorage(t *testing.T) {
 	logger := slog.Default()
+	storage := NewInMemoryStorage(logger)
 
-	return &cacheImpl{
-		Client: mockCache,
-		Logger: logger,
-	}, mockCache
-}
-
-func TestNewCache(t *testing.T) {
-	// Create test configuration
-	cfg := &c.Configuration{
-		DB: c.DBConfig{
-			Name: "testdb",
-		},
-	}
-	logger := slog.Default()
-
-	// Create a mock MongoDB client
-	client := &mongo_client.Client{}
-
-	// Test cache initialization
-	cacheInstance := NewCache(cfg, logger, client)
-
-	assert.NotNil(t, cacheInstance, "Cache instance should not be nil")
-	_, ok := cacheInstance.(*cacheImpl)
-	assert.True(t, ok, "Cache should be of type *cacheImpl")
-}
-
-func TestCacheGet(t *testing.T) {
-	cacheInstance, mockCache := setupTestCache()
-	ctx := context.Background()
-
-	tests := []struct {
-		name        string
-		key         string
-		mockValue   string
-		mockError   error
-		expectValue string
-		expectError bool
-	}{
-		{
-			name:        "Successful Get",
-			key:         "test-key",
-			mockValue:   "test-value",
-			mockError:   nil,
-			expectValue: "test-value",
-			expectError: false,
-		},
-		{
-			name:        "Get Error",
-			key:         "error-key",
-			mockValue:   "",
-			mockError:   errors.New("fetch error"),
-			expectValue: "",
-			expectError: true,
-		},
-		{
-			name:        "Empty Value",
-			key:         "empty-key",
-			mockValue:   "",
-			mockError:   nil,
-			expectValue: "",
-			expectError: false,
-		},
+	if storage == nil {
+		t.Fatal("Expected non-nil storage instance")
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockCache.On("Fetch", tt.key).Return(tt.mockValue, tt.mockError).Once()
-
-			value, err := cacheInstance.Get(ctx, tt.key)
-
-			if tt.expectError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expectValue, value)
-			}
-
-			mockCache.AssertExpectations(t)
-		})
+	// Type assertion to verify we get the correct implementation
+	_, ok := storage.(*keyValueStorerImpl)
+	if !ok {
+		t.Fatal("Expected keyValueStorerImpl instance")
 	}
 }
 
-func TestCacheSet(t *testing.T) {
-	cacheInstance, mockCache := setupTestCache()
-	ctx := context.Background()
+// TestBasicOperations tests the basic Set/Get/Delete operations
+func TestBasicOperations(t *testing.T) {
+	storage := NewInMemoryStorage(slog.Default())
 
-	tests := []struct {
-		name        string
-		key         string
-		value       string
-		mockError   error
-		expectError bool
-	}{
-		{
-			name:        "Successful Set",
-			key:         "test-key",
-			value:       "test-value",
-			mockError:   nil,
-			expectError: false,
-		},
-		{
-			name:        "Set Error",
-			key:         "error-key",
-			value:       "error-value",
-			mockError:   errors.New("save error"),
-			expectError: true,
-		},
-		{
-			name:        "Empty Value",
-			key:         "empty-key",
-			value:       "",
-			mockError:   nil,
-			expectError: false,
-		},
-	}
+	// Test Set and Get
+	t.Run("Set and Get", func(t *testing.T) {
+		key := "test-key"
+		value := []byte("test-value")
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockCache.On("Save", tt.key, tt.value, time.Duration(0)).Return(tt.mockError).Once()
+		err := storage.Set(key, value)
+		if err != nil {
+			t.Fatalf("Set failed: %v", err)
+		}
 
-			err := cacheInstance.Set(ctx, tt.key, tt.value)
+		retrieved, err := storage.Get(key)
+		if err != nil {
+			t.Fatalf("Get failed: %v", err)
+		}
 
-			if tt.expectError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-
-			mockCache.AssertExpectations(t)
-		})
-	}
-}
-
-func TestCacheSetWithExpiry(t *testing.T) {
-	cacheInstance, mockCache := setupTestCache()
-	ctx := context.Background()
-
-	tests := []struct {
-		name        string
-		key         string
-		value       string
-		expiry      time.Duration
-		mockError   error
-		expectError bool
-	}{
-		{
-			name:        "Successful Set with Expiry",
-			key:         "test-key",
-			value:       "test-value",
-			expiry:      time.Hour,
-			mockError:   nil,
-			expectError: false,
-		},
-		{
-			name:        "Set with Expiry Error",
-			key:         "error-key",
-			value:       "error-value",
-			expiry:      time.Minute,
-			mockError:   errors.New("save error"),
-			expectError: true,
-		},
-		{
-			name:        "Zero Expiry",
-			key:         "zero-expiry-key",
-			value:       "test-value",
-			expiry:      0,
-			mockError:   nil,
-			expectError: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockCache.On("Save", tt.key, tt.value, tt.expiry).Return(tt.mockError).Once()
-
-			err := cacheInstance.SetWithExpiry(ctx, tt.key, tt.value, tt.expiry)
-
-			if tt.expectError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-
-			mockCache.AssertExpectations(t)
-		})
-	}
-}
-
-func TestCacheDelete(t *testing.T) {
-	cacheInstance, mockCache := setupTestCache()
-	ctx := context.Background()
-
-	tests := []struct {
-		name        string
-		key         string
-		mockError   error
-		expectError bool
-	}{
-		{
-			name:        "Successful Delete",
-			key:         "test-key",
-			mockError:   nil,
-			expectError: false,
-		},
-		{
-			name:        "Delete Error",
-			key:         "error-key",
-			mockError:   errors.New("delete error"),
-			expectError: true,
-		},
-		{
-			name:        "Empty Key",
-			key:         "",
-			mockError:   nil,
-			expectError: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockCache.On("Delete", tt.key).Return(tt.mockError).Once()
-
-			err := cacheInstance.Delete(ctx, tt.key)
-
-			if tt.expectError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-
-			mockCache.AssertExpectations(t)
-		})
-	}
-}
-
-func TestCacheShutdown(t *testing.T) {
-	cacheInstance, _ := setupTestCache()
-
-	assert.NotPanics(t, func() {
-		cacheInstance.Shutdown()
+		if !reflect.DeepEqual(retrieved, value) {
+			t.Errorf("Retrieved value doesn't match: got %v, want %v", retrieved, value)
+		}
 	})
+
+	// Test Get with non-existent key
+	t.Run("Get Non-existent", func(t *testing.T) {
+		_, err := storage.Get("non-existent")
+		if err == nil {
+			t.Error("Expected error for non-existent key")
+		}
+	})
+
+	// Test Delete
+	t.Run("Delete", func(t *testing.T) {
+		key := "delete-test"
+		value := []byte("delete-value")
+
+		// First set a value
+		err := storage.Set(key, value)
+		if err != nil {
+			t.Fatalf("Set failed: %v", err)
+		}
+
+		// Delete it
+		err = storage.Delete(key)
+		if err != nil {
+			t.Fatalf("Delete failed: %v", err)
+		}
+
+		// Verify it's gone
+		_, err = storage.Get(key)
+		if err == nil {
+			t.Error("Expected error after deletion")
+		}
+	})
+}
+
+// TestIteration tests the Iterate functionality
+func TestIteration(t *testing.T) {
+	storage := NewInMemoryStorage(slog.Default())
+
+	// Prepare test data
+	testData := map[string][]byte{
+		"key1": []byte("value1"),
+		"key2": []byte("value2"),
+		"key3": []byte("value3"),
+	}
+
+	// Insert test data
+	for k, v := range testData {
+		if err := storage.Set(k, v); err != nil {
+			t.Fatalf("Failed to set test data: %v", err)
+		}
+	}
+
+	// Test basic iteration
+	t.Run("Basic Iteration", func(t *testing.T) {
+		found := make(map[string][]byte)
+
+		err := storage.Iterate(func(key, value []byte) error {
+			found[string(key)] = value
+			return nil
+		})
+
+		if err != nil {
+			t.Fatalf("Iteration failed: %v", err)
+		}
+
+		if !reflect.DeepEqual(testData, found) {
+			t.Errorf("Iteration results don't match: got %v, want %v", found, testData)
+		}
+	})
+
+	// Test filtered iteration
+	t.Run("Filtered Iteration", func(t *testing.T) {
+		filterKeys := []string{"key1", "key3"}
+		found := make(map[string][]byte)
+
+		err := storage.IterateWithFilterByKeys(filterKeys, func(key, value []byte) error {
+			found[string(key)] = value
+			return nil
+		})
+
+		if err != nil {
+			t.Fatalf("Filtered iteration failed: %v", err)
+		}
+
+		// Verify only requested keys were returned
+		if len(found) != len(filterKeys) {
+			t.Errorf("Expected %d items, got %d", len(filterKeys), len(found))
+		}
+
+		for _, k := range filterKeys {
+			if !reflect.DeepEqual(found[k], testData[k]) {
+				t.Errorf("Filtered data mismatch for key %s: got %v, want %v", k, found[k], testData[k])
+			}
+		}
+	})
+}
+
+// TestTransactions tests the transaction-related functionality
+func TestTransactions(t *testing.T) {
+	storage := NewInMemoryStorage(slog.Default())
+
+	// Test basic transaction commit
+	t.Run("Transaction Commit", func(t *testing.T) {
+		// Start transaction
+		err := storage.OpenTransaction()
+		if err != nil {
+			t.Fatalf("Failed to open transaction: %v", err)
+		}
+
+		// Make changes in transaction
+		key := "tx-test"
+		value := []byte("tx-value")
+
+		err = storage.Set(key, value)
+		if err != nil {
+			t.Fatalf("Failed to set in transaction: %v", err)
+		}
+
+		// Commit transaction
+		err = storage.CommitTransaction()
+		if err != nil {
+			t.Fatalf("Failed to commit transaction: %v", err)
+		}
+
+		// Verify changes persisted
+		retrieved, err := storage.Get(key)
+		if err != nil {
+			t.Fatalf("Failed to get after commit: %v", err)
+		}
+
+		if !reflect.DeepEqual(retrieved, value) {
+			t.Errorf("Retrieved value doesn't match after commit: got %v, want %v", retrieved, value)
+		}
+	})
+
+	// Test transaction discard
+	t.Run("Transaction Discard", func(t *testing.T) {
+		// Start transaction
+		err := storage.OpenTransaction()
+		if err != nil {
+			t.Fatalf("Failed to open transaction: %v", err)
+		}
+
+		// Make changes in transaction
+		key := "discard-test"
+		value := []byte("discard-value")
+
+		err = storage.Set(key, value)
+		if err != nil {
+			t.Fatalf("Failed to set in transaction: %v", err)
+		}
+
+		// Discard transaction
+		storage.DiscardTransaction()
+
+		// Verify changes were not persisted
+		_, err = storage.Get(key)
+		if err == nil {
+			t.Error("Expected error getting discarded value")
+		}
+	})
+
+	// Test transaction behavior with multiple opens
+	t.Run("Multiple Transaction Opens", func(t *testing.T) {
+		// Set initial value
+		err := storage.Set("tx-test", []byte("initial"))
+		if err != nil {
+			t.Fatalf("Failed to set initial value: %v", err)
+		}
+
+		// First transaction
+		err = storage.OpenTransaction()
+		if err != nil {
+			t.Fatalf("Failed to open first transaction: %v", err)
+		}
+
+		// Modify value
+		err = storage.Set("tx-test", []byte("modified"))
+		if err != nil {
+			t.Fatalf("Failed to set value in transaction: %v", err)
+		}
+
+		// Opening another transaction while one is in progress overwrites the transaction data
+		err = storage.OpenTransaction()
+		if err != nil {
+			t.Fatalf("Failed to open second transaction: %v", err)
+		}
+
+		// Modify value again
+		err = storage.Set("tx-test", []byte("final"))
+		if err != nil {
+			t.Fatalf("Failed to set value in second transaction: %v", err)
+		}
+
+		// Commit the transaction (only need to commit once as there's only one transaction state)
+		err = storage.CommitTransaction()
+		if err != nil {
+			t.Fatalf("Failed to commit transaction: %v", err)
+		}
+
+		// Verify attempting to commit again fails since transaction state is cleared
+		err = storage.CommitTransaction()
+		if err == nil {
+			t.Error("Expected error when committing with no transaction in progress")
+		}
+
+		// Verify final value
+		val, err := storage.Get("tx-test")
+		if err != nil {
+			t.Fatalf("Failed to get final value: %v", err)
+		}
+
+		if !reflect.DeepEqual(val, []byte("final")) {
+			t.Errorf("Unexpected final value: got %s, want %s", string(val), "final")
+		}
+	})
+}
+
+// TestClose verifies the Close functionality
+func TestClose(t *testing.T) {
+	storage := NewInMemoryStorage(slog.Default())
+
+	// Add some data
+	err := storage.Set("test", []byte("value"))
+	if err != nil {
+		t.Fatalf("Failed to set test data: %v", err)
+	}
+
+	// Close storage
+	err = storage.Close()
+	if err != nil {
+		t.Fatalf("Close failed: %v", err)
+	}
+
+	// Verify data is cleared
+	_, err = storage.Get("test")
+	if err == nil {
+		t.Error("Expected error getting value after close")
+	}
 }
