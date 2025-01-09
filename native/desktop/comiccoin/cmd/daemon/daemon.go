@@ -23,7 +23,6 @@ import (
 	pref "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/common/preferences"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/interface/rpc"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
@@ -31,6 +30,7 @@ import (
 	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
 	service_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/nftok"
 	service_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/tok"
+	service_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/wallet"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -473,12 +473,12 @@ func doRunDaemonCmd() {
 		logger,
 		listTokensByOwnerUseCase,
 	)
-	exportWalletService := service.NewExportWalletService(
+	exportWalletService := service_wallet.NewExportWalletService(
 		logger,
 		getAccountUseCase,
 		getWalletUseCase,
 	)
-	importWalletService := service.NewImportWalletService(
+	importWalletService := service_wallet.NewImportWalletService(
 		logger,
 		getAccountUseCase,
 		getWalletUseCase,

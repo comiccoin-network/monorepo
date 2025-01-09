@@ -9,13 +9,13 @@ import (
 	"net/rpc"
 
 	rpchandler "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/interface/rpc/handler"
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
 	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
 	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
 	service_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/nftok"
 	service_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/tok"
+	service_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/wallet"
 )
 
 // RPCServer represents an RPC server that handles incoming requests.
@@ -86,8 +86,8 @@ func NewRPCServer(
 	s10 *service_blockdata.GetByBlockTransactionTimestampService,
 	s11 *service_blockdata.BlockDataGetByHashService,
 	s12 *service_tok.TokenListByOwnerService,
-	s13 *service.ExportWalletService,
-	s14 *service.ImportWalletService,
+	s13 *service_wallet.ExportWalletService,
+	s14 *service_wallet.ImportWalletService,
 ) RPCServer {
 	// Create a new RPC server
 	myServer := rpchandler.NewComicCoinRPCServer(logger, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14)

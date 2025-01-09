@@ -3,13 +3,13 @@ package handler
 import (
 	"log/slog"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
 	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
 	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
 	service_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/nftok"
 	service_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/tok"
+	service_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/wallet"
 )
 
 type ComicCoinRPCServer struct {
@@ -26,8 +26,8 @@ type ComicCoinRPCServer struct {
 	getByBlockTransactionTimestampService *service_blockdata.GetByBlockTransactionTimestampService
 	blockDataGetByHashService             *service_blockdata.BlockDataGetByHashService
 	tokenListByOwnerService               *service_tok.TokenListByOwnerService
-	exportWalletService                   *service.ExportWalletService
-	importWalletService                   *service.ImportWalletService
+	exportWalletService                   *service_wallet.ExportWalletService
+	importWalletService                   *service_wallet.ImportWalletService
 }
 
 func NewComicCoinRPCServer(
@@ -44,8 +44,8 @@ func NewComicCoinRPCServer(
 	s10 *service_blockdata.GetByBlockTransactionTimestampService,
 	s11 *service_blockdata.BlockDataGetByHashService,
 	s12 *service_tok.TokenListByOwnerService,
-	s13 *service.ExportWalletService,
-	s14 *service.ImportWalletService,
+	s13 *service_wallet.ExportWalletService,
+	s14 *service_wallet.ImportWalletService,
 ) *ComicCoinRPCServer {
 
 	// Create a new RPC server instance.

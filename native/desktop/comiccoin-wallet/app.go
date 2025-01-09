@@ -19,7 +19,6 @@ import (
 	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltxdto"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
 	service_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchainsyncstatus"
@@ -29,6 +28,7 @@ import (
 	service_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/nftok"
 	service_pstx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/pstx"
 	service_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/tok"
+	service_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/wallet"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -70,12 +70,12 @@ type App struct {
 	tokenCountByOwnerService                                        *service_tok.TokenCountByOwnerService
 	blockchainSyncService                                           *service_blockchain.BlockchainSyncWithBlockchainAuthorityService
 	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService *service_blockchain.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService
-	walletsFilterByLocalService                                     *service.WalletsFilterByLocalService
+	walletsFilterByLocalService                                     *service_wallet.WalletsFilterByLocalService
 	listNonFungibleTokensByOwnerService                             *service_nftok.ListNonFungibleTokensByOwnerService
 	pendingSignedTransactionListService                             *service_pstx.PendingSignedTransactionListService
-	exportWalletService                                             *service.ExportWalletService
-	importWalletService                                             *service.ImportWalletService
-	walletRecoveryService                                           *service.WalletRecoveryService
+	exportWalletService                                             *service_wallet.ExportWalletService
+	importWalletService                                             *service_wallet.ImportWalletService
+	walletRecoveryService                                           *service_wallet.WalletRecoveryService
 }
 
 // NewApp creates a new App application struct
@@ -528,7 +528,7 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		countTokensByOwnerUseCase,
 	)
-	walletsFilterByLocalService := service.NewWalletsFilterByLocalService(
+	walletsFilterByLocalService := service_wallet.NewWalletsFilterByLocalService(
 		logger,
 		listAllWalletUseCase,
 	)
@@ -542,19 +542,19 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		listPendingSignedTransactionUseCase,
 	)
-	exportWalletService := service.NewExportWalletService(
+	exportWalletService := service_wallet.NewExportWalletService(
 		logger,
 		getAccountUseCase,
 		getWalletUseCase,
 	)
-	importWalletService := service.NewImportWalletService(
+	importWalletService := service_wallet.NewImportWalletService(
 		logger,
 		getAccountUseCase,
 		getWalletUseCase,
 		upsertAccountUseCase,
 		createWalletUseCase,
 	)
-	walletRecoveryService := service.NewWalletRecoveryService(
+	walletRecoveryService := service_wallet.NewWalletRecoveryService(
 		logger,
 		getWalletUseCase,
 		mnemonicFromEncryptedHDWalletUseCase,
