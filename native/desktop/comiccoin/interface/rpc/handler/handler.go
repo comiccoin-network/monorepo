@@ -8,6 +8,7 @@ import (
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
 	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
 	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
+	service_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/nftok"
 )
 
 type ComicCoinRPCServer struct {
@@ -19,7 +20,7 @@ type ComicCoinRPCServer struct {
 	tokenGetService                       *service.TokenGetService
 	tokenTransferService                  *service.TokenTransferService
 	tokenBurnService                      *service.TokenBurnService
-	getOrDownloadNonFungibleTokenService  *service.GetOrDownloadNonFungibleTokenService
+	getOrDownloadNonFungibleTokenService  *service_nftok.GetOrDownloadNonFungibleTokenService
 	listBlockTransactionsByAddressService *service_blocktx.ListBlockTransactionsByAddressService
 	getByBlockTransactionTimestampService *service_blockdata.GetByBlockTransactionTimestampService
 	blockDataGetByHashService             *service_blockdata.BlockDataGetByHashService
@@ -37,7 +38,7 @@ func NewComicCoinRPCServer(
 	s5 *service.TokenGetService,
 	s6 *service.TokenTransferService,
 	s7 *service.TokenBurnService,
-	s8 *service.GetOrDownloadNonFungibleTokenService,
+	s8 *service_nftok.GetOrDownloadNonFungibleTokenService,
 	s9 *service_blocktx.ListBlockTransactionsByAddressService,
 	s10 *service_blockdata.GetByBlockTransactionTimestampService,
 	s11 *service_blockdata.BlockDataGetByHashService,

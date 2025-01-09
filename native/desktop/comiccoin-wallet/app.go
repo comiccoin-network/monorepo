@@ -26,6 +26,7 @@ import (
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
 	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
 	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
+	service_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/nftok"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -58,7 +59,7 @@ type App struct {
 	tokenGetService                                                 *service.TokenGetService
 	tokenTransferService                                            *service.TokenTransferService
 	tokenBurnService                                                *service.TokenBurnService
-	getOrDownloadNonFungibleTokenService                            *service.GetOrDownloadNonFungibleTokenService
+	getOrDownloadNonFungibleTokenService                            *service_nftok.GetOrDownloadNonFungibleTokenService
 	listBlockTransactionsByAddressService                           *service_blocktx.ListBlockTransactionsByAddressService
 	listWithLimitBlockTransactionsByAddressService                  *service_blocktx.ListWithLimitBlockTransactionsByAddressService
 	getByBlockTransactionTimestampService                           *service_blockdata.GetByBlockTransactionTimestampService
@@ -68,7 +69,7 @@ type App struct {
 	blockchainSyncService                                           *service_blockchain.BlockchainSyncWithBlockchainAuthorityService
 	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService *service_blockchain.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService
 	walletsFilterByLocalService                                     *service.WalletsFilterByLocalService
-	listNonFungibleTokensByOwnerService                             *service.ListNonFungibleTokensByOwnerService
+	listNonFungibleTokensByOwnerService                             *service_nftok.ListNonFungibleTokensByOwnerService
 	pendingSignedTransactionListService                             *service.PendingSignedTransactionListService
 	exportWalletService                                             *service.ExportWalletService
 	importWalletService                                             *service.ImportWalletService
@@ -493,7 +494,7 @@ func (a *App) startup(ctx context.Context) {
 	// 	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
 	// )
 
-	getOrDownloadNonFungibleTokenService := service.NewGetOrDownloadNonFungibleTokenService(
+	getOrDownloadNonFungibleTokenService := service_nftok.NewGetOrDownloadNonFungibleTokenService(
 		logger,
 		getNFTokUseCase,
 		getTokUseCase,
@@ -529,7 +530,7 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		listAllWalletUseCase,
 	)
-	listNonFungibleTokensByOwnerService := service.NewListNonFungibleTokensByOwnerService(
+	listNonFungibleTokensByOwnerService := service_nftok.NewListNonFungibleTokensByOwnerService(
 		logger,
 		listTokensByOwnerUseCase,
 		listNonFungibleTokensWithFilterByTokenIDsyUseCase,
