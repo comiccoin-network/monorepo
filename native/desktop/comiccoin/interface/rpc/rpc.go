@@ -13,6 +13,7 @@ import (
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
 	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
+	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
 )
 
 // RPCServer represents an RPC server that handles incoming requests.
@@ -74,7 +75,7 @@ func NewRPCServer(
 	s1 *service_account.GetAccountService,
 	s2 *service_account.CreateAccountService,
 	s3 *service_account.AccountListingByLocalWalletsService,
-	s4 *service.CoinTransferService,
+	s4 *service_coin.CoinTransferService,
 	s5 *service.TokenGetService,
 	s6 *service.TokenTransferService,
 	s7 *service.TokenBurnService,

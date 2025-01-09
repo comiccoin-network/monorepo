@@ -28,6 +28,7 @@ import (
 	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
 	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
+	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -360,7 +361,7 @@ func doRunDaemonCmd() {
 		listAllAddressesWalletUseCase,
 		accountsFilterByAddressesUseCase,
 	)
-	coinTransferService := service.NewCoinTransferService(
+	coinTransferService := service_coin.NewCoinTransferService(
 		logger,
 		storageTransactionOpenUseCase,
 		storageTransactionCommitUseCase,
