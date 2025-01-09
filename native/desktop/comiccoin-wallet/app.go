@@ -23,6 +23,7 @@ import (
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
 	service_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchainsyncstatus"
+	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -58,8 +59,8 @@ type App struct {
 	getOrDownloadNonFungibleTokenService                            *service.GetOrDownloadNonFungibleTokenService
 	listBlockTransactionsByAddressService                           *service.ListBlockTransactionsByAddressService
 	listWithLimitBlockTransactionsByAddressService                  *service.ListWithLimitBlockTransactionsByAddressService
-	getByBlockTransactionTimestampService                           *service.GetByBlockTransactionTimestampService
-	blockDataGetByHashService                                       *service.BlockDataGetByHashService
+	getByBlockTransactionTimestampService                           *service_blockdata.GetByBlockTransactionTimestampService
+	blockDataGetByHashService                                       *service_blockdata.BlockDataGetByHashService
 	tokenListByOwnerService                                         *service.TokenListByOwnerService
 	tokenCountByOwnerService                                        *service.TokenCountByOwnerService
 	blockchainSyncService                                           *service_blockchain.BlockchainSyncWithBlockchainAuthorityService
@@ -506,11 +507,11 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		listWithLimitBlockTransactionsByAddressUseCase,
 	)
-	getByBlockTransactionTimestampService := service.NewGetByBlockTransactionTimestampService(
+	getByBlockTransactionTimestampService := service_blockdata.NewGetByBlockTransactionTimestampService(
 		logger,
 		getByBlockTransactionTimestampUseCase,
 	)
-	blockDataGetByHashService := service.NewBlockDataGetByHashService(
+	blockDataGetByHashService := service_blockdata.NewBlockDataGetByHashService(
 		logger,
 		getBlockDataUseCase,
 	)

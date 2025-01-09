@@ -10,7 +10,8 @@ import (
 
 	rpchandler "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/interface/rpc/handler"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
-	s_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
+	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
+	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
 )
 
 // RPCServer represents an RPC server that handles incoming requests.
@@ -69,17 +70,17 @@ type RPCServerImpl struct {
 func NewRPCServer(
 	config RPCServerConfigurationProvider,
 	logger *slog.Logger,
-	s1 *s_account.GetAccountService,
-	s2 *s_account.CreateAccountService,
-	s3 *s_account.AccountListingByLocalWalletsService,
+	s1 *service_account.GetAccountService,
+	s2 *service_account.CreateAccountService,
+	s3 *service_account.AccountListingByLocalWalletsService,
 	s4 *service.CoinTransferService,
 	s5 *service.TokenGetService,
 	s6 *service.TokenTransferService,
 	s7 *service.TokenBurnService,
 	s8 *service.GetOrDownloadNonFungibleTokenService,
 	s9 *service.ListBlockTransactionsByAddressService,
-	s10 *service.GetByBlockTransactionTimestampService,
-	s11 *service.BlockDataGetByHashService,
+	s10 *service_blockdata.GetByBlockTransactionTimestampService,
+	s11 *service_blockdata.BlockDataGetByHashService,
 	s12 *service.TokenListByOwnerService,
 	s13 *service.ExportWalletService,
 	s14 *service.ImportWalletService,

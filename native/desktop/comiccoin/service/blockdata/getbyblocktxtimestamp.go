@@ -1,4 +1,4 @@
-package service
+package blockdata
 
 import (
 	"context"
@@ -11,26 +11,26 @@ import (
 	uc_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockdata"
 )
 
-type BlockDataGetByHashService struct {
-	logger              *slog.Logger
-	GetBlockDataUseCase *uc_blockdata.GetBlockDataUseCase
+type GetByBlockTransactionTimestampService struct {
+	logger                                *slog.Logger
+	GetByBlockTransactionTimestampUseCase *uc_blockdata.GetByBlockTransactionTimestampUseCase
 }
 
-func NewBlockDataGetByHashService(
+func NewGetByBlockTransactionTimestampService(
 	logger *slog.Logger,
-	uc1 *uc_blockdata.GetBlockDataUseCase,
-) *BlockDataGetByHashService {
-	return &BlockDataGetByHashService{logger, uc1}
+	uc1 *uc_blockdata.GetByBlockTransactionTimestampUseCase,
+) *GetByBlockTransactionTimestampService {
+	return &GetByBlockTransactionTimestampService{logger, uc1}
 }
 
-func (s *BlockDataGetByHashService) Execute(ctx context.Context, hash string) (*domain.BlockData, error) {
+func (s *GetByBlockTransactionTimestampService) Execute(ctx context.Context, timestamp uint64) (*domain.BlockData, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if hash == "" {
-		e["hash"] = "missing value"
+	if timestamp == 0 {
+		e["timestamp"] = "missing value"
 	}
 	if len(e) != 0 {
 		s.logger.Warn("Failed validating",
@@ -42,11 +42,11 @@ func (s *BlockDataGetByHashService) Execute(ctx context.Context, hash string) (*
 	// STEP 2: Get
 	//
 
-	blockData, err := s.GetBlockDataUseCase.ExecuteByHash(ctx, hash)
+	blockData, err := s.GetByBlockTransactionTimestampUseCase.Execute(ctx, timestamp)
 	if err != nil {
 		if !strings.Contains(err.Error(), "does not exist") {
 			s.logger.Error("failed getting block data",
-				slog.Any("hash", hash),
+				slog.Any("timestamp", timestamp),
 				slog.Any("error", err))
 			return nil, err
 		}

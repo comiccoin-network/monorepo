@@ -26,6 +26,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
+	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -456,11 +457,11 @@ func doRunDaemonCmd() {
 		logger,
 		listBlockTransactionsByAddressUseCase,
 	)
-	getByBlockTransactionTimestampService := service.NewGetByBlockTransactionTimestampService(
+	getByBlockTransactionTimestampService := service_blockdata.NewGetByBlockTransactionTimestampService(
 		logger,
 		getByBlockTransactionTimestampUseCase,
 	)
-	blockDataGetByHashService := service.NewBlockDataGetByHashService(
+	blockDataGetByHashService := service_blockdata.NewBlockDataGetByHashService(
 		logger,
 		getBlockDataUseCase,
 	)
