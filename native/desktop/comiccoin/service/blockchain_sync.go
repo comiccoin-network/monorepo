@@ -17,6 +17,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
@@ -27,8 +28,8 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	getGenesisBlockDataUseCase                           *usecase.GetGenesisBlockDataUseCase
 	upsertGenesisBlockDataUseCase                        *usecase.UpsertGenesisBlockDataUseCase
 	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
-	getBlockchainStateUseCase                            *usecase.GetBlockchainStateUseCase
-	upsertBlockchainStateUseCase                         *usecase.UpsertBlockchainStateUseCase
+	getBlockchainStateUseCase                            *uc_blockchainstate.GetBlockchainStateUseCase
+	upsertBlockchainStateUseCase                         *uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockchainStateDTOFromBlockchainAuthorityUseCase  *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
 	getBlockDataUseCase                                  *usecase.GetBlockDataUseCase
 	upsertBlockDataUseCase                               *usecase.UpsertBlockDataUseCase
@@ -46,8 +47,8 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc3 *usecase.GetGenesisBlockDataUseCase,
 	uc4 *usecase.UpsertGenesisBlockDataUseCase,
 	uc5 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
-	uc6 *usecase.GetBlockchainStateUseCase,
-	uc7 *usecase.UpsertBlockchainStateUseCase,
+	uc6 *uc_blockchainstate.GetBlockchainStateUseCase,
+	uc7 *uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc8 *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
 	uc9 *usecase.GetBlockDataUseCase,
 	uc10 *usecase.UpsertBlockDataUseCase,

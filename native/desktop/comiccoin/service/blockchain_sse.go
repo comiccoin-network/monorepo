@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 )
 
@@ -17,8 +17,8 @@ type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
 	storageTransactionOpenUseCase                                            *uc_storagetransaction.StorageTransactionOpenUseCase
 	storageTransactionCommitUseCase                                          *uc_storagetransaction.StorageTransactionCommitUseCase
 	storageTransactionDiscardUseCase                                         *uc_storagetransaction.StorageTransactionDiscardUseCase
-	getBlockchainStateUseCase                                                *usecase.GetBlockchainStateUseCase
-	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase *usecase.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase
+	getBlockchainStateUseCase                                                *uc_blockchainstate.GetBlockchainStateUseCase
+	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase *uc_blockchainstate.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase
 }
 
 func NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
@@ -27,8 +27,8 @@ func NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 	uc1 *uc_storagetransaction.StorageTransactionOpenUseCase,
 	uc2 *uc_storagetransaction.StorageTransactionCommitUseCase,
 	uc3 *uc_storagetransaction.StorageTransactionDiscardUseCase,
-	uc4 *usecase.GetBlockchainStateUseCase,
-	uc5 *usecase.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
+	uc4 *uc_blockchainstate.GetBlockchainStateUseCase,
+	uc5 *uc_blockchainstate.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService {
 	return &BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService{logger, s1, uc1, uc2, uc3, uc4, uc5}
 }

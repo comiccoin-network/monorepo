@@ -26,6 +26,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
@@ -227,10 +228,10 @@ func doRunDaemonCmd() {
 	_ = getAccountsHashStateUseCase
 
 	// Blockchain State
-	upsertBlockchainStateUseCase := usecase.NewUpsertBlockchainStateUseCase(
+	upsertBlockchainStateUseCase := uc_blockchainstate.NewUpsertBlockchainStateUseCase(
 		logger,
 		blockchainStateRepo)
-	getBlockchainStateUseCase := usecase.NewGetBlockchainStateUseCase(
+	getBlockchainStateUseCase := uc_blockchainstate.NewGetBlockchainStateUseCase(
 		logger,
 		blockchainStateRepo)
 
@@ -287,7 +288,7 @@ func doRunDaemonCmd() {
 	)
 
 	// Blockchain State Server Sent Events DTO
-	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase := usecase.NewSubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase(
+	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase := uc_blockchainstate.NewSubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase(
 		logger,
 		blockchainStateServerSentEventsDTORepo)
 

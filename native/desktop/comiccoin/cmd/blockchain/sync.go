@@ -18,6 +18,8 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
+	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
@@ -103,7 +105,7 @@ func doRunBlockchainSyncCmd() error {
 	// ------------ Use-Case ------------
 
 	// Storage Transaction
-	storageTransactionOpenUseCase := usecase.NewStorageTransactionOpenUseCase(
+	storageTransactionOpenUseCase := uc_storagetransaction.NewStorageTransactionOpenUseCase(
 		logger,
 		walletRepo,
 		accountRepo,
@@ -112,7 +114,7 @@ func doRunBlockchainSyncCmd() error {
 		blockDataRepo,
 		tokRepo,
 		pstxRepo)
-	storageTransactionCommitUseCase := usecase.NewStorageTransactionCommitUseCase(
+	storageTransactionCommitUseCase := uc_storagetransaction.NewStorageTransactionCommitUseCase(
 		logger,
 		walletRepo,
 		accountRepo,
@@ -121,7 +123,7 @@ func doRunBlockchainSyncCmd() error {
 		blockDataRepo,
 		tokRepo,
 		pstxRepo)
-	storageTransactionDiscardUseCase := usecase.NewStorageTransactionDiscardUseCase(
+	storageTransactionDiscardUseCase := uc_storagetransaction.NewStorageTransactionDiscardUseCase(
 		logger,
 		walletRepo,
 		accountRepo,
@@ -132,10 +134,10 @@ func doRunBlockchainSyncCmd() error {
 		pstxRepo)
 
 	// Blockchain State
-	upsertBlockchainStateUseCase := usecase.NewUpsertBlockchainStateUseCase(
+	upsertBlockchainStateUseCase := uc_blockchainstate.NewUpsertBlockchainStateUseCase(
 		logger,
 		blockchainStateRepo)
-	getBlockchainStateUseCase := usecase.NewGetBlockchainStateUseCase(
+	getBlockchainStateUseCase := uc_blockchainstate.NewGetBlockchainStateUseCase(
 		logger,
 		blockchainStateRepo)
 
