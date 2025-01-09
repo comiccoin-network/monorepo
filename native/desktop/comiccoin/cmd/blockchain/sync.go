@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
+	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -214,7 +214,7 @@ func doRunBlockchainSyncCmd() error {
 
 	// ------------ Service ------------
 
-	blockchainSyncService := service.NewBlockchainSyncWithBlockchainAuthorityService(
+	blockchainSyncService := service_blockchain.NewBlockchainSyncWithBlockchainAuthorityService(
 		logger,
 		getBlockchainSyncStatusUseCase,
 		setBlockchainSyncStatusUseCase,
