@@ -199,7 +199,7 @@ func (a *App) startup(ctx context.Context) {
 		pstxRepo)
 
 	// Wallet Utility
-	openWalletFromMnemonicUseCase := usecase.NewOpenWalletFromMnemonicUseCase(
+	openHDWalletFromMnemonicUseCase := usecase.NewOpenHDWalletFromMnemonicUseCase(
 		logger,
 		keystore)
 	encryptWalletUseCase := usecase.NewEncryptWalletUseCase(
@@ -208,7 +208,11 @@ func (a *App) startup(ctx context.Context) {
 	decryptWalletUseCase := usecase.NewDecryptWalletUseCase(
 		logger,
 		keystore)
-	decryptWalletMnemonicPhraseUseCase := usecase.NewDecryptWalletMnemonicPhraseUseCase(
+	_ = decryptWalletUseCase
+	mnemonicFromEncryptedHDWalletUseCase := usecase.NewMnemonicFromEncryptedHDWalletUseCase(
+		logger,
+		keystore)
+	privateKeyFromHDWalletUseCase := usecase.NewPrivateKeyFromHDWalletUseCase(
 		logger,
 		keystore)
 
@@ -374,7 +378,8 @@ func (a *App) startup(ctx context.Context) {
 	)
 	createAccountService := service.NewCreateAccountService(
 		logger,
-		openWalletFromMnemonicUseCase,
+		openHDWalletFromMnemonicUseCase,
+		privateKeyFromHDWalletUseCase,
 		encryptWalletUseCase,
 		createWalletUseCase,
 		createAccountUseCase,
@@ -395,7 +400,8 @@ func (a *App) startup(ctx context.Context) {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		decryptWalletUseCase,
+		mnemonicFromEncryptedHDWalletUseCase,
+		privateKeyFromHDWalletUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
 	tokenGetService := service.NewTokenGetService(
@@ -412,7 +418,8 @@ func (a *App) startup(ctx context.Context) {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		decryptWalletUseCase,
+		mnemonicFromEncryptedHDWalletUseCase,
+		privateKeyFromHDWalletUseCase,
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
@@ -426,7 +433,8 @@ func (a *App) startup(ctx context.Context) {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		decryptWalletUseCase,
+		mnemonicFromEncryptedHDWalletUseCase,
+		privateKeyFromHDWalletUseCase,
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
@@ -531,7 +539,7 @@ func (a *App) startup(ctx context.Context) {
 	walletRecoveryService := service.NewWalletRecoveryService(
 		logger,
 		getWalletUseCase,
-		decryptWalletMnemonicPhraseUseCase,
+		mnemonicFromEncryptedHDWalletUseCase,
 	)
 
 	// ------------ Interfaces ------------
