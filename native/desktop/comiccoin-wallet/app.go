@@ -25,6 +25,7 @@ import (
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
 	uc_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockdata"
+	uc_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blocktx"
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
@@ -296,10 +297,10 @@ func (a *App) startup(ctx context.Context) {
 		blockDataRepo)
 
 	// Block Transactions
-	listBlockTransactionsByAddressUseCase := usecase.NewListBlockTransactionsByAddressUseCase(
+	listBlockTransactionsByAddressUseCase := uc_blocktx.NewListBlockTransactionsByAddressUseCase(
 		logger,
 		blockDataRepo)
-	listWithLimitBlockTransactionsByAddressUseCase := usecase.NewListWithLimitBlockTransactionsByAddressUseCase(
+	listWithLimitBlockTransactionsByAddressUseCase := uc_blocktx.NewListWithLimitBlockTransactionsByAddressUseCase(
 		logger,
 		blockDataRepo)
 

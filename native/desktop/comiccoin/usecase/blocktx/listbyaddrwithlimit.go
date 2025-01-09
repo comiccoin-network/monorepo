@@ -1,4 +1,4 @@
-package usecase
+package blocktx
 
 import (
 	"context"
@@ -9,16 +9,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type ListBlockTransactionsByAddressUseCase struct {
+type ListWithLimitBlockTransactionsByAddressUseCase struct {
 	logger *slog.Logger
 	repo   domain.BlockDataRepository
 }
 
-func NewListBlockTransactionsByAddressUseCase(logger *slog.Logger, repo domain.BlockDataRepository) *ListBlockTransactionsByAddressUseCase {
-	return &ListBlockTransactionsByAddressUseCase{logger, repo}
+func NewListWithLimitBlockTransactionsByAddressUseCase(logger *slog.Logger, repo domain.BlockDataRepository) *ListWithLimitBlockTransactionsByAddressUseCase {
+	return &ListWithLimitBlockTransactionsByAddressUseCase{logger, repo}
 }
 
-func (uc *ListBlockTransactionsByAddressUseCase) Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error) {
+func (uc *ListWithLimitBlockTransactionsByAddressUseCase) Execute(ctx context.Context, address *common.Address, limit int64) ([]*domain.BlockTransaction, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -27,6 +27,9 @@ func (uc *ListBlockTransactionsByAddressUseCase) Execute(ctx context.Context, ad
 	if address == nil {
 		e["address"] = "missing value"
 	}
+	if limit == 0 {
+		e["limit"] = "missing value"
+	}
 	if len(e) != 0 {
 		uc.logger.Warn("Failed getting account",
 			slog.Any("error", e))
@@ -34,10 +37,10 @@ func (uc *ListBlockTransactionsByAddressUseCase) Execute(ctx context.Context, ad
 	}
 
 	//
-	// STEP 2: List from database.
+	// STEP 2:  List from database.
 	//
 
-	res, err := uc.repo.ListBlockTransactionsByAddress(ctx, address)
+	res, err := uc.repo.ListWithLimitForBlockTransactionsByAddress(ctx, address, limit)
 	if err != nil {
 		uc.logger.Error("failed listing block data by address",
 			slog.Any("address", address),
@@ -61,3 +64,5 @@ func (uc *ListBlockTransactionsByAddressUseCase) Execute(ctx context.Context, ad
 
 	return res, nil
 }
+
+//

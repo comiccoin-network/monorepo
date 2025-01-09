@@ -9,17 +9,17 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blocktx"
 )
 
 type ListWithLimitBlockTransactionsByAddressService struct {
 	logger                                         *slog.Logger
-	listWithLimitBlockTransactionsByAddressUseCase *usecase.ListWithLimitBlockTransactionsByAddressUseCase
+	listWithLimitBlockTransactionsByAddressUseCase *uc_blocktx.ListWithLimitBlockTransactionsByAddressUseCase
 }
 
 func NewListWithLimitBlockTransactionsByAddressService(
 	logger *slog.Logger,
-	uc1 *usecase.ListWithLimitBlockTransactionsByAddressUseCase,
+	uc1 *uc_blocktx.ListWithLimitBlockTransactionsByAddressUseCase,
 ) *ListWithLimitBlockTransactionsByAddressService {
 	return &ListWithLimitBlockTransactionsByAddressService{logger, uc1}
 }

@@ -9,17 +9,17 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blocktx"
 )
 
 type ListBlockTransactionsByAddressService struct {
 	logger                                *slog.Logger
-	listBlockTransactionsByAddressUseCase *usecase.ListBlockTransactionsByAddressUseCase
+	listBlockTransactionsByAddressUseCase *uc_blocktx.ListBlockTransactionsByAddressUseCase
 }
 
 func NewListBlockTransactionsByAddressService(
 	logger *slog.Logger,
-	uc1 *usecase.ListBlockTransactionsByAddressUseCase,
+	uc1 *uc_blocktx.ListBlockTransactionsByAddressUseCase,
 ) *ListBlockTransactionsByAddressService {
 	return &ListBlockTransactionsByAddressService{logger, uc1}
 }
