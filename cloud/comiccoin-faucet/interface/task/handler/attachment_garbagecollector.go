@@ -4,23 +4,24 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
+	sv_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/attachment"
 )
 
 type AttachmentGarbageCollectorTaskHandler struct {
 	config                            *config.Configuration
 	logger                            *slog.Logger
 	dbClient                          *mongo.Client
-	attachmentGarbageCollectorService *service.AttachmentGarbageCollectorService
+	attachmentGarbageCollectorService *sv_attachment.AttachmentGarbageCollectorService
 }
 
 func NewAttachmentGarbageCollectorTaskHandler(
 	config *config.Configuration,
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	s1 *service.AttachmentGarbageCollectorService,
+	s1 *sv_attachment.AttachmentGarbageCollectorService,
 ) *AttachmentGarbageCollectorTaskHandler {
 	return &AttachmentGarbageCollectorTaskHandler{config, logger, dbClient, s1}
 }

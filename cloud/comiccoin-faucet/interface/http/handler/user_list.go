@@ -13,19 +13,19 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/user"
 )
 
 type UserListByFilterHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.UserListByFilterService
+	service  *sv_user.UserListByFilterService
 }
 
 func NewUserListByFilterHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.UserListByFilterService,
+	service *sv_user.UserListByFilterService,
 ) *UserListByFilterHTTPHandler {
 	return &UserListByFilterHTTPHandler{
 		logger:   logger,
@@ -42,7 +42,7 @@ func (h *UserListByFilterHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 	query := r.URL.Query()
 
 	// Initialize the filter with required fields
-	filter := &service.UserFilterRequestID{
+	filter := &sv_user.UserFilterRequestID{
 		TenantID: tenantID,
 	}
 
@@ -179,7 +179,7 @@ func (h *UserListByFilterHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	resp := result.(*service.UserFilterResultResponseIDO)
+	resp := result.(*sv_user.UserFilterResultResponseIDO)
 
 	// Set response headers
 	w.Header().Set("Content-Type", "application/json")

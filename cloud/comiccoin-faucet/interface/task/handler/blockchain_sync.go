@@ -4,23 +4,24 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
+	sv_blockchain "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/blockchain"
 )
 
 type BlockchainSyncWithBlockchainAuthorityTaskHandler struct {
 	config                                       *config.Configuration
 	logger                                       *slog.Logger
 	dbClient                                     *mongo.Client
-	blockchainSyncWithBlockchainAuthorityService *service.BlockchainSyncWithBlockchainAuthorityService
+	blockchainSyncWithBlockchainAuthorityService *sv_blockchain.BlockchainSyncWithBlockchainAuthorityService
 }
 
 func NewBlockchainSyncWithBlockchainAuthorityTaskHandler(
 	config *config.Configuration,
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	s1 *service.BlockchainSyncWithBlockchainAuthorityService,
+	s1 *sv_blockchain.BlockchainSyncWithBlockchainAuthorityService,
 ) *BlockchainSyncWithBlockchainAuthorityTaskHandler {
 	return &BlockchainSyncWithBlockchainAuthorityTaskHandler{config, logger, dbClient, s1}
 }

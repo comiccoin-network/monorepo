@@ -10,19 +10,19 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/gateway"
 )
 
 type GatewayProfileDetailHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.GatewayProfileGetService
+	service  *sv_gateway.GatewayProfileGetService
 }
 
 func NewGatewayProfileDetailHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.GatewayProfileGetService,
+	service *sv_gateway.GatewayProfileGetService,
 ) *GatewayProfileDetailHTTPHandler {
 	return &GatewayProfileDetailHTTPHandler{
 		logger:   logger,

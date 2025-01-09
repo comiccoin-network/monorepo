@@ -14,19 +14,19 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/gateway"
 )
 
 type GatewayProfileWalletAddressHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.GatewayAddWalletAddressToFaucetService
+	service  *sv_gateway.GatewayAddWalletAddressToFaucetService
 }
 
 func NewGatewayProfileWalletAddressHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.GatewayAddWalletAddressToFaucetService,
+	service *sv_gateway.GatewayAddWalletAddressToFaucetService,
 ) *GatewayProfileWalletAddressHTTPHandler {
 	return &GatewayProfileWalletAddressHTTPHandler{
 		logger:   logger,
@@ -38,9 +38,9 @@ func NewGatewayProfileWalletAddressHTTPHandler(
 func (h *GatewayProfileWalletAddressHTTPHandler) unmarshalProfileWalletAddressRequest(
 	ctx context.Context,
 	r *http.Request,
-) (*service.GatewayProfileWalletAddressRequestIDO, error) {
+) (*sv_gateway.GatewayProfileWalletAddressRequestIDO, error) {
 	// Initialize our array which will store all the results from the remote server.
-	var requestData service.GatewayProfileWalletAddressRequestIDO
+	var requestData sv_gateway.GatewayProfileWalletAddressRequestIDO
 
 	defer r.Body.Close()
 

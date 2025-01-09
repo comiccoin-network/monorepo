@@ -13,19 +13,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/gateway"
 )
 
 type GatewayUserRegisterHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.GatewayUserRegisterService
+	service  *sv_gateway.GatewayUserRegisterService
 }
 
 func NewGatewayUserRegisterHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.GatewayUserRegisterService,
+	service *sv_gateway.GatewayUserRegisterService,
 ) *GatewayUserRegisterHTTPHandler {
 	return &GatewayUserRegisterHTTPHandler{
 		logger:   logger,
@@ -37,9 +37,9 @@ func NewGatewayUserRegisterHTTPHandler(
 func (h *GatewayUserRegisterHTTPHandler) unmarshalRegisterCustomerRequest(
 	ctx context.Context,
 	r *http.Request,
-) (*service.RegisterCustomerRequestIDO, error) {
+) (*sv_gateway.RegisterCustomerRequestIDO, error) {
 	// Initialize our array which will store all the results from the remote server.
-	var requestData service.RegisterCustomerRequestIDO
+	var requestData sv_gateway.RegisterCustomerRequestIDO
 
 	defer r.Body.Close()
 
@@ -104,7 +104,7 @@ func (h *GatewayUserRegisterHTTPHandler) Execute(w http.ResponseWriter, r *http.
 		return
 	}
 
-	resp := result.(*service.RegisterCustomerResponseIDO)
+	resp := result.(*sv_gateway.RegisterCustomerResponseIDO)
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {

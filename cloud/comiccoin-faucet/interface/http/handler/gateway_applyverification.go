@@ -13,19 +13,19 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/gateway"
 )
 
 type GatewayApplyProfileForVerificationHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.GatewayApplyProfileForVerificationService
+	service  *sv_gateway.GatewayApplyProfileForVerificationService
 }
 
 func NewGatewayApplyProfileForVerificationHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.GatewayApplyProfileForVerificationService,
+	service *sv_gateway.GatewayApplyProfileForVerificationService,
 ) *GatewayApplyProfileForVerificationHTTPHandler {
 	return &GatewayApplyProfileForVerificationHTTPHandler{
 		logger:   logger,
@@ -37,9 +37,9 @@ func NewGatewayApplyProfileForVerificationHTTPHandler(
 func (h *GatewayApplyProfileForVerificationHTTPHandler) unmarshalProfileUpdateRequest(
 	ctx context.Context,
 	r *http.Request,
-) (*service.GatewayApplyProfileForVerificationRequestIDO, error) {
+) (*sv_gateway.GatewayApplyProfileForVerificationRequestIDO, error) {
 	// Initialize our array which will store all the results from the remote server.
-	var requestData service.GatewayApplyProfileForVerificationRequestIDO
+	var requestData sv_gateway.GatewayApplyProfileForVerificationRequestIDO
 
 	defer r.Body.Close()
 

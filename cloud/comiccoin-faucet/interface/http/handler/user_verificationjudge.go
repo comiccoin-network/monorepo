@@ -14,19 +14,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/user"
 )
 
 type UserProfileVerificationJudgeOperationHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.UserProfileVerificationJudgeOperationService
+	service  *sv_user.UserProfileVerificationJudgeOperationService
 }
 
 func NewUserProfileVerificationJudgeOperationHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.UserProfileVerificationJudgeOperationService,
+	service *sv_user.UserProfileVerificationJudgeOperationService,
 ) *UserProfileVerificationJudgeOperationHTTPHandler {
 	return &UserProfileVerificationJudgeOperationHTTPHandler{
 		logger:   logger,
@@ -38,9 +38,9 @@ func NewUserProfileVerificationJudgeOperationHTTPHandler(
 func (h *UserProfileVerificationJudgeOperationHTTPHandler) unmarshalProfileUpdateRequest(
 	ctx context.Context,
 	r *http.Request,
-) (*service.UserProfileVerificationJudgeOperationRequestIDO, error) {
+) (*sv_user.UserProfileVerificationJudgeOperationRequestIDO, error) {
 	// Initialize our array which will store all the results from the remote server.
-	var requestData service.UserProfileVerificationJudgeOperationRequestIDO
+	var requestData sv_user.UserProfileVerificationJudgeOperationRequestIDO
 
 	defer r.Body.Close()
 

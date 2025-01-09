@@ -9,19 +9,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/faucet"
 )
 
 type FaucetBalanceHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.FaucetBalanceService
+	service  *sv_faucet.FaucetBalanceService
 }
 
 func NewFaucetBalanceHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.FaucetBalanceService,
+	service *sv_faucet.FaucetBalanceService,
 ) *FaucetBalanceHTTPHandler {
 	return &FaucetBalanceHTTPHandler{
 		logger:   logger,
@@ -65,7 +65,7 @@ func (h *FaucetBalanceHTTPHandler) Execute(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	resp := result.(*service.FaucetBalanceResponseIDO)
+	resp := result.(*sv_faucet.FaucetBalanceResponseIDO)
 
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

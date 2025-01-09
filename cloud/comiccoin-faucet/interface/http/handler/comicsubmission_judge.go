@@ -15,19 +15,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/comicsubmission"
 )
 
 type ComicSubmissionJudgeOperationHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.ComicSubmissionJudgeOperationService
+	service  *sv_comicsubmission.ComicSubmissionJudgeOperationService
 }
 
 func NewComicSubmissionJudgeOperationHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.ComicSubmissionJudgeOperationService,
+	service *sv_comicsubmission.ComicSubmissionJudgeOperationService,
 ) *ComicSubmissionJudgeOperationHTTPHandler {
 	return &ComicSubmissionJudgeOperationHTTPHandler{
 		logger:   logger,
@@ -39,9 +39,9 @@ func NewComicSubmissionJudgeOperationHTTPHandler(
 func (h *ComicSubmissionJudgeOperationHTTPHandler) unmarshalRequest(
 	ctx context.Context,
 	r *http.Request,
-) (*service.ComicSubmissionJudgeVerdictRequestIDO, error) {
+) (*sv_comicsubmission.ComicSubmissionJudgeVerdictRequestIDO, error) {
 	// Initialize our array which will store all the results from the remote server.
-	var requestData service.ComicSubmissionJudgeVerdictRequestIDO
+	var requestData sv_comicsubmission.ComicSubmissionJudgeVerdictRequestIDO
 
 	defer r.Body.Close()
 

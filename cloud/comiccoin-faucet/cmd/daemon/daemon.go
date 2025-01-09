@@ -27,7 +27,12 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/interface/task"
 	taskhandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/interface/task/handler"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/repo"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/attachment"
+	sv_blockchain "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/blockchain"
+	sv_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/comicsubmission"
+	sv_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/faucet"
+	sv_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/gateway"
+	sv_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/user"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 	uc_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/attachment"
@@ -394,7 +399,7 @@ func doRunDaemon() {
 	// Service
 	//
 
-	faucetCoinTransferService := service.NewFaucetCoinTransferService(
+	faucetCoinTransferService := sv_faucet.NewFaucetCoinTransferService(
 		cfg,
 		logger,
 		kmutex,
@@ -408,7 +413,7 @@ func doRunDaemon() {
 		createUserTransactionUseCase,
 	)
 
-	gatewayUserRegisterService := service.NewGatewayUserRegisterService(
+	gatewayUserRegisterService := sv_gateway.NewGatewayUserRegisterService(
 		cfg,
 		logger,
 		passp,
@@ -421,7 +426,7 @@ func doRunDaemon() {
 		sendUserVerificationEmailUseCase,
 	)
 
-	gatewayLoginService := service.NewGatewayLoginService(
+	gatewayLoginService := sv_gateway.NewGatewayLoginService(
 		logger,
 		passp,
 		cache,
@@ -431,54 +436,54 @@ func doRunDaemon() {
 		userUpdateUseCase,
 	)
 
-	gatewayLogoutService := service.NewGatewayLogoutService(
+	gatewayLogoutService := sv_gateway.NewGatewayLogoutService(
 		logger,
 		cache,
 	)
 
-	gatewayRefreshTokenService := service.NewGatewayRefreshTokenService(
+	gatewayRefreshTokenService := sv_gateway.NewGatewayRefreshTokenService(
 		logger,
 		cache,
 		jwtp,
 		userGetByEmailUseCase,
 	)
 
-	gatewayProfileGetService := service.NewGatewayProfileGetService(
+	gatewayProfileGetService := sv_gateway.NewGatewayProfileGetService(
 		logger,
 		userGetByIDUseCase,
 	)
-	gatewayProfileUpdateService := service.NewGatewayProfileUpdateService(
+	gatewayProfileUpdateService := sv_gateway.NewGatewayProfileUpdateService(
 		logger,
 		userGetByIDUseCase,
 		userUpdateUseCase,
 	)
-	gatewayVerifyEmailService := service.NewGatewayVerifyEmailService(
+	gatewayVerifyEmailService := sv_gateway.NewGatewayVerifyEmailService(
 		logger,
 		kmutex,
 		userGetByVerificationCodeUseCase,
 		userUpdateUseCase,
 	)
-	gatewayChangePasswordService := service.NewGatewayChangePasswordService(
+	gatewayChangePasswordService := sv_gateway.NewGatewayChangePasswordService(
 		logger,
 		kmutex,
 		passp,
 		userGetByIDUseCase,
 		userUpdateUseCase,
 	)
-	gatewayForgotPasswordService := service.NewGatewayForgotPasswordService(
+	gatewayForgotPasswordService := sv_gateway.NewGatewayForgotPasswordService(
 		logger,
 		templatedEmailer,
 		userGetByEmailUseCase,
 		userUpdateUseCase,
 	)
-	gatewayResetPasswordService := service.NewGatewayResetPasswordService(
+	gatewayResetPasswordService := sv_gateway.NewGatewayResetPasswordService(
 		logger,
 		kmutex,
 		passp,
 		userGetByVerificationCodeUseCase,
 		userUpdateUseCase,
 	)
-	gatewayAddWalletAddressToFaucetService := service.NewGatewayAddWalletAddressToFaucetService(
+	gatewayAddWalletAddressToFaucetService := sv_gateway.NewGatewayAddWalletAddressToFaucetService(
 		cfg,
 		logger,
 		tenantGetByIDUseCase,
@@ -486,14 +491,14 @@ func doRunDaemon() {
 		userUpdateUseCase,
 		faucetCoinTransferService,
 	)
-	gatewayProfileApplyForVerificationService := service.NewGatewayApplyProfileForVerificationService(
+	gatewayProfileApplyForVerificationService := sv_gateway.NewGatewayApplyProfileForVerificationService(
 		logger,
 		userGetByIDUseCase,
 		userUpdateUseCase,
 	)
 	_ = gatewayProfileApplyForVerificationService
 
-	blockchainSyncWithBlockchainAuthorityService := service.NewBlockchainSyncWithBlockchainAuthorityService(
+	blockchainSyncWithBlockchainAuthorityService := sv_blockchain.NewBlockchainSyncWithBlockchainAuthorityService(
 		cfg,
 		logger,
 		getGenesisBlockDataUseCase,
@@ -514,7 +519,7 @@ func doRunDaemon() {
 		userTransactionUpdateUseCase,
 	)
 
-	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService := service.NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
+	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService := sv_blockchain.NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 		cfg,
 		logger,
 		dbClient,
@@ -524,14 +529,14 @@ func doRunDaemon() {
 	)
 
 	// Attachment
-	attachmentCreateService := service.NewAttachmentCreateService(
+	attachmentCreateService := sv_attachment.NewAttachmentCreateService(
 		cfg,
 		logger,
 		cloudStorageSyncUploadUseCase,
 		createAttachmentUseCase,
 		cloudStoragePresignedURLUseCase,
 	)
-	attachmentGarbageCollectorService := service.NewAttachmentGarbageCollectorService(
+	attachmentGarbageCollectorService := sv_attachment.NewAttachmentGarbageCollectorService(
 		logger,
 		attachmentListByFilterUseCase,
 		attachmentDeleteUseCase,
@@ -539,7 +544,7 @@ func doRunDaemon() {
 	)
 
 	// Comic Submission
-	comicSubmissionCreateService := service.NewComicSubmissionCreateService(
+	comicSubmissionCreateService := sv_comicsubmission.NewComicSubmissionCreateService(
 		cfg,
 		logger,
 		userGetByIDUseCase,
@@ -548,28 +553,28 @@ func doRunDaemon() {
 		attachmentUpdateUseCase,
 		comicSubmissionCreateUseCase,
 	)
-	comicSubmissionGetService := service.NewComicSubmissionGetService(
+	comicSubmissionGetService := sv_comicsubmission.NewComicSubmissionGetService(
 		logger,
 		comicSubmissionGetByIDUseCase,
 	)
-	comicSubmissionCountByFilterService := service.NewComicSubmissionCountByFilterService(
+	comicSubmissionCountByFilterService := sv_comicsubmission.NewComicSubmissionCountByFilterService(
 		logger,
 		comicSubmissionCountByFilterUseCase,
 	)
-	comicSubmissionCountTotalCreatedTodayByUserService := service.NewComicSubmissionCountTotalCreatedTodayByUserService(
+	comicSubmissionCountTotalCreatedTodayByUserService := sv_comicsubmission.NewComicSubmissionCountTotalCreatedTodayByUserService(
 		logger,
 		comicSubmissionCountTotalCreatedTodayByUserUseCase,
 	)
-	comicSubmissionListByFilterService := service.NewComicSubmissionListByFilterService(
+	comicSubmissionListByFilterService := sv_comicsubmission.NewComicSubmissionListByFilterService(
 		logger,
 		cloudStoragePresignedURLUseCase,
 		comicSubmissionListByFilterUseCase,
 	)
-	comicSubmissionCountCoinsRewardByFilterService := service.NewComicSubmissionCountCoinsRewardByFilterService(
+	comicSubmissionCountCoinsRewardByFilterService := sv_comicsubmission.NewComicSubmissionCountCoinsRewardByFilterService(
 		logger,
 		comicSubmissionCountCoinsRewardByFilterUseCase,
 	)
-	comicSubmissionJudgeOperationService := service.NewComicSubmissionJudgeOperationService(
+	comicSubmissionJudgeOperationService := sv_comicsubmission.NewComicSubmissionJudgeOperationService(
 		cfg,
 		logger,
 		faucetCoinTransferService,
@@ -580,29 +585,29 @@ func doRunDaemon() {
 		comicSubmissionGetByIDUseCase,
 		comicSubmissionUpdateUseCase,
 	)
-	comicSubmissionTotalCoinsAwardedService := service.NewComicSubmissionTotalCoinsAwardedService(
+	comicSubmissionTotalCoinsAwardedService := sv_comicsubmission.NewComicSubmissionTotalCoinsAwardedService(
 		logger,
 		comicSubmissionTotalCoinsAwardedUseCase,
 	)
 
 	// User
-	userCountJoinedThisWeekService := service.NewUserCountJoinedThisWeekService(
+	userCountJoinedThisWeekService := sv_user.NewUserCountJoinedThisWeekService(
 		logger,
 		userCountByFilterUseCase,
 	)
-	userListByFilterService := service.NewUserListByFilterService(
+	userListByFilterService := sv_user.NewUserListByFilterService(
 		logger,
 		cloudStoragePresignedURLUseCase,
 		userListByFilterUseCase,
 	)
-	userProfileVerificationJudgeOperationService := service.NewUserProfileVerificationJudgeOperationService(
+	userProfileVerificationJudgeOperationService := sv_user.NewUserProfileVerificationJudgeOperationService(
 		logger,
 		userGetByIDUseCase,
 		userUpdateUseCase,
 	)
 
 	// Faucet
-	faucetBalanceService := service.NewFaucetBalanceService(
+	faucetBalanceService := sv_faucet.NewFaucetBalanceService(
 		cfg,
 		logger,
 		kmutex,

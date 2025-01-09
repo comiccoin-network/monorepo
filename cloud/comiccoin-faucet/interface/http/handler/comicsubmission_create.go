@@ -12,19 +12,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/comicsubmission"
 )
 
 type ComicSubmissionCreateHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.ComicSubmissionCreateService
+	service  *sv_comicsubmission.ComicSubmissionCreateService
 }
 
 func NewComicSubmissionCreateHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.ComicSubmissionCreateService,
+	service *sv_comicsubmission.ComicSubmissionCreateService,
 ) *ComicSubmissionCreateHTTPHandler {
 	return &ComicSubmissionCreateHTTPHandler{
 		logger:   logger,
@@ -36,9 +36,9 @@ func NewComicSubmissionCreateHTTPHandler(
 func (h *ComicSubmissionCreateHTTPHandler) unmarshaRequest(
 	ctx context.Context,
 	r *http.Request,
-) (*service.ComicSubmissionCreateRequestIDO, error) {
+) (*sv_comicsubmission.ComicSubmissionCreateRequestIDO, error) {
 	// Initialize our array which will store all the results from the remote server.
-	var requestData service.ComicSubmissionCreateRequestIDO
+	var requestData sv_comicsubmission.ComicSubmissionCreateRequestIDO
 
 	defer r.Body.Close()
 
@@ -99,7 +99,7 @@ func (h *ComicSubmissionCreateHTTPHandler) Execute(w http.ResponseWriter, r *htt
 		return
 	}
 
-	resp := result.(*service.ComicSubmissionCreateResponseIDO)
+	resp := result.(*sv_comicsubmission.ComicSubmissionCreateResponseIDO)
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {

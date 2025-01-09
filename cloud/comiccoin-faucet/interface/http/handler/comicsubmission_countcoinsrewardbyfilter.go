@@ -13,19 +13,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/comicsubmission"
 )
 
 type ComicSubmissionCountCoinsRewardByFilterHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.ComicSubmissionCountCoinsRewardByFilterService
+	service  *sv_comicsubmission.ComicSubmissionCountCoinsRewardByFilterService
 }
 
 func NewComicSubmissionCountCoinsRewardByFilterHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.ComicSubmissionCountCoinsRewardByFilterService,
+	service *sv_comicsubmission.ComicSubmissionCountCoinsRewardByFilterService,
 ) *ComicSubmissionCountCoinsRewardByFilterHTTPHandler {
 	return &ComicSubmissionCountCoinsRewardByFilterHTTPHandler{
 		logger:   logger,
@@ -94,7 +94,7 @@ func (h *ComicSubmissionCountCoinsRewardByFilterHTTPHandler) Execute(w http.Resp
 		return
 	}
 
-	resp := result.(*service.ComicSubmissionCountCoinsRewardByFilterServiceResponseIDO)
+	resp := result.(*sv_comicsubmission.ComicSubmissionCountCoinsRewardByFilterServiceResponseIDO)
 
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

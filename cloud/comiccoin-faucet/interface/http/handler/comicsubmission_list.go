@@ -14,19 +14,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/comicsubmission"
 )
 
 type ComicSubmissionListByFilterHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.ComicSubmissionListByFilterService
+	service  *sv_comicsubmission.ComicSubmissionListByFilterService
 }
 
 func NewComicSubmissionListByFilterHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.ComicSubmissionListByFilterService,
+	service *sv_comicsubmission.ComicSubmissionListByFilterService,
 ) *ComicSubmissionListByFilterHTTPHandler {
 	return &ComicSubmissionListByFilterHTTPHandler{
 		logger:   logger,
@@ -43,7 +43,7 @@ func (h *ComicSubmissionListByFilterHTTPHandler) Execute(w http.ResponseWriter, 
 	query := r.URL.Query()
 
 	// Initialize the filter with required fields
-	filter := &service.ComicSubmissionFilterRequestID{
+	filter := &sv_comicsubmission.ComicSubmissionFilterRequestID{
 		TenantID: tenantID,
 	}
 
@@ -168,7 +168,7 @@ func (h *ComicSubmissionListByFilterHTTPHandler) Execute(w http.ResponseWriter, 
 		return
 	}
 
-	resp := result.(*service.ComicSubmissionFilterResultResponseIDO)
+	resp := result.(*sv_comicsubmission.ComicSubmissionFilterResultResponseIDO)
 
 	// Set response headers
 	w.Header().Set("Content-Type", "application/json")

@@ -12,19 +12,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/gateway"
 )
 
 type GatewayResetPasswordHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.GatewayResetPasswordService
+	service  *sv_gateway.GatewayResetPasswordService
 }
 
 func NewGatewayResetPasswordHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.GatewayResetPasswordService,
+	service *sv_gateway.GatewayResetPasswordService,
 ) *GatewayResetPasswordHTTPHandler {
 	return &GatewayResetPasswordHTTPHandler{
 		logger:   logger,
@@ -36,9 +36,9 @@ func NewGatewayResetPasswordHTTPHandler(
 func (h *GatewayResetPasswordHTTPHandler) unmarshalResetPasswordRequest(
 	ctx context.Context,
 	r *http.Request,
-) (*service.GatewayResetPasswordRequestIDO, error) {
+) (*sv_gateway.GatewayResetPasswordRequestIDO, error) {
 	// Initialize our array which will store all the results from the remote server.
-	var requestData service.GatewayResetPasswordRequestIDO
+	var requestData sv_gateway.GatewayResetPasswordRequestIDO
 
 	defer r.Body.Close()
 

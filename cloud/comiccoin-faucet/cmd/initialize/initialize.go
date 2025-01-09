@@ -17,6 +17,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/repo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/account"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
@@ -146,7 +147,7 @@ func doRunGatewayInit() {
 	// Service
 	//
 
-	createAccountService := service.NewCreateAccountService(
+	createAccountService := sv_account.NewCreateAccountService(
 		logger,
 		openHDWalletFromMnemonicUseCase,
 		privateKeyFromHDWalletUseCase,

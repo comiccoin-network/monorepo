@@ -14,19 +14,19 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/gateway"
 )
 
 type GatewayProfileUpdateHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.GatewayProfileUpdateService
+	service  *sv_gateway.GatewayProfileUpdateService
 }
 
 func NewGatewayProfileUpdateHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.GatewayProfileUpdateService,
+	service *sv_gateway.GatewayProfileUpdateService,
 ) *GatewayProfileUpdateHTTPHandler {
 	return &GatewayProfileUpdateHTTPHandler{
 		logger:   logger,
@@ -38,9 +38,9 @@ func NewGatewayProfileUpdateHTTPHandler(
 func (h *GatewayProfileUpdateHTTPHandler) unmarshalProfileUpdateRequest(
 	ctx context.Context,
 	r *http.Request,
-) (*service.GatewayProfileUpdateRequestIDO, error) {
+) (*sv_gateway.GatewayProfileUpdateRequestIDO, error) {
 	// Initialize our array which will store all the results from the remote server.
-	var requestData service.GatewayProfileUpdateRequestIDO
+	var requestData sv_gateway.GatewayProfileUpdateRequestIDO
 
 	defer r.Body.Close()
 

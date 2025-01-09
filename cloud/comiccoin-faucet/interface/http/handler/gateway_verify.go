@@ -14,19 +14,19 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/gateway"
 )
 
 type GatewayVerifyHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.GatewayVerifyEmailService
+	service  *sv_gateway.GatewayVerifyEmailService
 }
 
 func NewGatewayVerifyHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.GatewayVerifyEmailService,
+	service *sv_gateway.GatewayVerifyEmailService,
 ) *GatewayVerifyHTTPHandler {
 	return &GatewayVerifyHTTPHandler{
 		logger:   logger,
@@ -38,9 +38,9 @@ func NewGatewayVerifyHTTPHandler(
 func (h *GatewayVerifyHTTPHandler) unmarshalVerifyRequest(
 	ctx context.Context,
 	r *http.Request,
-) (*service.GatewayVerifyRequestIDO, error) {
+) (*sv_gateway.GatewayVerifyRequestIDO, error) {
 	// Initialize our array which will store all the results from the remote server.
-	var requestData service.GatewayVerifyRequestIDO
+	var requestData sv_gateway.GatewayVerifyRequestIDO
 
 	defer r.Body.Close()
 

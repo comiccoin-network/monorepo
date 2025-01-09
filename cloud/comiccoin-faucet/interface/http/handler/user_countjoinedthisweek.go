@@ -12,19 +12,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/user"
 )
 
 type UserCountJoinedThisWeekHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.UserCountJoinedThisWeekService
+	service  *sv_user.UserCountJoinedThisWeekService
 }
 
 func NewUserCountJoinedThisWeekHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.UserCountJoinedThisWeekService,
+	service *sv_user.UserCountJoinedThisWeekService,
 ) *UserCountJoinedThisWeekHTTPHandler {
 	return &UserCountJoinedThisWeekHTTPHandler{
 		logger:   logger,
@@ -77,7 +77,7 @@ func (h *UserCountJoinedThisWeekHTTPHandler) Execute(w http.ResponseWriter, r *h
 		return
 	}
 
-	resp := result.(*service.UserCountJoinedThisWeekResponseIDO)
+	resp := result.(*sv_user.UserCountJoinedThisWeekResponseIDO)
 
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

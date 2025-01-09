@@ -18,7 +18,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/repo"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/user"
 	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
@@ -127,7 +127,7 @@ func doRunNewAccount() {
 	//
 	// Service
 	//
-	userCreateService := service.NewUserCreateService(
+	userCreateService := sv_user.NewUserCreateService(
 		cfg,
 		logger,
 		passp,
@@ -175,7 +175,7 @@ func doRunNewAccount() {
 	// Define a transaction function with a series of operations
 	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
 		logger.Debug("Transaction started")
-		req := &service.UserCreateRequestIDO{
+		req := &sv_user.UserCreateRequestIDO{
 			FirstName:           flagFirstName,
 			LastName:            flagLastName,
 			Email:               flagEmail,
@@ -217,7 +217,7 @@ func doRunNewAccount() {
 		log.Fatalf("Failed creating account: %v\n", err)
 	}
 
-	resp := res.(*service.UserCreateResponseIDO)
+	resp := res.(*sv_user.UserCreateResponseIDO)
 
 	logger.Debug("Account created",
 		slog.Any("resp", resp))

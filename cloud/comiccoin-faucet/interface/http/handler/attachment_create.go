@@ -13,19 +13,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_attachment "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/attachment"
 )
 
 type AttachmentCreateHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.AttachmentCreateService
+	service  *sv_attachment.AttachmentCreateService
 }
 
 func NewAttachmentCreateHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.AttachmentCreateService,
+	service *sv_attachment.AttachmentCreateService,
 ) *AttachmentCreateHTTPHandler {
 	return &AttachmentCreateHTTPHandler{
 		logger:   logger,
@@ -66,7 +66,7 @@ func (h *AttachmentCreateHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 	}
 
 	// Initialize our array which will store all the results from the remote server.
-	requestData := &service.AttachmentCreateRequestIDO{
+	requestData := &sv_attachment.AttachmentCreateRequestIDO{
 		Filename:    header.Filename,
 		ContentType: header.Header.Get("Content-Type"),
 		Data:        data,
@@ -107,7 +107,7 @@ func (h *AttachmentCreateHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	resp := result.(*service.AttachmentCreateResponseIDO)
+	resp := result.(*sv_attachment.AttachmentCreateResponseIDO)
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {

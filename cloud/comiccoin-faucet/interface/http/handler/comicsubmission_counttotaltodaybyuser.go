@@ -11,19 +11,19 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/comicsubmission"
 )
 
 type ComicSubmissionCountTotalCreatedTodayByUserHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.ComicSubmissionCountTotalCreatedTodayByUserService
+	service  *sv_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserService
 }
 
 func NewComicSubmissionCountTotalCreatedTodayByUserHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.ComicSubmissionCountTotalCreatedTodayByUserService,
+	service *sv_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserService,
 ) *ComicSubmissionCountTotalCreatedTodayByUserHTTPHandler {
 	return &ComicSubmissionCountTotalCreatedTodayByUserHTTPHandler{
 		logger:   logger,
@@ -69,7 +69,7 @@ func (h *ComicSubmissionCountTotalCreatedTodayByUserHTTPHandler) Execute(w http.
 		return
 	}
 
-	resp := result.(*service.ComicSubmissionCountTotalCreatedTodayByUserServiceResponseIDO)
+	resp := result.(*sv_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserServiceResponseIDO)
 
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

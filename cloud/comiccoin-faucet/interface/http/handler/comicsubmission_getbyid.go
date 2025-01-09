@@ -10,19 +10,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service"
+	sv_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/service/comicsubmission"
 )
 
 type ComicSubmissionGetHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *service.ComicSubmissionGetService
+	service  *sv_comicsubmission.ComicSubmissionGetService
 }
 
 func NewComicSubmissionGetHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *service.ComicSubmissionGetService,
+	service *sv_comicsubmission.ComicSubmissionGetService,
 ) *ComicSubmissionGetHTTPHandler {
 	return &ComicSubmissionGetHTTPHandler{
 		logger:   logger,
@@ -71,7 +71,7 @@ func (h *ComicSubmissionGetHTTPHandler) Execute(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	resp := result.(*service.ComicSubmissionResponseIDO)
+	resp := result.(*sv_comicsubmission.ComicSubmissionResponseIDO)
 
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
