@@ -21,7 +21,7 @@ import (
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
-	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
 type TokenTransferService struct {
@@ -29,7 +29,7 @@ type TokenTransferService struct {
 	logger                          *slog.Logger
 	kmutex                          kmutexutil.KMutexProvider
 	dbClient                        *mongo.Client
-	walletDecryptKeyUseCase         *uc_wallet.WalletDecryptKeyUseCase
+	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
 	getBlockchainStateUseCase       *uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase    *uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockDataUseCase             *uc_blockdata.GetBlockDataUseCase
@@ -42,7 +42,7 @@ func NewTokenTransferService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
 	client *mongo.Client,
-	uc1 *uc_wallet.WalletDecryptKeyUseCase,
+	uc1 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc2 *uc_blockchainstate.GetBlockchainStateUseCase,
 	uc3 *uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc4 *uc_blockdata.GetBlockDataUseCase,
@@ -121,16 +121,7 @@ func (s *TokenTransferService) Execute(
 			return nil, fmt.Errorf("Blockchain state does not exist")
 		}
 
-		ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(sessCtx, tokenOwnerWalletMnemonic, tokenOwnerWalletPath)
-		if err != nil {
-			s.logger.Error("failed deriving wallet from mnemonic phrase",
-				slog.Any("error", err))
-			return nil, fmt.Errorf("failed deriving wallet from mnemonic phrase: %s", err)
-		}
-		if wallet == nil {
-			return nil, fmt.Errorf("failed deriving wallet from mnemonic phrase: %s", "d.n.e.")
-		}
-		privateKey, err := wallet.PrivateKey(*ethAccount)
+		privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(ctx, tokenOwnerWalletMnemonic, tokenOwnerWalletPath)
 		if err != nil {
 			s.logger.Error("failed getting wallet private key",
 				slog.Any("error", err))

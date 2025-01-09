@@ -41,7 +41,7 @@ import (
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
-	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -75,7 +75,7 @@ func doRunDaemon() {
 	ipcbp := ipcb.NewProvider(cfg, logger)
 
 	// Repository
-	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
+	// walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
 	accountRepo := repo.NewAccountRepo(cfg, logger, dbClient)
 	bdRepo := repo.NewBlockDataRepo(cfg, logger, dbClient)
 	gbdRepo := repo.NewGenesisBlockDataRepo(cfg, logger, dbClient)
@@ -136,13 +136,20 @@ func doRunDaemon() {
 		bdRepo,
 	)
 
-	// Wallet
-	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
+	// Wallet Utils
+	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
 		cfg,
 		logger,
 		keystore,
-		walletRepo,
 	)
+
+	// Wallet
+	// walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
+	// 	cfg,
+	// 	logger,
+	// 	keystore,
+	// 	walletRepo,
+	// )
 	// getWalletUseCase := uc_wallet.NewGetWalletUseCase(
 	// 	cfg,
 	// 	logger,
@@ -268,7 +275,7 @@ func doRunDaemon() {
 	getProofOfAuthorityPrivateKeyService := s_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
-		walletDecryptKeyUseCase,
+		privateKeyFromHDWalletUseCase,
 	)
 	proofOfAuthorityConsensusMechanismService := s_poa.NewProofOfAuthorityConsensusMechanismService(
 		cfg,

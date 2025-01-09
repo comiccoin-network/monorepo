@@ -8,19 +8,19 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
-	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
 type GetProofOfAuthorityPrivateKeyService struct {
-	config                  *config.Configuration
-	logger                  *slog.Logger
-	walletDecryptKeyUseCase *uc_wallet.WalletDecryptKeyUseCase
+	config                        *config.Configuration
+	logger                        *slog.Logger
+	privateKeyFromHDWalletUseCase *uc_walletutil.PrivateKeyFromHDWalletUseCase
 }
 
 func NewGetProofOfAuthorityPrivateKeyService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc1 *uc_wallet.WalletDecryptKeyUseCase,
+	uc1 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 ) *GetProofOfAuthorityPrivateKeyService {
 	return &GetProofOfAuthorityPrivateKeyService{cfg, logger, uc1}
 }
@@ -44,24 +44,10 @@ func (s *GetProofOfAuthorityPrivateKeyService) Execute(ctx context.Context) (*ec
 	}
 
 	//
-	// STEP 2: Return the account.
+	// STEP 2: Get private key
 	//
 
-	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(ctx, s.config.Blockchain.ProofOfAuthorityWalletMnemonic, s.config.Blockchain.ProofOfAuthorityWalletPath)
-	if err != nil {
-		s.logger.Error("failed deriving wallet from mnemonic phrase",
-			slog.Any("error", err))
-		return nil, fmt.Errorf("failed deriving wallet from mnemonic phrase: %s", err)
-	}
-	if wallet == nil {
-		return nil, fmt.Errorf("failed deriving wallet from mnemonic phrase: %s", "d.n.e.")
-	}
-
-	//
-	// STEP 3: Get private key
-	//
-
-	privateKey, err := wallet.PrivateKey(*ethAccount)
+	privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(ctx, s.config.Blockchain.ProofOfAuthorityWalletMnemonic, s.config.Blockchain.ProofOfAuthorityWalletPath)
 	if err != nil {
 		s.logger.Error("failed getting wallet private key",
 			slog.Any("error", err))

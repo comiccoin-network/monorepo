@@ -21,7 +21,7 @@ import (
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
-	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
 func BurnTokenCmd() *cobra.Command {
@@ -52,7 +52,7 @@ func doRunBurnToken() {
 	kmutex := kmutexutil.NewKMutexProvider()
 
 	// ------ Repository ------
-	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
+	// walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
 	// accountRepo := repo.NewAccountRepo(cfg, logger, dbClient)
 	blockchainStateRepo := repo.NewBlockchainStateRepo(cfg, logger, dbClient)
 	tokRepo := repo.NewTokenRepo(cfg, logger, dbClient)
@@ -69,11 +69,10 @@ func doRunBurnToken() {
 	// 	walletRepo,
 	// )
 	// _ = walletEncryptKeyUseCase
-	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
+	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
 		cfg,
 		logger,
 		keystore,
-		walletRepo,
 	)
 	// createWalletUseCase := usecase.NewCreateWalletUseCase(
 	// 	cfg,
@@ -178,7 +177,7 @@ func doRunBurnToken() {
 		logger,
 		kmutex,
 		dbClient, // Note: Used for mongoDB transaction handling.
-		walletDecryptKeyUseCase,
+		privateKeyFromHDWalletUseCase,
 		getBlockchainStateUseCase,
 		upsertBlockchainStateUseCase,
 		getBlockDataUseCase,

@@ -3,6 +3,7 @@ package hdkeystore
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/json"
@@ -10,6 +11,7 @@ import (
 	"io"
 
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/crypto"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/crypto/pbkdf2"
@@ -24,6 +26,7 @@ type KeystoreAdapter interface {
 	EncryptWallet(mnemonic *sstring.SecureString, path string, password *sstring.SecureString) ([]byte, error)
 	DecryptWallet(cryptData []byte, password *sstring.SecureString) (accounts.Account, *hdwallet.Wallet, error)
 	DecryptMnemonicPhrase(cryptData []byte, password *sstring.SecureString) (*sstring.SecureString, string, error)
+	PrivateKeyFromOpenWallet(mnemonic *sstring.SecureString, path string) (*ecdsa.PrivateKey, error)
 }
 
 type keystoreAdapterImpl struct{}
@@ -206,4 +209,31 @@ func (impl *keystoreAdapterImpl) DecryptMnemonicPhrase(cryptData []byte, passwor
 	}
 
 	return secureMnemonic, walletData.Path, nil
+}
+
+func (impl *keystoreAdapterImpl) PrivateKeyFromOpenWallet(mnemonic *sstring.SecureString, path string) (*ecdsa.PrivateKey, error) {
+	wallet, err := hdwallet.NewFromMnemonic(mnemonic.String())
+	if err != nil {
+		return nil, fmt.Errorf("failed to open wallet: %v", err)
+	}
+
+	derivationPath := hdwallet.MustParseDerivationPath(path)
+	ethAccount, err := wallet.Derive(derivationPath, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to derive account: %v", err)
+	}
+
+	privateKey, err := wallet.PrivateKey(ethAccount)
+	if err != nil {
+		return nil, fmt.Errorf("failed getting wallet private key: %s", err)
+	}
+
+	// Convert the private key to the correct curve format
+	privateKeyBytes := crypto.FromECDSA(privateKey)
+	correctedPrivateKey, err := crypto.ToECDSA(privateKeyBytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed converting private key to correct curve: %s", err)
+	}
+
+	return correctedPrivateKey, nil
 }

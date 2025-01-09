@@ -18,7 +18,7 @@ import (
 	s_coin "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/coin"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
-	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
 // Command line argument flags
@@ -81,7 +81,6 @@ func doRunTransferCoinsCommand() {
 	keystore := hdkeystore.NewAdapter()
 
 	// ------ Repository ------
-	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
 	accountRepo := repo.NewAccountRepo(cfg, logger, dbClient)
 	mempoolTxRepo := repo.NewMempoolTransactionRepo(cfg, logger, dbClient)
 	// blockchainStateRepo := repo.NewBlockchainStateRepo(cfg, logger, dbClient)
@@ -91,11 +90,10 @@ func doRunTransferCoinsCommand() {
 
 	// ------ Use-case ------
 	// Wallet
-	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
+	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
 		cfg,
 		logger,
 		keystore,
-		walletRepo,
 	)
 
 	// Account
@@ -117,7 +115,7 @@ func doRunTransferCoinsCommand() {
 		cfg,
 		logger,
 		getAccountUseCase,
-		walletDecryptKeyUseCase,
+		privateKeyFromHDWalletUseCase,
 		mempoolTransactionCreateUseCase,
 	)
 

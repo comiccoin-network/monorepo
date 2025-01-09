@@ -16,14 +16,14 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
-	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
 type CoinTransferService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	getAccountUseCase               *uc_account.GetAccountUseCase
-	walletDecryptKeyUseCase         *uc_wallet.WalletDecryptKeyUseCase
+	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
 	mempoolTransactionCreateUseCase *uc_mempooltx.MempoolTransactionCreateUseCase
 }
 
@@ -31,7 +31,7 @@ func NewCoinTransferService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc1 *uc_account.GetAccountUseCase,
-	uc2 *uc_wallet.WalletDecryptKeyUseCase,
+	uc2 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc3 *uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *CoinTransferService {
 	return &CoinTransferService{cfg, logger, uc1, uc2, uc3}
@@ -82,23 +82,14 @@ func (s *CoinTransferService) Execute(
 	}
 
 	//
-	// STEP 2: Get the account and extract the wallet private/public key.
+	// STEP 2: Get the wallet and extract the wallet private/public key.
 	//
 
-	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
+	privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
 	if err != nil {
-		s.logger.Error("failed decrypting wallet",
+		s.logger.Error("failed getting wallet key",
 			slog.Any("error", err))
-		return fmt.Errorf("failed decrypting wallet: %s", err)
-	}
-	if wallet == nil {
-		return fmt.Errorf("failed decrypting wallet: %s", "d.n.e.")
-	}
-	privateKey, err := wallet.PrivateKey(*ethAccount)
-	if err != nil {
-		s.logger.Error("failed getting wallet private key",
-			slog.Any("error", err))
-		return fmt.Errorf("failed getting wallet private key: %s", err)
+		return fmt.Errorf("failed getting wallet key: %s", err)
 	}
 
 	//

@@ -20,7 +20,7 @@ import (
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
-	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
 func MintTokenCmd() *cobra.Command {
@@ -52,7 +52,7 @@ func doRunMintToken() {
 	dmutex := distributedmutex.NewAdapter(logger, cachep.GetRedisClient())
 
 	// ------ Repository ------
-	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
+	// walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
 	// accountRepo := repo.NewAccountRepo(cfg, logger, dbClient)
 	blockchainStateRepo := repo.NewBlockchainStateRepo(cfg, logger, dbClient)
 	// tokRepo := repo.NewTokenRepo(cfg, logger, dbClient)
@@ -69,11 +69,10 @@ func doRunMintToken() {
 	// 	walletRepo,
 	// )
 	// _ = walletEncryptKeyUseCase
-	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
+	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
 		cfg,
 		logger,
 		keystore,
-		walletRepo,
 	)
 	// createWalletUseCase := usecase.NewCreateWalletUseCase(
 	// 	cfg,
@@ -171,7 +170,7 @@ func doRunMintToken() {
 	getProofOfAuthorityPrivateKeyService := s_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
-		walletDecryptKeyUseCase,
+		privateKeyFromHDWalletUseCase,
 	)
 	tokenMintService := s_token.NewTokenMintService(
 		cfg,
