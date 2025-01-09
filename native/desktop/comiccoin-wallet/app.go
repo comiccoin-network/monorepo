@@ -24,6 +24,7 @@ import (
 	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
 	service_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchainsyncstatus"
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
+	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -57,8 +58,8 @@ type App struct {
 	tokenTransferService                                            *service.TokenTransferService
 	tokenBurnService                                                *service.TokenBurnService
 	getOrDownloadNonFungibleTokenService                            *service.GetOrDownloadNonFungibleTokenService
-	listBlockTransactionsByAddressService                           *service.ListBlockTransactionsByAddressService
-	listWithLimitBlockTransactionsByAddressService                  *service.ListWithLimitBlockTransactionsByAddressService
+	listBlockTransactionsByAddressService                           *service_blocktx.ListBlockTransactionsByAddressService
+	listWithLimitBlockTransactionsByAddressService                  *service_blocktx.ListWithLimitBlockTransactionsByAddressService
 	getByBlockTransactionTimestampService                           *service_blockdata.GetByBlockTransactionTimestampService
 	blockDataGetByHashService                                       *service_blockdata.BlockDataGetByHashService
 	tokenListByOwnerService                                         *service.TokenListByOwnerService
@@ -499,11 +500,11 @@ func (a *App) startup(ctx context.Context) {
 		downloadNFTokAssetUsecase,
 		upsertNFTokUseCase)
 
-	listBlockTransactionsByAddressService := service.NewListBlockTransactionsByAddressService(
+	listBlockTransactionsByAddressService := service_blocktx.NewListBlockTransactionsByAddressService(
 		logger,
 		listBlockTransactionsByAddressUseCase,
 	)
-	listWithLimitBlockTransactionsByAddressService := service.NewListWithLimitBlockTransactionsByAddressService(
+	listWithLimitBlockTransactionsByAddressService := service_blocktx.NewListWithLimitBlockTransactionsByAddressService(
 		logger,
 		listWithLimitBlockTransactionsByAddressUseCase,
 	)

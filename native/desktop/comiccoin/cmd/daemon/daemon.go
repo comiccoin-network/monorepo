@@ -27,6 +27,7 @@ import (
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
+	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -453,7 +454,7 @@ func doRunDaemonCmd() {
 		downloadNFTokMetadataUsecase,
 		downloadNFTokAssetUsecase,
 		upsertNFTokUseCase)
-	listBlockTransactionsByAddressService := service.NewListBlockTransactionsByAddressService(
+	listBlockTransactionsByAddressService := service_blocktx.NewListBlockTransactionsByAddressService(
 		logger,
 		listBlockTransactionsByAddressUseCase,
 	)
