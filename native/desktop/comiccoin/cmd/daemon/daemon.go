@@ -24,6 +24,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/interface/rpc"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
+	s_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -338,11 +339,11 @@ func doRunDaemonCmd() {
 
 	// ------------ Service ------------
 
-	getAccountService := service.NewGetAccountService(
+	getAccountService := s_account.NewGetAccountService(
 		logger,
 		getAccountUseCase,
 	)
-	createAccountService := service.NewCreateAccountService(
+	createAccountService := s_account.NewCreateAccountService(
 		logger,
 		openHDWalletFromMnemonicUseCase,
 		privateKeyFromHDWalletUseCase,
@@ -351,7 +352,7 @@ func doRunDaemonCmd() {
 		createAccountUseCase,
 		getAccountUseCase,
 	)
-	accountListingByLocalWalletsService := service.NewAccountListingByLocalWalletsService(
+	accountListingByLocalWalletsService := s_account.NewAccountListingByLocalWalletsService(
 		logger,
 		listAllAddressesWalletUseCase,
 		accountsFilterByAddressesUseCase,

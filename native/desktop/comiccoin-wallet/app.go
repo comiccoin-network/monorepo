@@ -20,6 +20,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
+	s_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -45,9 +46,9 @@ type App struct {
 	kmutex kmutexutil.KMutexProvider
 
 	getBlockchainSyncStatusService                                  *service.GetBlockchainSyncStatusService
-	getAccountService                                               *service.GetAccountService
-	createAccountService                                            *service.CreateAccountService
-	accountListingByLocalWalletsService                             *service.AccountListingByLocalWalletsService
+	getAccountService                                               *s_account.GetAccountService
+	createAccountService                                            *s_account.CreateAccountService
+	accountListingByLocalWalletsService                             *s_account.AccountListingByLocalWalletsService
 	coinTransferService                                             *service.CoinTransferService
 	tokenGetService                                                 *service.TokenGetService
 	tokenTransferService                                            *service.TokenTransferService
@@ -381,11 +382,11 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		getBlockchainSyncStatusUseCase,
 	)
-	getAccountService := service.NewGetAccountService(
+	getAccountService := s_account.NewGetAccountService(
 		logger,
 		getAccountUseCase,
 	)
-	createAccountService := service.NewCreateAccountService(
+	createAccountService := s_account.NewCreateAccountService(
 		logger,
 		openHDWalletFromMnemonicUseCase,
 		privateKeyFromHDWalletUseCase,
@@ -394,7 +395,7 @@ func (a *App) startup(ctx context.Context) {
 		createAccountUseCase,
 		getAccountUseCase,
 	)
-	accountListingByLocalWalletsService := service.NewAccountListingByLocalWalletsService(
+	accountListingByLocalWalletsService := s_account.NewAccountListingByLocalWalletsService(
 		logger,
 		listAllAddressesWalletUseCase,
 		accountsFilterByAddressesUseCase,

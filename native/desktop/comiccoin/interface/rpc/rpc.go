@@ -10,6 +10,7 @@ import (
 
 	rpchandler "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/interface/rpc/handler"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
+	s_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 )
 
 // RPCServer represents an RPC server that handles incoming requests.
@@ -68,9 +69,9 @@ type RPCServerImpl struct {
 func NewRPCServer(
 	config RPCServerConfigurationProvider,
 	logger *slog.Logger,
-	s1 *service.GetAccountService,
-	s2 *service.CreateAccountService,
-	s3 *service.AccountListingByLocalWalletsService,
+	s1 *s_account.GetAccountService,
+	s2 *s_account.CreateAccountService,
+	s3 *s_account.AccountListingByLocalWalletsService,
 	s4 *service.CoinTransferService,
 	s5 *service.TokenGetService,
 	s6 *service.TokenTransferService,

@@ -4,13 +4,14 @@ import (
 	"log/slog"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
+	s_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 )
 
 type ComicCoinRPCServer struct {
 	logger                                *slog.Logger
-	getAccountService                     *service.GetAccountService
-	createAccountService                  *service.CreateAccountService
-	accountListingByLocalWalletsService   *service.AccountListingByLocalWalletsService
+	getAccountService                     *s_account.GetAccountService
+	createAccountService                  *s_account.CreateAccountService
+	accountListingByLocalWalletsService   *s_account.AccountListingByLocalWalletsService
 	coinTransferService                   *service.CoinTransferService
 	tokenGetService                       *service.TokenGetService
 	tokenTransferService                  *service.TokenTransferService
@@ -26,9 +27,9 @@ type ComicCoinRPCServer struct {
 
 func NewComicCoinRPCServer(
 	logger *slog.Logger,
-	s1 *service.GetAccountService,
-	s2 *service.CreateAccountService,
-	s3 *service.AccountListingByLocalWalletsService,
+	s1 *s_account.GetAccountService,
+	s2 *s_account.CreateAccountService,
+	s3 *s_account.AccountListingByLocalWalletsService,
 	s4 *service.CoinTransferService,
 	s5 *service.TokenGetService,
 	s6 *service.TokenTransferService,
