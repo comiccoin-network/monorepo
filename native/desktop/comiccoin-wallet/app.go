@@ -22,6 +22,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
 	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
+	service_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchainsyncstatus"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -46,7 +47,7 @@ type App struct {
 
 	kmutex kmutexutil.KMutexProvider
 
-	getBlockchainSyncStatusService                                  *service.GetBlockchainSyncStatusService
+	getBlockchainSyncStatusService                                  *service_blockchainsyncstatus.GetBlockchainSyncStatusService
 	getAccountService                                               *service_account.GetAccountService
 	createAccountService                                            *service_account.CreateAccountService
 	accountListingByLocalWalletsService                             *service_account.AccountListingByLocalWalletsService
@@ -379,7 +380,7 @@ func (a *App) startup(ctx context.Context) {
 
 	// ------------ Service ------------
 
-	getBlockchainSyncStatusService := service.NewGetBlockchainSyncStatusService(
+	getBlockchainSyncStatusService := service_blockchainsyncstatus.NewGetBlockchainSyncStatusService(
 		logger,
 		getBlockchainSyncStatusUseCase,
 	)
