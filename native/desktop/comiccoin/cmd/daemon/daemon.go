@@ -30,6 +30,7 @@ import (
 	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
 	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
 	service_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/nftok"
+	service_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/tok"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -376,11 +377,11 @@ func doRunDaemonCmd() {
 		privateKeyFromHDWalletUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
-	tokenGetService := service.NewTokenGetService(
+	tokenGetService := service_tok.NewTokenGetService(
 		logger,
 		getTokUseCase,
 	)
-	tokenTransferService := service.NewTokenTransferService(
+	tokenTransferService := service_tok.NewTokenTransferService(
 		logger,
 		storageTransactionOpenUseCase,
 		storageTransactionCommitUseCase,
@@ -395,7 +396,7 @@ func doRunDaemonCmd() {
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
-	tokenBurnService := service.NewTokenBurnService(
+	tokenBurnService := service_tok.NewTokenBurnService(
 		logger,
 		storageTransactionOpenUseCase,
 		storageTransactionCommitUseCase,
@@ -468,7 +469,7 @@ func doRunDaemonCmd() {
 		logger,
 		getBlockDataUseCase,
 	)
-	tokenListByOwnerService := service.NewTokenListByOwnerService(
+	tokenListByOwnerService := service_tok.NewTokenListByOwnerService(
 		logger,
 		listTokensByOwnerUseCase,
 	)

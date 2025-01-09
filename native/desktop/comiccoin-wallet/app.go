@@ -28,6 +28,7 @@ import (
 	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
 	service_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/nftok"
 	service_pstx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/pstx"
+	service_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/tok"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -57,16 +58,16 @@ type App struct {
 	createAccountService                                            *service_account.CreateAccountService
 	accountListingByLocalWalletsService                             *service_account.AccountListingByLocalWalletsService
 	coinTransferService                                             *service_coin.CoinTransferService
-	tokenGetService                                                 *service.TokenGetService
-	tokenTransferService                                            *service.TokenTransferService
-	tokenBurnService                                                *service.TokenBurnService
+	tokenGetService                                                 *service_tok.TokenGetService
+	tokenTransferService                                            *service_tok.TokenTransferService
+	tokenBurnService                                                *service_tok.TokenBurnService
 	getOrDownloadNonFungibleTokenService                            *service_nftok.GetOrDownloadNonFungibleTokenService
 	listBlockTransactionsByAddressService                           *service_blocktx.ListBlockTransactionsByAddressService
 	listWithLimitBlockTransactionsByAddressService                  *service_blocktx.ListWithLimitBlockTransactionsByAddressService
 	getByBlockTransactionTimestampService                           *service_blockdata.GetByBlockTransactionTimestampService
 	blockDataGetByHashService                                       *service_blockdata.BlockDataGetByHashService
-	tokenListByOwnerService                                         *service.TokenListByOwnerService
-	tokenCountByOwnerService                                        *service.TokenCountByOwnerService
+	tokenListByOwnerService                                         *service_tok.TokenListByOwnerService
+	tokenCountByOwnerService                                        *service_tok.TokenCountByOwnerService
 	blockchainSyncService                                           *service_blockchain.BlockchainSyncWithBlockchainAuthorityService
 	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService *service_blockchain.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService
 	walletsFilterByLocalService                                     *service.WalletsFilterByLocalService
@@ -421,11 +422,11 @@ func (a *App) startup(ctx context.Context) {
 		privateKeyFromHDWalletUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
-	tokenGetService := service.NewTokenGetService(
+	tokenGetService := service_tok.NewTokenGetService(
 		logger,
 		getTokUseCase,
 	)
-	tokenTransferService := service.NewTokenTransferService(
+	tokenTransferService := service_tok.NewTokenTransferService(
 		logger,
 		storageTransactionOpenUseCase,
 		storageTransactionCommitUseCase,
@@ -440,7 +441,7 @@ func (a *App) startup(ctx context.Context) {
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
-	tokenBurnService := service.NewTokenBurnService(
+	tokenBurnService := service_tok.NewTokenBurnService(
 		logger,
 		storageTransactionOpenUseCase,
 		storageTransactionCommitUseCase,
@@ -519,11 +520,11 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		getBlockDataUseCase,
 	)
-	tokenListByOwnerService := service.NewTokenListByOwnerService(
+	tokenListByOwnerService := service_tok.NewTokenListByOwnerService(
 		logger,
 		listTokensByOwnerUseCase,
 	)
-	tokenCountByOwnerService := service.NewTokenCountByOwnerService(
+	tokenCountByOwnerService := service_tok.NewTokenCountByOwnerService(
 		logger,
 		countTokensByOwnerUseCase,
 	)
