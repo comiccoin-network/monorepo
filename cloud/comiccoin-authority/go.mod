@@ -15,7 +15,7 @@ require (
 	github.com/rs/cors v1.11.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.8.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	go.mongodb.org/mongo-driver v1.17.1
 	go.uber.org/ratelimit v0.3.1

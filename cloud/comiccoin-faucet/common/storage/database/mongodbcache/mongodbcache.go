@@ -20,7 +20,7 @@ type Cacher interface {
 	Delete(ctx context.Context, key string) error
 }
 
-type cache struct {
+type cacheImpl struct {
 	Client cachego.Cache
 	Logger *slog.Logger
 }
@@ -28,22 +28,22 @@ type cache struct {
 func NewCache(cfg *c.Configuration, logger *slog.Logger, dbClient *mongo_client.Client) Cacher {
 	logger.Debug("cache initializing...")
 
-	cc := dbClient.Database(cfg.DB.Name).Collection("cache")
+	cc := dbClient.Database(cfg.DB.Name).Collection("caches")
 
 	c := mongo.New(cc)
 
 	logger.Debug("cache initialized with mongodb as backend")
-	return &cache{
+	return &cacheImpl{
 		Client: c,
 		Logger: logger,
 	}
 }
 
-func (s *cache) Shutdown() {
+func (s *cacheImpl) Shutdown() {
 	// Do nothing...
 }
 
-func (s *cache) Get(ctx context.Context, key string) ([]byte, error) {
+func (s *cacheImpl) Get(ctx context.Context, key string) ([]byte, error) {
 	val, err := s.Client.Fetch(key)
 	if err != nil {
 		s.Logger.Error("cache get failed", slog.Any("error", err))
@@ -52,7 +52,7 @@ func (s *cache) Get(ctx context.Context, key string) ([]byte, error) {
 	return []byte(val), nil
 }
 
-func (s *cache) Set(ctx context.Context, key string, val []byte) error {
+func (s *cacheImpl) Set(ctx context.Context, key string, val []byte) error {
 	err := s.Client.Save(key, string(val), 0)
 	if err != nil {
 		s.Logger.Error("cache set failed", slog.Any("error", err))
@@ -61,7 +61,7 @@ func (s *cache) Set(ctx context.Context, key string, val []byte) error {
 	return nil
 }
 
-func (s *cache) SetWithExpiry(ctx context.Context, key string, val []byte, expiry time.Duration) error {
+func (s *cacheImpl) SetWithExpiry(ctx context.Context, key string, val []byte, expiry time.Duration) error {
 	err := s.Client.Save(key, string(val), expiry)
 	if err != nil {
 		s.Logger.Error("cache set with expiry failed", slog.Any("error", err))
@@ -70,7 +70,7 @@ func (s *cache) SetWithExpiry(ctx context.Context, key string, val []byte, expir
 	return nil
 }
 
-func (s *cache) Delete(ctx context.Context, key string) error {
+func (s *cacheImpl) Delete(ctx context.Context, key string) error {
 	err := s.Client.Delete(key)
 	if err != nil {
 		s.Logger.Error("cache delete failed", slog.Any("error", err))
