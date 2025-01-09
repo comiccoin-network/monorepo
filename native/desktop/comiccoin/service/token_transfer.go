@@ -18,6 +18,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 )
 
 type TokenTransferService struct {
@@ -28,7 +29,7 @@ type TokenTransferService struct {
 	listPendingSignedTransactionUseCase                     *usecase.ListPendingSignedTransactionUseCase
 	getGenesisBlockDataUseCase                              *usecase.GetGenesisBlockDataUseCase
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
-	getAccountUseCase                                       *usecase.GetAccountUseCase
+	getAccountUseCase                                       *uc_account.GetAccountUseCase
 	getWalletUseCase                                        *usecase.GetWalletUseCase
 	mnemonicFromEncryptedHDWalletUseCase                    *usecase.MnemonicFromEncryptedHDWalletUseCase
 	privateKeyFromHDWalletUseCase                           *usecase.PrivateKeyFromHDWalletUseCase
@@ -44,7 +45,7 @@ func NewTokenTransferService(
 	uc4 *usecase.ListPendingSignedTransactionUseCase,
 	uc5 *usecase.GetGenesisBlockDataUseCase,
 	uc6 *usecase.UpsertPendingSignedTransactionUseCase,
-	uc7 *usecase.GetAccountUseCase,
+	uc7 *uc_account.GetAccountUseCase,
 	uc8 *usecase.GetWalletUseCase,
 	uc9 *usecase.MnemonicFromEncryptedHDWalletUseCase,
 	uc10 *usecase.PrivateKeyFromHDWalletUseCase,

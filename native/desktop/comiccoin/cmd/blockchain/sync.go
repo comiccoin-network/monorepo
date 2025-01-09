@@ -17,6 +17,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 )
 
 // Command line argument flags
@@ -169,11 +170,11 @@ func doRunBlockchainSyncCmd() error {
 		blockDataDTORepo)
 
 	// Account
-	getAccountUseCase := usecase.NewGetAccountUseCase(
+	getAccountUseCase := uc_account.NewGetAccountUseCase(
 		logger,
 		accountRepo,
 	)
-	upsertAccountUseCase := usecase.NewUpsertAccountUseCase(
+	upsertAccountUseCase := uc_account.NewUpsertAccountUseCase(
 		logger,
 		accountRepo,
 	)

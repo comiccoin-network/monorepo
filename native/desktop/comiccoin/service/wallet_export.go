@@ -11,17 +11,18 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 )
 
 type ExportWalletService struct {
 	logger            *slog.Logger
-	getAccountUseCase *usecase.GetAccountUseCase
+	getAccountUseCase *uc_account.GetAccountUseCase
 	getWalletUseCase  *usecase.GetWalletUseCase
 }
 
 func NewExportWalletService(
 	logger *slog.Logger,
-	uc1 *usecase.GetAccountUseCase,
+	uc1 *uc_account.GetAccountUseCase,
 	uc2 *usecase.GetWalletUseCase,
 ) *ExportWalletService {
 	return &ExportWalletService{logger, uc1, uc2}

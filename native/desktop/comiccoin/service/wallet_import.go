@@ -12,21 +12,22 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 )
 
 type ImportWalletService struct {
 	logger               *slog.Logger
-	getAccountUseCase    *usecase.GetAccountUseCase
+	getAccountUseCase    *uc_account.GetAccountUseCase
 	getWalletUseCase     *usecase.GetWalletUseCase
-	upsertAccountUseCase *usecase.UpsertAccountUseCase
+	upsertAccountUseCase *uc_account.UpsertAccountUseCase
 	createWalletUseCase  *usecase.CreateWalletUseCase
 }
 
 func NewImportWalletService(
 	logger *slog.Logger,
-	uc1 *usecase.GetAccountUseCase,
+	uc1 *uc_account.GetAccountUseCase,
 	uc2 *usecase.GetWalletUseCase,
-	uc3 *usecase.UpsertAccountUseCase,
+	uc3 *uc_account.UpsertAccountUseCase,
 	uc4 *usecase.CreateWalletUseCase,
 ) *ImportWalletService {
 	return &ImportWalletService{logger, uc1, uc2, uc3, uc4}

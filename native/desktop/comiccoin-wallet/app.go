@@ -21,6 +21,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 )
 
 // App struct
@@ -232,19 +233,19 @@ func (a *App) startup(ctx context.Context) {
 	)
 
 	// Account
-	createAccountUseCase := usecase.NewCreateAccountUseCase(
+	createAccountUseCase := uc_account.NewCreateAccountUseCase(
 		logger,
 		accountRepo)
-	getAccountUseCase := usecase.NewGetAccountUseCase(
+	getAccountUseCase := uc_account.NewGetAccountUseCase(
 		logger,
 		accountRepo)
-	getAccountsHashStateUseCase := usecase.NewGetAccountsHashStateUseCase(
+	getAccountsHashStateUseCase := uc_account.NewGetAccountsHashStateUseCase(
 		logger,
 		accountRepo)
-	upsertAccountUseCase := usecase.NewUpsertAccountUseCase(
+	upsertAccountUseCase := uc_account.NewUpsertAccountUseCase(
 		logger,
 		accountRepo)
-	accountsFilterByAddressesUseCase := usecase.NewAccountsFilterByAddressesUseCase(
+	accountsFilterByAddressesUseCase := uc_account.NewAccountsFilterByAddressesUseCase(
 		logger,
 		accountRepo,
 	)

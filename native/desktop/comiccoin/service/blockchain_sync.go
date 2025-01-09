@@ -16,6 +16,7 @@ import (
 	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 )
 
 type BlockchainSyncWithBlockchainAuthorityService struct {
@@ -31,8 +32,8 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	getBlockDataUseCase                                  *usecase.GetBlockDataUseCase
 	upsertBlockDataUseCase                               *usecase.UpsertBlockDataUseCase
 	getBlockDataDTOFromBlockchainAuthorityUseCase        *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase
-	getAccountUseCase                                    *usecase.GetAccountUseCase
-	upsertAccountUseCase                                 *usecase.UpsertAccountUseCase
+	getAccountUseCase                                    *uc_account.GetAccountUseCase
+	upsertAccountUseCase                                 *uc_account.UpsertAccountUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase            *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase
 	deletePendingSignedTransactionUseCase                *usecase.DeletePendingSignedTransactionUseCase
 }
@@ -50,8 +51,8 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc9 *usecase.GetBlockDataUseCase,
 	uc10 *usecase.UpsertBlockDataUseCase,
 	uc11 *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
-	uc12 *usecase.GetAccountUseCase,
-	uc13 *usecase.UpsertAccountUseCase,
+	uc12 *uc_account.GetAccountUseCase,
+	uc13 *uc_account.UpsertAccountUseCase,
 	uc14 *usecase.UpsertTokenIfPreviousTokenNonceGTEUseCase,
 	uc15 *usecase.DeletePendingSignedTransactionUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityService {
