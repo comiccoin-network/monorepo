@@ -14,23 +14,25 @@ import (
 )
 
 type CreateAccountService struct {
-	logger                        *slog.Logger
-	openWalletFromMnemonicUseCase *usecase.OpenWalletFromMnemonicUseCase
-	encryptWalletUseCase          *usecase.EncryptWalletUseCase
-	createWalletUseCase           *usecase.CreateWalletUseCase
-	createAccountUseCase          *usecase.CreateAccountUseCase
-	getAccountUseCase             *usecase.GetAccountUseCase
+	logger                          *slog.Logger
+	openHDWalletFromMnemonicUseCase *usecase.OpenHDWalletFromMnemonicUseCase
+	privateKeyFromHDWalletUseCase   *usecase.PrivateKeyFromHDWalletUseCase
+	encryptWalletUseCase            *usecase.EncryptWalletUseCase
+	createWalletUseCase             *usecase.CreateWalletUseCase
+	createAccountUseCase            *usecase.CreateAccountUseCase
+	getAccountUseCase               *usecase.GetAccountUseCase
 }
 
 func NewCreateAccountService(
 	logger *slog.Logger,
-	uc1 *usecase.OpenWalletFromMnemonicUseCase,
-	uc2 *usecase.EncryptWalletUseCase,
-	uc3 *usecase.CreateWalletUseCase,
-	uc4 *usecase.CreateAccountUseCase,
-	uc5 *usecase.GetAccountUseCase,
+	uc1 *usecase.OpenHDWalletFromMnemonicUseCase,
+	uc2 *usecase.PrivateKeyFromHDWalletUseCase,
+	uc3 *usecase.EncryptWalletUseCase,
+	uc4 *usecase.CreateWalletUseCase,
+	uc5 *usecase.CreateAccountUseCase,
+	uc6 *usecase.GetAccountUseCase,
 ) *CreateAccountService {
-	return &CreateAccountService{logger, uc1, uc2, uc3, uc4, uc5}
+	return &CreateAccountService{logger, uc1, uc2, uc3, uc4, uc5, uc6}
 }
 
 func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstring.SecureString, walletPath string, walletPassword *sstring.SecureString, walletLabel string) (*domain.Account, error) {
@@ -59,15 +61,29 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 	// Derive wallet from mnemonic phrase and path.
 	//
 
-	ethAccount, wallet, err := s.openWalletFromMnemonicUseCase.Execute(ctx, walletMnemonic, walletPath)
+	ethAccount, _, err := s.openHDWalletFromMnemonicUseCase.Execute(ctx, walletMnemonic, walletPath)
 	if err != nil {
 		s.logger.Error("failed getting wallet key",
 			slog.Any("error", err))
 		return nil, fmt.Errorf("failed getting wallet key: %s", err)
 	}
 
+	walletAddress := ethAccount.Address.Hex()
+
 	s.logger.Debug("Created new wallet for account",
-		slog.Any("wallet_address", ethAccount.Address.Hex()))
+		slog.Any("wallet_address", walletAddress))
+
+	//
+	// STEP 3:
+	// Decrypt the wallet so we can extract data from it.
+	//
+
+	privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(ctx, walletMnemonic, walletPath)
+	if err != nil {
+		s.logger.Error("failed getting wallet key",
+			slog.Any("error", err))
+		return nil, fmt.Errorf("failed getting wallet key: %s", err)
+	}
 
 	//
 	// STEP 3:
@@ -78,13 +94,6 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 		name string
 	}{
 		name: "ComicCoin Blockchain",
-	}
-
-	privateKey, err := wallet.PrivateKey(*ethAccount)
-	if err != nil {
-		s.logger.Error("failed getting wallet private key",
-			slog.Any("error", err))
-		return nil, fmt.Errorf("failed getting wallet private key: %s", err)
 	}
 
 	// Break the signature into the 3 parts: R, S, and V.

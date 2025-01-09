@@ -14,15 +14,15 @@ import (
 )
 
 type WalletRecoveryService struct {
-	logger                             *slog.Logger
-	getWalletUseCase                   *usecase.GetWalletUseCase
-	decryptWalletMnemonicPhraseUseCase *usecase.DecryptWalletMnemonicPhraseUseCase
+	logger                               *slog.Logger
+	getWalletUseCase                     *usecase.GetWalletUseCase
+	mnemonicFromEncryptedHDWalletUseCase *usecase.MnemonicFromEncryptedHDWalletUseCase
 }
 
 func NewWalletRecoveryService(
 	logger *slog.Logger,
 	uc1 *usecase.GetWalletUseCase,
-	uc2 *usecase.DecryptWalletMnemonicPhraseUseCase,
+	uc2 *usecase.MnemonicFromEncryptedHDWalletUseCase,
 ) *WalletRecoveryService {
 	return &WalletRecoveryService{logger, uc1, uc2}
 }
@@ -72,7 +72,7 @@ func (s *WalletRecoveryService) Execute(ctx context.Context, address *common.Add
 	// STEP 3: Decrypt it.
 	//
 
-	mn, path, err := s.decryptWalletMnemonicPhraseUseCase.Execute(ctx, wallet.KeystoreBytes, password)
+	mn, path, err := s.mnemonicFromEncryptedHDWalletUseCase.Execute(ctx, wallet.KeystoreBytes, password)
 	if err != nil {
 		s.logger.Error("failed decrypting wallet",
 			slog.Any("address", address),

@@ -1,4 +1,4 @@
-package usecase
+package walletutil
 
 import (
 	"context"
@@ -8,21 +8,24 @@ import (
 	hdkeystore "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 )
 
-type MnemonicFromEncryptedHDWalletUseCase struct {
+type MnemonicFromEncryptedWalletUseCase struct {
+	config   *config.Configuration
 	logger   *slog.Logger
 	keystore hdkeystore.KeystoreAdapter
 }
 
-func NewMnemonicFromEncryptedHDWalletUseCase(
+func NewMnemonicFromEncryptedWalletUseCase(
+	config *config.Configuration,
 	logger *slog.Logger,
 	keystore hdkeystore.KeystoreAdapter,
-) *MnemonicFromEncryptedHDWalletUseCase {
-	return &MnemonicFromEncryptedHDWalletUseCase{logger, keystore}
+) *MnemonicFromEncryptedWalletUseCase {
+	return &MnemonicFromEncryptedWalletUseCase{config, logger, keystore}
 }
 
-func (uc *MnemonicFromEncryptedHDWalletUseCase) Execute(ctx context.Context, encryptedWalletBytes []byte, password *sstring.SecureString) (*sstring.SecureString, string, error) {
+func (uc *MnemonicFromEncryptedWalletUseCase) Execute(ctx context.Context, encryptedWalletBytes []byte, password *sstring.SecureString) (*sstring.SecureString, string, error) {
 	//
 	// STEP 1: Validation.
 	//

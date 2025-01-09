@@ -30,7 +30,8 @@ type TokenTransferService struct {
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *usecase.GetAccountUseCase
 	getWalletUseCase                                        *usecase.GetWalletUseCase
-	decryptWalletUseCase                                    *usecase.DecryptWalletUseCase
+	mnemonicFromEncryptedHDWalletUseCase                    *usecase.MnemonicFromEncryptedHDWalletUseCase
+	privateKeyFromHDWalletUseCase                           *usecase.PrivateKeyFromHDWalletUseCase
 	getTokenUseCase                                         *usecase.GetTokenUseCase
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }
@@ -45,11 +46,12 @@ func NewTokenTransferService(
 	uc6 *usecase.UpsertPendingSignedTransactionUseCase,
 	uc7 *usecase.GetAccountUseCase,
 	uc8 *usecase.GetWalletUseCase,
-	uc9 *usecase.DecryptWalletUseCase,
-	uc10 *usecase.GetTokenUseCase,
-	uc11 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
+	uc9 *usecase.MnemonicFromEncryptedHDWalletUseCase,
+	uc10 *usecase.PrivateKeyFromHDWalletUseCase,
+	uc11 *usecase.GetTokenUseCase,
+	uc12 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 ) *TokenTransferService {
-	return &TokenTransferService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11}
+	return &TokenTransferService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12}
 }
 
 func (s *TokenTransferService) Execute(
@@ -133,18 +135,15 @@ func (s *TokenTransferService) Execute(
 		return fmt.Errorf("failed getting encrypted wallet: %s", err)
 	}
 
-	ethAccount, wallet, err := s.decryptWalletUseCase.Execute(ctx, encryptedWallet.KeystoreBytes, accountWalletPassword)
+	mnemonic, path, err := s.mnemonicFromEncryptedHDWalletUseCase.Execute(ctx, encryptedWallet.KeystoreBytes, accountWalletPassword)
 	if err != nil {
-		s.logger.Error("failed decrypting wallet",
+		s.logger.Error("failed decrypting wallet and getting mnemonic",
 			slog.Any("error", err))
 		s.storageTransactionDiscardUseCase.Execute()
-		return fmt.Errorf("failed decrypting wallet: %s", err)
+		return fmt.Errorf("failed decrypting wallet and getting mnemonic: %s", err)
 	}
-	if wallet == nil {
-		s.storageTransactionDiscardUseCase.Execute()
-		return fmt.Errorf("failed decrypting wallet: %s", "d.n.e.")
-	}
-	privateKey, err := wallet.PrivateKey(ethAccount)
+
+	privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(ctx, mnemonic, path)
 	if err != nil {
 		s.logger.Error("failed getting wallet private key",
 			slog.Any("error", err))
@@ -153,7 +152,7 @@ func (s *TokenTransferService) Execute(
 	}
 	if privateKey == nil {
 		s.storageTransactionDiscardUseCase.Execute()
-		return fmt.Errorf("failed getting key: %s", "d.n.e.")
+		return fmt.Errorf("failed getting wallet private key: %s", "d.n.e.")
 	}
 
 	tok, err := s.getTokenUseCase.Execute(ctx, tokenID)

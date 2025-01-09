@@ -191,7 +191,7 @@ func TestEncryptDecryptWallet(t *testing.T) {
 	})
 }
 
-func TestDecryptMnemonicPhrase(t *testing.T) {
+func TestMnemonicFromEncryptedWallet(t *testing.T) {
 	adapter := NewAdapter()
 	validPath := "m/44'/60'/0'/0/0"
 	password := "testPassword123"
@@ -211,7 +211,7 @@ func TestDecryptMnemonicPhrase(t *testing.T) {
 		assert.NotEmpty(t, encryptedData)
 
 		// Decrypt and verify mnemonic and path
-		decryptedMnemonic, decryptedPath, err := adapter.DecryptMnemonicPhrase(encryptedData, securePassword)
+		decryptedMnemonic, decryptedPath, err := adapter.MnemonicFromEncryptedWallet(encryptedData, securePassword)
 		assert.NoError(t, err)
 		assert.NotNil(t, decryptedMnemonic)
 		assert.Equal(t, originalMnemonic, decryptedMnemonic.String())
@@ -231,7 +231,7 @@ func TestDecryptMnemonicPhrase(t *testing.T) {
 
 		wrongPassword, err := sstring.NewSecureString("wrongpassword")
 		assert.NoError(t, err)
-		decryptedMnemonic, decryptedPath, err := adapter.DecryptMnemonicPhrase(encryptedData, wrongPassword)
+		decryptedMnemonic, decryptedPath, err := adapter.MnemonicFromEncryptedWallet(encryptedData, wrongPassword)
 		assert.Error(t, err)
 		assert.Nil(t, decryptedMnemonic)
 		assert.Empty(t, decryptedPath)
@@ -240,7 +240,7 @@ func TestDecryptMnemonicPhrase(t *testing.T) {
 	t.Run("decrypt corrupted data", func(t *testing.T) {
 		securePassword, err := sstring.NewSecureString(password)
 		assert.NoError(t, err)
-		decryptedMnemonic, decryptedPath, err := adapter.DecryptMnemonicPhrase([]byte("corrupted data"), securePassword)
+		decryptedMnemonic, decryptedPath, err := adapter.MnemonicFromEncryptedWallet([]byte("corrupted data"), securePassword)
 		assert.Error(t, err)
 		assert.Nil(t, decryptedMnemonic)
 		assert.Empty(t, decryptedPath)

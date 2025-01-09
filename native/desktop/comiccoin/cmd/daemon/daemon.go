@@ -169,13 +169,20 @@ func doRunDaemonCmd() {
 		pstxRepo)
 
 	// Wallet Utility
-	openWalletFromMnemonicUseCase := usecase.NewOpenWalletFromMnemonicUseCase(
+	openHDWalletFromMnemonicUseCase := usecase.NewOpenHDWalletFromMnemonicUseCase(
 		logger,
 		keystore)
 	encryptWalletUseCase := usecase.NewEncryptWalletUseCase(
 		logger,
 		keystore)
 	decryptWalletUseCase := usecase.NewDecryptWalletUseCase(
+		logger,
+		keystore)
+	_ = decryptWalletUseCase
+	mnemonicFromEncryptedHDWalletUseCase := usecase.NewMnemonicFromEncryptedHDWalletUseCase(
+		logger,
+		keystore)
+	privateKeyFromHDWalletUseCase := usecase.NewPrivateKeyFromHDWalletUseCase(
 		logger,
 		keystore)
 
@@ -328,7 +335,8 @@ func doRunDaemonCmd() {
 	)
 	createAccountService := service.NewCreateAccountService(
 		logger,
-		openWalletFromMnemonicUseCase,
+		openHDWalletFromMnemonicUseCase,
+		privateKeyFromHDWalletUseCase,
 		encryptWalletUseCase,
 		createWalletUseCase,
 		createAccountUseCase,
@@ -349,7 +357,8 @@ func doRunDaemonCmd() {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		decryptWalletUseCase,
+		mnemonicFromEncryptedHDWalletUseCase,
+		privateKeyFromHDWalletUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
 	tokenGetService := service.NewTokenGetService(
@@ -366,7 +375,8 @@ func doRunDaemonCmd() {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		decryptWalletUseCase,
+		mnemonicFromEncryptedHDWalletUseCase,
+		privateKeyFromHDWalletUseCase,
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
@@ -380,7 +390,8 @@ func doRunDaemonCmd() {
 		upsertPendingSignedTransactionUseCase,
 		getAccountUseCase,
 		getWalletUseCase,
-		decryptWalletUseCase,
+		mnemonicFromEncryptedHDWalletUseCase,
+		privateKeyFromHDWalletUseCase,
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)

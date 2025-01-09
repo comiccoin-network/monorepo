@@ -24,9 +24,9 @@ type KeystoreAdapter interface {
 	OpenWallet(mnemonic *sstring.SecureString, path string) (accounts.Account, *hdwallet.Wallet, error)
 	OpenWalletWithPassphrase(mnemonic *sstring.SecureString, passphrase *sstring.SecureString, path string) (accounts.Account, *hdwallet.Wallet, error)
 	EncryptWallet(mnemonic *sstring.SecureString, path string, password *sstring.SecureString) ([]byte, error)
-	DecryptWallet(cryptData []byte, password *sstring.SecureString) (accounts.Account, *hdwallet.Wallet, error)
-	DecryptMnemonicPhrase(cryptData []byte, password *sstring.SecureString) (*sstring.SecureString, string, error)
+	DecryptWallet(encryptedWalletBytes []byte, password *sstring.SecureString) (accounts.Account, *hdwallet.Wallet, error)
 	PrivateKeyFromOpenWallet(mnemonic *sstring.SecureString, path string) (*ecdsa.PrivateKey, error)
+	MnemonicFromEncryptedWallet(encryptedWalletBytes []byte, password *sstring.SecureString) (*sstring.SecureString, string, error)
 }
 
 type keystoreAdapterImpl struct{}
@@ -140,9 +140,9 @@ func (impl *keystoreAdapterImpl) EncryptWallet(mnemonic *sstring.SecureString, p
 	return json.Marshal(encWallet)
 }
 
-func (impl *keystoreAdapterImpl) DecryptWallet(cryptData []byte, password *sstring.SecureString) (accounts.Account, *hdwallet.Wallet, error) {
+func (impl *keystoreAdapterImpl) DecryptWallet(encryptedWalletBytes []byte, password *sstring.SecureString) (accounts.Account, *hdwallet.Wallet, error) {
 	var encWallet encryptedWallet
-	if err := json.Unmarshal(cryptData, &encWallet); err != nil {
+	if err := json.Unmarshal(encryptedWalletBytes, &encWallet); err != nil {
 		return accounts.Account{}, nil, fmt.Errorf("failed to unmarshal encrypted wallet: %v", err)
 	}
 
@@ -175,9 +175,9 @@ func (impl *keystoreAdapterImpl) DecryptWallet(cryptData []byte, password *sstri
 	return impl.OpenWallet(secureMnemonic, walletData.Path)
 }
 
-func (impl *keystoreAdapterImpl) DecryptMnemonicPhrase(cryptData []byte, password *sstring.SecureString) (*sstring.SecureString, string, error) {
+func (impl *keystoreAdapterImpl) MnemonicFromEncryptedWallet(encryptedWalletBytes []byte, password *sstring.SecureString) (*sstring.SecureString, string, error) {
 	var encWallet encryptedWallet
-	if err := json.Unmarshal(cryptData, &encWallet); err != nil {
+	if err := json.Unmarshal(encryptedWalletBytes, &encWallet); err != nil {
 		return nil, "", fmt.Errorf("failed to unmarshal encrypted wallet: %v", err)
 	}
 
