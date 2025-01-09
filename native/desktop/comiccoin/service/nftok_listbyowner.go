@@ -12,11 +12,12 @@ import (
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
 type ListNonFungibleTokensByOwnerService struct {
 	logger                                            *slog.Logger
-	listTokensByOwnerUseCase                          *usecase.ListTokensByOwnerUseCase
+	listTokensByOwnerUseCase                          *uc_tok.ListTokensByOwnerUseCase
 	listNonFungibleTokensWithFilterByTokenIDsyUseCase *usecase.ListNonFungibleTokensWithFilterByTokenIDsyUseCase
 
 	// DEVELOPERS NOTE: This is not a mistake according to `Clean Architecture`, the service layer can communicate with other services.
@@ -25,7 +26,7 @@ type ListNonFungibleTokensByOwnerService struct {
 
 func NewListNonFungibleTokensByOwnerService(
 	logger *slog.Logger,
-	uc1 *usecase.ListTokensByOwnerUseCase,
+	uc1 *uc_tok.ListTokensByOwnerUseCase,
 	uc2 *usecase.ListNonFungibleTokensWithFilterByTokenIDsyUseCase,
 	s1 *GetOrDownloadNonFungibleTokenService,
 ) *ListNonFungibleTokensByOwnerService {

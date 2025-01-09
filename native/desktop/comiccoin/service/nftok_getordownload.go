@@ -11,12 +11,13 @@ import (
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
 type GetOrDownloadNonFungibleTokenService struct {
 	logger                       *slog.Logger
 	getNFTokUseCase              *usecase.GetNonFungibleTokenUseCase
-	getTokUseCase                *usecase.GetTokenUseCase
+	getTokUseCase                *uc_tok.GetTokenUseCase
 	downloadNFTokMetadataUsecase *usecase.DownloadMetadataNonFungibleTokenUseCase
 	downloadNFTokAssetUsecase    *usecase.DownloadNonFungibleTokenAssetUseCase
 	upsertNFTokUseCase           *usecase.UpsertNonFungibleTokenUseCase
@@ -25,7 +26,7 @@ type GetOrDownloadNonFungibleTokenService struct {
 func NewGetOrDownloadNonFungibleTokenService(
 	logger *slog.Logger,
 	uc1 *usecase.GetNonFungibleTokenUseCase,
-	uc2 *usecase.GetTokenUseCase,
+	uc2 *uc_tok.GetTokenUseCase,
 	uc3 *usecase.DownloadMetadataNonFungibleTokenUseCase,
 	uc4 *usecase.DownloadNonFungibleTokenAssetUseCase,
 	uc5 *usecase.UpsertNonFungibleTokenUseCase,

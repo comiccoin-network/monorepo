@@ -7,17 +7,17 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
 type TokenCountByOwnerService struct {
 	logger                    *slog.Logger
-	countTokensByOwnerUseCase *usecase.CountTokensByOwnerUseCase
+	countTokensByOwnerUseCase *uc_tok.CountTokensByOwnerUseCase
 }
 
 func NewTokenCountByOwnerService(
 	logger *slog.Logger,
-	uc1 *usecase.CountTokensByOwnerUseCase,
+	uc1 *uc_tok.CountTokensByOwnerUseCase,
 ) *TokenCountByOwnerService {
 	return &TokenCountByOwnerService{logger, uc1}
 }

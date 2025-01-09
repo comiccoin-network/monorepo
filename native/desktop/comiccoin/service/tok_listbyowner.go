@@ -8,17 +8,17 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
 type TokenListByOwnerService struct {
 	logger                   *slog.Logger
-	listTokensByOwnerUseCase *usecase.ListTokensByOwnerUseCase
+	listTokensByOwnerUseCase *uc_tok.ListTokensByOwnerUseCase
 }
 
 func NewTokenListByOwnerService(
 	logger *slog.Logger,
-	uc1 *usecase.ListTokensByOwnerUseCase,
+	uc1 *uc_tok.ListTokensByOwnerUseCase,
 ) *TokenListByOwnerService {
 	return &TokenListByOwnerService{logger, uc1}
 }

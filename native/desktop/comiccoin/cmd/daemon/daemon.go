@@ -26,6 +26,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
@@ -272,11 +273,14 @@ func doRunDaemonCmd() {
 		blockDataDTORepo)
 
 	// Token
-	upsertTokenIfPreviousTokenNonceGTEUseCase := usecase.NewUpsertTokenIfPreviousTokenNonceGTEUseCase(
+	getTokUseCase := uc_tok.NewGetTokenUseCase(
+		logger,
+		tokRepo)
+	upsertTokenIfPreviousTokenNonceGTEUseCase := uc_tok.NewUpsertTokenIfPreviousTokenNonceGTEUseCase(
 		logger,
 		tokRepo,
 	)
-	listTokensByOwnerUseCase := usecase.NewListTokensByOwnerUseCase(
+	listTokensByOwnerUseCase := uc_tok.NewListTokensByOwnerUseCase(
 		logger,
 		tokRepo,
 	)
@@ -285,11 +289,6 @@ func doRunDaemonCmd() {
 	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase := usecase.NewSubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase(
 		logger,
 		blockchainStateServerSentEventsDTORepo)
-
-	// Token
-	getTokUseCase := usecase.NewGetTokenUseCase(
-		logger,
-		tokRepo)
 
 	// Non-Fungible Token
 	getNFTokUseCase := usecase.NewGetNonFungibleTokenUseCase(
