@@ -27,6 +27,7 @@ import (
 	uc_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockdata"
 	uc_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blocktx"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/genesisblockdata"
+	uc_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/nftok"
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
@@ -333,19 +334,19 @@ func (a *App) startup(ctx context.Context) {
 		blockchainStateServerSentEventsDTORepo)
 
 	// Non-Fungible Token
-	getNFTokUseCase := usecase.NewGetNonFungibleTokenUseCase(
+	getNFTokUseCase := uc_nftok.NewGetNonFungibleTokenUseCase(
 		logger,
 		nftokenRepo)
-	downloadNFTokMetadataUsecase := usecase.NewDownloadMetadataNonFungibleTokenUseCase(
+	downloadNFTokMetadataUsecase := uc_nftok.NewDownloadMetadataNonFungibleTokenUseCase(
 		logger,
 		nftAssetRepo)
-	downloadNFTokAssetUsecase := usecase.NewDownloadNonFungibleTokenAssetUseCase(
+	downloadNFTokAssetUsecase := uc_nftok.NewDownloadNonFungibleTokenAssetUseCase(
 		logger,
 		nftAssetRepo)
-	upsertNFTokUseCase := usecase.NewUpsertNonFungibleTokenUseCase(
+	upsertNFTokUseCase := uc_nftok.NewUpsertNonFungibleTokenUseCase(
 		logger,
 		nftokenRepo)
-	listNonFungibleTokensWithFilterByTokenIDsyUseCase := usecase.NewListNonFungibleTokensWithFilterByTokenIDsyUseCase(
+	listNonFungibleTokensWithFilterByTokenIDsyUseCase := uc_nftok.NewListNonFungibleTokensWithFilterByTokenIDsyUseCase(
 		logger,
 		nftokenRepo)
 

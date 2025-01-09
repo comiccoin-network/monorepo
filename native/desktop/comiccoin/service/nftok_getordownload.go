@@ -10,26 +10,26 @@ import (
 	auth_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/nftok"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
 type GetOrDownloadNonFungibleTokenService struct {
 	logger                       *slog.Logger
-	getNFTokUseCase              *usecase.GetNonFungibleTokenUseCase
+	getNFTokUseCase              *uc_nftok.GetNonFungibleTokenUseCase
 	getTokUseCase                *uc_tok.GetTokenUseCase
-	downloadNFTokMetadataUsecase *usecase.DownloadMetadataNonFungibleTokenUseCase
-	downloadNFTokAssetUsecase    *usecase.DownloadNonFungibleTokenAssetUseCase
-	upsertNFTokUseCase           *usecase.UpsertNonFungibleTokenUseCase
+	downloadNFTokMetadataUsecase *uc_nftok.DownloadMetadataNonFungibleTokenUseCase
+	downloadNFTokAssetUsecase    *uc_nftok.DownloadNonFungibleTokenAssetUseCase
+	upsertNFTokUseCase           *uc_nftok.UpsertNonFungibleTokenUseCase
 }
 
 func NewGetOrDownloadNonFungibleTokenService(
 	logger *slog.Logger,
-	uc1 *usecase.GetNonFungibleTokenUseCase,
+	uc1 *uc_nftok.GetNonFungibleTokenUseCase,
 	uc2 *uc_tok.GetTokenUseCase,
-	uc3 *usecase.DownloadMetadataNonFungibleTokenUseCase,
-	uc4 *usecase.DownloadNonFungibleTokenAssetUseCase,
-	uc5 *usecase.UpsertNonFungibleTokenUseCase,
+	uc3 *uc_nftok.DownloadMetadataNonFungibleTokenUseCase,
+	uc4 *uc_nftok.DownloadNonFungibleTokenAssetUseCase,
+	uc5 *uc_nftok.UpsertNonFungibleTokenUseCase,
 ) *GetOrDownloadNonFungibleTokenService {
 	return &GetOrDownloadNonFungibleTokenService{logger, uc1, uc2, uc3, uc4, uc5}
 }
