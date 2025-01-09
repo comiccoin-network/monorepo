@@ -27,6 +27,7 @@ import (
 	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
 	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
 	service_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/nftok"
+	service_pstx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/pstx"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -70,7 +71,7 @@ type App struct {
 	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService *service_blockchain.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService
 	walletsFilterByLocalService                                     *service.WalletsFilterByLocalService
 	listNonFungibleTokensByOwnerService                             *service_nftok.ListNonFungibleTokensByOwnerService
-	pendingSignedTransactionListService                             *service.PendingSignedTransactionListService
+	pendingSignedTransactionListService                             *service_pstx.PendingSignedTransactionListService
 	exportWalletService                                             *service.ExportWalletService
 	importWalletService                                             *service.ImportWalletService
 	walletRecoveryService                                           *service.WalletRecoveryService
@@ -536,7 +537,7 @@ func (a *App) startup(ctx context.Context) {
 		listNonFungibleTokensWithFilterByTokenIDsyUseCase,
 		getOrDownloadNonFungibleTokenService,
 	)
-	pendingSignedTransactionListService := service.NewPendingSignedTransactionListService(
+	pendingSignedTransactionListService := service_pstx.NewPendingSignedTransactionListService(
 		logger,
 		listPendingSignedTransactionUseCase,
 	)
