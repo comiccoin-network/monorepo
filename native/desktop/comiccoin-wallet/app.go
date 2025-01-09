@@ -20,7 +20,8 @@ import (
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
-	s_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
+	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
+	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -46,9 +47,9 @@ type App struct {
 	kmutex kmutexutil.KMutexProvider
 
 	getBlockchainSyncStatusService                                  *service.GetBlockchainSyncStatusService
-	getAccountService                                               *s_account.GetAccountService
-	createAccountService                                            *s_account.CreateAccountService
-	accountListingByLocalWalletsService                             *s_account.AccountListingByLocalWalletsService
+	getAccountService                                               *service_account.GetAccountService
+	createAccountService                                            *service_account.CreateAccountService
+	accountListingByLocalWalletsService                             *service_account.AccountListingByLocalWalletsService
 	coinTransferService                                             *service.CoinTransferService
 	tokenGetService                                                 *service.TokenGetService
 	tokenTransferService                                            *service.TokenTransferService
@@ -60,8 +61,8 @@ type App struct {
 	blockDataGetByHashService                                       *service.BlockDataGetByHashService
 	tokenListByOwnerService                                         *service.TokenListByOwnerService
 	tokenCountByOwnerService                                        *service.TokenCountByOwnerService
-	blockchainSyncService                                           *service.BlockchainSyncWithBlockchainAuthorityService
-	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService *service.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService
+	blockchainSyncService                                           *service_blockchain.BlockchainSyncWithBlockchainAuthorityService
+	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService *service_blockchain.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService
 	walletsFilterByLocalService                                     *service.WalletsFilterByLocalService
 	listNonFungibleTokensByOwnerService                             *service.ListNonFungibleTokensByOwnerService
 	pendingSignedTransactionListService                             *service.PendingSignedTransactionListService
@@ -382,11 +383,11 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		getBlockchainSyncStatusUseCase,
 	)
-	getAccountService := s_account.NewGetAccountService(
+	getAccountService := service_account.NewGetAccountService(
 		logger,
 		getAccountUseCase,
 	)
-	createAccountService := s_account.NewCreateAccountService(
+	createAccountService := service_account.NewCreateAccountService(
 		logger,
 		openHDWalletFromMnemonicUseCase,
 		privateKeyFromHDWalletUseCase,
@@ -395,7 +396,7 @@ func (a *App) startup(ctx context.Context) {
 		createAccountUseCase,
 		getAccountUseCase,
 	)
-	accountListingByLocalWalletsService := s_account.NewAccountListingByLocalWalletsService(
+	accountListingByLocalWalletsService := service_account.NewAccountListingByLocalWalletsService(
 		logger,
 		listAllAddressesWalletUseCase,
 		accountsFilterByAddressesUseCase,
@@ -449,7 +450,7 @@ func (a *App) startup(ctx context.Context) {
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
 
-	blockchainSyncService := service.NewBlockchainSyncWithBlockchainAuthorityService(
+	blockchainSyncService := service_blockchain.NewBlockchainSyncWithBlockchainAuthorityService(
 		logger,
 		getBlockchainSyncStatusUseCase,
 		setBlockchainSyncStatusUseCase,
@@ -468,7 +469,7 @@ func (a *App) startup(ctx context.Context) {
 		deletePendingSignedTransactionUseCase,
 	)
 
-	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService := service.NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
+	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService := service_blockchain.NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 		logger,
 		blockchainSyncService,
 		storageTransactionOpenUseCase,

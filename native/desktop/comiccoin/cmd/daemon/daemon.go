@@ -24,7 +24,8 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/interface/rpc"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/repo"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
-	s_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
+	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/account"
+	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchain"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -339,11 +340,11 @@ func doRunDaemonCmd() {
 
 	// ------------ Service ------------
 
-	getAccountService := s_account.NewGetAccountService(
+	getAccountService := service_account.NewGetAccountService(
 		logger,
 		getAccountUseCase,
 	)
-	createAccountService := s_account.NewCreateAccountService(
+	createAccountService := service_account.NewCreateAccountService(
 		logger,
 		openHDWalletFromMnemonicUseCase,
 		privateKeyFromHDWalletUseCase,
@@ -352,7 +353,7 @@ func doRunDaemonCmd() {
 		createAccountUseCase,
 		getAccountUseCase,
 	)
-	accountListingByLocalWalletsService := s_account.NewAccountListingByLocalWalletsService(
+	accountListingByLocalWalletsService := service_account.NewAccountListingByLocalWalletsService(
 		logger,
 		listAllAddressesWalletUseCase,
 		accountsFilterByAddressesUseCase,
@@ -405,7 +406,7 @@ func doRunDaemonCmd() {
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
-	blockchainSyncService := service.NewBlockchainSyncWithBlockchainAuthorityService(
+	blockchainSyncService := service_blockchain.NewBlockchainSyncWithBlockchainAuthorityService(
 		logger,
 		getBlockchainSyncStatusUseCase,
 		setBlockchainSyncStatusUseCase,
@@ -423,7 +424,7 @@ func doRunDaemonCmd() {
 		upsertTokenIfPreviousTokenNonceGTEUseCase,
 		deletePendingSignedTransactionUseCase,
 	)
-	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService := service.NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
+	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService := service_blockchain.NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 		logger,
 		blockchainSyncService,
 		storageTransactionOpenUseCase,
