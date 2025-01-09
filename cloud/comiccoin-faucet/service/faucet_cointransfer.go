@@ -21,6 +21,7 @@ import (
 	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
 	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/walletutil"
 )
 
 type FaucetCoinTransferService struct {
@@ -32,7 +33,7 @@ type FaucetCoinTransferService struct {
 	getAccountUseCase                                       *uc_account.GetAccountUseCase
 	upsertAccountUseCase                                    *uc_account.UpsertAccountUseCase
 	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
-	walletDecryptKeyUseCase                                 *uc_wallet.WalletDecryptKeyUseCase
+	privateKeyFromHDWalletUseCase                           *uc_walletutil.PrivateKeyFromHDWalletUseCase
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *usecase.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 	createUserTransactionUseCase                            *uc_usertx.CreateUserTransactionUseCase
 }
@@ -46,7 +47,7 @@ func NewFaucetCoinTransferService(
 	uc3 *uc_account.GetAccountUseCase,
 	uc4 *uc_account.UpsertAccountUseCase,
 	uc5 *uc_wallet.GetWalletUseCase,
-	uc6 *uc_wallet.WalletDecryptKeyUseCase,
+	uc6 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc7 *usecase.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	uc8 *uc_usertx.CreateUserTransactionUseCase,
 ) *FaucetCoinTransferService {
@@ -111,16 +112,7 @@ func (s *FaucetCoinTransferService) Execute(sessCtx mongo.SessionContext, req *F
 	// STEP 2: Get the account and extract the wallet private/public key.
 	//
 
-	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(sessCtx, req.AccountWalletMnemonic, req.AccountWalletPath)
-	if err != nil {
-		s.logger.Error("failed decrypting wallet",
-			slog.Any("error", err))
-		return fmt.Errorf("failed decrypting wallet: %s", err)
-	}
-	if wallet == nil {
-		return fmt.Errorf("failed decrypting wallet: %s", "d.n.e.")
-	}
-	privateKey, err := wallet.PrivateKey(*ethAccount)
+	privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(sessCtx, req.AccountWalletMnemonic, req.AccountWalletPath)
 	if err != nil {
 		s.logger.Error("failed getting wallet private key",
 			slog.Any("error", err))

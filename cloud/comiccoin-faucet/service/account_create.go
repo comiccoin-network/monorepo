@@ -11,21 +11,22 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/walletutil"
 )
 
 type CreateAccountService struct {
-	logger                  *slog.Logger
-	walletEncryptKeyUseCase *uc_wallet.WalletEncryptKeyUseCase
-	walletDecryptKeyUseCase *uc_wallet.WalletDecryptKeyUseCase
-	createWalletUseCase     *uc_wallet.CreateWalletUseCase
-	createAccountUseCase    *uc_account.CreateAccountUseCase
-	getAccountUseCase       *uc_account.GetAccountUseCase
+	logger                          *slog.Logger
+	openHDWalletFromMnemonicUseCase *uc_walletutil.OpenHDWalletFromMnemonicUseCase
+	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
+	createWalletUseCase             *uc_wallet.CreateWalletUseCase
+	createAccountUseCase            *uc_account.CreateAccountUseCase
+	getAccountUseCase               *uc_account.GetAccountUseCase
 }
 
 func NewCreateAccountService(
 	logger *slog.Logger,
-	uc1 *uc_wallet.WalletEncryptKeyUseCase,
-	uc2 *uc_wallet.WalletDecryptKeyUseCase,
+	uc1 *uc_walletutil.OpenHDWalletFromMnemonicUseCase,
+	uc2 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc3 *uc_wallet.CreateWalletUseCase,
 	uc4 *uc_account.CreateAccountUseCase,
 	uc5 *uc_account.GetAccountUseCase,
@@ -56,12 +57,13 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 	// Create the encrypted physical wallet on file.
 	//
 
-	walletAddress, _, err := s.walletEncryptKeyUseCase.Execute(ctx, walletMnemonic, walletPath)
+	ethAccount, _, err := s.openHDWalletFromMnemonicUseCase.Execute(ctx, walletMnemonic, walletPath)
 	if err != nil {
 		s.logger.Error("failed creating new keystore",
 			slog.Any("error", err))
 		return nil, fmt.Errorf("failed creating new keystore: %s", err)
 	}
+	walletAddress := ethAccount.Address.Hex()
 
 	s.logger.Debug("Created new wallet for account",
 		slog.Any("wallet_address", walletAddress))
@@ -71,7 +73,7 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 	// Decrypt the wallet so we can extract data from it.
 	//
 
-	ethAccount, wallet, err := s.walletDecryptKeyUseCase.Execute(ctx, walletMnemonic, walletPath)
+	privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(ctx, walletMnemonic, walletPath)
 	if err != nil {
 		s.logger.Error("failed getting wallet key",
 			slog.Any("error", err))
@@ -82,13 +84,6 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 		name string
 	}{
 		name: "ComicCoin Blockchain",
-	}
-
-	privateKey, err := wallet.PrivateKey(*ethAccount)
-	if err != nil {
-		s.logger.Error("failed getting wallet private key",
-			slog.Any("error", err))
-		return nil, fmt.Errorf("failed getting wallet private key: %s", err)
 	}
 
 	// Break the signature into the 3 parts: R, S, and V.
@@ -110,7 +105,7 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 	if ethAccount.Address.Hex() != addressFromSig {
 		s.logger.Error("address from signature does not match the wallet address",
 			slog.Any("addressFromSig", addressFromSig),
-			slog.Any("walletAddress", walletAddress.Address.Hex()))
+			slog.Any("walletAddress", ethAccount.Address.Hex()))
 		return nil, fmt.Errorf("address from signature at %v does not match the wallet address of %v", addressFromSig, ethAccount.Address.Hex())
 	}
 

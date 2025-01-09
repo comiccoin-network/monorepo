@@ -21,6 +21,7 @@ import (
 	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/walletutil"
 )
 
 var (
@@ -81,19 +82,19 @@ func doRunGatewayInit() {
 	// Use-case
 	//
 
+	// Wallet Utils
+	openHDWalletFromMnemonicUseCase := uc_walletutil.NewOpenHDWalletFromMnemonicUseCase(
+		cfg,
+		logger,
+		keystore,
+	)
+	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
+		cfg,
+		logger,
+		keystore,
+	)
+
 	// Wallet
-	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
-		cfg,
-		logger,
-		keystore,
-		walletRepo,
-	)
-	walletEncryptKeyUseCase := uc_wallet.NewWalletEncryptKeyUseCase(
-		cfg,
-		logger,
-		keystore,
-		walletRepo,
-	)
 	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
 		cfg,
 		logger,
@@ -147,8 +148,8 @@ func doRunGatewayInit() {
 
 	createAccountService := service.NewCreateAccountService(
 		logger,
-		walletEncryptKeyUseCase,
-		walletDecryptKeyUseCase,
+		openHDWalletFromMnemonicUseCase,
+		privateKeyFromHDWalletUseCase,
 		createWalletUseCase,
 		createAccountUseCase,
 		getAccountUseCase,

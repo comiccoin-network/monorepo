@@ -46,6 +46,7 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
 	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/walletutil"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -151,13 +152,14 @@ func doRunDaemon() {
 	attachmentListByFilterUseCase := uc_attachment.NewAttachmentListByFilterUseCase(cfg, logger, attachmentRepo)
 	attachmentDeleteUseCase := uc_attachment.NewAttachmentDeleteUseCase(cfg, logger, attachmentRepo)
 
-	// Wallet
-	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
+	// Wallet Utils
+	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
 		cfg,
 		logger,
 		keystore,
-		walletRepo,
 	)
+
+	// Wallet
 	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
 		cfg,
 		logger,
@@ -398,7 +400,7 @@ func doRunDaemon() {
 		getAccountUseCase,
 		upsertAccountUseCase,
 		getWalletUseCase,
-		walletDecryptKeyUseCase,
+		privateKeyFromHDWalletUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 		createUserTransactionUseCase,
 	)
