@@ -8,17 +8,17 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockdata"
 )
 
 type GetByBlockTransactionTimestampService struct {
 	logger                                *slog.Logger
-	GetByBlockTransactionTimestampUseCase *usecase.GetByBlockTransactionTimestampUseCase
+	GetByBlockTransactionTimestampUseCase *uc_blockdata.GetByBlockTransactionTimestampUseCase
 }
 
 func NewGetByBlockTransactionTimestampService(
 	logger *slog.Logger,
-	uc1 *usecase.GetByBlockTransactionTimestampUseCase,
+	uc1 *uc_blockdata.GetByBlockTransactionTimestampUseCase,
 ) *GetByBlockTransactionTimestampService {
 	return &GetByBlockTransactionTimestampService{logger, uc1}
 }

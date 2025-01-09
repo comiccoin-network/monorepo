@@ -8,17 +8,17 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockdata"
 )
 
 type BlockDataGetByHashService struct {
 	logger              *slog.Logger
-	GetBlockDataUseCase *usecase.GetBlockDataUseCase
+	GetBlockDataUseCase *uc_blockdata.GetBlockDataUseCase
 }
 
 func NewBlockDataGetByHashService(
 	logger *slog.Logger,
-	uc1 *usecase.GetBlockDataUseCase,
+	uc1 *uc_blockdata.GetBlockDataUseCase,
 ) *BlockDataGetByHashService {
 	return &BlockDataGetByHashService{logger, uc1}
 }

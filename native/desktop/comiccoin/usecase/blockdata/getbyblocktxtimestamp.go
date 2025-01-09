@@ -1,33 +1,34 @@
-package usecase
+package blockdata
 
 import (
 	"context"
 	"log/slog"
+	"strings"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type GetBlockDataUseCase struct {
+type GetByBlockTransactionTimestampUseCase struct {
 	logger *slog.Logger
 	repo   domain.BlockDataRepository
 }
 
-func NewGetBlockDataUseCase(logger *slog.Logger, repo domain.BlockDataRepository) *GetBlockDataUseCase {
-	return &GetBlockDataUseCase{logger, repo}
+func NewGetByBlockTransactionTimestampUseCase(logger *slog.Logger, repo domain.BlockDataRepository) *GetByBlockTransactionTimestampUseCase {
+	return &GetByBlockTransactionTimestampUseCase{logger, repo}
 }
 
-func (uc *GetBlockDataUseCase) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
+func (uc *GetByBlockTransactionTimestampUseCase) Execute(ctx context.Context, timestamp uint64) (*domain.BlockData, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if hash == "" {
-		e["hash"] = "missing value"
+	if timestamp == 0 {
+		e["timestamp"] = "missing value"
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("Failed getting account",
+		uc.logger.Warn("Failed validating",
 			slog.Any("error", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
@@ -36,12 +37,14 @@ func (uc *GetBlockDataUseCase) ExecuteByHash(ctx context.Context, hash string) (
 	// STEP 2: Get from database.
 	//
 
-	blockData, err := uc.repo.GetByHash(ctx, hash)
+	blockData, err := uc.repo.GetByBlockTransactionTimestamp(ctx, timestamp)
 	if err != nil {
-		uc.logger.Error("failed getting block data by hash",
-			slog.Any("hash", hash),
-			slog.Any("error", err))
-		return nil, err
+		if !strings.Contains(err.Error(), "does not exist") {
+			uc.logger.Error("failed getting block data by timestamp",
+				slog.Any("timestamp", timestamp),
+				slog.Any("error", err))
+			return nil, err
+		}
 	}
 
 	//
