@@ -26,6 +26,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
 
@@ -189,16 +190,16 @@ func doRunDaemonCmd() {
 		keystore)
 
 	// Wallet
-	createWalletUseCase := usecase.NewCreateWalletUseCase(
+	createWalletUseCase := uc_wallet.NewCreateWalletUseCase(
 		logger,
 		walletRepo)
-	getWalletUseCase := usecase.NewGetWalletUseCase(
+	getWalletUseCase := uc_wallet.NewGetWalletUseCase(
 		logger,
 		walletRepo)
-	listAllWalletUseCase := usecase.NewListAllWalletUseCase(
+	listAllWalletUseCase := uc_wallet.NewListAllWalletUseCase(
 		logger,
 		walletRepo)
-	listAllAddressesWalletUseCase := usecase.NewListAllAddressesWalletUseCase(
+	listAllAddressesWalletUseCase := uc_wallet.NewListAllAddressesWalletUseCase(
 		logger,
 		walletRepo,
 	)

@@ -10,20 +10,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 )
 
 type ExportWalletService struct {
 	logger            *slog.Logger
 	getAccountUseCase *uc_account.GetAccountUseCase
-	getWalletUseCase  *usecase.GetWalletUseCase
+	getWalletUseCase  *uc_wallet.GetWalletUseCase
 }
 
 func NewExportWalletService(
 	logger *slog.Logger,
 	uc1 *uc_account.GetAccountUseCase,
-	uc2 *usecase.GetWalletUseCase,
+	uc2 *uc_wallet.GetWalletUseCase,
 ) *ExportWalletService {
 	return &ExportWalletService{logger, uc1, uc2}
 }

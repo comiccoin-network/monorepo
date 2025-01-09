@@ -6,17 +6,17 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 )
 
 type WalletsFilterByLocalService struct {
 	logger               *slog.Logger
-	listAllWalletUseCase *usecase.ListAllWalletUseCase
+	listAllWalletUseCase *uc_wallet.ListAllWalletUseCase
 }
 
 func NewWalletsFilterByLocalService(
 	logger *slog.Logger,
-	uc1 *usecase.ListAllWalletUseCase,
+	uc1 *uc_wallet.ListAllWalletUseCase,
 ) *WalletsFilterByLocalService {
 	return &WalletsFilterByLocalService{logger, uc1}
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
 
@@ -31,7 +32,7 @@ type TokenBurnService struct {
 	getGenesisBlockDataUseCase                              *usecase.GetGenesisBlockDataUseCase
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *uc_account.GetAccountUseCase
-	getWalletUseCase                                        *usecase.GetWalletUseCase
+	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
 	mnemonicFromEncryptedHDWalletUseCase                    *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
 	privateKeyFromHDWalletUseCase                           *uc_walletutil.PrivateKeyFromHDWalletUseCase
 	getTokenUseCase                                         *usecase.GetTokenUseCase
@@ -47,7 +48,7 @@ func NewTokenBurnService(
 	uc5 *usecase.GetGenesisBlockDataUseCase,
 	uc6 *usecase.UpsertPendingSignedTransactionUseCase,
 	uc7 *uc_account.GetAccountUseCase,
-	uc8 *usecase.GetWalletUseCase,
+	uc8 *uc_wallet.GetWalletUseCase,
 	uc9 *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,
 	uc10 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc11 *usecase.GetTokenUseCase,

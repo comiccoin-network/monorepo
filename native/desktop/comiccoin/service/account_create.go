@@ -10,8 +10,8 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
 
@@ -20,7 +20,7 @@ type CreateAccountService struct {
 	openHDWalletFromMnemonicUseCase *uc_walletutil.OpenHDWalletFromMnemonicUseCase
 	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
 	encryptWalletUseCase            *uc_walletutil.EncryptWalletUseCase
-	createWalletUseCase             *usecase.CreateWalletUseCase
+	createWalletUseCase             *uc_wallet.CreateWalletUseCase
 	createAccountUseCase            *uc_account.CreateAccountUseCase
 	getAccountUseCase               *uc_account.GetAccountUseCase
 }
@@ -30,7 +30,7 @@ func NewCreateAccountService(
 	uc1 *uc_walletutil.OpenHDWalletFromMnemonicUseCase,
 	uc2 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc3 *uc_walletutil.EncryptWalletUseCase,
-	uc4 *usecase.CreateWalletUseCase,
+	uc4 *uc_wallet.CreateWalletUseCase,
 	uc5 *uc_account.CreateAccountUseCase,
 	uc6 *uc_account.GetAccountUseCase,
 ) *CreateAccountService {
