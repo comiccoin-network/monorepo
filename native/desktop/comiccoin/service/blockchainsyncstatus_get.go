@@ -6,17 +6,17 @@ import (
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
 )
 
 type GetBlockchainSyncStatusService struct {
 	logger                         *slog.Logger
-	getBlockchainSyncStatusUseCase *usecase.GetBlockchainSyncStatusUseCase
+	getBlockchainSyncStatusUseCase *uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase
 }
 
 func NewGetBlockchainSyncStatusService(
 	logger *slog.Logger,
-	uc1 *usecase.GetBlockchainSyncStatusUseCase,
+	uc1 *uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase,
 ) *GetBlockchainSyncStatusService {
 	return &GetBlockchainSyncStatusService{logger, uc1}
 }

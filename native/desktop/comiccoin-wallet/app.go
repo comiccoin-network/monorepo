@@ -23,6 +23,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
+	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
@@ -363,10 +364,10 @@ func (a *App) startup(ctx context.Context) {
 		pstxRepo)
 
 	// Blockchain Sync Status
-	setBlockchainSyncStatusUseCase := usecase.NewSetBlockchainSyncStatusUseCase(
+	setBlockchainSyncStatusUseCase := uc_blockchainsyncstatus.NewSetBlockchainSyncStatusUseCase(
 		logger,
 		blockchainSyncStatusRepo)
-	getBlockchainSyncStatusUseCase := usecase.NewGetBlockchainSyncStatusUseCase(
+	getBlockchainSyncStatusUseCase := uc_blockchainsyncstatus.NewGetBlockchainSyncStatusUseCase(
 		logger,
 		blockchainSyncStatusRepo)
 

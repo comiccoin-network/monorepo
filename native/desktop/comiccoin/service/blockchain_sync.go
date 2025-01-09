@@ -18,13 +18,14 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
+	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
 type BlockchainSyncWithBlockchainAuthorityService struct {
 	logger                                               *slog.Logger
-	getBlockchainSyncStatusUseCase                       *usecase.GetBlockchainSyncStatusUseCase
-	setBlockchainSyncStatusUseCase                       *usecase.SetBlockchainSyncStatusUseCase
+	getBlockchainSyncStatusUseCase                       *uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase
+	setBlockchainSyncStatusUseCase                       *uc_blockchainsyncstatus.SetBlockchainSyncStatusUseCase
 	getGenesisBlockDataUseCase                           *usecase.GetGenesisBlockDataUseCase
 	upsertGenesisBlockDataUseCase                        *usecase.UpsertGenesisBlockDataUseCase
 	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
@@ -42,8 +43,8 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 
 func NewBlockchainSyncWithBlockchainAuthorityService(
 	logger *slog.Logger,
-	uc1 *usecase.GetBlockchainSyncStatusUseCase,
-	uc2 *usecase.SetBlockchainSyncStatusUseCase,
+	uc1 *uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase,
+	uc2 *uc_blockchainsyncstatus.SetBlockchainSyncStatusUseCase,
 	uc3 *usecase.GetGenesisBlockDataUseCase,
 	uc4 *usecase.UpsertGenesisBlockDataUseCase,
 	uc5 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
