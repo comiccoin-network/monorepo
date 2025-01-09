@@ -23,7 +23,7 @@ import (
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
 	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
-	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/wallet"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
 func NewGenesistCmd() *cobra.Command {
@@ -49,7 +49,7 @@ func doRunNewAccount() {
 	keystore := hdkeystore.NewAdapter()
 
 	// ------ Repository ------
-	walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
+	// walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
 	accountRepo := repo.NewAccountRepo(cfg, logger, dbClient)
 	blockchainStateRepo := repo.NewBlockchainStateRepo(cfg, logger, dbClient)
 	tokRepo := repo.NewTokenRepo(cfg, logger, dbClient)
@@ -57,27 +57,12 @@ func doRunNewAccount() {
 	bdRepo := repo.NewBlockDataRepo(cfg, logger, dbClient)
 
 	// ------ Use-case ------
-	// Wallet
-	walletEncryptKeyUseCase := uc_wallet.NewWalletEncryptKeyUseCase(
+	// Wallet Util
+	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
 		cfg,
 		logger,
 		keystore,
-		walletRepo,
 	)
-	_ = walletEncryptKeyUseCase
-	walletDecryptKeyUseCase := uc_wallet.NewWalletDecryptKeyUseCase(
-		cfg,
-		logger,
-		keystore,
-		walletRepo,
-	)
-	_ = walletDecryptKeyUseCase
-	createWalletUseCase := uc_wallet.NewCreateWalletUseCase(
-		cfg,
-		logger,
-		walletRepo,
-	)
-	_ = createWalletUseCase
 
 	// Account
 	createAccountUseCase := uc_account.NewCreateAccountUseCase(
@@ -150,7 +135,7 @@ func doRunNewAccount() {
 	getProofOfAuthorityPrivateKeyService := s_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
-		walletDecryptKeyUseCase,
+		privateKeyFromHDWalletUseCase,
 	)
 	createGenesisBlockDataService := s_genesis.NewCreateGenesisBlockDataService(
 		cfg,
