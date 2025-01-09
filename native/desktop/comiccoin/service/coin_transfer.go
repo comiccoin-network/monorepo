@@ -18,15 +18,16 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
 
 type CoinTransferService struct {
 	logger                                                  *slog.Logger
-	storageTransactionOpenUseCase                           *usecase.StorageTransactionOpenUseCase
-	storageTransactionCommitUseCase                         *usecase.StorageTransactionCommitUseCase
-	storageTransactionDiscardUseCase                        *usecase.StorageTransactionDiscardUseCase
+	storageTransactionOpenUseCase                           *uc_storagetransaction.StorageTransactionOpenUseCase
+	storageTransactionCommitUseCase                         *uc_storagetransaction.StorageTransactionCommitUseCase
+	storageTransactionDiscardUseCase                        *uc_storagetransaction.StorageTransactionDiscardUseCase
 	listPendingSignedTransactionUseCase                     *usecase.ListPendingSignedTransactionUseCase
 	getGenesisBlockDataUseCase                              *usecase.GetGenesisBlockDataUseCase
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
@@ -39,9 +40,9 @@ type CoinTransferService struct {
 
 func NewCoinTransferService(
 	logger *slog.Logger,
-	uc1 *usecase.StorageTransactionOpenUseCase,
-	uc2 *usecase.StorageTransactionCommitUseCase,
-	uc3 *usecase.StorageTransactionDiscardUseCase,
+	uc1 *uc_storagetransaction.StorageTransactionOpenUseCase,
+	uc2 *uc_storagetransaction.StorageTransactionCommitUseCase,
+	uc3 *uc_storagetransaction.StorageTransactionDiscardUseCase,
 	uc4 *usecase.ListPendingSignedTransactionUseCase,
 	uc5 *usecase.GetGenesisBlockDataUseCase,
 	uc6 *usecase.UpsertPendingSignedTransactionUseCase,

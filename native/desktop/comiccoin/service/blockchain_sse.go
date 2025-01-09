@@ -8,14 +8,15 @@ import (
 	"time"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 )
 
 type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
 	logger                                                                   *slog.Logger
 	blockchainSyncWithBlockchainAuthorityService                             *BlockchainSyncWithBlockchainAuthorityService
-	storageTransactionOpenUseCase                                            *usecase.StorageTransactionOpenUseCase
-	storageTransactionCommitUseCase                                          *usecase.StorageTransactionCommitUseCase
-	storageTransactionDiscardUseCase                                         *usecase.StorageTransactionDiscardUseCase
+	storageTransactionOpenUseCase                                            *uc_storagetransaction.StorageTransactionOpenUseCase
+	storageTransactionCommitUseCase                                          *uc_storagetransaction.StorageTransactionCommitUseCase
+	storageTransactionDiscardUseCase                                         *uc_storagetransaction.StorageTransactionDiscardUseCase
 	getBlockchainStateUseCase                                                *usecase.GetBlockchainStateUseCase
 	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase *usecase.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase
 }
@@ -23,9 +24,9 @@ type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
 func NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 	logger *slog.Logger,
 	s1 *BlockchainSyncWithBlockchainAuthorityService,
-	uc1 *usecase.StorageTransactionOpenUseCase,
-	uc2 *usecase.StorageTransactionCommitUseCase,
-	uc3 *usecase.StorageTransactionDiscardUseCase,
+	uc1 *uc_storagetransaction.StorageTransactionOpenUseCase,
+	uc2 *uc_storagetransaction.StorageTransactionCommitUseCase,
+	uc3 *uc_storagetransaction.StorageTransactionDiscardUseCase,
 	uc4 *usecase.GetBlockchainStateUseCase,
 	uc5 *usecase.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService {

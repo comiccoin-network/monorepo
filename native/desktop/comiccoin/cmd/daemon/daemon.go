@@ -26,6 +26,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
@@ -144,7 +145,7 @@ func doRunDaemonCmd() {
 	// ------------ Use-Case ------------
 
 	// Storage Transaction
-	storageTransactionOpenUseCase := usecase.NewStorageTransactionOpenUseCase(
+	storageTransactionOpenUseCase := uc_storagetransaction.NewStorageTransactionOpenUseCase(
 		logger,
 		walletRepo,
 		accountRepo,
@@ -153,7 +154,7 @@ func doRunDaemonCmd() {
 		blockDataRepo,
 		tokRepo,
 		pstxRepo)
-	storageTransactionCommitUseCase := usecase.NewStorageTransactionCommitUseCase(
+	storageTransactionCommitUseCase := uc_storagetransaction.NewStorageTransactionCommitUseCase(
 		logger,
 		walletRepo,
 		accountRepo,
@@ -162,7 +163,7 @@ func doRunDaemonCmd() {
 		blockDataRepo,
 		tokRepo,
 		pstxRepo)
-	storageTransactionDiscardUseCase := usecase.NewStorageTransactionDiscardUseCase(
+	storageTransactionDiscardUseCase := uc_storagetransaction.NewStorageTransactionDiscardUseCase(
 		logger,
 		walletRepo,
 		accountRepo,

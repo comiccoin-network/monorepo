@@ -11,24 +11,24 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	uc_blockchainstatechangeeventdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstatechangeeventdto"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 )
 
 type BlockchainSyncManagerService struct {
 	logger                                                               *slog.Logger
 	blockchainSyncWithBlockchainAuthorityService                         *BlockchainSyncWithBlockchainAuthorityService
-	storageTransactionOpenUseCase                                        *usecase.StorageTransactionOpenUseCase
-	storageTransactionCommitUseCase                                      *usecase.StorageTransactionCommitUseCase
-	storageTransactionDiscardUseCase                                     *usecase.StorageTransactionDiscardUseCase
+	storageTransactionOpenUseCase                                        *uc_storagetransaction.StorageTransactionOpenUseCase
+	storageTransactionCommitUseCase                                      *uc_storagetransaction.StorageTransactionCommitUseCase
+	storageTransactionDiscardUseCase                                     *uc_storagetransaction.StorageTransactionDiscardUseCase
 	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase *uc_blockchainstatechangeeventdto.SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase
 }
 
 func NewBlockchainSyncManagerService(
 	logger *slog.Logger,
 	s1 *BlockchainSyncWithBlockchainAuthorityService,
-	uc1 *usecase.StorageTransactionOpenUseCase,
-	uc2 *usecase.StorageTransactionCommitUseCase,
-	uc3 *usecase.StorageTransactionDiscardUseCase,
+	uc1 *uc_storagetransaction.StorageTransactionOpenUseCase,
+	uc2 *uc_storagetransaction.StorageTransactionCommitUseCase,
+	uc3 *uc_storagetransaction.StorageTransactionDiscardUseCase,
 	uc4 *uc_blockchainstatechangeeventdto.SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
 ) *BlockchainSyncManagerService {
 	return &BlockchainSyncManagerService{logger, s1, uc1, uc2, uc3, uc4}
