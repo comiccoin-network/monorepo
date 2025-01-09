@@ -25,6 +25,7 @@ import (
 	service_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockchainsyncstatus"
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blockdata"
 	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/blocktx"
+	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service/coin"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
@@ -53,7 +54,7 @@ type App struct {
 	getAccountService                                               *service_account.GetAccountService
 	createAccountService                                            *service_account.CreateAccountService
 	accountListingByLocalWalletsService                             *service_account.AccountListingByLocalWalletsService
-	coinTransferService                                             *service.CoinTransferService
+	coinTransferService                                             *service_coin.CoinTransferService
 	tokenGetService                                                 *service.TokenGetService
 	tokenTransferService                                            *service.TokenTransferService
 	tokenBurnService                                                *service.TokenBurnService
@@ -404,7 +405,7 @@ func (a *App) startup(ctx context.Context) {
 		listAllAddressesWalletUseCase,
 		accountsFilterByAddressesUseCase,
 	)
-	coinTransferService := service.NewCoinTransferService(
+	coinTransferService := service_coin.NewCoinTransferService(
 		logger,
 		storageTransactionOpenUseCase,
 		storageTransactionCommitUseCase,
