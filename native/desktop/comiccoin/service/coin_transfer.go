@@ -18,6 +18,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_genesisblockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/genesisblockdata"
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
@@ -29,7 +30,7 @@ type CoinTransferService struct {
 	storageTransactionCommitUseCase                         *uc_storagetransaction.StorageTransactionCommitUseCase
 	storageTransactionDiscardUseCase                        *uc_storagetransaction.StorageTransactionDiscardUseCase
 	listPendingSignedTransactionUseCase                     *usecase.ListPendingSignedTransactionUseCase
-	getGenesisBlockDataUseCase                              *usecase.GetGenesisBlockDataUseCase
+	getGenesisBlockDataUseCase                              *uc_genesisblockdata.GetGenesisBlockDataUseCase
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *uc_account.GetAccountUseCase
 	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
@@ -44,7 +45,7 @@ func NewCoinTransferService(
 	uc2 *uc_storagetransaction.StorageTransactionCommitUseCase,
 	uc3 *uc_storagetransaction.StorageTransactionDiscardUseCase,
 	uc4 *usecase.ListPendingSignedTransactionUseCase,
-	uc5 *usecase.GetGenesisBlockDataUseCase,
+	uc5 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
 	uc6 *usecase.UpsertPendingSignedTransactionUseCase,
 	uc7 *uc_account.GetAccountUseCase,
 	uc8 *uc_wallet.GetWalletUseCase,

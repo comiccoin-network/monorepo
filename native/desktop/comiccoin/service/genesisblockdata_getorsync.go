@@ -9,20 +9,20 @@ import (
 	authority_domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_genesisblockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/genesisblockdata"
 )
 
 type GenesisBlockDataGetOrSyncService struct {
 	logger                                               *slog.Logger
-	getGenesisBlockDataUseCase                           *usecase.GetGenesisBlockDataUseCase
-	upsertGenesisBlockDataUseCase                        *usecase.UpsertGenesisBlockDataUseCase
+	getGenesisBlockDataUseCase                           *uc_genesisblockdata.GetGenesisBlockDataUseCase
+	upsertGenesisBlockDataUseCase                        *uc_genesisblockdata.UpsertGenesisBlockDataUseCase
 	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
 }
 
 func NewGenesisBlockDataGetOrSyncService(
 	logger *slog.Logger,
-	uc1 *usecase.GetGenesisBlockDataUseCase,
-	uc2 *usecase.UpsertGenesisBlockDataUseCase,
+	uc1 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
+	uc2 *uc_genesisblockdata.UpsertGenesisBlockDataUseCase,
 	uc3 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
 ) *GenesisBlockDataGetOrSyncService {
 	return &GenesisBlockDataGetOrSyncService{logger, uc1, uc2, uc3}

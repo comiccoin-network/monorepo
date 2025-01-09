@@ -26,6 +26,7 @@ import (
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
 	uc_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockdata"
 	uc_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blocktx"
+	uc_genesisblockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/genesisblockdata"
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
@@ -273,10 +274,10 @@ func (a *App) startup(ctx context.Context) {
 		blockchainStateDTORepo)
 
 	// Genesis Block Data
-	upsertGenesisBlockDataUseCase := usecase.NewUpsertGenesisBlockDataUseCase(
+	upsertGenesisBlockDataUseCase := uc_genesisblockdata.NewUpsertGenesisBlockDataUseCase(
 		logger,
 		genesisBlockDataRepo)
-	getGenesisBlockDataUseCase := usecase.NewGetGenesisBlockDataUseCase(
+	getGenesisBlockDataUseCase := uc_genesisblockdata.NewGetGenesisBlockDataUseCase(
 		logger,
 		genesisBlockDataRepo)
 
