@@ -11,12 +11,13 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstate"
 	uc_blockchainstatedto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatedto"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockdata"
 	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockdatadto"
+	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/genesisblockdata"
+	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/genesisblockdatadto"
 	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/token"
 	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
@@ -25,9 +26,9 @@ import (
 type BlockchainSyncWithBlockchainAuthorityService struct {
 	config                                               *config.Configuration
 	logger                                               *slog.Logger
-	getGenesisBlockDataUseCase                           *usecase.GetGenesisBlockDataUseCase
-	upsertGenesisBlockDataUseCase                        *usecase.UpsertGenesisBlockDataUseCase
-	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *usecase.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
+	getGenesisBlockDataUseCase                           *uc_genesisblockdata.GetGenesisBlockDataUseCase
+	upsertGenesisBlockDataUseCase                        *uc_genesisblockdata.UpsertGenesisBlockDataUseCase
+	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
 	getBlockchainStateUseCase                            *uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase                         *uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockchainStateDTOFromBlockchainAuthorityUseCase  *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
@@ -46,9 +47,9 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 func NewBlockchainSyncWithBlockchainAuthorityService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc1 *usecase.GetGenesisBlockDataUseCase,
-	uc2 *usecase.UpsertGenesisBlockDataUseCase,
-	uc3 *usecase.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc1 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
+	uc2 *uc_genesisblockdata.UpsertGenesisBlockDataUseCase,
+	uc3 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
 	uc4 *uc_blockchainstate.GetBlockchainStateUseCase,
 	uc5 *uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc6 *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,

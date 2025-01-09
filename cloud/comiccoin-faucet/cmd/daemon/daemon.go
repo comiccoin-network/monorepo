@@ -41,6 +41,9 @@ import (
 	uc_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blocktx"
 	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
+	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/genesisblockdata"
+	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/genesisblockdatadto"
+	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/mempooltxdto"
 	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/token"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
@@ -190,18 +193,18 @@ func doRunDaemon() {
 	_ = accountsFilterByAddressesUseCase
 
 	// Genesis Block Data
-	getGenesisBlockDataUseCase := usecase.NewGetGenesisBlockDataUseCase(
+	getGenesisBlockDataUseCase := uc_genesisblockdata.NewGetGenesisBlockDataUseCase(
 		cfg,
 		logger,
 		genesisBlockDataRepo,
 	)
-	upsertGenesisBlockDataUseCase := usecase.NewUpsertGenesisBlockDataUseCase(
+	upsertGenesisBlockDataUseCase := uc_genesisblockdata.NewUpsertGenesisBlockDataUseCase(
 		logger,
 		genesisBlockDataRepo,
 	)
 
 	// Genesis Block Data DTO
-	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase := usecase.NewGetGenesisBlockDataDTOFromBlockchainAuthorityUseCase(
+	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase := uc_genesisblockdatadto.NewGetGenesisBlockDataDTOFromBlockchainAuthorityUseCase(
 		logger,
 		genesisBlockDataDTORepo)
 
@@ -281,7 +284,7 @@ func doRunDaemon() {
 		blockchainStateServerSentEventsDTORepo)
 
 	// Mempooltx DTO
-	submitMempoolTransactionDTOToBlockchainAuthorityUseCase := usecase.NewSubmitMempoolTransactionDTOToBlockchainAuthorityUseCase(
+	submitMempoolTransactionDTOToBlockchainAuthorityUseCase := uc_mempooltxdto.NewSubmitMempoolTransactionDTOToBlockchainAuthorityUseCase(
 		logger,
 		mempoolTxDTORepo,
 	)

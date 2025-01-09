@@ -16,8 +16,8 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
+	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/mempooltxdto"
 	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/tenant"
 	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
 	uc_wallet "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/wallet"
@@ -34,7 +34,7 @@ type FaucetCoinTransferService struct {
 	upsertAccountUseCase                                    *uc_account.UpsertAccountUseCase
 	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
 	privateKeyFromHDWalletUseCase                           *uc_walletutil.PrivateKeyFromHDWalletUseCase
-	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *usecase.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
+	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 	createUserTransactionUseCase                            *uc_usertx.CreateUserTransactionUseCase
 }
 
@@ -48,7 +48,7 @@ func NewFaucetCoinTransferService(
 	uc4 *uc_account.UpsertAccountUseCase,
 	uc5 *uc_wallet.GetWalletUseCase,
 	uc6 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
-	uc7 *usecase.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
+	uc7 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	uc8 *uc_usertx.CreateUserTransactionUseCase,
 ) *FaucetCoinTransferService {
 	return &FaucetCoinTransferService{cfg, logger, kmutex, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8}
