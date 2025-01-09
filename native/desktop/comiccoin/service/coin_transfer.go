@@ -18,6 +18,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
 
 type CoinTransferService struct {
@@ -30,8 +31,8 @@ type CoinTransferService struct {
 	upsertPendingSignedTransactionUseCase                   *usecase.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       *uc_account.GetAccountUseCase
 	getWalletUseCase                                        *usecase.GetWalletUseCase
-	mnemonicFromEncryptedHDWalletUseCase                    *usecase.MnemonicFromEncryptedHDWalletUseCase
-	privateKeyFromHDWalletUseCase                           *usecase.PrivateKeyFromHDWalletUseCase
+	mnemonicFromEncryptedHDWalletUseCase                    *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
+	privateKeyFromHDWalletUseCase                           *uc_walletutil.PrivateKeyFromHDWalletUseCase
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }
 
@@ -45,8 +46,8 @@ func NewCoinTransferService(
 	uc6 *usecase.UpsertPendingSignedTransactionUseCase,
 	uc7 *uc_account.GetAccountUseCase,
 	uc8 *usecase.GetWalletUseCase,
-	uc9 *usecase.MnemonicFromEncryptedHDWalletUseCase,
-	uc10 *usecase.PrivateKeyFromHDWalletUseCase,
+	uc9 *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,
+	uc10 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc11 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 ) *CoinTransferService {
 	return &CoinTransferService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11}

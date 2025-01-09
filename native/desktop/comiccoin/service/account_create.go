@@ -12,13 +12,14 @@ import (
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
 
 type CreateAccountService struct {
 	logger                          *slog.Logger
-	openHDWalletFromMnemonicUseCase *usecase.OpenHDWalletFromMnemonicUseCase
-	privateKeyFromHDWalletUseCase   *usecase.PrivateKeyFromHDWalletUseCase
-	encryptWalletUseCase            *usecase.EncryptWalletUseCase
+	openHDWalletFromMnemonicUseCase *uc_walletutil.OpenHDWalletFromMnemonicUseCase
+	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
+	encryptWalletUseCase            *uc_walletutil.EncryptWalletUseCase
 	createWalletUseCase             *usecase.CreateWalletUseCase
 	createAccountUseCase            *uc_account.CreateAccountUseCase
 	getAccountUseCase               *uc_account.GetAccountUseCase
@@ -26,9 +27,9 @@ type CreateAccountService struct {
 
 func NewCreateAccountService(
 	logger *slog.Logger,
-	uc1 *usecase.OpenHDWalletFromMnemonicUseCase,
-	uc2 *usecase.PrivateKeyFromHDWalletUseCase,
-	uc3 *usecase.EncryptWalletUseCase,
+	uc1 *uc_walletutil.OpenHDWalletFromMnemonicUseCase,
+	uc2 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
+	uc3 *uc_walletutil.EncryptWalletUseCase,
 	uc4 *usecase.CreateWalletUseCase,
 	uc5 *uc_account.CreateAccountUseCase,
 	uc6 *uc_account.GetAccountUseCase,

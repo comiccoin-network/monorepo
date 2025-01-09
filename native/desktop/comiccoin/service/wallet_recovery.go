@@ -11,18 +11,19 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
+	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
 
 type WalletRecoveryService struct {
 	logger                               *slog.Logger
 	getWalletUseCase                     *usecase.GetWalletUseCase
-	mnemonicFromEncryptedHDWalletUseCase *usecase.MnemonicFromEncryptedHDWalletUseCase
+	mnemonicFromEncryptedHDWalletUseCase *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
 }
 
 func NewWalletRecoveryService(
 	logger *slog.Logger,
 	uc1 *usecase.GetWalletUseCase,
-	uc2 *usecase.MnemonicFromEncryptedHDWalletUseCase,
+	uc2 *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,
 ) *WalletRecoveryService {
 	return &WalletRecoveryService{logger, uc1, uc2}
 }

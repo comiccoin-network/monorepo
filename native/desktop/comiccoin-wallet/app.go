@@ -22,6 +22,7 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/service"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/account"
+	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
 
 // App struct
@@ -200,20 +201,20 @@ func (a *App) startup(ctx context.Context) {
 		pstxRepo)
 
 	// Wallet Utility
-	openHDWalletFromMnemonicUseCase := usecase.NewOpenHDWalletFromMnemonicUseCase(
+	openHDWalletFromMnemonicUseCase := uc_walletutil.NewOpenHDWalletFromMnemonicUseCase(
 		logger,
 		keystore)
-	encryptWalletUseCase := usecase.NewEncryptWalletUseCase(
+	encryptWalletUseCase := uc_walletutil.NewEncryptWalletUseCase(
 		logger,
 		keystore)
-	decryptWalletUseCase := usecase.NewDecryptWalletUseCase(
+	decryptWalletUseCase := uc_walletutil.NewDecryptWalletUseCase(
 		logger,
 		keystore)
 	_ = decryptWalletUseCase
-	mnemonicFromEncryptedHDWalletUseCase := usecase.NewMnemonicFromEncryptedHDWalletUseCase(
+	mnemonicFromEncryptedHDWalletUseCase := uc_walletutil.NewMnemonicFromEncryptedHDWalletUseCase(
 		logger,
 		keystore)
-	privateKeyFromHDWalletUseCase := usecase.NewPrivateKeyFromHDWalletUseCase(
+	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
 		logger,
 		keystore)
 
