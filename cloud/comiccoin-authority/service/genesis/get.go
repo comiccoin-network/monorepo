@@ -14,13 +14,13 @@ import (
 type GetGenesisBlockDataService struct {
 	config                     *config.Configuration
 	logger                     *slog.Logger
-	getGenesisBlockDataUseCase *uc_genesisblockdata.GetGenesisBlockDataUseCase
+	getGenesisBlockDataUseCase uc_genesisblockdata.GetGenesisBlockDataUseCase
 }
 
 func NewGetGenesisBlockDataService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *uc_genesisblockdata.GetGenesisBlockDataUseCase,
+	uc uc_genesisblockdata.GetGenesisBlockDataUseCase,
 ) *GetGenesisBlockDataService {
 	return &GetGenesisBlockDataService{cfg, logger, uc}
 }

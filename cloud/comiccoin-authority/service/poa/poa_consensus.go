@@ -38,7 +38,7 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	mempoolTransactionDeleteByIDUseCase        *uc_mempooltx.MempoolTransactionDeleteByIDUseCase
 	getBlockchainStateUseCase                  uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase               uc_blockchainstate.UpsertBlockchainStateUseCase
-	getGenesisBlockDataUseCase                 *uc_genesisblockdata.GetGenesisBlockDataUseCase
+	getGenesisBlockDataUseCase                 uc_genesisblockdata.GetGenesisBlockDataUseCase
 	getBlockDataUseCase                        uc_blockdata.GetBlockDataUseCase
 	getAccountUseCase                          uc_account.GetAccountUseCase
 	getAccountsHashStateUseCase                uc_account.GetAccountsHashStateUseCase
@@ -61,7 +61,7 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc2 *uc_mempooltx.MempoolTransactionDeleteByIDUseCase,
 	uc3 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc4 uc_blockchainstate.UpsertBlockchainStateUseCase,
-	uc5 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
+	uc5 uc_genesisblockdata.GetGenesisBlockDataUseCase,
 	uc6 uc_blockdata.GetBlockDataUseCase,
 	uc7 uc_account.GetAccountUseCase,
 	uc8 uc_account.GetAccountsHashStateUseCase,

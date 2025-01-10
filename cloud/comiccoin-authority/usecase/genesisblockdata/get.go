@@ -9,17 +9,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type GetGenesisBlockDataUseCase struct {
+type GetGenesisBlockDataUseCase interface {
+	Execute(ctx context.Context, chainID uint16) (*domain.GenesisBlockData, error)
+}
+
+type getGenesisBlockDataUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.GenesisBlockDataRepository
 }
 
-func NewGetGenesisBlockDataUseCase(config *config.Configuration, logger *slog.Logger, repo domain.GenesisBlockDataRepository) *GetGenesisBlockDataUseCase {
-	return &GetGenesisBlockDataUseCase{config, logger, repo}
+func NewGetGenesisBlockDataUseCase(config *config.Configuration, logger *slog.Logger, repo domain.GenesisBlockDataRepository) GetGenesisBlockDataUseCase {
+	return &getGenesisBlockDataUseCaseImpl{config, logger, repo}
 }
 
-func (uc *GetGenesisBlockDataUseCase) Execute(ctx context.Context, chainID uint16) (*domain.GenesisBlockData, error) {
+func (uc *getGenesisBlockDataUseCaseImpl) Execute(ctx context.Context, chainID uint16) (*domain.GenesisBlockData, error) {
 	//
 	// STEP 1: Validation.
 	//
