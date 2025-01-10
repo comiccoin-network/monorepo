@@ -10,12 +10,12 @@ import (
 
 type PendingSignedTransactionListService struct {
 	logger                              *slog.Logger
-	listPendingSignedTransactionUseCase *uc_pstx.ListPendingSignedTransactionUseCase
+	listPendingSignedTransactionUseCase uc_pstx.ListPendingSignedTransactionUseCase
 }
 
 func NewPendingSignedTransactionListService(
 	logger *slog.Logger,
-	uc1 *uc_pstx.ListPendingSignedTransactionUseCase,
+	uc1 uc_pstx.ListPendingSignedTransactionUseCase,
 ) *PendingSignedTransactionListService {
 	return &PendingSignedTransactionListService{logger, uc1}
 }

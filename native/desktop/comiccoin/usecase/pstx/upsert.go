@@ -9,16 +9,20 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
-type UpsertPendingSignedTransactionUseCase struct {
+type UpsertPendingSignedTransactionUseCase interface {
+	Execute(ctx context.Context, pstx *domain.PendingSignedTransaction) error
+}
+
+type upsertPendingSignedTransactionUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.PendingSignedTransactionRepository
 }
 
-func NewUpsertPendingSignedTransactionUseCase(logger *slog.Logger, repo domain.PendingSignedTransactionRepository) *UpsertPendingSignedTransactionUseCase {
-	return &UpsertPendingSignedTransactionUseCase{logger, repo}
+func NewUpsertPendingSignedTransactionUseCase(logger *slog.Logger, repo domain.PendingSignedTransactionRepository) UpsertPendingSignedTransactionUseCase {
+	return &upsertPendingSignedTransactionUseCaseImpl{logger, repo}
 }
 
-func (uc *UpsertPendingSignedTransactionUseCase) Execute(ctx context.Context, pstx *domain.PendingSignedTransaction) error {
+func (uc *upsertPendingSignedTransactionUseCaseImpl) Execute(ctx context.Context, pstx *domain.PendingSignedTransaction) error {
 	//
 	// STEP 1: Validation.
 	//

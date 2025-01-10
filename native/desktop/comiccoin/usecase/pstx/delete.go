@@ -10,16 +10,20 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
-type DeletePendingSignedTransactionUseCase struct {
+type DeletePendingSignedTransactionUseCase interface {
+	Execute(ctx context.Context, nonce *big.Int) error
+}
+
+type deletePendingSignedTransactionUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.PendingSignedTransactionRepository
 }
 
-func NewDeletePendingSignedTransactionUseCase(logger *slog.Logger, repo domain.PendingSignedTransactionRepository) *DeletePendingSignedTransactionUseCase {
-	return &DeletePendingSignedTransactionUseCase{logger, repo}
+func NewDeletePendingSignedTransactionUseCase(logger *slog.Logger, repo domain.PendingSignedTransactionRepository) DeletePendingSignedTransactionUseCase {
+	return &deletePendingSignedTransactionUseCaseImpl{logger, repo}
 }
 
-func (uc *DeletePendingSignedTransactionUseCase) Execute(ctx context.Context, nonce *big.Int) error {
+func (uc *deletePendingSignedTransactionUseCaseImpl) Execute(ctx context.Context, nonce *big.Int) error {
 	//
 	// STEP 1: Validation.
 	//

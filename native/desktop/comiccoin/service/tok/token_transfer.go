@@ -31,9 +31,9 @@ type TokenTransferService struct {
 	storageTransactionOpenUseCase                           *uc_storagetransaction.StorageTransactionOpenUseCase
 	storageTransactionCommitUseCase                         *uc_storagetransaction.StorageTransactionCommitUseCase
 	storageTransactionDiscardUseCase                        *uc_storagetransaction.StorageTransactionDiscardUseCase
-	listPendingSignedTransactionUseCase                     *uc_pstx.ListPendingSignedTransactionUseCase
+	listPendingSignedTransactionUseCase                     uc_pstx.ListPendingSignedTransactionUseCase
 	getGenesisBlockDataUseCase                              uc_genesisblockdata.GetGenesisBlockDataUseCase
-	upsertPendingSignedTransactionUseCase                   *uc_pstx.UpsertPendingSignedTransactionUseCase
+	upsertPendingSignedTransactionUseCase                   uc_pstx.UpsertPendingSignedTransactionUseCase
 	getAccountUseCase                                       uc_account.GetAccountUseCase
 	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
 	mnemonicFromEncryptedHDWalletUseCase                    *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
@@ -47,9 +47,9 @@ func NewTokenTransferService(
 	uc1 *uc_storagetransaction.StorageTransactionOpenUseCase,
 	uc2 *uc_storagetransaction.StorageTransactionCommitUseCase,
 	uc3 *uc_storagetransaction.StorageTransactionDiscardUseCase,
-	uc4 *uc_pstx.ListPendingSignedTransactionUseCase,
+	uc4 uc_pstx.ListPendingSignedTransactionUseCase,
 	uc5 uc_genesisblockdata.GetGenesisBlockDataUseCase,
-	uc6 *uc_pstx.UpsertPendingSignedTransactionUseCase,
+	uc6 uc_pstx.UpsertPendingSignedTransactionUseCase,
 	uc7 uc_account.GetAccountUseCase,
 	uc8 *uc_wallet.GetWalletUseCase,
 	uc9 *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,
