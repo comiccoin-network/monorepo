@@ -9,7 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type CreateBannedIPAddressUseCase struct {
+type CreateBannedIPAddressUseCase interface {
+	Execute(ctx context.Context, bannedIPAddress *domain.BannedIPAddress) error
+}
+
+type createBannedIPAddressUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.BannedIPAddressRepository
@@ -19,11 +23,11 @@ func NewCreateBannedIPAddressUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.BannedIPAddressRepository,
-) *CreateBannedIPAddressUseCase {
-	return &CreateBannedIPAddressUseCase{config, logger, repo}
+) CreateBannedIPAddressUseCase {
+	return &createBannedIPAddressUseCaseImpl{config, logger, repo}
 }
 
-func (uc *CreateBannedIPAddressUseCase) Execute(ctx context.Context, bannedIPAddress *domain.BannedIPAddress) error {
+func (uc *createBannedIPAddressUseCaseImpl) Execute(ctx context.Context, bannedIPAddress *domain.BannedIPAddress) error {
 	//
 	// STEP 1: Validation.
 	//

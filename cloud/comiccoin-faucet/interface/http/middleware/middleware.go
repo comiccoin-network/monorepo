@@ -21,7 +21,7 @@ type middleware struct {
 	blacklist                           blacklist.Provider
 	jwt                                 jwt.Provider
 	userGetBySessionIDUseCase           *uc_user.UserGetBySessionIDUseCase
-	bannedIPAddressListAllValuesUseCase *uc_bannedipaddress.BannedIPAddressListAllValuesUseCase
+	bannedIPAddressListAllValuesUseCase uc_bannedipaddress.BannedIPAddressListAllValuesUseCase
 	IPCountryBlocker                    ipcb.Provider
 }
 
@@ -31,7 +31,7 @@ func NewMiddleware(
 	ipcountryblocker ipcb.Provider,
 	jwtp jwt.Provider,
 	uc1 *uc_user.UserGetBySessionIDUseCase,
-	uc2 *uc_bannedipaddress.BannedIPAddressListAllValuesUseCase,
+	uc2 uc_bannedipaddress.BannedIPAddressListAllValuesUseCase,
 ) Middleware {
 	return &middleware{
 		logger:                              loggerp,
