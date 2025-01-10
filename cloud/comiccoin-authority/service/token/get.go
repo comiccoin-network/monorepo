@@ -13,12 +13,12 @@ import (
 
 type TokenRetrieveService struct {
 	logger          *slog.Logger
-	getTokenUseCase *uc_token.GetTokenUseCase
+	getTokenUseCase uc_token.GetTokenUseCase
 }
 
 func NewTokenRetrieveService(
 	logger *slog.Logger,
-	uc1 *uc_token.GetTokenUseCase,
+	uc1 uc_token.GetTokenUseCase,
 ) *TokenRetrieveService {
 	return &TokenRetrieveService{logger, uc1}
 }

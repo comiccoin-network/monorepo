@@ -13,6 +13,7 @@ import (
 type ProofOfWorkUseCase interface {
 	Execute(ctx context.Context, b *domain.Block, difficulty uint16) (*big.Int, error)
 }
+
 type proofOfWorkUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger

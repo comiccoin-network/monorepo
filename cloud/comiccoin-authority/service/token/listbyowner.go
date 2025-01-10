@@ -14,12 +14,12 @@ import (
 
 type TokenListByOwnerService struct {
 	logger                   *slog.Logger
-	listTokensByOwnerUseCase *uc_token.ListTokensByOwnerUseCase
+	listTokensByOwnerUseCase uc_token.ListTokensByOwnerUseCase
 }
 
 func NewTokenListByOwnerService(
 	logger *slog.Logger,
-	uc1 *uc_token.ListTokensByOwnerUseCase,
+	uc1 uc_token.ListTokensByOwnerUseCase,
 ) *TokenListByOwnerService {
 	return &TokenListByOwnerService{logger, uc1}
 }

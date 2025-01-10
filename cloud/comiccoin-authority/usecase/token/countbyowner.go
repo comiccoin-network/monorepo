@@ -10,17 +10,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type CountTokensByOwnerUseCase struct {
+type CountTokensByOwnerUseCase interface {
+	Execute(ctx context.Context, owner *common.Address) (int, error)
+}
+
+type countTokensByOwnerUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.TokenRepository
 }
 
-func NewCountTokensByOwnerUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TokenRepository) *CountTokensByOwnerUseCase {
-	return &CountTokensByOwnerUseCase{config, logger, repo}
+func NewCountTokensByOwnerUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TokenRepository) CountTokensByOwnerUseCase {
+	return &countTokensByOwnerUseCaseImpl{config, logger, repo}
 }
 
-func (uc *CountTokensByOwnerUseCase) Execute(ctx context.Context, owner *common.Address) (int, error) {
+func (uc *countTokensByOwnerUseCaseImpl) Execute(ctx context.Context, owner *common.Address) (int, error) {
 	toks, err := uc.repo.ListByOwner(ctx, owner)
 	if err != nil {
 		return 0, err

@@ -33,7 +33,7 @@ type TokenBurnService struct {
 	getBlockchainStateUseCase       uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase    uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockDataUseCase             uc_blockdata.GetBlockDataUseCase
-	getTokenUseCase                 *uc_token.GetTokenUseCase
+	getTokenUseCase                 uc_token.GetTokenUseCase
 	mempoolTransactionCreateUseCase uc_mempooltx.MempoolTransactionCreateUseCase
 }
 
@@ -46,7 +46,7 @@ func NewTokenBurnService(
 	uc2 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc3 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc4 uc_blockdata.GetBlockDataUseCase,
-	uc5 *uc_token.GetTokenUseCase,
+	uc5 uc_token.GetTokenUseCase,
 	uc6 uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *TokenBurnService {
 	return &TokenBurnService{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6}
