@@ -8,16 +8,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase struct {
+type SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase interface {
+	Execute(ctx context.Context, dto *domain.MempoolTransactionDTO) error
+}
+
+type submitMempoolTransactionDTOToBlockchainAuthorityUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.MempoolTransactionDTORepository
 }
 
-func NewSubmitMempoolTransactionDTOToBlockchainAuthorityUseCase(logger *slog.Logger, repo domain.MempoolTransactionDTORepository) *SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase {
-	return &SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase{logger, repo}
+func NewSubmitMempoolTransactionDTOToBlockchainAuthorityUseCase(logger *slog.Logger, repo domain.MempoolTransactionDTORepository) SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase {
+	return &submitMempoolTransactionDTOToBlockchainAuthorityUseCaseImpl{logger, repo}
 }
 
-func (uc *SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase) Execute(ctx context.Context, dto *domain.MempoolTransactionDTO) error {
+func (uc *submitMempoolTransactionDTOToBlockchainAuthorityUseCaseImpl) Execute(ctx context.Context, dto *domain.MempoolTransactionDTO) error {
 	//
 	// STEP 1: Validation.
 	//
