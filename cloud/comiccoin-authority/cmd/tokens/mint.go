@@ -15,7 +15,7 @@ import (
 	cache "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/memory/redis"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
+	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
 	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
@@ -167,7 +167,7 @@ func doRunMintToken() {
 	)
 
 	// ------ Service ------
-	getProofOfAuthorityPrivateKeyService := s_poa.NewGetProofOfAuthorityPrivateKeyService(
+	getProofOfAuthorityPrivateKeyService := sv_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
 		privateKeyFromHDWalletUseCase,

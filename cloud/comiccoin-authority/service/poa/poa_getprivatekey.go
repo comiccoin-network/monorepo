@@ -11,7 +11,11 @@ import (
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
-type GetProofOfAuthorityPrivateKeyService struct {
+type GetProofOfAuthorityPrivateKeyService interface {
+	Execute(ctx context.Context) (*ecdsa.PrivateKey, error)
+}
+
+type getProofOfAuthorityPrivateKeyServiceImpl struct {
 	config                        *config.Configuration
 	logger                        *slog.Logger
 	privateKeyFromHDWalletUseCase uc_walletutil.PrivateKeyFromHDWalletUseCase
@@ -21,11 +25,11 @@ func NewGetProofOfAuthorityPrivateKeyService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc1 uc_walletutil.PrivateKeyFromHDWalletUseCase,
-) *GetProofOfAuthorityPrivateKeyService {
-	return &GetProofOfAuthorityPrivateKeyService{cfg, logger, uc1}
+) GetProofOfAuthorityPrivateKeyService {
+	return &getProofOfAuthorityPrivateKeyServiceImpl{cfg, logger, uc1}
 }
 
-func (s *GetProofOfAuthorityPrivateKeyService) Execute(ctx context.Context) (*ecdsa.PrivateKey, error) {
+func (s *getProofOfAuthorityPrivateKeyServiceImpl) Execute(ctx context.Context) (*ecdsa.PrivateKey, error) {
 	//
 	// STEP 1: Validation.
 	//

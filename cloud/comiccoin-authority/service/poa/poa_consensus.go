@@ -23,17 +23,21 @@ import (
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
+type ProofOfAuthorityConsensusMechanismService interface {
+	Execute(ctx context.Context) error
+}
+
 // ProofOfAuthorityConsensusMechanismService represents the service which
 // delivers comparatively fast transactions using identity as a stake.
 //
 // Would you like to know more?
 // https://coinmarketcap.com/academy/glossary/proof-of-authority-poa
-type ProofOfAuthorityConsensusMechanismService struct {
+type proofOfAuthorityConsensusMechanismServiceImpl struct {
 	config                                     *config.Configuration
 	logger                                     *slog.Logger
 	dmutex                                     distributedmutex.Adapter
 	dbClient                                   *mongo.Client
-	getProofOfAuthorityPrivateKeyService       *GetProofOfAuthorityPrivateKeyService
+	getProofOfAuthorityPrivateKeyService       GetProofOfAuthorityPrivateKeyService
 	mempoolTransactionInsertionDetectorUseCase uc_mempooltx.MempoolTransactionInsertionDetectorUseCase
 	mempoolTransactionDeleteByIDUseCase        uc_mempooltx.MempoolTransactionDeleteByIDUseCase
 	getBlockchainStateUseCase                  uc_blockchainstate.GetBlockchainStateUseCase
@@ -56,7 +60,7 @@ func NewProofOfAuthorityConsensusMechanismService(
 	logger *slog.Logger,
 	dmutex distributedmutex.Adapter,
 	client *mongo.Client,
-	s1 *GetProofOfAuthorityPrivateKeyService,
+	s1 GetProofOfAuthorityPrivateKeyService,
 	uc1 uc_mempooltx.MempoolTransactionInsertionDetectorUseCase,
 	uc2 uc_mempooltx.MempoolTransactionDeleteByIDUseCase,
 	uc3 uc_blockchainstate.GetBlockchainStateUseCase,
@@ -72,11 +76,11 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc13 uc_pow.ProofOfWorkUseCase,
 	uc14 uc_blockdata.UpsertBlockDataUseCase,
 	uc15 uc_blockchainstate.BlockchainStatePublishUseCase,
-) *ProofOfAuthorityConsensusMechanismService {
-	return &ProofOfAuthorityConsensusMechanismService{config, logger, dmutex, client, s1, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15}
+) ProofOfAuthorityConsensusMechanismService {
+	return &proofOfAuthorityConsensusMechanismServiceImpl{config, logger, dmutex, client, s1, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15}
 }
 
-func (s *ProofOfAuthorityConsensusMechanismService) Execute(ctx context.Context) error {
+func (s *proofOfAuthorityConsensusMechanismServiceImpl) Execute(ctx context.Context) error {
 	// Protect our resource - this PoA consensus mechanism can only exist as
 	// a single instance any time. So if we have more then one authority nodes
 	// running on the network, coordinate view the distributed mutext, that
@@ -514,7 +518,7 @@ func (s *ProofOfAuthorityConsensusMechanismService) Execute(ctx context.Context)
 	return nil
 }
 
-func (s *ProofOfAuthorityConsensusMechanismService) verifyMempoolTransaction(sessCtx mongo.SessionContext, mempoolTx *domain.MempoolTransaction) error {
+func (s *proofOfAuthorityConsensusMechanismServiceImpl) verifyMempoolTransaction(sessCtx mongo.SessionContext, mempoolTx *domain.MempoolTransaction) error {
 	s.logger.Debug("Preparing to verify",
 		slog.Any("chain_id", mempoolTx.ChainID),
 		slog.Any("nonce", mempoolTx.GetNonce()),
@@ -630,7 +634,7 @@ func (s *ProofOfAuthorityConsensusMechanismService) verifyMempoolTransaction(ses
 	return nil
 }
 
-func (s *ProofOfAuthorityConsensusMechanismService) processAccountForCoinMempoolTransaction(
+func (s *proofOfAuthorityConsensusMechanismServiceImpl) processAccountForCoinMempoolTransaction(
 	sessCtx mongo.SessionContext,
 	mempoolTx *domain.MempoolTransaction,
 ) error {
@@ -739,7 +743,7 @@ func (s *ProofOfAuthorityConsensusMechanismService) processAccountForCoinMempool
 	return nil
 }
 
-func (s *ProofOfAuthorityConsensusMechanismService) processAccountForTokenMempoolTransaction(
+func (s *proofOfAuthorityConsensusMechanismServiceImpl) processAccountForTokenMempoolTransaction(
 	sessCtx mongo.SessionContext,
 	mempoolTx *domain.MempoolTransaction,
 	blockchainState *domain.BlockchainState,

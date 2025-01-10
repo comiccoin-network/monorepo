@@ -15,7 +15,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
+	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
@@ -26,7 +26,7 @@ type TokenMintService struct {
 	logger                               *slog.Logger
 	dmutex                               distributedmutex.Adapter
 	dbClient                             *mongo.Client
-	getProofOfAuthorityPrivateKeyService *s_poa.GetProofOfAuthorityPrivateKeyService
+	getProofOfAuthorityPrivateKeyService sv_poa.GetProofOfAuthorityPrivateKeyService
 	getBlockchainStateUseCase            uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase         uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockDataUseCase                  uc_blockdata.GetBlockDataUseCase
@@ -38,7 +38,7 @@ func NewTokenMintService(
 	logger *slog.Logger,
 	dmutex distributedmutex.Adapter,
 	client *mongo.Client,
-	s1 *s_poa.GetProofOfAuthorityPrivateKeyService,
+	s1 sv_poa.GetProofOfAuthorityPrivateKeyService,
 	uc1 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc2 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc3 uc_blockdata.GetBlockDataUseCase,

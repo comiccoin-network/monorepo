@@ -30,7 +30,7 @@ import (
 	sv_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blocktx"
 	sv_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
 	sv_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
-	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
+	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
 	s_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/signedtx"
 	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
@@ -272,12 +272,12 @@ func doRunDaemon() {
 	)
 
 	// Proof of Authority Consensus Mechanism
-	getProofOfAuthorityPrivateKeyService := s_poa.NewGetProofOfAuthorityPrivateKeyService(
+	getProofOfAuthorityPrivateKeyService := sv_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
 		privateKeyFromHDWalletUseCase,
 	)
-	proofOfAuthorityConsensusMechanismService := s_poa.NewProofOfAuthorityConsensusMechanismService(
+	proofOfAuthorityConsensusMechanismService := sv_poa.NewProofOfAuthorityConsensusMechanismService(
 		cfg,
 		logger,
 		dmutex,
