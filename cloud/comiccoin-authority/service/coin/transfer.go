@@ -19,7 +19,19 @@ import (
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
-type CoinTransferService struct {
+type CoinTransferService interface {
+	Execute(
+		ctx context.Context,
+		fromAccountAddress *common.Address,
+		accountWalletMnemonic *sstring.SecureString,
+		accountWalletPath string,
+		to *common.Address,
+		value uint64,
+		data []byte,
+	) error
+}
+
+type coinTransferServiceImpl struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	getAccountUseCase               uc_account.GetAccountUseCase
@@ -33,11 +45,11 @@ func NewCoinTransferService(
 	uc1 uc_account.GetAccountUseCase,
 	uc2 uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc3 uc_mempooltx.MempoolTransactionCreateUseCase,
-) *CoinTransferService {
-	return &CoinTransferService{cfg, logger, uc1, uc2, uc3}
+) CoinTransferService {
+	return &coinTransferServiceImpl{cfg, logger, uc1, uc2, uc3}
 }
 
-func (s *CoinTransferService) Execute(
+func (s *coinTransferServiceImpl) Execute(
 	ctx context.Context,
 	fromAccountAddress *common.Address,
 	accountWalletMnemonic *sstring.SecureString,
