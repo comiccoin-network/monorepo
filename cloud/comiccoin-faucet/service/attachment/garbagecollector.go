@@ -13,7 +13,11 @@ import (
 	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
 )
 
-type AttachmentGarbageCollectorService struct {
+type AttachmentGarbageCollectorService interface {
+	Execute(sessCtx mongo.SessionContext, tenantID primitive.ObjectID) error
+}
+
+type attachmentGarbageCollectorServiceImpl struct {
 	logger                        *slog.Logger
 	attachmentListByFilterUseCase uc_attachment.AttachmentListByFilterUseCase
 	attachmentDeleteUseCase       uc_attachment.AttachmentDeleteUseCase
@@ -25,11 +29,11 @@ func NewAttachmentGarbageCollectorService(
 	uc1 uc_attachment.AttachmentListByFilterUseCase,
 	uc2 uc_attachment.AttachmentDeleteUseCase,
 	uc3 uc_cloudstorage.CloudStorageDeleteUseCase,
-) *AttachmentGarbageCollectorService {
-	return &AttachmentGarbageCollectorService{logger, uc1, uc2, uc3}
+) AttachmentGarbageCollectorService {
+	return &attachmentGarbageCollectorServiceImpl{logger, uc1, uc2, uc3}
 }
 
-func (s *AttachmentGarbageCollectorService) Execute(sessCtx mongo.SessionContext, tenantID primitive.ObjectID) error {
+func (s *attachmentGarbageCollectorServiceImpl) Execute(sessCtx mongo.SessionContext, tenantID primitive.ObjectID) error {
 	//
 	// STEP 1: Validation.
 	//

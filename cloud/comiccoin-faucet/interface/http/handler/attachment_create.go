@@ -19,13 +19,13 @@ import (
 type AttachmentCreateHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_attachment.AttachmentCreateService
+	service  sv_attachment.AttachmentCreateService
 }
 
 func NewAttachmentCreateHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_attachment.AttachmentCreateService,
+	service sv_attachment.AttachmentCreateService,
 ) *AttachmentCreateHTTPHandler {
 	return &AttachmentCreateHTTPHandler{
 		logger:   logger,
@@ -107,7 +107,7 @@ func (h *AttachmentCreateHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	resp := result.(*sv_attachment.AttachmentCreateResponseIDO)
+	resp := result.(sv_attachment.AttachmentCreateResponseIDO)
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {

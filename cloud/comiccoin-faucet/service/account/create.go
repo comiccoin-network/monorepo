@@ -14,7 +14,11 @@ import (
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/walletutil"
 )
 
-type CreateAccountService struct {
+type CreateAccountService interface {
+	Execute(ctx context.Context, walletMnemonic *sstring.SecureString, walletPath string, walletLabel string) (*domain.Account, error)
+}
+
+type createAccountServiceImpl struct {
 	logger                          *slog.Logger
 	openHDWalletFromMnemonicUseCase uc_walletutil.OpenHDWalletFromMnemonicUseCase
 	privateKeyFromHDWalletUseCase   uc_walletutil.PrivateKeyFromHDWalletUseCase
@@ -30,11 +34,11 @@ func NewCreateAccountService(
 	uc3 uc_wallet.CreateWalletUseCase,
 	uc4 uc_account.CreateAccountUseCase,
 	uc5 uc_account.GetAccountUseCase,
-) *CreateAccountService {
-	return &CreateAccountService{logger, uc1, uc2, uc3, uc4, uc5}
+) CreateAccountService {
+	return &createAccountServiceImpl{logger, uc1, uc2, uc3, uc4, uc5}
 }
 
-func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstring.SecureString, walletPath string, walletLabel string) (*domain.Account, error) {
+func (s *createAccountServiceImpl) Execute(ctx context.Context, walletMnemonic *sstring.SecureString, walletPath string, walletLabel string) (*domain.Account, error) {
 	//
 	// STEP 1: Validation.
 	//

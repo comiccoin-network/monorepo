@@ -22,7 +22,7 @@ type GatewayInitService struct {
 	config                 *config.Configuration
 	logger                 *slog.Logger
 	passwordProvider       password.Provider
-	createAccountService   *sv_account.CreateAccountService
+	createAccountService   sv_account.CreateAccountService
 	tenantGetByNameUseCase uc_tenant.TenantGetByNameUseCase
 	tenantCreate           uc_tenant.TenantCreateUseCase
 	userGet                uc_user.UserGetByEmailUseCase
@@ -33,7 +33,7 @@ func NewGatewayInitService(
 	config *config.Configuration,
 	logger *slog.Logger,
 	pp password.Provider,
-	s1 *sv_account.CreateAccountService,
+	s1 sv_account.CreateAccountService,
 	uc1 uc_tenant.TenantGetByNameUseCase,
 	uc2 uc_tenant.TenantCreateUseCase,
 	uc3 uc_user.UserGetByEmailUseCase,

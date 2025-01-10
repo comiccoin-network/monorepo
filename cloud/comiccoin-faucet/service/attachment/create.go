@@ -19,7 +19,11 @@ import (
 	uc_cloudstorage "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/cloudstorage"
 )
 
-type AttachmentCreateService struct {
+type AttachmentCreateService interface {
+	Execute(sessCtx mongo.SessionContext, req *AttachmentCreateRequestIDO) (*AttachmentCreateResponseIDO, error)
+}
+
+type attachmentCreateServiceImpl struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	cloudStorageSyncUploadUseCase   uc_cloudstorage.CloudStorageSyncUploadUseCase
@@ -33,8 +37,8 @@ func NewAttachmentCreateService(
 	uc1 uc_cloudstorage.CloudStorageSyncUploadUseCase,
 	uc2 uc_attachment.CreateAttachmentUseCase,
 	uc3 uc_cloudstorage.CloudStoragePresignedURLUseCase,
-) *AttachmentCreateService {
-	return &AttachmentCreateService{cfg, logger, uc1, uc2, uc3}
+) AttachmentCreateService {
+	return &attachmentCreateServiceImpl{cfg, logger, uc1, uc2, uc3}
 }
 
 type AttachmentCreateRequestIDO struct {
@@ -46,7 +50,7 @@ type AttachmentCreateRequestIDO struct {
 
 type AttachmentCreateResponseIDO domain.Attachment
 
-func (s *AttachmentCreateService) Execute(sessCtx mongo.SessionContext, req *AttachmentCreateRequestIDO) (*AttachmentCreateResponseIDO, error) {
+func (s *attachmentCreateServiceImpl) Execute(sessCtx mongo.SessionContext, req *AttachmentCreateRequestIDO) (*AttachmentCreateResponseIDO, error) {
 	//
 	// STEP 1: Validation
 	//

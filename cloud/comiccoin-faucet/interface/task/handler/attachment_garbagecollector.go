@@ -14,14 +14,14 @@ type AttachmentGarbageCollectorTaskHandler struct {
 	config                            *config.Configuration
 	logger                            *slog.Logger
 	dbClient                          *mongo.Client
-	attachmentGarbageCollectorService *sv_attachment.AttachmentGarbageCollectorService
+	attachmentGarbageCollectorService sv_attachment.AttachmentGarbageCollectorService
 }
 
 func NewAttachmentGarbageCollectorTaskHandler(
 	config *config.Configuration,
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	s1 *sv_attachment.AttachmentGarbageCollectorService,
+	s1 sv_attachment.AttachmentGarbageCollectorService,
 ) *AttachmentGarbageCollectorTaskHandler {
 	return &AttachmentGarbageCollectorTaskHandler{config, logger, dbClient, s1}
 }
