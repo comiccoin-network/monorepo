@@ -23,7 +23,11 @@ import (
 	uc_usertx "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/usertx"
 )
 
-type BlockchainSyncWithBlockchainAuthorityService struct {
+type BlockchainSyncWithBlockchainAuthorityService interface {
+	Execute(sessCtx mongo.SessionContext) error
+}
+
+type blockchainSyncWithBlockchainAuthorityServiceImpl struct {
 	config                                               *config.Configuration
 	logger                                               *slog.Logger
 	getGenesisBlockDataUseCase                           uc_genesisblockdata.GetGenesisBlockDataUseCase
@@ -63,11 +67,11 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc14 uc_tenant.TenantUpdateUseCase,
 	uc15 uc_usertx.UserTransactionGetUseCase,
 	uc16 uc_usertx.UserTransactionUpdateUseCase,
-) *BlockchainSyncWithBlockchainAuthorityService {
-	return &BlockchainSyncWithBlockchainAuthorityService{cfg, logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15, uc16}
+) BlockchainSyncWithBlockchainAuthorityService {
+	return &blockchainSyncWithBlockchainAuthorityServiceImpl{cfg, logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15, uc16}
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(sessCtx mongo.SessionContext) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) Execute(sessCtx mongo.SessionContext) error {
 	//
 	// STEP 1: Get variables and reference data for convenience. Validate.
 	//
@@ -308,7 +312,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(sessCtx mongo.Ses
 	return nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainNetwork(sessCtx mongo.SessionContext, localBlockchainState, globalBlockchainState *domain.BlockchainState) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) syncWithGlobalBlockchainNetwork(sessCtx mongo.SessionContext, localBlockchainState, globalBlockchainState *domain.BlockchainState) error {
 	//
 	// Algorithm:
 	// (1) Download the most recent block from the Global Blockchain. Please
@@ -480,7 +484,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainN
 	return nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForTransaction(sessCtx mongo.SessionContext, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) processAccountForTransaction(sessCtx mongo.SessionContext, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
 	//
 	// CASE 1 OF 2: 🎟️ Token Transaction
 	//
@@ -500,7 +504,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForTransact
 	return nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForCoinTransaction(sessCtx mongo.SessionContext, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) processAccountForCoinTransaction(sessCtx mongo.SessionContext, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
 	//
 	// STEP 1
 	//
@@ -622,7 +626,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForCoinTran
 	return nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForTokenTransaction(sessCtx mongo.SessionContext, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) processAccountForTokenTransaction(sessCtx mongo.SessionContext, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
 	//
 	// STEP 1:
 	// Check to see if we have an account for this particular token and
@@ -737,7 +741,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForTokenTra
 	return nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) processUserTransactionForCoinTransaction(sessCtx mongo.SessionContext, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) processUserTransactionForCoinTransaction(sessCtx mongo.SessionContext, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
 	//
 	// STEP 1
 	// Check to see if our faucet sent the transaction and if it did then

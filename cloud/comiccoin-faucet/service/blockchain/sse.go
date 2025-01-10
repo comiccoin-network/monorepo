@@ -15,11 +15,15 @@ import (
 	uc_blockchainstatesse "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/blockchainstatesse"
 )
 
-type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
+type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService interface {
+	Execute(ctx context.Context) error
+}
+
+type blockchainSyncWithBlockchainAuthorityViaServerSentEventsServiceImpl struct {
 	config                                                                   *config.Configuration
 	logger                                                                   *slog.Logger
 	dbClient                                                                 *mongo.Client
-	blockchainSyncWithBlockchainAuthorityService                             *BlockchainSyncWithBlockchainAuthorityService
+	blockchainSyncWithBlockchainAuthorityService                             BlockchainSyncWithBlockchainAuthorityService
 	getBlockchainStateUseCase                                                uc_blockchainstate.GetBlockchainStateUseCase
 	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase uc_blockchainstatesse.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase
 }
@@ -28,14 +32,14 @@ func NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	s1 *BlockchainSyncWithBlockchainAuthorityService,
+	s1 BlockchainSyncWithBlockchainAuthorityService,
 	uc1 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc2 uc_blockchainstatesse.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
-) *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService {
-	return &BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService{cfg, logger, dbClient, s1, uc1, uc2}
+) BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService {
+	return &blockchainSyncWithBlockchainAuthorityViaServerSentEventsServiceImpl{cfg, logger, dbClient, s1, uc1, uc2}
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService) Execute(ctx context.Context) error {
+func (s *blockchainSyncWithBlockchainAuthorityViaServerSentEventsServiceImpl) Execute(ctx context.Context) error {
 	chainID := s.config.Blockchain.ChainID
 
 	//
