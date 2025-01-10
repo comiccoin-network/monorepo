@@ -9,17 +9,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type UserGetByVerificationCodeUseCase struct {
+type UserGetByVerificationCodeUseCase interface {
+	Execute(ctx context.Context, verificationCode string) (*domain.User, error)
+}
+
+type userGetByVerificationCodeUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.UserRepository
 }
 
-func NewUserGetByVerificationCodeUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) *UserGetByVerificationCodeUseCase {
-	return &UserGetByVerificationCodeUseCase{config, logger, repo}
+func NewUserGetByVerificationCodeUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) UserGetByVerificationCodeUseCase {
+	return &userGetByVerificationCodeUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UserGetByVerificationCodeUseCase) Execute(ctx context.Context, verificationCode string) (*domain.User, error) {
+func (uc *userGetByVerificationCodeUseCaseImpl) Execute(ctx context.Context, verificationCode string) (*domain.User, error) {
 	//
 	// STEP 1: Validation.
 	//

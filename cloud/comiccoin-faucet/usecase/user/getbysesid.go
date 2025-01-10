@@ -12,17 +12,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type UserGetBySessionIDUseCase struct {
+type UserGetBySessionIDUseCase interface {
+	Execute(ctx context.Context, sessionID string) (*domain.User, error)
+}
+
+type userGetBySessionIDUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	cache  mongodbcache.Cacher
 }
 
-func NewUserGetBySessionIDUseCase(config *config.Configuration, logger *slog.Logger, ca mongodbcache.Cacher) *UserGetBySessionIDUseCase {
-	return &UserGetBySessionIDUseCase{config, logger, ca}
+func NewUserGetBySessionIDUseCase(config *config.Configuration, logger *slog.Logger, ca mongodbcache.Cacher) UserGetBySessionIDUseCase {
+	return &userGetBySessionIDUseCaseImpl{config, logger, ca}
 }
 
-func (uc *UserGetBySessionIDUseCase) Execute(ctx context.Context, sessionID string) (*domain.User, error) {
+func (uc *userGetBySessionIDUseCaseImpl) Execute(ctx context.Context, sessionID string) (*domain.User, error) {
 	//
 	// STEP 1: Validation.
 	//

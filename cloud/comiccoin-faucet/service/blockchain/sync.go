@@ -38,10 +38,10 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	getAccountUseCase                                    uc_account.GetAccountUseCase
 	upsertAccountUseCase                                 uc_account.UpsertAccountUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase            uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
-	tenantGetByIDUseCase                                 *uc_tenant.TenantGetByIDUseCase
-	tenantUpdateUseCase                                  *uc_tenant.TenantUpdateUseCase
-	userTransactionGetUseCase                            *uc_usertx.UserTransactionGetUseCase
-	userTransactionUpdateUseCase                         *uc_usertx.UserTransactionUpdateUseCase
+	tenantGetByIDUseCase                                 uc_tenant.TenantGetByIDUseCase
+	tenantUpdateUseCase                                  uc_tenant.TenantUpdateUseCase
+	userTransactionGetUseCase                            uc_usertx.UserTransactionGetUseCase
+	userTransactionUpdateUseCase                         uc_usertx.UserTransactionUpdateUseCase
 }
 
 func NewBlockchainSyncWithBlockchainAuthorityService(
@@ -59,10 +59,10 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc10 uc_account.GetAccountUseCase,
 	uc11 uc_account.UpsertAccountUseCase,
 	uc12 uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
-	uc13 *uc_tenant.TenantGetByIDUseCase,
-	uc14 *uc_tenant.TenantUpdateUseCase,
-	uc15 *uc_usertx.UserTransactionGetUseCase,
-	uc16 *uc_usertx.UserTransactionUpdateUseCase,
+	uc13 uc_tenant.TenantGetByIDUseCase,
+	uc14 uc_tenant.TenantUpdateUseCase,
+	uc15 uc_usertx.UserTransactionGetUseCase,
+	uc16 uc_usertx.UserTransactionUpdateUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityService {
 	return &BlockchainSyncWithBlockchainAuthorityService{cfg, logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15, uc16}
 }

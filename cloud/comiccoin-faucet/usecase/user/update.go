@@ -9,17 +9,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type UserUpdateUseCase struct {
+type UserUpdateUseCase interface {
+	Execute(ctx context.Context, user *domain.User) error
+}
+
+type userUpdateUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.UserRepository
 }
 
-func NewUserUpdateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) *UserUpdateUseCase {
-	return &UserUpdateUseCase{config, logger, repo}
+func NewUserUpdateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) UserUpdateUseCase {
+	return &userUpdateUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UserUpdateUseCase) Execute(ctx context.Context, user *domain.User) error {
+func (uc *userUpdateUseCaseImpl) Execute(ctx context.Context, user *domain.User) error {
 	//
 	// STEP 1: Validation.
 	//

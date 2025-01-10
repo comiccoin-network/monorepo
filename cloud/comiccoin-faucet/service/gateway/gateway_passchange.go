@@ -20,16 +20,16 @@ type GatewayChangePasswordService struct {
 	logger             *slog.Logger
 	kmutex             kmutexutil.KMutexProvider
 	passwordProvider   password.Provider
-	userGetByIDUseCase *uc_user.UserGetByIDUseCase
-	userUpdateUseCase  *uc_user.UserUpdateUseCase
+	userGetByIDUseCase uc_user.UserGetByIDUseCase
+	userUpdateUseCase  uc_user.UserUpdateUseCase
 }
 
 func NewGatewayChangePasswordService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
 	passwordProvider password.Provider,
-	uc1 *uc_user.UserGetByIDUseCase,
-	uc2 *uc_user.UserUpdateUseCase,
+	uc1 uc_user.UserGetByIDUseCase,
+	uc2 uc_user.UserUpdateUseCase,
 ) *GatewayChangePasswordService {
 	return &GatewayChangePasswordService{logger, kmutex, passwordProvider, uc1, uc2}
 }

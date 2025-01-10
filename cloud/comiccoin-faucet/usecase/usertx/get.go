@@ -11,7 +11,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type UserTransactionGetUseCase struct {
+type UserTransactionGetUseCase interface {
+	ExecuteForID(ctx context.Context, id primitive.ObjectID) (*domain.UserTransaction, error)
+	ExecuteForNonce(ctx context.Context, nonce *big.Int) (*domain.UserTransaction, error)
+}
+
+type userTransactionGetUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.UserTransactionRepository
@@ -21,11 +26,11 @@ func NewUserTransactionGetUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.UserTransactionRepository,
-) *UserTransactionGetUseCase {
-	return &UserTransactionGetUseCase{config, logger, repo}
+) UserTransactionGetUseCase {
+	return &userTransactionGetUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UserTransactionGetUseCase) ExecuteForID(ctx context.Context, id primitive.ObjectID) (*domain.UserTransaction, error) {
+func (uc *userTransactionGetUseCaseImpl) ExecuteForID(ctx context.Context, id primitive.ObjectID) (*domain.UserTransaction, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -47,7 +52,7 @@ func (uc *UserTransactionGetUseCase) ExecuteForID(ctx context.Context, id primit
 	return uc.repo.GetByID(ctx, id)
 }
 
-func (uc *UserTransactionGetUseCase) ExecuteForNonce(ctx context.Context, nonce *big.Int) (*domain.UserTransaction, error) {
+func (uc *userTransactionGetUseCaseImpl) ExecuteForNonce(ctx context.Context, nonce *big.Int) (*domain.UserTransaction, error) {
 	//
 	// STEP 1: Validation.
 	//

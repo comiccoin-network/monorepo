@@ -10,17 +10,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type UserGetByIDUseCase struct {
+type UserGetByIDUseCase interface {
+	Execute(ctx context.Context, id primitive.ObjectID) (*domain.User, error)
+}
+
+type userGetByIDUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.UserRepository
 }
 
-func NewUserGetByIDUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) *UserGetByIDUseCase {
-	return &UserGetByIDUseCase{config, logger, repo}
+func NewUserGetByIDUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) UserGetByIDUseCase {
+	return &userGetByIDUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UserGetByIDUseCase) Execute(ctx context.Context, id primitive.ObjectID) (*domain.User, error) {
+func (uc *userGetByIDUseCaseImpl) Execute(ctx context.Context, id primitive.ObjectID) (*domain.User, error) {
 	//
 	// STEP 1: Validation.
 	//

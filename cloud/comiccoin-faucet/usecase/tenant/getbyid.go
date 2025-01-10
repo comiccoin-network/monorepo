@@ -10,17 +10,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type TenantGetByIDUseCase struct {
+type TenantGetByIDUseCase interface {
+	Execute(ctx context.Context, id primitive.ObjectID) (*domain.Tenant, error)
+}
+
+type tenantGetByIDUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.TenantRepository
 }
 
-func NewTenantGetByIDUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TenantRepository) *TenantGetByIDUseCase {
-	return &TenantGetByIDUseCase{config, logger, repo}
+func NewTenantGetByIDUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TenantRepository) TenantGetByIDUseCase {
+	return &tenantGetByIDUseCaseImpl{config, logger, repo}
 }
 
-func (uc *TenantGetByIDUseCase) Execute(ctx context.Context, id primitive.ObjectID) (*domain.Tenant, error) {
+func (uc *tenantGetByIDUseCaseImpl) Execute(ctx context.Context, id primitive.ObjectID) (*domain.Tenant, error) {
 	//
 	// STEP 1: Validation.
 	//

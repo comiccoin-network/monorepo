@@ -14,12 +14,12 @@ import (
 
 type UserCountJoinedThisWeekService struct {
 	logger                              *slog.Logger
-	comicSubmissionCountByFilterUseCase *uc_user.UserCountByFilterUseCase
+	comicSubmissionCountByFilterUseCase uc_user.UserCountByFilterUseCase
 }
 
 func NewUserCountJoinedThisWeekService(
 	logger *slog.Logger,
-	uc1 *uc_user.UserCountByFilterUseCase,
+	uc1 uc_user.UserCountByFilterUseCase,
 ) *UserCountJoinedThisWeekService {
 	return &UserCountJoinedThisWeekService{logger, uc1}
 }

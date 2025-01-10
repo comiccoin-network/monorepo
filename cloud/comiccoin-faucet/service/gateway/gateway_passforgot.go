@@ -14,15 +14,15 @@ import (
 type GatewayForgotPasswordService struct {
 	logger                *slog.Logger
 	templatedEmailer      templatedemailer.TemplatedEmailer
-	userGetByEmailUseCase *uc_user.UserGetByEmailUseCase
-	userUpdateUseCase     *uc_user.UserUpdateUseCase
+	userGetByEmailUseCase uc_user.UserGetByEmailUseCase
+	userUpdateUseCase     uc_user.UserUpdateUseCase
 }
 
 func NewGatewayForgotPasswordService(
 	logger *slog.Logger,
 	templatedEmailer templatedemailer.TemplatedEmailer,
-	uc1 *uc_user.UserGetByEmailUseCase,
-	uc2 *uc_user.UserUpdateUseCase,
+	uc1 uc_user.UserGetByEmailUseCase,
+	uc2 uc_user.UserUpdateUseCase,
 ) *GatewayForgotPasswordService {
 	return &GatewayForgotPasswordService{logger, templatedEmailer, uc1, uc2}
 }

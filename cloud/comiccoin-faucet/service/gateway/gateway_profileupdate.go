@@ -16,14 +16,14 @@ import (
 
 type GatewayProfileUpdateService struct {
 	logger             *slog.Logger
-	userGetByIDUseCase *uc_user.UserGetByIDUseCase
-	userUpdateUseCase  *uc_user.UserUpdateUseCase
+	userGetByIDUseCase uc_user.UserGetByIDUseCase
+	userUpdateUseCase  uc_user.UserUpdateUseCase
 }
 
 func NewGatewayProfileUpdateService(
 	logger *slog.Logger,
-	uc1 *uc_user.UserGetByIDUseCase,
-	uc2 *uc_user.UserUpdateUseCase,
+	uc1 uc_user.UserGetByIDUseCase,
+	uc2 uc_user.UserUpdateUseCase,
 ) *GatewayProfileUpdateService {
 	return &GatewayProfileUpdateService{logger, uc1, uc2}
 }

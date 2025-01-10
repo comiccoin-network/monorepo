@@ -9,17 +9,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type UserGetByEmailUseCase struct {
+type UserGetByEmailUseCase interface {
+	Execute(ctx context.Context, email string) (*domain.User, error)
+}
+
+type userGetByEmailUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.UserRepository
 }
 
-func NewUserGetByEmailUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) *UserGetByEmailUseCase {
-	return &UserGetByEmailUseCase{config, logger, repo}
+func NewUserGetByEmailUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) UserGetByEmailUseCase {
+	return &userGetByEmailUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UserGetByEmailUseCase) Execute(ctx context.Context, email string) (*domain.User, error) {
+func (uc *userGetByEmailUseCaseImpl) Execute(ctx context.Context, email string) (*domain.User, error) {
 	//
 	// STEP 1: Validation.
 	//

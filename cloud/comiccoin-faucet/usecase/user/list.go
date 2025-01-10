@@ -9,7 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type UserListByFilterUseCase struct {
+type UserListByFilterUseCase interface {
+	Execute(ctx context.Context, filter *domain.UserFilter) (*domain.UserFilterResult, error)
+}
+
+type userListByFilterUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.UserRepository
@@ -19,11 +23,11 @@ func NewUserListByFilterUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.UserRepository,
-) *UserListByFilterUseCase {
-	return &UserListByFilterUseCase{config, logger, repo}
+) UserListByFilterUseCase {
+	return &userListByFilterUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UserListByFilterUseCase) Execute(ctx context.Context, filter *domain.UserFilter) (*domain.UserFilterResult, error) {
+func (uc *userListByFilterUseCaseImpl) Execute(ctx context.Context, filter *domain.UserFilter) (*domain.UserFilterResult, error) {
 	//
 	// STEP 1: Validation.
 	//

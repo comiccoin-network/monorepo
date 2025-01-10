@@ -28,10 +28,10 @@ type UserCreateService struct {
 	passwordProvider      password.Provider
 	cache                 mongodbcache.Cacher
 	jwtProvider           jwt.Provider
-	tenantGetByIDUseCase  *uc_tenant.TenantGetByIDUseCase
-	userGetByEmailUseCase *uc_user.UserGetByEmailUseCase
-	userCreateUseCase     *uc_user.UserCreateUseCase
-	userUpdateUseCase     *uc_user.UserUpdateUseCase
+	tenantGetByIDUseCase  uc_tenant.TenantGetByIDUseCase
+	userGetByEmailUseCase uc_user.UserGetByEmailUseCase
+	userCreateUseCase     uc_user.UserCreateUseCase
+	userUpdateUseCase     uc_user.UserUpdateUseCase
 }
 
 func NewUserCreateService(
@@ -40,10 +40,10 @@ func NewUserCreateService(
 	pp password.Provider,
 	cach mongodbcache.Cacher,
 	jwtp jwt.Provider,
-	uc1 *uc_tenant.TenantGetByIDUseCase,
-	uc2 *uc_user.UserGetByEmailUseCase,
-	uc3 *uc_user.UserCreateUseCase,
-	uc4 *uc_user.UserUpdateUseCase,
+	uc1 uc_tenant.TenantGetByIDUseCase,
+	uc2 uc_user.UserGetByEmailUseCase,
+	uc3 uc_user.UserCreateUseCase,
+	uc4 uc_user.UserUpdateUseCase,
 ) *UserCreateService {
 	return &UserCreateService{cfg, logger, pp, cach, jwtp, uc1, uc2, uc3, uc4}
 }

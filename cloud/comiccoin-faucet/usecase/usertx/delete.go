@@ -10,7 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type UserTransactionDeleteUseCase struct {
+type UserTransactionDeleteUseCase interface {
+	Execute(ctx context.Context, id primitive.ObjectID) error
+}
+
+type userTransactionDeleteUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.UserTransactionRepository
@@ -20,11 +24,11 @@ func NewUserTransactionDeleteUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.UserTransactionRepository,
-) *UserTransactionDeleteUseCase {
-	return &UserTransactionDeleteUseCase{config, logger, repo}
+) UserTransactionDeleteUseCase {
+	return &userTransactionDeleteUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UserTransactionDeleteUseCase) Execute(ctx context.Context, id primitive.ObjectID) error {
+func (uc *userTransactionDeleteUseCaseImpl) Execute(ctx context.Context, id primitive.ObjectID) error {
 	//
 	// STEP 1: Validation.
 	//

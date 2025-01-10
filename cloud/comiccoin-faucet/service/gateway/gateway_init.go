@@ -23,10 +23,10 @@ type GatewayInitService struct {
 	logger                 *slog.Logger
 	passwordProvider       password.Provider
 	createAccountService   *sv_account.CreateAccountService
-	tenantGetByNameUseCase *uc_tenant.TenantGetByNameUseCase
-	tenantCreate           *uc_tenant.TenantCreateUseCase
-	userGet                *uc_user.UserGetByEmailUseCase
-	userCreate             *uc_user.UserCreateUseCase
+	tenantGetByNameUseCase uc_tenant.TenantGetByNameUseCase
+	tenantCreate           uc_tenant.TenantCreateUseCase
+	userGet                uc_user.UserGetByEmailUseCase
+	userCreate             uc_user.UserCreateUseCase
 }
 
 func NewGatewayInitService(
@@ -34,10 +34,10 @@ func NewGatewayInitService(
 	logger *slog.Logger,
 	pp password.Provider,
 	s1 *sv_account.CreateAccountService,
-	uc1 *uc_tenant.TenantGetByNameUseCase,
-	uc2 *uc_tenant.TenantCreateUseCase,
-	uc3 *uc_user.UserGetByEmailUseCase,
-	uc4 *uc_user.UserCreateUseCase,
+	uc1 uc_tenant.TenantGetByNameUseCase,
+	uc2 uc_tenant.TenantCreateUseCase,
+	uc3 uc_user.UserGetByEmailUseCase,
+	uc4 uc_user.UserCreateUseCase,
 ) *GatewayInitService {
 	return &GatewayInitService{config, logger, pp, s1, uc1, uc2, uc3, uc4}
 }

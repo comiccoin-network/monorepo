@@ -9,17 +9,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type TenantGetByNameUseCase struct {
+type TenantGetByNameUseCase interface {
+	Execute(ctx context.Context, name string) (*domain.Tenant, error)
+}
+
+type tenantGetByNameUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.TenantRepository
 }
 
-func NewTenantGetByNameUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TenantRepository) *TenantGetByNameUseCase {
-	return &TenantGetByNameUseCase{config, logger, repo}
+func NewTenantGetByNameUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TenantRepository) TenantGetByNameUseCase {
+	return &tenantGetByNameUseCaseImpl{config, logger, repo}
 }
 
-func (uc *TenantGetByNameUseCase) Execute(ctx context.Context, name string) (*domain.Tenant, error) {
+func (uc *tenantGetByNameUseCaseImpl) Execute(ctx context.Context, name string) (*domain.Tenant, error) {
 	//
 	// STEP 1: Validation.
 	//

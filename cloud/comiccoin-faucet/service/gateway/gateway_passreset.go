@@ -18,16 +18,16 @@ type GatewayResetPasswordService struct {
 	logger                           *slog.Logger
 	kmutex                           kmutexutil.KMutexProvider
 	passwordProvider                 password.Provider
-	userGetByVerificationCodeUseCase *uc_user.UserGetByVerificationCodeUseCase
-	userUpdateUseCase                *uc_user.UserUpdateUseCase
+	userGetByVerificationCodeUseCase uc_user.UserGetByVerificationCodeUseCase
+	userUpdateUseCase                uc_user.UserUpdateUseCase
 }
 
 func NewGatewayResetPasswordService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
 	pp password.Provider,
-	uc1 *uc_user.UserGetByVerificationCodeUseCase,
-	uc2 *uc_user.UserUpdateUseCase,
+	uc1 uc_user.UserGetByVerificationCodeUseCase,
+	uc2 uc_user.UserUpdateUseCase,
 ) *GatewayResetPasswordService {
 	return &GatewayResetPasswordService{logger, kmutex, pp, uc1, uc2}
 }

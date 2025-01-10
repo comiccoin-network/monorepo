@@ -19,14 +19,14 @@ type GatewayRefreshTokenService struct {
 	logger                *slog.Logger
 	cache                 mongodbcache.Cacher
 	jwtProvider           jwt.Provider
-	userGetByEmailUseCase *uc_user.UserGetByEmailUseCase
+	userGetByEmailUseCase uc_user.UserGetByEmailUseCase
 }
 
 func NewGatewayRefreshTokenService(
 	logger *slog.Logger,
 	cach mongodbcache.Cacher,
 	jwtp jwt.Provider,
-	uc1 *uc_user.UserGetByEmailUseCase,
+	uc1 uc_user.UserGetByEmailUseCase,
 ) *GatewayRefreshTokenService {
 	return &GatewayRefreshTokenService{logger, cach, jwtp, uc1}
 }

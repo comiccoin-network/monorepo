@@ -22,18 +22,18 @@ import (
 type GatewayAddWalletAddressToFaucetService struct {
 	config                    *config.Configuration
 	logger                    *slog.Logger
-	tenantGetByIDUseCase      *uc_tenant.TenantGetByIDUseCase
-	userGetByIDUseCase        *uc_user.UserGetByIDUseCase
-	userUpdateUseCase         *uc_user.UserUpdateUseCase
+	tenantGetByIDUseCase      uc_tenant.TenantGetByIDUseCase
+	userGetByIDUseCase        uc_user.UserGetByIDUseCase
+	userUpdateUseCase         uc_user.UserUpdateUseCase
 	faucetCoinTransferService *sv_faucet.FaucetCoinTransferService
 }
 
 func NewGatewayAddWalletAddressToFaucetService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc1 *uc_tenant.TenantGetByIDUseCase,
-	uc2 *uc_user.UserGetByIDUseCase,
-	uc3 *uc_user.UserUpdateUseCase,
+	uc1 uc_tenant.TenantGetByIDUseCase,
+	uc2 uc_user.UserGetByIDUseCase,
+	uc3 uc_user.UserUpdateUseCase,
 	s1 *sv_faucet.FaucetCoinTransferService,
 ) *GatewayAddWalletAddressToFaucetService {
 	return &GatewayAddWalletAddressToFaucetService{cfg, logger, uc1, uc2, uc3, s1}

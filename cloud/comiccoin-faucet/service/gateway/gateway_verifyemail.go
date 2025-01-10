@@ -16,15 +16,15 @@ import (
 type GatewayVerifyEmailService struct {
 	logger                           *slog.Logger
 	kmutex                           kmutexutil.KMutexProvider
-	userGetByVerificationCodeUseCase *uc_user.UserGetByVerificationCodeUseCase
-	userUpdateUseCase                *uc_user.UserUpdateUseCase
+	userGetByVerificationCodeUseCase uc_user.UserGetByVerificationCodeUseCase
+	userUpdateUseCase                uc_user.UserUpdateUseCase
 }
 
 func NewGatewayVerifyEmailService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
-	uc1 *uc_user.UserGetByVerificationCodeUseCase,
-	uc2 *uc_user.UserUpdateUseCase,
+	uc1 uc_user.UserGetByVerificationCodeUseCase,
+	uc2 uc_user.UserUpdateUseCase,
 ) *GatewayVerifyEmailService {
 	return &GatewayVerifyEmailService{logger, kmutex, uc1, uc2}
 }

@@ -10,17 +10,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type TenantCreateUseCase struct {
+type TenantCreateUseCase interface {
+	Execute(ctx context.Context, tenant *domain.Tenant) error
+}
+
+type tenantCreateUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.TenantRepository
 }
 
-func NewTenantCreateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TenantRepository) *TenantCreateUseCase {
-	return &TenantCreateUseCase{config, logger, repo}
+func NewTenantCreateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TenantRepository) TenantCreateUseCase {
+	return &tenantCreateUseCaseImpl{config, logger, repo}
 }
 
-func (uc *TenantCreateUseCase) Execute(ctx context.Context, tenant *domain.Tenant) error {
+func (uc *tenantCreateUseCaseImpl) Execute(ctx context.Context, tenant *domain.Tenant) error {
 	//
 	// STEP 1: Validation.
 	//

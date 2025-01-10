@@ -9,21 +9,25 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
+type TenantUpdateUseCase interface {
+	Execute(ctx context.Context, t *domain.Tenant) error
+}
+
 //
 // Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
 //
 
-type TenantUpdateUseCase struct {
+type tenantUpdateUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.TenantRepository
 }
 
-func NewTenantUpdateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TenantRepository) *TenantUpdateUseCase {
-	return &TenantUpdateUseCase{config, logger, repo}
+func NewTenantUpdateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TenantRepository) TenantUpdateUseCase {
+	return &tenantUpdateUseCaseImpl{config, logger, repo}
 }
 
-func (uc *TenantUpdateUseCase) Execute(ctx context.Context, t *domain.Tenant) error {
+func (uc *tenantUpdateUseCaseImpl) Execute(ctx context.Context, t *domain.Tenant) error {
 	//
 	// STEP 1: Validation.
 	//

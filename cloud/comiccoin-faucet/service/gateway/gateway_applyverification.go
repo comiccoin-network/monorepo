@@ -17,14 +17,14 @@ import (
 
 type GatewayApplyProfileForVerificationService struct {
 	logger             *slog.Logger
-	userGetByIDUseCase *uc_user.UserGetByIDUseCase
-	userUpdateUseCase  *uc_user.UserUpdateUseCase
+	userGetByIDUseCase uc_user.UserGetByIDUseCase
+	userUpdateUseCase  uc_user.UserUpdateUseCase
 }
 
 func NewGatewayApplyProfileForVerificationService(
 	logger *slog.Logger,
-	uc1 *uc_user.UserGetByIDUseCase,
-	uc2 *uc_user.UserUpdateUseCase,
+	uc1 uc_user.UserGetByIDUseCase,
+	uc2 uc_user.UserUpdateUseCase,
 ) *GatewayApplyProfileForVerificationService {
 	return &GatewayApplyProfileForVerificationService{logger, uc1, uc2}
 }

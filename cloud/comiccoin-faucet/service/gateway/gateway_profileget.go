@@ -14,12 +14,12 @@ import (
 
 type GatewayProfileGetService struct {
 	logger             *slog.Logger
-	userGetByIDUseCase *uc_user.UserGetByIDUseCase
+	userGetByIDUseCase uc_user.UserGetByIDUseCase
 }
 
 func NewGatewayProfileGetService(
 	logger *slog.Logger,
-	uc1 *uc_user.UserGetByIDUseCase,
+	uc1 uc_user.UserGetByIDUseCase,
 ) *GatewayProfileGetService {
 	return &GatewayProfileGetService{logger, uc1}
 }
