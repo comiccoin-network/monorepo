@@ -11,7 +11,11 @@ import (
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
-type TokenRetrieveService struct {
+type TokenRetrieveService interface {
+	Execute(ctx context.Context, id *big.Int) (*domain.Token, error)
+}
+
+type tokenRetrieveServiceImpl struct {
 	logger          *slog.Logger
 	getTokenUseCase uc_token.GetTokenUseCase
 }
@@ -19,11 +23,11 @@ type TokenRetrieveService struct {
 func NewTokenRetrieveService(
 	logger *slog.Logger,
 	uc1 uc_token.GetTokenUseCase,
-) *TokenRetrieveService {
-	return &TokenRetrieveService{logger, uc1}
+) TokenRetrieveService {
+	return &tokenRetrieveServiceImpl{logger, uc1}
 }
 
-func (s *TokenRetrieveService) Execute(ctx context.Context, id *big.Int) (*domain.Token, error) {
+func (s *tokenRetrieveServiceImpl) Execute(ctx context.Context, id *big.Int) (*domain.Token, error) {
 	//
 	// STEP 1: Validation.
 	//

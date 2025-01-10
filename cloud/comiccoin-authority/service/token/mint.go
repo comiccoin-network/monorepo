@@ -21,7 +21,11 @@ import (
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 )
 
-type TokenMintService struct {
+type TokenMintService interface {
+	Execute(ctx context.Context, walletAddress *common.Address, metadataURI string) (*big.Int, error)
+}
+
+type tokenMintServiceImpl struct {
 	config                               *config.Configuration
 	logger                               *slog.Logger
 	dmutex                               distributedmutex.Adapter
@@ -43,11 +47,11 @@ func NewTokenMintService(
 	uc2 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc3 uc_blockdata.GetBlockDataUseCase,
 	uc4 uc_mempooltx.MempoolTransactionCreateUseCase,
-) *TokenMintService {
-	return &TokenMintService{cfg, logger, dmutex, client, s1, uc1, uc2, uc3, uc4}
+) TokenMintService {
+	return &tokenMintServiceImpl{cfg, logger, dmutex, client, s1, uc1, uc2, uc3, uc4}
 }
 
-func (s *TokenMintService) Execute(
+func (s *tokenMintServiceImpl) Execute(
 	ctx context.Context,
 	walletAddress *common.Address,
 	metadataURI string,

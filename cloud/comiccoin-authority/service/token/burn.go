@@ -24,7 +24,16 @@ import (
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
-type TokenBurnService struct {
+type TokenBurnService interface {
+	Execute(
+		ctx context.Context,
+		tokenID *big.Int,
+		tokenOwnerAddress *common.Address,
+		accountWalletMnemonic *sstring.SecureString,
+		accountWalletPath string) error
+}
+
+type tokenBurnServiceImpl struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	kmutex                          kmutexutil.KMutexProvider
@@ -48,11 +57,11 @@ func NewTokenBurnService(
 	uc4 uc_blockdata.GetBlockDataUseCase,
 	uc5 uc_token.GetTokenUseCase,
 	uc6 uc_mempooltx.MempoolTransactionCreateUseCase,
-) *TokenBurnService {
-	return &TokenBurnService{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6}
+) TokenBurnService {
+	return &tokenBurnServiceImpl{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6}
 }
 
-func (s *TokenBurnService) Execute(
+func (s *tokenBurnServiceImpl) Execute(
 	ctx context.Context,
 	tokenID *big.Int,
 	tokenOwnerAddress *common.Address,

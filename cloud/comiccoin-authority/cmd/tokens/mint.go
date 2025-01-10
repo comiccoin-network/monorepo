@@ -16,7 +16,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
-	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
+	sv_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
@@ -172,7 +172,7 @@ func doRunMintToken() {
 		logger,
 		privateKeyFromHDWalletUseCase,
 	)
-	tokenMintService := s_token.NewTokenMintService(
+	tokenMintService := sv_token.NewTokenMintService(
 		cfg,
 		logger,
 		dmutex,

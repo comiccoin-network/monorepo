@@ -32,7 +32,7 @@ import (
 	sv_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
 	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
 	sv_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/signedtx"
-	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
+	sv_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
@@ -301,11 +301,11 @@ func doRunDaemon() {
 	)
 
 	// Tokens
-	tokenListByOwnerService := s_token.NewTokenListByOwnerService(
+	tokenListByOwnerService := sv_token.NewTokenListByOwnerService(
 		logger,
 		listTokensByOwnerUseCase,
 	)
-	tokenMintService := s_token.NewTokenMintService(
+	tokenMintService := sv_token.NewTokenMintService(
 		cfg,
 		logger,
 		dmutex,

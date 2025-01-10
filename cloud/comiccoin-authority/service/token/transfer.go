@@ -24,7 +24,17 @@ import (
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
 )
 
-type TokenTransferService struct {
+type TokenTransferService interface {
+	Execute(
+		ctx context.Context,
+		tokenID *big.Int,
+		tokenOwnerAddress *common.Address,
+		tokenOwnerWalletMnemonic *sstring.SecureString,
+		tokenOwnerWalletPath string,
+		recipientAddress *common.Address) error
+}
+
+type tokenTransferServiceImpl struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	kmutex                          kmutexutil.KMutexProvider
@@ -48,11 +58,11 @@ func NewTokenTransferService(
 	uc4 uc_blockdata.GetBlockDataUseCase,
 	uc5 uc_token.GetTokenUseCase,
 	uc6 uc_mempooltx.MempoolTransactionCreateUseCase,
-) *TokenTransferService {
-	return &TokenTransferService{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6}
+) TokenTransferService {
+	return &tokenTransferServiceImpl{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6}
 }
 
-func (s *TokenTransferService) Execute(
+func (s *tokenTransferServiceImpl) Execute(
 	ctx context.Context,
 	tokenID *big.Int,
 	tokenOwnerAddress *common.Address,

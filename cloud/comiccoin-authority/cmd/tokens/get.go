@@ -16,7 +16,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
+	sv_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
@@ -52,7 +52,7 @@ func doRunGetToken() {
 	)
 
 	// // Service
-	tokenRetrieveService := s_token.NewTokenRetrieveService(
+	tokenRetrieveService := sv_token.NewTokenRetrieveService(
 		logger,
 		getTokenUseCase,
 	)
