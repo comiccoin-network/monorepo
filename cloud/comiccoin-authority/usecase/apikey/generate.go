@@ -9,14 +9,18 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/password"
 )
 
-type GenerateAPIKeyUseCase struct {
+type GenerateAPIKeyUseCase interface {
+	Execute(chainID uint16) (*NFTStoreAppCredentials, error)
+}
+
+type generateAPIKeyUseCaseImpl struct {
 	logger   *slog.Logger
 	password password.Provider
 	jwt      jwt.Provider
 }
 
-func NewGenerateAPIKeyUseCase(logger *slog.Logger, passp password.Provider, jwtp jwt.Provider) *GenerateAPIKeyUseCase {
-	return &GenerateAPIKeyUseCase{logger, passp, jwtp}
+func NewGenerateAPIKeyUseCase(logger *slog.Logger, passp password.Provider, jwtp jwt.Provider) GenerateAPIKeyUseCase {
+	return &generateAPIKeyUseCaseImpl{logger, passp, jwtp}
 }
 
 type NFTStoreAppCredentials struct {
@@ -24,7 +28,7 @@ type NFTStoreAppCredentials struct {
 	APIKey       string
 }
 
-func (uc *GenerateAPIKeyUseCase) Execute(chainID uint16) (*NFTStoreAppCredentials, error) {
+func (uc *generateAPIKeyUseCaseImpl) Execute(chainID uint16) (*NFTStoreAppCredentials, error) {
 
 	// Generate hash for the secret.
 	randomSecretStr, err := uc.password.GenerateSecureRandomString(64)
