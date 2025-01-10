@@ -25,7 +25,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/interface/task"
 	taskhandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/interface/task/handler"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	s_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockchainstate"
+	sv_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockchainstate"
 	s_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockdata"
 	s_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blocktx"
 	s_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
@@ -238,7 +238,7 @@ func doRunDaemon() {
 	)
 
 	// Blockchain State
-	getBlockchainStateService := s_blockchainstate.NewGetBlockchainStateService(
+	getBlockchainStateService := sv_blockchainstate.NewGetBlockchainStateService(
 		cfg,
 		logger,
 		getBlockchainStateUseCase,
@@ -319,7 +319,7 @@ func doRunDaemon() {
 
 	// Stream Latest Blockchain State Change
 
-	blockchainStateChangeSubscriptionService := s_blockchainstate.NewBlockchainStateChangeSubscriptionService(
+	blockchainStateChangeSubscriptionService := sv_blockchainstate.NewBlockchainStateChangeSubscriptionService(
 		logger,
 		blockchainStateSubscribeUseCase,
 	)

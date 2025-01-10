@@ -8,17 +8,17 @@ import (
 	"strconv"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config/constants"
-	s_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockchainstate"
+	sv_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockchainstate"
 )
 
 type BlockchainStateChangeEventDTOHTTPHandler struct {
 	logger  *slog.Logger
-	service *s_blockchainstate.BlockchainStateChangeSubscriptionService
+	service sv_blockchainstate.BlockchainStateChangeSubscriptionService
 }
 
 func NewBlockchainStateChangeEventDTOHTTPHandler(
 	logger *slog.Logger,
-	s *s_blockchainstate.BlockchainStateChangeSubscriptionService,
+	s sv_blockchainstate.BlockchainStateChangeSubscriptionService,
 ) *BlockchainStateChangeEventDTOHTTPHandler {
 	return &BlockchainStateChangeEventDTOHTTPHandler{logger, s}
 }

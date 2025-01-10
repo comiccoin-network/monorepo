@@ -11,13 +11,18 @@ import (
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 )
 
+type BlockchainStateChangeSubscriptionService interface {
+	Execute(ctx context.Context) (*domain.BlockchainState, error)
+	Terminate(ctx context.Context) error
+}
+
 // BlockchainStateChangeSubscriptionService is responsible for subscribing to our
 // remote Redis server and wait to receive published events from the consensus
 // mechanism; in addition, this struct will take the received event and return
 // the blockchain state struct. This service is responsible for continously
 // maintaining a connection with Redis and accepting published events and
 // then returning latest blockchain states.
-type BlockchainStateChangeSubscriptionService struct {
+type blockchainStateChangeSubscriptionServiceImpl struct {
 	logger                          *slog.Logger
 	blockchainStateSubscribeUseCase uc_blockchainstate.BlockchainStateSubscribeUseCase
 	blockchainStateSubscriber       redis.RedisSubscriber
@@ -26,12 +31,12 @@ type BlockchainStateChangeSubscriptionService struct {
 func NewBlockchainStateChangeSubscriptionService(
 	logger *slog.Logger,
 	uc1 uc_blockchainstate.BlockchainStateSubscribeUseCase,
-) *BlockchainStateChangeSubscriptionService {
+) BlockchainStateChangeSubscriptionService {
 	subscriber := uc1.Execute(context.Background())
-	return &BlockchainStateChangeSubscriptionService{logger, uc1, subscriber}
+	return &blockchainStateChangeSubscriptionServiceImpl{logger, uc1, subscriber}
 }
 
-func (s *BlockchainStateChangeSubscriptionService) Execute(ctx context.Context) (*domain.BlockchainState, error) {
+func (s *blockchainStateChangeSubscriptionServiceImpl) Execute(ctx context.Context) (*domain.BlockchainState, error) {
 	ipAddress, _ := ctx.Value(constants.SessionIPAddress).(string)
 	s.logger.Debug("Waiting to receive latest blockchain state changes from redis...",
 		slog.Any("ip_address", ipAddress))
@@ -63,7 +68,7 @@ func (s *BlockchainStateChangeSubscriptionService) Execute(ctx context.Context) 
 	return bcState, nil
 }
 
-func (s *BlockchainStateChangeSubscriptionService) Terminate(ctx context.Context) error {
+func (s *blockchainStateChangeSubscriptionServiceImpl) Terminate(ctx context.Context) error {
 	ipAddress, _ := ctx.Value(constants.SessionIPAddress).(string)
 	s.logger.Debug("Gracefully shutting down blockchain state change subscription service...",
 		slog.Any("ip_address", ipAddress))

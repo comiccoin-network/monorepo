@@ -11,7 +11,11 @@ import (
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 )
 
-type GetBlockchainStateService struct {
+type GetBlockchainStateService interface {
+	Execute(ctx context.Context, chainID uint16) (*domain.BlockchainState, error)
+}
+
+type getBlockchainStateServiceImpl struct {
 	config                    *config.Configuration
 	logger                    *slog.Logger
 	getBlockchainStateUseCase uc_blockchainstate.GetBlockchainStateUseCase
@@ -21,11 +25,11 @@ func NewGetBlockchainStateService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc uc_blockchainstate.GetBlockchainStateUseCase,
-) *GetBlockchainStateService {
-	return &GetBlockchainStateService{cfg, logger, uc}
+) GetBlockchainStateService {
+	return &getBlockchainStateServiceImpl{cfg, logger, uc}
 }
 
-func (s *GetBlockchainStateService) Execute(ctx context.Context, chainID uint16) (*domain.BlockchainState, error) {
+func (s *getBlockchainStateServiceImpl) Execute(ctx context.Context, chainID uint16) (*domain.BlockchainState, error) {
 	blkchState, err := s.getBlockchainStateUseCase.Execute(ctx, chainID)
 	if err != nil {
 		s.logger.Error("Failed getting blockchain state", slog.Any("error", err))
