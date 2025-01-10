@@ -13,12 +13,12 @@ import (
 
 type BlockDataGetByHashService struct {
 	logger              *slog.Logger
-	GetBlockDataUseCase *uc_blockdata.GetBlockDataUseCase
+	GetBlockDataUseCase uc_blockdata.GetBlockDataUseCase
 }
 
 func NewBlockDataGetByHashService(
 	logger *slog.Logger,
-	uc1 *uc_blockdata.GetBlockDataUseCase,
+	uc1 uc_blockdata.GetBlockDataUseCase,
 ) *BlockDataGetByHashService {
 	return &BlockDataGetByHashService{logger, uc1}
 }

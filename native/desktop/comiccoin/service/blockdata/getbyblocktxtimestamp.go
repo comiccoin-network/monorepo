@@ -13,12 +13,12 @@ import (
 
 type GetByBlockTransactionTimestampService struct {
 	logger                                *slog.Logger
-	GetByBlockTransactionTimestampUseCase *uc_blockdata.GetByBlockTransactionTimestampUseCase
+	GetByBlockTransactionTimestampUseCase uc_blockdata.GetByBlockTransactionTimestampUseCase
 }
 
 func NewGetByBlockTransactionTimestampService(
 	logger *slog.Logger,
-	uc1 *uc_blockdata.GetByBlockTransactionTimestampUseCase,
+	uc1 uc_blockdata.GetByBlockTransactionTimestampUseCase,
 ) *GetByBlockTransactionTimestampService {
 	return &GetByBlockTransactionTimestampService{logger, uc1}
 }

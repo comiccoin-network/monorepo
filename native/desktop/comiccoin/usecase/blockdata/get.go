@@ -8,16 +8,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type GetBlockDataUseCase struct {
+type GetBlockDataUseCase interface {
+	ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error)
+}
+
+type getBlockDataUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.BlockDataRepository
 }
 
-func NewGetBlockDataUseCase(logger *slog.Logger, repo domain.BlockDataRepository) *GetBlockDataUseCase {
-	return &GetBlockDataUseCase{logger, repo}
+func NewGetBlockDataUseCase(logger *slog.Logger, repo domain.BlockDataRepository) GetBlockDataUseCase {
+	return &getBlockDataUseCaseImpl{logger, repo}
 }
 
-func (uc *GetBlockDataUseCase) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
+func (uc *getBlockDataUseCaseImpl) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
 	//
 	// STEP 1: Validation.
 	//

@@ -8,16 +8,27 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type UpsertBlockDataUseCase struct {
+type UpsertBlockDataUseCase interface {
+	Execute(
+		ctx context.Context,
+		hash string,
+		header *domain.BlockHeader,
+		headerSignature []byte,
+		trans []domain.BlockTransaction,
+		validator *domain.Validator,
+	) error
+}
+
+type upsertBlockDataUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.BlockDataRepository
 }
 
-func NewUpsertBlockDataUseCase(logger *slog.Logger, repo domain.BlockDataRepository) *UpsertBlockDataUseCase {
-	return &UpsertBlockDataUseCase{logger, repo}
+func NewUpsertBlockDataUseCase(logger *slog.Logger, repo domain.BlockDataRepository) UpsertBlockDataUseCase {
+	return &upsertBlockDataUseCaseImpl{logger, repo}
 }
 
-func (uc *UpsertBlockDataUseCase) Execute(
+func (uc *upsertBlockDataUseCaseImpl) Execute(
 	ctx context.Context,
 	hash string,
 	header *domain.BlockHeader,

@@ -9,16 +9,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type GetByBlockTransactionTimestampUseCase struct {
+type GetByBlockTransactionTimestampUseCase interface {
+	Execute(ctx context.Context, timestamp uint64) (*domain.BlockData, error)
+}
+
+type getByBlockTransactionTimestampUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.BlockDataRepository
 }
 
-func NewGetByBlockTransactionTimestampUseCase(logger *slog.Logger, repo domain.BlockDataRepository) *GetByBlockTransactionTimestampUseCase {
-	return &GetByBlockTransactionTimestampUseCase{logger, repo}
+func NewGetByBlockTransactionTimestampUseCase(logger *slog.Logger, repo domain.BlockDataRepository) GetByBlockTransactionTimestampUseCase {
+	return &getByBlockTransactionTimestampUseCaseImpl{logger, repo}
 }
 
-func (uc *GetByBlockTransactionTimestampUseCase) Execute(ctx context.Context, timestamp uint64) (*domain.BlockData, error) {
+func (uc *getByBlockTransactionTimestampUseCaseImpl) Execute(ctx context.Context, timestamp uint64) (*domain.BlockData, error) {
 	//
 	// STEP 1: Validation.
 	//
