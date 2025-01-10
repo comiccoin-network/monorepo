@@ -12,12 +12,12 @@ import (
 
 type ComicSubmissionCountByFilterService struct {
 	logger                              *slog.Logger
-	comicSubmissionCountByFilterUseCase *uc_comicsubmission.ComicSubmissionCountByFilterUseCase
+	comicSubmissionCountByFilterUseCase uc_comicsubmission.ComicSubmissionCountByFilterUseCase
 }
 
 func NewComicSubmissionCountByFilterService(
 	logger *slog.Logger,
-	uc1 *uc_comicsubmission.ComicSubmissionCountByFilterUseCase,
+	uc1 uc_comicsubmission.ComicSubmissionCountByFilterUseCase,
 ) *ComicSubmissionCountByFilterService {
 	return &ComicSubmissionCountByFilterService{logger, uc1}
 }

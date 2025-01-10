@@ -10,7 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type ComicSubmissionGetByIDUseCase struct {
+type ComicSubmissionGetByIDUseCase interface {
+	Execute(ctx context.Context, id primitive.ObjectID) (*domain.ComicSubmission, error)
+}
+
+type comicSubmissionGetByIDUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.ComicSubmissionRepository
@@ -20,11 +24,11 @@ func NewComicSubmissionGetByIDUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.ComicSubmissionRepository,
-) *ComicSubmissionGetByIDUseCase {
-	return &ComicSubmissionGetByIDUseCase{config, logger, repo}
+) ComicSubmissionGetByIDUseCase {
+	return &comicSubmissionGetByIDUseCaseImpl{config, logger, repo}
 }
 
-func (uc *ComicSubmissionGetByIDUseCase) Execute(ctx context.Context, id primitive.ObjectID) (*domain.ComicSubmission, error) {
+func (uc *comicSubmissionGetByIDUseCaseImpl) Execute(ctx context.Context, id primitive.ObjectID) (*domain.ComicSubmission, error) {
 	//
 	// STEP 1: Validation.
 	//

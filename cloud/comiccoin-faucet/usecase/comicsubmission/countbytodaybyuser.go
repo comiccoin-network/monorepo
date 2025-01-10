@@ -10,7 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type ComicSubmissionCountTotalCreatedTodayByUserUseCase struct {
+type ComicSubmissionCountTotalCreatedTodayByUserUseCase interface {
+	Execute(ctx context.Context, userID primitive.ObjectID, userTimezone string) (uint64, error)
+}
+
+type comicSubmissionCountTotalCreatedTodayByUserUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.ComicSubmissionRepository
@@ -20,11 +24,11 @@ func NewComicSubmissionCountTotalCreatedTodayByUserUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.ComicSubmissionRepository,
-) *ComicSubmissionCountTotalCreatedTodayByUserUseCase {
-	return &ComicSubmissionCountTotalCreatedTodayByUserUseCase{config, logger, repo}
+) ComicSubmissionCountTotalCreatedTodayByUserUseCase {
+	return &comicSubmissionCountTotalCreatedTodayByUserUseCaseImpl{config, logger, repo}
 }
 
-func (uc *ComicSubmissionCountTotalCreatedTodayByUserUseCase) Execute(ctx context.Context, userID primitive.ObjectID, userTimezone string) (uint64, error) {
+func (uc *comicSubmissionCountTotalCreatedTodayByUserUseCaseImpl) Execute(ctx context.Context, userID primitive.ObjectID, userTimezone string) (uint64, error) {
 	//
 	// STEP 1: Validation.
 	//

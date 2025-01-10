@@ -13,12 +13,12 @@ import (
 
 type ComicSubmissionGetService struct {
 	logger                        *slog.Logger
-	comicSubmissionGetByIDUseCase *uc_comicsubmission.ComicSubmissionGetByIDUseCase
+	comicSubmissionGetByIDUseCase uc_comicsubmission.ComicSubmissionGetByIDUseCase
 }
 
 func NewComicSubmissionGetService(
 	logger *slog.Logger,
-	uc1 *uc_comicsubmission.ComicSubmissionGetByIDUseCase,
+	uc1 uc_comicsubmission.ComicSubmissionGetByIDUseCase,
 ) *ComicSubmissionGetService {
 	return &ComicSubmissionGetService{logger, uc1}
 }

@@ -14,13 +14,13 @@ import (
 type ComicSubmissionListByFilterService struct {
 	logger                             *slog.Logger
 	cloudStoragePresignedURLUseCase    uc_cloudstorage.CloudStoragePresignedURLUseCase
-	comicSubmissionListByFilterUseCase *uc_comicsubmission.ComicSubmissionListByFilterUseCase
+	comicSubmissionListByFilterUseCase uc_comicsubmission.ComicSubmissionListByFilterUseCase
 }
 
 func NewComicSubmissionListByFilterService(
 	logger *slog.Logger,
 	uc1 uc_cloudstorage.CloudStoragePresignedURLUseCase,
-	uc2 *uc_comicsubmission.ComicSubmissionListByFilterUseCase,
+	uc2 uc_comicsubmission.ComicSubmissionListByFilterUseCase,
 ) *ComicSubmissionListByFilterService {
 	return &ComicSubmissionListByFilterService{logger, uc1, uc2}
 }

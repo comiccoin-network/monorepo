@@ -12,12 +12,12 @@ import (
 
 type ComicSubmissionCountCoinsRewardByFilterService struct {
 	logger                                         *slog.Logger
-	comicSubmissionCountCoinsRewardByFilterUseCase *uc_comicsubmission.ComicSubmissionCountCoinsRewardByFilterUseCase
+	comicSubmissionCountCoinsRewardByFilterUseCase uc_comicsubmission.ComicSubmissionCountCoinsRewardByFilterUseCase
 }
 
 func NewComicSubmissionCountCoinsRewardByFilterService(
 	logger *slog.Logger,
-	uc1 *uc_comicsubmission.ComicSubmissionCountCoinsRewardByFilterUseCase,
+	uc1 uc_comicsubmission.ComicSubmissionCountCoinsRewardByFilterUseCase,
 ) *ComicSubmissionCountCoinsRewardByFilterService {
 	return &ComicSubmissionCountCoinsRewardByFilterService{logger, uc1}
 }

@@ -26,8 +26,8 @@ type ComicSubmissionJudgeOperationService struct {
 	userGetByIDUseCase            *uc_user.UserGetByIDUseCase
 	userUpdateUseCase             *uc_user.UserUpdateUseCase
 	createBannedIPAddressUseCase  uc_bannedipaddress.CreateBannedIPAddressUseCase
-	comicSubmissionGetByIDUseCase *uc_comicsubmission.ComicSubmissionGetByIDUseCase
-	comicSubmissionUpdateUseCase  *uc_comicsubmission.ComicSubmissionUpdateUseCase
+	comicSubmissionGetByIDUseCase uc_comicsubmission.ComicSubmissionGetByIDUseCase
+	comicSubmissionUpdateUseCase  uc_comicsubmission.ComicSubmissionUpdateUseCase
 }
 
 func NewComicSubmissionJudgeOperationService(
@@ -38,8 +38,8 @@ func NewComicSubmissionJudgeOperationService(
 	uc2 *uc_user.UserGetByIDUseCase,
 	uc3 *uc_user.UserUpdateUseCase,
 	uc4 uc_bannedipaddress.CreateBannedIPAddressUseCase,
-	uc5 *uc_comicsubmission.ComicSubmissionGetByIDUseCase,
-	uc6 *uc_comicsubmission.ComicSubmissionUpdateUseCase,
+	uc5 uc_comicsubmission.ComicSubmissionGetByIDUseCase,
+	uc6 uc_comicsubmission.ComicSubmissionUpdateUseCase,
 ) *ComicSubmissionJudgeOperationService {
 	return &ComicSubmissionJudgeOperationService{cfg, logger, s1, uc1, uc2, uc3, uc4, uc5, uc6}
 }

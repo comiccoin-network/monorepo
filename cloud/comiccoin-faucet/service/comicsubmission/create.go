@@ -22,20 +22,20 @@ type ComicSubmissionCreateService struct {
 	config                                             *config.Configuration
 	logger                                             *slog.Logger
 	userGetByIDUseCase                                 *uc_user.UserGetByIDUseCase
-	comicSubmissionCountTotalCreatedTodayByUserUseCase *uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase
+	comicSubmissionCountTotalCreatedTodayByUserUseCase uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase
 	attachmentGetUseCase                               uc_attachment.AttachmentGetUseCase
 	attachmentUpdateUseCase                            uc_attachment.AttachmentUpdateUseCase
-	comicSubmissionCreateUseCase                       *uc_comicsubmission.ComicSubmissionCreateUseCase
+	comicSubmissionCreateUseCase                       uc_comicsubmission.ComicSubmissionCreateUseCase
 }
 
 func NewComicSubmissionCreateService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc1 *uc_user.UserGetByIDUseCase,
-	uc2 *uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase,
+	uc2 uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase,
 	uc3 uc_attachment.AttachmentGetUseCase,
 	uc4 uc_attachment.AttachmentUpdateUseCase,
-	uc5 *uc_comicsubmission.ComicSubmissionCreateUseCase,
+	uc5 uc_comicsubmission.ComicSubmissionCreateUseCase,
 ) *ComicSubmissionCreateService {
 	return &ComicSubmissionCreateService{cfg, logger, uc1, uc2, uc3, uc4, uc5}
 }

@@ -9,7 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type ComicSubmissionCountCoinsRewardByFilterUseCase struct {
+type ComicSubmissionCountCoinsRewardByFilterUseCase interface {
+	Execute(ctx context.Context, filter *domain.ComicSubmissionFilter) (uint64, error)
+}
+
+type comicSubmissionCountCoinsRewardByFilterUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.ComicSubmissionRepository
@@ -19,11 +23,11 @@ func NewComicSubmissionCountCoinsRewardByFilterUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.ComicSubmissionRepository,
-) *ComicSubmissionCountCoinsRewardByFilterUseCase {
-	return &ComicSubmissionCountCoinsRewardByFilterUseCase{config, logger, repo}
+) ComicSubmissionCountCoinsRewardByFilterUseCase {
+	return &comicSubmissionCountCoinsRewardByFilterUseCaseImpl{config, logger, repo}
 }
 
-func (uc *ComicSubmissionCountCoinsRewardByFilterUseCase) Execute(ctx context.Context, filter *domain.ComicSubmissionFilter) (uint64, error) {
+func (uc *comicSubmissionCountCoinsRewardByFilterUseCaseImpl) Execute(ctx context.Context, filter *domain.ComicSubmissionFilter) (uint64, error) {
 	//
 	// STEP 1: Validation.
 	//

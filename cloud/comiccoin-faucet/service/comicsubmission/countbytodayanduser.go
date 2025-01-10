@@ -12,12 +12,12 @@ import (
 
 type ComicSubmissionCountTotalCreatedTodayByUserService struct {
 	logger                                             *slog.Logger
-	comicSubmissionCountTotalCreatedTodayByUserUseCase *uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase
+	comicSubmissionCountTotalCreatedTodayByUserUseCase uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase
 }
 
 func NewComicSubmissionCountTotalCreatedTodayByUserService(
 	logger *slog.Logger,
-	uc1 *uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase,
+	uc1 uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase,
 ) *ComicSubmissionCountTotalCreatedTodayByUserService {
 	return &ComicSubmissionCountTotalCreatedTodayByUserService{logger, uc1}
 }

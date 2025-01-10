@@ -9,7 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type ComicSubmissionCreateUseCase struct {
+type ComicSubmissionCreateUseCase interface {
+	Execute(ctx context.Context, comicSubmission *domain.ComicSubmission) error
+}
+
+type comicSubmissionCreateUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.ComicSubmissionRepository
@@ -19,11 +23,11 @@ func NewComicSubmissionCreateUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.ComicSubmissionRepository,
-) *ComicSubmissionCreateUseCase {
-	return &ComicSubmissionCreateUseCase{config, logger, repo}
+) ComicSubmissionCreateUseCase {
+	return &comicSubmissionCreateUseCaseImpl{config, logger, repo}
 }
 
-func (uc *ComicSubmissionCreateUseCase) Execute(ctx context.Context, comicSubmission *domain.ComicSubmission) error {
+func (uc *comicSubmissionCreateUseCaseImpl) Execute(ctx context.Context, comicSubmission *domain.ComicSubmission) error {
 	//
 	// STEP 1: Validation.
 	//

@@ -10,12 +10,12 @@ import (
 
 type ComicSubmissionTotalCoinsAwardedService struct {
 	logger                                  *slog.Logger
-	comicSubmissionTotalCoinsAwardedUseCase *uc_comicsubmission.ComicSubmissionTotalCoinsAwardedUseCase
+	comicSubmissionTotalCoinsAwardedUseCase uc_comicsubmission.ComicSubmissionTotalCoinsAwardedUseCase
 }
 
 func NewComicSubmissionTotalCoinsAwardedService(
 	logger *slog.Logger,
-	uc1 *uc_comicsubmission.ComicSubmissionTotalCoinsAwardedUseCase,
+	uc1 uc_comicsubmission.ComicSubmissionTotalCoinsAwardedUseCase,
 ) *ComicSubmissionTotalCoinsAwardedService {
 	return &ComicSubmissionTotalCoinsAwardedService{logger, uc1}
 }
