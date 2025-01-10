@@ -39,7 +39,7 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	getBlockchainStateUseCase                  uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase               uc_blockchainstate.UpsertBlockchainStateUseCase
 	getGenesisBlockDataUseCase                 *uc_genesisblockdata.GetGenesisBlockDataUseCase
-	getBlockDataUseCase                        *uc_blockdata.GetBlockDataUseCase
+	getBlockDataUseCase                        uc_blockdata.GetBlockDataUseCase
 	getAccountUseCase                          uc_account.GetAccountUseCase
 	getAccountsHashStateUseCase                uc_account.GetAccountsHashStateUseCase
 	upsertAccountUseCase                       uc_account.UpsertAccountUseCase
@@ -47,7 +47,7 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	getTokensHashStateUseCase                  *uc_token.GetTokensHashStateUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase  *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
 	proofOfWorkUseCase                         *uc_pow.ProofOfWorkUseCase
-	upsertBlockDataUseCase                     *uc_blockdata.UpsertBlockDataUseCase
+	upsertBlockDataUseCase                     uc_blockdata.UpsertBlockDataUseCase
 	blockchainStatePublishUseCase              uc_blockchainstate.BlockchainStatePublishUseCase
 }
 
@@ -62,7 +62,7 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc3 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc4 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc5 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
-	uc6 *uc_blockdata.GetBlockDataUseCase,
+	uc6 uc_blockdata.GetBlockDataUseCase,
 	uc7 uc_account.GetAccountUseCase,
 	uc8 uc_account.GetAccountsHashStateUseCase,
 	uc9 uc_account.UpsertAccountUseCase,
@@ -70,7 +70,7 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc11 *uc_token.GetTokensHashStateUseCase,
 	uc12 *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
 	uc13 *uc_pow.ProofOfWorkUseCase,
-	uc14 *uc_blockdata.UpsertBlockDataUseCase,
+	uc14 uc_blockdata.UpsertBlockDataUseCase,
 	uc15 uc_blockchainstate.BlockchainStatePublishUseCase,
 ) *ProofOfAuthorityConsensusMechanismService {
 	return &ProofOfAuthorityConsensusMechanismService{config, logger, dmutex, client, s1, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15}

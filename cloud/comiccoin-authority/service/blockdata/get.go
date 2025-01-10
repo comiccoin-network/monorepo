@@ -15,13 +15,13 @@ import (
 type GetBlockDataService struct {
 	config              *config.Configuration
 	logger              *slog.Logger
-	GetBlockDataUseCase *uc_blockdata.GetBlockDataUseCase
+	GetBlockDataUseCase uc_blockdata.GetBlockDataUseCase
 }
 
 func NewGetBlockDataService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *uc_blockdata.GetBlockDataUseCase,
+	uc uc_blockdata.GetBlockDataUseCase,
 ) *GetBlockDataService {
 	return &GetBlockDataService{cfg, logger, uc}
 }

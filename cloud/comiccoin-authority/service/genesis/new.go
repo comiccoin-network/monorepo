@@ -38,7 +38,7 @@ type CreateGenesisBlockDataService struct {
 	getTokensHashStateUseCase                 *uc_token.GetTokensHashStateUseCase
 	proofOfWorkUseCase                        *uc_pow.ProofOfWorkUseCase
 	upsertGenesisBlockDataUseCase             *uc_genesisblockdata.UpsertGenesisBlockDataUseCase
-	upsertBlockDataUseCase                    *uc_blockdata.UpsertBlockDataUseCase
+	upsertBlockDataUseCase                    uc_blockdata.UpsertBlockDataUseCase
 	upsertBlockchainStateUseCase              uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockchainStateUseCase                 uc_blockchainstate.GetBlockchainStateUseCase
 }
@@ -54,7 +54,7 @@ func NewCreateGenesisBlockDataService(
 	uc5 *uc_token.GetTokensHashStateUseCase,
 	uc6 *uc_pow.ProofOfWorkUseCase,
 	uc7 *uc_genesisblockdata.UpsertGenesisBlockDataUseCase,
-	uc8 *uc_blockdata.UpsertBlockDataUseCase,
+	uc8 uc_blockdata.UpsertBlockDataUseCase,
 	uc9 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc10 uc_blockchainstate.GetBlockchainStateUseCase,
 ) *CreateGenesisBlockDataService {
