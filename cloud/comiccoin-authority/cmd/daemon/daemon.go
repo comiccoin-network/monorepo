@@ -28,7 +28,7 @@ import (
 	sv_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockchainstate"
 	sv_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockdata"
 	sv_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blocktx"
-	s_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
+	sv_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
 	s_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
 	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
 	s_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/signedtx"
@@ -231,7 +231,7 @@ func doRunDaemon() {
 	// --- Service
 
 	// Genesis
-	getGenesisBlockDataService := s_genesis.NewGetGenesisBlockDataService(
+	getGenesisBlockDataService := sv_genesis.NewGetGenesisBlockDataService(
 		cfg,
 		logger,
 		getGenesisBlockDataUseCase,

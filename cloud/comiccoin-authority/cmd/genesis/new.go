@@ -15,7 +15,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
-	s_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
+	sv_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
 	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
@@ -137,7 +137,7 @@ func doRunNewAccount() {
 		logger,
 		privateKeyFromHDWalletUseCase,
 	)
-	createGenesisBlockDataService := s_genesis.NewCreateGenesisBlockDataService(
+	createGenesisBlockDataService := sv_genesis.NewCreateGenesisBlockDataService(
 		cfg,
 		logger,
 		getProofOfAuthorityPrivateKeyService,

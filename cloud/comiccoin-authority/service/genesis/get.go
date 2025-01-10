@@ -11,7 +11,11 @@ import (
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
 )
 
-type GetGenesisBlockDataService struct {
+type GetGenesisBlockDataService interface {
+	Execute(ctx context.Context, chainID uint16) (*domain.GenesisBlockData, error)
+}
+
+type getGenesisBlockDataServiceImpl struct {
 	config                     *config.Configuration
 	logger                     *slog.Logger
 	getGenesisBlockDataUseCase uc_genesisblockdata.GetGenesisBlockDataUseCase
@@ -21,11 +25,11 @@ func NewGetGenesisBlockDataService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc uc_genesisblockdata.GetGenesisBlockDataUseCase,
-) *GetGenesisBlockDataService {
-	return &GetGenesisBlockDataService{cfg, logger, uc}
+) GetGenesisBlockDataService {
+	return &getGenesisBlockDataServiceImpl{cfg, logger, uc}
 }
 
-func (s *GetGenesisBlockDataService) Execute(ctx context.Context, chainID uint16) (*domain.GenesisBlockData, error) {
+func (s *getGenesisBlockDataServiceImpl) Execute(ctx context.Context, chainID uint16) (*domain.GenesisBlockData, error) {
 	genesis, err := s.getGenesisBlockDataUseCase.Execute(ctx, chainID)
 	if err != nil {
 		s.logger.Error("Failed getting genesis block data", slog.Any("error", err))

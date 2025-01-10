@@ -7,17 +7,17 @@ import (
 	"strconv"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
-	s_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
+	sv_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
 )
 
 type GetGenesisBlockDataHTTPHandler struct {
 	logger  *slog.Logger
-	service *s_genesis.GetGenesisBlockDataService
+	service sv_genesis.GetGenesisBlockDataService
 }
 
 func NewGetGenesisBlockDataHTTPHandler(
 	logger *slog.Logger,
-	s1 *s_genesis.GetGenesisBlockDataService,
+	s1 sv_genesis.GetGenesisBlockDataService,
 ) *GetGenesisBlockDataHTTPHandler {
 	return &GetGenesisBlockDataHTTPHandler{logger, s1}
 }

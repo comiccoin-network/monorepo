@@ -27,7 +27,11 @@ import (
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 )
 
-type CreateGenesisBlockDataService struct {
+type CreateGenesisBlockDataService interface {
+	Execute(sessCtx mongo.SessionContext) (*domain.BlockchainState, error)
+}
+
+type createGenesisBlockDataServiceImpl struct {
 	config                                    *config.Configuration
 	logger                                    *slog.Logger
 	getProofOfAuthorityPrivateKeyService      *s_poa.GetProofOfAuthorityPrivateKeyService
@@ -57,11 +61,11 @@ func NewCreateGenesisBlockDataService(
 	uc8 uc_blockdata.UpsertBlockDataUseCase,
 	uc9 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc10 uc_blockchainstate.GetBlockchainStateUseCase,
-) *CreateGenesisBlockDataService {
-	return &CreateGenesisBlockDataService{config, logger, s1, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10}
+) CreateGenesisBlockDataService {
+	return &createGenesisBlockDataServiceImpl{config, logger, s1, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10}
 }
 
-func (s *CreateGenesisBlockDataService) Execute(sessCtx mongo.SessionContext) (*domain.BlockchainState, error) {
+func (s *createGenesisBlockDataServiceImpl) Execute(sessCtx mongo.SessionContext) (*domain.BlockchainState, error) {
 	s.logger.Debug("starting genesis creation service...")
 
 	//
