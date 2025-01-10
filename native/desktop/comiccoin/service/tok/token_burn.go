@@ -34,7 +34,7 @@ type TokenBurnService struct {
 	listPendingSignedTransactionUseCase                     *uc_pstx.ListPendingSignedTransactionUseCase
 	getGenesisBlockDataUseCase                              *uc_genesisblockdata.GetGenesisBlockDataUseCase
 	upsertPendingSignedTransactionUseCase                   *uc_pstx.UpsertPendingSignedTransactionUseCase
-	getAccountUseCase                                       *uc_account.GetAccountUseCase
+	getAccountUseCase                                       uc_account.GetAccountUseCase
 	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
 	mnemonicFromEncryptedHDWalletUseCase                    *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
 	privateKeyFromHDWalletUseCase                           *uc_walletutil.PrivateKeyFromHDWalletUseCase
@@ -50,7 +50,7 @@ func NewTokenBurnService(
 	uc4 *uc_pstx.ListPendingSignedTransactionUseCase,
 	uc5 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
 	uc6 *uc_pstx.UpsertPendingSignedTransactionUseCase,
-	uc7 *uc_account.GetAccountUseCase,
+	uc7 uc_account.GetAccountUseCase,
 	uc8 *uc_wallet.GetWalletUseCase,
 	uc9 *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,
 	uc10 *uc_walletutil.PrivateKeyFromHDWalletUseCase,

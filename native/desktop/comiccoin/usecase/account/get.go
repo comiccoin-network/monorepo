@@ -9,16 +9,20 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type GetAccountUseCase struct {
+type GetAccountUseCase interface {
+	Execute(ctx context.Context, address *common.Address) (*domain.Account, error)
+}
+
+type getAccountUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.AccountRepository
 }
 
-func NewGetAccountUseCase(logger *slog.Logger, repo domain.AccountRepository) *GetAccountUseCase {
-	return &GetAccountUseCase{logger, repo}
+func NewGetAccountUseCase(logger *slog.Logger, repo domain.AccountRepository) GetAccountUseCase {
+	return &getAccountUseCaseImpl{logger, repo}
 }
 
-func (uc *GetAccountUseCase) Execute(ctx context.Context, address *common.Address) (*domain.Account, error) {
+func (uc *getAccountUseCaseImpl) Execute(ctx context.Context, address *common.Address) (*domain.Account, error) {
 	//
 	// STEP 1: Validation.
 	//

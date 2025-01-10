@@ -11,16 +11,25 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type CreateAccountUseCase struct {
+// CreateAccountUseCase defines the interface for creating blockchain accounts.
+// This interface is used to decouple the implementation details from the business logic,
+// making it easier to test and modify the implementation without affecting dependent code.
+type CreateAccountUseCase interface {
+	Execute(ctx context.Context, chainID uint16, address *common.Address) error
+}
+
+// createAccountUseCaseImpl implements the CreateAccountUseCase interface.
+// It handles the creation of new blockchain accounts with validation and persistence.
+type createAccountUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.AccountRepository
 }
 
-func NewCreateAccountUseCase(logger *slog.Logger, repo domain.AccountRepository) *CreateAccountUseCase {
-	return &CreateAccountUseCase{logger, repo}
+func NewCreateAccountUseCase(logger *slog.Logger, repo domain.AccountRepository) CreateAccountUseCase {
+	return &createAccountUseCaseImpl{logger, repo}
 }
 
-func (uc *CreateAccountUseCase) Execute(ctx context.Context, chainID uint16, address *common.Address) error {
+func (uc *createAccountUseCaseImpl) Execute(ctx context.Context, chainID uint16, address *common.Address) error {
 	//
 	// STEP 1: Validation.
 	//
@@ -36,7 +45,7 @@ func (uc *CreateAccountUseCase) Execute(ctx context.Context, chainID uint16, add
 	}
 
 	//
-	// STEP 2: Create our strucutre.
+	// STEP 2: Create our structure.
 	//
 
 	account := &domain.Account{

@@ -21,8 +21,8 @@ type CreateAccountService struct {
 	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
 	encryptWalletUseCase            *uc_walletutil.EncryptWalletUseCase
 	createWalletUseCase             *uc_wallet.CreateWalletUseCase
-	createAccountUseCase            *uc_account.CreateAccountUseCase
-	getAccountUseCase               *uc_account.GetAccountUseCase
+	createAccountUseCase            uc_account.CreateAccountUseCase
+	getAccountUseCase               uc_account.GetAccountUseCase
 }
 
 func NewCreateAccountService(
@@ -31,8 +31,8 @@ func NewCreateAccountService(
 	uc2 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc3 *uc_walletutil.EncryptWalletUseCase,
 	uc4 *uc_wallet.CreateWalletUseCase,
-	uc5 *uc_account.CreateAccountUseCase,
-	uc6 *uc_account.GetAccountUseCase,
+	uc5 uc_account.CreateAccountUseCase,
+	uc6 uc_account.GetAccountUseCase,
 ) *CreateAccountService {
 	return &CreateAccountService{logger, uc1, uc2, uc3, uc4, uc5, uc6}
 }

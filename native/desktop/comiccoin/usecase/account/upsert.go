@@ -10,16 +10,20 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type UpsertAccountUseCase struct {
+type UpsertAccountUseCase interface {
+	Execute(ctx context.Context, address *common.Address, balance uint64, nonce *big.Int) error
+}
+
+type upsertAccountUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.AccountRepository
 }
 
-func NewUpsertAccountUseCase(logger *slog.Logger, repo domain.AccountRepository) *UpsertAccountUseCase {
-	return &UpsertAccountUseCase{logger, repo}
+func NewUpsertAccountUseCase(logger *slog.Logger, repo domain.AccountRepository) UpsertAccountUseCase {
+	return &upsertAccountUseCaseImpl{logger, repo}
 }
 
-func (uc *UpsertAccountUseCase) Execute(ctx context.Context, address *common.Address, balance uint64, nonce *big.Int) error {
+func (uc *upsertAccountUseCaseImpl) Execute(ctx context.Context, address *common.Address, balance uint64, nonce *big.Int) error {
 	//
 	// STEP 1: Validation.
 	//
@@ -35,7 +39,7 @@ func (uc *UpsertAccountUseCase) Execute(ctx context.Context, address *common.Add
 	}
 
 	//
-	// STEP 2: Upsert our strucutre.
+	// STEP 2: Upsert our structure.
 	//
 
 	account := &domain.Account{

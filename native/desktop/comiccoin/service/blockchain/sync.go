@@ -37,8 +37,8 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	getBlockDataUseCase                                  *uc_blockdata.GetBlockDataUseCase
 	upsertBlockDataUseCase                               *uc_blockdata.UpsertBlockDataUseCase
 	getBlockDataDTOFromBlockchainAuthorityUseCase        uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase
-	getAccountUseCase                                    *uc_account.GetAccountUseCase
-	upsertAccountUseCase                                 *uc_account.UpsertAccountUseCase
+	getAccountUseCase                                    uc_account.GetAccountUseCase
+	upsertAccountUseCase                                 uc_account.UpsertAccountUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase            *uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase
 	deletePendingSignedTransactionUseCase                *uc_pstx.DeletePendingSignedTransactionUseCase
 }
@@ -56,8 +56,8 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc9 *uc_blockdata.GetBlockDataUseCase,
 	uc10 *uc_blockdata.UpsertBlockDataUseCase,
 	uc11 uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
-	uc12 *uc_account.GetAccountUseCase,
-	uc13 *uc_account.UpsertAccountUseCase,
+	uc12 uc_account.GetAccountUseCase,
+	uc13 uc_account.UpsertAccountUseCase,
 	uc14 *uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase,
 	uc15 *uc_pstx.DeletePendingSignedTransactionUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityService {

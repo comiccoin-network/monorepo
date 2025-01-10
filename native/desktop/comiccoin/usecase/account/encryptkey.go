@@ -13,7 +13,11 @@ import (
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 )
 
-type AccountEncryptKeyUseCase struct {
+type AccountEncryptKeyUseCase interface {
+	Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error)
+}
+
+type accountEncryptKeyUseCaseImpl struct {
 	logger   *slog.Logger
 	keystore hdkeystore.KeystoreAdapter
 	repo     domain.AccountRepository
@@ -23,11 +27,11 @@ func NewAccountEncryptKeyUseCase(
 	logger *slog.Logger,
 	keystore hdkeystore.KeystoreAdapter,
 	repo domain.AccountRepository,
-) *AccountEncryptKeyUseCase {
-	return &AccountEncryptKeyUseCase{logger, keystore, repo}
+) AccountEncryptKeyUseCase {
+	return &accountEncryptKeyUseCaseImpl{logger, keystore, repo}
 }
 
-func (uc *AccountEncryptKeyUseCase) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
+func (uc *accountEncryptKeyUseCaseImpl) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
 	//
 	// STEP 1: Validation.
 	//

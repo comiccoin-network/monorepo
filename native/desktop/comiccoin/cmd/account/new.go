@@ -72,7 +72,7 @@ func doRunNewAccountCmd() error {
 		log.Fatalf("Failed secure password: %v", err)
 	}
 
-	account, err := rpcClient.CreateAccount(ctx, mnemonic, flagPath, pass, flagLabel)
+	account, err := rpcClient.CreateAccount(ctx, flagChainID, mnemonic, flagPath, pass, flagLabel)
 	if err != nil {
 		log.Fatalf("Failed creating account: %v\n", err)
 	}

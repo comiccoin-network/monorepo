@@ -17,17 +17,17 @@ import (
 
 type ImportWalletService struct {
 	logger               *slog.Logger
-	getAccountUseCase    *uc_account.GetAccountUseCase
+	getAccountUseCase    uc_account.GetAccountUseCase
 	getWalletUseCase     *uc_wallet.GetWalletUseCase
-	upsertAccountUseCase *uc_account.UpsertAccountUseCase
+	upsertAccountUseCase uc_account.UpsertAccountUseCase
 	createWalletUseCase  *uc_wallet.CreateWalletUseCase
 }
 
 func NewImportWalletService(
 	logger *slog.Logger,
-	uc1 *uc_account.GetAccountUseCase,
+	uc1 uc_account.GetAccountUseCase,
 	uc2 *uc_wallet.GetWalletUseCase,
-	uc3 *uc_account.UpsertAccountUseCase,
+	uc3 uc_account.UpsertAccountUseCase,
 	uc4 *uc_wallet.CreateWalletUseCase,
 ) *ImportWalletService {
 	return &ImportWalletService{logger, uc1, uc2, uc3, uc4}
