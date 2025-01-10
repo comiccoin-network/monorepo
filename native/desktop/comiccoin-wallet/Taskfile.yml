@@ -9,19 +9,19 @@ tasks:
   buildlinux:
     desc: Build a linux executable.
     cmds:
-      - GOOS=linux GOARCH=amd64 go build -o ./build/comiccoin-v1.0.0-beta-linux_amd64 .
+      - GOOS=linux GOARCH=amd64 wails build -clean -o comiccoin-wallet
 
   buildmac:
     desc: Build a Apple Mac executable.
     cmds:
-      - GOOS=darwin GOARCH=arm64 go build -o ./build/comiccoin-v1.0.0-beta-mac .
+      - GOOS=darwin GOARCH=arm64 wails build -clean -o comiccoin-wallet
 
   buildwin:
     desc: Build a Microsoft Winows executable.
     cmds:
-      - GOOS=windows GOARCH=arm64 go build -o ./build/comiccoin-v1.0.0-beta-win_amd64 .
+      - GOOS=windows GOARCH=amd64 wails build -nsis
 
   start:
     desc: Begin and run the daemon in the foreground of maintaining connection with the ComicCoin blockchain network.
     cmds:
-      - go run main.go daemon
+      - wails dev
