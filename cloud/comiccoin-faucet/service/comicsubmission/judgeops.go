@@ -18,10 +18,17 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type ComicSubmissionJudgeOperationService struct {
+type ComicSubmissionJudgeOperationService interface {
+	Execute(
+		sessCtx mongo.SessionContext,
+		req *ComicSubmissionJudgeVerdictRequestIDO,
+	) (*domain.ComicSubmission, error)
+}
+
+type comicSubmissionJudgeOperationServiceImpl struct {
 	config                        *config.Configuration
 	logger                        *slog.Logger
-	faucetCoinTransferService     *sv_faucet.FaucetCoinTransferService
+	faucetCoinTransferService     sv_faucet.FaucetCoinTransferService
 	cloudStorageDeleteUseCase     uc_cloudstorage.CloudStorageDeleteUseCase
 	userGetByIDUseCase            uc_user.UserGetByIDUseCase
 	userUpdateUseCase             uc_user.UserUpdateUseCase
@@ -33,15 +40,15 @@ type ComicSubmissionJudgeOperationService struct {
 func NewComicSubmissionJudgeOperationService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	s1 *sv_faucet.FaucetCoinTransferService,
+	s1 sv_faucet.FaucetCoinTransferService,
 	uc1 uc_cloudstorage.CloudStorageDeleteUseCase,
 	uc2 uc_user.UserGetByIDUseCase,
 	uc3 uc_user.UserUpdateUseCase,
 	uc4 uc_bannedipaddress.CreateBannedIPAddressUseCase,
 	uc5 uc_comicsubmission.ComicSubmissionGetByIDUseCase,
 	uc6 uc_comicsubmission.ComicSubmissionUpdateUseCase,
-) *ComicSubmissionJudgeOperationService {
-	return &ComicSubmissionJudgeOperationService{cfg, logger, s1, uc1, uc2, uc3, uc4, uc5, uc6}
+) ComicSubmissionJudgeOperationService {
+	return &comicSubmissionJudgeOperationServiceImpl{cfg, logger, s1, uc1, uc2, uc3, uc4, uc5, uc6}
 }
 
 type ComicSubmissionJudgeVerdictRequestIDO struct {
@@ -54,7 +61,7 @@ type ComicSubmissionJudgeVerdictRequestIDO struct {
 	AdminUserIPAddress string             `bson:"admin_user_ip_address" json:"admin_user_ip_address"`
 }
 
-func (s *ComicSubmissionJudgeOperationService) Execute(
+func (s *comicSubmissionJudgeOperationServiceImpl) Execute(
 	sessCtx mongo.SessionContext,
 	req *ComicSubmissionJudgeVerdictRequestIDO,
 ) (*domain.ComicSubmission, error) {

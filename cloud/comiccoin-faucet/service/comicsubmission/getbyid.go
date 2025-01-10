@@ -11,7 +11,11 @@ import (
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
-type ComicSubmissionGetService struct {
+type ComicSubmissionGetService interface {
+	Execute(sessCtx mongo.SessionContext, id primitive.ObjectID) (*ComicSubmissionResponseIDO, error)
+}
+
+type comicSubmissionGetServiceImpl struct {
 	logger                        *slog.Logger
 	comicSubmissionGetByIDUseCase uc_comicsubmission.ComicSubmissionGetByIDUseCase
 }
@@ -19,13 +23,13 @@ type ComicSubmissionGetService struct {
 func NewComicSubmissionGetService(
 	logger *slog.Logger,
 	uc1 uc_comicsubmission.ComicSubmissionGetByIDUseCase,
-) *ComicSubmissionGetService {
-	return &ComicSubmissionGetService{logger, uc1}
+) ComicSubmissionGetService {
+	return &comicSubmissionGetServiceImpl{logger, uc1}
 }
 
 type ComicSubmissionResponseIDO domain.ComicSubmission
 
-func (s *ComicSubmissionGetService) Execute(sessCtx mongo.SessionContext, id primitive.ObjectID) (*ComicSubmissionResponseIDO, error) {
+func (s *comicSubmissionGetServiceImpl) Execute(sessCtx mongo.SessionContext, id primitive.ObjectID) (*ComicSubmissionResponseIDO, error) {
 	//
 	// STEP 1: Validation.
 	//

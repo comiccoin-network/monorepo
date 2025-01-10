@@ -14,14 +14,14 @@ type BlockchainSyncWithBlockchainAuthorityTaskHandler struct {
 	config                                       *config.Configuration
 	logger                                       *slog.Logger
 	dbClient                                     *mongo.Client
-	blockchainSyncWithBlockchainAuthorityService *sv_blockchain.BlockchainSyncWithBlockchainAuthorityService
+	blockchainSyncWithBlockchainAuthorityService sv_blockchain.BlockchainSyncWithBlockchainAuthorityService
 }
 
 func NewBlockchainSyncWithBlockchainAuthorityTaskHandler(
 	config *config.Configuration,
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	s1 *sv_blockchain.BlockchainSyncWithBlockchainAuthorityService,
+	s1 sv_blockchain.BlockchainSyncWithBlockchainAuthorityService,
 ) *BlockchainSyncWithBlockchainAuthorityTaskHandler {
 	return &BlockchainSyncWithBlockchainAuthorityTaskHandler{config, logger, dbClient, s1}
 }

@@ -10,7 +10,11 @@ import (
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
-type ComicSubmissionCountTotalCreatedTodayByUserService struct {
+type ComicSubmissionCountTotalCreatedTodayByUserService interface {
+	Execute(sessCtx mongo.SessionContext, userID primitive.ObjectID, userTimezone string) (*ComicSubmissionCountTotalCreatedTodayByUserServiceResponseIDO, error)
+}
+
+type comicSubmissionCountTotalCreatedTodayByUserServiceImpl struct {
 	logger                                             *slog.Logger
 	comicSubmissionCountTotalCreatedTodayByUserUseCase uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase
 }
@@ -18,15 +22,15 @@ type ComicSubmissionCountTotalCreatedTodayByUserService struct {
 func NewComicSubmissionCountTotalCreatedTodayByUserService(
 	logger *slog.Logger,
 	uc1 uc_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserUseCase,
-) *ComicSubmissionCountTotalCreatedTodayByUserService {
-	return &ComicSubmissionCountTotalCreatedTodayByUserService{logger, uc1}
+) ComicSubmissionCountTotalCreatedTodayByUserService {
+	return &comicSubmissionCountTotalCreatedTodayByUserServiceImpl{logger, uc1}
 }
 
 type ComicSubmissionCountTotalCreatedTodayByUserServiceResponseIDO struct {
 	Count uint64 `bson:"count" json:"count"`
 }
 
-func (s *ComicSubmissionCountTotalCreatedTodayByUserService) Execute(sessCtx mongo.SessionContext, userID primitive.ObjectID, userTimezone string) (*ComicSubmissionCountTotalCreatedTodayByUserServiceResponseIDO, error) {
+func (s *comicSubmissionCountTotalCreatedTodayByUserServiceImpl) Execute(sessCtx mongo.SessionContext, userID primitive.ObjectID, userTimezone string) (*ComicSubmissionCountTotalCreatedTodayByUserServiceResponseIDO, error) {
 	//
 	// STEP 1: Validation.
 	//

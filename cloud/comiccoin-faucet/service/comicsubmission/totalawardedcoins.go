@@ -8,7 +8,11 @@ import (
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
-type ComicSubmissionTotalCoinsAwardedService struct {
+type ComicSubmissionTotalCoinsAwardedService interface {
+	Execute(sessCtx mongo.SessionContext) (*ComicSubmissionTotalCoinsAwardedResponseIDO, error)
+}
+
+type comicSubmissionTotalCoinsAwardedServiceImpl struct {
 	logger                                  *slog.Logger
 	comicSubmissionTotalCoinsAwardedUseCase uc_comicsubmission.ComicSubmissionTotalCoinsAwardedUseCase
 }
@@ -16,15 +20,15 @@ type ComicSubmissionTotalCoinsAwardedService struct {
 func NewComicSubmissionTotalCoinsAwardedService(
 	logger *slog.Logger,
 	uc1 uc_comicsubmission.ComicSubmissionTotalCoinsAwardedUseCase,
-) *ComicSubmissionTotalCoinsAwardedService {
-	return &ComicSubmissionTotalCoinsAwardedService{logger, uc1}
+) ComicSubmissionTotalCoinsAwardedService {
+	return &comicSubmissionTotalCoinsAwardedServiceImpl{logger, uc1}
 }
 
 type ComicSubmissionTotalCoinsAwardedResponseIDO struct {
 	Count uint64 `bson:"count" json:"count"`
 }
 
-func (s *ComicSubmissionTotalCoinsAwardedService) Execute(sessCtx mongo.SessionContext) (*ComicSubmissionTotalCoinsAwardedResponseIDO, error) {
+func (s *comicSubmissionTotalCoinsAwardedServiceImpl) Execute(sessCtx mongo.SessionContext) (*ComicSubmissionTotalCoinsAwardedResponseIDO, error) {
 	count, err := s.comicSubmissionTotalCoinsAwardedUseCase.Execute(sessCtx)
 	if err != nil {
 		s.logger.Error("database error",

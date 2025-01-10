@@ -10,7 +10,11 @@ import (
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
-type ComicSubmissionCountByFilterService struct {
+type ComicSubmissionCountByFilterService interface {
+	Execute(sessCtx mongo.SessionContext, filter *domain.ComicSubmissionFilter) (*ComicSubmissionCountByFilterServiceResponseIDO, error)
+}
+
+type comicSubmissionCountByFilterServiceImpl struct {
 	logger                              *slog.Logger
 	comicSubmissionCountByFilterUseCase uc_comicsubmission.ComicSubmissionCountByFilterUseCase
 }
@@ -18,15 +22,15 @@ type ComicSubmissionCountByFilterService struct {
 func NewComicSubmissionCountByFilterService(
 	logger *slog.Logger,
 	uc1 uc_comicsubmission.ComicSubmissionCountByFilterUseCase,
-) *ComicSubmissionCountByFilterService {
-	return &ComicSubmissionCountByFilterService{logger, uc1}
+) ComicSubmissionCountByFilterService {
+	return &comicSubmissionCountByFilterServiceImpl{logger, uc1}
 }
 
 type ComicSubmissionCountByFilterServiceResponseIDO struct {
 	Count uint64 `bson:"count" json:"count"`
 }
 
-func (s *ComicSubmissionCountByFilterService) Execute(sessCtx mongo.SessionContext, filter *domain.ComicSubmissionFilter) (*ComicSubmissionCountByFilterServiceResponseIDO, error) {
+func (s *comicSubmissionCountByFilterServiceImpl) Execute(sessCtx mongo.SessionContext, filter *domain.ComicSubmissionFilter) (*ComicSubmissionCountByFilterServiceResponseIDO, error) {
 	//
 	// STEP 1: Validation.
 	//

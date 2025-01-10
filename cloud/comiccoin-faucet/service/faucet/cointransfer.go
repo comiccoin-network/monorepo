@@ -24,7 +24,11 @@ import (
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/walletutil"
 )
 
-type FaucetCoinTransferService struct {
+type FaucetCoinTransferService interface {
+	Execute(sessCtx mongo.SessionContext, req *FaucetCoinTransferRequestIDO) error
+}
+
+type faucetCoinTransferServiceImpl struct {
 	config                                                  *config.Configuration
 	logger                                                  *slog.Logger
 	kmutex                                                  kmutexutil.KMutexProvider
@@ -50,8 +54,8 @@ func NewFaucetCoinTransferService(
 	uc6 uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc7 uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	uc8 uc_usertx.CreateUserTransactionUseCase,
-) *FaucetCoinTransferService {
-	return &FaucetCoinTransferService{cfg, logger, kmutex, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8}
+) FaucetCoinTransferService {
+	return &faucetCoinTransferServiceImpl{cfg, logger, kmutex, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8}
 }
 
 type FaucetCoinTransferRequestIDO struct {
@@ -66,7 +70,7 @@ type FaucetCoinTransferRequestIDO struct {
 	UserName              string                `json:"user_name"`
 }
 
-func (s *FaucetCoinTransferService) Execute(sessCtx mongo.SessionContext, req *FaucetCoinTransferRequestIDO) error {
+func (s *faucetCoinTransferServiceImpl) Execute(sessCtx mongo.SessionContext, req *FaucetCoinTransferRequestIDO) error {
 	//
 	// STEP 1: Validation.
 	//

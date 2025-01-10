@@ -19,13 +19,13 @@ import (
 type ComicSubmissionCountCoinsRewardByFilterHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_comicsubmission.ComicSubmissionCountCoinsRewardByFilterService
+	service  sv_comicsubmission.ComicSubmissionCountCoinsRewardByFilterService
 }
 
 func NewComicSubmissionCountCoinsRewardByFilterHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_comicsubmission.ComicSubmissionCountCoinsRewardByFilterService,
+	service sv_comicsubmission.ComicSubmissionCountCoinsRewardByFilterService,
 ) *ComicSubmissionCountCoinsRewardByFilterHTTPHandler {
 	return &ComicSubmissionCountCoinsRewardByFilterHTTPHandler{
 		logger:   logger,
@@ -94,7 +94,7 @@ func (h *ComicSubmissionCountCoinsRewardByFilterHTTPHandler) Execute(w http.Resp
 		return
 	}
 
-	resp := result.(*sv_comicsubmission.ComicSubmissionCountCoinsRewardByFilterServiceResponseIDO)
+	resp := result.(sv_comicsubmission.ComicSubmissionCountCoinsRewardByFilterServiceResponseIDO)
 
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

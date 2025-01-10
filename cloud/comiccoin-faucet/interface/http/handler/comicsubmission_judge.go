@@ -21,13 +21,13 @@ import (
 type ComicSubmissionJudgeOperationHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_comicsubmission.ComicSubmissionJudgeOperationService
+	service  sv_comicsubmission.ComicSubmissionJudgeOperationService
 }
 
 func NewComicSubmissionJudgeOperationHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_comicsubmission.ComicSubmissionJudgeOperationService,
+	service sv_comicsubmission.ComicSubmissionJudgeOperationService,
 ) *ComicSubmissionJudgeOperationHTTPHandler {
 	return &ComicSubmissionJudgeOperationHTTPHandler{
 		logger:   logger,

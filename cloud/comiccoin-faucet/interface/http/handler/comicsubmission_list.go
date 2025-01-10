@@ -20,13 +20,13 @@ import (
 type ComicSubmissionListByFilterHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_comicsubmission.ComicSubmissionListByFilterService
+	service  sv_comicsubmission.ComicSubmissionListByFilterService
 }
 
 func NewComicSubmissionListByFilterHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_comicsubmission.ComicSubmissionListByFilterService,
+	service sv_comicsubmission.ComicSubmissionListByFilterService,
 ) *ComicSubmissionListByFilterHTTPHandler {
 	return &ComicSubmissionListByFilterHTTPHandler{
 		logger:   logger,
@@ -168,7 +168,7 @@ func (h *ComicSubmissionListByFilterHTTPHandler) Execute(w http.ResponseWriter, 
 		return
 	}
 
-	resp := result.(*sv_comicsubmission.ComicSubmissionFilterResultResponseIDO)
+	resp := result.(sv_comicsubmission.ComicSubmissionFilterResultResponseIDO)
 
 	// Set response headers
 	w.Header().Set("Content-Type", "application/json")

@@ -15,13 +15,13 @@ import (
 type FaucetBalanceHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_faucet.FaucetBalanceService
+	service  sv_faucet.FaucetBalanceService
 }
 
 func NewFaucetBalanceHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_faucet.FaucetBalanceService,
+	service sv_faucet.FaucetBalanceService,
 ) *FaucetBalanceHTTPHandler {
 	return &FaucetBalanceHTTPHandler{
 		logger:   logger,
@@ -65,7 +65,7 @@ func (h *FaucetBalanceHTTPHandler) Execute(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	resp := result.(*sv_faucet.FaucetBalanceResponseIDO)
+	resp := result.(sv_faucet.FaucetBalanceResponseIDO)
 
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

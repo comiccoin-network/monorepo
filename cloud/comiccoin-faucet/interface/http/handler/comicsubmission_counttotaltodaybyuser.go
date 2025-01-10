@@ -17,13 +17,13 @@ import (
 type ComicSubmissionCountTotalCreatedTodayByUserHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserService
+	service  sv_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserService
 }
 
 func NewComicSubmissionCountTotalCreatedTodayByUserHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserService,
+	service sv_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserService,
 ) *ComicSubmissionCountTotalCreatedTodayByUserHTTPHandler {
 	return &ComicSubmissionCountTotalCreatedTodayByUserHTTPHandler{
 		logger:   logger,
@@ -69,7 +69,7 @@ func (h *ComicSubmissionCountTotalCreatedTodayByUserHTTPHandler) Execute(w http.
 		return
 	}
 
-	resp := result.(*sv_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserServiceResponseIDO)
+	resp := result.(sv_comicsubmission.ComicSubmissionCountTotalCreatedTodayByUserServiceResponseIDO)
 
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

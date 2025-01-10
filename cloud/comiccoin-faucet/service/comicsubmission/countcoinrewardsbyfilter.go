@@ -10,7 +10,11 @@ import (
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
-type ComicSubmissionCountCoinsRewardByFilterService struct {
+type ComicSubmissionCountCoinsRewardByFilterService interface {
+	Execute(sessCtx mongo.SessionContext, filter *domain.ComicSubmissionFilter) (*ComicSubmissionCountCoinsRewardByFilterServiceResponseIDO, error)
+}
+
+type comicSubmissionCountCoinsRewardByFilterServiceImpl struct {
 	logger                                         *slog.Logger
 	comicSubmissionCountCoinsRewardByFilterUseCase uc_comicsubmission.ComicSubmissionCountCoinsRewardByFilterUseCase
 }
@@ -18,15 +22,15 @@ type ComicSubmissionCountCoinsRewardByFilterService struct {
 func NewComicSubmissionCountCoinsRewardByFilterService(
 	logger *slog.Logger,
 	uc1 uc_comicsubmission.ComicSubmissionCountCoinsRewardByFilterUseCase,
-) *ComicSubmissionCountCoinsRewardByFilterService {
-	return &ComicSubmissionCountCoinsRewardByFilterService{logger, uc1}
+) ComicSubmissionCountCoinsRewardByFilterService {
+	return &comicSubmissionCountCoinsRewardByFilterServiceImpl{logger, uc1}
 }
 
 type ComicSubmissionCountCoinsRewardByFilterServiceResponseIDO struct {
 	Count uint64 `bson:"count" json:"count"`
 }
 
-func (s *ComicSubmissionCountCoinsRewardByFilterService) Execute(sessCtx mongo.SessionContext, filter *domain.ComicSubmissionFilter) (*ComicSubmissionCountCoinsRewardByFilterServiceResponseIDO, error) {
+func (s *comicSubmissionCountCoinsRewardByFilterServiceImpl) Execute(sessCtx mongo.SessionContext, filter *domain.ComicSubmissionFilter) (*ComicSubmissionCountCoinsRewardByFilterServiceResponseIDO, error) {
 	//
 	// STEP 1: Validation.
 	//

@@ -18,13 +18,13 @@ import (
 type ComicSubmissionCreateHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_comicsubmission.ComicSubmissionCreateService
+	service  sv_comicsubmission.ComicSubmissionCreateService
 }
 
 func NewComicSubmissionCreateHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_comicsubmission.ComicSubmissionCreateService,
+	service sv_comicsubmission.ComicSubmissionCreateService,
 ) *ComicSubmissionCreateHTTPHandler {
 	return &ComicSubmissionCreateHTTPHandler{
 		logger:   logger,
@@ -99,7 +99,7 @@ func (h *ComicSubmissionCreateHTTPHandler) Execute(w http.ResponseWriter, r *htt
 		return
 	}
 
-	resp := result.(*sv_comicsubmission.ComicSubmissionCreateResponseIDO)
+	resp := result.(sv_comicsubmission.ComicSubmissionCreateResponseIDO)
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {

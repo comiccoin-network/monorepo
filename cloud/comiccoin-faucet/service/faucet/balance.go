@@ -11,7 +11,11 @@ import (
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/account"
 )
 
-type FaucetBalanceService struct {
+type FaucetBalanceService interface {
+	Execute(sessCtx mongo.SessionContext) (*FaucetBalanceResponseIDO, error)
+}
+
+type faucetBalanceServiceImpl struct {
 	config            *config.Configuration
 	logger            *slog.Logger
 	kmutex            kmutexutil.KMutexProvider
@@ -23,15 +27,15 @@ func NewFaucetBalanceService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
 	uc1 uc_account.GetAccountUseCase,
-) *FaucetBalanceService {
-	return &FaucetBalanceService{cfg, logger, kmutex, uc1}
+) FaucetBalanceService {
+	return &faucetBalanceServiceImpl{cfg, logger, kmutex, uc1}
 }
 
 type FaucetBalanceResponseIDO struct {
 	Count uint64 `bson:"count" json:"count"`
 }
 
-func (s *FaucetBalanceService) Execute(sessCtx mongo.SessionContext) (*FaucetBalanceResponseIDO, error) {
+func (s *faucetBalanceServiceImpl) Execute(sessCtx mongo.SessionContext) (*FaucetBalanceResponseIDO, error) {
 	account, err := s.getAccountUseCase.Execute(sessCtx, s.config.App.WalletAddress)
 	if err != nil {
 		s.logger.Error("failed getting account",

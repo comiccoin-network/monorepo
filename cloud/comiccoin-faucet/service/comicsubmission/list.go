@@ -11,7 +11,11 @@ import (
 	uc_comicsubmission "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/comicsubmission"
 )
 
-type ComicSubmissionListByFilterService struct {
+type ComicSubmissionListByFilterService interface {
+	Execute(sessCtx mongo.SessionContext, filter *ComicSubmissionFilterRequestID) (*ComicSubmissionFilterResultResponseIDO, error)
+}
+
+type comicSubmissionListByFilterServiceImpl struct {
 	logger                             *slog.Logger
 	cloudStoragePresignedURLUseCase    uc_cloudstorage.CloudStoragePresignedURLUseCase
 	comicSubmissionListByFilterUseCase uc_comicsubmission.ComicSubmissionListByFilterUseCase
@@ -21,15 +25,15 @@ func NewComicSubmissionListByFilterService(
 	logger *slog.Logger,
 	uc1 uc_cloudstorage.CloudStoragePresignedURLUseCase,
 	uc2 uc_comicsubmission.ComicSubmissionListByFilterUseCase,
-) *ComicSubmissionListByFilterService {
-	return &ComicSubmissionListByFilterService{logger, uc1, uc2}
+) ComicSubmissionListByFilterService {
+	return &comicSubmissionListByFilterServiceImpl{logger, uc1, uc2}
 }
 
 type ComicSubmissionFilterRequestID domain.ComicSubmissionFilter
 
 type ComicSubmissionFilterResultResponseIDO domain.ComicSubmissionFilterResult
 
-func (s *ComicSubmissionListByFilterService) Execute(sessCtx mongo.SessionContext, filter *ComicSubmissionFilterRequestID) (*ComicSubmissionFilterResultResponseIDO, error) {
+func (s *comicSubmissionListByFilterServiceImpl) Execute(sessCtx mongo.SessionContext, filter *ComicSubmissionFilterRequestID) (*ComicSubmissionFilterResultResponseIDO, error) {
 	//
 	// STEP 1: Validation.
 	//

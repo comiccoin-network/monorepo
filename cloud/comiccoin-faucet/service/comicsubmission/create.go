@@ -18,7 +18,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type ComicSubmissionCreateService struct {
+type ComicSubmissionCreateService interface {
+	Execute(sessCtx mongo.SessionContext, req *ComicSubmissionCreateRequestIDO) (*ComicSubmissionCreateResponseIDO, error)
+}
+
+type comicSubmissionCreateServiceImpl struct {
 	config                                             *config.Configuration
 	logger                                             *slog.Logger
 	userGetByIDUseCase                                 uc_user.UserGetByIDUseCase
@@ -36,8 +40,8 @@ func NewComicSubmissionCreateService(
 	uc3 uc_attachment.AttachmentGetUseCase,
 	uc4 uc_attachment.AttachmentUpdateUseCase,
 	uc5 uc_comicsubmission.ComicSubmissionCreateUseCase,
-) *ComicSubmissionCreateService {
-	return &ComicSubmissionCreateService{cfg, logger, uc1, uc2, uc3, uc4, uc5}
+) ComicSubmissionCreateService {
+	return &comicSubmissionCreateServiceImpl{cfg, logger, uc1, uc2, uc3, uc4, uc5}
 }
 
 type ComicSubmissionCreateRequestIDO struct {
@@ -48,7 +52,7 @@ type ComicSubmissionCreateRequestIDO struct {
 
 type ComicSubmissionCreateResponseIDO domain.ComicSubmission
 
-func (s *ComicSubmissionCreateService) Execute(sessCtx mongo.SessionContext, req *ComicSubmissionCreateRequestIDO) (*ComicSubmissionCreateResponseIDO, error) {
+func (s *comicSubmissionCreateServiceImpl) Execute(sessCtx mongo.SessionContext, req *ComicSubmissionCreateRequestIDO) (*ComicSubmissionCreateResponseIDO, error) {
 	//
 	// STEP 1: Validation
 	//
