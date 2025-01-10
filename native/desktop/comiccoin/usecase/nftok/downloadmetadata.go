@@ -18,16 +18,20 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
-type DownloadMetadataNonFungibleTokenUseCase struct {
+type DownloadMetadataNonFungibleTokenUseCase interface {
+	Execute(tokenID *big.Int, metadataURI string, dirPath string) (*domain.NonFungibleTokenMetadata, string, error)
+}
+
+type downloadMetadataNonFungibleTokenUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.NFTAssetRepository
 }
 
-func NewDownloadMetadataNonFungibleTokenUseCase(logger *slog.Logger, r domain.NFTAssetRepository) *DownloadMetadataNonFungibleTokenUseCase {
-	return &DownloadMetadataNonFungibleTokenUseCase{logger, r}
+func NewDownloadMetadataNonFungibleTokenUseCase(logger *slog.Logger, r domain.NFTAssetRepository) DownloadMetadataNonFungibleTokenUseCase {
+	return &downloadMetadataNonFungibleTokenUseCaseImpl{logger, r}
 }
 
-func (uc *DownloadMetadataNonFungibleTokenUseCase) Execute(tokenID *big.Int, metadataURI string, dirPath string) (*domain.NonFungibleTokenMetadata, string, error) {
+func (uc *downloadMetadataNonFungibleTokenUseCaseImpl) Execute(tokenID *big.Int, metadataURI string, dirPath string) (*domain.NonFungibleTokenMetadata, string, error) {
 	// Confirm URI is using protocol our app supports.
 	if strings.Contains(metadataURI, "ipfs://") {
 		uc.logger.Debug("Downloading metadata via ipfs...",
@@ -48,7 +52,7 @@ func (uc *DownloadMetadataNonFungibleTokenUseCase) Execute(tokenID *big.Int, met
 	return nil, "", fmt.Errorf("Token metadata URI contains protocol we do not support: %v\n", metadataURI)
 }
 
-func (uc *DownloadMetadataNonFungibleTokenUseCase) executeForIPFS(tokenID *big.Int, ipfsPath string, dirPath string) (*domain.NonFungibleTokenMetadata, string, error) {
+func (uc *downloadMetadataNonFungibleTokenUseCaseImpl) executeForIPFS(tokenID *big.Int, ipfsPath string, dirPath string) (*domain.NonFungibleTokenMetadata, string, error) {
 	cid := strings.Replace(ipfsPath, "ipfs://", "", -1)
 	nftAsset, err := uc.repo.Get(context.Background(), cid)
 	if err != nil {
@@ -74,7 +78,7 @@ func (uc *DownloadMetadataNonFungibleTokenUseCase) executeForIPFS(tokenID *big.I
 	return metadata, metadataFilepath, nil
 }
 
-func (uc *DownloadMetadataNonFungibleTokenUseCase) executeForHTTPS(tokenID *big.Int, url string, dirPath string) (*domain.NonFungibleTokenMetadata, string, error) {
+func (uc *downloadMetadataNonFungibleTokenUseCaseImpl) executeForHTTPS(tokenID *big.Int, url string, dirPath string) (*domain.NonFungibleTokenMetadata, string, error) {
 	r, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatalf("failed to setup get request: %v", err)

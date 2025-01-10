@@ -18,16 +18,20 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
-type DownloadNonFungibleTokenAssetUseCase struct {
+type DownloadNonFungibleTokenAssetUseCase interface {
+	Execute(tokenID *big.Int, assetURI string, dirPath string) (string, error)
+}
+
+type downloadNonFungibleTokenAssetUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.NFTAssetRepository
 }
 
-func NewDownloadNonFungibleTokenAssetUseCase(logger *slog.Logger, r domain.NFTAssetRepository) *DownloadNonFungibleTokenAssetUseCase {
-	return &DownloadNonFungibleTokenAssetUseCase{logger, r}
+func NewDownloadNonFungibleTokenAssetUseCase(logger *slog.Logger, r domain.NFTAssetRepository) DownloadNonFungibleTokenAssetUseCase {
+	return &downloadNonFungibleTokenAssetUseCaseImpl{logger, r}
 }
 
-func (uc *DownloadNonFungibleTokenAssetUseCase) Execute(tokenID *big.Int, assetURI string, dirPath string) (string, error) {
+func (uc *downloadNonFungibleTokenAssetUseCaseImpl) Execute(tokenID *big.Int, assetURI string, dirPath string) (string, error) {
 	if assetURI == "" {
 		uc.logger.Warn("No asset to download, skipping function...",
 			slog.Any("tokenID", tokenID),
@@ -67,7 +71,7 @@ func (uc *DownloadNonFungibleTokenAssetUseCase) Execute(tokenID *big.Int, assetU
 	return "", fmt.Errorf("Token asset URI contains protocol we do not support: %v\n", assetURI)
 }
 
-func (uc *DownloadNonFungibleTokenAssetUseCase) executeForIPFS(tokenID *big.Int, assetIpfsPath string, dirPath string) (string, error) {
+func (uc *downloadNonFungibleTokenAssetUseCaseImpl) executeForIPFS(tokenID *big.Int, assetIpfsPath string, dirPath string) (string, error) {
 	assetCID := strings.Replace(assetIpfsPath, "ipfs://", "", -1)
 	nftAsset, err := uc.repo.Get(context.Background(), assetCID)
 	if err != nil {
@@ -101,7 +105,7 @@ func (uc *DownloadNonFungibleTokenAssetUseCase) executeForIPFS(tokenID *big.Int,
 	return assetFilepath, nil
 }
 
-func (uc *DownloadNonFungibleTokenAssetUseCase) executeForHTTP(tokenID *big.Int, url string, dirPath string) (string, error) {
+func (uc *downloadNonFungibleTokenAssetUseCaseImpl) executeForHTTP(tokenID *big.Int, url string, dirPath string) (string, error) {
 	r, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatalf("failed to setup get request: %v", err)

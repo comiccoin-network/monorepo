@@ -8,15 +8,19 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
-type GetNonFungibleTokenUseCase struct {
+type GetNonFungibleTokenUseCase interface {
+	Execute(ctx context.Context, tokenID *big.Int) (*domain.NonFungibleToken, error)
+}
+
+type getNonFungibleTokenUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.NonFungibleTokenRepository
 }
 
-func NewGetNonFungibleTokenUseCase(logger *slog.Logger, repo domain.NonFungibleTokenRepository) *GetNonFungibleTokenUseCase {
-	return &GetNonFungibleTokenUseCase{logger, repo}
+func NewGetNonFungibleTokenUseCase(logger *slog.Logger, repo domain.NonFungibleTokenRepository) GetNonFungibleTokenUseCase {
+	return &getNonFungibleTokenUseCaseImpl{logger, repo}
 }
 
-func (uc *GetNonFungibleTokenUseCase) Execute(ctx context.Context, tokenID *big.Int) (*domain.NonFungibleToken, error) {
+func (uc *getNonFungibleTokenUseCaseImpl) Execute(ctx context.Context, tokenID *big.Int) (*domain.NonFungibleToken, error) {
 	return uc.repo.GetByTokenID(tokenID)
 }

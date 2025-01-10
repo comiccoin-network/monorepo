@@ -8,16 +8,20 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
-type UpsertNonFungibleTokenUseCase struct {
+type UpsertNonFungibleTokenUseCase interface {
+	Execute(nftok *domain.NonFungibleToken) error
+}
+
+type upsertNonFungibleTokenUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.NonFungibleTokenRepository
 }
 
-func NewUpsertNonFungibleTokenUseCase(logger *slog.Logger, repo domain.NonFungibleTokenRepository) *UpsertNonFungibleTokenUseCase {
-	return &UpsertNonFungibleTokenUseCase{logger, repo}
+func NewUpsertNonFungibleTokenUseCase(logger *slog.Logger, repo domain.NonFungibleTokenRepository) UpsertNonFungibleTokenUseCase {
+	return &upsertNonFungibleTokenUseCaseImpl{logger, repo}
 }
 
-func (uc *UpsertNonFungibleTokenUseCase) Execute(nftok *domain.NonFungibleToken) error {
+func (uc *upsertNonFungibleTokenUseCaseImpl) Execute(nftok *domain.NonFungibleToken) error {
 	//
 	// STEP 1: Validation.
 	//
