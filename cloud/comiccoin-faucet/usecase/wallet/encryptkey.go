@@ -15,7 +15,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type WalletEncryptKeyUseCase struct {
+type WalletEncryptKeyUseCase interface {
+	Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error)
+}
+
+type walletEncryptKeyUseCaseImpl struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	keystore hdkeystore.KeystoreAdapter
@@ -27,11 +31,11 @@ func NewWalletEncryptKeyUseCase(
 	logger *slog.Logger,
 	keystore hdkeystore.KeystoreAdapter,
 	repo domain.WalletRepository,
-) *WalletEncryptKeyUseCase {
-	return &WalletEncryptKeyUseCase{config, logger, keystore, repo}
+) WalletEncryptKeyUseCase {
+	return &walletEncryptKeyUseCaseImpl{config, logger, keystore, repo}
 }
 
-func (uc *WalletEncryptKeyUseCase) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
+func (uc *walletEncryptKeyUseCaseImpl) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
 	//
 	// STEP 1: Validation.
 	//

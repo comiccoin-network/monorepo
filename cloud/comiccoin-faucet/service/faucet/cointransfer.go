@@ -32,9 +32,9 @@ type FaucetCoinTransferService struct {
 	tenantUpdateUseCase                                     *uc_tenant.TenantUpdateUseCase
 	getAccountUseCase                                       uc_account.GetAccountUseCase
 	upsertAccountUseCase                                    uc_account.UpsertAccountUseCase
-	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
-	privateKeyFromHDWalletUseCase                           *uc_walletutil.PrivateKeyFromHDWalletUseCase
-	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
+	getWalletUseCase                                        uc_wallet.GetWalletUseCase
+	privateKeyFromHDWalletUseCase                           uc_walletutil.PrivateKeyFromHDWalletUseCase
+	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 	createUserTransactionUseCase                            *uc_usertx.CreateUserTransactionUseCase
 }
 
@@ -46,9 +46,9 @@ func NewFaucetCoinTransferService(
 	uc2 *uc_tenant.TenantUpdateUseCase,
 	uc3 uc_account.GetAccountUseCase,
 	uc4 uc_account.UpsertAccountUseCase,
-	uc5 *uc_wallet.GetWalletUseCase,
-	uc6 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
-	uc7 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
+	uc5 uc_wallet.GetWalletUseCase,
+	uc6 uc_walletutil.PrivateKeyFromHDWalletUseCase,
+	uc7 uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	uc8 *uc_usertx.CreateUserTransactionUseCase,
 ) *FaucetCoinTransferService {
 	return &FaucetCoinTransferService{cfg, logger, kmutex, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8}

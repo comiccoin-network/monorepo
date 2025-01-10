@@ -6,23 +6,25 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-//
-// Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
-//
+type CountTokensByOwnerUseCase interface {
+	Execute(ctx context.Context, owner *common.Address) (int, error)
+}
 
-type CountTokensByOwnerUseCase struct {
+type countTokensByOwnerUseCaseImpl struct {
+	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.TokenRepository
 }
 
-func NewCountTokensByOwnerUseCase(logger *slog.Logger, repo domain.TokenRepository) *CountTokensByOwnerUseCase {
-	return &CountTokensByOwnerUseCase{logger, repo}
+func NewCountTokensByOwnerUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TokenRepository) CountTokensByOwnerUseCase {
+	return &countTokensByOwnerUseCaseImpl{config, logger, repo}
 }
 
-func (uc *CountTokensByOwnerUseCase) Execute(ctx context.Context, owner *common.Address) (int, error) {
+func (uc *countTokensByOwnerUseCaseImpl) Execute(ctx context.Context, owner *common.Address) (int, error) {
 	toks, err := uc.repo.ListByOwner(ctx, owner)
 	if err != nil {
 		return 0, err

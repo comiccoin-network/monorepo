@@ -9,20 +9,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-//
-// Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
-//
+type GetBlockDataDTOFromBlockchainAuthorityUseCase interface {
+	ExecuteByHash(ctx context.Context, hash string) (*domain.BlockDataDTO, error)
+	ExecuteByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockDataDTO, error)
+}
 
-type GetBlockDataDTOFromBlockchainAuthorityUseCase struct {
+type getBlockDataDTOFromBlockchainAuthorityUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.BlockDataDTORepository
 }
 
-func NewGetBlockDataDTOFromBlockchainAuthorityUseCase(logger *slog.Logger, repo domain.BlockDataDTORepository) *GetBlockDataDTOFromBlockchainAuthorityUseCase {
-	return &GetBlockDataDTOFromBlockchainAuthorityUseCase{logger, repo}
+func NewGetBlockDataDTOFromBlockchainAuthorityUseCase(logger *slog.Logger, repo domain.BlockDataDTORepository) GetBlockDataDTOFromBlockchainAuthorityUseCase {
+	return &getBlockDataDTOFromBlockchainAuthorityUseCaseImpl{logger, repo}
 }
 
-func (uc *GetBlockDataDTOFromBlockchainAuthorityUseCase) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockDataDTO, error) {
+func (uc *getBlockDataDTOFromBlockchainAuthorityUseCaseImpl) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockDataDTO, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -44,7 +45,7 @@ func (uc *GetBlockDataDTOFromBlockchainAuthorityUseCase) ExecuteByHash(ctx conte
 	return uc.repo.GetFromBlockchainAuthorityByHash(ctx, hash)
 }
 
-func (uc *GetBlockDataDTOFromBlockchainAuthorityUseCase) ExecuteByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockDataDTO, error) {
+func (uc *getBlockDataDTOFromBlockchainAuthorityUseCaseImpl) ExecuteByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockDataDTO, error) {
 	//
 	// STEP 1: Validation.
 	//

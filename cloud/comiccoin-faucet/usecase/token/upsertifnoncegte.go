@@ -5,16 +5,21 @@ import (
 	"log/slog"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
+	"github.com/ethereum/go-ethereum/common"
 )
 
-//
-// Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
-//
+type UpsertTokenIfPreviousTokenNonceGTEUseCase interface {
+	Execute(
+		ctx context.Context,
+		id *big.Int,
+		owner *common.Address,
+		metadataURI string,
+		nonce *big.Int,
+	) error
+}
 
 // Struct represents the use case of looking up the previous token record and
 // only update the record if the new nonce value is greater then or equal to
@@ -26,17 +31,17 @@ import (
 // transactions have higher nonce values) and therefore ignore the previous
 // transactions. We do this because the `token` database only shows the most
 // recent tokens and their current owners, not the history of ownership.
-type UpsertTokenIfPreviousTokenNonceGTEUseCase struct {
+type upsertTokenIfPreviousTokenNonceGTEUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.TokenRepository
 }
 
-func NewUpsertTokenIfPreviousTokenNonceGTEUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TokenRepository) *UpsertTokenIfPreviousTokenNonceGTEUseCase {
-	return &UpsertTokenIfPreviousTokenNonceGTEUseCase{config, logger, repo}
+func NewUpsertTokenIfPreviousTokenNonceGTEUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TokenRepository) UpsertTokenIfPreviousTokenNonceGTEUseCase {
+	return &upsertTokenIfPreviousTokenNonceGTEUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UpsertTokenIfPreviousTokenNonceGTEUseCase) Execute(
+func (uc *upsertTokenIfPreviousTokenNonceGTEUseCaseImpl) Execute(
 	ctx context.Context,
 	id *big.Int,
 	owner *common.Address,

@@ -11,17 +11,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type CreateWalletUseCase struct {
+type CreateWalletUseCase interface {
+	Execute(ctx context.Context, address *common.Address, keystoreBytes []byte, label string) error
+}
+
+type createWalletUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.WalletRepository
 }
 
-func NewCreateWalletUseCase(config *config.Configuration, logger *slog.Logger, repo domain.WalletRepository) *CreateWalletUseCase {
-	return &CreateWalletUseCase{config, logger, repo}
+func NewCreateWalletUseCase(config *config.Configuration, logger *slog.Logger, repo domain.WalletRepository) CreateWalletUseCase {
+	return &createWalletUseCaseImpl{config, logger, repo}
 }
 
-func (uc *CreateWalletUseCase) Execute(ctx context.Context, address *common.Address, keystoreBytes []byte, label string) error {
+func (uc *createWalletUseCaseImpl) Execute(ctx context.Context, address *common.Address, keystoreBytes []byte, label string) error {
 	//
 	// STEP 1: Validation.
 	//
@@ -40,7 +44,7 @@ func (uc *CreateWalletUseCase) Execute(ctx context.Context, address *common.Addr
 	}
 
 	//
-	// STEP 2: Create our strucutre.
+	// STEP 2: Create our structure.
 	//
 
 	wallet := &domain.Wallet{

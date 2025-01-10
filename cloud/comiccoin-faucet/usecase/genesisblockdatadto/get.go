@@ -8,20 +8,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-//
-// Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
-//
+type GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase interface {
+	Execute(ctx context.Context, chainID uint16) (*domain.GenesisBlockDataDTO, error)
+}
 
-type GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase struct {
+type getGenesisBlockDataDTOFromBlockchainAuthorityUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.GenesisBlockDataDTORepository
 }
 
-func NewGetGenesisBlockDataDTOFromBlockchainAuthorityUseCase(logger *slog.Logger, repo domain.GenesisBlockDataDTORepository) *GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase {
-	return &GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase{logger, repo}
+func NewGetGenesisBlockDataDTOFromBlockchainAuthorityUseCase(logger *slog.Logger, repo domain.GenesisBlockDataDTORepository) GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase {
+	return &getGenesisBlockDataDTOFromBlockchainAuthorityUseCaseImpl{logger, repo}
 }
 
-func (uc *GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase) Execute(ctx context.Context, chainID uint16) (*domain.GenesisBlockDataDTO, error) {
+func (uc *getGenesisBlockDataDTOFromBlockchainAuthorityUseCaseImpl) Execute(ctx context.Context, chainID uint16) (*domain.GenesisBlockDataDTO, error) {
 	//
 	// STEP 1: Validation.
 	//

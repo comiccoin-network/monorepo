@@ -9,16 +9,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type ListAllAddressesWalletUseCase struct {
+type ListAllAddressesWalletUseCase interface {
+	Execute(ctx context.Context) ([]*common.Address, error)
+}
+
+type listAllAddressesWalletUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.WalletRepository
 }
 
-func NewListAllAddressesWalletUseCase(logger *slog.Logger, repo domain.WalletRepository) *ListAllAddressesWalletUseCase {
-	return &ListAllAddressesWalletUseCase{logger, repo}
+func NewListAllAddressesWalletUseCase(logger *slog.Logger, repo domain.WalletRepository) ListAllAddressesWalletUseCase {
+	return &listAllAddressesWalletUseCaseImpl{logger, repo}
 }
 
-func (uc *ListAllAddressesWalletUseCase) Execute(ctx context.Context) ([]*common.Address, error) {
+func (uc *listAllAddressesWalletUseCaseImpl) Execute(ctx context.Context) ([]*common.Address, error) {
 	addresses, err := uc.repo.ListAllAddresses(ctx)
 	if err != nil {
 		uc.logger.Error("Failed listing all by addresses",

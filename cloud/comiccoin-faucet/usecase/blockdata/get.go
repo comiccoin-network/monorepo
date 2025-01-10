@@ -10,21 +10,22 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-//
-// Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
-//
+type GetBlockDataUseCase interface {
+	ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error)
+	ExecuteByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockData, error)
+}
 
-type GetBlockDataUseCase struct {
+type getBlockDataUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.BlockDataRepository
 }
 
-func NewGetBlockDataUseCase(config *config.Configuration, logger *slog.Logger, repo domain.BlockDataRepository) *GetBlockDataUseCase {
-	return &GetBlockDataUseCase{config, logger, repo}
+func NewGetBlockDataUseCase(config *config.Configuration, logger *slog.Logger, repo domain.BlockDataRepository) GetBlockDataUseCase {
+	return &getBlockDataUseCaseImpl{config, logger, repo}
 }
 
-func (uc *GetBlockDataUseCase) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
+func (uc *getBlockDataUseCaseImpl) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -46,7 +47,7 @@ func (uc *GetBlockDataUseCase) ExecuteByHash(ctx context.Context, hash string) (
 	return uc.repo.GetByHash(ctx, hash)
 }
 
-func (uc *GetBlockDataUseCase) ExecuteByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockData, error) {
+func (uc *getBlockDataUseCaseImpl) ExecuteByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockData, error) {
 	//
 	// STEP 1: Validation.
 	//

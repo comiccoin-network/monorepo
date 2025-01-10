@@ -26,18 +26,18 @@ import (
 type BlockchainSyncWithBlockchainAuthorityService struct {
 	config                                               *config.Configuration
 	logger                                               *slog.Logger
-	getGenesisBlockDataUseCase                           *uc_genesisblockdata.GetGenesisBlockDataUseCase
-	upsertGenesisBlockDataUseCase                        *uc_genesisblockdata.UpsertGenesisBlockDataUseCase
-	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
-	getBlockchainStateUseCase                            *uc_blockchainstate.GetBlockchainStateUseCase
-	upsertBlockchainStateUseCase                         *uc_blockchainstate.UpsertBlockchainStateUseCase
-	getBlockchainStateDTOFromBlockchainAuthorityUseCase  *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
-	getBlockDataUseCase                                  *uc_blockdata.GetBlockDataUseCase
-	upsertBlockDataUseCase                               *uc_blockdata.UpsertBlockDataUseCase
-	getBlockDataDTOFromBlockchainAuthorityUseCase        *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase
+	getGenesisBlockDataUseCase                           uc_genesisblockdata.GetGenesisBlockDataUseCase
+	upsertGenesisBlockDataUseCase                        uc_genesisblockdata.UpsertGenesisBlockDataUseCase
+	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
+	getBlockchainStateUseCase                            uc_blockchainstate.GetBlockchainStateUseCase
+	upsertBlockchainStateUseCase                         uc_blockchainstate.UpsertBlockchainStateUseCase
+	getBlockchainStateDTOFromBlockchainAuthorityUseCase  uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
+	getBlockDataUseCase                                  uc_blockdata.GetBlockDataUseCase
+	upsertBlockDataUseCase                               uc_blockdata.UpsertBlockDataUseCase
+	getBlockDataDTOFromBlockchainAuthorityUseCase        uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase
 	getAccountUseCase                                    uc_account.GetAccountUseCase
 	upsertAccountUseCase                                 uc_account.UpsertAccountUseCase
-	upsertTokenIfPreviousTokenNonceGTEUseCase            *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
+	upsertTokenIfPreviousTokenNonceGTEUseCase            uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
 	tenantGetByIDUseCase                                 *uc_tenant.TenantGetByIDUseCase
 	tenantUpdateUseCase                                  *uc_tenant.TenantUpdateUseCase
 	userTransactionGetUseCase                            *uc_usertx.UserTransactionGetUseCase
@@ -47,18 +47,18 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 func NewBlockchainSyncWithBlockchainAuthorityService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc1 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
-	uc2 *uc_genesisblockdata.UpsertGenesisBlockDataUseCase,
-	uc3 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
-	uc4 *uc_blockchainstate.GetBlockchainStateUseCase,
-	uc5 *uc_blockchainstate.UpsertBlockchainStateUseCase,
-	uc6 *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
-	uc7 *uc_blockdata.GetBlockDataUseCase,
-	uc8 *uc_blockdata.UpsertBlockDataUseCase,
-	uc9 *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc1 uc_genesisblockdata.GetGenesisBlockDataUseCase,
+	uc2 uc_genesisblockdata.UpsertGenesisBlockDataUseCase,
+	uc3 uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc4 uc_blockchainstate.GetBlockchainStateUseCase,
+	uc5 uc_blockchainstate.UpsertBlockchainStateUseCase,
+	uc6 uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
+	uc7 uc_blockdata.GetBlockDataUseCase,
+	uc8 uc_blockdata.UpsertBlockDataUseCase,
+	uc9 uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
 	uc10 uc_account.GetAccountUseCase,
 	uc11 uc_account.UpsertAccountUseCase,
-	uc12 *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
+	uc12 uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
 	uc13 *uc_tenant.TenantGetByIDUseCase,
 	uc14 *uc_tenant.TenantUpdateUseCase,
 	uc15 *uc_usertx.UserTransactionGetUseCase,

@@ -8,11 +8,15 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
+type SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase interface {
+	Execute(ctx context.Context, chainID uint16) (<-chan string, error)
+}
+
 //
 // Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
 //
 
-type SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase struct {
+type subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.BlockchainStateServerSentEventsDTORepository
 }
@@ -20,11 +24,11 @@ type SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase st
 func NewSubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase(
 	logger *slog.Logger,
 	repo domain.BlockchainStateServerSentEventsDTORepository,
-) *SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase {
-	return &SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase{logger, repo}
+) SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase {
+	return &subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCaseImpl{logger, repo}
 }
 
-func (uc *SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase) Execute(ctx context.Context, chainID uint16) (<-chan string, error) {
+func (uc *subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCaseImpl) Execute(ctx context.Context, chainID uint16) (<-chan string, error) {
 	//
 	// STEP 1: Validation.
 	//

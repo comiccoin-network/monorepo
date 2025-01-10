@@ -9,21 +9,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-//
-// Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
-//
+type UpsertBlockDataUseCase interface {
+	Execute(ctx context.Context, hash string, header *domain.BlockHeader, headerSignature []byte, trans []domain.BlockTransaction, validator *domain.Validator) error
+}
 
-type UpsertBlockDataUseCase struct {
+type upsertBlockDataUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.BlockDataRepository
 }
 
-func NewUpsertBlockDataUseCase(config *config.Configuration, logger *slog.Logger, repo domain.BlockDataRepository) *UpsertBlockDataUseCase {
-	return &UpsertBlockDataUseCase{config, logger, repo}
+func NewUpsertBlockDataUseCase(config *config.Configuration, logger *slog.Logger, repo domain.BlockDataRepository) UpsertBlockDataUseCase {
+	return &upsertBlockDataUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UpsertBlockDataUseCase) Execute(ctx context.Context, hash string, header *domain.BlockHeader, headerSignature []byte, trans []domain.BlockTransaction, validator *domain.Validator) error {
+func (uc *upsertBlockDataUseCaseImpl) Execute(ctx context.Context, hash string, header *domain.BlockHeader, headerSignature []byte, trans []domain.BlockTransaction, validator *domain.Validator) error {
 	//
 	// STEP 1: Validation.
 	// Note: `headerSignature` is optional since PoW algorithm does not require it

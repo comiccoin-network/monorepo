@@ -20,8 +20,8 @@ type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
 	logger                                                                   *slog.Logger
 	dbClient                                                                 *mongo.Client
 	blockchainSyncWithBlockchainAuthorityService                             *BlockchainSyncWithBlockchainAuthorityService
-	getBlockchainStateUseCase                                                *uc_blockchainstate.GetBlockchainStateUseCase
-	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase *uc_blockchainstatesse.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase
+	getBlockchainStateUseCase                                                uc_blockchainstate.GetBlockchainStateUseCase
+	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase uc_blockchainstatesse.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase
 }
 
 func NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
@@ -29,8 +29,8 @@ func NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
 	s1 *BlockchainSyncWithBlockchainAuthorityService,
-	uc1 *uc_blockchainstate.GetBlockchainStateUseCase,
-	uc2 *uc_blockchainstatesse.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
+	uc1 uc_blockchainstate.GetBlockchainStateUseCase,
+	uc2 uc_blockchainstatesse.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService {
 	return &BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService{cfg, logger, dbClient, s1, uc1, uc2}
 }

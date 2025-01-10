@@ -10,17 +10,21 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type GetWalletUseCase struct {
+type GetWalletUseCase interface {
+	Execute(ctx context.Context, address *common.Address) (*domain.Wallet, error)
+}
+
+type getWalletUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.WalletRepository
 }
 
-func NewGetWalletUseCase(config *config.Configuration, logger *slog.Logger, repo domain.WalletRepository) *GetWalletUseCase {
-	return &GetWalletUseCase{config, logger, repo}
+func NewGetWalletUseCase(config *config.Configuration, logger *slog.Logger, repo domain.WalletRepository) GetWalletUseCase {
+	return &getWalletUseCaseImpl{config, logger, repo}
 }
 
-func (uc *GetWalletUseCase) Execute(ctx context.Context, address *common.Address) (*domain.Wallet, error) {
+func (uc *getWalletUseCaseImpl) Execute(ctx context.Context, address *common.Address) (*domain.Wallet, error) {
 	//
 	// STEP 1: Validation.
 	//
