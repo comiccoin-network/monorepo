@@ -37,7 +37,7 @@ func (a *App) CreateWallet(walletMnemonic, walletPassword, walletLabel string) (
 	// Developers Note: Use the same as what ethereum uses.
 	walletPath := "m/44'/60'/0'/0/0"
 
-	account, err := a.createAccountService.Execute(a.ctx, mnemonic, walletPath, pass, walletLabel)
+	account, err := a.createAccountService.Execute(a.ctx, PreferencesInstance().ChainID, mnemonic, walletPath, pass, walletLabel)
 	if err != nil {
 		a.logger.Error("failed creating wallet", slog.Any("error", err))
 		return "", err

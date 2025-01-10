@@ -20,7 +20,7 @@ func NewCreateAccountUseCase(logger *slog.Logger, repo domain.AccountRepository)
 	return &CreateAccountUseCase{logger, repo}
 }
 
-func (uc *CreateAccountUseCase) Execute(ctx context.Context, address *common.Address) error {
+func (uc *CreateAccountUseCase) Execute(ctx context.Context, chainID uint16, address *common.Address) error {
 	//
 	// STEP 1: Validation.
 	//
@@ -40,6 +40,7 @@ func (uc *CreateAccountUseCase) Execute(ctx context.Context, address *common.Add
 	//
 
 	account := &domain.Account{
+		ChainID:    chainID,
 		Address:    address,
 		NonceBytes: big.NewInt(0).Bytes(),
 		Balance:    0,

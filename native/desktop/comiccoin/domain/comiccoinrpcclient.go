@@ -23,6 +23,7 @@ type ComicCoincRPCClientRepository interface {
 
 	CreateAccount(
 		ctx context.Context,
+		chainID uint16,
 		accountWalletMnemonic *sstring.SecureString,
 		accountWalletPath string,
 		accountWalletPassword *sstring.SecureString,

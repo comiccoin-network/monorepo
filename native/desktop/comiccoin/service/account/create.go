@@ -37,7 +37,7 @@ func NewCreateAccountService(
 	return &CreateAccountService{logger, uc1, uc2, uc3, uc4, uc5, uc6}
 }
 
-func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstring.SecureString, walletPath string, walletPassword *sstring.SecureString, walletLabel string) (*domain.Account, error) {
+func (s *CreateAccountService) Execute(ctx context.Context, chainID uint16, walletMnemonic *sstring.SecureString, walletPath string, walletPassword *sstring.SecureString, walletLabel string) (*domain.Account, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -146,7 +146,7 @@ func (s *CreateAccountService) Execute(ctx context.Context, walletMnemonic *sstr
 	// STEP 4: Create the account.
 	//
 
-	if err := s.createAccountUseCase.Execute(ctx, &ethAccount.Address); err != nil {
+	if err := s.createAccountUseCase.Execute(ctx, chainID, &ethAccount.Address); err != nil {
 		s.logger.Error("failed saving to database",
 			slog.Any("error", err))
 		return nil, fmt.Errorf("failed saving account to database: %s", err)

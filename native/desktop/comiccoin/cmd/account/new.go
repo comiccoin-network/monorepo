@@ -15,6 +15,7 @@ import (
 
 var (
 	flagDataDirectory string
+	flagChainID       uint16
 	flagLabel         string
 	flagMnemonic      string
 	flagPath          string
@@ -33,6 +34,8 @@ func NewAccountCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&flagDataDirectory, "data-directory", preferences.DataDirectory, "The data directory to save to")
+	cmd.Flags().Uint16Var(&flagChainID, "chain-id", preferences.ChainID, "The ChainID to use")
+	cmd.MarkFlagRequired("chain-id")
 	cmd.Flags().StringVar(&flagMnemonic, "wallet-mnemonic", "", "The mnemonic phrase to derive the wallet with")
 	cmd.MarkFlagRequired("wallet-mnemonic")
 	cmd.Flags().StringVar(&flagPath, "wallet-path", "", "The path to use when deriving the wallet from the mnemonic phrase")
@@ -50,6 +53,7 @@ func doRunNewAccountCmd() error {
 
 	// logger := logger.NewProvider()
 	logger.Debug("Creating new account...",
+		slog.Any("chain_id", flagChainID),
 		slog.Any("wallet_mnemonic", flagMnemonic),
 		slog.Any("wallet_path", flagPath),
 		slog.Any("wallet_label", flagLabel),
@@ -73,6 +77,7 @@ func doRunNewAccountCmd() error {
 		log.Fatalf("Failed creating account: %v\n", err)
 	}
 	logger.Info("Account created",
+		slog.Any("chain-id", flagChainID),
 		slog.Any("nonce", account.GetNonce()),
 		slog.Uint64("balance", account.Balance),
 		slog.String("address", strings.ToLower(account.Address.Hex())),

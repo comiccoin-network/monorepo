@@ -9,6 +9,7 @@ import (
 )
 
 type CreateAccountArgs struct {
+	ChainID        uint16
 	WalletMnemonic string
 	WalletPath     string
 	WalletPassword string
@@ -28,7 +29,7 @@ func (impl *ComicCoinRPCServer) CreateAccount(args *CreateAccountArgs, reply *Cr
 	if err != nil {
 		return err
 	}
-	account, err := impl.createAccountService.Execute(context.Background(), mnem, args.WalletPath, pass, args.WalletLabel)
+	account, err := impl.createAccountService.Execute(context.Background(), args.ChainID, mnem, args.WalletPath, pass, args.WalletLabel)
 	if err != nil {
 		return err
 	}
