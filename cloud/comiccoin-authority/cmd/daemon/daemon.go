@@ -29,7 +29,7 @@ import (
 	sv_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockdata"
 	sv_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blocktx"
 	sv_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
-	s_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
+	sv_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
 	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
 	s_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/signedtx"
 	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
@@ -265,7 +265,7 @@ func doRunDaemon() {
 	)
 
 	// MempoolTransaction
-	mempoolTransactionReceiveDTOFromNetworkService := s_mempooltx.NewMempoolTransactionReceiveDTOFromNetworkService(
+	mempoolTransactionReceiveDTOFromNetworkService := sv_mempooltx.NewMempoolTransactionReceiveDTOFromNetworkService(
 		cfg,
 		logger,
 		mempoolTransactionCreateUseCase,

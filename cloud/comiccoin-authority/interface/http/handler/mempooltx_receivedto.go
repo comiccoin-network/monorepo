@@ -7,17 +7,17 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
-	s_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
+	sv_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
 )
 
 type MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler struct {
 	logger  *slog.Logger
-	service *s_mempooltx.MempoolTransactionReceiveDTOFromNetworkService
+	service sv_mempooltx.MempoolTransactionReceiveDTOFromNetworkService
 }
 
 func NewMempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler(
 	logger *slog.Logger,
-	s *s_mempooltx.MempoolTransactionReceiveDTOFromNetworkService,
+	s sv_mempooltx.MempoolTransactionReceiveDTOFromNetworkService,
 ) *MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler {
 	return &MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler{logger, s}
 }

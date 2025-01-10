@@ -10,7 +10,11 @@ import (
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
 )
 
-type MempoolTransactionReceiveDTOFromNetworkService struct {
+type MempoolTransactionReceiveDTOFromNetworkService interface {
+	Execute(ctx context.Context, dto *domain.MempoolTransactionDTO) error
+}
+
+type mempoolTransactionReceiveDTOFromNetworkServiceImpl struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	mempoolTransactionCreateUseCase uc_mempooltx.MempoolTransactionCreateUseCase
@@ -20,11 +24,11 @@ func NewMempoolTransactionReceiveDTOFromNetworkService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc uc_mempooltx.MempoolTransactionCreateUseCase,
-) *MempoolTransactionReceiveDTOFromNetworkService {
-	return &MempoolTransactionReceiveDTOFromNetworkService{cfg, logger, uc}
+) MempoolTransactionReceiveDTOFromNetworkService {
+	return &mempoolTransactionReceiveDTOFromNetworkServiceImpl{cfg, logger, uc}
 }
 
-func (s *MempoolTransactionReceiveDTOFromNetworkService) Execute(ctx context.Context, dto *domain.MempoolTransactionDTO) error {
+func (s *mempoolTransactionReceiveDTOFromNetworkServiceImpl) Execute(ctx context.Context, dto *domain.MempoolTransactionDTO) error {
 	//
 	// STEP 1: Validation.
 	//
