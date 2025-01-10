@@ -8,16 +8,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type UpsertGenesisBlockDataUseCase struct {
+type UpsertGenesisBlockDataUseCase interface {
+	Execute(ctx context.Context, hash string, header *domain.BlockHeader, headerSignature []byte, trans []domain.BlockTransaction, validator *domain.Validator) error
+}
+
+type upsertGenesisBlockDataUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.GenesisBlockDataRepository
 }
 
-func NewUpsertGenesisBlockDataUseCase(logger *slog.Logger, repo domain.GenesisBlockDataRepository) *UpsertGenesisBlockDataUseCase {
-	return &UpsertGenesisBlockDataUseCase{logger, repo}
+func NewUpsertGenesisBlockDataUseCase(logger *slog.Logger, repo domain.GenesisBlockDataRepository) UpsertGenesisBlockDataUseCase {
+	return &upsertGenesisBlockDataUseCaseImpl{logger, repo}
 }
 
-func (uc *UpsertGenesisBlockDataUseCase) Execute(ctx context.Context, hash string, header *domain.BlockHeader, headerSignature []byte, trans []domain.BlockTransaction, validator *domain.Validator) error {
+func (uc *upsertGenesisBlockDataUseCaseImpl) Execute(ctx context.Context, hash string, header *domain.BlockHeader, headerSignature []byte, trans []domain.BlockTransaction, validator *domain.Validator) error {
 	//
 	// STEP 1: Validation.
 	// Note: `headerSignature` is optional since PoW algorithm does not require it
