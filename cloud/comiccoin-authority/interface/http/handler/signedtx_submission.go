@@ -10,17 +10,17 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
-	s_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/signedtx"
+	sv_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/signedtx"
 )
 
 type SignedTransactionSubmissionHTTPHandler struct {
 	logger  *slog.Logger
-	service *s_signedtx.SignedTransactionSubmissionService
+	service sv_signedtx.SignedTransactionSubmissionService
 }
 
 func NewSignedTransactionSubmissionHTTPHandler(
 	logger *slog.Logger,
-	transferCoinsService *s_signedtx.SignedTransactionSubmissionService,
+	transferCoinsService sv_signedtx.SignedTransactionSubmissionService,
 ) *SignedTransactionSubmissionHTTPHandler {
 	return &SignedTransactionSubmissionHTTPHandler{logger, transferCoinsService}
 }

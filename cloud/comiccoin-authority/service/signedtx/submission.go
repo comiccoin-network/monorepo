@@ -7,7 +7,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 )
 
-type SignedTransactionSubmissionService struct {
+type SignedTransactionSubmissionService interface {
+	Execute(ctx context.Context) error
+}
+
+type signedTransactionSubmissionServiceImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 }
@@ -15,11 +19,11 @@ type SignedTransactionSubmissionService struct {
 func NewSignedTransactionSubmissionService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-) *SignedTransactionSubmissionService {
-	return &SignedTransactionSubmissionService{cfg, logger}
+) SignedTransactionSubmissionService {
+	return &signedTransactionSubmissionServiceImpl{cfg, logger}
 }
 
-func (s *SignedTransactionSubmissionService) Execute(
+func (s *signedTransactionSubmissionServiceImpl) Execute(
 	ctx context.Context,
 ) error {
 	return nil

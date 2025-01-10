@@ -31,7 +31,7 @@ import (
 	sv_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
 	sv_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
 	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
-	s_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/signedtx"
+	sv_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/signedtx"
 	s_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
@@ -259,7 +259,7 @@ func doRunDaemon() {
 	)
 
 	// Coins
-	signedTransactionSubmissionService := s_signedtx.NewSignedTransactionSubmissionService(
+	signedTransactionSubmissionService := sv_signedtx.NewSignedTransactionSubmissionService(
 		cfg,
 		logger,
 	)
