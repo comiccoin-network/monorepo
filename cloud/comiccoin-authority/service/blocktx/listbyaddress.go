@@ -11,7 +11,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type ListBlockTransactionsByAddressService struct {
+type ListBlockTransactionsByAddressService interface {
+	Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error)
+}
+
+type listBlockTransactionsByAddressServiceImpl struct {
 	config                                *config.Configuration
 	logger                                *slog.Logger
 	listBlockTransactionsByAddressUseCase uc_blocktx.ListBlockTransactionsByAddressUseCase
@@ -21,11 +25,11 @@ func NewListBlockTransactionsByAddressService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc uc_blocktx.ListBlockTransactionsByAddressUseCase,
-) *ListBlockTransactionsByAddressService {
-	return &ListBlockTransactionsByAddressService{cfg, logger, uc}
+) ListBlockTransactionsByAddressService {
+	return &listBlockTransactionsByAddressServiceImpl{cfg, logger, uc}
 }
 
-func (s *ListBlockTransactionsByAddressService) Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error) {
+func (s *listBlockTransactionsByAddressServiceImpl) Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error) {
 	data, err := s.listBlockTransactionsByAddressUseCase.Execute(ctx, address)
 	if err != nil {
 		s.logger.Error("Failed listing block transactions by address",

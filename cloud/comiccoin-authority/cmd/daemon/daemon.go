@@ -27,7 +27,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	sv_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockchainstate"
 	sv_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockdata"
-	s_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blocktx"
+	sv_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blocktx"
 	s_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
 	s_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
 	s_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
@@ -252,7 +252,7 @@ func doRunDaemon() {
 	)
 
 	// Block Transaction
-	listBlockTransactionsByAddressService := s_blocktx.NewListBlockTransactionsByAddressService(
+	listBlockTransactionsByAddressService := sv_blocktx.NewListBlockTransactionsByAddressService(
 		cfg,
 		logger,
 		listBlockTransactionsByAddressUseCase,

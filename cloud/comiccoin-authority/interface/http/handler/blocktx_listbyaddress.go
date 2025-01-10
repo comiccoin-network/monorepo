@@ -9,17 +9,17 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
-	s_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blocktx"
+	sv_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blocktx"
 )
 
 type ListBlockTransactionsByAddressHTTPHandler struct {
 	logger  *slog.Logger
-	service *s_blocktx.ListBlockTransactionsByAddressService
+	service sv_blocktx.ListBlockTransactionsByAddressService
 }
 
 func NewListBlockTransactionsByAddressHTTPHandler(
 	logger *slog.Logger,
-	s1 *s_blocktx.ListBlockTransactionsByAddressService,
+	s1 sv_blocktx.ListBlockTransactionsByAddressService,
 ) *ListBlockTransactionsByAddressHTTPHandler {
 	return &ListBlockTransactionsByAddressHTTPHandler{logger, s1}
 }
