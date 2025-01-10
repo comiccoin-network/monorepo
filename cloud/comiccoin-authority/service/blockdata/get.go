@@ -12,7 +12,12 @@ import (
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
 )
 
-type GetBlockDataService struct {
+type GetBlockDataService interface {
+	ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error)
+	ExecuteByHeaderNumber(ctx context.Context, blockHeader *big.Int) (*domain.BlockData, error)
+}
+
+type getBlockDataServiceImpl struct {
 	config              *config.Configuration
 	logger              *slog.Logger
 	GetBlockDataUseCase uc_blockdata.GetBlockDataUseCase
@@ -22,11 +27,11 @@ func NewGetBlockDataService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc uc_blockdata.GetBlockDataUseCase,
-) *GetBlockDataService {
-	return &GetBlockDataService{cfg, logger, uc}
+) GetBlockDataService {
+	return &getBlockDataServiceImpl{cfg, logger, uc}
 }
 
-func (s *GetBlockDataService) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
+func (s *getBlockDataServiceImpl) ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error) {
 	data, err := s.GetBlockDataUseCase.ExecuteByHash(ctx, hash)
 	if err != nil {
 		s.logger.Error("Failed getting block data", slog.Any("error", err))
@@ -40,7 +45,7 @@ func (s *GetBlockDataService) ExecuteByHash(ctx context.Context, hash string) (*
 	return data, nil
 }
 
-func (s *GetBlockDataService) ExecuteByHeaderNumber(ctx context.Context, blockHeader *big.Int) (*domain.BlockData, error) {
+func (s *getBlockDataServiceImpl) ExecuteByHeaderNumber(ctx context.Context, blockHeader *big.Int) (*domain.BlockData, error) {
 	data, err := s.GetBlockDataUseCase.ExecuteByHeaderNumber(ctx, blockHeader)
 	if err != nil {
 		s.logger.Error("Failed getting block data", slog.Any("error", err))

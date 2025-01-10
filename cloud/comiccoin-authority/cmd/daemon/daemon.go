@@ -26,7 +26,7 @@ import (
 	taskhandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/interface/task/handler"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/repo"
 	sv_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockchainstate"
-	s_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockdata"
+	sv_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blockdata"
 	s_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/blocktx"
 	s_genesis "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/genesis"
 	s_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/mempooltx"
@@ -245,7 +245,7 @@ func doRunDaemon() {
 	)
 
 	// Block Data
-	getBlockDataService := s_blockdata.NewGetBlockDataService(
+	getBlockDataService := sv_blockdata.NewGetBlockDataService(
 		cfg,
 		logger,
 		getBlockDataUseCase,
