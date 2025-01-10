@@ -26,8 +26,8 @@ import (
 
 type BlockchainSyncWithBlockchainAuthorityService struct {
 	logger                                               *slog.Logger
-	getBlockchainSyncStatusUseCase                       *uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase
-	setBlockchainSyncStatusUseCase                       *uc_blockchainsyncstatus.SetBlockchainSyncStatusUseCase
+	getBlockchainSyncStatusUseCase                       uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase
+	setBlockchainSyncStatusUseCase                       uc_blockchainsyncstatus.SetBlockchainSyncStatusUseCase
 	getGenesisBlockDataUseCase                           *uc_genesisblockdata.GetGenesisBlockDataUseCase
 	upsertGenesisBlockDataUseCase                        *uc_genesisblockdata.UpsertGenesisBlockDataUseCase
 	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
@@ -45,8 +45,8 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 
 func NewBlockchainSyncWithBlockchainAuthorityService(
 	logger *slog.Logger,
-	uc1 *uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase,
-	uc2 *uc_blockchainsyncstatus.SetBlockchainSyncStatusUseCase,
+	uc1 uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase,
+	uc2 uc_blockchainsyncstatus.SetBlockchainSyncStatusUseCase,
 	uc3 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
 	uc4 *uc_genesisblockdata.UpsertGenesisBlockDataUseCase,
 	uc5 uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,

@@ -11,12 +11,12 @@ import (
 
 type GetBlockchainSyncStatusService struct {
 	logger                         *slog.Logger
-	getBlockchainSyncStatusUseCase *uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase
+	getBlockchainSyncStatusUseCase uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase
 }
 
 func NewGetBlockchainSyncStatusService(
 	logger *slog.Logger,
-	uc1 *uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase,
+	uc1 uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase,
 ) *GetBlockchainSyncStatusService {
 	return &GetBlockchainSyncStatusService{logger, uc1}
 }

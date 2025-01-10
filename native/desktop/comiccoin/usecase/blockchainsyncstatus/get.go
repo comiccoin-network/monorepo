@@ -7,15 +7,19 @@ import (
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
-type GetBlockchainSyncStatusUseCase struct {
+type GetBlockchainSyncStatusUseCase interface {
+	Execute(ctx context.Context) (*domain.BlockchainSyncStatus, error)
+}
+
+type getBlockchainSyncStatusUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.BlockchainSyncStatusRepository
 }
 
-func NewGetBlockchainSyncStatusUseCase(logger *slog.Logger, repo domain.BlockchainSyncStatusRepository) *GetBlockchainSyncStatusUseCase {
-	return &GetBlockchainSyncStatusUseCase{logger, repo}
+func NewGetBlockchainSyncStatusUseCase(logger *slog.Logger, repo domain.BlockchainSyncStatusRepository) GetBlockchainSyncStatusUseCase {
+	return &getBlockchainSyncStatusUseCaseImpl{logger, repo}
 }
 
-func (uc *GetBlockchainSyncStatusUseCase) Execute(ctx context.Context) (*domain.BlockchainSyncStatus, error) {
+func (uc *getBlockchainSyncStatusUseCaseImpl) Execute(ctx context.Context) (*domain.BlockchainSyncStatus, error) {
 	return uc.repo.Get(ctx)
 }
