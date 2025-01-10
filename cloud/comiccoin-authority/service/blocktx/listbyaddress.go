@@ -14,13 +14,13 @@ import (
 type ListBlockTransactionsByAddressService struct {
 	config                                *config.Configuration
 	logger                                *slog.Logger
-	listBlockTransactionsByAddressUseCase *uc_blocktx.ListBlockTransactionsByAddressUseCase
+	listBlockTransactionsByAddressUseCase uc_blocktx.ListBlockTransactionsByAddressUseCase
 }
 
 func NewListBlockTransactionsByAddressService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *uc_blocktx.ListBlockTransactionsByAddressUseCase,
+	uc uc_blocktx.ListBlockTransactionsByAddressUseCase,
 ) *ListBlockTransactionsByAddressService {
 	return &ListBlockTransactionsByAddressService{cfg, logger, uc}
 }
