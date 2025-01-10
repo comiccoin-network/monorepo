@@ -11,7 +11,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 )
 
-type MnemonicFromEncryptedWalletUseCase struct {
+type MnemonicFromEncryptedWalletUseCase interface {
+	Execute(ctx context.Context, encryptedWalletBytes []byte, password *sstring.SecureString) (*sstring.SecureString, string, error)
+}
+
+type mnemonicFromEncryptedWalletUseCaseImpl struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	keystore hdkeystore.KeystoreAdapter
@@ -21,11 +25,11 @@ func NewMnemonicFromEncryptedWalletUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	keystore hdkeystore.KeystoreAdapter,
-) *MnemonicFromEncryptedWalletUseCase {
-	return &MnemonicFromEncryptedWalletUseCase{config, logger, keystore}
+) MnemonicFromEncryptedWalletUseCase {
+	return &mnemonicFromEncryptedWalletUseCaseImpl{config, logger, keystore}
 }
 
-func (uc *MnemonicFromEncryptedWalletUseCase) Execute(ctx context.Context, encryptedWalletBytes []byte, password *sstring.SecureString) (*sstring.SecureString, string, error) {
+func (uc *mnemonicFromEncryptedWalletUseCaseImpl) Execute(ctx context.Context, encryptedWalletBytes []byte, password *sstring.SecureString) (*sstring.SecureString, string, error) {
 	//
 	// STEP 1: Validation.
 	//

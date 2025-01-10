@@ -14,7 +14,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 )
 
-type OpenHDWalletFromMnemonicUseCase struct {
+type OpenHDWalletFromMnemonicUseCase interface {
+	Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error)
+}
+
+type openHDWalletFromMnemonicUseCaseImpl struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	keystore hdkeystore.KeystoreAdapter
@@ -24,11 +28,11 @@ func NewOpenHDWalletFromMnemonicUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	keystore hdkeystore.KeystoreAdapter,
-) *OpenHDWalletFromMnemonicUseCase {
-	return &OpenHDWalletFromMnemonicUseCase{config, logger, keystore}
+) OpenHDWalletFromMnemonicUseCase {
+	return &openHDWalletFromMnemonicUseCaseImpl{config, logger, keystore}
 }
 
-func (uc *OpenHDWalletFromMnemonicUseCase) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
+func (uc *openHDWalletFromMnemonicUseCaseImpl) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
 	//
 	// STEP 1: Validation.
 	//

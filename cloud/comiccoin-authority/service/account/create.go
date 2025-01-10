@@ -18,9 +18,9 @@ import (
 type CreateAccountService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
-	openHDWalletFromMnemonicUseCase *uc_walletutil.OpenHDWalletFromMnemonicUseCase
-	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
-	createWalletUseCase             *uc_wallet.CreateWalletUseCase
+	openHDWalletFromMnemonicUseCase uc_walletutil.OpenHDWalletFromMnemonicUseCase
+	privateKeyFromHDWalletUseCase   uc_walletutil.PrivateKeyFromHDWalletUseCase
+	createWalletUseCase             uc_wallet.CreateWalletUseCase
 	createAccountUseCase            uc_account.CreateAccountUseCase
 	getAccountUseCase               uc_account.GetAccountUseCase
 }
@@ -28,9 +28,9 @@ type CreateAccountService struct {
 func NewCreateAccountService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc1 *uc_walletutil.OpenHDWalletFromMnemonicUseCase,
-	uc2 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
-	uc3 *uc_wallet.CreateWalletUseCase,
+	uc1 uc_walletutil.OpenHDWalletFromMnemonicUseCase,
+	uc2 uc_walletutil.PrivateKeyFromHDWalletUseCase,
+	uc3 uc_wallet.CreateWalletUseCase,
 	uc4 uc_account.CreateAccountUseCase,
 	uc5 uc_account.GetAccountUseCase,
 ) *CreateAccountService {

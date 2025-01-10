@@ -14,13 +14,13 @@ import (
 type GetProofOfAuthorityPrivateKeyService struct {
 	config                        *config.Configuration
 	logger                        *slog.Logger
-	privateKeyFromHDWalletUseCase *uc_walletutil.PrivateKeyFromHDWalletUseCase
+	privateKeyFromHDWalletUseCase uc_walletutil.PrivateKeyFromHDWalletUseCase
 }
 
 func NewGetProofOfAuthorityPrivateKeyService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc1 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
+	uc1 uc_walletutil.PrivateKeyFromHDWalletUseCase,
 ) *GetProofOfAuthorityPrivateKeyService {
 	return &GetProofOfAuthorityPrivateKeyService{cfg, logger, uc1}
 }

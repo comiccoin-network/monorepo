@@ -11,13 +11,13 @@ import (
 
 type AccountListingByLocalWalletsService struct {
 	logger                           *slog.Logger
-	listAllAddressesWalletUseCase    *uc_wallet.ListAllAddressesWalletUseCase
+	listAllAddressesWalletUseCase    uc_wallet.ListAllAddressesWalletUseCase
 	accountsFilterByAddressesUseCase uc_account.AccountsFilterByAddressesUseCase
 }
 
 func NewAccountListingByLocalWalletsService(
 	logger *slog.Logger,
-	uc1 *uc_wallet.ListAllAddressesWalletUseCase,
+	uc1 uc_wallet.ListAllAddressesWalletUseCase,
 	uc2 uc_account.AccountsFilterByAddressesUseCase,
 ) *AccountListingByLocalWalletsService {
 	return &AccountListingByLocalWalletsService{logger, uc1, uc2}

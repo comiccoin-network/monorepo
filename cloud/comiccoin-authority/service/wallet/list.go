@@ -12,13 +12,13 @@ import (
 type WalletListService struct {
 	config               *config.Configuration
 	logger               *slog.Logger
-	listAllWalletUseCase *uc_wallet.ListAllWalletUseCase
+	listAllWalletUseCase uc_wallet.ListAllWalletUseCase
 }
 
 func NewWalletListService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *uc_wallet.ListAllWalletUseCase,
+	uc uc_wallet.ListAllWalletUseCase,
 ) *WalletListService {
 	return &WalletListService{cfg, logger, uc}
 }

@@ -15,7 +15,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type WalletDecryptKeyUseCase struct {
+type WalletDecryptKeyUseCase interface {
+	Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error)
+}
+
+type walletDecryptKeyUseCaseImpl struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	keystore hdkeystore.KeystoreAdapter
@@ -27,11 +31,11 @@ func NewWalletDecryptKeyUseCase(
 	logger *slog.Logger,
 	keystore hdkeystore.KeystoreAdapter,
 	repo domain.WalletRepository,
-) *WalletDecryptKeyUseCase {
-	return &WalletDecryptKeyUseCase{config, logger, keystore, repo}
+) WalletDecryptKeyUseCase {
+	return &walletDecryptKeyUseCaseImpl{config, logger, keystore, repo}
 }
 
-func (uc *WalletDecryptKeyUseCase) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
+func (uc *walletDecryptKeyUseCaseImpl) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
 	//
 	// STEP 1: Validation.
 	//

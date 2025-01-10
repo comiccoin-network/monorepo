@@ -29,7 +29,7 @@ type TokenTransferService struct {
 	logger                          *slog.Logger
 	kmutex                          kmutexutil.KMutexProvider
 	dbClient                        *mongo.Client
-	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
+	privateKeyFromHDWalletUseCase   uc_walletutil.PrivateKeyFromHDWalletUseCase
 	getBlockchainStateUseCase       uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase    uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockDataUseCase             uc_blockdata.GetBlockDataUseCase
@@ -42,7 +42,7 @@ func NewTokenTransferService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
 	client *mongo.Client,
-	uc1 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
+	uc1 uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc2 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc3 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc4 uc_blockdata.GetBlockDataUseCase,

@@ -12,7 +12,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 )
 
-type PrivateKeyFromHDWalletUseCase struct {
+type PrivateKeyFromHDWalletUseCase interface {
+	Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*ecdsa.PrivateKey, error)
+}
+
+type privateKeyFromHDWalletUseCaseImpl struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	keystore hdkeystore.KeystoreAdapter
@@ -22,11 +26,11 @@ func NewPrivateKeyFromHDWalletUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	keystore hdkeystore.KeystoreAdapter,
-) *PrivateKeyFromHDWalletUseCase {
-	return &PrivateKeyFromHDWalletUseCase{config, logger, keystore}
+) PrivateKeyFromHDWalletUseCase {
+	return &privateKeyFromHDWalletUseCaseImpl{config, logger, keystore}
 }
 
-func (uc *PrivateKeyFromHDWalletUseCase) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*ecdsa.PrivateKey, error) {
+func (uc *privateKeyFromHDWalletUseCaseImpl) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*ecdsa.PrivateKey, error) {
 	//
 	// STEP 1: Validation.
 	//
