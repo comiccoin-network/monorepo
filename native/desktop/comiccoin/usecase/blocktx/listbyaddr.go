@@ -9,16 +9,20 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type ListBlockTransactionsByAddressUseCase struct {
+type ListBlockTransactionsByAddressUseCase interface {
+	Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error)
+}
+
+type listBlockTransactionsByAddressUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.BlockDataRepository
 }
 
-func NewListBlockTransactionsByAddressUseCase(logger *slog.Logger, repo domain.BlockDataRepository) *ListBlockTransactionsByAddressUseCase {
-	return &ListBlockTransactionsByAddressUseCase{logger, repo}
+func NewListBlockTransactionsByAddressUseCase(logger *slog.Logger, repo domain.BlockDataRepository) ListBlockTransactionsByAddressUseCase {
+	return &listBlockTransactionsByAddressUseCaseImpl{logger, repo}
 }
 
-func (uc *ListBlockTransactionsByAddressUseCase) Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error) {
+func (uc *listBlockTransactionsByAddressUseCaseImpl) Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error) {
 	//
 	// STEP 1: Validation.
 	//

@@ -14,12 +14,12 @@ import (
 
 type ListWithLimitBlockTransactionsByAddressService struct {
 	logger                                         *slog.Logger
-	listWithLimitBlockTransactionsByAddressUseCase *uc_blocktx.ListWithLimitBlockTransactionsByAddressUseCase
+	listWithLimitBlockTransactionsByAddressUseCase uc_blocktx.ListWithLimitBlockTransactionsByAddressUseCase
 }
 
 func NewListWithLimitBlockTransactionsByAddressService(
 	logger *slog.Logger,
-	uc1 *uc_blocktx.ListWithLimitBlockTransactionsByAddressUseCase,
+	uc1 uc_blocktx.ListWithLimitBlockTransactionsByAddressUseCase,
 ) *ListWithLimitBlockTransactionsByAddressService {
 	return &ListWithLimitBlockTransactionsByAddressService{logger, uc1}
 }
