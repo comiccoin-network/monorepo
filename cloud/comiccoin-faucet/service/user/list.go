@@ -13,13 +13,13 @@ import (
 
 type UserListByFilterService struct {
 	logger                             *slog.Logger
-	cloudStoragePresignedURLUseCase    *uc_cloudstorage.CloudStoragePresignedURLUseCase
+	cloudStoragePresignedURLUseCase    uc_cloudstorage.CloudStoragePresignedURLUseCase
 	comicSubmissionListByFilterUseCase *uc_user.UserListByFilterUseCase
 }
 
 func NewUserListByFilterService(
 	logger *slog.Logger,
-	uc1 *uc_cloudstorage.CloudStoragePresignedURLUseCase,
+	uc1 uc_cloudstorage.CloudStoragePresignedURLUseCase,
 	uc2 *uc_user.UserListByFilterUseCase,
 ) *UserListByFilterService {
 	return &UserListByFilterService{logger, uc1, uc2}

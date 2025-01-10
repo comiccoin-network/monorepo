@@ -9,7 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 )
 
-type CloudStorageDeleteUseCase struct {
+type CloudStorageDeleteUseCase interface {
+	Execute(ctx context.Context, objectKeys []string) error
+}
+
+type cloudStorageDeleteUseCaseImpl struct {
 	config       *config.Configuration
 	logger       *slog.Logger
 	cloudstorage cloudinterface.CloudStorage
@@ -19,11 +23,11 @@ func NewCloudStorageDeleteUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	cloudstorage cloudinterface.CloudStorage,
-) *CloudStorageDeleteUseCase {
-	return &CloudStorageDeleteUseCase{config, logger, cloudstorage}
+) CloudStorageDeleteUseCase {
+	return &cloudStorageDeleteUseCaseImpl{config, logger, cloudstorage}
 }
 
-func (uc *CloudStorageDeleteUseCase) Execute(ctx context.Context, objectKeys []string) error {
+func (uc *cloudStorageDeleteUseCaseImpl) Execute(ctx context.Context, objectKeys []string) error {
 	//
 	// STEP 1: Validation.
 	//

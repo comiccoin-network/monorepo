@@ -10,7 +10,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 )
 
-type CloudStoragePresignedURLUseCase struct {
+type CloudStoragePresignedURLUseCase interface {
+	Execute(ctx context.Context, objectKey string) (string, error)
+}
+
+type cloudStoragePresignedURLUseCaseImpl struct {
 	config       *config.Configuration
 	logger       *slog.Logger
 	cloudstorage cloudinterface.CloudStorage
@@ -20,11 +24,11 @@ func NewCloudStoragePresignedURLUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	cloudstorage cloudinterface.CloudStorage,
-) *CloudStoragePresignedURLUseCase {
-	return &CloudStoragePresignedURLUseCase{config, logger, cloudstorage}
+) CloudStoragePresignedURLUseCase {
+	return &cloudStoragePresignedURLUseCaseImpl{config, logger, cloudstorage}
 }
 
-func (uc *CloudStoragePresignedURLUseCase) Execute(ctx context.Context, objectKey string) (string, error) {
+func (uc *cloudStoragePresignedURLUseCaseImpl) Execute(ctx context.Context, objectKey string) (string, error) {
 	//
 	// STEP 1: Validation.
 	//

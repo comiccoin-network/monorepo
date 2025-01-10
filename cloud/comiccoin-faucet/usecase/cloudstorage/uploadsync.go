@@ -9,7 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 )
 
-type CloudStorageSyncUploadUseCase struct {
+type CloudStorageSyncUploadUseCase interface {
+	Execute(ctx context.Context, objectKey string, dataBytes []byte, contentType string) error
+}
+
+type cloudStorageSyncUploadUseCaseImpl struct {
 	config       *config.Configuration
 	logger       *slog.Logger
 	cloudstorage cloudinterface.CloudStorage
@@ -19,11 +23,11 @@ func NewCloudStorageSyncUploadUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	cloudstorage cloudinterface.CloudStorage,
-) *CloudStorageSyncUploadUseCase {
-	return &CloudStorageSyncUploadUseCase{config, logger, cloudstorage}
+) CloudStorageSyncUploadUseCase {
+	return &cloudStorageSyncUploadUseCaseImpl{config, logger, cloudstorage}
 }
 
-func (uc *CloudStorageSyncUploadUseCase) Execute(ctx context.Context, objectKey string, dataBytes []byte, contentType string) error {
+func (uc *cloudStorageSyncUploadUseCaseImpl) Execute(ctx context.Context, objectKey string, dataBytes []byte, contentType string) error {
 	//
 	// STEP 1: Validation.
 	//

@@ -22,7 +22,7 @@ type ComicSubmissionJudgeOperationService struct {
 	config                        *config.Configuration
 	logger                        *slog.Logger
 	faucetCoinTransferService     *sv_faucet.FaucetCoinTransferService
-	cloudStorageDeleteUseCase     *uc_cloudstorage.CloudStorageDeleteUseCase
+	cloudStorageDeleteUseCase     uc_cloudstorage.CloudStorageDeleteUseCase
 	userGetByIDUseCase            *uc_user.UserGetByIDUseCase
 	userUpdateUseCase             *uc_user.UserUpdateUseCase
 	createBannedIPAddressUseCase  uc_bannedipaddress.CreateBannedIPAddressUseCase
@@ -34,7 +34,7 @@ func NewComicSubmissionJudgeOperationService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	s1 *sv_faucet.FaucetCoinTransferService,
-	uc1 *uc_cloudstorage.CloudStorageDeleteUseCase,
+	uc1 uc_cloudstorage.CloudStorageDeleteUseCase,
 	uc2 *uc_user.UserGetByIDUseCase,
 	uc3 *uc_user.UserUpdateUseCase,
 	uc4 uc_bannedipaddress.CreateBannedIPAddressUseCase,
