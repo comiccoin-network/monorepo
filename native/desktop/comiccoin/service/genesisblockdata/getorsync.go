@@ -16,14 +16,14 @@ type GenesisBlockDataGetOrSyncService struct {
 	logger                                               *slog.Logger
 	getGenesisBlockDataUseCase                           *uc_genesisblockdata.GetGenesisBlockDataUseCase
 	upsertGenesisBlockDataUseCase                        *uc_genesisblockdata.UpsertGenesisBlockDataUseCase
-	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
+	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
 }
 
 func NewGenesisBlockDataGetOrSyncService(
 	logger *slog.Logger,
 	uc1 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
 	uc2 *uc_genesisblockdata.UpsertGenesisBlockDataUseCase,
-	uc3 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc3 uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
 ) *GenesisBlockDataGetOrSyncService {
 	return &GenesisBlockDataGetOrSyncService{logger, uc1, uc2, uc3}
 }

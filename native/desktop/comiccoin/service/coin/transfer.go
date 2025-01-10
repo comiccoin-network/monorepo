@@ -36,7 +36,7 @@ type CoinTransferService struct {
 	getWalletUseCase                                        *uc_wallet.GetWalletUseCase
 	mnemonicFromEncryptedHDWalletUseCase                    *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
 	privateKeyFromHDWalletUseCase                           *uc_walletutil.PrivateKeyFromHDWalletUseCase
-	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
+	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }
 
 func NewCoinTransferService(
@@ -51,7 +51,7 @@ func NewCoinTransferService(
 	uc8 *uc_wallet.GetWalletUseCase,
 	uc9 *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,
 	uc10 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
-	uc11 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
+	uc11 uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 ) *CoinTransferService {
 	return &CoinTransferService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11}
 }

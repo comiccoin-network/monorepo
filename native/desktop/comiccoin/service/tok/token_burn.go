@@ -39,7 +39,7 @@ type TokenBurnService struct {
 	mnemonicFromEncryptedHDWalletUseCase                    *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
 	privateKeyFromHDWalletUseCase                           *uc_walletutil.PrivateKeyFromHDWalletUseCase
 	getTokenUseCase                                         *uc_tok.GetTokenUseCase
-	submitMempoolTransactionDTOToBlockchainAuthorityUseCase *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
+	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 }
 
 func NewTokenBurnService(
@@ -55,7 +55,7 @@ func NewTokenBurnService(
 	uc9 *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,
 	uc10 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc11 *uc_tok.GetTokenUseCase,
-	uc12 *uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
+	uc12 uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 ) *TokenBurnService {
 	return &TokenBurnService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12}
 }

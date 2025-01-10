@@ -30,13 +30,13 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	setBlockchainSyncStatusUseCase                       *uc_blockchainsyncstatus.SetBlockchainSyncStatusUseCase
 	getGenesisBlockDataUseCase                           *uc_genesisblockdata.GetGenesisBlockDataUseCase
 	upsertGenesisBlockDataUseCase                        *uc_genesisblockdata.UpsertGenesisBlockDataUseCase
-	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
+	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
 	getBlockchainStateUseCase                            *uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase                         *uc_blockchainstate.UpsertBlockchainStateUseCase
-	getBlockchainStateDTOFromBlockchainAuthorityUseCase  *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
+	getBlockchainStateDTOFromBlockchainAuthorityUseCase  uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
 	getBlockDataUseCase                                  *uc_blockdata.GetBlockDataUseCase
 	upsertBlockDataUseCase                               *uc_blockdata.UpsertBlockDataUseCase
-	getBlockDataDTOFromBlockchainAuthorityUseCase        *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase
+	getBlockDataDTOFromBlockchainAuthorityUseCase        uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase
 	getAccountUseCase                                    *uc_account.GetAccountUseCase
 	upsertAccountUseCase                                 *uc_account.UpsertAccountUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase            *uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase
@@ -49,13 +49,13 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc2 *uc_blockchainsyncstatus.SetBlockchainSyncStatusUseCase,
 	uc3 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
 	uc4 *uc_genesisblockdata.UpsertGenesisBlockDataUseCase,
-	uc5 *uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc5 uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
 	uc6 *uc_blockchainstate.GetBlockchainStateUseCase,
 	uc7 *uc_blockchainstate.UpsertBlockchainStateUseCase,
-	uc8 *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
+	uc8 uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
 	uc9 *uc_blockdata.GetBlockDataUseCase,
 	uc10 *uc_blockdata.UpsertBlockDataUseCase,
-	uc11 *uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
+	uc11 uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
 	uc12 *uc_account.GetAccountUseCase,
 	uc13 *uc_account.UpsertAccountUseCase,
 	uc14 *uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase,
