@@ -11,17 +11,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type MempoolTransactionDeleteByIDUseCase struct {
+type MempoolTransactionDeleteByIDUseCase interface {
+	Execute(ctx context.Context, id primitive.ObjectID) error
+}
+
+type mempoolTransactionDeleteByIDUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.MempoolTransactionRepository
 }
 
-func NewMempoolTransactionDeleteByIDUseCase(config *config.Configuration, logger *slog.Logger, repo domain.MempoolTransactionRepository) *MempoolTransactionDeleteByIDUseCase {
-	return &MempoolTransactionDeleteByIDUseCase{config, logger, repo}
+func NewMempoolTransactionDeleteByIDUseCase(config *config.Configuration, logger *slog.Logger, repo domain.MempoolTransactionRepository) MempoolTransactionDeleteByIDUseCase {
+	return &mempoolTransactionDeleteByIDUseCaseImpl{config, logger, repo}
 }
 
-func (uc *MempoolTransactionDeleteByIDUseCase) Execute(ctx context.Context, id primitive.ObjectID) error {
+func (uc *mempoolTransactionDeleteByIDUseCaseImpl) Execute(ctx context.Context, id primitive.ObjectID) error {
 	//
 	// STEP 1: Validation.
 	// Note: `headerSignature` is optional since PoW algorithm does not require it

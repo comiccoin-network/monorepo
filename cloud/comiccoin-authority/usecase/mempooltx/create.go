@@ -10,17 +10,21 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type MempoolTransactionCreateUseCase struct {
+type MempoolTransactionCreateUseCase interface {
+	Execute(ctx context.Context, mempoolTx *domain.MempoolTransaction) error
+}
+
+type mempoolTransactionCreateUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.MempoolTransactionRepository
 }
 
-func NewMempoolTransactionCreateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.MempoolTransactionRepository) *MempoolTransactionCreateUseCase {
-	return &MempoolTransactionCreateUseCase{config, logger, repo}
+func NewMempoolTransactionCreateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.MempoolTransactionRepository) MempoolTransactionCreateUseCase {
+	return &mempoolTransactionCreateUseCaseImpl{config, logger, repo}
 }
 
-func (uc *MempoolTransactionCreateUseCase) Execute(ctx context.Context, mempoolTx *domain.MempoolTransaction) error {
+func (uc *mempoolTransactionCreateUseCaseImpl) Execute(ctx context.Context, mempoolTx *domain.MempoolTransaction) error {
 	//
 	// STEP 1: Validation.
 	//

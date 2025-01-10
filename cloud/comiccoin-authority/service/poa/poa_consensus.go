@@ -34,8 +34,8 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	dmutex                                     distributedmutex.Adapter
 	dbClient                                   *mongo.Client
 	getProofOfAuthorityPrivateKeyService       *GetProofOfAuthorityPrivateKeyService
-	mempoolTransactionInsertionDetectorUseCase *uc_mempooltx.MempoolTransactionInsertionDetectorUseCase
-	mempoolTransactionDeleteByIDUseCase        *uc_mempooltx.MempoolTransactionDeleteByIDUseCase
+	mempoolTransactionInsertionDetectorUseCase uc_mempooltx.MempoolTransactionInsertionDetectorUseCase
+	mempoolTransactionDeleteByIDUseCase        uc_mempooltx.MempoolTransactionDeleteByIDUseCase
 	getBlockchainStateUseCase                  uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase               uc_blockchainstate.UpsertBlockchainStateUseCase
 	getGenesisBlockDataUseCase                 uc_genesisblockdata.GetGenesisBlockDataUseCase
@@ -57,8 +57,8 @@ func NewProofOfAuthorityConsensusMechanismService(
 	dmutex distributedmutex.Adapter,
 	client *mongo.Client,
 	s1 *GetProofOfAuthorityPrivateKeyService,
-	uc1 *uc_mempooltx.MempoolTransactionInsertionDetectorUseCase,
-	uc2 *uc_mempooltx.MempoolTransactionDeleteByIDUseCase,
+	uc1 uc_mempooltx.MempoolTransactionInsertionDetectorUseCase,
+	uc2 uc_mempooltx.MempoolTransactionDeleteByIDUseCase,
 	uc3 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc4 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc5 uc_genesisblockdata.GetGenesisBlockDataUseCase,

@@ -30,7 +30,7 @@ type TokenMintService struct {
 	getBlockchainStateUseCase            uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase         uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockDataUseCase                  uc_blockdata.GetBlockDataUseCase
-	mempoolTransactionCreateUseCase      *uc_mempooltx.MempoolTransactionCreateUseCase
+	mempoolTransactionCreateUseCase      uc_mempooltx.MempoolTransactionCreateUseCase
 }
 
 func NewTokenMintService(
@@ -42,7 +42,7 @@ func NewTokenMintService(
 	uc1 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc2 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc3 uc_blockdata.GetBlockDataUseCase,
-	uc4 *uc_mempooltx.MempoolTransactionCreateUseCase,
+	uc4 uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *TokenMintService {
 	return &TokenMintService{cfg, logger, dmutex, client, s1, uc1, uc2, uc3, uc4}
 }

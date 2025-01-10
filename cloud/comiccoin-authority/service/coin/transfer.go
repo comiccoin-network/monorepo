@@ -24,7 +24,7 @@ type CoinTransferService struct {
 	logger                          *slog.Logger
 	getAccountUseCase               uc_account.GetAccountUseCase
 	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
-	mempoolTransactionCreateUseCase *uc_mempooltx.MempoolTransactionCreateUseCase
+	mempoolTransactionCreateUseCase uc_mempooltx.MempoolTransactionCreateUseCase
 }
 
 func NewCoinTransferService(
@@ -32,7 +32,7 @@ func NewCoinTransferService(
 	logger *slog.Logger,
 	uc1 uc_account.GetAccountUseCase,
 	uc2 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
-	uc3 *uc_mempooltx.MempoolTransactionCreateUseCase,
+	uc3 uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *CoinTransferService {
 	return &CoinTransferService{cfg, logger, uc1, uc2, uc3}
 }

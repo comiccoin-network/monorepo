@@ -13,13 +13,13 @@ import (
 type MempoolTransactionReceiveDTOFromNetworkService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
-	mempoolTransactionCreateUseCase *uc_mempooltx.MempoolTransactionCreateUseCase
+	mempoolTransactionCreateUseCase uc_mempooltx.MempoolTransactionCreateUseCase
 }
 
 func NewMempoolTransactionReceiveDTOFromNetworkService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *uc_mempooltx.MempoolTransactionCreateUseCase,
+	uc uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *MempoolTransactionReceiveDTOFromNetworkService {
 	return &MempoolTransactionReceiveDTOFromNetworkService{cfg, logger, uc}
 }

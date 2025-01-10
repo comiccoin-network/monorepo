@@ -34,7 +34,7 @@ type TokenTransferService struct {
 	upsertBlockchainStateUseCase    uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockDataUseCase             uc_blockdata.GetBlockDataUseCase
 	getTokenUseCase                 *uc_token.GetTokenUseCase
-	mempoolTransactionCreateUseCase *uc_mempooltx.MempoolTransactionCreateUseCase
+	mempoolTransactionCreateUseCase uc_mempooltx.MempoolTransactionCreateUseCase
 }
 
 func NewTokenTransferService(
@@ -47,7 +47,7 @@ func NewTokenTransferService(
 	uc3 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc4 uc_blockdata.GetBlockDataUseCase,
 	uc5 *uc_token.GetTokenUseCase,
-	uc6 *uc_mempooltx.MempoolTransactionCreateUseCase,
+	uc6 uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *TokenTransferService {
 	return &TokenTransferService{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6}
 }

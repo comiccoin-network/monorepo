@@ -10,7 +10,12 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type MempoolTransactionInsertionDetectorUseCase struct {
+type MempoolTransactionInsertionDetectorUseCase interface {
+	Execute(ctx context.Context) (*domain.MempoolTransaction, error)
+	Terminate()
+}
+
+type mempoolTransactionInsertionDetectorUseCaseImpl struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	repo     domain.MempoolTransactionRepository
@@ -18,15 +23,15 @@ type MempoolTransactionInsertionDetectorUseCase struct {
 	quitChan chan struct{}
 }
 
-func NewMempoolTransactionInsertionDetectorUseCase(config *config.Configuration, logger *slog.Logger, repo domain.MempoolTransactionRepository) *MempoolTransactionInsertionDetectorUseCase {
+func NewMempoolTransactionInsertionDetectorUseCase(config *config.Configuration, logger *slog.Logger, repo domain.MempoolTransactionRepository) MempoolTransactionInsertionDetectorUseCase {
 	dataChan, quitChan, err := repo.GetInsertionChangeStreamChannel(context.Background())
 	if err != nil {
 		log.Fatalf("NewMempoolTransactionInsertionDetectorUseCase: Failed initializing use-case: %v\n", err)
 	}
-	return &MempoolTransactionInsertionDetectorUseCase{config, logger, repo, dataChan, quitChan}
+	return &mempoolTransactionInsertionDetectorUseCaseImpl{config, logger, repo, dataChan, quitChan}
 }
 
-func (uc *MempoolTransactionInsertionDetectorUseCase) Execute(ctx context.Context) (*domain.MempoolTransaction, error) {
+func (uc *mempoolTransactionInsertionDetectorUseCaseImpl) Execute(ctx context.Context) (*domain.MempoolTransaction, error) {
 	// uc.logger.Debug("Waiting to receive...")
 	select {
 	case mempoolTx, ok := <-uc.dataChan:
@@ -55,7 +60,7 @@ func (uc *MempoolTransactionInsertionDetectorUseCase) Execute(ctx context.Contex
 }
 
 // Terminate releases the channel resource
-func (uc *MempoolTransactionInsertionDetectorUseCase) Terminate() {
+func (uc *mempoolTransactionInsertionDetectorUseCaseImpl) Terminate() {
 	uc.logger.Debug("Closing change stream connection...")
 	close(uc.quitChan)
 }
