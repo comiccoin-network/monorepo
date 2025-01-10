@@ -11,17 +11,21 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type GetOrCreateAccountUseCase struct {
+type GetOrCreateAccountUseCase interface {
+	Execute(ctx context.Context, walletAddress *common.Address, balance uint64, nonce *big.Int) error
+}
+
+type getOrCreateAccountUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AccountRepository
 }
 
-func NewGetOrCreateAccountUseCase(config *config.Configuration, logger *slog.Logger, repo domain.AccountRepository) *GetOrCreateAccountUseCase {
-	return &GetOrCreateAccountUseCase{config, logger, repo}
+func NewGetOrCreateAccountUseCase(config *config.Configuration, logger *slog.Logger, repo domain.AccountRepository) GetOrCreateAccountUseCase {
+	return &getOrCreateAccountUseCaseImpl{config, logger, repo}
 }
 
-func (uc *GetOrCreateAccountUseCase) Execute(ctx context.Context, walletAddress *common.Address, balance uint64, nonce *big.Int) error {
+func (uc *getOrCreateAccountUseCaseImpl) Execute(ctx context.Context, walletAddress *common.Address, balance uint64, nonce *big.Int) error {
 	//
 	// STEP 1: Validation.
 	//

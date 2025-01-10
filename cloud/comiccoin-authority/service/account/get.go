@@ -14,12 +14,12 @@ import (
 
 type GetAccountService struct {
 	logger            *slog.Logger
-	getAccountUseCase *uc_account.GetAccountUseCase
+	getAccountUseCase uc_account.GetAccountUseCase
 }
 
 func NewGetAccountService(
 	logger *slog.Logger,
-	uc1 *uc_account.GetAccountUseCase,
+	uc1 uc_account.GetAccountUseCase,
 ) *GetAccountService {
 	return &GetAccountService{logger, uc1}
 }

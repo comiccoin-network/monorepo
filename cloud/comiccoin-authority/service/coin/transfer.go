@@ -22,7 +22,7 @@ import (
 type CoinTransferService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
-	getAccountUseCase               *uc_account.GetAccountUseCase
+	getAccountUseCase               uc_account.GetAccountUseCase
 	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
 	mempoolTransactionCreateUseCase *uc_mempooltx.MempoolTransactionCreateUseCase
 }
@@ -30,7 +30,7 @@ type CoinTransferService struct {
 func NewCoinTransferService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc1 *uc_account.GetAccountUseCase,
+	uc1 uc_account.GetAccountUseCase,
 	uc2 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc3 *uc_mempooltx.MempoolTransactionCreateUseCase,
 ) *CoinTransferService {

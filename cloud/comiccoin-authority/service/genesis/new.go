@@ -31,10 +31,10 @@ type CreateGenesisBlockDataService struct {
 	config                                    *config.Configuration
 	logger                                    *slog.Logger
 	getProofOfAuthorityPrivateKeyService      *s_poa.GetProofOfAuthorityPrivateKeyService
-	getAccountUseCase                         *uc_account.GetAccountUseCase
-	upsertAccountUseCase                      *uc_account.UpsertAccountUseCase
+	getAccountUseCase                         uc_account.GetAccountUseCase
+	upsertAccountUseCase                      uc_account.UpsertAccountUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
-	getAccountsHashStateUseCase               *uc_account.GetAccountsHashStateUseCase
+	getAccountsHashStateUseCase               uc_account.GetAccountsHashStateUseCase
 	getTokensHashStateUseCase                 *uc_token.GetTokensHashStateUseCase
 	proofOfWorkUseCase                        *uc_pow.ProofOfWorkUseCase
 	upsertGenesisBlockDataUseCase             *uc_genesisblockdata.UpsertGenesisBlockDataUseCase
@@ -47,10 +47,10 @@ func NewCreateGenesisBlockDataService(
 	config *config.Configuration,
 	logger *slog.Logger,
 	s1 *s_poa.GetProofOfAuthorityPrivateKeyService,
-	uc1 *uc_account.GetAccountUseCase,
-	uc2 *uc_account.UpsertAccountUseCase,
+	uc1 uc_account.GetAccountUseCase,
+	uc2 uc_account.UpsertAccountUseCase,
 	uc3 *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
-	uc4 *uc_account.GetAccountsHashStateUseCase,
+	uc4 uc_account.GetAccountsHashStateUseCase,
 	uc5 *uc_token.GetTokensHashStateUseCase,
 	uc6 *uc_pow.ProofOfWorkUseCase,
 	uc7 *uc_genesisblockdata.UpsertGenesisBlockDataUseCase,

@@ -40,9 +40,9 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	upsertBlockchainStateUseCase               *uc_blockchainstate.UpsertBlockchainStateUseCase
 	getGenesisBlockDataUseCase                 *uc_genesisblockdata.GetGenesisBlockDataUseCase
 	getBlockDataUseCase                        *uc_blockdata.GetBlockDataUseCase
-	getAccountUseCase                          *uc_account.GetAccountUseCase
-	getAccountsHashStateUseCase                *uc_account.GetAccountsHashStateUseCase
-	upsertAccountUseCase                       *uc_account.UpsertAccountUseCase
+	getAccountUseCase                          uc_account.GetAccountUseCase
+	getAccountsHashStateUseCase                uc_account.GetAccountsHashStateUseCase
+	upsertAccountUseCase                       uc_account.UpsertAccountUseCase
 	getTokenUseCase                            *uc_token.GetTokenUseCase
 	getTokensHashStateUseCase                  *uc_token.GetTokensHashStateUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase  *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
@@ -63,9 +63,9 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc4 *uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc5 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
 	uc6 *uc_blockdata.GetBlockDataUseCase,
-	uc7 *uc_account.GetAccountUseCase,
-	uc8 *uc_account.GetAccountsHashStateUseCase,
-	uc9 *uc_account.UpsertAccountUseCase,
+	uc7 uc_account.GetAccountUseCase,
+	uc8 uc_account.GetAccountsHashStateUseCase,
+	uc9 uc_account.UpsertAccountUseCase,
 	uc10 *uc_token.GetTokenUseCase,
 	uc11 *uc_token.GetTokensHashStateUseCase,
 	uc12 *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
