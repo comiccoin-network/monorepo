@@ -9,20 +9,20 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-//
-// Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
-//
+type GetAccountUseCase interface {
+	Execute(ctx context.Context, address *common.Address) (*domain.Account, error)
+}
 
-type GetAccountUseCase struct {
+type getAccountUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.AccountRepository
 }
 
-func NewGetAccountUseCase(logger *slog.Logger, repo domain.AccountRepository) *GetAccountUseCase {
-	return &GetAccountUseCase{logger, repo}
+func NewGetAccountUseCase(logger *slog.Logger, repo domain.AccountRepository) GetAccountUseCase {
+	return &getAccountUseCaseImpl{logger, repo}
 }
 
-func (uc *GetAccountUseCase) Execute(ctx context.Context, address *common.Address) (*domain.Account, error) {
+func (uc *getAccountUseCaseImpl) Execute(ctx context.Context, address *common.Address) (*domain.Account, error) {
 	//
 	// STEP 1: Validation.
 	//

@@ -10,20 +10,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-//
-// Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
-//
+type AccountsFilterByAddressesUseCase interface {
+	Execute(ctx context.Context, addresses []*common.Address) ([]*domain.Account, error)
+}
 
-type AccountsFilterByAddressesUseCase struct {
+type accountsFilterByAddressesUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.AccountRepository
 }
 
-func NewAccountsFilterByAddressesUseCase(logger *slog.Logger, repo domain.AccountRepository) *AccountsFilterByAddressesUseCase {
-	return &AccountsFilterByAddressesUseCase{logger, repo}
+func NewAccountsFilterByAddressesUseCase(logger *slog.Logger, repo domain.AccountRepository) AccountsFilterByAddressesUseCase {
+	return &accountsFilterByAddressesUseCaseImpl{logger, repo}
 }
 
-func (uc *AccountsFilterByAddressesUseCase) Execute(ctx context.Context, addresses []*common.Address) ([]*domain.Account, error) {
+func (uc *accountsFilterByAddressesUseCaseImpl) Execute(ctx context.Context, addresses []*common.Address) ([]*domain.Account, error) {
 	//
 	// STEP 1: Validation.
 	//

@@ -15,14 +15,14 @@ type FaucetBalanceService struct {
 	config            *config.Configuration
 	logger            *slog.Logger
 	kmutex            kmutexutil.KMutexProvider
-	getAccountUseCase *uc_account.GetAccountUseCase
+	getAccountUseCase uc_account.GetAccountUseCase
 }
 
 func NewFaucetBalanceService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
-	uc1 *uc_account.GetAccountUseCase,
+	uc1 uc_account.GetAccountUseCase,
 ) *FaucetBalanceService {
 	return &FaucetBalanceService{cfg, logger, kmutex, uc1}
 }

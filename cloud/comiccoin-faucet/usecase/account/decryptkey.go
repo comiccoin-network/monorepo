@@ -14,11 +14,15 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
+type AccountDecryptKeyUseCase interface {
+	Execute(ctx context.Context, walletKeystoreBytes []byte, walletPassword *sstring.SecureString) (*keystore.Key, error)
+}
+
 //
 // Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
 //
 
-type AccountDecryptKeyUseCase struct {
+type accountDecryptKeyUseCaseImpl struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	keystore pkgkeystore.KeystoreAdapter
@@ -30,11 +34,11 @@ func NewAccountDecryptKeyUseCase(
 	logger *slog.Logger,
 	keystore pkgkeystore.KeystoreAdapter,
 	repo domain.AccountRepository,
-) *AccountDecryptKeyUseCase {
-	return &AccountDecryptKeyUseCase{config, logger, keystore, repo}
+) AccountDecryptKeyUseCase {
+	return &accountDecryptKeyUseCaseImpl{config, logger, keystore, repo}
 }
 
-func (uc *AccountDecryptKeyUseCase) Execute(ctx context.Context, walletKeystoreBytes []byte, walletPassword *sstring.SecureString) (*keystore.Key, error) {
+func (uc *accountDecryptKeyUseCaseImpl) Execute(ctx context.Context, walletKeystoreBytes []byte, walletPassword *sstring.SecureString) (*keystore.Key, error) {
 	//
 	// STEP 1: Validation.
 	//

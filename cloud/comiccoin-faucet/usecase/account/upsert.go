@@ -5,27 +5,28 @@ import (
 	"log/slog"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
-	"github.com/ethereum/go-ethereum/common"
 )
 
-//
-// Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
-//
+type UpsertAccountUseCase interface {
+	Execute(ctx context.Context, address *common.Address, balance uint64, nonce *big.Int) error
+}
 
-type UpsertAccountUseCase struct {
+type upsertAccountUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AccountRepository
 }
 
-func NewUpsertAccountUseCase(config *config.Configuration, logger *slog.Logger, repo domain.AccountRepository) *UpsertAccountUseCase {
-	return &UpsertAccountUseCase{config, logger, repo}
+func NewUpsertAccountUseCase(config *config.Configuration, logger *slog.Logger, repo domain.AccountRepository) UpsertAccountUseCase {
+	return &upsertAccountUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UpsertAccountUseCase) Execute(ctx context.Context, address *common.Address, balance uint64, nonce *big.Int) error {
+func (uc *upsertAccountUseCaseImpl) Execute(ctx context.Context, address *common.Address, balance uint64, nonce *big.Int) error {
 	//
 	// STEP 1: Validation.
 	//

@@ -14,11 +14,15 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
+type AccountEncryptKeyUseCase interface {
+	Execute(ctx context.Context, dataDir string, walletPassword *sstring.SecureString) (*common.Address, []byte, error)
+}
+
 //
 // Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
 //
 
-type AccountEncryptKeyUseCase struct {
+type accountEncryptKeyUseCaseImpl struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	keystore pkgkeystore.KeystoreAdapter
@@ -30,11 +34,11 @@ func NewAccountEncryptKeyUseCase(
 	logger *slog.Logger,
 	keystore pkgkeystore.KeystoreAdapter,
 	repo domain.AccountRepository,
-) *AccountEncryptKeyUseCase {
-	return &AccountEncryptKeyUseCase{config, logger, keystore, repo}
+) AccountEncryptKeyUseCase {
+	return &accountEncryptKeyUseCaseImpl{config, logger, keystore, repo}
 }
 
-func (uc *AccountEncryptKeyUseCase) Execute(ctx context.Context, dataDir string, walletPassword *sstring.SecureString) (*common.Address, []byte, error) {
+func (uc *accountEncryptKeyUseCaseImpl) Execute(ctx context.Context, dataDir string, walletPassword *sstring.SecureString) (*common.Address, []byte, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -53,7 +57,7 @@ func (uc *AccountEncryptKeyUseCase) Execute(ctx context.Context, dataDir string,
 	}
 
 	//
-	// STEP 2: Create the encryted physical wallet on file.
+	// STEP 2: Create the encrypted physical wallet on file.
 	//
 
 	walletAddress, walletKeystoreBytes, err := uc.keystore.CreateWallet(walletPassword)

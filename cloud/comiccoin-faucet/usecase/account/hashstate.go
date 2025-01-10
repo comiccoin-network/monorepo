@@ -7,19 +7,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-//
-// Copied from `github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase`
-//
+type GetAccountsHashStateUseCase interface {
+	Execute(ctx context.Context, chainID uint16) (string, error)
+}
 
-type GetAccountsHashStateUseCase struct {
+type getAccountsHashStateUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.AccountRepository
 }
 
-func NewGetAccountsHashStateUseCase(logger *slog.Logger, repo domain.AccountRepository) *GetAccountsHashStateUseCase {
-	return &GetAccountsHashStateUseCase{logger, repo}
+func NewGetAccountsHashStateUseCase(logger *slog.Logger, repo domain.AccountRepository) GetAccountsHashStateUseCase {
+	return &getAccountsHashStateUseCaseImpl{logger, repo}
 }
 
-func (uc *GetAccountsHashStateUseCase) Execute(ctx context.Context, chainID uint16) (string, error) {
+func (uc *getAccountsHashStateUseCaseImpl) Execute(ctx context.Context, chainID uint16) (string, error) {
 	return uc.repo.HashStateByChainID(ctx, chainID)
 }
