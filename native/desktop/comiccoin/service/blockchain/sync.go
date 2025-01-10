@@ -31,8 +31,8 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	getGenesisBlockDataUseCase                           *uc_genesisblockdata.GetGenesisBlockDataUseCase
 	upsertGenesisBlockDataUseCase                        *uc_genesisblockdata.UpsertGenesisBlockDataUseCase
 	getGenesisBlockDataDTOFromBlockchainAuthorityUseCase uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase
-	getBlockchainStateUseCase                            *uc_blockchainstate.GetBlockchainStateUseCase
-	upsertBlockchainStateUseCase                         *uc_blockchainstate.UpsertBlockchainStateUseCase
+	getBlockchainStateUseCase                            uc_blockchainstate.GetBlockchainStateUseCase
+	upsertBlockchainStateUseCase                         uc_blockchainstate.UpsertBlockchainStateUseCase
 	getBlockchainStateDTOFromBlockchainAuthorityUseCase  uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
 	getBlockDataUseCase                                  *uc_blockdata.GetBlockDataUseCase
 	upsertBlockDataUseCase                               *uc_blockdata.UpsertBlockDataUseCase
@@ -50,8 +50,8 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc3 *uc_genesisblockdata.GetGenesisBlockDataUseCase,
 	uc4 *uc_genesisblockdata.UpsertGenesisBlockDataUseCase,
 	uc5 uc_genesisblockdatadto.GetGenesisBlockDataDTOFromBlockchainAuthorityUseCase,
-	uc6 *uc_blockchainstate.GetBlockchainStateUseCase,
-	uc7 *uc_blockchainstate.UpsertBlockchainStateUseCase,
+	uc6 uc_blockchainstate.GetBlockchainStateUseCase,
+	uc7 uc_blockchainstate.UpsertBlockchainStateUseCase,
 	uc8 uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
 	uc9 *uc_blockdata.GetBlockDataUseCase,
 	uc10 *uc_blockdata.UpsertBlockDataUseCase,

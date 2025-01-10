@@ -15,13 +15,13 @@ import (
 type BlockchainStateSyncService struct {
 	logger                                              *slog.Logger
 	getBlockchainStateDTOFromBlockchainAuthorityUseCase uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
-	upsertBlockchainStateUseCase                        *uc_blockchainstate.UpsertBlockchainStateUseCase
+	upsertBlockchainStateUseCase                        uc_blockchainstate.UpsertBlockchainStateUseCase
 }
 
 func NewBlockchainStateSyncService(
 	logger *slog.Logger,
 	uc1 uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
-	uc2 *uc_blockchainstate.UpsertBlockchainStateUseCase,
+	uc2 uc_blockchainstate.UpsertBlockchainStateUseCase,
 ) *BlockchainStateSyncService {
 	return &BlockchainStateSyncService{logger, uc1, uc2}
 }
