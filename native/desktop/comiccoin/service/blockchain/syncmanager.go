@@ -17,18 +17,18 @@ import (
 type BlockchainSyncManagerService struct {
 	logger                                                               *slog.Logger
 	blockchainSyncWithBlockchainAuthorityService                         *BlockchainSyncWithBlockchainAuthorityService
-	storageTransactionOpenUseCase                                        *uc_storagetransaction.StorageTransactionOpenUseCase
-	storageTransactionCommitUseCase                                      *uc_storagetransaction.StorageTransactionCommitUseCase
-	storageTransactionDiscardUseCase                                     *uc_storagetransaction.StorageTransactionDiscardUseCase
+	storageTransactionOpenUseCase                                        uc_storagetransaction.StorageTransactionOpenUseCase
+	storageTransactionCommitUseCase                                      uc_storagetransaction.StorageTransactionCommitUseCase
+	storageTransactionDiscardUseCase                                     uc_storagetransaction.StorageTransactionDiscardUseCase
 	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase uc_blockchainstatechangeeventdto.SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase
 }
 
 func NewBlockchainSyncManagerService(
 	logger *slog.Logger,
 	s1 *BlockchainSyncWithBlockchainAuthorityService,
-	uc1 *uc_storagetransaction.StorageTransactionOpenUseCase,
-	uc2 *uc_storagetransaction.StorageTransactionCommitUseCase,
-	uc3 *uc_storagetransaction.StorageTransactionDiscardUseCase,
+	uc1 uc_storagetransaction.StorageTransactionOpenUseCase,
+	uc2 uc_storagetransaction.StorageTransactionCommitUseCase,
+	uc3 uc_storagetransaction.StorageTransactionDiscardUseCase,
 	uc4 uc_blockchainstatechangeeventdto.SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
 ) *BlockchainSyncManagerService {
 	return &BlockchainSyncManagerService{logger, s1, uc1, uc2, uc3, uc4}

@@ -7,7 +7,11 @@ import (
 	ccdomain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
-type StorageTransactionCommitUseCase struct {
+type StorageTransactionCommitUseCase interface {
+	Execute() error
+}
+
+type storageTransactionCommitUseCaseImpl struct {
 	logger                       *slog.Logger
 	walletRepo                   domain.WalletRepository
 	accountRepo                  domain.AccountRepository
@@ -27,11 +31,11 @@ func NewStorageTransactionCommitUseCase(
 	r5 domain.BlockDataRepository,
 	r6 domain.TokenRepository,
 	r7 ccdomain.PendingSignedTransactionRepository,
-) *StorageTransactionCommitUseCase {
-	return &StorageTransactionCommitUseCase{logger, r1, r2, r3, r4, r5, r6, r7}
+) StorageTransactionCommitUseCase {
+	return &storageTransactionCommitUseCaseImpl{logger, r1, r2, r3, r4, r5, r6, r7}
 }
 
-func (uc *StorageTransactionCommitUseCase) Execute() error {
+func (uc *storageTransactionCommitUseCaseImpl) Execute() error {
 	if err := uc.accountRepo.CommitTransaction(); err != nil {
 		uc.logger.Error("Failed committing transaction for accounts",
 			slog.Any("error", err))

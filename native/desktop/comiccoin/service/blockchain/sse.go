@@ -14,9 +14,9 @@ import (
 type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
 	logger                                                                   *slog.Logger
 	blockchainSyncWithBlockchainAuthorityService                             *BlockchainSyncWithBlockchainAuthorityService
-	storageTransactionOpenUseCase                                            *uc_storagetransaction.StorageTransactionOpenUseCase
-	storageTransactionCommitUseCase                                          *uc_storagetransaction.StorageTransactionCommitUseCase
-	storageTransactionDiscardUseCase                                         *uc_storagetransaction.StorageTransactionDiscardUseCase
+	storageTransactionOpenUseCase                                            uc_storagetransaction.StorageTransactionOpenUseCase
+	storageTransactionCommitUseCase                                          uc_storagetransaction.StorageTransactionCommitUseCase
+	storageTransactionDiscardUseCase                                         uc_storagetransaction.StorageTransactionDiscardUseCase
 	getBlockchainStateUseCase                                                uc_blockchainstate.GetBlockchainStateUseCase
 	subscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase uc_blockchainstate.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase
 }
@@ -24,9 +24,9 @@ type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
 func NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 	logger *slog.Logger,
 	s1 *BlockchainSyncWithBlockchainAuthorityService,
-	uc1 *uc_storagetransaction.StorageTransactionOpenUseCase,
-	uc2 *uc_storagetransaction.StorageTransactionCommitUseCase,
-	uc3 *uc_storagetransaction.StorageTransactionDiscardUseCase,
+	uc1 uc_storagetransaction.StorageTransactionOpenUseCase,
+	uc2 uc_storagetransaction.StorageTransactionCommitUseCase,
+	uc3 uc_storagetransaction.StorageTransactionDiscardUseCase,
 	uc4 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc5 uc_blockchainstate.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService {

@@ -7,7 +7,11 @@ import (
 	ccdomain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
 )
 
-type StorageTransactionDiscardUseCase struct {
+type StorageTransactionDiscardUseCase interface {
+	Execute()
+}
+
+type storageTransactionDiscardUseCaseImpl struct {
 	logger                       *slog.Logger
 	walletRepo                   domain.WalletRepository
 	accountRepo                  domain.AccountRepository
@@ -27,11 +31,11 @@ func NewStorageTransactionDiscardUseCase(
 	r5 domain.BlockDataRepository,
 	r6 domain.TokenRepository,
 	r7 ccdomain.PendingSignedTransactionRepository,
-) *StorageTransactionDiscardUseCase {
-	return &StorageTransactionDiscardUseCase{logger, r1, r2, r3, r4, r5, r6, r7}
+) StorageTransactionDiscardUseCase {
+	return &storageTransactionDiscardUseCaseImpl{logger, r1, r2, r3, r4, r5, r6, r7}
 }
 
-func (uc *StorageTransactionDiscardUseCase) Execute() {
+func (uc *storageTransactionDiscardUseCaseImpl) Execute() {
 	uc.accountRepo.DiscardTransaction()
 	uc.walletRepo.DiscardTransaction()
 	uc.genesisBlockDataRepo.DiscardTransaction()

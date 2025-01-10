@@ -26,9 +26,9 @@ import (
 
 type CoinTransferService struct {
 	logger                                                  *slog.Logger
-	storageTransactionOpenUseCase                           *uc_storagetransaction.StorageTransactionOpenUseCase
-	storageTransactionCommitUseCase                         *uc_storagetransaction.StorageTransactionCommitUseCase
-	storageTransactionDiscardUseCase                        *uc_storagetransaction.StorageTransactionDiscardUseCase
+	storageTransactionOpenUseCase                           uc_storagetransaction.StorageTransactionOpenUseCase
+	storageTransactionCommitUseCase                         uc_storagetransaction.StorageTransactionCommitUseCase
+	storageTransactionDiscardUseCase                        uc_storagetransaction.StorageTransactionDiscardUseCase
 	listPendingSignedTransactionUseCase                     uc_pstx.ListPendingSignedTransactionUseCase
 	getGenesisBlockDataUseCase                              uc_genesisblockdata.GetGenesisBlockDataUseCase
 	upsertPendingSignedTransactionUseCase                   uc_pstx.UpsertPendingSignedTransactionUseCase
@@ -41,9 +41,9 @@ type CoinTransferService struct {
 
 func NewCoinTransferService(
 	logger *slog.Logger,
-	uc1 *uc_storagetransaction.StorageTransactionOpenUseCase,
-	uc2 *uc_storagetransaction.StorageTransactionCommitUseCase,
-	uc3 *uc_storagetransaction.StorageTransactionDiscardUseCase,
+	uc1 uc_storagetransaction.StorageTransactionOpenUseCase,
+	uc2 uc_storagetransaction.StorageTransactionCommitUseCase,
+	uc3 uc_storagetransaction.StorageTransactionDiscardUseCase,
 	uc4 uc_pstx.ListPendingSignedTransactionUseCase,
 	uc5 uc_genesisblockdata.GetGenesisBlockDataUseCase,
 	uc6 uc_pstx.UpsertPendingSignedTransactionUseCase,
