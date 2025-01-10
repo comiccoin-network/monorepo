@@ -24,7 +24,14 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type GatewayUserRegisterService struct {
+type GatewayUserRegisterService interface {
+	Execute(
+		sessCtx mongo.SessionContext,
+		req *RegisterCustomerRequestIDO,
+	) (*RegisterCustomerResponseIDO, error)
+}
+
+type gatewayUserRegisterServiceImpl struct {
 	config                           *config.Configuration
 	logger                           *slog.Logger
 	passwordProvider                 password.Provider
@@ -48,8 +55,8 @@ func NewGatewayUserRegisterService(
 	uc3 uc_user.UserCreateUseCase,
 	uc4 uc_user.UserUpdateUseCase,
 	uc5 *usecase.SendUserVerificationEmailUseCase,
-) *GatewayUserRegisterService {
-	return &GatewayUserRegisterService{cfg, logger, pp, cach, jwtp, uc1, uc2, uc3, uc4, uc5}
+) GatewayUserRegisterService {
+	return &gatewayUserRegisterServiceImpl{cfg, logger, pp, cach, jwtp, uc1, uc2, uc3, uc4, uc5}
 }
 
 type RegisterCustomerRequestIDO struct {
@@ -74,7 +81,7 @@ type RegisterCustomerResponseIDO struct {
 	RefreshTokenExpiryTime time.Time    `json:"refresh_token_expiry_time"`
 }
 
-func (s *GatewayUserRegisterService) Execute(
+func (s *gatewayUserRegisterServiceImpl) Execute(
 	sessCtx mongo.SessionContext,
 	req *RegisterCustomerRequestIDO,
 ) (*RegisterCustomerResponseIDO, error) {
@@ -175,7 +182,7 @@ func (s *GatewayUserRegisterService) Execute(
 	return s.registerWithUser(sessCtx, u)
 }
 
-func (s *GatewayUserRegisterService) registerWithUser(sessCtx mongo.SessionContext, u *domain.User) (*RegisterCustomerResponseIDO, error) {
+func (s *gatewayUserRegisterServiceImpl) registerWithUser(sessCtx mongo.SessionContext, u *domain.User) (*RegisterCustomerResponseIDO, error) {
 	uBin, err := json.Marshal(u)
 	if err != nil {
 		s.logger.Error("marshalling error", slog.Any("err", err))
@@ -212,7 +219,7 @@ func (s *GatewayUserRegisterService) registerWithUser(sessCtx mongo.SessionConte
 	}, nil
 }
 
-func (s *GatewayUserRegisterService) createCustomerUserForRequest(sessCtx mongo.SessionContext, req *RegisterCustomerRequestIDO) (*domain.User, error) {
+func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mongo.SessionContext, req *RegisterCustomerRequestIDO) (*domain.User, error) {
 	// Lookup the store and check to see if it's active or not, if not active then return the specific requests.
 	t, err := s.tenantGetByIDUseCase.Execute(sessCtx, s.config.App.TenantID)
 	if err != nil {

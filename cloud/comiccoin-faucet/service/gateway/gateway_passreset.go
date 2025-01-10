@@ -14,7 +14,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type GatewayResetPasswordService struct {
+type GatewayResetPasswordService interface {
+	Execute(sessCtx mongo.SessionContext, req *GatewayResetPasswordRequestIDO) error
+}
+
+type gatewayResetPasswordServiceImpl struct {
 	logger                           *slog.Logger
 	kmutex                           kmutexutil.KMutexProvider
 	passwordProvider                 password.Provider
@@ -28,8 +32,8 @@ func NewGatewayResetPasswordService(
 	pp password.Provider,
 	uc1 uc_user.UserGetByVerificationCodeUseCase,
 	uc2 uc_user.UserUpdateUseCase,
-) *GatewayResetPasswordService {
-	return &GatewayResetPasswordService{logger, kmutex, pp, uc1, uc2}
+) GatewayResetPasswordService {
+	return &gatewayResetPasswordServiceImpl{logger, kmutex, pp, uc1, uc2}
 }
 
 type GatewayResetPasswordRequestIDO struct {
@@ -37,7 +41,7 @@ type GatewayResetPasswordRequestIDO struct {
 	Password string `json:"password"`
 }
 
-func (s *GatewayResetPasswordService) Execute(sessCtx mongo.SessionContext, req *GatewayResetPasswordRequestIDO) error {
+func (s *gatewayResetPasswordServiceImpl) Execute(sessCtx mongo.SessionContext, req *GatewayResetPasswordRequestIDO) error {
 	s.kmutex.Acquire(req.Code)
 	defer func() {
 		s.kmutex.Release(req.Code)

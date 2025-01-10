@@ -20,13 +20,13 @@ import (
 type GatewayProfileWalletAddressHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_gateway.GatewayAddWalletAddressToFaucetService
+	service  sv_gateway.GatewayAddWalletAddressToFaucetService
 }
 
 func NewGatewayProfileWalletAddressHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_gateway.GatewayAddWalletAddressToFaucetService,
+	service sv_gateway.GatewayAddWalletAddressToFaucetService,
 ) *GatewayProfileWalletAddressHTTPHandler {
 	return &GatewayProfileWalletAddressHTTPHandler{
 		logger:   logger,

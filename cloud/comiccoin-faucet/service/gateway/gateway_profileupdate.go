@@ -14,7 +14,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type GatewayProfileUpdateService struct {
+type GatewayProfileUpdateService interface {
+	Execute(sessCtx mongo.SessionContext, nu *GatewayProfileUpdateRequestIDO) (*domain.User, error)
+}
+
+type gatewayProfileUpdateServiceImpl struct {
 	logger             *slog.Logger
 	userGetByIDUseCase uc_user.UserGetByIDUseCase
 	userUpdateUseCase  uc_user.UserUpdateUseCase
@@ -24,8 +28,8 @@ func NewGatewayProfileUpdateService(
 	logger *slog.Logger,
 	uc1 uc_user.UserGetByIDUseCase,
 	uc2 uc_user.UserUpdateUseCase,
-) *GatewayProfileUpdateService {
-	return &GatewayProfileUpdateService{logger, uc1, uc2}
+) GatewayProfileUpdateService {
+	return &gatewayProfileUpdateServiceImpl{logger, uc1, uc2}
 }
 
 type GatewayProfileUpdateRequestIDO struct {
@@ -55,7 +59,7 @@ type GatewayProfileUpdateRequestIDO struct {
 	AgreeTermsOfService       bool   `bson:"agree_terms_of_service" json:"agree_terms_of_service,omitempty"`
 }
 
-func (s *GatewayProfileUpdateService) Execute(sessCtx mongo.SessionContext, nu *GatewayProfileUpdateRequestIDO) (*domain.User, error) {
+func (s *gatewayProfileUpdateServiceImpl) Execute(sessCtx mongo.SessionContext, nu *GatewayProfileUpdateRequestIDO) (*domain.User, error) {
 	// Extract from our session the following data.
 	userID := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
 	ipAddress, _ := sessCtx.Value(constants.SessionIPAddress).(string)

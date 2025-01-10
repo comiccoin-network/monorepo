@@ -20,7 +20,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type GatewayLoginService struct {
+type GatewayLoginService interface {
+	Execute(sessCtx mongo.SessionContext, req *GatewayLoginRequestIDO) (*GatewayLoginResponseIDO, error)
+}
+
+type gatewayLoginServiceImpl struct {
 	logger                *slog.Logger
 	passwordProvider      password.Provider
 	cache                 mongodbcache.Cacher
@@ -38,8 +42,8 @@ func NewGatewayLoginService(
 	uc1 uc_tenant.TenantGetByIDUseCase,
 	uc2 uc_user.UserGetByEmailUseCase,
 	uc3 uc_user.UserUpdateUseCase,
-) *GatewayLoginService {
-	return &GatewayLoginService{logger, pp, cach, jwtp, uc1, uc2, uc3}
+) GatewayLoginService {
+	return &gatewayLoginServiceImpl{logger, pp, cach, jwtp, uc1, uc2, uc3}
 }
 
 type GatewayLoginRequestIDO struct {
@@ -55,7 +59,7 @@ type GatewayLoginResponseIDO struct {
 	RefreshTokenExpiryTime time.Time    `json:"refresh_token_expiry_time"`
 }
 
-func (s *GatewayLoginService) Execute(sessCtx mongo.SessionContext, req *GatewayLoginRequestIDO) (*GatewayLoginResponseIDO, error) {
+func (s *gatewayLoginServiceImpl) Execute(sessCtx mongo.SessionContext, req *GatewayLoginRequestIDO) (*GatewayLoginResponseIDO, error) {
 	//
 	// STEP 1: Sanization of input.
 	//
@@ -149,7 +153,7 @@ func (s *GatewayLoginService) Execute(sessCtx mongo.SessionContext, req *Gateway
 	return s.loginWithUser(sessCtx, u)
 }
 
-func (s *GatewayLoginService) loginWithUser(sessCtx mongo.SessionContext, u *domain.User) (*GatewayLoginResponseIDO, error) {
+func (s *gatewayLoginServiceImpl) loginWithUser(sessCtx mongo.SessionContext, u *domain.User) (*GatewayLoginResponseIDO, error) {
 	uBin, err := json.Marshal(u)
 	if err != nil {
 		s.logger.Error("marshalling error", slog.Any("err", err))

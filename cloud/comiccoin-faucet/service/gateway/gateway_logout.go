@@ -8,7 +8,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/config/constants"
 )
 
-type GatewayLogoutService struct {
+type GatewayLogoutService interface {
+	Execute(ctx context.Context) error
+}
+
+type gatewayLogoutServiceImpl struct {
 	logger *slog.Logger
 	cache  mongodbcache.Cacher
 }
@@ -16,11 +20,11 @@ type GatewayLogoutService struct {
 func NewGatewayLogoutService(
 	logger *slog.Logger,
 	cach mongodbcache.Cacher,
-) *GatewayLogoutService {
-	return &GatewayLogoutService{logger, cach}
+) GatewayLogoutService {
+	return &gatewayLogoutServiceImpl{logger, cach}
 }
 
-func (s *GatewayLogoutService) Execute(ctx context.Context) error {
+func (s *gatewayLogoutServiceImpl) Execute(ctx context.Context) error {
 	// Extract from our session the following data.
 	sessionID := ctx.Value(constants.SessionID).(string)
 

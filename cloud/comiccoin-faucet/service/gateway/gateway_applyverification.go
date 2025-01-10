@@ -15,7 +15,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type GatewayApplyProfileForVerificationService struct {
+type GatewayApplyProfileForVerificationService interface {
+	Execute(sessCtx mongo.SessionContext, req *GatewayApplyProfileForVerificationRequestIDO) (*domain.User, error)
+}
+
+type gatewayApplyProfileForVerificationServiceImpl struct {
 	logger             *slog.Logger
 	userGetByIDUseCase uc_user.UserGetByIDUseCase
 	userUpdateUseCase  uc_user.UserUpdateUseCase
@@ -25,8 +29,8 @@ func NewGatewayApplyProfileForVerificationService(
 	logger *slog.Logger,
 	uc1 uc_user.UserGetByIDUseCase,
 	uc2 uc_user.UserUpdateUseCase,
-) *GatewayApplyProfileForVerificationService {
-	return &GatewayApplyProfileForVerificationService{logger, uc1, uc2}
+) GatewayApplyProfileForVerificationService {
+	return &gatewayApplyProfileForVerificationServiceImpl{logger, uc1, uc2}
 }
 
 type GatewayApplyProfileForVerificationRequestIDO struct {
@@ -57,7 +61,7 @@ type GatewayApplyProfileForVerificationRequestIDO struct {
 	HasRegularlyAttendedComicConsOrCollectibleShows int8   `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
 }
 
-func (s *GatewayApplyProfileForVerificationService) Execute(sessCtx mongo.SessionContext, req *GatewayApplyProfileForVerificationRequestIDO) (*domain.User, error) {
+func (s *gatewayApplyProfileForVerificationServiceImpl) Execute(sessCtx mongo.SessionContext, req *GatewayApplyProfileForVerificationRequestIDO) (*domain.User, error) {
 	//
 	// STEP 1: Validation
 	//

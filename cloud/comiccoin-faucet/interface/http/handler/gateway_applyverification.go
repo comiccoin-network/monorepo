@@ -19,13 +19,13 @@ import (
 type GatewayApplyProfileForVerificationHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_gateway.GatewayApplyProfileForVerificationService
+	service  sv_gateway.GatewayApplyProfileForVerificationService
 }
 
 func NewGatewayApplyProfileForVerificationHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_gateway.GatewayApplyProfileForVerificationService,
+	service sv_gateway.GatewayApplyProfileForVerificationService,
 ) *GatewayApplyProfileForVerificationHTTPHandler {
 	return &GatewayApplyProfileForVerificationHTTPHandler{
 		logger:   logger,

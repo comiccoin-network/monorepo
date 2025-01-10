@@ -16,7 +16,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type GatewayChangePasswordService struct {
+type GatewayChangePasswordService interface {
+	Execute(sessCtx mongo.SessionContext, req *GatewayChangePasswordRequestIDO) error
+}
+
+type gatewayChangePasswordServiceImpl struct {
 	logger             *slog.Logger
 	kmutex             kmutexutil.KMutexProvider
 	passwordProvider   password.Provider
@@ -30,8 +34,8 @@ func NewGatewayChangePasswordService(
 	passwordProvider password.Provider,
 	uc1 uc_user.UserGetByIDUseCase,
 	uc2 uc_user.UserUpdateUseCase,
-) *GatewayChangePasswordService {
-	return &GatewayChangePasswordService{logger, kmutex, passwordProvider, uc1, uc2}
+) GatewayChangePasswordService {
+	return &gatewayChangePasswordServiceImpl{logger, kmutex, passwordProvider, uc1, uc2}
 }
 
 type GatewayChangePasswordRequestIDO struct {
@@ -40,7 +44,7 @@ type GatewayChangePasswordRequestIDO struct {
 	NewPasswordRepeated string `json:"new_password_repeated"`
 }
 
-func (s *GatewayChangePasswordService) Execute(sessCtx mongo.SessionContext, req *GatewayChangePasswordRequestIDO) error {
+func (s *gatewayChangePasswordServiceImpl) Execute(sessCtx mongo.SessionContext, req *GatewayChangePasswordRequestIDO) error {
 	// Extract from our session the following data.
 	userID := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
 	ipAddress, _ := sessCtx.Value(constants.SessionIPAddress).(string)

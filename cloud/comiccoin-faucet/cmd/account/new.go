@@ -217,7 +217,7 @@ func doRunNewAccount() {
 		log.Fatalf("Failed creating account: %v\n", err)
 	}
 
-	resp := res.(*sv_user.UserCreateResponseIDO)
+	resp := res.(sv_user.UserCreateResponseIDO)
 
 	logger.Debug("Account created",
 		slog.Any("resp", resp))

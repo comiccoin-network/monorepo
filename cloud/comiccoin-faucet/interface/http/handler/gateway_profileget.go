@@ -16,13 +16,13 @@ import (
 type GatewayProfileDetailHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_gateway.GatewayProfileGetService
+	service  sv_gateway.GatewayProfileGetService
 }
 
 func NewGatewayProfileDetailHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_gateway.GatewayProfileGetService,
+	service sv_gateway.GatewayProfileGetService,
 ) *GatewayProfileDetailHTTPHandler {
 	return &GatewayProfileDetailHTTPHandler{
 		logger:   logger,

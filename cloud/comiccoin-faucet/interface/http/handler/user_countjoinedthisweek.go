@@ -18,13 +18,13 @@ import (
 type UserCountJoinedThisWeekHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_user.UserCountJoinedThisWeekService
+	service  sv_user.UserCountJoinedThisWeekService
 }
 
 func NewUserCountJoinedThisWeekHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_user.UserCountJoinedThisWeekService,
+	service sv_user.UserCountJoinedThisWeekService,
 ) *UserCountJoinedThisWeekHTTPHandler {
 	return &UserCountJoinedThisWeekHTTPHandler{
 		logger:   logger,
@@ -77,7 +77,7 @@ func (h *UserCountJoinedThisWeekHTTPHandler) Execute(w http.ResponseWriter, r *h
 		return
 	}
 
-	resp := result.(*sv_user.UserCountJoinedThisWeekResponseIDO)
+	resp := result.(sv_user.UserCountJoinedThisWeekResponseIDO)
 
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

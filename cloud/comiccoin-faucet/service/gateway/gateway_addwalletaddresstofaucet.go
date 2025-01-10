@@ -1,7 +1,6 @@
 package gateway
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -20,11 +19,14 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type FaucetCoinTransferService interface {
-	Execute(ctx context.Context) error
+type GatewayAddWalletAddressToFaucetService interface {
+	Execute(
+		sessCtx mongo.SessionContext,
+		req *GatewayProfileWalletAddressRequestIDO,
+	) (*domain.User, error)
 }
 
-type GatewayAddWalletAddressToFaucetService struct {
+type gatewayAddWalletAddressToFaucetServiceImpl struct {
 	config                    *config.Configuration
 	logger                    *slog.Logger
 	tenantGetByIDUseCase      uc_tenant.TenantGetByIDUseCase
@@ -40,15 +42,15 @@ func NewGatewayAddWalletAddressToFaucetService(
 	uc2 uc_user.UserGetByIDUseCase,
 	uc3 uc_user.UserUpdateUseCase,
 	s1 sv_faucet.FaucetCoinTransferService,
-) *GatewayAddWalletAddressToFaucetService {
-	return &GatewayAddWalletAddressToFaucetService{cfg, logger, uc1, uc2, uc3, s1}
+) GatewayAddWalletAddressToFaucetService {
+	return &gatewayAddWalletAddressToFaucetServiceImpl{cfg, logger, uc1, uc2, uc3, s1}
 }
 
 type GatewayProfileWalletAddressRequestIDO struct {
 	WalletAddress string `bson:"wallet_address" json:"wallet_address"`
 }
 
-func (s *GatewayAddWalletAddressToFaucetService) Execute(
+func (s *gatewayAddWalletAddressToFaucetServiceImpl) Execute(
 	sessCtx mongo.SessionContext,
 	req *GatewayProfileWalletAddressRequestIDO,
 ) (*domain.User, error) {

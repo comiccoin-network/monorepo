@@ -14,13 +14,13 @@ import (
 type GatewayLogoutHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_gateway.GatewayLogoutService
+	service  sv_gateway.GatewayLogoutService
 }
 
 func NewGatewayLogoutHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_gateway.GatewayLogoutService,
+	service sv_gateway.GatewayLogoutService,
 ) *GatewayLogoutHTTPHandler {
 	return &GatewayLogoutHTTPHandler{
 		logger:   logger,

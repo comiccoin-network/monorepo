@@ -20,13 +20,13 @@ import (
 type GatewayProfileUpdateHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_gateway.GatewayProfileUpdateService
+	service  sv_gateway.GatewayProfileUpdateService
 }
 
 func NewGatewayProfileUpdateHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_gateway.GatewayProfileUpdateService,
+	service sv_gateway.GatewayProfileUpdateService,
 ) *GatewayProfileUpdateHTTPHandler {
 	return &GatewayProfileUpdateHTTPHandler{
 		logger:   logger,

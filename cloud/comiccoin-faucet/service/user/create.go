@@ -22,7 +22,14 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type UserCreateService struct {
+type UserCreateService interface {
+	Execute(
+		sessCtx mongo.SessionContext,
+		req *UserCreateRequestIDO,
+	) (*UserCreateResponseIDO, error)
+}
+
+type userCreateServiceImpl struct {
 	config                *config.Configuration
 	logger                *slog.Logger
 	passwordProvider      password.Provider
@@ -44,8 +51,8 @@ func NewUserCreateService(
 	uc2 uc_user.UserGetByEmailUseCase,
 	uc3 uc_user.UserCreateUseCase,
 	uc4 uc_user.UserUpdateUseCase,
-) *UserCreateService {
-	return &UserCreateService{cfg, logger, pp, cach, jwtp, uc1, uc2, uc3, uc4}
+) UserCreateService {
+	return &userCreateServiceImpl{cfg, logger, pp, cach, jwtp, uc1, uc2, uc3, uc4}
 }
 
 type UserCreateRequestIDO struct {
@@ -71,7 +78,7 @@ type UserCreateResponseIDO struct {
 	RefreshTokenExpiryTime time.Time    `json:"refresh_token_expiry_time"`
 }
 
-func (s *UserCreateService) Execute(
+func (s *userCreateServiceImpl) Execute(
 	sessCtx mongo.SessionContext,
 	req *UserCreateRequestIDO,
 ) (*UserCreateResponseIDO, error) {
@@ -167,7 +174,7 @@ func (s *UserCreateService) Execute(
 	return s.createUser(sessCtx, u)
 }
 
-func (s *UserCreateService) createUser(sessCtx mongo.SessionContext, u *domain.User) (*UserCreateResponseIDO, error) {
+func (s *userCreateServiceImpl) createUser(sessCtx mongo.SessionContext, u *domain.User) (*UserCreateResponseIDO, error) {
 	uBin, err := json.Marshal(u)
 	if err != nil {
 		s.logger.Error("marshalling error", slog.Any("err", err))
@@ -204,7 +211,7 @@ func (s *UserCreateService) createUser(sessCtx mongo.SessionContext, u *domain.U
 	}, nil
 }
 
-func (s *UserCreateService) createUserForRequest(sessCtx mongo.SessionContext, req *UserCreateRequestIDO) (*domain.User, error) {
+func (s *userCreateServiceImpl) createUserForRequest(sessCtx mongo.SessionContext, req *UserCreateRequestIDO) (*domain.User, error) {
 	// Lookup the store and check to see if it's active or not, if not active then return the specific requests.
 	t, err := s.tenantGetByIDUseCase.Execute(sessCtx, s.config.App.TenantID)
 	if err != nil {

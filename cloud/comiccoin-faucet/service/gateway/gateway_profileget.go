@@ -12,7 +12,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type GatewayProfileGetService struct {
+type GatewayProfileGetService interface {
+	Execute(sessCtx mongo.SessionContext) (*domain.User, error)
+}
+
+type gatewayProfileGetServiceImpl struct {
 	logger             *slog.Logger
 	userGetByIDUseCase uc_user.UserGetByIDUseCase
 }
@@ -20,11 +24,11 @@ type GatewayProfileGetService struct {
 func NewGatewayProfileGetService(
 	logger *slog.Logger,
 	uc1 uc_user.UserGetByIDUseCase,
-) *GatewayProfileGetService {
-	return &GatewayProfileGetService{logger, uc1}
+) GatewayProfileGetService {
+	return &gatewayProfileGetServiceImpl{logger, uc1}
 }
 
-func (s *GatewayProfileGetService) Execute(sessCtx mongo.SessionContext) (*domain.User, error) {
+func (s *gatewayProfileGetServiceImpl) Execute(sessCtx mongo.SessionContext) (*domain.User, error) {
 	// Extract from our session the following data.
 	userID := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
 

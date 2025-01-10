@@ -15,7 +15,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type UserProfileVerificationJudgeOperationService struct {
+type UserProfileVerificationJudgeOperationService interface {
+	Execute(sessCtx mongo.SessionContext, req *UserProfileVerificationJudgeOperationRequestIDO) (*domain.User, error)
+}
+
+type userProfileVerificationJudgeOperationServiceImpl struct {
 	logger             *slog.Logger
 	userGetByIDUseCase uc_user.UserGetByIDUseCase
 	userUpdateUseCase  uc_user.UserUpdateUseCase
@@ -25,8 +29,8 @@ func NewUserProfileVerificationJudgeOperationService(
 	logger *slog.Logger,
 	uc1 uc_user.UserGetByIDUseCase,
 	uc2 uc_user.UserUpdateUseCase,
-) *UserProfileVerificationJudgeOperationService {
-	return &UserProfileVerificationJudgeOperationService{logger, uc1, uc2}
+) UserProfileVerificationJudgeOperationService {
+	return &userProfileVerificationJudgeOperationServiceImpl{logger, uc1, uc2}
 }
 
 type UserProfileVerificationJudgeOperationRequestIDO struct {
@@ -34,7 +38,7 @@ type UserProfileVerificationJudgeOperationRequestIDO struct {
 	ProfileVerificationStatus int8               `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
 }
 
-func (s *UserProfileVerificationJudgeOperationService) Execute(sessCtx mongo.SessionContext, req *UserProfileVerificationJudgeOperationRequestIDO) (*domain.User, error) {
+func (s *userProfileVerificationJudgeOperationServiceImpl) Execute(sessCtx mongo.SessionContext, req *UserProfileVerificationJudgeOperationRequestIDO) (*domain.User, error) {
 	//
 	// STEP 1: Validation
 	//

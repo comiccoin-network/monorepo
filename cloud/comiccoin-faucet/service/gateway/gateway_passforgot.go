@@ -11,7 +11,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type GatewayForgotPasswordService struct {
+type GatewayForgotPasswordService interface {
+	Execute(sessCtx mongo.SessionContext, req *GatewayForgotPasswordRequestIDO) error
+}
+
+type gatewayForgotPasswordServiceImpl struct {
 	logger                *slog.Logger
 	templatedEmailer      templatedemailer.TemplatedEmailer
 	userGetByEmailUseCase uc_user.UserGetByEmailUseCase
@@ -23,15 +27,15 @@ func NewGatewayForgotPasswordService(
 	templatedEmailer templatedemailer.TemplatedEmailer,
 	uc1 uc_user.UserGetByEmailUseCase,
 	uc2 uc_user.UserUpdateUseCase,
-) *GatewayForgotPasswordService {
-	return &GatewayForgotPasswordService{logger, templatedEmailer, uc1, uc2}
+) GatewayForgotPasswordService {
+	return &gatewayForgotPasswordServiceImpl{logger, templatedEmailer, uc1, uc2}
 }
 
 type GatewayForgotPasswordRequestIDO struct {
 	Email string `json:"email"`
 }
 
-func (s *GatewayForgotPasswordService) Execute(sessCtx mongo.SessionContext, req *GatewayForgotPasswordRequestIDO) error {
+func (s *gatewayForgotPasswordServiceImpl) Execute(sessCtx mongo.SessionContext, req *GatewayForgotPasswordRequestIDO) error {
 	// // Extract from our session the following data.
 	// userID := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
 

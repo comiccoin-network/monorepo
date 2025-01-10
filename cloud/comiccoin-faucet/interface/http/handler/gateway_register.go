@@ -19,13 +19,13 @@ import (
 type GatewayUserRegisterHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_gateway.GatewayUserRegisterService
+	service  sv_gateway.GatewayUserRegisterService
 }
 
 func NewGatewayUserRegisterHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_gateway.GatewayUserRegisterService,
+	service sv_gateway.GatewayUserRegisterService,
 ) *GatewayUserRegisterHTTPHandler {
 	return &GatewayUserRegisterHTTPHandler{
 		logger:   logger,
@@ -104,7 +104,7 @@ func (h *GatewayUserRegisterHTTPHandler) Execute(w http.ResponseWriter, r *http.
 		return
 	}
 
-	resp := result.(*sv_gateway.RegisterCustomerResponseIDO)
+	resp := result.(sv_gateway.RegisterCustomerResponseIDO)
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {

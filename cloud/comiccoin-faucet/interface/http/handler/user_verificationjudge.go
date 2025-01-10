@@ -20,13 +20,13 @@ import (
 type UserProfileVerificationJudgeOperationHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_user.UserProfileVerificationJudgeOperationService
+	service  sv_user.UserProfileVerificationJudgeOperationService
 }
 
 func NewUserProfileVerificationJudgeOperationHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_user.UserProfileVerificationJudgeOperationService,
+	service sv_user.UserProfileVerificationJudgeOperationService,
 ) *UserProfileVerificationJudgeOperationHTTPHandler {
 	return &UserProfileVerificationJudgeOperationHTTPHandler{
 		logger:   logger,

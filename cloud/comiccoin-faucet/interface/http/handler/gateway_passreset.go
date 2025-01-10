@@ -18,13 +18,13 @@ import (
 type GatewayResetPasswordHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_gateway.GatewayResetPasswordService
+	service  sv_gateway.GatewayResetPasswordService
 }
 
 func NewGatewayResetPasswordHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_gateway.GatewayResetPasswordService,
+	service sv_gateway.GatewayResetPasswordService,
 ) *GatewayResetPasswordHTTPHandler {
 	return &GatewayResetPasswordHTTPHandler{
 		logger:   logger,

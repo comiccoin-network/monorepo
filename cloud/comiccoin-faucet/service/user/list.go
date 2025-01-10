@@ -11,7 +11,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type UserListByFilterService struct {
+type UserListByFilterService interface {
+	Execute(sessCtx mongo.SessionContext, filter *UserFilterRequestID) (*UserFilterResultResponseIDO, error)
+}
+
+type userListByFilterServiceImpl struct {
 	logger                             *slog.Logger
 	cloudStoragePresignedURLUseCase    uc_cloudstorage.CloudStoragePresignedURLUseCase
 	comicSubmissionListByFilterUseCase uc_user.UserListByFilterUseCase
@@ -21,15 +25,15 @@ func NewUserListByFilterService(
 	logger *slog.Logger,
 	uc1 uc_cloudstorage.CloudStoragePresignedURLUseCase,
 	uc2 uc_user.UserListByFilterUseCase,
-) *UserListByFilterService {
-	return &UserListByFilterService{logger, uc1, uc2}
+) UserListByFilterService {
+	return &userListByFilterServiceImpl{logger, uc1, uc2}
 }
 
 type UserFilterRequestID domain.UserFilter
 
 type UserFilterResultResponseIDO domain.UserFilterResult
 
-func (s *UserListByFilterService) Execute(sessCtx mongo.SessionContext, filter *UserFilterRequestID) (*UserFilterResultResponseIDO, error) {
+func (s *userListByFilterServiceImpl) Execute(sessCtx mongo.SessionContext, filter *UserFilterRequestID) (*UserFilterResultResponseIDO, error) {
 	//
 	// STEP 1: Validation.
 	//

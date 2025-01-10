@@ -18,13 +18,13 @@ import (
 type GatewayChangePasswordHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_gateway.GatewayChangePasswordService
+	service  sv_gateway.GatewayChangePasswordService
 }
 
 func NewGatewayChangePasswordHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_gateway.GatewayChangePasswordService,
+	service sv_gateway.GatewayChangePasswordService,
 ) *GatewayChangePasswordHTTPHandler {
 	return &GatewayChangePasswordHTTPHandler{
 		logger:   logger,

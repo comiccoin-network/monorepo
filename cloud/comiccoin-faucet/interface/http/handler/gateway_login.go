@@ -19,13 +19,13 @@ import (
 type GatewayLoginHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_gateway.GatewayLoginService
+	service  sv_gateway.GatewayLoginService
 }
 
 func NewGatewayLoginHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_gateway.GatewayLoginService,
+	service sv_gateway.GatewayLoginService,
 ) *GatewayLoginHTTPHandler {
 	return &GatewayLoginHTTPHandler{
 		logger:   logger,
@@ -104,7 +104,7 @@ func (h *GatewayLoginHTTPHandler) Execute(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	resp := result.(*sv_gateway.GatewayLoginResponseIDO)
+	resp := result.(sv_gateway.GatewayLoginResponseIDO)
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {

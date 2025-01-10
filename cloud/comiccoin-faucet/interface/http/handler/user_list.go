@@ -19,13 +19,13 @@ import (
 type UserListByFilterHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_user.UserListByFilterService
+	service  sv_user.UserListByFilterService
 }
 
 func NewUserListByFilterHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_user.UserListByFilterService,
+	service sv_user.UserListByFilterService,
 ) *UserListByFilterHTTPHandler {
 	return &UserListByFilterHTTPHandler{
 		logger:   logger,
@@ -179,7 +179,7 @@ func (h *UserListByFilterHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	resp := result.(*sv_user.UserFilterResultResponseIDO)
+	resp := result.(sv_user.UserFilterResultResponseIDO)
 
 	// Set response headers
 	w.Header().Set("Content-Type", "application/json")

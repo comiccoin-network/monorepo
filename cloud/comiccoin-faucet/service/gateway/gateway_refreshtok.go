@@ -15,7 +15,14 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type GatewayRefreshTokenService struct {
+type GatewayRefreshTokenService interface {
+	Execute(
+		sessCtx mongo.SessionContext,
+		req *GatewayRefreshTokenRequestIDO,
+	) (*GatewayRefreshTokenResponseIDO, error)
+}
+
+type gatewayRefreshTokenServiceImpl struct {
 	logger                *slog.Logger
 	cache                 mongodbcache.Cacher
 	jwtProvider           jwt.Provider
@@ -27,8 +34,8 @@ func NewGatewayRefreshTokenService(
 	cach mongodbcache.Cacher,
 	jwtp jwt.Provider,
 	uc1 uc_user.UserGetByEmailUseCase,
-) *GatewayRefreshTokenService {
-	return &GatewayRefreshTokenService{logger, cach, jwtp, uc1}
+) GatewayRefreshTokenService {
+	return &gatewayRefreshTokenServiceImpl{logger, cach, jwtp, uc1}
 }
 
 type GatewayRefreshTokenRequestIDO struct {
@@ -44,7 +51,7 @@ type GatewayRefreshTokenResponseIDO struct {
 	RefreshTokenExpiryDate time.Time `json:"refresh_token_expiry_date"`
 }
 
-func (s *GatewayRefreshTokenService) Execute(
+func (s *gatewayRefreshTokenServiceImpl) Execute(
 	sessCtx mongo.SessionContext,
 	req *GatewayRefreshTokenRequestIDO,
 ) (*GatewayRefreshTokenResponseIDO, error) {

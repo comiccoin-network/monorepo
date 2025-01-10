@@ -12,7 +12,11 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type UserCountJoinedThisWeekService struct {
+type UserCountJoinedThisWeekService interface {
+	Execute(sessCtx mongo.SessionContext, tenantID primitive.ObjectID, timezone string) (*UserCountJoinedThisWeekResponseIDO, error)
+}
+
+type userCountJoinedThisWeekServiceImpl struct {
 	logger                              *slog.Logger
 	comicSubmissionCountByFilterUseCase uc_user.UserCountByFilterUseCase
 }
@@ -20,15 +24,15 @@ type UserCountJoinedThisWeekService struct {
 func NewUserCountJoinedThisWeekService(
 	logger *slog.Logger,
 	uc1 uc_user.UserCountByFilterUseCase,
-) *UserCountJoinedThisWeekService {
-	return &UserCountJoinedThisWeekService{logger, uc1}
+) UserCountJoinedThisWeekService {
+	return &userCountJoinedThisWeekServiceImpl{logger, uc1}
 }
 
 type UserCountJoinedThisWeekResponseIDO struct {
 	Count uint64 `bson:"count" json:"count"`
 }
 
-func (s *UserCountJoinedThisWeekService) Execute(sessCtx mongo.SessionContext, tenantID primitive.ObjectID, timezone string) (*UserCountJoinedThisWeekResponseIDO, error) {
+func (s *userCountJoinedThisWeekServiceImpl) Execute(sessCtx mongo.SessionContext, tenantID primitive.ObjectID, timezone string) (*UserCountJoinedThisWeekResponseIDO, error) {
 	//
 	// STEP 1: Generate range.
 	//

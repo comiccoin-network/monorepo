@@ -18,13 +18,13 @@ import (
 type GatewayRefreshTokenHTTPHandler struct {
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  *sv_gateway.GatewayRefreshTokenService
+	service  sv_gateway.GatewayRefreshTokenService
 }
 
 func NewGatewayRefreshTokenHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service *sv_gateway.GatewayRefreshTokenService,
+	service sv_gateway.GatewayRefreshTokenService,
 ) *GatewayRefreshTokenHTTPHandler {
 	return &GatewayRefreshTokenHTTPHandler{
 		logger:   logger,
@@ -99,7 +99,7 @@ func (h *GatewayRefreshTokenHTTPHandler) Execute(w http.ResponseWriter, r *http.
 		return
 	}
 
-	resp := result.(*sv_gateway.GatewayRefreshTokenResponseIDO)
+	resp := result.(sv_gateway.GatewayRefreshTokenResponseIDO)
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {

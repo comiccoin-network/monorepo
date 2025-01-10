@@ -18,7 +18,18 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/usecase/user"
 )
 
-type GatewayInitService struct {
+type GatewayInitService interface {
+	Execute(
+		sessCtx mongo.SessionContext,
+		tenantName string,
+		chainID uint16,
+		email string,
+		walletMnemonic *sstring.SecureString,
+		walletPath string,
+	) error
+}
+
+type gatewayInitServiceImpl struct {
 	config                 *config.Configuration
 	logger                 *slog.Logger
 	passwordProvider       password.Provider
@@ -38,11 +49,11 @@ func NewGatewayInitService(
 	uc2 uc_tenant.TenantCreateUseCase,
 	uc3 uc_user.UserGetByEmailUseCase,
 	uc4 uc_user.UserCreateUseCase,
-) *GatewayInitService {
-	return &GatewayInitService{config, logger, pp, s1, uc1, uc2, uc3, uc4}
+) GatewayInitService {
+	return &gatewayInitServiceImpl{config, logger, pp, s1, uc1, uc2, uc3, uc4}
 }
 
-func (s *GatewayInitService) Execute(
+func (s *gatewayInitServiceImpl) Execute(
 	sessCtx mongo.SessionContext,
 	tenantName string,
 	chainID uint16,
