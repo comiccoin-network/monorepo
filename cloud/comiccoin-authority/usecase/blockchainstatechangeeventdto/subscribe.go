@@ -8,7 +8,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase struct {
+type SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase interface {
+	Execute(ctx context.Context, chainID uint16) (<-chan uint16, error)
+}
+
+type subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.BlockchainStateChangeEventDTORepository
 }
@@ -16,11 +20,11 @@ type SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase struct
 func NewSubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase(
 	logger *slog.Logger,
 	repo domain.BlockchainStateChangeEventDTORepository,
-) *SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase {
-	return &SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase{logger, repo}
+) SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase {
+	return &subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCaseImpl{logger, repo}
 }
 
-func (uc *SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase) Execute(ctx context.Context, chainID uint16) (<-chan uint16, error) {
+func (uc *subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCaseImpl) Execute(ctx context.Context, chainID uint16) (<-chan uint16, error) {
 	//
 	// STEP 1: Validation.
 	//
