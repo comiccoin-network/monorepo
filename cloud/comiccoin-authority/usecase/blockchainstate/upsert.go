@@ -9,7 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type UpsertBlockchainStateUseCase struct {
+type UpsertBlockchainStateUseCase interface {
+	Execute(ctx context.Context, bcs *domain.BlockchainState) error
+}
+
+type upsertBlockchainStateUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.BlockchainStateRepository
@@ -19,11 +23,11 @@ func NewUpsertBlockchainStateUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.BlockchainStateRepository,
-) *UpsertBlockchainStateUseCase {
-	return &UpsertBlockchainStateUseCase{config, logger, repo}
+) UpsertBlockchainStateUseCase {
+	return &upsertBlockchainStateUseCaseImpl{config, logger, repo}
 }
 
-func (uc *UpsertBlockchainStateUseCase) Execute(ctx context.Context, bcs *domain.BlockchainState) error {
+func (uc *upsertBlockchainStateUseCaseImpl) Execute(ctx context.Context, bcs *domain.BlockchainState) error {
 	//
 	// STEP 1: Validation.
 	//

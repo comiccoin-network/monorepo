@@ -10,7 +10,12 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type BlockchainStateUpdateDetectorUseCase struct {
+type BlockchainStateUpdateDetectorUseCase interface {
+	Execute(ctx context.Context) (*domain.BlockchainState, error)
+	Terminate()
+}
+
+type blockchainStateUpdateDetectorUseCaseImpl struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	repo     domain.BlockchainStateRepository
@@ -18,15 +23,15 @@ type BlockchainStateUpdateDetectorUseCase struct {
 	quitChan chan struct{}
 }
 
-func NewBlockchainStateUpdateDetectorUseCase(config *config.Configuration, logger *slog.Logger, repo domain.BlockchainStateRepository) *BlockchainStateUpdateDetectorUseCase {
+func NewBlockchainStateUpdateDetectorUseCase(config *config.Configuration, logger *slog.Logger, repo domain.BlockchainStateRepository) BlockchainStateUpdateDetectorUseCase {
 	dataChan, quitChan, err := repo.GetUpdateChangeStreamChannel(context.Background())
 	if err != nil {
 		log.Fatalf("NewBlockchainStateUpdateDetectorUseCase: Failed initializing use-case: %v\n", err)
 	}
-	return &BlockchainStateUpdateDetectorUseCase{config, logger, repo, dataChan, quitChan}
+	return &blockchainStateUpdateDetectorUseCaseImpl{config, logger, repo, dataChan, quitChan}
 }
 
-func (uc *BlockchainStateUpdateDetectorUseCase) Execute(ctx context.Context) (*domain.BlockchainState, error) {
+func (uc *blockchainStateUpdateDetectorUseCaseImpl) Execute(ctx context.Context) (*domain.BlockchainState, error) {
 	// uc.logger.Debug("Waiting to receive...")
 	select {
 	case blockchainState, ok := <-uc.dataChan:
@@ -45,7 +50,7 @@ func (uc *BlockchainStateUpdateDetectorUseCase) Execute(ctx context.Context) (*d
 }
 
 // Terminate releases the channel resource
-func (uc *BlockchainStateUpdateDetectorUseCase) Terminate() {
+func (uc *blockchainStateUpdateDetectorUseCaseImpl) Terminate() {
 	uc.logger.Debug("Closing change stream connection...")
 	close(uc.quitChan)
 }

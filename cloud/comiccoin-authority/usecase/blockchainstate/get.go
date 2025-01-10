@@ -9,7 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type GetBlockchainStateUseCase struct {
+type GetBlockchainStateUseCase interface {
+	Execute(ctx context.Context, chainID uint16) (*domain.BlockchainState, error)
+}
+
+type getBlockchainStateUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.BlockchainStateRepository
@@ -19,11 +23,11 @@ func NewGetBlockchainStateUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.BlockchainStateRepository,
-) *GetBlockchainStateUseCase {
-	return &GetBlockchainStateUseCase{config, logger, repo}
+) GetBlockchainStateUseCase {
+	return &getBlockchainStateUseCaseImpl{config, logger, repo}
 }
 
-func (uc *GetBlockchainStateUseCase) Execute(ctx context.Context, chainID uint16) (*domain.BlockchainState, error) {
+func (uc *getBlockchainStateUseCaseImpl) Execute(ctx context.Context, chainID uint16) (*domain.BlockchainState, error) {
 	//
 	// STEP 1: Validation.
 	//

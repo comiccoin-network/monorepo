@@ -14,13 +14,13 @@ import (
 type GetBlockchainStateService struct {
 	config                    *config.Configuration
 	logger                    *slog.Logger
-	getBlockchainStateUseCase *uc_blockchainstate.GetBlockchainStateUseCase
+	getBlockchainStateUseCase uc_blockchainstate.GetBlockchainStateUseCase
 }
 
 func NewGetBlockchainStateService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc *uc_blockchainstate.GetBlockchainStateUseCase,
+	uc uc_blockchainstate.GetBlockchainStateUseCase,
 ) *GetBlockchainStateService {
 	return &GetBlockchainStateService{cfg, logger, uc}
 }
