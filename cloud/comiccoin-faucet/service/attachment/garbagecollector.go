@@ -15,15 +15,15 @@ import (
 
 type AttachmentGarbageCollectorService struct {
 	logger                        *slog.Logger
-	attachmentListByFilterUseCase *uc_attachment.AttachmentListByFilterUseCase
-	attachmentDeleteUseCase       *uc_attachment.AttachmentDeleteUseCase
+	attachmentListByFilterUseCase uc_attachment.AttachmentListByFilterUseCase
+	attachmentDeleteUseCase       uc_attachment.AttachmentDeleteUseCase
 	cloudStorageDeleteUseCase     *uc_cloudstorage.CloudStorageDeleteUseCase
 }
 
 func NewAttachmentGarbageCollectorService(
 	logger *slog.Logger,
-	uc1 *uc_attachment.AttachmentListByFilterUseCase,
-	uc2 *uc_attachment.AttachmentDeleteUseCase,
+	uc1 uc_attachment.AttachmentListByFilterUseCase,
+	uc2 uc_attachment.AttachmentDeleteUseCase,
 	uc3 *uc_cloudstorage.CloudStorageDeleteUseCase,
 ) *AttachmentGarbageCollectorService {
 	return &AttachmentGarbageCollectorService{logger, uc1, uc2, uc3}

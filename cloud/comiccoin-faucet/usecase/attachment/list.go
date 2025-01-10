@@ -9,7 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type AttachmentListByFilterUseCase struct {
+type AttachmentListByFilterUseCase interface {
+	Execute(ctx context.Context, filter *domain.AttachmentFilter) (*domain.AttachmentFilterResult, error)
+}
+
+type attachmentListByFilterUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AttachmentRepository
@@ -19,11 +23,11 @@ func NewAttachmentListByFilterUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.AttachmentRepository,
-) *AttachmentListByFilterUseCase {
-	return &AttachmentListByFilterUseCase{config, logger, repo}
+) AttachmentListByFilterUseCase {
+	return &attachmentListByFilterUseCaseImpl{config, logger, repo}
 }
 
-func (uc *AttachmentListByFilterUseCase) Execute(ctx context.Context, filter *domain.AttachmentFilter) (*domain.AttachmentFilterResult, error) {
+func (uc *attachmentListByFilterUseCaseImpl) Execute(ctx context.Context, filter *domain.AttachmentFilter) (*domain.AttachmentFilterResult, error) {
 	//
 	// STEP 1: Validation.
 	//

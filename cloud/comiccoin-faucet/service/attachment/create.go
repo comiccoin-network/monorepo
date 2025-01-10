@@ -23,7 +23,7 @@ type AttachmentCreateService struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	cloudStorageSyncUploadUseCase   *uc_cloudstorage.CloudStorageSyncUploadUseCase
-	createAttachmentUseCase         *uc_attachment.CreateAttachmentUseCase
+	createAttachmentUseCase         uc_attachment.CreateAttachmentUseCase
 	cloudStoragePresignedURLUseCase *uc_cloudstorage.CloudStoragePresignedURLUseCase
 }
 
@@ -31,7 +31,7 @@ func NewAttachmentCreateService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	uc1 *uc_cloudstorage.CloudStorageSyncUploadUseCase,
-	uc2 *uc_attachment.CreateAttachmentUseCase,
+	uc2 uc_attachment.CreateAttachmentUseCase,
 	uc3 *uc_cloudstorage.CloudStoragePresignedURLUseCase,
 ) *AttachmentCreateService {
 	return &AttachmentCreateService{cfg, logger, uc1, uc2, uc3}

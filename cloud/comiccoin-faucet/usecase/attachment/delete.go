@@ -10,7 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type AttachmentDeleteUseCase struct {
+type AttachmentDeleteUseCase interface {
+	Execute(ctx context.Context, id primitive.ObjectID) error
+}
+
+type attachmentDeleteUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AttachmentRepository
@@ -20,11 +24,11 @@ func NewAttachmentDeleteUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.AttachmentRepository,
-) *AttachmentDeleteUseCase {
-	return &AttachmentDeleteUseCase{config, logger, repo}
+) AttachmentDeleteUseCase {
+	return &attachmentDeleteUseCaseImpl{config, logger, repo}
 }
 
-func (uc *AttachmentDeleteUseCase) Execute(ctx context.Context, id primitive.ObjectID) error {
+func (uc *attachmentDeleteUseCaseImpl) Execute(ctx context.Context, id primitive.ObjectID) error {
 	//
 	// STEP 1: Validation.
 	//

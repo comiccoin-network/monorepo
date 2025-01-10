@@ -10,7 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type AttachmentGetUseCase struct {
+type AttachmentGetUseCase interface {
+	Execute(ctx context.Context, id primitive.ObjectID) (*domain.Attachment, error)
+}
+
+type attachmentGetUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AttachmentRepository
@@ -20,11 +24,11 @@ func NewAttachmentGetUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.AttachmentRepository,
-) *AttachmentGetUseCase {
-	return &AttachmentGetUseCase{config, logger, repo}
+) AttachmentGetUseCase {
+	return &attachmentGetUseCaseImpl{config, logger, repo}
 }
 
-func (uc *AttachmentGetUseCase) Execute(ctx context.Context, id primitive.ObjectID) (*domain.Attachment, error) {
+func (uc *attachmentGetUseCaseImpl) Execute(ctx context.Context, id primitive.ObjectID) (*domain.Attachment, error) {
 	//
 	// STEP 1: Validation.
 	//

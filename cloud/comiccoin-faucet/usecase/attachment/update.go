@@ -9,7 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-faucet/domain"
 )
 
-type AttachmentUpdateUseCase struct {
+type AttachmentUpdateUseCase interface {
+	Execute(ctx context.Context, attachment *domain.Attachment) error
+}
+
+type attachmentUpdateUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.AttachmentRepository
@@ -19,11 +23,11 @@ func NewAttachmentUpdateUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo domain.AttachmentRepository,
-) *AttachmentUpdateUseCase {
-	return &AttachmentUpdateUseCase{config, logger, repo}
+) AttachmentUpdateUseCase {
+	return &attachmentUpdateUseCaseImpl{config, logger, repo}
 }
 
-func (uc *AttachmentUpdateUseCase) Execute(ctx context.Context, attachment *domain.Attachment) error {
+func (uc *attachmentUpdateUseCaseImpl) Execute(ctx context.Context, attachment *domain.Attachment) error {
 	//
 	// STEP 1: Validation.
 	//
