@@ -12,7 +12,11 @@ import (
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 )
 
-type GetAccountService struct {
+type GetAccountService interface {
+	Execute(ctx context.Context, address *common.Address) (*domain.Account, error)
+}
+
+type getAccountServiceImpl struct {
 	logger            *slog.Logger
 	getAccountUseCase uc_account.GetAccountUseCase
 }
@@ -20,11 +24,11 @@ type GetAccountService struct {
 func NewGetAccountService(
 	logger *slog.Logger,
 	uc1 uc_account.GetAccountUseCase,
-) *GetAccountService {
-	return &GetAccountService{logger, uc1}
+) GetAccountService {
+	return &getAccountServiceImpl{logger, uc1}
 }
 
-func (s *GetAccountService) Execute(ctx context.Context, address *common.Address) (*domain.Account, error) {
+func (s *getAccountServiceImpl) Execute(ctx context.Context, address *common.Address) (*domain.Account, error) {
 	//
 	// STEP 1: Validation.
 	//
