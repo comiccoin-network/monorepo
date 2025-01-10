@@ -46,7 +46,7 @@ type ProofOfAuthorityConsensusMechanismService struct {
 	getTokenUseCase                            *uc_token.GetTokenUseCase
 	getTokensHashStateUseCase                  *uc_token.GetTokensHashStateUseCase
 	upsertTokenIfPreviousTokenNonceGTEUseCase  *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
-	proofOfWorkUseCase                         *uc_pow.ProofOfWorkUseCase
+	proofOfWorkUseCase                         uc_pow.ProofOfWorkUseCase
 	upsertBlockDataUseCase                     uc_blockdata.UpsertBlockDataUseCase
 	blockchainStatePublishUseCase              uc_blockchainstate.BlockchainStatePublishUseCase
 }
@@ -69,7 +69,7 @@ func NewProofOfAuthorityConsensusMechanismService(
 	uc10 *uc_token.GetTokenUseCase,
 	uc11 *uc_token.GetTokensHashStateUseCase,
 	uc12 *uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
-	uc13 *uc_pow.ProofOfWorkUseCase,
+	uc13 uc_pow.ProofOfWorkUseCase,
 	uc14 uc_blockdata.UpsertBlockDataUseCase,
 	uc15 uc_blockchainstate.BlockchainStatePublishUseCase,
 ) *ProofOfAuthorityConsensusMechanismService {

@@ -10,16 +10,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type ProofOfWorkUseCase struct {
+type ProofOfWorkUseCase interface {
+	Execute(ctx context.Context, b *domain.Block, difficulty uint16) (*big.Int, error)
+}
+type proofOfWorkUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 }
 
-func NewProofOfWorkUseCase(config *config.Configuration, logger *slog.Logger) *ProofOfWorkUseCase {
-	return &ProofOfWorkUseCase{config, logger}
+func NewProofOfWorkUseCase(config *config.Configuration, logger *slog.Logger) ProofOfWorkUseCase {
+	return &proofOfWorkUseCaseImpl{config, logger}
 }
 
-func (uc *ProofOfWorkUseCase) Execute(ctx context.Context, b *domain.Block, difficulty uint16) (*big.Int, error) {
+func (uc *proofOfWorkUseCaseImpl) Execute(ctx context.Context, b *domain.Block, difficulty uint16) (*big.Int, error) {
 	//
 	// STEP 1: Validation.
 	//
