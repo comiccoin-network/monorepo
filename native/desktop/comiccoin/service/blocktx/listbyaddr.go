@@ -12,7 +12,11 @@ import (
 	uc_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blocktx"
 )
 
-type ListBlockTransactionsByAddressService struct {
+type ListBlockTransactionsByAddressService interface {
+	Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error)
+}
+
+type listBlockTransactionsByAddressServiceImpl struct {
 	logger                                *slog.Logger
 	listBlockTransactionsByAddressUseCase uc_blocktx.ListBlockTransactionsByAddressUseCase
 }
@@ -20,11 +24,11 @@ type ListBlockTransactionsByAddressService struct {
 func NewListBlockTransactionsByAddressService(
 	logger *slog.Logger,
 	uc1 uc_blocktx.ListBlockTransactionsByAddressUseCase,
-) *ListBlockTransactionsByAddressService {
-	return &ListBlockTransactionsByAddressService{logger, uc1}
+) ListBlockTransactionsByAddressService {
+	return &listBlockTransactionsByAddressServiceImpl{logger, uc1}
 }
 
-func (s *ListBlockTransactionsByAddressService) Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error) {
+func (s *listBlockTransactionsByAddressServiceImpl) Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error) {
 	//
 	// STEP 1: Validation.
 	//

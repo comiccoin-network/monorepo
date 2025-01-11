@@ -14,7 +14,11 @@ import (
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
-type GetOrDownloadNonFungibleTokenService struct {
+type GetOrDownloadNonFungibleTokenService interface {
+	Execute(ctx context.Context, tokenID *big.Int, dirPath string) (*domain.NonFungibleToken, error)
+}
+
+type getOrDownloadNonFungibleTokenServiceImpl struct {
 	logger                       *slog.Logger
 	getNFTokUseCase              uc_nftok.GetNonFungibleTokenUseCase
 	getTokUseCase                uc_tok.GetTokenUseCase
@@ -30,11 +34,11 @@ func NewGetOrDownloadNonFungibleTokenService(
 	uc3 uc_nftok.DownloadMetadataNonFungibleTokenUseCase,
 	uc4 uc_nftok.DownloadNonFungibleTokenAssetUseCase,
 	uc5 uc_nftok.UpsertNonFungibleTokenUseCase,
-) *GetOrDownloadNonFungibleTokenService {
-	return &GetOrDownloadNonFungibleTokenService{logger, uc1, uc2, uc3, uc4, uc5}
+) GetOrDownloadNonFungibleTokenService {
+	return &getOrDownloadNonFungibleTokenServiceImpl{logger, uc1, uc2, uc3, uc4, uc5}
 }
 
-func (s *GetOrDownloadNonFungibleTokenService) Execute(ctx context.Context, tokenID *big.Int, dirPath string) (*domain.NonFungibleToken, error) {
+func (s *getOrDownloadNonFungibleTokenServiceImpl) Execute(ctx context.Context, tokenID *big.Int, dirPath string) (*domain.NonFungibleToken, error) {
 	//
 	// STEP 1
 	// Lookup our `token id` in our NFT db and if it exists we can return value.
@@ -85,7 +89,7 @@ func (s *GetOrDownloadNonFungibleTokenService) Execute(ctx context.Context, toke
 	return nil, fmt.Errorf("Token metadata URI contains protocol we do not support: %v\n", tok.MetadataURI)
 }
 
-func (s *GetOrDownloadNonFungibleTokenService) getOrDownload(ctx context.Context, tok *auth_domain.Token, dirPath string) (*domain.NonFungibleToken, error) {
+func (s *getOrDownloadNonFungibleTokenServiceImpl) getOrDownload(ctx context.Context, tok *auth_domain.Token, dirPath string) (*domain.NonFungibleToken, error) {
 	metadataURI := tok.MetadataURI
 
 	metadata, metadataFilepath, err := s.downloadNFTokMetadataUsecase.Execute(tok.GetID(), metadataURI, dirPath)

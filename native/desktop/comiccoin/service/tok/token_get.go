@@ -12,7 +12,11 @@ import (
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
-type TokenGetService struct {
+type TokenGetService interface {
+	Execute(ctx context.Context, tokenID *big.Int) (*domain.Token, error)
+}
+
+type tokenGetServiceImpl struct {
 	logger          *slog.Logger
 	getTokenUseCase uc_tok.GetTokenUseCase
 }
@@ -20,11 +24,11 @@ type TokenGetService struct {
 func NewTokenGetService(
 	logger *slog.Logger,
 	uc1 uc_tok.GetTokenUseCase,
-) *TokenGetService {
-	return &TokenGetService{logger, uc1}
+) TokenGetService {
+	return &tokenGetServiceImpl{logger, uc1}
 }
 
-func (s *TokenGetService) Execute(ctx context.Context, tokenID *big.Int) (*domain.Token, error) {
+func (s *tokenGetServiceImpl) Execute(ctx context.Context, tokenID *big.Int) (*domain.Token, error) {
 	//
 	// STEP 1: Validation.
 	//

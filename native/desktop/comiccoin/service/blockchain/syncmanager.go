@@ -14,9 +14,13 @@ import (
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 )
 
-type BlockchainSyncManagerService struct {
+type BlockchainSyncManagerService interface {
+	Execute(ctx context.Context, chainID uint16) error
+}
+
+type blockchainSyncManagerServiceImpl struct {
 	logger                                                               *slog.Logger
-	blockchainSyncWithBlockchainAuthorityService                         *BlockchainSyncWithBlockchainAuthorityService
+	blockchainSyncWithBlockchainAuthorityService                         BlockchainSyncWithBlockchainAuthorityService
 	storageTransactionOpenUseCase                                        uc_storagetransaction.StorageTransactionOpenUseCase
 	storageTransactionCommitUseCase                                      uc_storagetransaction.StorageTransactionCommitUseCase
 	storageTransactionDiscardUseCase                                     uc_storagetransaction.StorageTransactionDiscardUseCase
@@ -25,16 +29,16 @@ type BlockchainSyncManagerService struct {
 
 func NewBlockchainSyncManagerService(
 	logger *slog.Logger,
-	s1 *BlockchainSyncWithBlockchainAuthorityService,
+	s1 BlockchainSyncWithBlockchainAuthorityService,
 	uc1 uc_storagetransaction.StorageTransactionOpenUseCase,
 	uc2 uc_storagetransaction.StorageTransactionCommitUseCase,
 	uc3 uc_storagetransaction.StorageTransactionDiscardUseCase,
 	uc4 uc_blockchainstatechangeeventdto.SubscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
-) *BlockchainSyncManagerService {
-	return &BlockchainSyncManagerService{logger, s1, uc1, uc2, uc3, uc4}
+) BlockchainSyncManagerService {
+	return &blockchainSyncManagerServiceImpl{logger, s1, uc1, uc2, uc3, uc4}
 }
 
-func (s *BlockchainSyncManagerService) Execute(ctx context.Context, chainID uint16) error {
+func (s *blockchainSyncManagerServiceImpl) Execute(ctx context.Context, chainID uint16) error {
 	//
 	// STEP 1: Validation.
 	//

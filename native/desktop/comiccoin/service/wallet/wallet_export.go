@@ -14,7 +14,11 @@ import (
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 )
 
-type ExportWalletService struct {
+type ExportWalletService interface {
+	Execute(ctx context.Context, address *common.Address, filepath string) error
+}
+
+type exportWalletServiceImpl struct {
 	logger            *slog.Logger
 	getAccountUseCase uc_account.GetAccountUseCase
 	getWalletUseCase  uc_wallet.GetWalletUseCase
@@ -24,11 +28,11 @@ func NewExportWalletService(
 	logger *slog.Logger,
 	uc1 uc_account.GetAccountUseCase,
 	uc2 uc_wallet.GetWalletUseCase,
-) *ExportWalletService {
-	return &ExportWalletService{logger, uc1, uc2}
+) ExportWalletService {
+	return &exportWalletServiceImpl{logger, uc1, uc2}
 }
 
-func (s *ExportWalletService) Execute(ctx context.Context, address *common.Address, filepath string) error {
+func (s *exportWalletServiceImpl) Execute(ctx context.Context, address *common.Address, filepath string) error {
 	//
 	// STEP 1: Validation.
 	//

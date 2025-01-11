@@ -11,9 +11,13 @@ import (
 	uc_storagetransaction "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/storagetransaction"
 )
 
-type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
+type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService interface {
+	Execute(ctx context.Context, chainID uint16) error
+}
+
+type blockchainSyncWithBlockchainAuthorityViaServerSentEventsServiceImpl struct {
 	logger                                                                   *slog.Logger
-	blockchainSyncWithBlockchainAuthorityService                             *BlockchainSyncWithBlockchainAuthorityService
+	blockchainSyncWithBlockchainAuthorityService                             BlockchainSyncWithBlockchainAuthorityService
 	storageTransactionOpenUseCase                                            uc_storagetransaction.StorageTransactionOpenUseCase
 	storageTransactionCommitUseCase                                          uc_storagetransaction.StorageTransactionCommitUseCase
 	storageTransactionDiscardUseCase                                         uc_storagetransaction.StorageTransactionDiscardUseCase
@@ -23,17 +27,17 @@ type BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService struct {
 
 func NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 	logger *slog.Logger,
-	s1 *BlockchainSyncWithBlockchainAuthorityService,
+	s1 BlockchainSyncWithBlockchainAuthorityService,
 	uc1 uc_storagetransaction.StorageTransactionOpenUseCase,
 	uc2 uc_storagetransaction.StorageTransactionCommitUseCase,
 	uc3 uc_storagetransaction.StorageTransactionDiscardUseCase,
 	uc4 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc5 uc_blockchainstate.SubscribeToBlockchainStateServerSentEventsFromBlockchainAuthorityUseCase,
-) *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService {
-	return &BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService{logger, s1, uc1, uc2, uc3, uc4, uc5}
+) BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService {
+	return &blockchainSyncWithBlockchainAuthorityViaServerSentEventsServiceImpl{logger, s1, uc1, uc2, uc3, uc4, uc5}
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService) Execute(ctx context.Context, chainID uint16) error {
+func (s *blockchainSyncWithBlockchainAuthorityViaServerSentEventsServiceImpl) Execute(ctx context.Context, chainID uint16) error {
 	// Fetch our local blockchain state.
 	localBlockchainState, err := s.getBlockchainStateUseCase.Execute(ctx, chainID)
 	if err != nil {

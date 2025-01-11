@@ -10,7 +10,11 @@ import (
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
-type TokenCountByOwnerService struct {
+type TokenCountByOwnerService interface {
+	Execute(ctx context.Context, address *common.Address) (int64, error)
+}
+
+type tokenCountByOwnerServiceImpl struct {
 	logger                    *slog.Logger
 	countTokensByOwnerUseCase uc_tok.CountTokensByOwnerUseCase
 }
@@ -18,11 +22,11 @@ type TokenCountByOwnerService struct {
 func NewTokenCountByOwnerService(
 	logger *slog.Logger,
 	uc1 uc_tok.CountTokensByOwnerUseCase,
-) *TokenCountByOwnerService {
-	return &TokenCountByOwnerService{logger, uc1}
+) TokenCountByOwnerService {
+	return &tokenCountByOwnerServiceImpl{logger, uc1}
 }
 
-func (s *TokenCountByOwnerService) Execute(ctx context.Context, address *common.Address) (int64, error) {
+func (s *tokenCountByOwnerServiceImpl) Execute(ctx context.Context, address *common.Address) (int64, error) {
 	//
 	// STEP 1: Validation.
 	//

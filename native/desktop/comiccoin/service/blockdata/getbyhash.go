@@ -11,7 +11,11 @@ import (
 	uc_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockdata"
 )
 
-type BlockDataGetByHashService struct {
+type BlockDataGetByHashService interface {
+	Execute(ctx context.Context, hash string) (*domain.BlockData, error)
+}
+
+type blockDataGetByHashServiceImpl struct {
 	logger              *slog.Logger
 	GetBlockDataUseCase uc_blockdata.GetBlockDataUseCase
 }
@@ -19,11 +23,11 @@ type BlockDataGetByHashService struct {
 func NewBlockDataGetByHashService(
 	logger *slog.Logger,
 	uc1 uc_blockdata.GetBlockDataUseCase,
-) *BlockDataGetByHashService {
-	return &BlockDataGetByHashService{logger, uc1}
+) BlockDataGetByHashService {
+	return &blockDataGetByHashServiceImpl{logger, uc1}
 }
 
-func (s *BlockDataGetByHashService) Execute(ctx context.Context, hash string) (*domain.BlockData, error) {
+func (s *blockDataGetByHashServiceImpl) Execute(ctx context.Context, hash string) (*domain.BlockData, error) {
 	//
 	// STEP 1: Validation.
 	//

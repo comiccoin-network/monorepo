@@ -9,7 +9,11 @@ import (
 	uc_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainsyncstatus"
 )
 
-type GetBlockchainSyncStatusService struct {
+type GetBlockchainSyncStatusService interface {
+	Execute(ctx context.Context) (*domain.BlockchainSyncStatus, error)
+}
+
+type getBlockchainSyncStatusServiceImpl struct {
 	logger                         *slog.Logger
 	getBlockchainSyncStatusUseCase uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase
 }
@@ -17,11 +21,11 @@ type GetBlockchainSyncStatusService struct {
 func NewGetBlockchainSyncStatusService(
 	logger *slog.Logger,
 	uc1 uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase,
-) *GetBlockchainSyncStatusService {
-	return &GetBlockchainSyncStatusService{logger, uc1}
+) GetBlockchainSyncStatusService {
+	return &getBlockchainSyncStatusServiceImpl{logger, uc1}
 }
 
-func (s *GetBlockchainSyncStatusService) Execute(ctx context.Context) (*domain.BlockchainSyncStatus, error) {
+func (s *getBlockchainSyncStatusServiceImpl) Execute(ctx context.Context) (*domain.BlockchainSyncStatus, error) {
 	blockchainSyncStatus, err := s.getBlockchainSyncStatusUseCase.Execute(ctx)
 	if err != nil {
 		s.logger.Error("failed getting blockchain sync status",

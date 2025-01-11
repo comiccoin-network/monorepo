@@ -12,7 +12,11 @@ import (
 	uc_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blocktx"
 )
 
-type ListWithLimitBlockTransactionsByAddressService struct {
+type ListWithLimitBlockTransactionsByAddressService interface {
+	Execute(ctx context.Context, address *common.Address, limit int64) ([]*domain.BlockTransaction, error)
+}
+
+type listWithLimitBlockTransactionsByAddressServiceImpl struct {
 	logger                                         *slog.Logger
 	listWithLimitBlockTransactionsByAddressUseCase uc_blocktx.ListWithLimitBlockTransactionsByAddressUseCase
 }
@@ -20,11 +24,11 @@ type ListWithLimitBlockTransactionsByAddressService struct {
 func NewListWithLimitBlockTransactionsByAddressService(
 	logger *slog.Logger,
 	uc1 uc_blocktx.ListWithLimitBlockTransactionsByAddressUseCase,
-) *ListWithLimitBlockTransactionsByAddressService {
-	return &ListWithLimitBlockTransactionsByAddressService{logger, uc1}
+) ListWithLimitBlockTransactionsByAddressService {
+	return &listWithLimitBlockTransactionsByAddressServiceImpl{logger, uc1}
 }
 
-func (s *ListWithLimitBlockTransactionsByAddressService) Execute(ctx context.Context, address *common.Address, limit int64) ([]*domain.BlockTransaction, error) {
+func (s *listWithLimitBlockTransactionsByAddressServiceImpl) Execute(ctx context.Context, address *common.Address, limit int64) ([]*domain.BlockTransaction, error) {
 	//
 	// STEP 1: Validation.
 	//

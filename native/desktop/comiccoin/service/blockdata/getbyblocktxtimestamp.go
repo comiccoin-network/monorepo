@@ -11,7 +11,11 @@ import (
 	uc_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockdata"
 )
 
-type GetByBlockTransactionTimestampService struct {
+type GetByBlockTransactionTimestampService interface {
+	Execute(ctx context.Context, timestamp uint64) (*domain.BlockData, error)
+}
+
+type getByBlockTransactionTimestampServiceImpl struct {
 	logger                                *slog.Logger
 	GetByBlockTransactionTimestampUseCase uc_blockdata.GetByBlockTransactionTimestampUseCase
 }
@@ -19,11 +23,11 @@ type GetByBlockTransactionTimestampService struct {
 func NewGetByBlockTransactionTimestampService(
 	logger *slog.Logger,
 	uc1 uc_blockdata.GetByBlockTransactionTimestampUseCase,
-) *GetByBlockTransactionTimestampService {
-	return &GetByBlockTransactionTimestampService{logger, uc1}
+) GetByBlockTransactionTimestampService {
+	return &getByBlockTransactionTimestampServiceImpl{logger, uc1}
 }
 
-func (s *GetByBlockTransactionTimestampService) Execute(ctx context.Context, timestamp uint64) (*domain.BlockData, error) {
+func (s *getByBlockTransactionTimestampServiceImpl) Execute(ctx context.Context, timestamp uint64) (*domain.BlockData, error) {
 	//
 	// STEP 1: Validation.
 	//

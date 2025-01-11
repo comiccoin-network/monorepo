@@ -24,7 +24,11 @@ import (
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
-type BlockchainSyncWithBlockchainAuthorityService struct {
+type BlockchainSyncWithBlockchainAuthorityService interface {
+	Execute(ctx context.Context, chainID uint16) error
+}
+
+type blockchainSyncWithBlockchainAuthorityServiceImpl struct {
 	logger                                               *slog.Logger
 	getBlockchainSyncStatusUseCase                       uc_blockchainsyncstatus.GetBlockchainSyncStatusUseCase
 	setBlockchainSyncStatusUseCase                       uc_blockchainsyncstatus.SetBlockchainSyncStatusUseCase
@@ -60,11 +64,11 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc13 uc_account.UpsertAccountUseCase,
 	uc14 uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase,
 	uc15 uc_pstx.DeletePendingSignedTransactionUseCase,
-) *BlockchainSyncWithBlockchainAuthorityService {
-	return &BlockchainSyncWithBlockchainAuthorityService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15}
+) BlockchainSyncWithBlockchainAuthorityService {
+	return &blockchainSyncWithBlockchainAuthorityServiceImpl{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15}
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(ctx context.Context, chainID uint16) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) Execute(ctx context.Context, chainID uint16) error {
 	//
 	// STEP 1: Validation.
 	//
@@ -201,7 +205,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) Execute(ctx context.Conte
 	return nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) getGenesisLocallyOrDownloadGenesisFromGlobalBlockchainNetwork(ctx context.Context, chainID uint16) (*domain.GenesisBlockData, error) {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) getGenesisLocallyOrDownloadGenesisFromGlobalBlockchainNetwork(ctx context.Context, chainID uint16) (*domain.GenesisBlockData, error) {
 	genesis, err := s.getGenesisBlockDataUseCase.Execute(ctx, chainID)
 	if err != nil {
 		s.logger.Error("Failed getting genesis block locally",
@@ -299,7 +303,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) getGenesisLocallyOrDownlo
 	return genesis, nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainNetwork(ctx context.Context, localBlockchainState, globalBlockchainState *domain.BlockchainState) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) syncWithGlobalBlockchainNetwork(ctx context.Context, localBlockchainState, globalBlockchainState *domain.BlockchainState) error {
 	//
 	// Algorithm:
 	// (1) Download the most recent block from the Global Blockchain. Please
@@ -461,7 +465,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) syncWithGlobalBlockchainN
 	return nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForTransaction(ctx context.Context, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) processAccountForTransaction(ctx context.Context, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
 	//
 	// CASE 1 OF 2: 🎟️ Token Transaction
 	//
@@ -481,7 +485,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForTransact
 	return nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForCoinTransaction(ctx context.Context, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) processAccountForCoinTransaction(ctx context.Context, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
 	//
 	// STEP 1
 	//
@@ -584,7 +588,7 @@ func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForCoinTran
 	return nil
 }
 
-func (s *BlockchainSyncWithBlockchainAuthorityService) processAccountForTokenTransaction(ctx context.Context, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
+func (s *blockchainSyncWithBlockchainAuthorityServiceImpl) processAccountForTokenTransaction(ctx context.Context, blockData *domain.BlockData, blockTx *domain.BlockTransaction) error {
 	//
 	// STEP 1:
 	// Check to see if we have an account for this particular token and

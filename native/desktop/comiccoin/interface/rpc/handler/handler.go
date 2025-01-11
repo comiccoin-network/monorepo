@@ -14,38 +14,38 @@ import (
 
 type ComicCoinRPCServer struct {
 	logger                                *slog.Logger
-	getAccountService                     *service_account.GetAccountService
-	createAccountService                  *service_account.CreateAccountService
-	accountListingByLocalWalletsService   *service_account.AccountListingByLocalWalletsService
-	coinTransferService                   *service_coin.CoinTransferService
-	tokenGetService                       *service_tok.TokenGetService
-	tokenTransferService                  *service_tok.TokenTransferService
-	tokenBurnService                      *service_tok.TokenBurnService
-	getOrDownloadNonFungibleTokenService  *service_nftok.GetOrDownloadNonFungibleTokenService
-	listBlockTransactionsByAddressService *service_blocktx.ListBlockTransactionsByAddressService
-	getByBlockTransactionTimestampService *service_blockdata.GetByBlockTransactionTimestampService
-	blockDataGetByHashService             *service_blockdata.BlockDataGetByHashService
-	tokenListByOwnerService               *service_tok.TokenListByOwnerService
-	exportWalletService                   *service_wallet.ExportWalletService
-	importWalletService                   *service_wallet.ImportWalletService
+	getAccountService                     service_account.GetAccountService
+	createAccountService                  service_account.CreateAccountService
+	accountListingByLocalWalletsService   service_account.AccountListingByLocalWalletsService
+	coinTransferService                   service_coin.CoinTransferService
+	tokenGetService                       service_tok.TokenGetService
+	tokenTransferService                  service_tok.TokenTransferService
+	tokenBurnService                      service_tok.TokenBurnService
+	getOrDownloadNonFungibleTokenService  service_nftok.GetOrDownloadNonFungibleTokenService
+	listBlockTransactionsByAddressService service_blocktx.ListBlockTransactionsByAddressService
+	getByBlockTransactionTimestampService service_blockdata.GetByBlockTransactionTimestampService
+	blockDataGetByHashService             service_blockdata.BlockDataGetByHashService
+	tokenListByOwnerService               service_tok.TokenListByOwnerService
+	exportWalletService                   service_wallet.ExportWalletService
+	importWalletService                   service_wallet.ImportWalletService
 }
 
 func NewComicCoinRPCServer(
 	logger *slog.Logger,
-	s1 *service_account.GetAccountService,
-	s2 *service_account.CreateAccountService,
-	s3 *service_account.AccountListingByLocalWalletsService,
-	s4 *service_coin.CoinTransferService,
-	s5 *service_tok.TokenGetService,
-	s6 *service_tok.TokenTransferService,
-	s7 *service_tok.TokenBurnService,
-	s8 *service_nftok.GetOrDownloadNonFungibleTokenService,
-	s9 *service_blocktx.ListBlockTransactionsByAddressService,
-	s10 *service_blockdata.GetByBlockTransactionTimestampService,
-	s11 *service_blockdata.BlockDataGetByHashService,
-	s12 *service_tok.TokenListByOwnerService,
-	s13 *service_wallet.ExportWalletService,
-	s14 *service_wallet.ImportWalletService,
+	s1 service_account.GetAccountService,
+	s2 service_account.CreateAccountService,
+	s3 service_account.AccountListingByLocalWalletsService,
+	s4 service_coin.CoinTransferService,
+	s5 service_tok.TokenGetService,
+	s6 service_tok.TokenTransferService,
+	s7 service_tok.TokenBurnService,
+	s8 service_nftok.GetOrDownloadNonFungibleTokenService,
+	s9 service_blocktx.ListBlockTransactionsByAddressService,
+	s10 service_blockdata.GetByBlockTransactionTimestampService,
+	s11 service_blockdata.BlockDataGetByHashService,
+	s12 service_tok.TokenListByOwnerService,
+	s13 service_wallet.ExportWalletService,
+	s14 service_wallet.ImportWalletService,
 ) *ComicCoinRPCServer {
 
 	// Create a new RPC server instance.

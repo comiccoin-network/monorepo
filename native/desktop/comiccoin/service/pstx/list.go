@@ -8,7 +8,11 @@ import (
 	uc_pstx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/pstx"
 )
 
-type PendingSignedTransactionListService struct {
+type PendingSignedTransactionListService interface {
+	Execute(ctx context.Context) ([]*domain.PendingSignedTransaction, error)
+}
+
+type pendingSignedTransactionListServiceImpl struct {
 	logger                              *slog.Logger
 	listPendingSignedTransactionUseCase uc_pstx.ListPendingSignedTransactionUseCase
 }
@@ -16,10 +20,10 @@ type PendingSignedTransactionListService struct {
 func NewPendingSignedTransactionListService(
 	logger *slog.Logger,
 	uc1 uc_pstx.ListPendingSignedTransactionUseCase,
-) *PendingSignedTransactionListService {
-	return &PendingSignedTransactionListService{logger, uc1}
+) PendingSignedTransactionListService {
+	return &pendingSignedTransactionListServiceImpl{logger, uc1}
 }
 
-func (s *PendingSignedTransactionListService) Execute(ctx context.Context) ([]*domain.PendingSignedTransaction, error) {
+func (s *pendingSignedTransactionListServiceImpl) Execute(ctx context.Context) ([]*domain.PendingSignedTransaction, error) {
 	return s.listPendingSignedTransactionUseCase.Execute(ctx)
 }

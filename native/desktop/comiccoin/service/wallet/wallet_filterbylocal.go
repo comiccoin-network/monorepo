@@ -9,7 +9,11 @@ import (
 	uc_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/wallet"
 )
 
-type WalletsFilterByLocalService struct {
+type WalletsFilterByLocalService interface {
+	Execute(ctx context.Context) ([]*domain.Wallet, error)
+}
+
+type walletsFilterByLocalServiceImpl struct {
 	logger               *slog.Logger
 	listAllWalletUseCase uc_wallet.ListAllWalletUseCase
 }
@@ -17,11 +21,11 @@ type WalletsFilterByLocalService struct {
 func NewWalletsFilterByLocalService(
 	logger *slog.Logger,
 	uc1 uc_wallet.ListAllWalletUseCase,
-) *WalletsFilterByLocalService {
-	return &WalletsFilterByLocalService{logger, uc1}
+) WalletsFilterByLocalService {
+	return &walletsFilterByLocalServiceImpl{logger, uc1}
 }
 
-func (s *WalletsFilterByLocalService) Execute(ctx context.Context) ([]*domain.Wallet, error) {
+func (s *walletsFilterByLocalServiceImpl) Execute(ctx context.Context) ([]*domain.Wallet, error) {
 	myLocalWallets, err := s.listAllWalletUseCase.Execute(ctx)
 	if err != nil {
 		s.logger.Error("Failed listing all wallet addresses",

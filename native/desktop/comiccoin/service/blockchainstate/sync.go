@@ -12,7 +12,11 @@ import (
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/blockchainstate"
 )
 
-type BlockchainStateSyncService struct {
+type BlockchainStateSyncService interface {
+	Execute(ctx context.Context, chainID uint16) (*authority_domain.BlockchainState, error)
+}
+
+type blockchainStateSyncServiceImpl struct {
 	logger                                              *slog.Logger
 	getBlockchainStateDTOFromBlockchainAuthorityUseCase uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
 	upsertBlockchainStateUseCase                        uc_blockchainstate.UpsertBlockchainStateUseCase
@@ -22,12 +26,12 @@ func NewBlockchainStateSyncService(
 	logger *slog.Logger,
 	uc1 uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase,
 	uc2 uc_blockchainstate.UpsertBlockchainStateUseCase,
-) *BlockchainStateSyncService {
-	return &BlockchainStateSyncService{logger, uc1, uc2}
+) BlockchainStateSyncService {
+	return &blockchainStateSyncServiceImpl{logger, uc1, uc2}
 }
 
 // Execute method gets genesis block data from authority if we don't have it locally, else gets genesis from local source.
-func (s *BlockchainStateSyncService) Execute(ctx context.Context, chainID uint16) (*authority_domain.BlockchainState, error) {
+func (s *blockchainStateSyncServiceImpl) Execute(ctx context.Context, chainID uint16) (*authority_domain.BlockchainState, error) {
 	//
 	// STEP 1: Validation.
 	//

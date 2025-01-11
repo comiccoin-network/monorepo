@@ -14,7 +14,11 @@ import (
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
 
-type WalletRecoveryService struct {
+type WalletRecoveryService interface {
+	Execute(ctx context.Context, address *common.Address, password *sstring.SecureString) (*sstring.SecureString, string, error)
+}
+
+type walletRecoveryServiceImpl struct {
 	logger                               *slog.Logger
 	getWalletUseCase                     uc_wallet.GetWalletUseCase
 	mnemonicFromEncryptedHDWalletUseCase uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
@@ -24,11 +28,11 @@ func NewWalletRecoveryService(
 	logger *slog.Logger,
 	uc1 uc_wallet.GetWalletUseCase,
 	uc2 uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,
-) *WalletRecoveryService {
-	return &WalletRecoveryService{logger, uc1, uc2}
+) WalletRecoveryService {
+	return &walletRecoveryServiceImpl{logger, uc1, uc2}
 }
 
-func (s *WalletRecoveryService) Execute(ctx context.Context, address *common.Address, password *sstring.SecureString) (*sstring.SecureString, string, error) {
+func (s *walletRecoveryServiceImpl) Execute(ctx context.Context, address *common.Address, password *sstring.SecureString) (*sstring.SecureString, string, error) {
 	//
 	// STEP 1: Validation.
 	//

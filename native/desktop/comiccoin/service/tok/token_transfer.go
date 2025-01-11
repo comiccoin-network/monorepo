@@ -26,7 +26,18 @@ import (
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/walletutil"
 )
 
-type TokenTransferService struct {
+type TokenTransferService interface {
+	Execute(
+		ctx context.Context,
+		chainID uint16,
+		fromAccountAddress *common.Address,
+		accountWalletPassword *sstring.SecureString,
+		to *common.Address,
+		tokenID *big.Int,
+	) error
+}
+
+type tokenTransferServiceImpl struct {
 	logger                                                  *slog.Logger
 	storageTransactionOpenUseCase                           uc_storagetransaction.StorageTransactionOpenUseCase
 	storageTransactionCommitUseCase                         uc_storagetransaction.StorageTransactionCommitUseCase
@@ -56,11 +67,11 @@ func NewTokenTransferService(
 	uc10 uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc11 uc_tok.GetTokenUseCase,
 	uc12 uc_mempooltxdto.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
-) *TokenTransferService {
-	return &TokenTransferService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12}
+) TokenTransferService {
+	return &tokenTransferServiceImpl{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12}
 }
 
-func (s *TokenTransferService) Execute(
+func (s *tokenTransferServiceImpl) Execute(
 	ctx context.Context,
 	chainID uint16,
 	fromAccountAddress *common.Address,

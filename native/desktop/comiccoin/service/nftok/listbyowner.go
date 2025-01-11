@@ -15,25 +15,29 @@ import (
 	uc_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/usecase/tok"
 )
 
-type ListNonFungibleTokensByOwnerService struct {
+type ListNonFungibleTokensByOwnerService interface {
+	Execute(ctx context.Context, address *common.Address, dirPath string) ([]*domain.NonFungibleToken, error)
+}
+
+type listNonFungibleTokensByOwnerServiceImpl struct {
 	logger                                            *slog.Logger
 	listTokensByOwnerUseCase                          uc_tok.ListTokensByOwnerUseCase
 	listNonFungibleTokensWithFilterByTokenIDsyUseCase uc_nftok.ListNonFungibleTokensWithFilterByTokenIDsyUseCase
 
 	// DEVELOPERS NOTE: This is not a mistake according to `Clean Architecture`, the service layer can communicate with other services.
-	getOrDownloadNonFungibleTokenService *GetOrDownloadNonFungibleTokenService
+	getOrDownloadNonFungibleTokenService GetOrDownloadNonFungibleTokenService
 }
 
 func NewListNonFungibleTokensByOwnerService(
 	logger *slog.Logger,
 	uc1 uc_tok.ListTokensByOwnerUseCase,
 	uc2 uc_nftok.ListNonFungibleTokensWithFilterByTokenIDsyUseCase,
-	s1 *GetOrDownloadNonFungibleTokenService,
-) *ListNonFungibleTokensByOwnerService {
-	return &ListNonFungibleTokensByOwnerService{logger, uc1, uc2, s1}
+	s1 GetOrDownloadNonFungibleTokenService,
+) ListNonFungibleTokensByOwnerService {
+	return &listNonFungibleTokensByOwnerServiceImpl{logger, uc1, uc2, s1}
 }
 
-func (s *ListNonFungibleTokensByOwnerService) Execute(ctx context.Context, address *common.Address, dirPath string) ([]*domain.NonFungibleToken, error) {
+func (s *listNonFungibleTokensByOwnerServiceImpl) Execute(ctx context.Context, address *common.Address, dirPath string) ([]*domain.NonFungibleToken, error) {
 	//
 	// STEP 1: Validation.
 	//
