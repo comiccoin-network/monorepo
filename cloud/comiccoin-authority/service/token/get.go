@@ -37,8 +37,8 @@ func (s *tokenRetrieveServiceImpl) Execute(ctx context.Context, id *big.Int) (*d
 		e["id"] = "missing value"
 	}
 	if len(e) != 0 {
-		s.logger.Warn("Validation failed for getting token",
-			slog.Any("error", e))
+		// s.logger.Warn("Validation failed for getting token",
+		// 	slog.Any("error", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
 

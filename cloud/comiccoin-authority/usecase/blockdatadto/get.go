@@ -33,8 +33,8 @@ func (uc *getBlockDataDTOFromBlockchainAuthorityUseCaseImpl) ExecuteByHash(ctx c
 		e["hash"] = "missing value"
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("Validation failed.",
-			slog.Any("error", e))
+		// uc.logger.Warn("Validation failed.",
+		// 	slog.Any("error", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
 
@@ -60,8 +60,8 @@ func (uc *getBlockDataDTOFromBlockchainAuthorityUseCaseImpl) ExecuteByHeaderNumb
 		// }
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("Validation failed.",
-			slog.Any("error", e))
+		// uc.logger.Warn("Validation failed.",
+		// 	slog.Any("error", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
 

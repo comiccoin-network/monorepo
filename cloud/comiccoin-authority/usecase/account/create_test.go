@@ -15,7 +15,12 @@ import (
 
 // mockRepo implements a minimal AccountRepository for testing
 type mockRepo struct {
-	upsertErr error
+	upsertErr      error
+	filterAccounts []*domain.Account
+	filterErr      error
+	getAccount     *domain.Account
+	getErr         error
+	// ... any other existing fields
 }
 
 func (m mockRepo) Upsert(ctx context.Context, acc *domain.Account) error {
@@ -24,13 +29,13 @@ func (m mockRepo) Upsert(ctx context.Context, acc *domain.Account) error {
 
 // Empty implementations for interface satisfaction
 func (m mockRepo) GetByAddress(ctx context.Context, addr *common.Address) (*domain.Account, error) {
-	return nil, nil
+	return m.getAccount, m.getErr
 }
 func (m mockRepo) ListByChainID(ctx context.Context, chainID uint16) ([]*domain.Account, error) {
 	return nil, nil
 }
 func (m mockRepo) ListWithFilterByAddresses(ctx context.Context, addrs []*common.Address) ([]*domain.Account, error) {
-	return nil, nil
+	return m.filterAccounts, m.filterErr
 }
 func (m mockRepo) DeleteByAddress(ctx context.Context, addr *common.Address) error { return nil }
 func (m mockRepo) HashStateByChainID(ctx context.Context, chainID uint16) (string, error) {

@@ -38,8 +38,8 @@ func (s *getAccountServiceImpl) Execute(ctx context.Context, address *common.Add
 		e["address"] = "missing value"
 	}
 	if len(e) != 0 {
-		s.logger.Warn("Validation failed for getting account",
-			slog.Any("error", e))
+		// s.logger.Warn("Validation failed for getting account",
+		// 	slog.Any("error", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
 

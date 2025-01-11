@@ -35,8 +35,8 @@ func (s *mempoolTransactionReceiveDTOFromNetworkServiceImpl) Execute(ctx context
 
 	if dto == nil {
 		err := fmt.Errorf("Cannot have empty mempool transaction dto")
-		s.logger.Warn("Validation failed for received",
-			slog.Any("error", err))
+		// s.logger.Warn("Validation failed for received",
+		// 	slog.Any("error", err))
 		return err
 	}
 
@@ -59,8 +59,8 @@ func (s *mempoolTransactionReceiveDTOFromNetworkServiceImpl) Execute(ctx context
 	// network submission.
 	upsertErr := s.mempoolTransactionCreateUseCase.Execute(ctx, mempoolTx)
 	if upsertErr != nil {
-		s.logger.Warn("Validation failed for received",
-			slog.Any("error", upsertErr))
+		// s.logger.Warn("Validation failed for received",
+		// 	slog.Any("error", upsertErr))
 		return upsertErr
 	}
 	return nil

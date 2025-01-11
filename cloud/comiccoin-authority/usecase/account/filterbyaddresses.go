@@ -36,8 +36,8 @@ func (uc *accountsFilterByAddressesUseCaseImpl) Execute(ctx context.Context, add
 		e["addresses"] = "empty array"
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("Validation failed",
-			slog.Any("error", e))
+		// uc.logger.Warn("Validation failed",
+		// 	slog.Any("error", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
 

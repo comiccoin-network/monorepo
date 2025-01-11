@@ -61,8 +61,8 @@ func (uc *upsertTokenIfPreviousTokenNonceGTEUseCaseImpl) Execute(
 		e["metadata_uri"] = "missing value"
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("Validation failed for upsert",
-			slog.Any("error", e))
+		// uc.logger.Warn("Validation failed for upsert",
+		// 	slog.Any("error", e))
 		return httperror.NewForBadRequest(&e)
 	}
 

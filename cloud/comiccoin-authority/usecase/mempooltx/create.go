@@ -78,8 +78,8 @@ func (uc *mempoolTransactionCreateUseCaseImpl) Execute(ctx context.Context, memp
 		e["s_bytes"] = "missing value"
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("Validation failed for received",
-			slog.Any("error", e))
+		// uc.logger.Warn("Validation failed for received",
+		// 	slog.Any("error", e))
 		return httperror.NewForBadRequest(&e)
 	}
 
@@ -88,8 +88,8 @@ func (uc *mempoolTransactionCreateUseCaseImpl) Execute(ctx context.Context, memp
 	//
 
 	if err := mempoolTx.Validate(uc.config.Blockchain.ChainID, true); err != nil {
-		uc.logger.Warn("Validation failed for create",
-			slog.Any("error", err))
+		// uc.logger.Warn("Validation failed for create",
+		// 	slog.Any("error", err))
 		return err
 	}
 

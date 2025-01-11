@@ -38,8 +38,8 @@ func (s *tokenListByOwnerServiceImpl) Execute(ctx context.Context, ownerAddr *co
 		e["ownerAddr"] = "missing value"
 	}
 	if len(e) != 0 {
-		s.logger.Warn("Validation failed list tokens by owner",
-			slog.Any("error", e))
+		// s.logger.Warn("Validation failed list tokens by owner",
+		// 	slog.Any("error", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
 
