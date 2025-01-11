@@ -53,29 +53,29 @@ type App struct {
 
 	kmutex kmutexutil.KMutexProvider
 
-	getBlockchainSyncStatusService                                  *service_blockchainsyncstatus.GetBlockchainSyncStatusService
-	getAccountService                                               *service_account.GetAccountService
-	createAccountService                                            *service_account.CreateAccountService
-	accountListingByLocalWalletsService                             *service_account.AccountListingByLocalWalletsService
-	coinTransferService                                             *service_coin.CoinTransferService
-	tokenGetService                                                 *service_tok.TokenGetService
-	tokenTransferService                                            *service_tok.TokenTransferService
-	tokenBurnService                                                *service_tok.TokenBurnService
-	getOrDownloadNonFungibleTokenService                            *service_nftok.GetOrDownloadNonFungibleTokenService
-	listBlockTransactionsByAddressService                           *service_blocktx.ListBlockTransactionsByAddressService
-	listWithLimitBlockTransactionsByAddressService                  *service_blocktx.ListWithLimitBlockTransactionsByAddressService
-	getByBlockTransactionTimestampService                           *service_blockdata.GetByBlockTransactionTimestampService
-	blockDataGetByHashService                                       *service_blockdata.BlockDataGetByHashService
-	tokenListByOwnerService                                         *service_tok.TokenListByOwnerService
-	tokenCountByOwnerService                                        *service_tok.TokenCountByOwnerService
-	blockchainSyncService                                           *service_blockchain.BlockchainSyncWithBlockchainAuthorityService
-	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService *service_blockchain.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService
-	walletsFilterByLocalService                                     *service_wallet.WalletsFilterByLocalService
-	listNonFungibleTokensByOwnerService                             *service_nftok.ListNonFungibleTokensByOwnerService
-	pendingSignedTransactionListService                             *service_pstx.PendingSignedTransactionListService
-	exportWalletService                                             *service_wallet.ExportWalletService
-	importWalletService                                             *service_wallet.ImportWalletService
-	walletRecoveryService                                           *service_wallet.WalletRecoveryService
+	getBlockchainSyncStatusService                                  service_blockchainsyncstatus.GetBlockchainSyncStatusService
+	getAccountService                                               service_account.GetAccountService
+	createAccountService                                            service_account.CreateAccountService
+	accountListingByLocalWalletsService                             service_account.AccountListingByLocalWalletsService
+	coinTransferService                                             service_coin.CoinTransferService
+	tokenGetService                                                 service_tok.TokenGetService
+	tokenTransferService                                            service_tok.TokenTransferService
+	tokenBurnService                                                service_tok.TokenBurnService
+	getOrDownloadNonFungibleTokenService                            service_nftok.GetOrDownloadNonFungibleTokenService
+	listBlockTransactionsByAddressService                           service_blocktx.ListBlockTransactionsByAddressService
+	listWithLimitBlockTransactionsByAddressService                  service_blocktx.ListWithLimitBlockTransactionsByAddressService
+	getByBlockTransactionTimestampService                           service_blockdata.GetByBlockTransactionTimestampService
+	blockDataGetByHashService                                       service_blockdata.BlockDataGetByHashService
+	tokenListByOwnerService                                         service_tok.TokenListByOwnerService
+	tokenCountByOwnerService                                        service_tok.TokenCountByOwnerService
+	blockchainSyncService                                           service_blockchain.BlockchainSyncWithBlockchainAuthorityService
+	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService service_blockchain.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService
+	walletsFilterByLocalService                                     service_wallet.WalletsFilterByLocalService
+	listNonFungibleTokensByOwnerService                             service_nftok.ListNonFungibleTokensByOwnerService
+	pendingSignedTransactionListService                             service_pstx.PendingSignedTransactionListService
+	exportWalletService                                             service_wallet.ExportWalletService
+	importWalletService                                             service_wallet.ImportWalletService
+	walletRecoveryService                                           service_wallet.WalletRecoveryService
 }
 
 // NewApp creates a new App application struct
