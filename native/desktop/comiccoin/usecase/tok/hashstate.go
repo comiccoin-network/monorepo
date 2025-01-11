@@ -8,16 +8,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type GetTokensHashStateUseCase struct {
+type GetTokensHashStateUseCase interface {
+	Execute(ctx context.Context, chainID uint16) (string, error)
+}
+
+type getTokensHashStateUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   domain.TokenRepository
 }
 
-func NewGetTokensHashStateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TokenRepository) *GetTokensHashStateUseCase {
-	return &GetTokensHashStateUseCase{config, logger, repo}
+func NewGetTokensHashStateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.TokenRepository) GetTokensHashStateUseCase {
+	return &getTokensHashStateUseCaseImpl{config, logger, repo}
 }
 
-func (uc *GetTokensHashStateUseCase) Execute(ctx context.Context, chainID uint16) (string, error) {
+func (uc *getTokensHashStateUseCaseImpl) Execute(ctx context.Context, chainID uint16) (string, error) {
 	return uc.repo.HashStateByChainID(ctx, chainID)
 }

@@ -16,14 +16,14 @@ import (
 
 type WalletRecoveryService struct {
 	logger                               *slog.Logger
-	getWalletUseCase                     *uc_wallet.GetWalletUseCase
-	mnemonicFromEncryptedHDWalletUseCase *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
+	getWalletUseCase                     uc_wallet.GetWalletUseCase
+	mnemonicFromEncryptedHDWalletUseCase uc_walletutil.MnemonicFromEncryptedHDWalletUseCase
 }
 
 func NewWalletRecoveryService(
 	logger *slog.Logger,
-	uc1 *uc_wallet.GetWalletUseCase,
-	uc2 *uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,
+	uc1 uc_wallet.GetWalletUseCase,
+	uc2 uc_walletutil.MnemonicFromEncryptedHDWalletUseCase,
 ) *WalletRecoveryService {
 	return &WalletRecoveryService{logger, uc1, uc2}
 }

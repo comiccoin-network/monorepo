@@ -10,16 +10,20 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type CreateWalletUseCase struct {
+type CreateWalletUseCase interface {
+	Execute(ctx context.Context, address *common.Address, keystoreBytes []byte, label string) error
+}
+
+type createWalletUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.WalletRepository
 }
 
-func NewCreateWalletUseCase(logger *slog.Logger, repo domain.WalletRepository) *CreateWalletUseCase {
-	return &CreateWalletUseCase{logger, repo}
+func NewCreateWalletUseCase(logger *slog.Logger, repo domain.WalletRepository) CreateWalletUseCase {
+	return &createWalletUseCaseImpl{logger, repo}
 }
 
-func (uc *CreateWalletUseCase) Execute(ctx context.Context, address *common.Address, keystoreBytes []byte, label string) error {
+func (uc *createWalletUseCaseImpl) Execute(ctx context.Context, address *common.Address, keystoreBytes []byte, label string) error {
 	//
 	// STEP 1: Validation.
 	//

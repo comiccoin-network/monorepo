@@ -9,15 +9,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type ListTokensByOwnerUseCase struct {
+type ListTokensByOwnerUseCase interface {
+	Execute(ctx context.Context, owner *common.Address) ([]*domain.Token, error)
+}
+
+type listTokensByOwnerUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.TokenRepository
 }
 
-func NewListTokensByOwnerUseCase(logger *slog.Logger, repo domain.TokenRepository) *ListTokensByOwnerUseCase {
-	return &ListTokensByOwnerUseCase{logger, repo}
+func NewListTokensByOwnerUseCase(logger *slog.Logger, repo domain.TokenRepository) ListTokensByOwnerUseCase {
+	return &listTokensByOwnerUseCaseImpl{logger, repo}
 }
 
-func (uc *ListTokensByOwnerUseCase) Execute(ctx context.Context, owner *common.Address) ([]*domain.Token, error) {
+func (uc *listTokensByOwnerUseCaseImpl) Execute(ctx context.Context, owner *common.Address) ([]*domain.Token, error) {
 	return uc.repo.ListByOwner(ctx, owner)
 }

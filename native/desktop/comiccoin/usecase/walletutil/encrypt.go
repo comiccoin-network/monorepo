@@ -9,7 +9,11 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 )
 
-type EncryptWalletUseCase struct {
+type EncryptWalletUseCase interface {
+	Execute(ctx context.Context, mnemonic *sstring.SecureString, path string, password *sstring.SecureString) ([]byte, error)
+}
+
+type encryptWalletUseCaseImpl struct {
 	logger   *slog.Logger
 	keystore hdkeystore.KeystoreAdapter
 }
@@ -17,11 +21,11 @@ type EncryptWalletUseCase struct {
 func NewEncryptWalletUseCase(
 	logger *slog.Logger,
 	keystore hdkeystore.KeystoreAdapter,
-) *EncryptWalletUseCase {
-	return &EncryptWalletUseCase{logger, keystore}
+) EncryptWalletUseCase {
+	return &encryptWalletUseCaseImpl{logger, keystore}
 }
 
-func (uc *EncryptWalletUseCase) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string, password *sstring.SecureString) ([]byte, error) {
+func (uc *encryptWalletUseCaseImpl) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string, password *sstring.SecureString) ([]byte, error) {
 	//
 	// STEP 1: Validation.
 	//

@@ -39,7 +39,7 @@ type BlockchainSyncWithBlockchainAuthorityService struct {
 	getBlockDataDTOFromBlockchainAuthorityUseCase        uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase
 	getAccountUseCase                                    uc_account.GetAccountUseCase
 	upsertAccountUseCase                                 uc_account.UpsertAccountUseCase
-	upsertTokenIfPreviousTokenNonceGTEUseCase            *uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase
+	upsertTokenIfPreviousTokenNonceGTEUseCase            uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase
 	deletePendingSignedTransactionUseCase                uc_pstx.DeletePendingSignedTransactionUseCase
 }
 
@@ -58,7 +58,7 @@ func NewBlockchainSyncWithBlockchainAuthorityService(
 	uc11 uc_blockdatadto.GetBlockDataDTOFromBlockchainAuthorityUseCase,
 	uc12 uc_account.GetAccountUseCase,
 	uc13 uc_account.UpsertAccountUseCase,
-	uc14 *uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase,
+	uc14 uc_tok.UpsertTokenIfPreviousTokenNonceGTEUseCase,
 	uc15 uc_pstx.DeletePendingSignedTransactionUseCase,
 ) *BlockchainSyncWithBlockchainAuthorityService {
 	return &BlockchainSyncWithBlockchainAuthorityService{logger, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15}

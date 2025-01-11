@@ -17,20 +17,20 @@ import (
 
 type CreateAccountService struct {
 	logger                          *slog.Logger
-	openHDWalletFromMnemonicUseCase *uc_walletutil.OpenHDWalletFromMnemonicUseCase
-	privateKeyFromHDWalletUseCase   *uc_walletutil.PrivateKeyFromHDWalletUseCase
-	encryptWalletUseCase            *uc_walletutil.EncryptWalletUseCase
-	createWalletUseCase             *uc_wallet.CreateWalletUseCase
+	openHDWalletFromMnemonicUseCase uc_walletutil.OpenHDWalletFromMnemonicUseCase
+	privateKeyFromHDWalletUseCase   uc_walletutil.PrivateKeyFromHDWalletUseCase
+	encryptWalletUseCase            uc_walletutil.EncryptWalletUseCase
+	createWalletUseCase             uc_wallet.CreateWalletUseCase
 	createAccountUseCase            uc_account.CreateAccountUseCase
 	getAccountUseCase               uc_account.GetAccountUseCase
 }
 
 func NewCreateAccountService(
 	logger *slog.Logger,
-	uc1 *uc_walletutil.OpenHDWalletFromMnemonicUseCase,
-	uc2 *uc_walletutil.PrivateKeyFromHDWalletUseCase,
-	uc3 *uc_walletutil.EncryptWalletUseCase,
-	uc4 *uc_wallet.CreateWalletUseCase,
+	uc1 uc_walletutil.OpenHDWalletFromMnemonicUseCase,
+	uc2 uc_walletutil.PrivateKeyFromHDWalletUseCase,
+	uc3 uc_walletutil.EncryptWalletUseCase,
+	uc4 uc_wallet.CreateWalletUseCase,
 	uc5 uc_account.CreateAccountUseCase,
 	uc6 uc_account.GetAccountUseCase,
 ) *CreateAccountService {

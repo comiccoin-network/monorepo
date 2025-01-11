@@ -12,12 +12,12 @@ import (
 
 type TokenCountByOwnerService struct {
 	logger                    *slog.Logger
-	countTokensByOwnerUseCase *uc_tok.CountTokensByOwnerUseCase
+	countTokensByOwnerUseCase uc_tok.CountTokensByOwnerUseCase
 }
 
 func NewTokenCountByOwnerService(
 	logger *slog.Logger,
-	uc1 *uc_tok.CountTokensByOwnerUseCase,
+	uc1 uc_tok.CountTokensByOwnerUseCase,
 ) *TokenCountByOwnerService {
 	return &TokenCountByOwnerService{logger, uc1}
 }

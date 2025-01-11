@@ -14,12 +14,12 @@ import (
 
 type TokenGetService struct {
 	logger          *slog.Logger
-	getTokenUseCase *uc_tok.GetTokenUseCase
+	getTokenUseCase uc_tok.GetTokenUseCase
 }
 
 func NewTokenGetService(
 	logger *slog.Logger,
-	uc1 *uc_tok.GetTokenUseCase,
+	uc1 uc_tok.GetTokenUseCase,
 ) *TokenGetService {
 	return &TokenGetService{logger, uc1}
 }

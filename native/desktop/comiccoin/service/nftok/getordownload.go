@@ -17,7 +17,7 @@ import (
 type GetOrDownloadNonFungibleTokenService struct {
 	logger                       *slog.Logger
 	getNFTokUseCase              uc_nftok.GetNonFungibleTokenUseCase
-	getTokUseCase                *uc_tok.GetTokenUseCase
+	getTokUseCase                uc_tok.GetTokenUseCase
 	downloadNFTokMetadataUsecase uc_nftok.DownloadMetadataNonFungibleTokenUseCase
 	downloadNFTokAssetUsecase    uc_nftok.DownloadNonFungibleTokenAssetUseCase
 	upsertNFTokUseCase           uc_nftok.UpsertNonFungibleTokenUseCase
@@ -26,7 +26,7 @@ type GetOrDownloadNonFungibleTokenService struct {
 func NewGetOrDownloadNonFungibleTokenService(
 	logger *slog.Logger,
 	uc1 uc_nftok.GetNonFungibleTokenUseCase,
-	uc2 *uc_tok.GetTokenUseCase,
+	uc2 uc_tok.GetTokenUseCase,
 	uc3 uc_nftok.DownloadMetadataNonFungibleTokenUseCase,
 	uc4 uc_nftok.DownloadNonFungibleTokenAssetUseCase,
 	uc5 uc_nftok.UpsertNonFungibleTokenUseCase,

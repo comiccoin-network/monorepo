@@ -8,15 +8,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
 
-type GetTokenUseCase struct {
+type GetTokenUseCase interface {
+	Execute(ctx context.Context, tokenID *big.Int) (*domain.Token, error)
+}
+
+type getTokenUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.TokenRepository
 }
 
-func NewGetTokenUseCase(logger *slog.Logger, repo domain.TokenRepository) *GetTokenUseCase {
-	return &GetTokenUseCase{logger, repo}
+func NewGetTokenUseCase(logger *slog.Logger, repo domain.TokenRepository) GetTokenUseCase {
+	return &getTokenUseCaseImpl{logger, repo}
 }
 
-func (uc *GetTokenUseCase) Execute(ctx context.Context, tokenID *big.Int) (*domain.Token, error) {
+func (uc *getTokenUseCaseImpl) Execute(ctx context.Context, tokenID *big.Int) (*domain.Token, error) {
 	return uc.repo.GetByID(ctx, tokenID)
 }

@@ -13,7 +13,11 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 )
 
-type OpenHDWalletFromMnemonicUseCase struct {
+type OpenHDWalletFromMnemonicUseCase interface {
+	Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error)
+}
+
+type openHDWalletFromMnemonicUseCaseImpl struct {
 	logger   *slog.Logger
 	keystore hdkeystore.KeystoreAdapter
 }
@@ -21,11 +25,11 @@ type OpenHDWalletFromMnemonicUseCase struct {
 func NewOpenHDWalletFromMnemonicUseCase(
 	logger *slog.Logger,
 	keystore hdkeystore.KeystoreAdapter,
-) *OpenHDWalletFromMnemonicUseCase {
-	return &OpenHDWalletFromMnemonicUseCase{logger, keystore}
+) OpenHDWalletFromMnemonicUseCase {
+	return &openHDWalletFromMnemonicUseCaseImpl{logger, keystore}
 }
 
-func (uc *OpenHDWalletFromMnemonicUseCase) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
+func (uc *openHDWalletFromMnemonicUseCaseImpl) Execute(ctx context.Context, mnemonic *sstring.SecureString, path string) (*accounts.Account, *hdwallet.Wallet, error) {
 	//
 	// STEP 1: Validation.
 	//

@@ -17,7 +17,7 @@ import (
 
 type ListNonFungibleTokensByOwnerService struct {
 	logger                                            *slog.Logger
-	listTokensByOwnerUseCase                          *uc_tok.ListTokensByOwnerUseCase
+	listTokensByOwnerUseCase                          uc_tok.ListTokensByOwnerUseCase
 	listNonFungibleTokensWithFilterByTokenIDsyUseCase uc_nftok.ListNonFungibleTokensWithFilterByTokenIDsyUseCase
 
 	// DEVELOPERS NOTE: This is not a mistake according to `Clean Architecture`, the service layer can communicate with other services.
@@ -26,7 +26,7 @@ type ListNonFungibleTokensByOwnerService struct {
 
 func NewListNonFungibleTokensByOwnerService(
 	logger *slog.Logger,
-	uc1 *uc_tok.ListTokensByOwnerUseCase,
+	uc1 uc_tok.ListTokensByOwnerUseCase,
 	uc2 uc_nftok.ListNonFungibleTokensWithFilterByTokenIDsyUseCase,
 	s1 *GetOrDownloadNonFungibleTokenService,
 ) *ListNonFungibleTokensByOwnerService {

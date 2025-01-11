@@ -10,6 +10,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+type UpsertTokenIfPreviousTokenNonceGTEUseCase interface {
+	Execute(
+		ctx context.Context,
+		id *big.Int,
+		owner *common.Address,
+		metadataURI string,
+		nonce *big.Int,
+	) error
+}
+
 // Struct represents the use case of looking up the previous token record and
 // only update the record if the new nonce value is greater then or equal to
 // the previous old nonce value.
@@ -20,16 +30,16 @@ import (
 // transactions have higher nonce values) and therefore ignore the previous
 // transactions. We do this because the `token` database only shows the most
 // recent tokens and their current owners, not the history of ownership.
-type UpsertTokenIfPreviousTokenNonceGTEUseCase struct {
+type upsertTokenIfPreviousTokenNonceGTEUseCaseImpl struct {
 	logger *slog.Logger
 	repo   domain.TokenRepository
 }
 
-func NewUpsertTokenIfPreviousTokenNonceGTEUseCase(logger *slog.Logger, repo domain.TokenRepository) *UpsertTokenIfPreviousTokenNonceGTEUseCase {
-	return &UpsertTokenIfPreviousTokenNonceGTEUseCase{logger, repo}
+func NewUpsertTokenIfPreviousTokenNonceGTEUseCase(logger *slog.Logger, repo domain.TokenRepository) UpsertTokenIfPreviousTokenNonceGTEUseCase {
+	return &upsertTokenIfPreviousTokenNonceGTEUseCaseImpl{logger, repo}
 }
 
-func (uc *UpsertTokenIfPreviousTokenNonceGTEUseCase) Execute(
+func (uc *upsertTokenIfPreviousTokenNonceGTEUseCaseImpl) Execute(
 	ctx context.Context,
 	id *big.Int,
 	owner *common.Address,

@@ -11,12 +11,12 @@ import (
 
 type WalletsFilterByLocalService struct {
 	logger               *slog.Logger
-	listAllWalletUseCase *uc_wallet.ListAllWalletUseCase
+	listAllWalletUseCase uc_wallet.ListAllWalletUseCase
 }
 
 func NewWalletsFilterByLocalService(
 	logger *slog.Logger,
-	uc1 *uc_wallet.ListAllWalletUseCase,
+	uc1 uc_wallet.ListAllWalletUseCase,
 ) *WalletsFilterByLocalService {
 	return &WalletsFilterByLocalService{logger, uc1}
 }
