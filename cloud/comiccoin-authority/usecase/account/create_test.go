@@ -10,40 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/testutils/mocks"
 )
-
-// mockRepo implements a minimal AccountRepository for testing
-type mockRepo struct {
-	upsertErr      error
-	filterAccounts []*domain.Account
-	filterErr      error
-	getAccount     *domain.Account
-	getErr         error
-	// ... any other existing fields
-}
-
-func (m mockRepo) Upsert(ctx context.Context, acc *domain.Account) error {
-	return m.upsertErr
-}
-
-// Empty implementations for interface satisfaction
-func (m mockRepo) GetByAddress(ctx context.Context, addr *common.Address) (*domain.Account, error) {
-	return m.getAccount, m.getErr
-}
-func (m mockRepo) ListByChainID(ctx context.Context, chainID uint16) ([]*domain.Account, error) {
-	return nil, nil
-}
-func (m mockRepo) ListWithFilterByAddresses(ctx context.Context, addrs []*common.Address) ([]*domain.Account, error) {
-	return m.filterAccounts, m.filterErr
-}
-func (m mockRepo) DeleteByAddress(ctx context.Context, addr *common.Address) error { return nil }
-func (m mockRepo) HashStateByChainID(ctx context.Context, chainID uint16) (string, error) {
-	return "", nil
-}
-func (m mockRepo) OpenTransaction() error   { return nil }
-func (m mockRepo) CommitTransaction() error { return nil }
-func (m mockRepo) DiscardTransaction()      {}
 
 func TestCreateAccountUseCase_Execute(t *testing.T) {
 	// Common setup with a no-op logger
@@ -57,7 +25,7 @@ func TestCreateAccountUseCase_Execute(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		// Setup
 		address := common.HexToAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")
-		useCase := NewCreateAccountUseCase(cfg, logger, mockRepo{})
+		useCase := NewCreateAccountUseCase(cfg, logger, &mocks.AccountRepository{})
 
 		// Execute
 		err := useCase.Execute(context.Background(), &address)
@@ -67,7 +35,7 @@ func TestCreateAccountUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("validation fails - nil address", func(t *testing.T) {
-		useCase := NewCreateAccountUseCase(cfg, logger, mockRepo{})
+		useCase := NewCreateAccountUseCase(cfg, logger, &mocks.AccountRepository{})
 
 		err := useCase.Execute(context.Background(), nil)
 
@@ -79,7 +47,9 @@ func TestCreateAccountUseCase_Execute(t *testing.T) {
 	t.Run("repository error", func(t *testing.T) {
 		// Setup with failing repository
 		address := common.HexToAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")
-		useCase := NewCreateAccountUseCase(cfg, logger, mockRepo{upsertErr: assert.AnError})
+		useCase := NewCreateAccountUseCase(cfg, logger, &mocks.AccountRepository{
+			UpsertErr: assert.AnError,
+		})
 
 		// Execute
 		err := useCase.Execute(context.Background(), &address)

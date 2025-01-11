@@ -11,9 +11,11 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/testutils/mocks"
 )
 
 func TestGetAccountUseCase_Execute(t *testing.T) {
+
 	// Common setup
 	cfg := &config.Configuration{}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
@@ -22,7 +24,7 @@ func TestGetAccountUseCase_Execute(t *testing.T) {
 		// Setup
 		address := common.HexToAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")
 		expectedAccount := &domain.Account{Address: &address}
-		repo := mockRepo{getAccount: expectedAccount}
+		repo := &mocks.AccountRepository{GetAccount: expectedAccount}
 		useCase := NewGetAccountUseCase(cfg, logger, repo)
 
 		// Execute
@@ -34,7 +36,7 @@ func TestGetAccountUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("validation fails - nil address", func(t *testing.T) {
-		useCase := NewGetAccountUseCase(cfg, logger, mockRepo{})
+		useCase := NewGetAccountUseCase(cfg, logger, &mocks.AccountRepository{})
 
 		account, err := useCase.Execute(context.Background(), nil)
 
@@ -43,15 +45,14 @@ func TestGetAccountUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("repository error", func(t *testing.T) {
-		// Setup
 		address := common.HexToAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")
-		repo := mockRepo{getErr: assert.AnError}
+		repo := &mocks.AccountRepository{
+			GetErr: assert.AnError,
+		}
 		useCase := NewGetAccountUseCase(cfg, logger, repo)
 
-		// Execute
 		account, err := useCase.Execute(context.Background(), &address)
 
-		// Assert
 		assert.Nil(t, account)
 		assert.Error(t, err)
 		assert.Equal(t, assert.AnError, err)
