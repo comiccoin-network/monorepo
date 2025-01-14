@@ -40,18 +40,20 @@ const IndexPage = () => {
               </span>
             </div>
             <div className="flex space-x-4">
-              <button
+              <Link
+                to="/create-first-wallet"
                 className="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-bold border-2 border-white transition-colors"
                 aria-label="Create Wallet"
               >
                 Create Wallet
-              </button>
-              <button
+              </Link>
+              <Link
+                 to="/access-existing-wallet"
                 className="px-4 py-2 rounded-lg bg-white hover:bg-purple-50 text-purple-700 font-bold transition-colors"
                 aria-label="Access Wallet"
               >
                 Access Wallet
-              </button>
+              </Link>
             </div>
           </div>
         </div>
