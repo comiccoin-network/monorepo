@@ -326,9 +326,13 @@ function DashboardPage() {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-medium text-gray-900">
-                                {tx.type === 'coin' ? `${tx.value} CC` : `NFT #${tx.tokenId || 'Unknown'}`}
-                              </p>
+                                <p className="text-sm font-medium text-gray-900">
+                                 {tx.type === 'coin' ? (
+                                   `${tx.from === currentWallet.address ? '-' : '+'}${tx.actualValue} CC`
+                                 ) : (
+                                   `NFT #${tx.tokenId || 'Unknown'}`
+                                 )}
+                               </p>
                               <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 tx.status === 'confirmed'
                                   ? 'bg-green-100 text-green-800'

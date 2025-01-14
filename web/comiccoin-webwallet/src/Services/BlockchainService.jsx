@@ -25,15 +25,16 @@ class BlockchainService {
                 throw new Error(error.message || 'Failed to fetch transactions');
             }
 
-            const transactions = await response.json();
+            const data = await response.json();
 
             // Transform the transaction data to standardize the format
-            return transactions.map(tx => ({
-                id: tx.nonce_string || tx.nonce_bytes, // Use nonce as unique ID
+            return data.map(tx => ({
+                id: tx.nonce_string || tx.nonce_bytes,
                 timestamp: tx.timestamp,
                 fee: tx.fee,
                 type: tx.type,
                 value: tx.value,
+                actualValue: tx.value - tx.fee,
                 from: tx.from,
                 to: tx.to,
                 chainId: tx.chain_id,
@@ -41,13 +42,11 @@ class BlockchainService {
                 tokenMetadataURI: tx.token_metadata_uri || null,
                 tokenNonce: tx.token_nonce_string || null,
                 data: tx.data_string || tx.data || '',
-                // Include signature information
                 signature: {
                     v: tx.v_bytes,
                     r: tx.r_bytes,
                     s: tx.s_bytes
                 },
-                // Calculate status based on presence of required fields
                 status: tx.timestamp ? 'confirmed' : 'pending'
             }));
         } catch (error) {

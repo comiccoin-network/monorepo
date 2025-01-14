@@ -37,30 +37,46 @@ export const useWalletTransactions = (walletAddress) => {
         const coinTransactions = transactions.filter(tx => tx.type === 'coin');
         const nftTransactions = transactions.filter(tx => tx.type === 'token');
 
+        // Calculate total coin value using actualValue
+        const totalCoinValue = coinTransactions.reduce((sum, tx) => {
+            if (tx.from === walletAddress) {
+                return sum - Number(tx.actualValue);
+            } else {
+                return sum + Number(tx.actualValue);
+            }
+        }, 0);
+
+        // Calculate total fees paid
+        const totalFeesPaid = coinTransactions.reduce((sum, tx) => {
+            if (tx.from === walletAddress) {
+                return sum + Number(tx.fee);
+            }
+            return sum;
+        }, 0);
+
+        // Calculate NFT ownership
+        const ownedNfts = new Set();
+        nftTransactions.forEach(tx => {
+            if (tx.from === walletAddress) {
+                ownedNfts.delete(tx.tokenId);
+            } else {
+                ownedNfts.add(tx.tokenId);
+            }
+        });
+
         return {
             totalTransactions: transactions.length,
             coinTransactionsCount: coinTransactions.length,
             nftTransactionsCount: nftTransactions.length,
             coinTransactions,
             nftTransactions,
-            // Additional statistics can be added here
-            totalCoinValue: coinTransactions.reduce((sum, tx) => sum + Number(tx.value), 0),
-            totalNftCount: new Set(nftTransactions.map(tx => tx.tokenId)).size,
-            latestCoinTransaction: coinTransactions[0] || null,
-            latestNftTransaction: nftTransactions[0] || null,
+            totalCoinValue,
+            totalFeesPaid,
+            totalNftCount: ownedNfts.size,
+            ownedNftIds: Array.from(ownedNfts)
         };
-    }, [transactions]);
+    }, [transactions, walletAddress]);
 
-    // Transaction filters
-    const getTransactionsByType = useCallback((type) => {
-        return transactions.filter(tx => tx.type === type);
-    }, [transactions]);
-
-    const getTransactionsByStatus = useCallback((status) => {
-        return transactions.filter(tx => tx.status === status);
-    }, [transactions]);
-
-    // Return the hook's API
     return {
         // Basic state
         transactions,
@@ -71,12 +87,6 @@ export const useWalletTransactions = (walletAddress) => {
         // Statistics
         statistics,
 
-        // Filter methods
-        getCoinTransactions: () => getTransactionsByType('coin'),
-        getNftTransactions: () => getTransactionsByType('token'),
-        getPendingTransactions: () => getTransactionsByStatus('pending'),
-        getConfirmedTransactions: () => getTransactionsByStatus('confirmed'),
-
         // Direct access to counts
         totalTransactions: statistics.totalTransactions,
         coinTransactionsCount: statistics.coinTransactionsCount,
@@ -85,5 +95,10 @@ export const useWalletTransactions = (walletAddress) => {
         // Direct access to filtered transactions
         coinTransactions: statistics.coinTransactions,
         nftTransactions: statistics.nftTransactions,
+
+        // Additional statistics
+        totalCoinValue: statistics.totalCoinValue,
+        totalFeesPaid: statistics.totalFeesPaid,
+        totalNftCount: statistics.totalNftCount
     };
 };
