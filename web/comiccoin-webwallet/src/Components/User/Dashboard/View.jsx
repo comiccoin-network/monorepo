@@ -161,24 +161,6 @@ function DashboardPage() {
         Skip to main content
       </a>
 
-      {/* Platform Selection Banner */}
-      <div className="bg-purple-900 text-white py-3 px-4" role="banner">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-center sm:text-left">
-          <div className="flex items-center gap-2 mb-2 sm:mb-0">
-            <Globe aria-hidden="true" className="h-5 w-5" />
-            <span>You're using the <strong>Web Wallet</strong> - Access your ComicCoin from any browser</span>
-          </div>
-          <a
-            href="/download-native-wallet"
-            className="text-purple-200 hover:text-white flex items-center gap-1 text-sm"
-          >
-            <Monitor aria-hidden="true" className="h-4 w-4" />
-            Looking for our Native Wallet? Get it here
-            <span aria-hidden="true">→</span>
-          </a>
-        </div>
-      </div>
-
       {/* Navigation Header */}
       <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white" role="navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -339,7 +321,7 @@ function DashboardPage() {
                   </div>
                 </button>
               </div>
-              
+
             </div>
           </div>
         )}
