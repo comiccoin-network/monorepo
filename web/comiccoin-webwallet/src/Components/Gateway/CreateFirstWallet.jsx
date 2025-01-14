@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useWallet } from '../../Hooks/useWallet';
 import { Wallet, Mnemonic } from 'ethers';
 import {
   Globe,
@@ -18,6 +17,10 @@ import {
   Loader2
 } from 'lucide-react';
 import { Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+
+import { useWallet } from '../../Hooks/useWallet';
+
 
 const CreateFirstWalletPage = () => {
     const { createWallet, loading: serviceLoading, error: serviceError } = useWallet();
@@ -27,7 +30,7 @@ const CreateFirstWalletPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formData, setFormData] = useState({
-      label: '', 
+      label: '',
       mnemonic: '',
       password: '',
       repeatPassword: ''
@@ -176,7 +179,7 @@ const CreateFirstWalletPage = () => {
               </div>
               <div className="flex space-x-4">
                 <a href="/help" className="text-white hover:text-purple-200 px-3 py-2">Help</a>
-                <a href="/" className="text-white hover:text-purple-200 px-3 py-2">About</a>
+                <Link to="/" className="text-white hover:text-purple-200 px-3 py-2">Home</Link>
               </div>
             </div>
           </div>
@@ -410,12 +413,13 @@ const CreateFirstWalletPage = () => {
 
               {/* Submit Button */}
               <div className="flex justify-end gap-4">
-                <button
+                <Link
+                  to="/"
                   type="button"
                   className="px-6 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   Cancel
-                </button>
+                </Link>
                 <button
                   type="submit"
                   disabled={isLoading || serviceLoading}

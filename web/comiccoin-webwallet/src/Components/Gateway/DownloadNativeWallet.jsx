@@ -50,7 +50,7 @@ const DownloadNativeWalletPage = () => {
             </div>
             <div className="flex space-x-4">
               <a href="/help" className="text-white hover:text-purple-200 px-3 py-2">Help</a>
-              <a href="https://comiccoin.ca" className="text-white hover:text-purple-200 px-3 py-2">About</a>
+              <a href="/" className="text-white hover:text-purple-200 px-3 py-2">Home</a>
             </div>
           </div>
         </div>

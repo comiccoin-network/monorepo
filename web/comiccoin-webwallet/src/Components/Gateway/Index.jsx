@@ -220,7 +220,7 @@ const IndexPage = () => {
                   {/* Source Code Link */}
                   <div className="mt-4 text-center">
                     <a
-                      href="https://github.com/comiccoin-network/wallet"
+                      href="https://github.com/comiccoin-network/monorepo"
                       className="text-sm text-gray-600 hover:text-gray-800 flex items-center justify-center gap-1"
                     >
                       <Github className="h-4 w-4" />

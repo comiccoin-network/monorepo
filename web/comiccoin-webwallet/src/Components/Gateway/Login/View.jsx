@@ -1,7 +1,7 @@
 // src/Components/Gateway/Login/View.jsx
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '../../../Hooks/useWallet';
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import {
   Globe,
   Monitor,
@@ -234,12 +234,13 @@ function LoginPage() {
 
             {/* Submit Button */}
             <div className="flex justify-end gap-4 pt-4">
-              <button
+              <Link
+                to="/"
                 type="button"
                 className="px-6 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Cancel
-              </button>
+              </Link>
               <button
                 type="submit"
                 disabled={isLoading || serviceLoading}
