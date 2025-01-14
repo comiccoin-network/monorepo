@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { RecoilRoot } from "recoil";
 
 // Public Generic
+import AccessExistingWalletPage from "./Components/Gateway/AccessExistingWallet";
+import CreateFirstWalletPage from "./Components/Gateway/CreateFirstWallet";
+import DownloadNativeWalletPage from "./Components/Gateway/DownloadNativeWallet";
+import GetStartedPage from "./Components/Gateway/GettingStarted";
 import Index from "./Components/Gateway/Index";
 import Terms from "./Components/Gateway/Terms";
 import Privacy from "./Components/Gateway/Privacy";
@@ -19,6 +23,10 @@ function AppRoute() {
       <RecoilRoot>
         <Router>
           <Routes>
+            <Route exact path="/access-existing-wallet" element={<AccessExistingWalletPage />} />
+            <Route exact path="/create-first-wallet" element={<CreateFirstWalletPage />} />
+            <Route exact path="/download-native-wallet" element={<DownloadNativeWalletPage />} />
+            <Route exact path="/get-started" element={<GetStartedPage />} />
             <Route exact path="/" element={<Index />} />
             <Route path="*" element={<NotFoundError />} />
           </Routes>
