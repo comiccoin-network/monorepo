@@ -33,6 +33,7 @@ import (
 	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/poa"
 	sv_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/signedtx"
 	sv_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/token"
+	sv_tx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/tx"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdata"
@@ -263,6 +264,11 @@ func doRunDaemon() {
 		cfg,
 		logger,
 	)
+	prepareTransactionService := sv_tx.NewPrepareTransactionService(
+		cfg,
+		logger,
+		getBlockchainStateUseCase,
+	)
 
 	// MempoolTransaction
 	mempoolTransactionReceiveDTOFromNetworkService := sv_mempooltx.NewMempoolTransactionReceiveDTOFromNetworkService(
@@ -368,6 +374,9 @@ func doRunDaemon() {
 	blockchainStateServerSentEventsHTTPHandler := httphandler.NewBlockchainStateServerSentEventsHTTPHandler(
 		logger,
 		getBlockchainStateService)
+	prepareTransactionHTTPHandler := httphandler.NewPrepareTransactionHTTPHandler(
+		logger,
+		prepareTransactionService)
 	signedTransactionSubmissionHTTPHandler := httphandler.NewSignedTransactionSubmissionHTTPHandler(
 		logger,
 		signedTransactionSubmissionService)
@@ -402,6 +411,7 @@ func doRunDaemon() {
 		blockchainStateChangeEventsHTTPHandler,
 		blockchainStateServerSentEventsHTTPHandler,
 		getBlockDataHTTPHandler,
+		prepareTransactionHTTPHandler,
 		signedTransactionSubmissionHTTPHandler,
 		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
 		tokenListByOwnerHTTPHandler,

@@ -41,6 +41,7 @@ type httpServerImpl struct {
 	getBlockchainStateHTTPHandler                             *handler.GetBlockchainStateHTTPHandler
 	getBlockDataHTTPHandler                                   *handler.GetBlockDataHTTPHandler
 	listBlockTransactionsByAddressHTTPHandler                 *handler.ListBlockTransactionsByAddressHTTPHandler
+	prepareTransactionHTTPHandler                             *handler.PrepareTransactionHTTPHandler
 	signedTransactionSubmissionHTTPHandler                    *handler.SignedTransactionSubmissionHTTPHandler
 	mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler
 	blockchainStateChangeEventDTOHTTPHandler                  *handler.BlockchainStateChangeEventDTOHTTPHandler
@@ -62,10 +63,11 @@ func NewHTTPServer(
 	http6 *handler.BlockchainStateChangeEventDTOHTTPHandler,
 	http7 *handler.BlockchainStateServerSentEventsHTTPHandler,
 	http8 *handler.GetBlockDataHTTPHandler,
-	http9 *handler.SignedTransactionSubmissionHTTPHandler,
-	http10 *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
-	http11 *handler.TokenListByOwnerHTTPHandler,
-	http12 *handler.TokenMintServiceHTTPHandler,
+	http9 *handler.PrepareTransactionHTTPHandler,
+	http10 *handler.SignedTransactionSubmissionHTTPHandler,
+	http11 *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
+	http12 *handler.TokenListByOwnerHTTPHandler,
+	http13 *handler.TokenMintServiceHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.IP == "" {
@@ -101,10 +103,11 @@ func NewHTTPServer(
 		blockchainStateChangeEventDTOHTTPHandler:                  http6,
 		blockchainStateServerSentEventsHTTPHandler:                http7,
 		getBlockDataHTTPHandler:                                   http8,
-		signedTransactionSubmissionHTTPHandler:                    http9,
-		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler: http10,
-		tokenListByOwnerHTTPHandler:                               http11,
-		tokenMintServiceHTTPHandler:                               http12,
+		prepareTransactionHTTPHandler:                             http9,
+		signedTransactionSubmissionHTTPHandler:                    http10,
+		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler: http11,
+		tokenListByOwnerHTTPHandler:                               http12,
+		tokenMintServiceHTTPHandler:                               http13,
 	}
 
 	// Attach the HTTP server controller to the ServeMux.
@@ -192,6 +195,9 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "signed-transaction" && r.Method == http.MethodPost:
 		port.signedTransactionSubmissionHTTPHandler.Execute(w, r)
+
+	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "transaction" && p[3] == "prepare" && r.Method == http.MethodPost:
+		port.prepareTransactionHTTPHandler.Execute(w, r)
 
 	case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "mempool-transactions" && r.Method == http.MethodPost:
 		port.mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler.Execute(w, r)

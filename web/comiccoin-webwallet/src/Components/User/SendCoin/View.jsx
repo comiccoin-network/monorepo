@@ -1,3 +1,4 @@
+// src/Components/User/SendCoin/View.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -12,11 +13,13 @@ import {
 } from 'lucide-react';
 import { useWallet } from '../../../Hooks/useWallet';
 import { useWalletTransactions } from '../../../Hooks/useWalletTransactions';
+import { useTransaction } from '../../../Hooks/useTransaction';
 
 const SendCoinsPage = () => {
   const navigate = useNavigate();
   const { currentWallet, logout } = useWallet();
   const { statistics } = useWalletTransactions(currentWallet?.address);
+   const { submitTransaction } = useTransaction();
 
   const [formData, setFormData] = useState({
     recipientAddress: '',
@@ -93,23 +96,27 @@ const SendCoinsPage = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate transaction delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+        const result = await submitTransaction(
+            formData.recipientAddress,
+            formData.amount,
+            formData.note,
+            currentWallet, // This should include the wallet.address
+            formData.password
+        );
 
-      // Navigate back to dashboard after success
-      navigate('/dashboard', {
-        state: {
-          transactionSuccess: true,
-          message: `Successfully sent ${formData.amount} CC to ${formData.recipientAddress}`
-        }
-      });
+        navigate('/dashboard', {
+            state: {
+                transactionSuccess: true,
+                message: `Transaction submitted: ${result.nonce_string}`
+            }
+        });
     } catch (error) {
-      setErrors({ submit: 'Transaction failed. Please try again.' });
+        setErrors({ submit: error.message });
     } finally {
-      setIsSubmitting(false);
-      setShowConfirmation(false);
+        setIsSubmitting(false);
+        setShowConfirmation(false);
     }
-  };
+};
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
@@ -403,7 +410,7 @@ const SendCoinsPage = () => {
 
               <div>
                 <p className="text-sm text-gray-600">Network Fee</p>
-                <p className="text-lg font-medium text-gray-900">0.001 CC</p>
+                <p className="text-lg font-medium text-gray-900">1 CC</p>
               </div>
 
               {formData.note && (
