@@ -1,6 +1,6 @@
 // src/Components/User/Dashboard/View.jsx
 import React, { useState, useEffect } from 'react';
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import {
     Globe,
     Monitor,
@@ -395,14 +395,14 @@ function DashboardPage() {
                   </div>
                 </button>
 
-                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
+                <Link to="/send-coins" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Send className="w-5 h-5 text-blue-600" />
                     </div>
                     <span className="font-medium text-gray-900 group-hover:text-gray-700">Send</span>
                   </div>
-                </button>
+                </Link>
 
                 <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
                   <div className="flex items-center gap-3">
