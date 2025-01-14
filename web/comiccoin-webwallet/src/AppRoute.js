@@ -4,7 +4,7 @@ import { RecoilRoot } from "recoil";
 
 import DashboardPage from "./Components/User/Dashboard/View";
 import LoginPage from "./Components/Gateway/Login/View";
-import AccessExistingWalletPage from "./Components/Gateway/AccessExistingWallet";
+import RecoverExistingWalletPage from "./Components/Gateway/RecoverExistingWallet";
 import CreateFirstWalletPage from "./Components/Gateway/CreateFirstWallet";
 import DownloadNativeWalletPage from "./Components/Gateway/DownloadNativeWallet";
 import GetStartedPage from "./Components/Gateway/GettingStarted";
@@ -26,7 +26,7 @@ function AppRoute() {
           <Routes>
             <Route exact path="/dashboard" element={<DashboardPage />} />
             <Route exact path="/login" element={<LoginPage />} />
-            <Route exact path="/access-existing-wallet" element={<AccessExistingWalletPage />} />
+            <Route exact path="/recover" element={<RecoverExistingWalletPage />} />
             <Route exact path="/create-first-wallet" element={<CreateFirstWalletPage />} />
             <Route exact path="/download-native-wallet" element={<DownloadNativeWalletPage />} />
             <Route exact path="/get-started" element={<GetStartedPage />} />

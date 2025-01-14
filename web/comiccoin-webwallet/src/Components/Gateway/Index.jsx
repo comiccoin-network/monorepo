@@ -48,7 +48,7 @@ const IndexPage = () => {
                 Create Wallet
               </Link>
               <Link
-                 to="/access-existing-wallet"
+                 to="/login"
                 className="px-4 py-2 rounded-lg bg-white hover:bg-purple-50 text-purple-700 font-bold transition-colors"
                 aria-label="Access Wallet"
               >

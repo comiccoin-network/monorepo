@@ -11,7 +11,8 @@ import {
   KeyRound,
   ChevronRight
 } from 'lucide-react';
-const AccessExistingWalletPage = () => {
+
+const RecoverExistingWalletPage = () => {
   const [showPhrase, setShowPhrase] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -309,4 +310,4 @@ const AccessExistingWalletPage = () => {
   );
 };
 
-export default AccessExistingWalletPage;
+export default RecoverExistingWalletPage;

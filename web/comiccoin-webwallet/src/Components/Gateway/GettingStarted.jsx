@@ -168,7 +168,7 @@ const GetStartedPage = () => {
             </div>
 
             <Link
-              to="/access-existing-wallet"
+              to="/login"
               className="w-full px-6 py-4 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
               aria-label="Access your existing wallet"
             >
