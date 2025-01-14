@@ -169,7 +169,8 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "blockchain-state" && r.Method == http.MethodGet:
 		port.getBlockchainStateHTTPHandler.Execute(w, r)
-	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockchain-state" && p[3] == "changes" && r.Method == http.MethodGet:
+
+	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockchain-state" && p[3] == "changes" && r.Method == http.MethodGet: // DEPRECATED
 		port.blockchainStateChangeEventDTOHTTPHandler.Execute(w, r)
 
 	// DEVELOPERS NOTE: Using `POST` method to get it working on DigitalOcean App Platform, see more for details:
@@ -179,7 +180,11 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockdata" && r.Method == http.MethodGet:
 		port.getBlockDataHTTPHandler.ExecuteByHash(w, r, p[3])
-	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockdata-via-header-number" && r.Method == http.MethodGet: // NEW API ENDPOINT
+
+	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockdata-via-hash" && r.Method == http.MethodGet:
+		port.getBlockDataHTTPHandler.ExecuteByHash(w, r, p[3]) // Note: Same as above.
+
+	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockdata-via-header-number" && r.Method == http.MethodGet:
 		port.getBlockDataHTTPHandler.ExecuteByHeaderNumber(w, r, p[3])
 
 	case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "block-transactions" && r.Method == http.MethodGet:
@@ -199,7 +204,7 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	// --- CATCH ALL: D.N.E. ---
 	default:
-		// Log a message to indicate that the request is not found.
+		// // Log a message to indicate that the request is not found.
 		// port.logger.Debug("404 request",
 		// 	slog.Any("method", r.Method),
 		// 	slog.Any("url_tokens", p),
