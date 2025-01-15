@@ -362,19 +362,26 @@ class TransactionService {
                 body: requestBody
             });
 
-            // Log response details
-            const responseData = await response.json();
-            console.log('Server response:', {
-                status: response.status,
-                ok: response.ok,
-                data: responseData
-            });
-
-            if (!response.ok) {
-                throw new Error(responseData.message || 'Failed to submit transaction');
+            // Handle different response status codes
+            if (response.status === 201) {
+                // Success case - return transaction ID
+                return {
+                    success: true,
+                    transactionId: mempoolTransaction.id
+                };
             }
 
-            return responseData;
+            // For error cases, try to parse error message
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                // If can't parse JSON, use status text
+                errorData = { message: response.statusText };
+            }
+
+            throw new Error(errorData.message || 'Failed to submit transaction');
+
         } catch (error) {
             console.error('submitSignedTransaction error:', error);
             console.error('Error details:', {
