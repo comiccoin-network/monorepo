@@ -37,33 +37,30 @@ function DashboardPage() {
     error: serviceError
   } = useWallet();
 
-  const {
-    // Basic state
-    loading: txloading,
-    error: txerror,
-    refresh: txrefresh,
+  // Get the wallet address using the current HDNodeWallet format
+ const getWalletAddress = () => {
+   if (!currentWallet) return "";
+   // HDNodeWallet stores the address in the address property
+   return currentWallet.address;
+ };
 
-    // Direct access to counts
-    totalTransactions,
-    coinTransactionsCount,
-    nftTransactionsCount,
+ const {
+   loading: txloading,
+   error: txerror,
+   refresh: txrefresh,
+   totalTransactions,
+   coinTransactionsCount,
+   nftTransactionsCount,
+   coinTransactions,
+   nftTransactions,
+   statistics,
+   getCoinTransactions,
+   getNftTransactions,
+   getPendingTransactions,
+   getConfirmedTransactions,
+   transactions
+ } = useWalletTransactions(getWalletAddress());
 
-    // Direct access to filtered transactions
-    coinTransactions,
-    nftTransactions,
-
-    // Statistics with more detailed information
-    statistics,
-
-    // Filter methods if you need custom filtering
-    getCoinTransactions,
-    getNftTransactions,
-    getPendingTransactions,
-    getConfirmedTransactions,
-
-    // All transactions
-    transactions
-  } = useWalletTransactions(currentWallet?.address);
 
   const [forceURL, setForceURL] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
@@ -72,55 +69,55 @@ function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('DashboardPage: Initial useEffect running');
-    let mounted = true;
+     console.log('DashboardPage: Initial useEffect running');
+     let mounted = true;
 
-    const checkWalletSession = async () => {
-      console.log('DashboardPage: checkWalletSession starting');
-      try {
-        if (!mounted) return;
-        setIsLoading(true);
+     const checkWalletSession = async () => {
+       console.log('DashboardPage: checkWalletSession starting');
+       try {
+         if (!mounted) return;
+         setIsLoading(true);
 
-        if (serviceLoading) {
-          console.log('DashboardPage: Service still loading, waiting...');
-          return;
-        }
+         if (serviceLoading) {
+           console.log('DashboardPage: Service still loading, waiting...');
+           return;
+         }
 
-        if (!currentWallet) {
-          console.log('DashboardPage: No current wallet found, redirecting to login');
-          if (mounted) {
-            setForceURL("/login");
-          }
-          return;
-        }
+         if (!currentWallet) {
+           console.log('DashboardPage: No current wallet found, redirecting to login');
+           if (mounted) {
+             setForceURL("/login");
+           }
+           return;
+         }
 
-        if (mounted) {
-          setForceURL("");
-          setWalletAddress(currentWallet.address);
-        }
+         if (mounted) {
+           setForceURL("");
+           setWalletAddress(getWalletAddress()); // Use the getter function
+         }
 
-      } catch (error) {
-        console.error('DashboardPage: Session check error:', error);
-        if (error.message === "Session expired" && mounted) {
-          handleSessionExpired();
-        } else if (mounted) {
-          setError(error.message);
-        }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
+       } catch (error) {
+         console.error('DashboardPage: Session check error:', error);
+         if (error.message === "Session expired" && mounted) {
+           handleSessionExpired();
+         } else if (mounted) {
+           setError(error.message);
+         }
+       } finally {
+         if (mounted) {
+           setIsLoading(false);
+         }
+       }
+     };
 
-    checkWalletSession();
-    const sessionCheckInterval = setInterval(checkWalletSession, 60000);
+     checkWalletSession();
+     const sessionCheckInterval = setInterval(checkWalletSession, 60000);
 
-    return () => {
-      mounted = false;
-      clearInterval(sessionCheckInterval);
-    };
-  }, [currentWallet, serviceLoading]);
+     return () => {
+       mounted = false;
+       clearInterval(sessionCheckInterval);
+     };
+   }, [currentWallet, serviceLoading]);
 
   const handleSessionExpired = () => {
     setIsSessionExpired(true);

@@ -8,6 +8,8 @@ class TransactionService {
         this.defaultHeaders = {
             'Content-Type': 'application/json',
         };
+        this.comicCoinId = 29;
+        this.chainId = null;
     }
 
     initialize(chainId) {
@@ -63,7 +65,7 @@ class TransactionService {
         }
     }
 
-    async createMessage(transaction) {
+    async createStamp(transaction) {
         // Create exact JSON structure that matches backend
         const orderedObj = {
             chain_id: transaction.chain_id,
@@ -84,8 +86,23 @@ class TransactionService {
 
         // Convert to compact JSON
         const message = JSON.stringify(orderedObj);
-        console.log('Transaction JSON for signing:', message);
-        return message;
+        console.log('Transaction JSON for stamping:', message);
+
+        // Convert to UTF-8 bytes
+        const messageBytes = ethers.toUtf8Bytes(message);
+        console.log('Message byte length:', messageBytes.length);
+
+        // Create stamp with exact prefix
+        const prefix = `ComicCoin Signed Message:\n${messageBytes.length}`;
+        const stampBytes = ethers.toUtf8Bytes(prefix);
+        console.log('Stamp prefix:', prefix);
+
+        // Concatenate and hash
+        const fullMessage = ethers.concat([stampBytes, messageBytes]);
+        const hash = ethers.keccak256(fullMessage);
+        console.log('Final hash:', hash);
+
+        return hash;
     }
 
     async signTransaction(template) {
@@ -97,14 +114,13 @@ class TransactionService {
 
             console.log('Starting signing process with wallet address:', currentWallet.address);
 
-            // Create the message
-            const message = await this.createMessage(template);
+            // Create the hash
+            const messageHash = await this.createStamp(template);
 
-            // Sign the message using ethers v2
-            const signature = await currentWallet.signMessage(message);
-
-            // Split signature into v, r, s components
-            const sig = ethers.Signature.from(signature);
+            // Sign the hash using the private key directly
+            const signingKey = new ethers.SigningKey(currentWallet.privateKey);
+            const digest = ethers.getBytes(messageHash);
+            const signature = signingKey.sign(digest);
 
             // Create signed transaction with EXACT field order
             const signedTx = {
@@ -122,13 +138,13 @@ class TransactionService {
                 token_metadata_uri: "",
                 token_nonce_bytes: null,
                 token_nonce_string: "",
-                v_bytes: [sig.v + 27], // Add 27 to match Ethereum's v value
-                r_bytes: Array.from(ethers.getBytes(sig.r)),
-                s_bytes: Array.from(ethers.getBytes(sig.s))
+                v_bytes: [30], // Fixed value (29 + 1)
+                r_bytes: Array.from(ethers.getBytes(signature.r)),
+                s_bytes: Array.from(ethers.getBytes(signature.s))
             };
 
-            // Verify signature
-            const verificationResult = await this.verifySignature(signedTx, message);
+            // Verify signature before returning
+            const verificationResult = await this.verifySignature(signedTx);
             console.log('Signature verification result:', verificationResult);
 
             if (!verificationResult.isValid) {
@@ -142,21 +158,32 @@ class TransactionService {
         }
     }
 
-    async verifySignature(signedTransaction, originalMessage) {
+    async verifySignature(signedTransaction) {
         try {
+            // Create the hash of the transaction
+            const messageHash = await this.createStamp(signedTransaction);
+            const digest = ethers.getBytes(messageHash);
+
             // Reconstruct the signature
             const r = ethers.hexlify(new Uint8Array(signedTransaction.r_bytes));
             const s = ethers.hexlify(new Uint8Array(signedTransaction.s_bytes));
-            const v = signedTransaction.v_bytes[0] - 27; // Subtract 27 to get standard v value
+            const v = signedTransaction.v_bytes[0] - this.comicCoinId;
 
+            console.log('Verification components:', {
+                v: v.toString(),
+                r,
+                s
+            });
+
+            // Create the Signature object
             const signature = ethers.Signature.from({
                 r,
                 s,
                 v: Number(v)
             });
 
-            // Recover the address using ethers.verifyMessage
-            const recoveredAddress = ethers.verifyMessage(originalMessage, signature);
+            // Recover the address using built-in ethers function
+            const recoveredAddress = ethers.recoverAddress(digest, signature);
 
             console.log('Recovered address:', recoveredAddress);
             console.log('Expected address:', signedTransaction.from);

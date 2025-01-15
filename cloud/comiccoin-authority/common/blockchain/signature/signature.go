@@ -1,3 +1,4 @@
+// monorepo/cloud/comiccoin-authority/common/blockchain/signature/signature.go
 // Package signature provides helper functions for handling the blockchain
 // signature needs.
 // Special thanks: https://raw.githubusercontent.com/ardanlabs/blockchain/refs/heads/main/foundation/blockchain/signature/signature.go

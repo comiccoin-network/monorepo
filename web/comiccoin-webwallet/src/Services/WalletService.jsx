@@ -1,5 +1,5 @@
 // src/Services/WalletService.js
-import { Wallet, Mnemonic } from 'ethers';
+import { HDNodeWallet, Wallet } from "ethers/wallet";
 import CryptoJS from 'crypto-js';
 
 class WalletService {
@@ -25,6 +25,7 @@ class WalletService {
             if (activeWalletData) {
                 const { id, wallet } = JSON.parse(activeWalletData);
                 if (this.checkSession()) {
+                    // Create wallet directly from private key
                     this.currentWallet = new Wallet(wallet.privateKey);
                 } else {
                     // Clear expired session
@@ -43,13 +44,13 @@ class WalletService {
         try {
             const normalizedMnemonic = mnemonic.trim().toLowerCase();
 
-            const mnemonicObj = Mnemonic.fromPhrase(normalizedMnemonic);
-            const hdNode = Wallet.fromPhrase(normalizedMnemonic);
+            // Create HD wallet from mnemonic
+            const hdWallet = HDNodeWallet.fromPhrase(normalizedMnemonic);
 
             const walletData = {
                 id: crypto.randomUUID(),
-                address: hdNode.address,
-                encryptedPrivateKey: this.encryptData(hdNode.privateKey, password),
+                address: hdWallet.address,
+                encryptedPrivateKey: this.encryptData(hdWallet.privateKey, password),
                 createdAt: Date.now(),
                 lastAccessed: Date.now()
             };
@@ -74,8 +75,13 @@ class WalletService {
             // Decrypt private key
             const privateKey = this.decryptData(walletData.encryptedPrivateKey, password);
 
-            // Create wallet instance
+            // Create wallet instance directly from private key
             this.currentWallet = new Wallet(privateKey);
+
+            // Verify address matches
+            if (this.currentWallet.address.toLowerCase() !== walletData.address.toLowerCase()) {
+                throw new Error('Wallet address mismatch');
+            }
 
             // Update last accessed
             walletData.lastAccessed = Date.now();
@@ -151,31 +157,6 @@ class WalletService {
             console.error('Failed to save wallets:', error);
             throw new Error('Failed to save wallets');
         }
-    }
-
-    checkSession() {
-        const now = Date.now();
-        if (now - this.lastActivity > this.sessionTimeout) {
-            this.logout();
-            return false;
-        }
-        this.lastActivity = now;
-        return true;
-    }
-
-    logout() {
-        this.currentWallet = null;
-        this.lastActivity = null;
-        // Clear sensitive data from memory
-        // Note: This is a basic implementation. In production, you might want to use
-        // more secure memory handling techniques
-    }
-
-    getCurrentWallet() {
-        if (!this.checkSession()) {
-            throw new Error('Session expired');
-        }
-        return this.currentWallet;
     }
 
     getWallets() {

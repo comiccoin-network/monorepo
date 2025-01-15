@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Navigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { HDNodeWallet } from "ethers/wallet";
 
 import { useWallet } from '../../Hooks/useWallet';
 
@@ -39,27 +40,28 @@ const CreateFirstWalletPage = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const onGenerateMnemonic = (e) => {
-      e.preventDefault();
-      try {
-        const wallet = Wallet.createRandom();
-        const mnemonic = wallet.mnemonic?.phrase;
-        if (mnemonic) {
-          setFormData(prev => ({ ...prev, mnemonic }));
-          if (errors.mnemonic) {
-            setErrors(prev => {
-              const newErrors = { ...prev };
-              delete newErrors.mnemonic;
-              return newErrors;
-            });
-          }
-        }
-      } catch (error) {
-        setErrors(prev => ({
-          ...prev,
-          mnemonic: 'Failed to generate mnemonic'
-        }));
+  e.preventDefault();
+  try {
+    // Use HDNodeWallet instead of Wallet
+    const wallet = HDNodeWallet.createRandom();
+    const mnemonic = wallet.mnemonic?.phrase;
+    if (mnemonic) {
+      setFormData(prev => ({ ...prev, mnemonic }));
+      if (errors.mnemonic) {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.mnemonic;
+          return newErrors;
+        });
       }
-    };
+    }
+  } catch (error) {
+    setErrors(prev => ({
+      ...prev,
+      mnemonic: 'Failed to generate mnemonic'
+    }));
+  }
+};
 
     const handleInputChange = (e) => {
       const { name, value } = e.target;

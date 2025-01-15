@@ -19,7 +19,7 @@ const SendCoinsPage = () => {
   const navigate = useNavigate();
   const { currentWallet, logout } = useWallet();
   const { statistics } = useWalletTransactions(currentWallet?.address);
-   const { submitTransaction } = useTransaction();
+  const { submitTransaction, loading: transactionLoading, error: transactionError } = useTransaction(1); // Use your actual chain ID
 
   const [formData, setFormData] = useState({
     recipientAddress: '',
@@ -99,22 +99,24 @@ const SendCoinsPage = () => {
         const result = await submitTransaction(
             formData.recipientAddress,
             formData.amount,
-            formData.note,
-            currentWallet, // This should include the wallet.address
+            formData.note || "",  // Ensure note is never undefined
+            currentWallet,
             formData.password
         );
 
+        // Navigate to dashboard with success message
         navigate('/dashboard', {
             state: {
                 transactionSuccess: true,
-                message: `Transaction submitted: ${result.nonce_string}`
+                message: `Transaction submitted successfully!`
             }
         });
     } catch (error) {
+        console.error('Transaction failed:', error);
         setErrors({ submit: error.message });
+        setShowConfirmation(false); // Hide the confirmation modal on error
     } finally {
         setIsSubmitting(false);
-        setShowConfirmation(false);
     }
 };
 
