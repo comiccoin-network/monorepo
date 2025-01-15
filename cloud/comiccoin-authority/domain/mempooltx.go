@@ -24,7 +24,35 @@ type MempoolTransaction struct {
 // It verifies the signature, makes sure the account addresses are correct,
 // and checks if the 'from' and 'to' accounts are not the same.
 func (mtx MempoolTransaction) Validate(chainID uint16, isPoA bool) error {
-	return mtx.SignedTransaction.Validate(chainID, isPoA)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> === Starting MempoolTransaction Validation ===\n")
+	fmt.Printf("domain/mempooltx.go -> Validate() -> Transaction ID: %s\n", mtx.ID.Hex())
+	fmt.Printf("domain/mempooltx.go -> Validate() -> Chain ID: %d\n", mtx.ChainID)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> From: %s\n", mtx.From.Hex())
+	fmt.Printf("domain/mempooltx.go -> Validate() -> To: %s\n", mtx.To.Hex())
+	fmt.Printf("domain/mempooltx.go -> Validate() -> Value: %d\n", mtx.Value)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> Type: %s\n", mtx.Type)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> Nonce String: %s\n", mtx.NonceString)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> Nonce Bytes: %s\n", mtx.NonceBytes)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> Data: %x\n", mtx.Data)
+
+	// Add before calling SignedTransaction.Validate
+	v, r, s := mtx.SignedTransaction.GetBigIntFields()
+	fmt.Printf("domain/mempooltx.go -> Validate() -> Signature fields before validation:\n")
+	fmt.Printf("domain/mempooltx.go -> Validate() -> V: %x\n", mtx.VBytes)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> R: %x\n", mtx.RBytes)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> S: %x\n", mtx.SBytes)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> V (big.Int): %v\n", v)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> R (big.Int): %x\n", r)
+	fmt.Printf("domain/mempooltx.go -> Validate() -> S (big.Int): %x\n", s)
+
+	err := mtx.SignedTransaction.Validate(chainID, isPoA)
+	if err != nil {
+		fmt.Printf("domain/mempooltx.go -> Validate() -> Validation failed: %v\n", err)
+		return err
+	}
+
+	fmt.Printf("domain/mempooltx.go -> Validate() -> === MempoolTransaction Validation Complete ===\n\n")
+	return nil
 }
 
 // MempoolTransactionRepository interface defines the methods for interacting with

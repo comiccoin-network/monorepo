@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -91,31 +92,37 @@ func VerifySignature(v, r, s *big.Int) error {
 
 // FromAddress extracts the address for the account that signed the data.
 func FromAddress(value any, v, r, s *big.Int) (string, error) {
-	// log.Printf("signature.go -> FromAddress(): value: %v\n", value)
+	fmt.Printf("signature.go -> FromAddress: Input v: %v, r: %v, s: %v\n", v, r, s)
 
 	// Prepare the data for public key extraction.
 	data, err := stamp(value)
 	if err != nil {
-		// log.Printf("signature.go -> FromAddress(): stamp error: %v\n", err)
+		fmt.Printf("signature.go -> FromAddress(): stamp error: %v\n", err)
 		return "", err
 	}
 
-	// log.Printf("signature.go -> FromAddress(): stamp data: %v\n", data)
+	fmt.Printf("signature.go -> FromAddress(): stamp data: %v\n", data)
 
 	// Convert the [R|S|V] format into the original 65 bytes.
 	sig := ToSignatureBytes(v, r, s)
 
-	// log.Printf("signature.go -> FromAddress(): ToSignatureBytes sig: %v\n", sig)
+	// After getting the signature bytes:
+	fmt.Printf("signature.go -> FromAddress(): Signature bytes: %s\n", hexutil.Encode(sig))
 
 	// Capture the public key associated with this data and signature.
 	publicKey, err := crypto.SigToPub(data, sig)
 	if err != nil {
-		// log.Printf("signature.go -> FromAddress(): crypto.SigToPub error: %v\n", err)
+		log.Printf("signature.go -> FromAddress(): crypto.SigToPub error: %v\n", err)
 		return "", err
 	}
 
+	// After SigToPub:
+	fmt.Printf("signature.go -> FromAddress(): Recovered public key: %v\n", publicKey)
+
 	// Extract the account address from the public key.
-	return crypto.PubkeyToAddress(*publicKey).String(), nil
+	res := crypto.PubkeyToAddress(*publicKey).String()
+
+	return res, nil
 }
 
 // GetPublicKeyFromSignature extracts the public key for the account that signed the data.
@@ -196,6 +203,9 @@ func stamp(value any) ([]byte, error) {
 		return nil, err
 	}
 
+	// Add these logs in your stamp function, right after the first json.Marshal:
+	fmt.Printf("signature.go -> stamp: Initial JSON marshal: %s\n", string(v))
+
 	// Unmarshal back into a map to normalize the structure
 	var normalized map[string]interface{}
 	if err := json.Unmarshal(v, &normalized); err != nil {
@@ -204,6 +214,9 @@ func stamp(value any) ([]byte, error) {
 
 	// Clean up empty strings and null values
 	cleanMap(normalized)
+
+	// After normalization and cleanMap:
+	fmt.Printf("signature.go -> stamp: After cleaning: %s\n", string(v))
 
 	// Marshal again after normalization
 	v, err = json.Marshal(normalized)
@@ -215,9 +228,15 @@ func stamp(value any) ([]byte, error) {
 	// are always unique to the ComicCoin blockchain.
 	stamp := []byte(fmt.Sprintf("\x19ComicCoin Signed Message:\n%d", len(v)))
 
+	// After creating the stamp:
+	fmt.Printf("signature.go -> stamp: Final stamp prefix: %s\n", string(stamp))
+
 	// Hash the stamp and txHash together in a final 32 byte array
 	// that represents the data.
 	data := crypto.Keccak256(stamp, v)
+
+	// Just before returning:
+	fmt.Printf("signature.go -> stamp: Final hash in hex: %s\n", hexutil.Encode(data))
 
 	return data, nil
 }

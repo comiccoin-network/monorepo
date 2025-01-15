@@ -25,7 +25,7 @@ const SendCoinsPage = () => {
     recipientAddress: '',
     amount: '',
     note: '',
-    password: ''
+    password: '123password123'
   });
 
   const [errors, setErrors] = useState({});

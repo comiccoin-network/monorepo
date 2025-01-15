@@ -2,6 +2,7 @@ package domain
 
 import (
 	"crypto/ecdsa"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -107,24 +108,24 @@ func (stx SignedTransaction) FromAddress() (string, error) {
 	// Note: MongoDB doesn't support `*big.Int` so we are forced to do this.
 	v, r, s := stx.GetBigIntFields()
 
-	// log.Println("tx.go -> FromAddress() -> v:", v)
-	// log.Println("tx.go -> FromAddress() -> r:", r)
-	// log.Println("tx.go -> FromAddress() -> s:", s)
-	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> ChainID:", stx.Transaction.ChainID)
-	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> NonceBytes:", stx.Transaction.NonceBytes)
-	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> From:", stx.Transaction.From)
-	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> To:", stx.Transaction.To)
-	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> Value:", stx.Transaction.Value)
-	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> Data:", stx.Transaction.Data)
-	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> Type:", stx.Transaction.Type)
-	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> TokenIDBytes:", stx.Transaction.TokenIDBytes)
-	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> TokenMetadataURI:", stx.Transaction.TokenMetadataURI)
-	// log.Println("tx.go -> FromAddress() -> stx.Transaction -> TokenNonceBytes:", stx.Transaction.TokenNonceBytes)
-	// log.Println("tx.go -> FromAddress() -> stx -> VBytes:", stx.VBytes)
-	// log.Println("tx.go -> FromAddress() -> stx -> RBytes:", stx.RBytes)
-	// log.Println("tx.go -> FromAddress() -> stx -> SBytes:", stx.SBytes)
+	fmt.Println("domain/tx.go -> FromAddress() -> v:", v)
+	fmt.Println("domain/tx.go -> FromAddress() -> r:", r)
+	fmt.Println("domain/tx.go -> FromAddress() -> s:", s)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx.Transaction -> ChainID:", stx.Transaction.ChainID)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx.Transaction -> NonceBytes:", stx.Transaction.NonceBytes)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx.Transaction -> From:", stx.Transaction.From)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx.Transaction -> To:", stx.Transaction.To)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx.Transaction -> Value:", stx.Transaction.Value)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx.Transaction -> Data:", stx.Transaction.Data)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx.Transaction -> Type:", stx.Transaction.Type)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx.Transaction -> TokenIDBytes:", stx.Transaction.TokenIDBytes)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx.Transaction -> TokenMetadataURI:", stx.Transaction.TokenMetadataURI)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx.Transaction -> TokenNonceBytes:", stx.Transaction.TokenNonceBytes)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx -> VBytes:", stx.VBytes)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx -> RBytes:", stx.RBytes)
+	fmt.Println("domain/tx.go -> FromAddress() -> stx -> SBytes:", stx.SBytes)
 	sig, err := signature.FromAddress(stx.Transaction, v, r, s)
-	// log.Println("tx.go -> FromAddress() -> signature.FromAddress(...) ->:", sig, err)
+	fmt.Println("domain/tx.go -> FromAddress() -> signature.FromAddress() ->:", sig, err)
 	return sig, err
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 type MempoolTransactionCreateUseCase interface {
@@ -86,6 +87,14 @@ func (uc *mempoolTransactionCreateUseCaseImpl) Execute(ctx context.Context, memp
 	//
 	// STEP 2: Validate
 	//
+
+	uc.logger.Info("Validating mempool transaction",
+		slog.Any("chain_id", mempoolTx.ChainID),
+		slog.Any("from", mempoolTx.From.Hex()),
+		slog.Any("to", mempoolTx.To.Hex()),
+		slog.Any("v_bytes", hexutil.Encode(mempoolTx.VBytes)),
+		slog.Any("r_bytes", hexutil.Encode(mempoolTx.RBytes)),
+		slog.Any("s_bytes", hexutil.Encode(mempoolTx.SBytes)))
 
 	if err := mempoolTx.Validate(uc.config.Blockchain.ChainID, true); err != nil {
 		// uc.logger.Warn("Validation failed for create",

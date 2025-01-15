@@ -46,6 +46,27 @@ func (s *mempoolTransactionReceiveDTOFromNetworkServiceImpl) Execute(ctx context
 
 	mempoolTx := dto.ToIDO()
 
+	s.logger.Debug("Received mempooltx",
+		slog.Any("id", dto.ID),
+		slog.Any("v_bytes", dto.VBytes),
+		slog.Any("r_bytes", dto.RBytes),
+		slog.Any("s_bytes", dto.SBytes),
+		slog.Any("chain_id", dto.ChainID),
+		slog.Any("nonce_bytes", dto.NonceBytes),
+		slog.Any("nonce_string", dto.NonceString),
+		slog.Any("from", dto.From),
+		slog.Any("to", dto.To),
+		slog.Any("value", dto.Value),
+		slog.Any("data", dto.Data),
+		slog.Any("data_string", dto.DataString),
+		slog.Any("type", dto.Type),
+		slog.Any("token_id_bytes", dto.TokenIDBytes),
+		slog.Any("token_id_string", dto.TokenIDString),
+		slog.Any("token_metadata_uri", dto.TokenMetadataURI),
+		slog.Any("token_nonce_bytes", dto.TokenNonceBytes),
+		slog.Any("token_nonce_string", dto.TokenNonceString),
+	)
+
 	//
 	// STEP 3: Save to our database.
 	//

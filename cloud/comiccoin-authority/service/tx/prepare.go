@@ -12,6 +12,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 type PrepareTransactionRequestIDO struct {
@@ -123,35 +124,27 @@ func (s *prepareTransactionServiceImpl) Execute(ctx context.Context, req *Prepar
 
 	nonceBigInt := big.NewInt(time.Now().Unix())
 	nonceBytes := nonceBigInt.Bytes()
-	nonceStr := nonceBigInt.String()
 
-	tx := &PrepareTransactionResponseIDO{
-		ChainID:     s.config.Blockchain.ChainID,
-		NonceBytes:  nonceBytes,
-		NonceString: nonceStr,
-		From:        &senderAddr,
-		To:          &toAddr,
-		Value:       req.Value + s.config.Blockchain.TransactionFee, // Note: The transaction fee gets reclaimed by the us, so it's fully recirculating when authority calls this.
-		Data:        []byte(req.Data),
-		Type:        req.Type,
+	preparedTx := &PrepareTransactionResponseIDO{
+		ChainID:    s.config.Blockchain.ChainID,
+		NonceBytes: nonceBytes,
+		From:       &senderAddr,
+		To:         &toAddr,
+		Value:      req.Value + s.config.Blockchain.TransactionFee, // Note: The transaction fee gets reclaimed by the us, so it's fully recirculating when authority calls this.
+		Data:       []byte(req.Data),
+		Type:       req.Type,
 	}
 
-	s.logger.Debug("Prepared transaction",
-		slog.Any("chain_id", tx.ChainID),
-		slog.Any("nonce_bytes", tx.NonceBytes),
-		slog.Any("nonce_string", tx.NonceString),
-		slog.Any("from", tx.From),
-		slog.Any("to", tx.To),
-		slog.Any("value", tx.Value),
-		slog.Any("data", tx.Data),
-		slog.Any("data_string", tx.DataString),
-		slog.Any("type", tx.Type),
-		slog.Any("token_id_bytes", tx.TokenIDBytes),
-		slog.Any("token_id_string", tx.TokenIDString),
-		slog.Any("token_metadata_uri", tx.TokenMetadataURI),
-		slog.Any("token_nonce_bytes", tx.TokenNonceBytes),
-		slog.Any("token_nonce_string", tx.TokenNonceString),
-	)
+	// Just before returning the prepared transaction
+	s.logger.Debug("Transaction template details",
+		slog.Any("chain_id", preparedTx.ChainID),
+		slog.Any("nonce_bytes_hex", hexutil.Encode(preparedTx.NonceBytes)),
+		// slog.Any("nonce_string", preparedTx.NonceString),
+		slog.Any("from", preparedTx.From.Hex()),
+		slog.Any("to", preparedTx.To.Hex()),
+		slog.Any("value", preparedTx.Value),
+		slog.Any("data_hex", hexutil.Encode(preparedTx.Data)),
+		slog.String("type", preparedTx.Type))
 
-	return tx, nil
+	return preparedTx, nil
 }

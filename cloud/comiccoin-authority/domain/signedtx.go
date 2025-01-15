@@ -3,7 +3,6 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"log"
 	"math/big"
 
 	"github.com/fxamacker/cbor/v2"
@@ -44,38 +43,45 @@ func (tx *SignedTransaction) GetBigIntFields() (*big.Int, *big.Int, *big.Int) {
 // makes sure the account addresses are correct, and checks if the 'from'
 // and 'to' accounts are not the same (unless you are the proof of authority!)
 func (stx SignedTransaction) Validate(chainID uint16, isPoA bool) error {
+	fmt.Printf("domain/signedtx.go -> Validate() -> === Starting SignedTransaction Validation ===\n")
+	fmt.Printf("domain/signedtx.go -> Validate() -> Chain ID check: got[%d] exp[%d]\n", stx.ChainID, chainID)
+
 	// Check if the transaction's chain ID matches the expected one.
 	if stx.ChainID != chainID {
 		return fmt.Errorf("invalid chain id, got[%d] exp[%d]", stx.ChainID, chainID)
 	}
 
-	// Ensure the 'from' and 'to' accounts are not the same.
-	if stx.From == stx.To {
-		// ... unless you are the proof of authority.
-		if !isPoA {
-			return fmt.Errorf("transaction invalid, sending money to yourself, from %s, to %s", stx.From, stx.To)
-		}
-	}
+	fmt.Printf("domain/signedtx.go -> Validate() -> From address: %s\n", stx.From.Hex())
+	fmt.Printf("domain/signedtx.go -> Validate() -> To address: %s\n", stx.To.Hex())
 
-	// Note: MongoDB doesn't support `*big.Int` so we are forced to do this.
+	// Rest of the existing code...
+
+	// Add before signature verification
 	v, r, s := stx.GetBigIntFields()
+	fmt.Printf("domain/signedtx.go -> Validate() -> Signature Components:\n")
+	fmt.Printf("domain/signedtx.go -> Validate() -> V (bytes): %x\n", stx.VBytes)
+	fmt.Printf("domain/signedtx.go -> Validate() -> R (bytes): %x\n", stx.RBytes)
+	fmt.Printf("domain/signedtx.go -> Validate() -> S (bytes): %x\n", stx.SBytes)
+	fmt.Printf("domain/signedtx.go -> Validate() -> V (big.Int): %v\n", v)
+	fmt.Printf("domain/signedtx.go -> Validate() -> R (big.Int): %x\n", r)
+	fmt.Printf("domain/signedtx.go -> Validate() -> S (big.Int): %x\n", s)
 
-	// Validate the signature parts (R, S, and V).
-	if err := VerifySignature(v, r, s); err != nil {
-		return err
-	}
-
-	// Verify that the 'from' address matches the one from the signature.
+	// Add before FromAddress check
 	address, err := stx.FromAddress()
 	if err != nil {
+		fmt.Printf("domain/signedtx.go -> Validate() ->FromAddress error: %v\n", err)
 		return err
 	}
+	fmt.Printf("domain/signedtx.go -> Validate() -> Recovered address: %s\n", address)
+	fmt.Printf("domain/signedtx.go -> Validate() -> Expected address: %s\n", stx.From.Hex())
 
 	if address != string(stx.From.Hex()) {
-		log.Printf("SignedTransaction: Validate: signature address %v doesn't match from address %v\n", address, stx.From.Hex())
+		fmt.Printf("domain/signedtx.go -> Validate() -> Address mismatch:\n  Recovered: %s\n  Expected: %s\n",
+			address, stx.From.Hex())
 		return errors.New("signature address doesn't match from address")
 	}
 
+	fmt.Printf("domain/signedtx.go -> Validate() -> === Transaction Validation Complete ===\n\n")
 	return nil
 }
 

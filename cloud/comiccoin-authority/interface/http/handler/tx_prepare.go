@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	sv_tx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/service/tx"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type PrepareTransactionHTTPHandler struct {
@@ -49,14 +47,14 @@ func (h *PrepareTransactionHTTPHandler) Execute(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	toAddr := common.HexToAddress(strings.ToLower(req.RecipientAddress))
-	senderAddr := common.HexToAddress(strings.ToLower(req.SenderAccountAddress))
-
-	h.logger.Debug("tx submit received",
-		slog.Any("sender", senderAddr),
-		slog.Any("receipient", toAddr),
-		slog.Any("value", req.Value),
-		slog.Any("data", req.Data))
+	// toAddr := common.HexToAddress(strings.ToLower(req.RecipientAddress))
+	// senderAddr := common.HexToAddress(strings.ToLower(req.SenderAccountAddress))
+	//
+	// h.logger.Debug("tx submit received",
+	// 	slog.Any("sender", senderAddr),
+	// 	slog.Any("receipient", toAddr),
+	// 	slog.Any("value", req.Value),
+	// 	slog.Any("data", req.Data))
 
 	preparedTx, err := h.service.Execute(ctx, req)
 	if err != nil {
