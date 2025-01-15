@@ -116,154 +116,106 @@ class TransactionService {
     }
 
     async createStamp(transaction) {
-        console.log('Creating stamp from:', transaction);
+    console.log('Creating stamp from:', transaction);
 
-        // Create exact JSON structure that matches backend's alphabetical order
-        const orderedObj = {
-            chain_id: transaction.chain_id,
-            from: transaction.from.toLowerCase(),
-            nonce_bytes: transaction.nonce_bytes,
-            to: transaction.to.toLowerCase(),
+    // Order fields exactly like backend
+    const orderedObj = {
+        chain_id: transaction.chain_id,
+        from: transaction.from.toLowerCase(),
+        nonce_bytes: transaction.nonce_bytes,
+        to: transaction.to.toLowerCase(),
+        type: "coin",
+        value: transaction.value
+    };
+
+    // First convert to JSON with same fields and order as backend
+    const initialJson = JSON.stringify(orderedObj);
+    console.log('Initial JSON (raw):', initialJson);
+    console.log('Initial JSON bytes:', Array.from(ethers.toUtf8Bytes(initialJson)).map(b => b.toString(16).padStart(2, '0')));
+
+    // Create exact prefix as backend: \x19ComicCoin Signed Message:\n<length>
+    const prefix = `\x19ComicCoin Signed Message:\n${initialJson.length}`;
+    const stampBytes = ethers.toUtf8Bytes(prefix);
+    const messageBytes = ethers.toUtf8Bytes(initialJson);
+
+    // Concatenate and hash exactly like backend
+    return ethers.getBytes(ethers.keccak256(
+        ethers.concat([
+            stampBytes,
+            messageBytes
+        ])
+    ));
+}
+
+async signTransaction(template) {
+    try {
+        const currentWallet = walletService.getCurrentWallet();
+        if (!currentWallet) {
+            throw new Error('No wallet is currently loaded');
+        }
+
+        console.log('Starting signing process:', {
+            wallet_address: currentWallet.address,
+            template: template
+        });
+
+        // Create the stamp hash exactly like backend
+        const messageHash = await this.createStamp(template);
+        console.log('Message hash:', ethers.hexlify(messageHash));
+
+        const wallet = new ethers.Wallet(currentWallet.privateKey);
+        const signature = await wallet.signingKey.sign(messageHash);
+
+        // Convert signature to same format as backend
+        const recoveryBit = signature.yParity;  // 0 or 1
+        const v = this.comicCoinId + recoveryBit; // 29 or 30
+
+        // Verify signature exactly as backend
+        const verifySignature = ethers.Signature.from({
+            r: signature.r,
+            s: signature.s,
+            v: 27 + recoveryBit // Convert to Ethereum format (27/28) for verification
+        });
+
+        // Verify the recovered address matches sender
+        const recoveredAddr = ethers.recoverAddress(messageHash, verifySignature);
+        if (recoveredAddr.toLowerCase() !== currentWallet.address.toLowerCase()) {
+            throw new Error('Pre-verification failed - recovered address does not match sender');
+        }
+
+        // Create signed transaction matching backend's format
+        const signedTx = {
+            chain_id: template.chain_id,
+            nonce_bytes: template.nonce_bytes,
+            nonce_string: "",
+            from: template.from.toLowerCase(),
+            to: template.to.toLowerCase(),
+            value: template.value,
+            data: "",
+            data_string: "",
             type: "coin",
-            value: transaction.value
+            token_id_bytes: null,
+            token_id_string: "",
+            token_metadata_uri: "",
+            token_nonce_bytes: null,
+            token_nonce_string: "",
+            v_bytes: [v],
+            r_bytes: Array.from(ethers.getBytes(signature.r)),
+            s_bytes: Array.from(ethers.getBytes(signature.s))
         };
 
-        // First convert to JSON
-        const initialJson = JSON.stringify(orderedObj);
-        console.log('Initial JSON (raw):', initialJson);
-        console.log('Initial JSON bytes:', Array.from(ethers.toUtf8Bytes(initialJson)).map(b => b.toString(16).padStart(2, '0')));
-
-        // Keep exact fields to match backend
-        const message = initialJson;
-        console.log('Final JSON:', message);
-
-        // Convert to UTF-8 bytes with detailed logging
-        const messageBytes = ethers.toUtf8Bytes(message);
-        console.log('Message bytes:', {
-            decimal: Array.from(messageBytes),
-            hex: Array.from(messageBytes).map(b => b.toString(16).padStart(2, '0')),
-            length: messageBytes.length,
-            utf8: new TextDecoder().decode(messageBytes)
-        });
-
-        // Create stamp prefix - exactly match backend format
-        const prefix = `\x19ComicCoin Signed Message:\n${messageBytes.length}`;
-        const stampBytes = ethers.toUtf8Bytes(prefix);
-        console.log('Prefix details:', {
-            text: prefix,
-            bytes: Array.from(stampBytes),
-            hex: ethers.hexlify(stampBytes)
-        });
-
-        // Log components for debugging
-        console.log('Hash components:', {
-            prefix_bytes: Array.from(stampBytes).map(b => b.toString(16).padStart(2, '0')),
-            message_bytes: Array.from(messageBytes).map(b => b.toString(16).padStart(2, '0'))
-        });
-
-        // Concatenate and hash
-        const fullMessage = ethers.concat([stampBytes, messageBytes]);
-        console.log('Full message:', {
-            hex: ethers.hexlify(fullMessage),
-            bytes: Array.from(fullMessage).map(b => b.toString(16).padStart(2, '0'))
-        });
-
-        const hash = ethers.keccak256(fullMessage);
-        console.log('Final hash:', {
-            hex: hash,
-            bytes: Array.from(ethers.getBytes(hash)).map(b => b.toString(16).padStart(2, '0'))
-        });
-
-        return ethers.getBytes(hash);
-    }
-
-    async signTransaction(template) {
-        try {
-            const currentWallet = walletService.getCurrentWallet();
-            if (!currentWallet) {
-                throw new Error('No wallet is currently loaded');
-            }
-
-            console.log('Starting signing process:', {
-                wallet_address: currentWallet.address,
-                template: template
-            });
-
-            // Create the hash
-            const messageHash = await this.createStamp(template);
-            console.log('Message hash:', ethers.hexlify(messageHash));
-
-            // Create wallet and log details
-            const wallet = new ethers.Wallet(currentWallet.privateKey);
-
-            // Sign the hash bytes directly
-            const signature = await wallet.signingKey.sign(messageHash);
-            console.log('Raw signature:', signature);
-
-            // Get parity and set v value
-            const recoveryBit = signature.yParity;  // This will be 0 or 1
-            const v = this.comicCoinId + recoveryBit; // 29 or 30
-
-            // Create verification signature first to ensure it's valid
-            const verifySignature = ethers.Signature.from({
-                r: signature.r,
-                s: signature.s,
-                v: signature.v === 28 ? 28 : 27 // Convert to ethers format for verification
-            });
-
-            const recoveredAddr = ethers.recoverAddress(messageHash, verifySignature);
-            console.log('Pre-verify recovered:', recoveredAddr);
-
-            if (recoveredAddr.toLowerCase() !== currentWallet.address.toLowerCase()) {
-                throw new Error('Pre-verification failed - signature would be invalid');
-            }
-
-            // Create signed transaction
-            const signedTx = {
-                chain_id: template.chain_id,
-                nonce_bytes: template.nonce_bytes,
-                nonce_string: "",
-                from: template.from.toLowerCase(),
-                to: template.to.toLowerCase(),
-                value: template.value,
-                data: "",
-                data_string: "",
-                type: "coin",
-                token_id_bytes: null,
-                token_id_string: "",
-                token_metadata_uri: "",
-                token_nonce_bytes: null,
-                token_nonce_string: "",
-                v_bytes: [v],
-                r_bytes: Array.from(ethers.getBytes(signature.r)),
-                s_bytes: Array.from(ethers.getBytes(signature.s))
-            };
-
-            // Log final values for debugging
-            console.log('Final signature values:', {
-                messageHash: ethers.hexlify(messageHash),
-                r: signature.r,
-                s: signature.s,
-                v_original: signature.v,
-                v_final: v,
-                recoveryBit,
-                address: currentWallet.address
-            });
-
-            // Final verification
-            const verificationResult = await this.verifySignature(signedTx);
-            console.log('Final verification result:', verificationResult);
-
-            if (!verificationResult.isValid) {
-                throw new Error('Signature verification failed: ' + verificationResult.error);
-            }
-
-            return signedTx;
-        } catch (error) {
-            console.error('signTransaction error:', error);
-            throw error;
+        // Do final verification
+        const verificationResult = await this.verifySignature(signedTx);
+        if (!verificationResult.isValid) {
+            throw new Error('Final verification failed: ' + verificationResult.error);
         }
+
+        return signedTx;
+    } catch (error) {
+        console.error('signTransaction error:', error);
+        throw error;
     }
+}
 
     async verifySignature(signedTransaction) {
         try {

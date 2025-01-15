@@ -37,19 +37,42 @@ export const useWalletTransactions = (walletAddress) => {
         const coinTransactions = transactions.filter(tx => tx.type === 'coin');
         const nftTransactions = transactions.filter(tx => tx.type === 'token');
 
-        // Calculate total coin value using actualValue
+        // Calculate total coin value by tracking incoming and outgoing transactions
         const totalCoinValue = coinTransactions.reduce((sum, tx) => {
-            if (tx.from === walletAddress) {
-                return sum - Number(tx.actualValue);
-            } else {
-                return sum + Number(tx.actualValue);
+            if (tx.from.toLowerCase() === walletAddress.toLowerCase()) {
+                // When we send coins:
+                // 1. Subtract the value being sent
+                // 2. Subtract the transaction fee
+                return sum - Number(tx.value) - Number(tx.fee);
+            } else if (tx.to.toLowerCase() === walletAddress.toLowerCase()) {
+                // When we receive coins:
+                // Just add the value (we don't pay fee when receiving)
+                return sum + Number(tx.value);
             }
+            return sum;
         }, 0);
 
-        // Calculate total fees paid
+        // Calculate total fees paid (only when we send)
         const totalFeesPaid = coinTransactions.reduce((sum, tx) => {
-            if (tx.from === walletAddress) {
+            // We only pay fees when we are the sender
+            if (tx.from.toLowerCase() === walletAddress.toLowerCase()) {
                 return sum + Number(tx.fee);
+            }
+            return sum;
+        }, 0);
+
+        // Calculate total sent
+        const totalSent = coinTransactions.reduce((sum, tx) => {
+            if (tx.from.toLowerCase() === walletAddress.toLowerCase()) {
+                return sum + Number(tx.value);
+            }
+            return sum;
+        }, 0);
+
+        // Calculate total received
+        const totalReceived = coinTransactions.reduce((sum, tx) => {
+            if (tx.to.toLowerCase() === walletAddress.toLowerCase()) {
+                return sum + Number(tx.value);
             }
             return sum;
         }, 0);
@@ -57,9 +80,9 @@ export const useWalletTransactions = (walletAddress) => {
         // Calculate NFT ownership
         const ownedNfts = new Set();
         nftTransactions.forEach(tx => {
-            if (tx.from === walletAddress) {
+            if (tx.from.toLowerCase() === walletAddress.toLowerCase()) {
                 ownedNfts.delete(tx.tokenId);
-            } else {
+            } else if (tx.to.toLowerCase() === walletAddress.toLowerCase()) {
                 ownedNfts.add(tx.tokenId);
             }
         });
@@ -70,10 +93,17 @@ export const useWalletTransactions = (walletAddress) => {
             nftTransactionsCount: nftTransactions.length,
             coinTransactions,
             nftTransactions,
-            totalCoinValue,
-            totalFeesPaid,
+            totalCoinValue,          // Current balance
+            totalFeesPaid,           // Total fees paid
+            totalSent,               // Total amount sent
+            totalReceived,           // Total amount received
             totalNftCount: ownedNfts.size,
-            ownedNftIds: Array.from(ownedNfts)
+            ownedNftIds: Array.from(ownedNfts),
+            // Add formatted values for display
+            formattedBalance: `${totalCoinValue.toLocaleString()} CC`,
+            formattedTotalSent: `${totalSent.toLocaleString()} CC`,
+            formattedTotalReceived: `${totalReceived.toLocaleString()} CC`,
+            formattedTotalFees: `${totalFeesPaid.toLocaleString()} CC`
         };
     }, [transactions, walletAddress]);
 
@@ -87,18 +117,13 @@ export const useWalletTransactions = (walletAddress) => {
         // Statistics
         statistics,
 
-        // Direct access to counts
-        totalTransactions: statistics.totalTransactions,
-        coinTransactionsCount: statistics.coinTransactionsCount,
-        nftTransactionsCount: statistics.nftTransactionsCount,
-
-        // Direct access to filtered transactions
-        coinTransactions: statistics.coinTransactions,
-        nftTransactions: statistics.nftTransactions,
-
-        // Additional statistics
         totalCoinValue: statistics.totalCoinValue,
-        totalFeesPaid: statistics.totalFeesPaid,
-        totalNftCount: statistics.totalNftCount
+       totalFeesPaid: statistics.totalFeesPaid,
+       totalSent: statistics.totalSent,
+       totalReceived: statistics.totalReceived,
+       formattedBalance: statistics.formattedBalance,
+       formattedTotalSent: statistics.formattedTotalSent,
+       formattedTotalReceived: statistics.formattedTotalReceived,
+       formattedTotalFees: statistics.formattedTotalFees
     };
 };

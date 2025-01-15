@@ -190,15 +190,35 @@ const SendCoinsPage = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6 mb-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-purple-100 rounded-xl">
-              <Wallet className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Available Balance</h2>
-              <p className="text-gray-600">{statistics?.totalCoinValue || 0} CC</p>
-            </div>
-          </div>
+        <div className="flex items-center gap-3 mb-6">
+<div className="p-2 bg-purple-100 rounded-xl">
+  <Wallet className="w-5 h-5 text-purple-600" />
+</div>
+<div className="w-full">
+  <div className="flex justify-between items-center">
+    <h2 className="text-xl font-bold text-gray-900">Available Balance</h2>
+    <p className="text-2xl font-bold text-purple-600">{statistics?.totalCoinValue || 0} CC</p>
+  </div>
+
+  {/* Add transaction preview when amount is entered */}
+  {formData.amount && (
+    <div className="mt-2 border-t pt-2 space-y-1">
+      <div className="flex justify-between text-sm">
+        <span className="text-red-600">Amount to Send</span>
+        <span className="text-red-600">- {formData.amount} CC</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-red-600">Network Fee</span>
+        <span className="text-red-600">- 1 CC</span>
+      </div>
+      <div className="flex justify-between text-sm font-medium">
+        <span className="text-gray-600">Remaining Balance</span>
+        <span className="text-gray-900">= {(statistics?.totalCoinValue - parseFloat(formData.amount) - 1).toFixed(2)} CC</span>
+      </div>
+    </div>
+  )}
+</div>
+</div>
 
           {/* Important Notices Section */}
           <div className="space-y-4 mb-6">
@@ -254,14 +274,14 @@ const SendCoinsPage = () => {
               </div>
 
               <div>
-                <label htmlFor="amount" className="block">
+              <label htmlFor="amount" className="block">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium text-gray-700">
                       Coins <span className="text-red-500">*</span>
                     </span>
                     <span className="text-sm text-gray-500 flex items-center gap-1">
                       <Coins className="w-4 h-4" />
-                      Balance: {statistics?.totalCoinValue || 0} CC
+                      Current Balance: {statistics?.totalCoinValue || 0} CC
                     </span>
                   </div>
                   <input
@@ -283,14 +303,16 @@ const SendCoinsPage = () => {
                       <AlertCircle className="w-4 h-4" />
                       {errors.amount}
                     </p>
-                  ) : (
-                    formData.amount && (
-                      <p className="mt-1.5 text-sm text-gray-500">
-                        Remaining balance after transaction:{' '}
-                        {(statistics?.totalCoinValue - parseFloat(formData.amount)).toFixed(2)} CC
+                  ) : formData.amount ? (
+                    <div className="mt-2 space-y-1">
+                      <p className="text-sm text-red-600">
+                        Network Fee: 1 CC
                       </p>
-                    )
-                  )}
+                      <p className="text-sm text-gray-600">
+                        Total amount (including fee): {(parseFloat(formData.amount) + 1).toFixed(2)} CC
+                      </p>
+                    </div>
+                  ) : null}
                 </label>
               </div>
 
@@ -395,61 +417,75 @@ const SendCoinsPage = () => {
 
       {/* Confirmation Modal */}
       {showConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Confirm Transaction</h3>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+      <h3 className="text-xl font-bold text-gray-900 mb-4">Confirm Transaction</h3>
 
-            <div className="space-y-4 mb-6">
-              <div>
-                <p className="text-sm text-gray-600">Amount</p>
-                <p className="text-lg font-medium text-gray-900">{formData.amount} CC</p>
-              </div>
+      <div className="space-y-4 mb-6">
+        <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+          <div>
+            <p className="text-sm text-gray-600">Send Amount</p>
+            <p className="text-lg font-medium text-red-600">- {formData.amount} CC</p>
+          </div>
 
-              <div>
-                <p className="text-sm text-gray-600">To Address</p>
-                <p className="text-lg font-medium text-gray-900 break-all">{formData.recipientAddress}</p>
-              </div>
+          <div>
+            <p className="text-sm text-gray-600">Network Fee</p>
+            <p className="text-lg font-medium text-red-600">- 1 CC</p>
+          </div>
 
-              <div>
-                <p className="text-sm text-gray-600">Network Fee</p>
-                <p className="text-lg font-medium text-gray-900">1 CC</p>
-              </div>
+          <div className="pt-2 border-t">
+            <p className="text-sm text-gray-600">Total Deduction</p>
+            <p className="text-lg font-bold text-red-600">- {(parseFloat(formData.amount) + 1).toFixed(2)} CC</p>
+          </div>
 
-              {formData.note && (
-                <div>
-                  <p className="text-sm text-gray-600">Note</p>
-                  <p className="text-lg font-medium text-gray-900">{formData.note}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowConfirmation(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleConfirmTransaction}
-                className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Processing...
-                  </div>
-                ) : (
-                  'Confirm'
-                )}
-              </button>
-            </div>
+          <div className="pt-2 border-t">
+            <p className="text-sm text-gray-600">Remaining Balance</p>
+            <p className="text-lg font-bold text-gray-900">
+              {(statistics?.totalCoinValue - parseFloat(formData.amount) - 1).toFixed(2)} CC
+            </p>
           </div>
         </div>
-      )}
+
+        <div>
+          <p className="text-sm text-gray-600">To Address</p>
+          <p className="text-lg font-medium text-gray-900 break-all">{formData.recipientAddress}</p>
+        </div>
+
+        {formData.note && (
+          <div>
+            <p className="text-sm text-gray-600">Note</p>
+            <p className="text-lg font-medium text-gray-900">{formData.note}</p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-4">
+        <button
+          onClick={() => setShowConfirmation(false)}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleConfirmTransaction}
+          className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Processing...
+            </div>
+          ) : (
+            'Confirm'
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
