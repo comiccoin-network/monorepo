@@ -9,7 +9,7 @@ class TransactionService {
             'Content-Type': 'application/json',
         };
         this.comicCoinId = 29;
-        this.chainId = null;
+        this.chainId = 1;
     }
 
     initialize(chainId) {
@@ -86,29 +86,29 @@ class TransactionService {
 
         // First convert to JSON
         const initialJson = JSON.stringify(orderedObj);
-        console.log('Initial JSON:', initialJson);
+        console.log('createStamp: Initial JSON:', initialJson);
 
         // Parse back to object and clean it
         const normalizedObj = this.cleanMap(JSON.parse(initialJson));
-        console.log('After cleaning:', normalizedObj);
+        console.log('createStamp: After cleaning:', normalizedObj);
 
         // Convert back to JSON
         const message = JSON.stringify(normalizedObj);
-        console.log('Final JSON for stamping:', message);
+        console.log('createStamp: Final JSON for stamping:', message);
 
         // Convert to UTF-8 bytes
         const messageBytes = ethers.toUtf8Bytes(message);
-        console.log('Message byte length:', messageBytes.length);
+        console.log('createStamp: Message byte length:', messageBytes.length);
 
         // Create stamp with exact prefix
         const prefix = `\x19ComicCoin Signed Message:\n${messageBytes.length}`;
         const stampBytes = ethers.toUtf8Bytes(prefix);
-        console.log('Stamp prefix:', prefix);
+        console.log('createStamp: Stamp prefix:', prefix);
 
         // Concatenate and hash
         const fullMessage = ethers.concat([stampBytes, messageBytes]);
         const hash = ethers.keccak256(fullMessage);
-        console.log('Final hash:', hash);
+        console.log('createStamp: Final hash:', hash);
 
         return ethers.getBytes(hash);
     }
@@ -161,7 +161,8 @@ class TransactionService {
                 throw new Error('No wallet is currently loaded');
             }
 
-            console.log('Starting signing process with wallet address:', currentWallet.address);
+            console.log('signTransaction: Starting signing process with wallet address:', currentWallet.address);
+            console.log("signTransaction: Pre-signed template:", template);
 
             // Create the hash
             const messageHash = await this.createStamp(template);
@@ -197,7 +198,7 @@ class TransactionService {
 
             // Self-verify before returning
             const verificationResult = await this.verifySignature(signedTx);
-            console.log('Signature verification result:', verificationResult);
+            console.log('signTransaction: Signature verification result:', verificationResult);
 
             if (!verificationResult.isValid) {
                 throw new Error('Signature verification failed: ' + verificationResult.error);
