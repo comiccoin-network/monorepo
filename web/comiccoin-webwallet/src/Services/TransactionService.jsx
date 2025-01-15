@@ -8,6 +8,8 @@ class TransactionService {
         this.defaultHeaders = {
             'Content-Type': 'application/json',
         };
+        this.comicCoinId = 29;
+        this.chainId = null;
     }
 
     initialize(chainId) {
@@ -20,6 +22,95 @@ class TransactionService {
         const processId = Math.floor(Math.random() * 65536).toString(16).padStart(4, '0');
         const counter = Math.floor(Math.random() * 16777216).toString(16).padStart(6, '0');
         return timestamp + machineId + processId + counter;
+    }
+
+    // Matches backend's cleanMap function exactly
+    cleanMap(obj) {
+        const result = { ...obj }; // Work on a copy to avoid mutating the input
+
+        for (const [key, value] of Object.entries(result)) {
+            if (value === null) {
+                delete result[key];
+                continue;
+            }
+
+            if (typeof value === 'string' && value === '') {
+                delete result[key];
+                continue;
+            }
+
+            if (Array.isArray(value)) {
+                if (value.length === 0) {
+                    delete result[key];
+                } else {
+                    for (let i = 0; i < value.length; i++) {
+                        if (typeof value[i] === 'object' && value[i] !== null) {
+                            value[i] = this.cleanMap(value[i]);
+                        }
+                    }
+                }
+                continue;
+            }
+
+            if (typeof value === 'object') {
+                const cleaned = this.cleanMap(value);
+                if (Object.keys(cleaned).length === 0) {
+                    delete result[key];
+                } else {
+                    result[key] = cleaned;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    async createStamp(transaction) {
+        // Create exact JSON structure that matches backend
+        const orderedObj = {
+            chain_id: transaction.chain_id,
+            nonce_bytes: transaction.nonce_bytes,
+            nonce_string: "",
+            from: transaction.from.toLowerCase(),
+            to: transaction.to.toLowerCase(),
+            value: transaction.value,
+            data: "",
+            data_string: "",
+            type: "coin",
+            token_id_bytes: null,
+            token_id_string: "",
+            token_metadata_uri: "",
+            token_nonce_bytes: null,
+            token_nonce_string: ""
+        };
+
+        // First convert to JSON
+        const initialJson = JSON.stringify(orderedObj);
+        console.log('Initial JSON:', initialJson);
+
+        // Parse back to object and clean it
+        const normalizedObj = this.cleanMap(JSON.parse(initialJson));
+        console.log('After cleaning:', normalizedObj);
+
+        // Convert back to JSON
+        const message = JSON.stringify(normalizedObj);
+        console.log('Final JSON for stamping:', message);
+
+        // Convert to UTF-8 bytes
+        const messageBytes = ethers.toUtf8Bytes(message);
+        console.log('Message byte length:', messageBytes.length);
+
+        // Create stamp with exact prefix
+        const prefix = `\x19ComicCoin Signed Message:\n${messageBytes.length}`;
+        const stampBytes = ethers.toUtf8Bytes(prefix);
+        console.log('Stamp prefix:', prefix);
+
+        // Concatenate and hash
+        const fullMessage = ethers.concat([stampBytes, messageBytes]);
+        const hash = ethers.keccak256(fullMessage);
+        console.log('Final hash:', hash);
+
+        return ethers.getBytes(hash);
     }
 
     async getTransactionTemplate(senderAddress, recipientAddress, amount, message = "") {
@@ -63,31 +154,6 @@ class TransactionService {
         }
     }
 
-    async createMessage(transaction) {
-        // Create exact JSON structure that matches backend
-        const orderedObj = {
-            chain_id: transaction.chain_id,
-            nonce_bytes: transaction.nonce_bytes,
-            nonce_string: "",
-            from: transaction.from.toLowerCase(),
-            to: transaction.to.toLowerCase(),
-            value: transaction.value,
-            data: "",
-            data_string: "",
-            type: "coin",
-            token_id_bytes: null,
-            token_id_string: "",
-            token_metadata_uri: "",
-            token_nonce_bytes: null,
-            token_nonce_string: ""
-        };
-
-        // Convert to compact JSON
-        const message = JSON.stringify(orderedObj);
-        console.log('Transaction JSON for signing:', message);
-        return message;
-    }
-
     async signTransaction(template) {
         try {
             const currentWallet = walletService.getCurrentWallet();
@@ -97,14 +163,16 @@ class TransactionService {
 
             console.log('Starting signing process with wallet address:', currentWallet.address);
 
-            // Create the message
-            const message = await this.createMessage(template);
+            // Create the hash
+            const messageHash = await this.createStamp(template);
 
-            // Sign the message using ethers v2
-            const signature = await currentWallet.signMessage(message);
+            // Sign the hash using the private key directly
+            const signingKey = new ethers.SigningKey(currentWallet.privateKey);
+            const signature = signingKey.sign(messageHash);
 
-            // Split signature into v, r, s components
-            const sig = ethers.Signature.from(signature);
+            // ComicCoin expects v to be 0 or 1 plus comicCoinID (29)
+            const recoveryParam = signature.yParity === 1 ? 1 : 0;
+            const v = recoveryParam + this.comicCoinId;
 
             // Create signed transaction with EXACT field order
             const signedTx = {
@@ -122,13 +190,13 @@ class TransactionService {
                 token_metadata_uri: "",
                 token_nonce_bytes: null,
                 token_nonce_string: "",
-                v_bytes: [sig.v + 27], // Add 27 to match Ethereum's v value
-                r_bytes: Array.from(ethers.getBytes(sig.r)),
-                s_bytes: Array.from(ethers.getBytes(sig.s))
+                v_bytes: [v],
+                r_bytes: Array.from(ethers.getBytes(signature.r)),
+                s_bytes: Array.from(ethers.getBytes(signature.s))
             };
 
-            // Verify signature
-            const verificationResult = await this.verifySignature(signedTx, message);
+            // Self-verify before returning
+            const verificationResult = await this.verifySignature(signedTx);
             console.log('Signature verification result:', verificationResult);
 
             if (!verificationResult.isValid) {
@@ -142,21 +210,25 @@ class TransactionService {
         }
     }
 
-    async verifySignature(signedTransaction, originalMessage) {
+    async verifySignature(signedTransaction) {
         try {
+            // Create the hash of the transaction
+            const messageHash = await this.createStamp(signedTransaction);
+
             // Reconstruct the signature
             const r = ethers.hexlify(new Uint8Array(signedTransaction.r_bytes));
             const s = ethers.hexlify(new Uint8Array(signedTransaction.s_bytes));
-            const v = signedTransaction.v_bytes[0] - 27; // Subtract 27 to get standard v value
+            const v = signedTransaction.v_bytes[0] - this.comicCoinId;
 
+            // Create the Signature object
             const signature = ethers.Signature.from({
                 r,
                 s,
                 v: Number(v)
             });
 
-            // Recover the address using ethers.verifyMessage
-            const recoveredAddress = ethers.verifyMessage(originalMessage, signature);
+            // Recover the address using built-in ethers function
+            const recoveredAddress = ethers.recoverAddress(messageHash, signature);
 
             console.log('Recovered address:', recoveredAddress);
             console.log('Expected address:', signedTransaction.from);
