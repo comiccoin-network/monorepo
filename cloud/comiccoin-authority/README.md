@@ -1,12 +1,12 @@
 # ⚖️ ComicCoin Blockchain Authority
 
-The ⚖️ ComicCoin Blockchain Authority is a central server that implements the "Proof of Authority" consensus mechanism for all connected nodes. This repository contains the necessary code and instructions to set up and run the authority.
+The **⚖️ ComicCoin Blockchain Authority** is a central server implementing the "Proof of Authority" consensus mechanism for all connected nodes. This repository provides the necessary code and instructions to set up and run the authority.
 
 ## 📖 Installation
 
 ### Step 1: Set Up Your Go Environment
 
-1. Navigate to your Go folder and create a new directory for the ComicCoin Network:
+1. Navigate to your Go workspace and create a new directory for the ComicCoin Network:
 
     ```bash
     cd ~/go/src/github.com/
@@ -30,21 +30,22 @@ The ⚖️ ComicCoin Blockchain Authority is a central server that implements th
     cp .env.sample .env
     ```
 
-2. Fill in the environment variables in the `.env` file as best as you can. **Note:** The following variables will be filled later and should be skipped for now:
-   * `COMICCOIN_AUTHORITY_APP_ADMINISTRATION_HMAC_SECRET`
-   * `COMICCOIN_AUTHORITY_APP_ADMINISTRATION_SECRET_KEY`
-   * `COMICCOIN_AUTHORITY_APP_ADMINISTRATION_API_KEY`
-   * `COMICCOIN_AUTHORITY_APP_GEOLITE_DB_PATH`
-   * `COMICCOIN_AUTHORITY_APP_BANNED_COUNTRIES`
-   * `COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_ACCOUNT_ADDRESS`
-   * `COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC`
-   * `COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PATH`
+2. Fill in the environment variables in the `.env` file. **Note:** The following variables will be configured later and should be skipped for now:
 
-3. Ensure the remaining variables are filled in accurately, as they are crucial for proper operation.
+   - `COMICCOIN_AUTHORITY_APP_ADMINISTRATION_HMAC_SECRET`
+   - `COMICCOIN_AUTHORITY_APP_ADMINISTRATION_SECRET_KEY`
+   - `COMICCOIN_AUTHORITY_APP_ADMINISTRATION_API_KEY`
+   - `COMICCOIN_AUTHORITY_APP_GEOLITE_DB_PATH`
+   - `COMICCOIN_AUTHORITY_APP_BANNED_COUNTRIES`
+   - `COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_ACCOUNT_ADDRESS`
+   - `COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC`
+   - `COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PATH`
+
+3. Ensure the remaining variables are accurately filled in, as they are essential for proper operation.
 
 ### Part 2: Get External Dependencies
 
-1. **Download GeoLite2-Country Database:** Download the GeoLite2-Country.mmdb database from the [P3TERX/GeoLite.mmdb](https://github.com/P3TERX/GeoLite.mmdb?tab=readme-ov-file) repository.
+1. **Download the GeoLite2-Country Database:** Download the `GeoLite2-Country.mmdb` database from the [P3TERX/GeoLite.mmdb](https://github.com/P3TERX/GeoLite.mmdb?tab=readme-ov-file) repository.
 
 2. **Save the Database File:** Save the downloaded file in the `static` folder:
 
@@ -52,207 +53,224 @@ The ⚖️ ComicCoin Blockchain Authority is a central server that implements th
     ./monorepo/cloud/comiccoin-authority/static/GeoLite2-Country.mmdb
     ```
 
-3. **Configure Environment Variables:** Update the `.env` file:
+3. **Update the `.env` File:** Set the correct paths in the `.env` file:
 
     ```bash
     COMICCOIN_AUTHORITY_APP_GEOLITE_DB_PATH=./static/GeoLite2-Country.mmdb
     COMICCOIN_AUTHORITY_APP_BANNED_COUNTRIES=KP
     ```
 
-Example configuration:
+## Part 3: Setting Up the ComicCoin Blockchain
 
-```bash
-COMICCOIN_AUTHORITY_APP_GEOLITE_DB_PATH=./static/GeoLite2-Country.mmdb
-COMICCOIN_AUTHORITY_APP_BANNED_COUNTRIES=KP
-```
+Follow the steps below to create and set up the ComicCoin blockchain.
 
-### Part 3: Create the ComicCoin Blockchain
+### Step 1: Start Docker Compose
 
-Follow these steps to create the ComicCoin blockchain.
-
-#### Step 1: Start Docker Compose
-
-Start the blockchain with the following command:
+Start the blockchain by running:
 
 ```bash
 task start
 ```
 
-#### Step 2: Enter the Running Container
+### Step 2: Access the Running Container
 
-Open a new terminal window and enter the running container:
+In a new terminal window, enter the running container:
 
 ```bash
 task console
 ```
 
-#### Step 3: Generate Mnemonic Phrase
+### Step 3: Generate a Mnemonic Phrase
 
-Inside the secondary terminal window, generate a unique mnemonic phrase:
+Generate a unique mnemonic phrase in the secondary terminal:
 
 ```bash
 go run main.go credentials mnemonic generate
 ```
 
-**Important:** The output will be unique. Save it for future use.
+> **Important:** The generated mnemonic will be unique. Save it securely for future use.
 
 Example output:
 
 ```bash
-time=2025-01-15T20:24:52.242Z level=INFO msg="Successfully generated mnemonic phrase" result="<YOUR_GENERATED_MNEMOMIC_PHRASE>"
+time=2025-01-15T20:24:52.242Z level=INFO msg="Successfully generated mnemonic phrase" result="<YOUR_GENERATED_MNEMONIC>"
 ```
 
-#### Step 4: Create Coinbase Account
+### Step 4: Create the Coinbase Account
 
-Create your `coinbase` account using the mnemonic phrase:
+Use the generated mnemonic phrase to create your `coinbase` account:
 
 ```bash
 go run main.go account new \
 --wallet-label=Coinbase \
---wallet-mnemonic="<YOUR_GENERATED_MNEMOMIC_PHRASE>" \
---wallet-path="m/44'/60'/0'/0/0";
+--wallet-mnemonic="<YOUR_GENERATED_MNEMONIC>" \
+--wallet-path="m/44'/60'/0'/0/0"
 ```
 
-#### Step 5: Update Environment Variables
+### Step 5: Update Environment Variables
 
-Use the generated output to update the `.env` file:
+Update the `.env` file with the generated account information:
 
 ```bash
-COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_ACCOUNT_ADDRESS='<YOUR_GENERATED_COINBASE_ADDRESS>'
-COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC='<YOUR_GENERATED_MNEMOMIC_PHRASE>'
+COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_ACCOUNT_ADDRESS="<YOUR_GENERATED_COINBASE_ADDRESS>"
+COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC="<YOUR_GENERATED_MNEMONIC>"
 COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PATH="m/44'/60'/0'/0/0"
 ```
 
-#### Step 6: Restart Docker Container and Enter Console Again
+### Step 6: Restart the Docker Container
 
-Restart the container and enter the console again:
+Restart the container and access the console again:
 
 ```bash
 task console
 ```
 
-#### Step 7: Create Blockchain
+### Step 7: Create the Blockchain
 
-Create the blockchain inside the container:
+Inside the container, run the following to initialize the blockchain:
 
 ```bash
 go run main.go genesis new
 ```
 
-#### Step 8: Verify Coinbase Balance
+### Step 8: Verify Coinbase Balance
 
-Check that `coinbase` has coins:
-
-```bash
-go run main.go account get --address=<YOUR_GENERATED_COINBASE_ADDRESS>
-```
-
-### Part 4: Generate Administration API Key for NFT Minter
-
-1. Enter the running container:
-
-    ```bash
-    task console
-    ```
-
-2. Generate a secure application secret:
-
-    ```bash
-    openssl rand -hex 128
-    ```
-
-3. Generate the API key for NFT minting:
-
-    ```bash
-    go run main.go credentials apikey generate --chain-id=1 --hmac-secret-key=<YOUR_GENERATED_SECRET>
-    ```
-
-4. Update the `.env` file with the new credentials:
+To check the `coinbase` balance, run:
 
 ```bash
-COMICCOIN_AUTHORITY_APP_ADMINISTRATION_HMAC_SECRET='<YOUR_GENERATED_SECRET>'
-COMICCOIN_AUTHORITY_APP_ADMINISTRATION_SECRET_KEY='<YOUR_GENERATED_SECRET_KEY>'
-COMICCOIN_AUTHORITY_APP_ADMINISTRATION_API_KEY='<YOUR_API_KEY>'
+go run main.go account get --address="<YOUR_GENERATED_COINBASE_ADDRESS>"
 ```
 
-5. Provide the **System Administrator** with the `api_key`.
+---
 
-6. Restart the `comiccoin-authority` server to apply the new credentials.
+## Part 4: Generate the Administration API Key for NFT Minter
+
+To generate the administration API key, follow these steps:
+
+### Step 1: Enter the Running Container
+
+Access the container console:
+
+```bash
+task console
+```
+
+### Step 2: Generate a Secure Application Secret
+
+Generate a secure secret key using:
+
+```bash
+openssl rand -hex 128
+```
+
+### Step 3: Generate the API Key for NFT Minting
+
+Generate the API key using the secret key:
+
+```bash
+go run main.go credentials apikey generate --chain-id=1 --hmac-secret-key=<YOUR_GENERATED_SECRET>
+```
+
+### Step 4: Update the `.env` File with the New Credentials
+
+Add the generated credentials to the `.env` file:
+
+```bash
+COMICCOIN_AUTHORITY_APP_ADMINISTRATION_HMAC_SECRET="<YOUR_GENERATED_SECRET>"
+COMICCOIN_AUTHORITY_APP_ADMINISTRATION_SECRET_KEY="<YOUR_GENERATED_SECRET_KEY>"
+COMICCOIN_AUTHORITY_APP_ADMINISTRATION_API_KEY="<YOUR_API_KEY>"
+```
+
+### Step 5: Provide the API Key to the System Administrator
+
+Share the `api_key` with your **System Administrator** for further configuration.
+
+### Step 6: Restart the Server
+
+Restart the `comiccoin-authority` server to apply the new API credentials:
+
+```bash
+task restart
+```
 
 ## 🚜 Usage
 
-Assuming the server is running and you are in the console, here are some commands you can execute.
+Once the server is running, here are some useful commands you can execute.
 
 ### 🪙 Coins
 
-1. Create the mnemonic phrase for a test account called `alice`.
+#### 1. Generate a Mnemonic Phrase for a Test Account (e.g., `alice`)
 
-    ```bash
-    go run main.go credentials mnemonic generate
-    ```
+```bash
+go run main.go credentials mnemonic generate
+```
 
-2. Create a test account called `alice` and transfer coins:
+#### 2. Create a Test Account (e.g., `alice`) and Transfer Coins
 
-    ```bash
-    go run main.go account new \
-    --wallet-label=Alice \
-    --wallet-mnemonic='<YOUR_GENERATED_MNEMOMIC_PHRASE_FOR_ALICE>' \
-    --wallet-path="m/44'/60'/0'/0/0";
-    ```
+To create the `alice` account and transfer coins:
 
-3. Transfer coins from `coinbase` to `alice`:
+```bash
+go run main.go account new \
+--wallet-label=Alice \
+--wallet-mnemonic='<YOUR_GENERATED_MNEMONIC_PHRASE_FOR_ALICE>' \
+--wallet-path="m/44'/60'/0'/0/0"
+```
 
-    ```bash
-    go run main.go coins transfer \
-    --value=100 \
-    --data="" \
-    --recipient-address=<YOUR_GENERATED_ALICE_ADDRESS>;
-    ```
+#### 3. Transfer Coins from `coinbase` to `alice`
 
-4. Verify that `alice` has received the coins:
+```bash
+go run main.go coins transfer \
+--value=100 \
+--data="" \
+--recipient-address=<YOUR_GENERATED_ALICE_ADDRESS>
+```
 
-    ```bash
-    go run main.go account get --address=<YOUR_GENERATED_ALICE_ADDRESS>
-    ```
+#### 4. Verify `alice`'s Balance
+
+Check if `alice` has received the coins:
+
+```bash
+go run main.go account get --address=<YOUR_GENERATED_ALICE_ADDRESS>
+```
 
 ### 🎟️ Tokens
 
-1. Admin creates a new token:
+#### 1. Admin Mints a New Token
 
-    ```bash
-    go run main.go tokens mint --metadata-uri='https://raw.githubusercontent.com/momokonagata/sample-NFT-metadata/refs/heads/main/assets/1'
-    ```
+```bash
+go run main.go tokens mint --metadata-uri='https://raw.githubusercontent.com/momokonagata/sample-NFT-metadata/refs/heads/main/assets/1'
+```
 
-2. Anyone can view the new token using the token ID:
+#### 2. Anyone Can View the Token Using the Token ID
 
-    ```bash
-    go run main.go tokens get --token-id=1
-    ```
+```bash
+go run main.go tokens get --token-id=1
+```
 
-3. Admin transfers an existing token to `alice`:
+#### 3. Admin Transfers a Token to `alice`
 
-    ```bash
-    go run main.go tokens transfer \
-    --recipient-address=<YOUR_GENERATED_ALICE_ADDRESS> \
-    --token-id=1
-    ```
+```bash
+go run main.go tokens transfer \
+--recipient-address=<YOUR_GENERATED_ALICE_ADDRESS> \
+--token-id=1
+```
 
-4. Anyone can view the existing token:
+#### 4. Anyone Can View the Transferred Token
 
-    ```bash
-    go run main.go tokens get --token-id=1
-    ```
+```bash
+go run main.go tokens get --token-id=1
+```
 
-5. Admin burns an existing token:
+#### 5. Admin Burns an Existing Token
 
-    ```bash
-    go run main.go tokens burn --token-id=2
-    ```
+```bash
+go run main.go tokens burn --token-id=2
+```
 
 ## 🤝 Contributing
 
-Found a bug? Want a feature to improve the monorepo? Please create an [issue](https://github.com/comiccoin-network/monorepo/issues/new).
+Found a bug or have suggestions for improvements? Please create a [GitHub issue](https://github.com/comiccoin-network/monorepo/issues/new).
 
 ## 📝 License
 
-This application is licensed under the [**GNU Affero General Public License v3.0**](https://opensource.org/license/agpl-v3). See [LICENSE](LICENSE) for more information.
+This application is licensed under the [**GNU Affero General Public License v3.0**](https://opensource.org/license/agpl-v3). For more details, refer to the [LICENSE](LICENSE) file.
