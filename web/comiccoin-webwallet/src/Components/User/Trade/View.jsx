@@ -1,3 +1,4 @@
+// src/Components/User/Trade/View.jsx
 import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
