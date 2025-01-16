@@ -1,5 +1,6 @@
+// src/Components/User/More/Transaction/DetailView.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import {
     ArrowLeft,
     AlertCircle,
@@ -17,49 +18,113 @@ import {
     Shield
 } from 'lucide-react';
 
+import { useWallet } from '../../../../Hooks/useWallet';
 import { useBlockDataViaTransactionNonce } from '../../../../Hooks/useBlockDataViaTransactionNonce';
 import { formatBytes, base64ToHex } from '../../../../Utils/byteUtils';
 import NavigationMenu from "../../NavigationMenu/View";
 import FooterMenu from "../../FooterMenu/View";
+import walletService from '../../../../Services/WalletService';
 
 function TransactionDetailPage() {
     const { nonceString } = useParams();
     const { blockData, loading, error } = useBlockDataViaTransactionNonce(nonceString);
+    const {
+        currentWallet,
+        logout,
+        loading: serviceLoading,
+        error: serviceError
+    } = useWallet();
+
+    // State for session management
+    const [forceURL, setForceURL] = useState("");
+    const [sessionError, setSessionError] = useState(null);
+    const [isSessionExpired, setIsSessionExpired] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [currentTransaction, setCurrentTransaction] = useState(null);
 
+    // Session checking effect
     useEffect(() => {
-        console.log('Current blockData:', blockData);
-        console.log('Nonce String from URL:', nonceString);
+        let mounted = true;
 
+        const checkWalletSession = async () => {
+            try {
+                if (!mounted) return;
+                setIsLoading(true);
+
+                if (serviceLoading) {
+                    return;
+                }
+
+                if (!currentWallet) {
+                    if (mounted) {
+                        setForceURL("/login");
+                    }
+                    return;
+                }
+
+                // Check session using the wallet service
+                if (!walletService.checkSession()) {
+                    throw new Error("Session expired");
+                }
+
+                if (mounted) {
+                    setForceURL("");
+                    setSessionError(null);
+                }
+
+            } catch (error) {
+                console.error('TransactionDetailPage: Session check error:', error);
+                if (error.message === "Session expired" && mounted) {
+                    handleSessionExpired();
+                } else if (mounted) {
+                    setSessionError(error.message);
+                }
+            } finally {
+                if (mounted) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        checkWalletSession();
+        const sessionCheckInterval = setInterval(checkWalletSession, 60000);
+
+        return () => {
+            mounted = false;
+            clearInterval(sessionCheckInterval);
+        };
+    }, [currentWallet, serviceLoading]);
+
+    // Transaction matching effect
+    useEffect(() => {
         if (blockData?.trans && blockData.trans.length > 0) {
-            console.log('Transactions:', blockData.trans);
-
-            // First try to find by timestamp since the nonce looks like a timestamp
             const transaction = blockData.trans.find(tx => {
-                console.log('Transaction data:', {
-                    timestamp: tx.timestamp,
-                    urlNonce: parseInt(nonceString),
-                    nonceBytesHex: tx.nonce_bytes ? base64ToHex(tx.nonce_bytes) : null,
-                    nonceString: tx.nonce_string
-                });
-
-                // Try different matching strategies
                 return tx.timestamp === parseInt(nonceString) ||           // Match by timestamp
                        tx.nonce_string === nonceString ||                 // Match by nonce string
                        base64ToHex(tx.nonce_bytes || '') === nonceString; // Match by nonce bytes
             });
-
-            console.log('Found transaction:', transaction);
             setCurrentTransaction(transaction);
         }
     }, [blockData, nonceString]);
 
-    const copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text);
-        // You could add a toast notification here
+    const handleSessionExpired = () => {
+        setIsSessionExpired(true);
+        logout();
+        setSessionError("Your session has expired. Please sign in again.");
+        setTimeout(() => {
+            setForceURL("/login");
+        }, 3000);
     };
 
-    if (loading) {
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+    };
+
+    if (forceURL !== "" && !serviceLoading) {
+        return <Navigate to={forceURL} />;
+    }
+
+    if (serviceLoading || isLoading || loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
@@ -68,82 +133,60 @@ function TransactionDetailPage() {
         );
     }
 
-    if (error) {
-        return (
-            <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-                <NavigationMenu />
-                <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
-                            <div>
-                                <h3 className="text-red-800 font-medium">Error Loading Transaction</h3>
-                                <p className="text-red-700 mt-1">{error}</p>
-                            </div>
+    const renderErrorState = (errorMessage, type = "error") => (
+        <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+            <NavigationMenu />
+            <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div className={`bg-${type === "error" ? "red" : "yellow"}-50 border-l-4 border-${type === "error" ? "red" : "yellow"}-500 p-4 rounded-r-lg`}>
+                    <div className="flex items-start gap-3">
+                        <AlertCircle className={`w-6 h-6 text-${type === "error" ? "red" : "yellow"}-500 flex-shrink-0`} />
+                        <div>
+                            <h3 className={`text-${type === "error" ? "red" : "yellow"}-800 font-medium`}>
+                                {type === "error" ? "Error Loading Transaction" : "Transaction Not Found"}
+                            </h3>
+                            <p className={`text-${type === "error" ? "red" : "yellow"}-700 mt-1`}>{errorMessage}</p>
                         </div>
                     </div>
-                </main>
-                <FooterMenu />
-            </div>
-        );
+                </div>
+            </main>
+            <FooterMenu />
+        </div>
+    );
+
+    // Handle various error states
+    if (sessionError) {
+        return renderErrorState(sessionError);
+    }
+
+    if (error) {
+        return renderErrorState(error);
     }
 
     if (!blockData) {
-        return (
-            <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-                <NavigationMenu />
-                <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-6 h-6 text-yellow-500 flex-shrink-0" />
-                            <div>
-                                <h3 className="text-yellow-800 font-medium">No Block Data</h3>
-                                <p className="text-yellow-700 mt-1">Failed to load block data.</p>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-                <FooterMenu />
-            </div>
-        );
+        return renderErrorState("Failed to load block data.", "warning");
     }
 
-    // DEVELOPERS NOTE: Only stops here
-    console.log("currentTransaction --------------->", currentTransaction);
-
-    if (!currentTransaction) { // It skips here
-        return (
-            <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-                <NavigationMenu />
-                <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-6 h-6 text-yellow-500 flex-shrink-0" />
-                            <div>
-                                <h3 className="text-yellow-800 font-medium">Transaction Not Found</h3>
-                                <p className="text-yellow-700 mt-1">
-                                    Could not find transaction with nonce: {nonceString}
-                                </p>
-                                <p className="text-yellow-700 mt-1">
-                                    Block contains {blockData.trans?.length || 0} transaction(s)
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-                <FooterMenu />
-            </div>
+    if (!currentTransaction) {
+        return renderErrorState(
+            `Could not find transaction with nonce: ${nonceString}. Block contains ${blockData.trans?.length || 0} transaction(s)`,
+            "warning"
         );
     }
-
-    // DEVELOPERS NOTE: DOES NOT GO HERE
-    console.log("currentTransaction ===============>", currentTransaction);
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
             <NavigationMenu />
 
             <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-16 md:mb-0">
+                {isSessionExpired && (
+                    <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="w-6 h-6 text-yellow-500 flex-shrink-0" />
+                            <p className="text-yellow-800">Session expired. Redirecting to login...</p>
+                        </div>
+                    </div>
+                )}
+
                 <Link
                     to="/transactions"
                     className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 mb-6"
