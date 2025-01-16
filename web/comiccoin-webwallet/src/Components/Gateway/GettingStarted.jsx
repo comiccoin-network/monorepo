@@ -1,3 +1,4 @@
+// src/Components/Gateway/GettingStarted.jsx
 import React from 'react';
 import {
   Wallet,
@@ -9,7 +10,8 @@ import {
   Globe,
   Shield,
   Github,
-  Coins
+  Coins,
+  Monitor
 } from 'lucide-react';
 import { Link } from "react-router-dom";
 
@@ -25,17 +27,20 @@ const GetStartedPage = () => {
       </a>
 
       {/* Platform Selection Banner */}
-      <div className="bg-purple-900 text-white py-3 px-4">
+      <div className="bg-purple-900 text-white py-3 px-4" role="banner">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-center sm:text-left">
           <div className="flex items-center gap-2 mb-2 sm:mb-0">
-            <Globe className="h-5 w-5" />
+            <Globe aria-hidden="true" className="h-5 w-5" />
             <span>You're using the <strong>Web Wallet</strong> - Access your ComicCoin from any browser</span>
           </div>
           <a
-            href="https://comiccoin.ca/native-wallet"
+            href="/download-native-wallet"
             className="text-purple-200 hover:text-white flex items-center gap-1 text-sm"
+            aria-label="Download Native Wallet"
           >
-            Looking for our Native Wallet? Get it here →
+            <Monitor aria-hidden="true" className="h-4 w-4" />
+            Looking for our Native Wallet? Get it here
+            <span aria-hidden="true">→</span>
           </a>
         </div>
       </div>
@@ -140,42 +145,42 @@ const GetStartedPage = () => {
             </Link>
           </div>
 
-          {/* Access Existing Wallet */}
-          <div className="bg-white rounded-xl p-8 border-2 border-purple-200 hover:border-purple-400 transition-all hover:shadow-lg">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-4 bg-purple-100 rounded-xl">
-                <Key className="h-8 w-8 text-purple-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">Access Existing Wallet</h2>
-            </div>
+          {/* Access Browser Wallet */}
+         <div className="bg-white rounded-xl p-8 border-2 border-purple-200 hover:border-purple-400 transition-all hover:shadow-lg">
+           <div className="flex items-center gap-4 mb-8">
+             <div className="p-4 bg-purple-100 rounded-xl">
+               <Globe className="h-8 w-8 text-purple-600" />
+             </div>
+             <h2 className="text-2xl font-bold text-gray-900">Access Browser Wallet</h2>
+           </div>
 
-            <div className="space-y-6 mb-8">
-              <h3 className="font-semibold text-gray-900">What you'll need:</h3>
-              <ul className="space-y-4 text-gray-600">
-                <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">•</div>
-                  <span>Your 12-word recovery phrase from wallet creation</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">•</div>
-                  <span>Private, secure environment to enter your phrase</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">•</div>
-                  <span>About 2-3 minutes to complete the process</span>
-                </li>
-              </ul>
-            </div>
+           <div className="space-y-6 mb-8">
+             <h3 className="font-semibold text-gray-900">Quick Access:</h3>
+             <ul className="space-y-4 text-gray-600">
+               <li className="flex items-start gap-3">
+                 <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">•</div>
+                 <span>Access your existing wallet stored in this browser</span>
+               </li>
+               <li className="flex items-start gap-3">
+                 <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">•</div>
+                 <span>Enter your password to unlock your wallet</span>
+               </li>
+               <li className="flex items-start gap-3">
+                 <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">•</div>
+                 <span>Access in seconds with secure local storage</span>
+               </li>
+             </ul>
+           </div>
 
-            <Link
-              to="/login"
-              className="w-full px-6 py-4 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
-              aria-label="Access your existing wallet"
-            >
-              Access Existing Wallet
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </div>
+           <Link
+             to="/login"
+             className="w-full px-6 py-4 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+             aria-label="Access your browser wallet"
+           >
+             Access Browser Wallet
+             <ArrowRight className="w-5 h-5" />
+           </Link>
+         </div>
         </div>
 
         {/* Additional Security Tips */}
