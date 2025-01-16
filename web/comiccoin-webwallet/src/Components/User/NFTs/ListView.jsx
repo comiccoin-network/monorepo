@@ -1,4 +1,4 @@
-// src/Components/User/NFTs/View.jsx
+// src/Components/User/NFTs/ListView.jsx
 import React, { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import {
@@ -11,9 +11,10 @@ import {
   ImageOff
 } from 'lucide-react';
 import { useWallet } from '../../../Hooks/useWallet';
-import { useWalletTransactions } from '../../../Hooks/useWalletTransactions';
+import { useNFTTransactions } from '../../../Hooks/useNFTTransactions';
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
+import walletService from '../../../Services/WalletService';
 
 const NFTListPage = () => {
   const {
@@ -38,36 +39,38 @@ const NFTListPage = () => {
     return currentWallet.address;
   };
 
-  // Hook for transactions
+  // Hook for NFT transactions - using our new specialized hook
   const {
     transactions,
     loading: txLoading,
     error: txError,
-    statistics
-  } = useWalletTransactions(getWalletAddress());
+    statistics,
+    refresh: refreshNFTs
+  } = useNFTTransactions(getWalletAddress());
 
   // Session checking effect
   useEffect(() => {
-    console.log('NFTListPage: Initial useEffect running');
     let mounted = true;
 
     const checkWalletSession = async () => {
-      console.log('NFTListPage: checkWalletSession starting');
       try {
         if (!mounted) return;
         setIsLoading(true);
 
         if (serviceLoading) {
-          console.log('NFTListPage: Service still loading, waiting...');
           return;
         }
 
         if (!currentWallet) {
-          console.log('NFTListPage: No current wallet found, redirecting to login');
           if (mounted) {
             setForceURL("/login");
           }
           return;
+        }
+
+        // Check session using the wallet service
+        if (!walletService.checkSession()) {
+          throw new Error("Session expired");
         }
 
         if (mounted) {
@@ -113,11 +116,10 @@ const NFTListPage = () => {
   };
 
   if (forceURL !== "" && !serviceLoading) {
-    console.log('NFTListPage: Navigating to:', forceURL);
     return <Navigate to={forceURL} />;
   }
 
-  if (serviceLoading) {
+  if (serviceLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-6 h-6 animate-spin" />
@@ -126,19 +128,17 @@ const NFTListPage = () => {
     );
   }
 
-  // Rest of your existing render logic...
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <NavigationMenu onSignOut={handleSignOut} />
 
       <main className="flex-grow max-w-7xl mx-auto px-4 py-12 mb-16 md:mb-0">
-        {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-purple-800 mb-4">NFT Collection</h1>
           <p className="text-xl text-gray-600">View and manage your NFTs</p>
         </div>
 
-        {/* Error Handling */}
+        {/* Error Messages */}
         {error && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -180,7 +180,7 @@ const NFTListPage = () => {
               <p className="text-2xl font-bold text-gray-900">{statistics?.totalNftCount || 0}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600">Total Transactions</p>
+              <p className="text-sm text-gray-600">Total NFT Transactions</p>
               <p className="text-2xl font-bold text-gray-900">{statistics?.nftTransactionsCount || 0}</p>
             </div>
           </div>
@@ -197,17 +197,15 @@ const NFTListPage = () => {
                 <h2 className="text-xl font-bold text-gray-900">Your NFTs</h2>
               </div>
 
-              {!txLoading && (
-                <a
-                  href="https://cpscapsule.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                >
-                  <span>Get Your Comics Graded</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              )}
+              <a
+                href="https://cpscapsule.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+              >
+                <span>Get Your Comics Graded</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
           </div>
 
@@ -217,7 +215,7 @@ const NFTListPage = () => {
               <span className="ml-2 text-gray-600">Loading NFTs...</span>
             </div>
           ) : transactions?.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center p-12">
               <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <ImageOff className="w-12 h-12 text-gray-400" />
               </div>
@@ -240,12 +238,10 @@ const NFTListPage = () => {
                 return (
                   <div key={tx.id} className="p-6 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center gap-6">
-                      {/* NFT Preview (placeholder) */}
                       <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         <ImageIcon className="w-8 h-8 text-purple-300" />
                       </div>
 
-                      {/* NFT Details */}
                       <div className="flex-grow">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-medium text-gray-900">NFT #{tx.tokenId || 'Unknown'}</h3>
@@ -266,7 +262,6 @@ const NFTListPage = () => {
                         </div>
                       </div>
 
-                      {/* Action Button */}
                       <button className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
                         View Details
                         <ArrowRight className="w-4 h-4" />
@@ -277,61 +272,6 @@ const NFTListPage = () => {
               })}
             </div>
           )}
-        </div>
-
-        {/* Info Cards */}
-        <div className="mt-6 space-y-4">
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-6">
-            <div className="flex gap-3">
-              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-blue-900 mb-2">About ComicCoin NFTs</h3>
-                  <p className="text-blue-800">
-                    ComicCoin NFTs represent professionally graded and encapsulated comic books. Each NFT is a digital certificate of authenticity that corresponds to a physical comic book that has been evaluated, graded, and secured in a protective capsule by our authorized grading service.
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-medium text-blue-900 mb-1">Grading Process</h4>
-                  <ul className="space-y-2 text-blue-800">
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2"></div>
-                      <span>Professional Evaluation: Submit your comic book to be assessed by expert graders</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2"></div>
-                      <span>Protective Encapsulation: Your comic is sealed in a special protective cover for preservation</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2"></div>
-                      <span>Digital Certificate: Receive an NFT that certifies the grade and authenticity of your comic</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2"></div>
-                      <span>Blockchain Security: Your comic's grade and ownership are permanently recorded on the blockchain</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="pt-2">
-                  <p className="text-blue-800">
-                    Get your comics professionally graded at{' '}
-                    <a
-                      href="https://cpscapsule.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-700 underline inline-flex items-center gap-1"
-                    >
-                      cpscapsule.com
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                    {' '}to receive your NFT certificate.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </main>
 
