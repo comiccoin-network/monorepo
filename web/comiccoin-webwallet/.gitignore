@@ -76,9 +76,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-#—————————
-#  MISC
-#—————————
+#—————————————————————————————
+# Application Specific Ignores
+#—————————————————————————————
 
 # misc
 .DS_Store
@@ -90,3 +90,10 @@ yarn-error.log*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Do not share developer's private notebook
+private.txt
+private_prod.md
+private.md
+private_*.md
+todo.txt
