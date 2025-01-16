@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+// src/Components/User/NFTs/View.jsx
+import React, { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import {
   Loader2,
@@ -15,40 +16,106 @@ import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
 const NFTListPage = () => {
-    const {
-      currentWallet,
-      wallets,
-      loadWallet,
-      logout,
-      loading: serviceLoading,
-      error: serviceError
-    } = useWallet();
+  const {
+    currentWallet,
+    wallets,
+    loadWallet,
+    logout,
+    loading: serviceLoading,
+    error: serviceError
+  } = useWallet();
 
-    // Get the wallet address using the current HDNodeWallet format
-   const getWalletAddress = () => {
-     if (!currentWallet) return "";
-     // HDNodeWallet stores the address in the address property
-     return currentWallet.address;
-   };
+  // State management
+  const [forceURL, setForceURL] = useState("");
+  const [walletAddress, setWalletAddress] = useState("");
+  const [error, setError] = useState(null);
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-   const {
-       transactions,
-       loading: txLoading,
-       error: txError,
-       getNftTransactions,
-       statistics
-   } = useWalletTransactions(getWalletAddress());
+  // Get the wallet address
+  const getWalletAddress = () => {
+    if (!currentWallet) return "";
+    return currentWallet.address;
+  };
 
-   useEffect(() => {
-       console.log('NFTListPage: useEffect running');
-       console.log('Current wallet:', currentWallet);
+  // Hook for transactions
+  const {
+    transactions,
+    loading: txLoading,
+    error: txError,
+    statistics
+  } = useWalletTransactions(getWalletAddress());
 
-       if (currentWallet?.address) {
-           console.log('Fetching NFT transactions for address:', currentWallet.address);
-           getNftTransactions();
-       }
-   }, [currentWallet, getNftTransactions]);  // Add proper dependencies
+  // Session checking effect
+  useEffect(() => {
+    console.log('NFTListPage: Initial useEffect running');
+    let mounted = true;
 
+    const checkWalletSession = async () => {
+      console.log('NFTListPage: checkWalletSession starting');
+      try {
+        if (!mounted) return;
+        setIsLoading(true);
+
+        if (serviceLoading) {
+          console.log('NFTListPage: Service still loading, waiting...');
+          return;
+        }
+
+        if (!currentWallet) {
+          console.log('NFTListPage: No current wallet found, redirecting to login');
+          if (mounted) {
+            setForceURL("/login");
+          }
+          return;
+        }
+
+        if (mounted) {
+          setForceURL("");
+          setWalletAddress(getWalletAddress());
+        }
+
+      } catch (error) {
+        console.error('NFTListPage: Session check error:', error);
+        if (error.message === "Session expired" && mounted) {
+          handleSessionExpired();
+        } else if (mounted) {
+          setError(error.message);
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    checkWalletSession();
+    const sessionCheckInterval = setInterval(checkWalletSession, 60000);
+
+    return () => {
+      mounted = false;
+      clearInterval(sessionCheckInterval);
+    };
+  }, [currentWallet, serviceLoading]);
+
+  const handleSessionExpired = () => {
+    setIsSessionExpired(true);
+    logout();
+    setError("Your session has expired. Please sign in again.");
+    setTimeout(() => {
+      setForceURL("/login");
+    }, 3000);
+  };
+
+  const handleSignOut = () => {
+    logout();
+    setForceURL("/login");
+  };
+
+  if (forceURL !== "" && !serviceLoading) {
+    console.log('NFTListPage: Navigating to:', forceURL);
+    return <Navigate to={forceURL} />;
+  }
 
   if (serviceLoading) {
     return (
@@ -59,13 +126,10 @@ const NFTListPage = () => {
     );
   }
 
-  if (!currentWallet) {
-    return <Navigate to="/login" />;
-  }
-
+  // Rest of your existing render logic...
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <NavigationMenu />
+      <NavigationMenu onSignOut={handleSignOut} />
 
       <main className="flex-grow max-w-7xl mx-auto px-4 py-12 mb-16 md:mb-0">
         {/* Page Header */}
@@ -74,7 +138,14 @@ const NFTListPage = () => {
           <p className="text-xl text-gray-600">View and manage your NFTs</p>
         </div>
 
-        {/* Error Message */}
+        {/* Error Handling */}
+        {error && (
+          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            <p className="text-red-800">{error}</p>
+          </div>
+        )}
+
         {txError && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
             <div className="flex items-center gap-3">
@@ -84,6 +155,13 @@ const NFTListPage = () => {
                 <p className="text-sm text-red-600">{txError}</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {isSessionExpired && (
+          <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+            <p className="text-yellow-800">Session expired. Redirecting to login...</p>
           </div>
         )}
 
