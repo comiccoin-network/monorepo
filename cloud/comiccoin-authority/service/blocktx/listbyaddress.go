@@ -12,7 +12,7 @@ import (
 )
 
 type ListBlockTransactionsByAddressService interface {
-	Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error)
+	Execute(ctx context.Context, address *common.Address, filterByType string) ([]*domain.BlockTransaction, error)
 }
 
 type listBlockTransactionsByAddressServiceImpl struct {
@@ -29,7 +29,7 @@ func NewListBlockTransactionsByAddressService(
 	return &listBlockTransactionsByAddressServiceImpl{cfg, logger, uc}
 }
 
-func (s *listBlockTransactionsByAddressServiceImpl) Execute(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error) {
+func (s *listBlockTransactionsByAddressServiceImpl) Execute(ctx context.Context, address *common.Address, filterByType string) ([]*domain.BlockTransaction, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -70,5 +70,27 @@ func (s *listBlockTransactionsByAddressServiceImpl) Execute(ctx context.Context,
 			slog.Any("address", address))
 		return []*domain.BlockTransaction{}, nil
 	}
+
+	//
+	// STEP 3: Apply filter
+	//
+
+	if filterByType != "" {
+		s.logger.Debug("Filtering block transactions list by type",
+			slog.Any("type", filterByType))
+
+		filtered := make([]*domain.BlockTransaction, 0)
+		for _, datum := range data {
+			if datum.Type == filterByType {
+				filtered = append(filtered, datum)
+			}
+		}
+		data = filtered
+
+		s.logger.Debug("Filtered block transactions list by type",
+			slog.Any("type", filterByType),
+			slog.Any("filtered", filtered))
+	}
+
 	return data, nil
 }

@@ -38,8 +38,18 @@ func (h *ListBlockTransactionsByAddressHTTPHandler) Execute(w http.ResponseWrite
 		return
 	}
 
+	// Note: Optional field
+	filterByType := query.Get("type")
+	if filterByType != "" {
+		if filterByType != "coin" && filterByType != "token" {
+			err := httperror.NewForNotFoundWithSingleField("type", "Type only accepted options are `coin` or `token`")
+			httperror.ResponseError(w, err)
+			return
+		}
+	}
+
 	address := common.HexToAddress(strings.ToLower(addressStr))
-	blockTxs, err := h.service.Execute(ctx, &address)
+	blockTxs, err := h.service.Execute(ctx, &address, filterByType)
 	if err != nil {
 		httperror.ResponseError(w, err)
 		return

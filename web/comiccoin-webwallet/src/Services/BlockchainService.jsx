@@ -9,13 +9,16 @@ class BlockchainService {
         };
     }
 
-    setAuthToken(token) {
-        this.defaultHeaders['Authorization'] = `Bearer ${token}`;
-    }
-
-    async fetchWalletTransactions(address) {
+    async fetchWalletTransactions(address, type = null) {
         try {
-            const response = await fetch(`${BASE_URL}/api/v1/block-transactions?address=${address}`, {
+            console.log('fetchWalletTransactions called with:', { address, type }); // Debug log
+            let url = `${BASE_URL}/api/v1/block-transactions?address=${address}`;
+            if (type) {
+                url += `&type=${type}`;
+            }
+            console.log('Fetching from URL:', url); // Debug log
+
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: this.defaultHeaders,
             });
@@ -26,8 +29,6 @@ class BlockchainService {
             }
 
             const data = await response.json();
-
-            // Transform the transaction data to standardize the format
             return data.map(tx => ({
                 id: tx.nonce_string || tx.nonce_bytes,
                 timestamp: tx.timestamp,

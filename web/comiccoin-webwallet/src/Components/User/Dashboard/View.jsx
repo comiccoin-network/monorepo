@@ -28,8 +28,6 @@ import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
 function DashboardPage() {
-  console.log('DashboardPage: Component rendering');
-
   const {
     currentWallet,
     wallets,

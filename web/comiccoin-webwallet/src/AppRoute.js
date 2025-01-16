@@ -2,6 +2,7 @@ import { React, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { RecoilRoot } from "recoil";
 
+import NFTListPage from "./Components/User/NFTs/ListView";
 import TradePage from "./Components/User/Trade/View";
 import ReceiveCoin from "./Components/User/ReceiveCoin/View";
 import SendCoinsPage from "./Components/User/SendCoin/View";
@@ -27,6 +28,7 @@ function AppRoute() {
       <RecoilRoot>
         <Router>
           <Routes>
+            <Route exact path="/nfts" element={<NFTListPage />} />
             <Route exact path="/trade" element={<TradePage />} />
             <Route exact path="/receive-coins" element={<ReceiveCoin />} />
             <Route exact path="/send-coins" element={<SendCoinsPage />} />
