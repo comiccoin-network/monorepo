@@ -48,6 +48,8 @@ type BlockDataRepository interface {
 
 	GetByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*BlockData, error)
 
+	GetByTransactionNonce(ctx context.Context, txNonce *big.Int) (*BlockData, error)
+
 	// ListByChainID lists all block data in the repository for the particular chain.
 	ListByChainID(ctx context.Context, chainID uint16) ([]*BlockData, error)
 

@@ -15,6 +15,7 @@ import (
 type GetBlockDataService interface {
 	ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error)
 	ExecuteByHeaderNumber(ctx context.Context, blockHeader *big.Int) (*domain.BlockData, error)
+	ExecuteByTransactionNonce(ctx context.Context, txNonce *big.Int) (*domain.BlockData, error)
 }
 
 type getBlockDataServiceImpl struct {
@@ -53,6 +54,20 @@ func (s *getBlockDataServiceImpl) ExecuteByHeaderNumber(ctx context.Context, blo
 	}
 	if data == nil {
 		errStr := fmt.Sprintf("Block data does not exist for block header: %v", blockHeader.String())
+		s.logger.Error("Failed getting block data", slog.Any("error", errStr))
+		return nil, httperror.NewForNotFoundWithSingleField("hash", errStr)
+	}
+	return data, nil
+}
+
+func (s *getBlockDataServiceImpl) ExecuteByTransactionNonce(ctx context.Context, txNonce *big.Int) (*domain.BlockData, error) {
+	data, err := s.GetBlockDataUseCase.ExecuteByTransactionNonce(ctx, txNonce)
+	if err != nil {
+		s.logger.Error("Failed getting block data", slog.Any("error", err))
+		return nil, err
+	}
+	if data == nil {
+		errStr := fmt.Sprintf("Block data does not exist for transaction nonce: %v", txNonce.String())
 		s.logger.Error("Failed getting block data", slog.Any("error", errStr))
 		return nil, httperror.NewForNotFoundWithSingleField("hash", errStr)
 	}

@@ -13,6 +13,7 @@ import (
 type GetBlockDataUseCase interface {
 	ExecuteByHash(ctx context.Context, hash string) (*domain.BlockData, error)
 	ExecuteByHeaderNumber(ctx context.Context, headerNumber *big.Int) (*domain.BlockData, error)
+	ExecuteByTransactionNonce(ctx context.Context, txNonce *big.Int) (*domain.BlockData, error)
 }
 
 type getBlockDataUseCaseImpl struct {
@@ -73,4 +74,32 @@ func (uc *getBlockDataUseCaseImpl) ExecuteByHeaderNumber(ctx context.Context, he
 	//
 
 	return uc.repo.GetByHeaderNumber(ctx, headerNumber)
+}
+
+func (uc *getBlockDataUseCaseImpl) ExecuteByTransactionNonce(ctx context.Context, txNonce *big.Int) (*domain.BlockData, error) {
+	//
+	// STEP 1: Validation.
+	//
+
+	e := make(map[string]string)
+
+	if txNonce == nil {
+		e["transaction_nonce"] = "Transaction nonce is required"
+	} else {
+		// // Special thanks to "Is there another way of testing if a big.Int is 0?" via https://stackoverflow.com/a/64257532
+		// if len(headerNumber.Bits()) == 0 {
+		// 	e["header_number"] = "Header number is required"
+		// }
+	}
+	if len(e) != 0 {
+		uc.logger.Warn("Failed validating",
+			slog.Any("error", e))
+		return nil, httperror.NewForBadRequest(&e)
+	}
+
+	//
+	// STEP 2: Get from database.
+	//
+
+	return uc.repo.GetByTransactionNonce(ctx, txNonce)
 }

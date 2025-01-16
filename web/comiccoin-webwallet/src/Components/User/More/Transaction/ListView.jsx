@@ -1,3 +1,4 @@
+// src/Components/User/More/Transaction/ListView.jsx
 import React, { useState, useEffect } from 'react';
 import { Navigate, Link } from "react-router-dom";
 import {
@@ -143,98 +144,102 @@ function TransactionListPage() {
         </div>
 
         {/* Transactions List */}
-        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100">
-          {txloading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-            </div>
-          ) : filteredTransactions?.length > 0 ? (
-            <div className="divide-y divide-gray-100">
-              {filteredTransactions.map((tx) => {
-                const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase();
-                const displayValue = tx.type === 'coin' ? `${tx.actualValue} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
+       <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100">
+         {txloading ? (
+           <div className="flex items-center justify-center py-12">
+             <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+           </div>
+         ) : filteredTransactions?.length > 0 ? (
+           <div className="divide-y divide-gray-100">
+             {filteredTransactions.map((tx) => {
+               const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase();
+               const displayValue = tx.type === 'coin' ? `${tx.actualValue} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
 
-                return (
-                  <div key={tx.id} className="p-6 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
-                          tx.type === 'coin'
-                            ? (isSent ? 'bg-red-100' : 'bg-green-100')
-                            : 'bg-purple-100'
-                        }`}>
-                          {tx.type === 'coin' ? (
-                            <Coins className={`w-5 h-5 ${
-                              isSent ? 'text-red-600' : 'text-green-600'
-                            }`} />
-                          ) : (
-                            <Image className="w-5 h-5 text-purple-600" />
-                          )}
-                        </div>
+               return (
+                 <Link
+                   key={tx.id}
+                   to={`/transaction/${tx.id}`}
+                   className="block p-6 hover:bg-gray-50 transition-colors cursor-pointer"
+                 >
+                   <div className="flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                       <div className={`p-2 rounded-lg ${
+                         tx.type === 'coin'
+                           ? (isSent ? 'bg-red-100' : 'bg-green-100')
+                           : 'bg-purple-100'
+                       }`}>
+                         {tx.type === 'coin' ? (
+                           <Coins className={`w-5 h-5 ${
+                             isSent ? 'text-red-600' : 'text-green-600'
+                           }`} />
+                         ) : (
+                           <Image className="w-5 h-5 text-purple-600" />
+                         )}
+                       </div>
 
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className={`font-medium ${
-                              isSent ? 'text-red-600' : 'text-green-600'
-                            }`}>
-                              {isSent ? 'Sent' : 'Received'} {tx.type === 'coin' ? 'Coins' : 'NFT'}
-                            </span>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              tx.status === 'confirmed'
-                                ? 'bg-blue-50 text-blue-700'
-                                : 'bg-yellow-50 text-yellow-700'
-                            }`}>
-                              {tx.status}
-                            </span>
-                          </div>
+                       <div>
+                         <div className="flex items-center gap-2">
+                           <span className={`font-medium ${
+                             isSent ? 'text-red-600' : 'text-green-600'
+                           }`}>
+                             {isSent ? 'Sent' : 'Received'} {tx.type === 'coin' ? 'Coins' : 'NFT'}
+                           </span>
+                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                             tx.status === 'confirmed'
+                               ? 'bg-blue-50 text-blue-700'
+                               : 'bg-yellow-50 text-yellow-700'
+                           }`}>
+                             {tx.status}
+                           </span>
+                         </div>
 
-                          <div className="mt-2 space-y-1">
-                            <div className="flex items-center gap-1 text-sm text-gray-500">
-                              <Clock className="w-4 h-4" />
-                              {new Date(tx.timestamp).toLocaleString()}
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                              <div className="text-gray-500">
-                                From: {tx.from}
-                              </div>
-                              <div className="text-gray-500">
-                                To: {tx.to}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                         <div className="mt-2 space-y-1">
+                           <div className="flex items-center gap-1 text-sm text-gray-500">
+                             <Clock className="w-4 h-4" />
+                             {new Date(tx.timestamp).toLocaleString()}
+                           </div>
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                             <div className="text-gray-500">
+                               From: {tx.from}
+                             </div>
+                             <div className="text-gray-500">
+                               To: {tx.to}
+                             </div>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
 
-                      <div className="text-right">
-                        <div className={`text-lg font-bold ${
-                          isSent ? 'text-red-600' : 'text-green-600'
-                        }`}>
-                          {isSent ? '-' : '+'}{displayValue}
-                        </div>
-                        {tx.type === 'coin' && (
-                          <div className="text-sm text-gray-500 mt-1">
-                            Fee: {tx.fee} CC
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <LineChart className="w-16 h-16 mx-auto mb-4 text-gray-400 opacity-50" />
-              <h3 className="text-lg font-medium text-gray-900">No Transactions Found</h3>
-              <p className="text-sm text-gray-500 mt-1">Try adjusting your filters or search terms</p>
-            </div>
-          )}
-        </div>
-      </main>
+                     <div className="text-right">
+                       <div className={`text-lg font-bold ${
+                         isSent ? 'text-red-600' : 'text-green-600'
+                       }`}>
+                         {isSent ? '-' : '+'}{displayValue}
+                       </div>
+                       {tx.type === 'coin' && (
+                         <div className="text-sm text-gray-500 mt-1">
+                           Fee: {tx.fee} CC
+                         </div>
+                       )}
+                     </div>
+                   </div>
+                 </Link>
+               );
+             })}
+           </div>
+         ) : (
+           <div className="text-center py-12">
+             <LineChart className="w-16 h-16 mx-auto mb-4 text-gray-400 opacity-50" />
+             <h3 className="text-lg font-medium text-gray-900">No Transactions Found</h3>
+             <p className="text-sm text-gray-500 mt-1">Try adjusting your filters or search terms</p>
+           </div>
+         )}
+       </div>
+     </main>
 
-      <FooterMenu />
-    </div>
-  );
+     <FooterMenu />
+   </div>
+ );
 }
 
 export default TransactionListPage;

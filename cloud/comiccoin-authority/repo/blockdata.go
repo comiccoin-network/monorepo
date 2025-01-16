@@ -29,6 +29,14 @@ func NewBlockDataRepo(cfg *config.Configuration, logger *slog.Logger, client *mo
 	// ctx := context.Background()
 	uc := client.Database(cfg.DB.Name).Collection("blockdata")
 
+	// For debugging purposes only or if you are going to recreate new indexes.
+	if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
+		logger.Warn("failed deleting all indexes for blockdata",
+			slog.Any("err", err))
+
+		// Do not crash app, just continue.
+	}
+
 	// Note:
 	// * 1 for ascending
 	// * -1 for descending
@@ -41,6 +49,7 @@ func NewBlockDataRepo(cfg *config.Configuration, logger *slog.Logger, client *mo
 		{Keys: bson.D{{Key: "header.chain_id", Value: 1}}},
 		{Keys: bson.D{{Key: "header.number", Value: 1}}},
 		{Keys: bson.D{{Key: "header.timestamp", Value: 1}}},
+		{Keys: bson.D{{Key: "trans.signedtransaction.transaction.nonce_bytes", Value: 1}}},
 		{Keys: bson.D{
 			{Key: "hash", Value: "text"},
 		}},
@@ -59,6 +68,36 @@ func NewBlockDataRepo(cfg *config.Configuration, logger *slog.Logger, client *mo
 	}
 }
 
+// includeJSONStrings method will include the `_string` fields in our domain model.
+func (r *BlockDataRepo) includeJSONStrings(blockData *domain.BlockData) {
+	if blockData != nil {
+		// Header remains the same
+		blockData.Header.NumberString = blockData.Header.GetNumber().String()
+		blockData.Header.NonceString = blockData.Header.GetNonce().String()
+		blockData.Header.LatestTokenIDString = blockData.Header.GetLatestTokenID().String()
+
+		// Transactions - key change is using index-based iteration
+		for i := range blockData.Trans {
+			// Get pointer to the actual transaction in the slice
+			tx := &blockData.Trans[i]
+
+			if !tx.SignedTransaction.Transaction.IsNonceZero() {
+				tx.SignedTransaction.Transaction.NonceString = tx.SignedTransaction.Transaction.GetNonce().String()
+			}
+
+			if !tx.SignedTransaction.Transaction.IsTokenIDZero() {
+				tx.SignedTransaction.Transaction.TokenIDString = tx.SignedTransaction.Transaction.GetTokenID().String()
+			}
+			if !tx.SignedTransaction.Transaction.IsTokenNonceZero() {
+				tx.SignedTransaction.Transaction.TokenNonceString = tx.SignedTransaction.Transaction.GetTokenNonce().String()
+			}
+			if tx.SignedTransaction.Transaction.Data != nil {
+				tx.SignedTransaction.Transaction.DataString = string(tx.SignedTransaction.Transaction.Data)
+			}
+		}
+	}
+}
+
 func (r *BlockDataRepo) Upsert(ctx context.Context, blockdata *domain.BlockData) error {
 	opts := options.Update().SetUpsert(true)
 	_, err := r.collection.UpdateOne(ctx, bson.M{"hash": blockdata.Hash}, bson.M{"$set": blockdata}, opts)
@@ -74,6 +113,7 @@ func (r *BlockDataRepo) GetByHash(ctx context.Context, hash string) (*domain.Blo
 		}
 		return nil, err
 	}
+	r.includeJSONStrings(&blockData)
 	return &blockData, nil
 }
 
@@ -86,7 +126,49 @@ func (r *BlockDataRepo) GetByHeaderNumber(ctx context.Context, headerNumber *big
 		}
 		return nil, err
 	}
+	r.includeJSONStrings(&blockData)
 	return &blockData, nil
+}
+
+func (r *BlockDataRepo) GetByTransactionNonce(ctx context.Context, txNonce *big.Int) (*domain.BlockData, error) {
+	if txNonce == nil {
+		return nil, fmt.Errorf("transaction nonce cannot be nil")
+	}
+
+	// Convert big.Int to bytes for matching against BinData in MongoDB
+	nonceBytes := txNonce.Bytes()
+
+	// Create filter to search for transactions with matching nonce
+	filter := bson.M{
+		"trans": bson.M{
+			"$elemMatch": bson.M{
+				"signedtransaction.transaction.nonce_bytes": nonceBytes,
+			},
+		},
+	}
+
+	var blockData domain.BlockData
+	err := r.collection.FindOne(ctx, filter).Decode(&blockData)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil // No document found
+		}
+		return nil, fmt.Errorf("failed to get block by transaction nonce: %v", err)
+	}
+
+	r.includeJSONStrings(&blockData)
+
+	// Validate that we actually found a matching transaction
+	for _, trans := range blockData.Trans {
+		if bytes.Equal(trans.SignedTransaction.Transaction.NonceBytes, nonceBytes) {
+			return &blockData, nil
+		}
+	}
+
+	// This case shouldn't happen if the index and query are working correctly,
+	// but it's good practice to verify
+	return nil, fmt.Errorf("inconsistent state: matching block found but no matching transaction")
+
 }
 
 func (r *BlockDataRepo) ListByChainID(ctx context.Context, chainID uint16) ([]*domain.BlockData, error) {
@@ -103,6 +185,7 @@ func (r *BlockDataRepo) ListByChainID(ctx context.Context, chainID uint16) ([]*d
 		if err != nil {
 			return nil, err
 		}
+		r.includeJSONStrings(&blockData)
 		blockDatas = append(blockDatas, &blockData)
 	}
 	if err := cur.Err(); err != nil {
@@ -130,6 +213,7 @@ func (r *BlockDataRepo) ListInHashes(ctx context.Context, hashes []string) ([]*d
 		if err != nil {
 			return nil, err
 		}
+		r.includeJSONStrings(&blockData)
 		blockDatas = append(blockDatas, &blockData)
 	}
 	if err := cur.Err(); err != nil {
@@ -159,6 +243,7 @@ func (r *BlockDataRepo) ListInBetweenBlockNumbersForChainID(ctx context.Context,
 		if err != nil {
 			return nil, err
 		}
+		r.includeJSONStrings(&blockData)
 		blockDatas = append(blockDatas, &blockData)
 	}
 	if err := cur.Err(); err != nil {
@@ -276,10 +361,22 @@ func (r *BlockDataRepo) ListBlockTransactionsByAddress(ctx context.Context, addr
 		}
 
 		// Filter transactions by `from` or `to` address
-		for _, trans := range blockData.Trans {
-			if (trans.SignedTransaction.Transaction.From != nil && bytes.Equal(trans.SignedTransaction.Transaction.From.Bytes(), addressBytes)) ||
-				(trans.SignedTransaction.Transaction.To != nil && bytes.Equal(trans.SignedTransaction.Transaction.To.Bytes(), addressBytes)) {
-				blockTransactions = append(blockTransactions, &trans)
+		for _, blocktx := range blockData.Trans {
+			if (blocktx.SignedTransaction.Transaction.From != nil && bytes.Equal(blocktx.SignedTransaction.Transaction.From.Bytes(), addressBytes)) ||
+				(blocktx.SignedTransaction.Transaction.To != nil && bytes.Equal(blocktx.SignedTransaction.Transaction.To.Bytes(), addressBytes)) {
+
+				if !blocktx.SignedTransaction.IsNonceZero() {
+					blocktx.SignedTransaction.NonceString = blocktx.SignedTransaction.GetNonce().String()
+				}
+
+				if !blocktx.IsTokenIDZero() {
+					blocktx.SignedTransaction.TokenIDString = blocktx.SignedTransaction.GetTokenID().String()
+				}
+				if !blocktx.IsTokenNonceZero() {
+					blocktx.SignedTransaction.TokenNonceString = blocktx.SignedTransaction.GetTokenNonce().String()
+				}
+
+				blockTransactions = append(blockTransactions, &blocktx)
 			}
 		}
 	}
@@ -335,10 +432,22 @@ func (r *BlockDataRepo) ListWithLimitForBlockTransactionsByAddress(ctx context.C
 		}
 
 		// Filter transactions by `from` or `to` address
-		for _, trans := range blockData.Trans {
-			if (trans.SignedTransaction.Transaction.From != nil && bytes.Equal(trans.SignedTransaction.Transaction.From.Bytes(), addressBytes)) ||
-				(trans.SignedTransaction.Transaction.To != nil && bytes.Equal(trans.SignedTransaction.Transaction.To.Bytes(), addressBytes)) {
-				blockTransactions = append(blockTransactions, &trans)
+		for _, blocktx := range blockData.Trans {
+			if (blocktx.SignedTransaction.Transaction.From != nil && bytes.Equal(blocktx.SignedTransaction.Transaction.From.Bytes(), addressBytes)) ||
+				(blocktx.SignedTransaction.Transaction.To != nil && bytes.Equal(blocktx.SignedTransaction.Transaction.To.Bytes(), addressBytes)) {
+
+				if !blocktx.SignedTransaction.IsNonceZero() {
+					blocktx.SignedTransaction.NonceString = blocktx.SignedTransaction.GetNonce().String()
+				}
+
+				if !blocktx.IsTokenIDZero() {
+					blocktx.SignedTransaction.TokenIDString = blocktx.SignedTransaction.GetTokenID().String()
+				}
+				if !blocktx.IsTokenNonceZero() {
+					blocktx.SignedTransaction.TokenNonceString = blocktx.SignedTransaction.GetTokenNonce().String()
+				}
+
+				blockTransactions = append(blockTransactions, &blocktx)
 			}
 		}
 	}
@@ -361,6 +470,7 @@ func (r *BlockDataRepo) GetByBlockTransactionTimestamp(ctx context.Context, time
 		}
 		return nil, err
 	}
+	r.includeJSONStrings(&blockData)
 	return &blockData, nil
 }
 

@@ -63,3 +63,27 @@ func (h *GetBlockDataHTTPHandler) ExecuteByHeaderNumber(w http.ResponseWriter, r
 		return
 	}
 }
+
+func (h *GetBlockDataHTTPHandler) ExecuteByTransactionNonce(w http.ResponseWriter, r *http.Request, transactionNonceStr string) {
+	ctx := r.Context()
+	h.logger.Debug("BlockData requested by transaction nonce")
+
+	transactionNonce, ok := new(big.Int).SetString(transactionNonceStr, 10)
+	if !ok {
+		err := fmt.Errorf("Failed converting: %s", transactionNonceStr)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := h.service.ExecuteByTransactionNonce(ctx, transactionNonce)
+	if err != nil {
+		httperror.ResponseError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&resp); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}

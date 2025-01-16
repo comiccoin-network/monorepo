@@ -2,6 +2,7 @@ import { React, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { RecoilRoot } from "recoil";
 
+import TransactionDetailPage from "./Components/User/More/Transaction/DetailView";
 import TransactionListPage from "./Components/User/More/Transaction/ListView";
 import MorePage from "./Components/User/More/View";
 import NFTListPage from "./Components/User/NFTs/ListView";
@@ -30,6 +31,7 @@ function AppRoute() {
       <RecoilRoot>
         <Router>
           <Routes>
+            <Route exact path="/transaction/:nonceString" element={<TransactionDetailPage />} />
             <Route exact path="/transactions" element={<TransactionListPage />} />
             <Route exact path="/more" element={<MorePage />} />
             <Route exact path="/nfts" element={<NFTListPage />} />
