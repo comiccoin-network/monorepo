@@ -290,87 +290,136 @@ function DashboardPage() {
             </div>
 
             {/* Latest Transactions Card */}
+            {/* Latest Transactions Card - New Design */}
             <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6 md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-purple-100 rounded-xl">
-                  <LineChart className="w-5 h-5 text-purple-600" />
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-xl">
+                    <LineChart className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900">Latest Transactions</h2>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">Latest Transactions</h2>
+
+                <button
+                  onClick={txrefresh}
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Refresh transactions"
+                  disabled={txloading}
+                >
+                  {txloading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-5 h-5" />
+                  )}
+                </button>
               </div>
 
-              {/* Recent Activity */}
-              <div className="mt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                  <span className="text-sm text-gray-500">Showing latest 5 transactions</span>
+              {txloading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                 </div>
+              ) : transactions?.length > 0 ? (
+                <div className="divide-y divide-gray-100">
+                  {transactions.slice(0, 5).map((tx) => {
+                    const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase();
+                    const displayValue = tx.type === 'coin' ? `${tx.actualValue} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
 
-                {txloading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-                  </div>
-                ) : transactions?.length > 0 ? (
-                  <div className="space-y-3">
-                    {transactions.slice(0, 5).map((tx) => (
-                      <div key={tx.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${tx.type === 'coin' ? 'bg-blue-100' : 'bg-purple-100'}`}>
-                            {tx.type === 'coin' ? (
-                              <Coins className={`w-4 h-4 ${tx.type === 'coin' ? 'text-blue-600' : 'text-purple-600'}`} />
-                            ) : (
-                              <Image className="w-4 h-4 text-purple-600" />
+                    return (
+                      <div key={tx.id} className="py-4 first:pt-0 last:pb-0">
+                        <div className="flex items-center justify-between">
+                          {/* Left side - Transaction type and direction */}
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${
+                              tx.type === 'coin'
+                                ? (isSent ? 'bg-red-100' : 'bg-green-100')
+                                : 'bg-purple-100'
+                            }`}>
+                              {tx.type === 'coin' ? (
+                                <Coins className={`w-5 h-5 ${
+                                  isSent ? 'text-red-600' : 'text-green-600'
+                                }`} />
+                              ) : (
+                                <Image className="w-5 h-5 text-purple-600" />
+                              )}
+                            </div>
+
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className={`font-medium ${
+                                  isSent ? 'text-red-600' : 'text-green-600'
+                                }`}>
+                                  {isSent ? 'Sent' : 'Received'} {tx.type === 'coin' ? 'Coins' : 'NFT'}
+                                </span>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                  tx.status === 'confirmed'
+                                    ? 'bg-blue-50 text-blue-700'
+                                    : 'bg-yellow-50 text-yellow-700'
+                                }`}>
+                                  {tx.status}
+                                </span>
+                              </div>
+
+                              {/* Time and Address */}
+                              <div className="mt-1 space-y-1">
+                                <div className="flex items-center gap-1 text-xs text-gray-500">
+                                  <Clock className="w-3 h-3" />
+                                  {new Date(tx.timestamp).toLocaleString()}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {isSent
+                                    ? `To: ${tx.to.slice(0, 8)}...${tx.to.slice(-6)}`
+                                    : `From: ${tx.from.slice(0, 8)}...${tx.from.slice(-6)}`
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right side - Amount and fee */}
+                          <div className="text-right">
+                            <div className={`text-lg font-bold ${
+                              isSent ? 'text-red-600' : 'text-green-600'
+                            }`}>
+                              {isSent ? '-' : '+'}{displayValue}
+                            </div>
+                            {tx.type === 'coin' && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                Fee: {tx.fee} CC
+                              </div>
                             )}
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                                <p className="text-sm font-medium text-gray-900">
-                                 {tx.type === 'coin' ? (
-                                   `${tx.from === currentWallet.address ? '-' : '+'}${tx.actualValue} CC`
-                                 ) : (
-                                   `NFT #${tx.tokenId || 'Unknown'}`
-                                 )}
-                               </p>
-                              <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                tx.status === 'confirmed'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {tx.status}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <Clock className="w-3 h-3" />
-                              {new Date(tx.timestamp).toLocaleString()}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right text-sm">
-                          <p className="text-gray-900 font-medium">
-                            {tx.from === currentWallet.address ? 'Sent' : 'Received'}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Fee: {tx.fee} CC
-                          </p>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
 
-                    {/* View All Transactions Link */}
-                    <button
-                      className="w-full mt-4 text-center py-2 px-4 text-purple-600 hover:text-purple-700 font-medium transition-colors"
-                      onClick={() => {/* TODO: Implement view all transactions */}}
-                    >
+                  {/* Bottom action buttons */}
+                  <div className="pt-4 mt-4 flex gap-4">
+                    <button className="flex-1 text-center py-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors">
                       View All Transactions
                     </button>
+                    <Link
+                      to="/send-coins"
+                      className="flex-1 text-center py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg transition-colors"
+                    >
+                      Send New Transaction
+                    </Link>
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
-                    <Image className="w-12 h-12 mx-auto mb-3 text-gray-400 opacity-50" />
-                    <p className="font-medium">No transactions found</p>
-                    <p className="text-sm mt-1">Your transaction history will appear here</p>
-                  </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                  <Image className="w-16 h-16 mx-auto mb-4 text-gray-400 opacity-50" />
+                  <h3 className="text-lg font-medium text-gray-900">No Transactions Yet</h3>
+                  <p className="text-sm text-gray-500 mt-1">Start by sending or receiving coins</p>
+                  <Link
+                    to="/send-coins"
+                    className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    <Send className="w-4 h-4" />
+                    Send First Transaction
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Quick Actions */}
