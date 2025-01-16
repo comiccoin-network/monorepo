@@ -29,7 +29,7 @@ const SendCoinsPage = () => {
     recipientAddress: '',
     amount: '',
     note: '',
-    password: '123password123'
+    password: ''
   });
 
   const [errors, setErrors] = useState({});
