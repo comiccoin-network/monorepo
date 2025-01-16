@@ -1,4 +1,4 @@
-// src/Hooks/useNFTTransactions.js
+// src/Hooks/useNFTTransactions.jsx
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import blockchainService from '../Services/BlockchainService';
 

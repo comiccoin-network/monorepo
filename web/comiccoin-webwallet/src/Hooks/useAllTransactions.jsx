@@ -1,4 +1,4 @@
-// src/Hooks/useAllTransactions.js
+// src/Hooks/useAllTransactions.jsx
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import blockchainService from '../Services/BlockchainService';
 

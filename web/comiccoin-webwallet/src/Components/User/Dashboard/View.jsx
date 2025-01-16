@@ -23,9 +23,10 @@ import {
 } from 'lucide-react';
 
 import { useWallet } from '../../../Hooks/useWallet';
-import { useWalletTransactions } from '../../../Hooks/useWalletTransactions';
+import { useAllTransactions } from '../../../Hooks/useAllTransactions';
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
+import walletService from '../../../Services/WalletService';
 
 function DashboardPage() {
   const {
@@ -38,29 +39,21 @@ function DashboardPage() {
   } = useWallet();
 
   // Get the wallet address using the current HDNodeWallet format
- const getWalletAddress = () => {
-   if (!currentWallet) return "";
-   // HDNodeWallet stores the address in the address property
-   return currentWallet.address;
- };
+  const getWalletAddress = () => {
+    if (!currentWallet) return "";
+    return currentWallet.address;
+  };
 
- const {
-   loading: txloading,
-   error: txerror,
-   refresh: txrefresh,
-   totalTransactions,
-   coinTransactionsCount,
-   nftTransactionsCount,
-   coinTransactions,
-   nftTransactions,
-   statistics,
-   getCoinTransactions,
-   getNftTransactions,
-   getPendingTransactions,
-   getConfirmedTransactions,
-   transactions
- } = useWalletTransactions(getWalletAddress());
-
+  // Using the new useAllTransactions hook
+  const {
+    transactions,
+    loading: txloading,
+    error: txerror,
+    refresh: txrefresh,
+    statistics,
+    coinTransactions,
+    nftTransactions
+  } = useAllTransactions(getWalletAddress());
 
   const [forceURL, setForceURL] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
@@ -69,55 +62,60 @@ function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-     console.log('DashboardPage: Initial useEffect running');
-     let mounted = true;
+    console.log('DashboardPage: Initial useEffect running');
+    let mounted = true;
 
-     const checkWalletSession = async () => {
-       console.log('DashboardPage: checkWalletSession starting');
-       try {
-         if (!mounted) return;
-         setIsLoading(true);
+    const checkWalletSession = async () => {
+      console.log('DashboardPage: checkWalletSession starting');
+      try {
+        if (!mounted) return;
+        setIsLoading(true);
 
-         if (serviceLoading) {
-           console.log('DashboardPage: Service still loading, waiting...');
-           return;
-         }
+        if (serviceLoading) {
+          console.log('DashboardPage: Service still loading, waiting...');
+          return;
+        }
 
-         if (!currentWallet) {
-           console.log('DashboardPage: No current wallet found, redirecting to login');
-           if (mounted) {
-             setForceURL("/login");
-           }
-           return;
-         }
+        if (!currentWallet) {
+          console.log('DashboardPage: No current wallet found, redirecting to login');
+          if (mounted) {
+            setForceURL("/login");
+          }
+          return;
+        }
 
-         if (mounted) {
-           setForceURL("");
-           setWalletAddress(getWalletAddress()); // Use the getter function
-         }
+        // Check session using the wallet service
+        if (!walletService.checkSession()) {
+          throw new Error("Session expired");
+        }
 
-       } catch (error) {
-         console.error('DashboardPage: Session check error:', error);
-         if (error.message === "Session expired" && mounted) {
-           handleSessionExpired();
-         } else if (mounted) {
-           setError(error.message);
-         }
-       } finally {
-         if (mounted) {
-           setIsLoading(false);
-         }
-       }
-     };
+        if (mounted) {
+          setForceURL("");
+          setWalletAddress(getWalletAddress());
+        }
 
-     checkWalletSession();
-     const sessionCheckInterval = setInterval(checkWalletSession, 60000);
+      } catch (error) {
+        console.error('DashboardPage: Session check error:', error);
+        if (error.message === "Session expired" && mounted) {
+          handleSessionExpired();
+        } else if (mounted) {
+          setError(error.message);
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
 
-     return () => {
-       mounted = false;
-       clearInterval(sessionCheckInterval);
-     };
-   }, [currentWallet, serviceLoading]);
+    checkWalletSession();
+    const sessionCheckInterval = setInterval(checkWalletSession, 60000);
+
+    return () => {
+      mounted = false;
+      clearInterval(sessionCheckInterval);
+    };
+  }, [currentWallet, serviceLoading]);
 
   const handleSessionExpired = () => {
     setIsSessionExpired(true);
@@ -148,7 +146,7 @@ function DashboardPage() {
   }
 
   return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
@@ -159,17 +157,18 @@ function DashboardPage() {
       <NavigationMenu onSignOut={handleSignOut} />
 
       <main id="main-content" className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-12 mb-16 md:mb-0">
-          <div className="mb-12">
-            <h1 className="text-4xl font-bold text-purple-800 mb-4">Dashboard</h1>
-            <p className="text-xl text-gray-600">Manage your ComicCoin wallet</p>
-          </div>
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-purple-800 mb-4">Dashboard</h1>
+          <p className="text-xl text-gray-600">Manage your ComicCoin wallet</p>
+        </div>
 
-          {error && (
-            <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              <p className="text-red-800">{error}</p>
-            </div>
-          )}
+        {/* Error Messages */}
+        {error && (
+          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            <p className="text-red-800">{error}</p>
+          </div>
+        )}
 
         {txerror && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3">
@@ -251,7 +250,7 @@ function DashboardPage() {
                     {statistics?.totalCoinValue || 0}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {coinTransactionsCount || 0} transactions
+                    {statistics?.coinTransactionsCount || 0} transactions
                   </p>
                 </div>
 
@@ -264,14 +263,13 @@ function DashboardPage() {
                     {statistics?.totalNftCount || 0}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {nftTransactionsCount || 0} transactions
+                    {statistics?.nftTransactionsCount || 0} transactions
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Latest Transactions Card */}
-            {/* Latest Transactions Card - New Design */}
             <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6 md:col-span-2">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
