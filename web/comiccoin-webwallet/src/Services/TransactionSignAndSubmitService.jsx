@@ -1,8 +1,8 @@
-// src/Services/TransactionService.jsx
+// src/Services/TransactionSignAndSubmitService.jsx
 import { ethers } from 'ethers';
 import walletService from './WalletService';
 
-class TransactionService {
+class TransactionSignAndSubmitService {
     constructor() {
         this.BASE_URL = process.env.REACT_APP_AUTHORITY_API_URL || 'http://localhost:8000';
         this.defaultHeaders = {
@@ -346,5 +346,5 @@ async signTransaction(template) {
     }
 }
 
-const transactionService = new TransactionService();
-export default transactionService;
+const transactionSignAndSubmitService = new TransactionSignAndSubmitService();
+export default transactionSignAndSubmitService;

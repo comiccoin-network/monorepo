@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useWallet } from '../../../Hooks/useWallet';
 import { useWalletTransactions } from '../../../Hooks/useWalletTransactions';
-import { useTransaction } from '../../../Hooks/useTransaction';
+import { useTransactionSignAndSubmit } from '../../../Hooks/useTransactionSignAndSubmit';
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
@@ -23,7 +23,7 @@ const SendCoinsPage = () => {
     error: serviceError
   } = useWallet();
   const { statistics } = useWalletTransactions(currentWallet?.address);
-  const { submitTransaction, loading: transactionLoading, error: transactionError } = useTransaction(1);
+  const { submitTransaction, loading: transactionLoading, error: transactionError } = useTransactionSignAndSubmit(1);
 
   const [formData, setFormData] = useState({
     recipientAddress: '',
@@ -221,7 +221,7 @@ const SendCoinsPage = () => {
           </div>
 
           {/* Form Section */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6" autocomplete="off">
               <div>
                 <label htmlFor="recipientAddress" className="block">
                   <span className="text-sm font-medium text-gray-700">
@@ -332,6 +332,7 @@ const SendCoinsPage = () => {
                       errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
                     }`}
                     placeholder="Enter your wallet password"
+                    autocomplete="false"
                   />
                   {errors.password && (
                     <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
