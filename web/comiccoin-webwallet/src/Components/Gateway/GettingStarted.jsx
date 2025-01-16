@@ -1,4 +1,3 @@
-// src/Components/Gateway/GettingStarted.jsx
 import React from 'react';
 import {
   Wallet,
@@ -18,35 +17,30 @@ import { Link } from "react-router-dom";
 const GetStartedPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      {/* Skip to main content link for keyboard users */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
-      >
+      {/* Skip to main content link */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50">
         Skip to main content
       </a>
 
       {/* Platform Selection Banner */}
-      <div className="bg-purple-900 text-white py-3 px-4" role="banner">
+      <div className="bg-purple-900 text-white py-3 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-center sm:text-left">
           <div className="flex items-center gap-2 mb-2 sm:mb-0">
-            <Globe aria-hidden="true" className="h-5 w-5" />
+            <Globe className="h-5 w-5" />
             <span>You're using the <strong>Web Wallet</strong> - Access your ComicCoin from any browser</span>
           </div>
           <a
             href="/download-native-wallet"
             className="text-purple-200 hover:text-white flex items-center gap-1 text-sm"
-            aria-label="Download Native Wallet"
           >
-            <Monitor aria-hidden="true" className="h-4 w-4" />
-            Looking for our Native Wallet? Get it here
-            <span aria-hidden="true">→</span>
+            <Monitor className="h-4 w-4" />
+            Looking for our Native Wallet? Get it here →
           </a>
         </div>
       </div>
 
-      {/* Header Navigation */}
-      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white" role="navigation">
+      {/* Navigation Header */}
+      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center space-x-2">
@@ -56,30 +50,26 @@ const GetStartedPage = () => {
               </span>
             </div>
             <div className="flex space-x-4">
-              <a href="/help" className="text-white hover:text-purple-200 px-3 py-2">
-                Help
-              </a>
-              <a href="/" className="text-white hover:text-purple-200 px-3 py-2">
-                Home
-              </a>
+              <a href="/help" className="text-white hover:text-purple-200 px-3 py-2">Help</a>
+              <a href="/" className="text-white hover:text-purple-200 px-3 py-2">Home</a>
             </div>
           </div>
         </div>
       </nav>
 
-      <main id="main-content" className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main id="main-content" className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-6xl font-bold text-purple-800 mb-6" style={{fontFamily: 'Comic Sans MS, cursive'}}>
-            Begin Your ComicCoin Journey
+            Welcome to ComicCoin
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Choose how you'd like to start your secure wallet experience
+            Choose an option below to get started with your wallet
           </p>
         </div>
 
         {/* Important Notice */}
-        <div className="mb-12 p-6 bg-purple-50 border border-purple-200 rounded-xl shadow-sm" role="alert">
+        <div className="mb-8 p-6 bg-purple-50 border border-purple-200 rounded-xl shadow-sm">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-purple-100 rounded-lg shrink-0">
               <AlertCircle className="h-6 w-6 text-purple-600" />
@@ -90,120 +80,113 @@ const GetStartedPage = () => {
               </h2>
               <ul className="space-y-2 text-purple-700">
                 <li className="flex items-start gap-2">
-                  <span className="font-bold">•</span>
-                  Your recovery phrase is the only way to restore your wallet
+                  <Shield className="h-5 w-5 mt-0.5 shrink-0" />
+                  <span>Never share your recovery phrase or password with anyone</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold">•</span>
-                  Write it down and store it in a safe place
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="font-bold">•</span>
-                  Never share it with anyone - ComicCoin team will never ask for it
+                  <Shield className="h-5 w-5 mt-0.5 shrink-0" />
+                  <span>Always keep your recovery phrase in a safe place - you'll need it to restore your wallet</span>
                 </li>
               </ul>
             </div>
           </div>
         </div>
 
-        {/* Options Grid */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* Create New Wallet */}
-          <div className="bg-white rounded-xl p-8 border-2 border-purple-200 hover:border-purple-400 transition-all hover:shadow-lg">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-4 bg-purple-100 rounded-xl">
-                <Plus className="h-8 w-8 text-purple-600" />
+        {/* Main Actions */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-12">
+          {/* Left Column - New/Access */}
+          <div className="space-y-6">
+            {/* Create New Wallet */}
+            <div className="bg-white rounded-xl p-6 border-2 border-purple-200 hover:border-purple-400 transition-all hover:shadow-lg">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <Plus className="h-6 w-6 text-purple-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Create New Wallet</h2>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Create New Wallet</h2>
+              <p className="text-gray-600 mb-6">Start fresh with a new wallet, perfect for first-time users.</p>
+              <Link
+                to="/create-first-wallet"
+                className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                Create New Wallet
+                <ArrowRight className="w-5 h-5" />
+              </Link>
             </div>
 
-            <div className="space-y-6 mb-8">
-              <h3 className="font-semibold text-gray-900">What you'll get:</h3>
-              <ul className="space-y-4 text-gray-600">
-                <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">1</div>
-                  <span>New unique wallet address that belongs only to you</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">2</div>
-                  <span>Secure 12-word recovery phrase for wallet backup</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">3</div>
-                  <span>Guided setup process with security verification</span>
-                </li>
-              </ul>
+            {/* Access Existing */}
+            <div className="bg-white rounded-xl p-6 border-2 border-purple-200 hover:border-purple-400 transition-all hover:shadow-lg">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <Globe className="h-6 w-6 text-purple-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Access Browser Wallet</h2>
+              </div>
+              <p className="text-gray-600 mb-6">Quick access to your wallet stored in this browser.</p>
+              <Link
+                to="/login"
+                className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                Access Browser Wallet
+                <ArrowRight className="w-5 h-5" />
+              </Link>
             </div>
-
-            <Link
-              to="/create-first-wallet"
-              className="w-full px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
-              aria-label="Create a new wallet"
-            >
-              Create New Wallet
-              <ArrowRight className="w-5 h-5" />
-            </Link>
           </div>
 
-          {/* Access Browser Wallet */}
-         <div className="bg-white rounded-xl p-8 border-2 border-purple-200 hover:border-purple-400 transition-all hover:shadow-lg">
-           <div className="flex items-center gap-4 mb-8">
-             <div className="p-4 bg-purple-100 rounded-xl">
-               <Globe className="h-8 w-8 text-purple-600" />
-             </div>
-             <h2 className="text-2xl font-bold text-gray-900">Access Browser Wallet</h2>
-           </div>
-
-           <div className="space-y-6 mb-8">
-             <h3 className="font-semibold text-gray-900">Quick Access:</h3>
-             <ul className="space-y-4 text-gray-600">
-               <li className="flex items-start gap-3">
-                 <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">•</div>
-                 <span>Access your existing wallet stored in this browser</span>
-               </li>
-               <li className="flex items-start gap-3">
-                 <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">•</div>
-                 <span>Enter your password to unlock your wallet</span>
-               </li>
-               <li className="flex items-start gap-3">
-                 <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">•</div>
-                 <span>Access in seconds with secure local storage</span>
-               </li>
-             </ul>
-           </div>
-
-           <Link
-             to="/login"
-             className="w-full px-6 py-4 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
-             aria-label="Access your browser wallet"
-           >
-             Access Browser Wallet
-             <ArrowRight className="w-5 h-5" />
-           </Link>
-         </div>
-        </div>
-
-        {/* Additional Security Tips */}
-        <div className="bg-white rounded-xl p-6 border border-purple-200 mb-12">
-          <h2 className="font-semibold text-gray-900 mb-4">Security Tips:</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="flex items-start gap-3">
-              <RefreshCw className="h-5 w-5 text-purple-600 mt-1" />
-              <div>
-                <h3 className="font-medium text-gray-900">Recovery is Critical</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Your recovery phrase is the only way to restore access. No one can help if you lose it.
-                </p>
+          {/* Right Column - Recovery */}
+          <div className="lg:pl-6">
+            <div className="bg-white rounded-xl p-8 border-2 border-purple-200">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <RefreshCw className="h-6 w-6 text-purple-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Recover Existing Wallet</h2>
+                  <p className="text-sm text-gray-500 mt-1">Have a wallet on another browser?</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Shield className="h-5 w-5 text-purple-600 mt-1" />
-              <div>
-                <h3 className="font-medium text-gray-900">Stay Secure</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Never enter your recovery phrase on any website claiming to be ComicCoin.
-                </p>
+
+              <div className="space-y-6 mb-8">
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">When to use recovery:</h3>
+                  <ul className="space-y-3 text-gray-600">
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-purple-600">•</span>
+                      <span>You're using a new browser or device</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-purple-600">•</span>
+                      <span>You've cleared your browser data</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-purple-600">•</span>
+                      <span>You want to restore from a backup</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">What you'll need:</h3>
+                  <ul className="space-y-3 text-gray-600">
+                    <li className="flex items-start gap-2">
+                      <Key className="h-5 w-5 text-purple-600 mt-0.5 shrink-0" />
+                      <span>Your 12-word recovery phrase</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Shield className="h-5 w-5 text-purple-600 mt-0.5 shrink-0" />
+                      <span>A secure environment to enter it</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
+
+              <Link
+                to="/recover"
+                className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                Recover Wallet
+                <ArrowRight className="w-5 h-5" />
+              </Link>
             </div>
           </div>
         </div>
@@ -223,9 +206,7 @@ const GetStartedPage = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="https://comiccoin.ca" className="hover:text-purple-200">
-                    Project Website
-                  </a>
+                  <a href="https://comiccoin.ca" className="hover:text-purple-200">Project Website</a>
                 </li>
               </ul>
             </div>
