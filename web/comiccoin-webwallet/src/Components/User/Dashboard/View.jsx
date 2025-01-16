@@ -429,32 +429,32 @@ function DashboardPage() {
                   </div>
                 </Link>
 
-                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
+                <Link to="/trade" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-purple-100 rounded-lg">
                       <ArrowUpRight className="w-5 h-5 text-purple-600" />
                     </div>
                     <span className="font-medium text-gray-900 group-hover:text-gray-700">Trade</span>
                   </div>
-                </button>
+                </Link>
 
-                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
+                <Link to="/nfts" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-indigo-100 rounded-lg">
                       <Image className="w-5 h-5 text-indigo-600" />
                     </div>
                     <span className="font-medium text-gray-900 group-hover:text-gray-700">NFTs</span>
                   </div>
-                </button>
+                </Link>
 
-                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
+                <Link to="/more" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gray-100 rounded-lg">
                       <MoreHorizontal className="w-5 h-5 text-gray-600" />
                     </div>
                     <span className="font-medium text-gray-900 group-hover:text-gray-700">More</span>
                   </div>
-                </button>
+                </Link>
               </div>
             </div>
 
