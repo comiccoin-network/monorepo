@@ -81,7 +81,7 @@ const MorePage = () => {
       title: "ComicCoin Faucet",
       description: "Get free test coins for development",
       icon: Droplets,
-      link: "https://faucet.comiccoin.com",
+      link: "https://comiccoinfaucet.com",
       isExternal: true
     }
   ];
