@@ -76,7 +76,7 @@ const MorePage = () => {
     //   link: "https://explorer.comiccoin.com",
     //   isExternal: true
     // },
-    
+
     {
       title: "ComicCoin Faucet",
       description: "Get free test coins for development",

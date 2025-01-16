@@ -35,7 +35,7 @@ const TradePage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       <NavigationMenu />
 
       <main className="flex-grow max-w-3xl mx-auto px-4 py-12 mb-16 md:mb-0">
