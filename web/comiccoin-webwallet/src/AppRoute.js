@@ -2,6 +2,7 @@ import { React, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { RecoilRoot } from "recoil";
 
+import TradePage from "./Components/User/Trade/View";
 import ReceiveCoin from "./Components/User/ReceiveCoin/View";
 import SendCoinsPage from "./Components/User/SendCoin/View";
 import DashboardPage from "./Components/User/Dashboard/View";
@@ -26,6 +27,7 @@ function AppRoute() {
       <RecoilRoot>
         <Router>
           <Routes>
+            <Route exact path="/trade" element={<TradePage />} />
             <Route exact path="/receive-coins" element={<ReceiveCoin />} />
             <Route exact path="/send-coins" element={<SendCoinsPage />} />
             <Route exact path="/dashboard" element={<DashboardPage />} />
