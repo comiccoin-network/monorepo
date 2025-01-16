@@ -24,6 +24,8 @@ import {
 
 import { useWallet } from '../../../Hooks/useWallet';
 import { useWalletTransactions } from '../../../Hooks/useWalletTransactions';
+import NavigationMenu from "../NavigationMenu/View";
+import FooterMenu from "../FooterMenu/View";
 
 function DashboardPage() {
   console.log('DashboardPage: Component rendering');
@@ -148,7 +150,7 @@ function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
@@ -156,39 +158,20 @@ function DashboardPage() {
         Skip to main content
       </a>
 
-      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white" role="navigation">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-2">
-              <Wallet aria-hidden="true" className="h-8 w-8" />
-              <span className="text-2xl font-bold">ComicCoin Web Wallet</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="/help" className="text-white hover:text-purple-200 px-3 py-2">Help</a>
-              <button
-                onClick={handleSignOut}
-                className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <NavigationMenu onSignOut={handleSignOut} />
 
-      <main id="main-content" className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-purple-800 mb-4">Dashboard</h1>
-          <p className="text-xl text-gray-600">Manage your ComicCoin wallet</p>
-        </div>
-
-        {error && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            <p className="text-red-800">{error}</p>
+      <main id="main-content" className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-12 mb-16 md:mb-0">
+          <div className="mb-12">
+            <h1 className="text-4xl font-bold text-purple-800 mb-4">Dashboard</h1>
+            <p className="text-xl text-gray-600">Manage your ComicCoin wallet</p>
           </div>
-        )}
+
+          {error && (
+            <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <p className="text-red-800">{error}</p>
+            </div>
+          )}
 
         {txerror && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3">
@@ -490,11 +473,7 @@ function DashboardPage() {
         )}
       </main>
 
-      <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p>© 2025 ComicCoin Web Wallet. All rights reserved.</p>
-        </div>
-      </footer>
+      <FooterMenu />
     </div>
   );
 }

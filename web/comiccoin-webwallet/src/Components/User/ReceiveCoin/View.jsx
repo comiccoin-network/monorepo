@@ -7,10 +7,14 @@ import {
   QrCode,
   Send,
   MoreHorizontal,
-  CheckCircle2
+  CheckCircle2,
+  Download,
+  Printer
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useWallet } from '../../../Hooks/useWallet';
+import NavigationMenu from "../NavigationMenu/View";
+import FooterMenu from "../FooterMenu/View";
 
 const ReceivePage = () => {
   const {
@@ -22,7 +26,7 @@ const ReceivePage = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    window.scrollTo(0, 0); // Start the page at the top
+    window.scrollTo(0, 0);
   }, []);
 
   const handleCopyAddress = async () => {
@@ -31,6 +35,60 @@ const ReceivePage = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleDownloadQR = () => {
+    const svg = document.querySelector("#wallet-qr");
+    const serializer = new XMLSerializer();
+    const svgStr = serializer.serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      const a = document.createElement("a");
+      a.download = "wallet-qr.png";
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+    };
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgStr);
+  };
+
+  const handlePrintQR = () => {
+    const printWindow = window.open('', '', 'width=600,height=600');
+    const svg = document.querySelector("#wallet-qr");
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Wallet QR Code</title>
+          <style>
+            body {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              padding: 2rem;
+              font-family: system-ui, sans-serif;
+            }
+            .address {
+              margin-top: 1rem;
+              font-family: monospace;
+              font-size: 0.875rem;
+              color: #374151;
+            }
+          </style>
+        </head>
+        <body>
+          ${svg.outerHTML}
+          <div class="address">${currentWallet.address}</div>
+          <script>window.print();window.close();</script>
+        </body>
+      </html>
+    `);
   };
 
   if (serviceLoading) {
@@ -47,9 +105,16 @@ const ReceivePage = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-24">
-      {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-6 py-12">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <NavigationMenu />
+
+      <main className="flex-grow max-w-2xl mx-auto px-6 py-12 md:py-12 mb-16 md:mb-0">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-purple-800 mb-4">Receive</h1>
+          <p className="text-xl text-gray-600">Accept ComicCoins and NFTs to your wallet</p>
+        </div>
+
         <div className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden">
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
@@ -66,14 +131,38 @@ const ReceivePage = () => {
           </div>
 
           <div className="p-6 space-y-8">
-            {/* QR Code */}
-            <div className="flex justify-center">
-              <div className="p-4 bg-white rounded-2xl border-2 border-gray-100">
-                <QRCodeSVG
-                  value={currentWallet.address}
-                  size={240}
-                  className="w-full h-auto"
-                />
+            {/* QR Code with enhanced size and actions */}
+            <div className="relative">
+              <div className="flex justify-center">
+                <div className="p-6 bg-white rounded-2xl border-2 border-gray-100 w-full max-w-md">
+                  <QRCodeSVG
+                    id="wallet-qr"
+                    value={currentWallet.address}
+                    size={400}
+                    className="w-full h-auto"
+                    level="H"
+                    includeMargin={true}
+                  />
+                  {/* Action buttons overlayed on bottom of QR container */}
+                  <div className="mt-4 flex justify-center gap-4">
+                    <button
+                      onClick={handlePrintQR}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                      title="Print QR Code"
+                    >
+                      <Printer className="w-4 h-4" />
+                      <span className="hidden sm:inline">Print</span>
+                    </button>
+                    <button
+                      onClick={handleDownloadQR}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                      title="Download QR Code"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span className="hidden sm:inline">Download</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -123,27 +212,7 @@ const ReceivePage = () => {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 w-full bg-white border-t border-gray-200 shadow-lg" aria-label="Primary navigation">
-        <div className="grid grid-cols-4 h-20">
-          <Link to="/dashboard" className="flex flex-col items-center justify-center space-y-2">
-            <Wallet className="w-7 h-7 text-gray-600" aria-hidden="true" />
-            <span className="text-sm text-gray-600">Overview</span>
-          </Link>
-          <Link to="/send" className="flex flex-col items-center justify-center space-y-2">
-            <Send className="w-7 h-7 text-gray-600" aria-hidden="true" />
-            <span className="text-sm text-gray-600">Send</span>
-          </Link>
-          <div className="flex flex-col items-center justify-center space-y-2 bg-purple-50">
-            <QrCode className="w-7 h-7 text-purple-600" aria-hidden="true" />
-            <span className="text-sm text-purple-600">Receive</span>
-          </div>
-          <button className="flex flex-col items-center justify-center space-y-2">
-            <MoreHorizontal className="w-7 h-7 text-gray-600" aria-hidden="true" />
-            <span className="text-sm text-gray-600">More</span>
-          </button>
-        </div>
-      </nav>
+      <FooterMenu />
     </div>
   );
 };
