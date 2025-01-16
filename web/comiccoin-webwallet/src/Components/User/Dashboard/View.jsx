@@ -432,14 +432,14 @@ function DashboardPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
+                <Link to="/receive-coins" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <ArrowDownRight className="w-5 h-5 text-green-600" />
                     </div>
                     <span className="font-medium text-gray-900 group-hover:text-gray-700">Receive</span>
                   </div>
-                </button>
+                </Link>
 
                 <Link to="/send-coins" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
                   <div className="flex items-center gap-3">
