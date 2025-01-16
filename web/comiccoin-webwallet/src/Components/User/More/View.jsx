@@ -7,7 +7,10 @@ import {
   Droplets,
   ExternalLink,
   AlertCircle,
-  Loader2
+  Loader2,
+  KeyRound,
+  Network,
+  BarChart3
 } from 'lucide-react';
 
 import { useWallet } from '../../../Hooks/useWallet';
@@ -37,13 +40,43 @@ const MorePage = () => {
       link: "/transactions",
       isExternal: false
     },
-    {
-      title: "Recovery Key",
-      description: "View and backup your wallet recovery key",
-      icon: Key,
-      link: "/recovery-key",
-      isExternal: false
-    },
+
+    // TODO: UNCOMMENT WHEN READY
+    // {
+    //   title: "Recovery Key",
+    //   description: "View and backup your wallet recovery key",
+    //   icon: Key,
+    //   link: "/recovery-key",
+    //   isExternal: false
+    // },
+
+    // TODO: UNCOMMENT WHEN READY
+    // {
+    //   title: "Password Change",
+    //   description: "Update your wallet password",
+    //   icon: KeyRound,
+    //   link: "/change-password",
+    //   isExternal: false
+    // },
+
+    // TODO: UNCOMMENT WHEN READY
+    // {
+    //   title: "Network Settings",
+    //   description: "Configure blockchain network settings",
+    //   icon: Network,
+    //   link: "/network-settings",
+    //   isExternal: false
+    // },
+
+    // TODO: UNCOMMENT WHEN READY
+    // {
+    //   title: "Block Explorer",
+    //   description: "View detailed blockchain transactions",
+    //   icon: BarChart3,
+    //   link: "https://explorer.comiccoin.com",
+    //   isExternal: true
+    // },
+    
     {
       title: "ComicCoin Faucet",
       description: "Get free test coins for development",
