@@ -1,6 +1,5 @@
-// src/Components/User/SendCoin/View.jsx
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowLeft,
@@ -8,18 +7,23 @@ import {
   Loader2,
   Info,
   Wallet,
-  LogOut,
   Coins
 } from 'lucide-react';
 import { useWallet } from '../../../Hooks/useWallet';
 import { useWalletTransactions } from '../../../Hooks/useWalletTransactions';
 import { useTransaction } from '../../../Hooks/useTransaction';
+import NavigationMenu from "../NavigationMenu/View";
+import FooterMenu from "../FooterMenu/View";
 
 const SendCoinsPage = () => {
   const navigate = useNavigate();
-  const { currentWallet, logout } = useWallet();
+  const {
+    currentWallet,
+    loading: serviceLoading,
+    error: serviceError
+  } = useWallet();
   const { statistics } = useWalletTransactions(currentWallet?.address);
-  const { submitTransaction, loading: transactionLoading, error: transactionError } = useTransaction(1); // Use your actual chain ID
+  const { submitTransaction, loading: transactionLoading, error: transactionError } = useTransaction(1);
 
   const [formData, setFormData] = useState({
     recipientAddress: '',
@@ -32,11 +36,7 @@ const SendCoinsPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const handleSignOut = () => {
-    logout();
-    navigate("/login");
-  };
-
+  // Your existing validation and handlers remain the same
   const validateForm = () => {
     const newErrors = {};
 
@@ -73,7 +73,6 @@ const SendCoinsPage = () => {
       [name]: value
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -84,170 +83,145 @@ const SendCoinsPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+    if (!validateForm()) return;
     setShowConfirmation(true);
   };
 
   const handleConfirmTransaction = async () => {
     setIsSubmitting(true);
-
     try {
-        const result = await submitTransaction(
-            formData.recipientAddress,
-            formData.amount,
-            formData.note || "",  // Ensure note is never undefined
-            currentWallet,
-            formData.password
-        );
-
-        // Navigate to dashboard with success message
-        navigate('/dashboard', {
-            state: {
-                transactionSuccess: true,
-                message: `Transaction submitted successfully!`
-            }
-        });
+      await submitTransaction(
+        formData.recipientAddress,
+        formData.amount,
+        formData.note || "",
+        currentWallet,
+        formData.password
+      );
+      navigate('/dashboard', {
+        state: {
+          transactionSuccess: true,
+          message: 'Transaction submitted successfully!'
+        }
+      });
     } catch (error) {
-        console.error('Transaction failed:', error);
-        setErrors({ submit: error.message });
-        setShowConfirmation(false); // Hide the confirmation modal on error
+      console.error('Transaction failed:', error);
+      setErrors({ submit: error.message });
+      setShowConfirmation(false);
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
-};
+  };
+
+  if (serviceLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-6 h-6 animate-spin" />
+        <span className="ml-2">Loading wallet...</span>
+      </div>
+    );
+  }
+
+  if (!serviceLoading && !currentWallet) {
+    return <Navigate to="/login" />;
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      {/* Skip Link for Accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
-      >
-        Skip to main content
-      </a>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <NavigationMenu />
 
-      {/* Header/Navigation */}
-      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white" role="navigation">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-2">
-              <Wallet aria-hidden="true" className="h-8 w-8" />
-              <span className="text-2xl font-bold">ComicCoin Web Wallet</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link to="/help" className="text-white hover:text-purple-200 px-3 py-2">Help</Link>
-              <button
-                onClick={handleSignOut}
-                className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </div>
+      <main className="flex-grow max-w-3xl mx-auto px-4 py-12 mb-16 md:mb-0">
+        {/* Page Header */}
+        <div className="mb-8">
+         {/*
+          <div className="flex items-center gap-2 mb-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center text-purple-600 hover:text-purple-700 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back
+            </button>
           </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <main id="main-content" className="flex-grow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="max-w-3xl mx-auto">
-            {/* Error Messages */}
-            {Object.keys(errors).length > 0 && (
-              <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-red-800">Transaction Error</h3>
-                    <div className="text-sm text-red-600 mt-1">
-                      {Object.values(errors).map((error, index) => (
-                        <p key={index} className="flex items-center gap-2">
-                          <span>•</span> {error}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center text-purple-600 hover:text-purple-700 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back to Dashboard
-          </button>
-        </div>
-
-        <div className="mb-8">
+          */}
           <h1 className="text-4xl font-bold text-purple-800 mb-4">Send ComicCoins</h1>
           <p className="text-xl text-gray-600">Transfer CC to another wallet</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6 mb-6">
-        <div className="flex items-center gap-3 mb-6">
-<div className="p-2 bg-purple-100 rounded-xl">
-  <Wallet className="w-5 h-5 text-purple-600" />
-</div>
-<div className="w-full">
-  <div className="flex justify-between items-center">
-    <h2 className="text-xl font-bold text-gray-900">Available Balance</h2>
-    <p className="text-2xl font-bold text-purple-600">{statistics?.totalCoinValue || 0} CC</p>
-  </div>
-
-  {/* Add transaction preview when amount is entered */}
-  {formData.amount && (
-    <div className="mt-2 border-t pt-2 space-y-1">
-      <div className="flex justify-between text-sm">
-        <span className="text-red-600">Amount to Send</span>
-        <span className="text-red-600">- {formData.amount} CC</span>
-      </div>
-      <div className="flex justify-between text-sm">
-        <span className="text-red-600">Network Fee</span>
-        <span className="text-red-600">- 1 CC</span>
-      </div>
-      <div className="flex justify-between text-sm font-medium">
-        <span className="text-gray-600">Remaining Balance</span>
-        <span className="text-gray-900">= {(statistics?.totalCoinValue - parseFloat(formData.amount) - 1).toFixed(2)} CC</span>
-      </div>
-    </div>
-  )}
-</div>
-</div>
-
-          {/* Important Notices Section */}
-          <div className="space-y-4 mb-6">
-            {/* Warning Notice */}
-            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-amber-800">
-                <p className="font-semibold mb-1">Important Notice</p>
-                <p>
-                  All transactions are final and cannot be undone. Please verify
-                  all details before sending.
-                </p>
+        {/* Error Messages */}
+        {Object.keys(errors).length > 0 && (
+          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-red-800">Transaction Error</h3>
+                <div className="text-sm text-red-600 mt-1">
+                  {Object.values(errors).map((error, index) => (
+                    <p key={index} className="flex items-center gap-2">
+                      <span>•</span> {error}
+                    </p>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Transaction Fee Notice */}
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
-              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold mb-1">Transaction Fee Information</p>
-                <p>
-                  A network fee of 0.001 CC will be added to your transaction to ensure timely processing.
-                  This fee goes to network validators who process your transaction.
-                </p>
+        {/* Main Form Card */}
+        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden">
+          {/* Balance Section */}
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 rounded-xl">
+                <Wallet className="w-5 h-5 text-purple-600" />
+              </div>
+              <div className="flex-grow">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-bold text-gray-900">Available Balance</h2>
+                  <p className="text-2xl font-bold text-purple-600">{statistics?.totalCoinValue || 0} CC</p>
+                </div>
+                {formData.amount && (
+                  <div className="mt-2 pt-2 border-t space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-red-600">Amount to Send</span>
+                      <span className="text-red-600">- {formData.amount} CC</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-red-600">Network Fee</span>
+                      <span className="text-red-600">- 1 CC</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-medium">
+                      <span className="text-gray-600">Remaining Balance</span>
+                      <span className="text-gray-900">
+                        = {(statistics?.totalCoinValue - parseFloat(formData.amount || 0) - 1).toFixed(2)} CC
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Important Notices */}
+          <div className="p-6 border-b border-gray-100 space-y-4">
+            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-amber-800">
+                <p className="font-semibold mb-1">Important Notice</p>
+                <p>All transactions are final and cannot be undone. Please verify all details before sending.</p>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
+              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-semibold mb-1">Transaction Fee Information</p>
+                <p>A network fee of 1 CC will be added to your transaction to ensure timely processing.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Form Section */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
               <div>
                 <label htmlFor="recipientAddress" className="block">
                   <span className="text-sm font-medium text-gray-700">
@@ -403,17 +377,9 @@ const SendCoinsPage = () => {
             </button>
           </form>
         </div>
-
-          </div>
-        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p>© 2025 ComicCoin Web Wallet. All rights reserved.</p>
-        </div>
-      </footer>
+      <FooterMenu />
 
       {/* Confirmation Modal */}
       {showConfirmation && (
