@@ -29,7 +29,7 @@ const Topbar = (props) => {
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <Coins className="h-8 w-8" />
-            <span className="text-xl font-bold" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+            <span className="text-xl font-bold" style={{fontFamily: 'Comic Sans MS'}}>
               ComicCoin
             </span>
           </div>

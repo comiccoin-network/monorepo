@@ -73,7 +73,7 @@ const NFTCard = ({ nft, currentWallet }) => {
         </div>
 
         <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1" style={{ fontFamily: 'Comic Sans MS' }}>
             {nft.metadata?.name || `Comic #${nft.tokenId}`}
           </h3>
 
@@ -246,7 +246,7 @@ const NFTListPage = () => {
      <div className="flex-grow flex flex-col items-center px-6 sm:px-8 lg:px-12 py-12">
        {/* Header */}
        <div className="w-full max-w-[1200px]">
-         <h1 className="text-4xl font-bold text-[#5D37AF] mb-2" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+         <h1 className="text-4xl font-bold text-[#5D37AF] mb-2" style={{ fontFamily: 'Comic Sans MS' }}>
            My NFT Collection
          </h1>
          <p className="text-gray-600">

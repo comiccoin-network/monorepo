@@ -146,7 +146,7 @@ const RecoverHDWalletPage = () => {
                     <div className="flex justify-between h-16 items-center">
                         <div className="flex items-center space-x-2">
                             <Coins className="h-8 w-8" />
-                            <span className="text-2xl font-bold" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+                            <span className="text-2xl font-bold" style={{fontFamily: 'Comic Sans MS'}}>
                                 ComicCoin Web Wallet
                             </span>
                         </div>
@@ -161,7 +161,7 @@ const RecoverHDWalletPage = () => {
             <main id="main-content" className="flex-grow max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 {/* Title Section */}
                 <div className="text-center mb-12">
-                    <h1 className="text-5xl md:text-6xl font-bold text-purple-800 mb-4" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+                    <h1 className="text-5xl md:text-6xl font-bold text-purple-800 mb-4" style={{fontFamily: 'Comic Sans MS'}}>
                         Recover Your Wallet
                     </h1>
                     <p className="text-xl text-gray-600">

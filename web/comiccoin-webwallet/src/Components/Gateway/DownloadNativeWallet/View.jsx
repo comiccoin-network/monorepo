@@ -36,7 +36,7 @@ const WindowsDownloadPage = () => {
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center space-x-2">
               <Monitor className="h-8 w-8" />
-              <span className="text-2xl font-bold" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+              <span className="text-2xl font-bold" style={{fontFamily: 'Comic Sans MS'}}>
                 ComicCoin Native Wallet
               </span>
             </div>
@@ -54,7 +54,7 @@ const WindowsDownloadPage = () => {
         <div className="bg-gradient-to-b from-indigo-600 to-indigo-500 text-white py-16 mb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold mb-6" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6" style={{fontFamily: 'Comic Sans MS'}}>
                 Download ComicCoin Wallet for Windows
               </h1>
               <p className="text-xl text-indigo-100 max-w-2xl mx-auto mb-8">

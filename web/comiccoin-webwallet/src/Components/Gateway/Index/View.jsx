@@ -36,7 +36,7 @@ const IndexPage = () => {
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center space-x-2">
               <Wallet className="h-8 w-8" />
-              <span className="text-2xl font-bold" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+              <span className="text-2xl font-bold" style={{fontFamily: 'Comic Sans MS'}}>
                 ComicCoin Web Wallet
               </span>
             </div>
@@ -60,7 +60,7 @@ const IndexPage = () => {
 
       <main id="main-content" className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="text-center mb-12 md:mb-16">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 md:mb-6 text-purple-800" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 md:mb-6 text-purple-800" style={{fontFamily: 'Comic Sans MS'}}>
             Your ComicCoin Wallet<br />Anywhere You Need It
           </h1>
           <p className="text-xl text-gray-700 max-w-2xl mx-auto">
@@ -178,7 +178,7 @@ const IndexPage = () => {
                 <div className="p-2 bg-purple-100 rounded-lg">
                   {feature.icon}
                 </div>
-                <h2 className="mt-4 text-xl font-bold text-purple-800" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+                <h2 className="mt-4 text-xl font-bold text-purple-800" style={{fontFamily: 'Comic Sans MS'}}>
                   {feature.title}
                 </h2>
                 <p className="mt-2 text-gray-700">
@@ -191,7 +191,7 @@ const IndexPage = () => {
 
         {/* About Section */}
         <section className="bg-white rounded-xl p-8 shadow-lg mb-16 border-2 border-purple-200">
-          <h2 className="text-3xl font-bold mb-6 text-purple-800" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+          <h2 className="text-3xl font-bold mb-6 text-purple-800" style={{fontFamily: 'Comic Sans MS'}}>
             About ComicCoin
           </h2>
           <div className="flex items-start space-x-4">
