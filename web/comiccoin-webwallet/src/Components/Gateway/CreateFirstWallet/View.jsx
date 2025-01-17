@@ -20,7 +20,7 @@ import { Navigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { HDNodeWallet } from "ethers/wallet";
 
-import { useWallet } from '../../Hooks/useWallet';
+import { useWallet } from '../../../Hooks/useWallet';
 
 
 const CreateFirstWalletPage = () => {
