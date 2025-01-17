@@ -247,7 +247,7 @@ const NFTListPage = () => {
        {/* Header */}
        <div className="w-full max-w-[1200px]">
          <h1 className="text-4xl font-bold text-[#5D37AF] mb-2" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
-           My Comic Collection
+           My NFT Collection
          </h1>
          <p className="text-gray-600">
            Manage and showcase your digital comic book collectibles
