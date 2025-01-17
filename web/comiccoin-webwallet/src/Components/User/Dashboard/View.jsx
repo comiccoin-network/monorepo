@@ -374,9 +374,9 @@ function DashboardPage() {
 
                   {/* Bottom action buttons */}
                   <div className="pt-4 mt-4 flex gap-4">
-                    <button className="flex-1 text-center py-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors">
+                    <Link to="/transactions" className="flex-1 text-center py-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors">
                       View All Transactions
-                    </button>
+                    </Link>
                     <Link
                       to="/send-coins"
                       className="flex-1 text-center py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg transition-colors"
