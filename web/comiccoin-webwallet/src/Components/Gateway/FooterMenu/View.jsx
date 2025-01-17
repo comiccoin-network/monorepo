@@ -13,7 +13,8 @@ import {
   Code,
   ExternalLink,
   BookMarked,
-  Heart
+  Heart,
+  RefreshCw
 } from 'lucide-react';
 
 function Footer() {
@@ -88,6 +89,16 @@ function Footer() {
                 >
                   <Coins className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
                   <span>Access Wallet</span>
+                  <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/recover"
+                  className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
+                >
+                  <RefreshCw className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                  <span>Recover Wallet</span>
                   <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               </li>
