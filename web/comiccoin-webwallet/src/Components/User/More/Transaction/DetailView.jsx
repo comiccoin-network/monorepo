@@ -24,6 +24,8 @@ import { formatBytes, base64ToHex } from '../../../../Utils/byteUtils';
 import NavigationMenu from "../../NavigationMenu/View";
 import FooterMenu from "../../FooterMenu/View";
 import walletService from '../../../../Services/WalletService';
+import { useNFTMetadata } from '../../../../Hooks/useNFTMetadata';
+import { convertIPFSToGatewayURL } from '../../../../Services/NFTMetadataService';
 
 function TransactionDetailPage() {
     const { nonceString } = useParams();
@@ -41,6 +43,10 @@ function TransactionDetailPage() {
     const [isSessionExpired, setIsSessionExpired] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [currentTransaction, setCurrentTransaction] = useState(null);
+
+    const { metadata: nftMetadata, loading: nftLoading, error: nftError } = useNFTMetadata(
+        currentTransaction?.type === 'token' ? currentTransaction.token_metadata_uri : null
+    );
 
     // Session checking effect
     useEffect(() => {
@@ -326,20 +332,23 @@ function TransactionDetailPage() {
             </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-2">Token ID</h4>
-                <p className="text-lg font-bold text-gray-900">
-                    {currentTransaction.token_id_string || formatBytes(currentTransaction.token_id_bytes)}
-                </p>
+        <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Token ID</h4>
+                    <p className="text-lg font-bold text-gray-900">
+                        {currentTransaction.token_id_string || formatBytes(currentTransaction.token_id_bytes)}
+                    </p>
+                </div>
+                <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Token Nonce</h4>
+                    <p className="text-lg font-bold text-gray-900">
+                        {currentTransaction.token_nonce_string || formatBytes(currentTransaction.token_nonce_bytes)}
+                    </p>
+                </div>
             </div>
+
             <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-2">Token Nonce</h4>
-                <p className="text-lg font-bold text-gray-900">
-                    {currentTransaction.token_nonce_string || formatBytes(currentTransaction.token_nonce_bytes)}
-                </p>
-            </div>
-            <div className="md:col-span-2">
                 <h4 className="text-sm font-medium text-gray-500 mb-2">Metadata URI</h4>
                 <div className="space-y-3">
                     {/* IPFS Storage Link */}
@@ -348,8 +357,8 @@ function TransactionDetailPage() {
                             {currentTransaction.token_metadata_uri || 'N/A'}
                         </code>
                         {currentTransaction.token_metadata_uri && (
-                           <a
-                                href={`${process.env.REACT_APP_NFTSTORAGE_API_URL}/ipfs/${currentTransaction.token_metadata_uri.replace('ipfs://', '')}`}
+                            <a
+                                href={convertIPFSToGatewayURL(currentTransaction.token_metadata_uri)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
@@ -366,7 +375,6 @@ function TransactionDetailPage() {
                             <FileText className="w-4 h-4" />
                             <span>View via public IPFS gateway:</span>
                             <a
-
                                 href={`https://ipfs.io/ipfs/${currentTransaction.token_metadata_uri.replace('ipfs://', '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -375,6 +383,29 @@ function TransactionDetailPage() {
                                 ipfs.io gateway
                             </a>
                         </div>
+                    )}
+                </div>
+            </div>
+
+            {/* NFT Metadata Display */}
+            <div>
+                <h4 className="text-sm font-medium text-gray-500 mb-2">NFT Metadata</h4>
+                <div className="bg-gray-50 rounded-lg p-4">
+                    {nftLoading && (
+                        <div className="flex items-center justify-center py-4">
+                            <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+                            <span className="ml-2 text-gray-600">Loading metadata...</span>
+                        </div>
+                    )}
+                    {nftError && (
+                        <div className="text-red-600 py-2">
+                            Failed to load metadata: {nftError}
+                        </div>
+                    )}
+                    {nftMetadata && (
+                        <pre className="text-sm overflow-x-auto whitespace-pre-wrap break-all text-gray-800">
+                            {JSON.stringify(nftMetadata, null, 2)}
+                        </pre>
                     )}
                 </div>
             </div>
