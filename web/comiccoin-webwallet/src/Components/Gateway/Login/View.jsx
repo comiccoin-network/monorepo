@@ -180,7 +180,7 @@ function LoginPage() {
                 <div className="text-sm text-amber-800">
                   <p className="font-medium mb-2">Security Notice:</p>
                   <ul className="list-disc pl-4 space-y-1">
-                    <li>Make sure you're on the correct website (comiccoinwallet.com)</li>
+                    <li>Make sure you're on the correct website ({process.env.REACT_APP_WWW_DOMAIN})</li>
                     <li>Never share your password with anyone</li>
                     <li>ComicCoin team will never ask for your password</li>
                   </ul>

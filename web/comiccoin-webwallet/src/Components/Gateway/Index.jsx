@@ -217,7 +217,7 @@ const IndexPage = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="https://comiccoin.ca" className="hover:text-purple-200">
+                  <a href="https://comiccoinnetwork.com" className="hover:text-purple-200">
                     Project Website
                   </a>
                 </li>

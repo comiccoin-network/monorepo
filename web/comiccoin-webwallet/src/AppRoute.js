@@ -46,6 +46,8 @@ function AppRoute() {
             <Route exact path="/create-first-wallet" element={<CreateFirstWalletPage />} />
             <Route exact path="/download-native-wallet" element={<DownloadNativeWalletPage />} />
             <Route exact path="/get-started" element={<GetStartedPage />} />
+            <Route exact path="/privacy" element={<Privacy />} />
+            <Route exact path="/terms" element={<Terms />} />
             <Route exact path="/" element={<Index />} />
             <Route path="*" element={<NotFoundError />} />
           </Routes>

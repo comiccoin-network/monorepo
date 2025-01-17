@@ -11,6 +11,7 @@ import {
   KeyRound,
   ChevronRight
 } from 'lucide-react';
+import { Link } from "react-router-dom";
 
 const RecoverExistingWalletPage = () => {
   const [showPhrase, setShowPhrase] = useState(false);
@@ -158,7 +159,7 @@ const RecoverExistingWalletPage = () => {
                 <div className="text-sm text-amber-800">
                   <p className="font-medium mb-2">Security Notice:</p>
                   <ul className="list-disc pl-4 space-y-1">
-                    <li>Make sure you're on the correct website (comiccoin.ca)</li>
+                    <li>Make sure you're on the correct website ({process.env.REACT_APP_WWW_DOMAIN})</li>
                     <li>Never share your recovery phrase with anyone</li>
                     <li>ComicCoin team will never ask for your phrase</li>
                   </ul>
@@ -272,12 +273,13 @@ const RecoverExistingWalletPage = () => {
 
             {/* Submit Button */}
             <div className="flex justify-end gap-4 pt-4">
-              <button
+              <Link
+                to="/"
                 type="button"
                 className="px-6 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Cancel
-              </button>
+              </Link>
               <button
                 type="submit"
                 disabled={isLoading}

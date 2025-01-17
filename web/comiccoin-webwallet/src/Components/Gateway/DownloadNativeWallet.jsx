@@ -168,7 +168,7 @@ const WindowsDownloadPage = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="https://comiccoin.ca" className="hover:text-purple-200">Project Website</a>
+                  <a href="https://comiccoinnetwork.com" className="hover:text-purple-200">Project Website</a>
                 </li>
               </ul>
             </div>
