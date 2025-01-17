@@ -6,12 +6,12 @@ import {
   ArrowUpRight, ImageOff, Clock, Search,
   Tag, Coins, CheckCircle
 } from 'lucide-react';
-import { useWallet } from '../../../Hooks/useWallet';
-import { useNFTCollection } from '../../../Hooks/useNFTCollection';
-import { convertIPFSToGatewayURL } from '../../../Services/NFTMetadataService';
-import NavigationMenu from "../NavigationMenu/View";
-import FooterMenu from "../FooterMenu/View";
-import walletService from '../../../Services/WalletService';
+import { useWallet } from '../../../../Hooks/useWallet';
+import { useNFTCollection } from '../../../../Hooks/useNFTCollection';
+import { convertIPFSToGatewayURL } from '../../../../Services/NFTMetadataService';
+import NavigationMenu from "../../NavigationMenu/View";
+import FooterMenu from "../../FooterMenu/View";
+import walletService from '../../../../Services/WalletService';
 
 // Comic Book NFT Card
 const NFTCard = ({ nft, currentWallet }) => {

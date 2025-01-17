@@ -19,10 +19,10 @@ import {
   Link as LinkIcon
 } from 'lucide-react';
 
-import { useNFTMetadata } from '../../../Hooks/useNFTMetadata';
-import { convertIPFSToGatewayURL } from '../../../Services/NFTMetadataService';
-import NavigationMenu from "../../User/NavigationMenu/View";
-import FooterMenu from "../../User/FooterMenu/View";
+import { useNFTMetadata } from '../../../../Hooks/useNFTMetadata';
+import { convertIPFSToGatewayURL } from '../../../../Services/NFTMetadataService';
+import NavigationMenu from "../../../User/NavigationMenu/View";
+import FooterMenu from "../../../User/FooterMenu/View";
 import IPFSInfoModal from "./IPFSInfoModal";
 
 // ShareButton component
