@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import FooterMenu from "../FooterMenu/View";
 
-function LoginPage() {
+function LoginHDWalletPage() {
   const {
     wallets,
     loadWallet,
@@ -269,4 +269,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default LoginHDWalletPage;
