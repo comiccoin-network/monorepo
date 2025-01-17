@@ -22,7 +22,7 @@ type App struct {
 
 	tokenRepo                                           TokenRepository
 	nftAssetRepo                                        NFTAssetRepository
-	getBlockchainStateDTOFromBlockchainAuthorityUseCase *uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
+	getBlockchainStateDTOFromBlockchainAuthorityUseCase uc_blockchainstatedto.GetBlockchainStateDTOFromBlockchainAuthorityUseCase
 }
 
 // NewApp creates a new App application struct
