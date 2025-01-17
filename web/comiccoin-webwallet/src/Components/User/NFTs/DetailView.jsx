@@ -23,7 +23,7 @@ function NFTDetailPage() {
   const tokenId = searchParams.get('token_id');
   const tokenMetadataUri = searchParams.get('token_metadata_uri');
 
-  const { loading, error, metadata, rawAsset } = useNFTMetadata(tokenMetadataUri);
+  const { metadata, loading, error, rawAsset } = useNFTMetadata(tokenMetadataUri);
 
   // Function to handle metadata download
   const handleDownload = () => {
@@ -40,7 +40,7 @@ function NFTDetailPage() {
     URL.revokeObjectURL(url);
   };
 
-  console.log("Debugging: metadata --->", metadata);
+  // console.log("Debugging: metadata --->", metadata);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">

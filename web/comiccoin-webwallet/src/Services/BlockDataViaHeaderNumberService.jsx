@@ -1,4 +1,4 @@
-// src/Services/BlockDataViaHeaderNumberService.js
+// src/Services/BlockDataViaHeaderNumberService.jsx
 import axios from 'axios';
 
 class BlockDataViaHeaderNumberService {

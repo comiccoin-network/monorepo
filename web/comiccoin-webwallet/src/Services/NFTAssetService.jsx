@@ -1,4 +1,4 @@
-// src/Services/NFTAssetService.js
+// src/Services/NFTAssetService.jsx
 
 /**
  * @typedef {Object} NFTAsset
