@@ -107,7 +107,7 @@ const GetStartedPage = () => {
               </div>
               <p className="text-gray-600 mb-6">Start fresh with a new wallet, perfect for first-time users.</p>
               <Link
-                to="/create-first-wallet"
+                to="/create-wallet"
                 className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 Create New Wallet

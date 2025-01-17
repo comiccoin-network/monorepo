@@ -42,7 +42,7 @@ const IndexPage = () => {
             </div>
             <div className="flex space-x-4">
               <Link
-                to="/create-first-wallet"
+                to="/create-wallet"
                 className="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-bold border-2 border-white transition-colors"
               >
                 Create Wallet

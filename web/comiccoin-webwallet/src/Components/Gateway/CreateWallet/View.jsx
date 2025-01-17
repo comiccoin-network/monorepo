@@ -24,7 +24,7 @@ import { useWallet } from '../../../Hooks/useWallet';
 import FooterMenu from "../FooterMenu/View";
 
 
-const CreateFirstWalletPage = () => {
+const CreateWalletPage = () => {
     const { createWallet, loading: serviceLoading, error: serviceError } = useWallet();
 
     const [forceURL, setForceURL] = useState("");
@@ -220,10 +220,10 @@ const CreateFirstWalletPage = () => {
                 <div className="p-2 bg-purple-100 rounded-xl">
                   <KeyRound className="w-5 h-5 text-purple-600" aria-hidden="true" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">Create Your First Wallet</h2>
+                <h2 className="text-xl font-bold text-gray-900">Create Your HD Wallet</h2>
               </div>
               <p className="text-sm text-gray-500">
-                Set up your first ComicCoin wallet by providing a label and secure password.
+                Set up your ComicCoin HD wallet by providing a label and secure password.
               </p>
             </div>
 
@@ -451,4 +451,4 @@ const CreateFirstWalletPage = () => {
     );
 };
 
-export default CreateFirstWalletPage;
+export default CreateWalletPage;
