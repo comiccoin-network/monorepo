@@ -6,17 +6,18 @@ import { fetchNFTMetadata } from '../Services/NFTMetadataService';
 /**
  * Custom hook for fetching NFT metadata
  * @param {string} tokenMetadataURI - The IPFS URI of the metadata
- * @returns {Object} The hook state containing loading, error, and metadata
+ * @returns {Object} The hook state containing loading, error, metadata, and raw asset
  */
 export const useNFTMetadata = (tokenMetadataURI) => {
   const [state, setState] = useState({
     loading: false,
     error: null,
     metadata: null,
+    rawAsset: null,
   });
 
   useEffect(() => {
-    const fetchMetadata = async () => {
+    const fetchData = async () => {
       if (!tokenMetadataURI) {
         return;
       }
@@ -24,22 +25,24 @@ export const useNFTMetadata = (tokenMetadataURI) => {
       setState(prev => ({ ...prev, loading: true }));
 
       try {
-        const metadata = await fetchNFTMetadata(tokenMetadataURI);
+        const { metadata, rawAsset } = await fetchNFTMetadata(tokenMetadataURI);
         setState({
           loading: false,
           error: null,
           metadata,
+          rawAsset,
         });
       } catch (error) {
         setState({
           loading: false,
           error: error.message,
           metadata: null,
+          rawAsset: null,
         });
       }
     };
 
-    fetchMetadata();
+    fetchData();
   }, [tokenMetadataURI]);
 
   return state;

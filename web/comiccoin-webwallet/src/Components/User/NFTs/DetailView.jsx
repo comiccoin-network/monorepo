@@ -7,11 +7,14 @@ import {
   AlertCircle,
   FileText,
   Image as ImageIcon,
-  Info,
+  ExternalLink,
+  Youtube,
+  Play,
   Download
 } from 'lucide-react';
 
 import { useNFTMetadata } from '../../../Hooks/useNFTMetadata';
+import { convertIPFSToGatewayURL } from '../../../Services/NFTMetadataService';
 import NavigationMenu from "../../User/NavigationMenu/View";
 import FooterMenu from "../../User/FooterMenu/View";
 
@@ -20,38 +23,24 @@ function NFTDetailPage() {
   const tokenId = searchParams.get('token_id');
   const tokenMetadataUri = searchParams.get('token_metadata_uri');
 
-  const { loading, error, metadata } = useNFTMetadata(tokenMetadataUri);
+  const { loading, error, metadata, rawAsset } = useNFTMetadata(tokenMetadataUri);
 
-  // Function to parse and display JSON metadata
-  const displayMetadata = () => {
-    if (!metadata || !metadata.content) return null;
-
-    try {
-      const content = new TextDecoder().decode(metadata.content);
-      const jsonContent = JSON.parse(content);
-      return jsonContent;
-    } catch (e) {
-      console.error('Error parsing metadata:', e);
-      return null;
-    }
-  };
-
-  const parsedMetadata = displayMetadata();
-
-  // Function to download metadata
+  // Function to handle metadata download
   const handleDownload = () => {
-    if (!metadata || !metadata.content) return;
+    if (!rawAsset || !rawAsset.content) return;
 
-    const blob = new Blob([metadata.content], { type: metadata.content_type });
+    const blob = new Blob([rawAsset.content], { type: rawAsset.content_type });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = metadata.filename || 'metadata.json';
+    a.download = rawAsset.filename || 'metadata.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
+  console.log("Debugging: metadata --->", metadata);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
@@ -69,11 +58,11 @@ function NFTDetailPage() {
           </Link>
 
           <h1 className="text-4xl font-bold text-purple-800 mb-2">
-            NFT #{tokenId}
+            {metadata?.name || `NFT #${tokenId}`}
           </h1>
-          <p className="text-gray-600">
-            View detailed information about this NFT
-          </p>
+          {metadata?.description && (
+            <p className="text-gray-600">{metadata.description}</p>
+          )}
         </div>
 
         {/* Error Message */}
@@ -95,13 +84,75 @@ function NFTDetailPage() {
         {/* Content */}
         {!loading && metadata && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Metadata File Info */}
+            {/* NFT Preview */}
+            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-purple-100 rounded-xl">
+                  <ImageIcon className="w-5 h-5 text-purple-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">NFT Preview</h2>
+              </div>
+
+              <div className="space-y-4">
+                {/* Main Image */}
+                {metadata.image && (
+                  <div className="aspect-square w-full relative rounded-lg overflow-hidden bg-gray-100">
+                    <img
+                      src={convertIPFSToGatewayURL(metadata.image)}
+                      alt={metadata.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* Animation/Video Links */}
+                <div className="flex flex-col gap-2">
+                  {metadata.animation_url && (
+                    <a
+                      href={convertIPFSToGatewayURL(metadata.animation_url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700"
+                    >
+                      <Play className="w-4 h-4" />
+                      View Animation
+                    </a>
+                  )}
+
+                  {metadata.youtube_url && (
+                    <a
+                      href={metadata.youtube_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-red-600 hover:text-red-700"
+                    >
+                      <Youtube className="w-4 h-4" />
+                      Watch on YouTube
+                    </a>
+                  )}
+
+                  {metadata.external_url && (
+                    <a
+                      href={metadata.external_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      View External Link
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* NFT Attributes */}
             <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-purple-100 rounded-xl">
                   <FileText className="w-5 h-5 text-purple-600" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">Metadata File</h2>
+                <h2 className="text-xl font-bold text-gray-900">Attributes</h2>
                 <button
                   onClick={handleDownload}
                   className="ml-auto p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
@@ -111,63 +162,47 @@ function NFTDetailPage() {
                 </button>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Filename
-                  </label>
-                  <p className="text-gray-900">{metadata.filename}</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Content Type
-                  </label>
-                  <p className="text-gray-900">{metadata.content_type}</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Size
-                  </label>
-                  <p className="text-gray-900">{metadata.content_length} bytes</p>
-                </div>
-              </div>
-            </div>
-
-            {/* NFT Metadata Content */}
-            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-purple-100 rounded-xl">
-                  <Info className="w-5 h-5 text-purple-600" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">NFT Information</h2>
-              </div>
-
-              {parsedMetadata ? (
-                <div className="space-y-4">
-                  {Object.entries(parsedMetadata).map(([key, value]) => (
-                    <div key={key}>
-                      <label className="block text-sm font-medium text-gray-600 mb-1 capitalize">
-                        {key.replace(/_/g, ' ')}
-                      </label>
-                      <p className="text-gray-900">
-                        {typeof value === 'object'
-                          ? JSON.stringify(value, null, 2)
-                          : value.toString()}
+              {metadata.attributes && metadata.attributes.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {metadata.attributes.map((attr, index) => (
+                    <div
+                      key={index}
+                      className="bg-purple-50 rounded-lg p-4"
+                    >
+                      <h3 className="text-sm font-medium text-purple-600 mb-1">
+                        {attr.trait_type}
+                      </h3>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {attr.value.toString()}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
-                  <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-400 opacity-50" />
+                  <FileText className="w-16 h-16 mx-auto mb-4 text-gray-400 opacity-50" />
                   <h3 className="text-lg font-medium text-gray-900">
-                    Unable to Parse Metadata
+                    No Attributes
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    The metadata file could not be parsed as JSON
+                    This NFT has no attributes defined
                   </p>
+                </div>
+              )}
+
+              {/* Background Color Preview */}
+              {metadata.background_color && (
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium text-gray-600 mb-2">
+                    Background Color
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-full border border-gray-200"
+                      style={{ backgroundColor: `#${metadata.background_color}` }}
+                    />
+                    <span className="text-gray-900">#{metadata.background_color}</span>
+                  </div>
                 </div>
               )}
             </div>
