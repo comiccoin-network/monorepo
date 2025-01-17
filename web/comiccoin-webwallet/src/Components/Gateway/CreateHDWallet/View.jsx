@@ -1,3 +1,4 @@
+// src/Components/Gateway/CreateWallet/View.jsx
 import React, { useState } from 'react';
 import { Wallet, Mnemonic } from 'ethers';
 import {
@@ -24,7 +25,7 @@ import { useWallet } from '../../../Hooks/useWallet';
 import FooterMenu from "../FooterMenu/View";
 
 
-const CreateWalletPage = () => {
+const CreateHDWalletPage = () => {
     const { createWallet, loading: serviceLoading, error: serviceError } = useWallet();
 
     const [forceURL, setForceURL] = useState("");
@@ -451,4 +452,4 @@ const CreateWalletPage = () => {
     );
 };
 
-export default CreateWalletPage;
+export default CreateHDWalletPage;

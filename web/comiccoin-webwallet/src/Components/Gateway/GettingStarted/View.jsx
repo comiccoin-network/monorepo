@@ -1,3 +1,4 @@
+// src/Components/Gateway/GettingStarted/View.jsx
 import React from 'react';
 import {
   Wallet,

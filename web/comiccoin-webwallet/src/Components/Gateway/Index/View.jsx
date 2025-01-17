@@ -1,4 +1,4 @@
-// src/Components/Gateway/Index.jsx
+// src/Components/Gateway/Index/View.jsx
 import React from 'react';
 import { Link } from "react-router-dom";
 import { Shield, Wallet, Key, RefreshCw, Github, ArrowRight, Monitor, Globe, CheckCircle } from 'lucide-react';

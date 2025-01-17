@@ -13,7 +13,7 @@ import SendCoinsPage from "./Components/User/SendCoin/View";
 import DashboardPage from "./Components/User/Dashboard/View";
 import LoginPage from "./Components/Gateway/Login/View";
 import RecoverHDWalletPage from "./Components/Gateway/RecoverHDWallet/View";
-import CreateWalletPage from "./Components/Gateway/CreateWallet/View";
+import CreateHDWalletPage from "./Components/Gateway/CreateHDWallet/View";
 import DownloadNativeWalletPage from "./Components/Gateway/DownloadNativeWallet/View";
 import GetStartedPage from "./Components/Gateway/GettingStarted/View";
 import Index from "./Components/Gateway/Index/View";
@@ -43,7 +43,7 @@ function AppRoute() {
             <Route exact path="/dashboard" element={<DashboardPage />} />
             <Route exact path="/login" element={<LoginPage />} />
             <Route exact path="/recover" element={<RecoverHDWalletPage />} />
-            <Route exact path="/create-wallet" element={<CreateWalletPage />} />
+            <Route exact path="/create-wallet" element={<CreateHDWalletPage />} />
             <Route exact path="/download-native-wallet" element={<DownloadNativeWalletPage />} />
             <Route exact path="/get-started" element={<GetStartedPage />} />
             <Route exact path="/privacy" element={<Privacy />} />

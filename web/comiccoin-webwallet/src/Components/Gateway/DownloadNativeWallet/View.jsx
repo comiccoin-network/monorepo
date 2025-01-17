@@ -1,3 +1,4 @@
+// src/Components/Gateway/DownloadNativeWallet/View.jsx
 import React from 'react';
 import { Monitor, Globe, ArrowRight, Shield, Github, CheckCircle } from 'lucide-react';
 import { Link } from "react-router-dom";

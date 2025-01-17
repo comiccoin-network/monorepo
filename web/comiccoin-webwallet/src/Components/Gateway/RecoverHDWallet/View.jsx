@@ -1,3 +1,4 @@
+// src/Components/Gateway/RecoverHDWallet/View.jsx
 import React, { useState } from 'react';
 import {
   Globe,
