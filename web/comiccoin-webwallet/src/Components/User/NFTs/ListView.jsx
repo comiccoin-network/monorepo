@@ -255,9 +255,9 @@ const NFTListPage = () => {
         </div>
 
         {/* Search */}
-        <div className="w-full max-w-[800px] mt-8">
+        {(searchTerm || filteredNFTs.length !== 0) &&<div className="w-full max-w-[800px] mt-8">
           <SearchBar onSearch={setSearchTerm} />
-        </div>
+        </div>}
 
         {/* NFT Container */}
         <div className="w-full max-w-[800px] mt-8 bg-white rounded-xl">

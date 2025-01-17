@@ -1,3 +1,4 @@
+// src/Hooks/useNFTCollection.jsx
 import { useState, useEffect, useMemo } from 'react';
 import { useNFTTransactions } from './useNFTTransactions';
 import { fetchNFTMetadata } from '../Services/NFTMetadataService';
@@ -43,7 +44,15 @@ export const useNFTCollection = (walletAddress) => {
   // Fetch metadata for owned NFTs
   useEffect(() => {
     const fetchMetadataForNFTs = async () => {
-      if (txLoading || ownedNFTs.size === 0) return;
+      // Only set loading true if we're actually going to fetch something
+      if (txLoading) return;
+
+      // If transactions are loaded but there are no owned NFTs, we're done
+      if (!txLoading && ownedNFTs.size === 0) {
+        setLoading(false);
+        setNftCollection([]);
+        return;
+      }
 
       setLoading(true);
       const nftsWithMetadata = [];
