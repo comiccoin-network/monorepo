@@ -1,6 +1,6 @@
 // src/Components/User/NFTs/DetailView.jsx
 import React, { useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Loader2,
@@ -16,6 +16,8 @@ import {
   File,
   Star,
   TrendingUp,
+  SendHorizontal,
+  Flame,
   Link as LinkIcon
 } from 'lucide-react';
 
@@ -135,6 +137,39 @@ const MediaTabs = ({ activeTab, onTabChange, metadata }) => {
           {label}
         </button>
       ))}
+    </div>
+  );
+};
+
+const ActionButtons = ({ tokenId }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-purple-100 rounded-xl">
+          <TrendingUp className="w-5 h-5 text-purple-600" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900">Actions</h2>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <button
+          onClick={() => navigate(`/transfer/${tokenId}`)}
+          className="flex items-center justify-center gap-2 px-6 py-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors"
+        >
+          <SendHorizontal className="w-5 h-5" />
+          <span className="font-medium">Transfer</span>
+        </button>
+
+        <button
+          onClick={() => navigate(`/burn/${tokenId}`)}
+          className="flex items-center justify-center gap-2 px-6 py-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
+        >
+          <Flame className="w-5 h-5" />
+          <span className="font-medium">Burn</span>
+        </button>
+      </div>
     </div>
   );
 };
@@ -362,6 +397,9 @@ const NFTDetailPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* New Action Buttons Section */}
+            <ActionButtons tokenId={tokenId} />
 
             {/* Attributes Card */}
             <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
