@@ -13,13 +13,62 @@ import {
   Share2,
   File,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Copy
 } from 'lucide-react';
 
 import { useNFTMetadata } from '../../../Hooks/useNFTMetadata';
 import { convertIPFSToGatewayURL } from '../../../Services/NFTMetadataService';
 import NavigationMenu from "../../User/NavigationMenu/View";
 import FooterMenu from "../../User/FooterMenu/View";
+
+// ShareButton component with feedback states
+const ShareButton = ({ tokenMetadataUri, metadata, tokenId }) => {
+  const [shareState, setShareState] = useState('idle'); // idle, copying, success, error
+
+  const handleShare = async () => {
+    if (!tokenMetadataUri) return;
+
+    setShareState('copying');
+    try {
+      await navigator.clipboard.writeText(tokenMetadataUri);
+      setShareState('success');
+      setTimeout(() => setShareState('idle'), 2000);
+    } catch (error) {
+      setShareState('error');
+      setTimeout(() => setShareState('idle'), 3000);
+    }
+  };
+
+  const getButtonStyles = () => {
+    const baseStyles = "p-2 rounded-lg transition-all duration-200 flex items-center gap-2";
+
+    switch (shareState) {
+      case 'copying':
+        return `${baseStyles} bg-gray-100 text-gray-400 cursor-wait`;
+      case 'success':
+        return `${baseStyles} bg-green-50 text-green-600`;
+      case 'error':
+        return `${baseStyles} bg-red-50 text-red-600`;
+      default:
+        return `${baseStyles} text-gray-500 hover:text-gray-700 hover:bg-gray-100`;
+    }
+  };
+
+  return (
+    <button
+      onClick={handleShare}
+      disabled={shareState === 'copying'}
+      className={getButtonStyles()}
+      title="Copy Metadata URI to clipboard"
+    >
+      {shareState === 'copying' && <Loader2 className="w-5 h-5 animate-spin" />}
+      {shareState === 'success' && <CheckCircle2 className="w-5 h-5" />}
+      {shareState === 'error' && <XCircle className="w-5 h-5" />}
+      {shareState === 'idle' && <Copy className="w-5 h-5" />}
+    </button>
+  );
+};
 
 const DownloadButton = ({ onClick, icon: Icon, label, variant = 'primary' }) => {
   const [downloadState, setDownloadState] = useState('idle'); // idle, loading, success, error
@@ -223,22 +272,21 @@ const NFTDetailPage = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-         {/* Media Preview Card */}
-         <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
-           <div className="flex items-center gap-3 mb-6">
-             <div className="p-2 bg-purple-100 rounded-xl">
-               <ImageIcon className="w-5 h-5 text-purple-600" />
-             </div>
-             <h2 className="text-xl font-bold text-gray-900">NFT Preview</h2>
-             <div className="ml-auto flex gap-2">
-               <button
-                 className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                 title="Share NFT"
-               >
-                 <Share2 className="w-5 h-5" />
-               </button>
-             </div>
-           </div>
+          {/* Media Preview Card */}
+          <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-purple-100 rounded-xl">
+                <ImageIcon className="w-5 h-5 text-purple-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">NFT Preview</h2>
+              <div className="ml-auto">
+                <ShareButton
+                  tokenMetadataUri={tokenMetadataUri}
+                  metadata={metadata}
+                  tokenId={tokenId}
+                />
+              </div>
+            </div>
 
             {/* Media Tabs */}
             <MediaTabs
@@ -288,34 +336,35 @@ const NFTDetailPage = () => {
             </div>
 
             {/* Download Section */}
-           <div className="bg-gray-50 rounded-xl p-4">
-             <h3 className="text-sm font-medium text-gray-600 mb-3">Downloads</h3>
-             <div className="flex flex-wrap gap-3">
-               {metadata?.image && (
-                 <DownloadButton
-                   onClick={downloadImage}
-                   icon={ImageIcon}
-                   label="Download Image"
-                   variant="primary"
-                 />
-               )}
-               {metadata?.animation_url && (
-                 <DownloadButton
-                   onClick={downloadAnimation}
-                   icon={Play}
-                   label="Download Animation"
-                   variant="secondary"
-                 />
-               )}
-               <DownloadButton
-                 onClick={downloadMetadata}
-                 icon={File}
-                 label="Download Metadata"
-                 variant="tertiary"
-               />
-             </div>
+            <div className="bg-gray-50 rounded-xl p-4">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">Downloads</h3>
+              <div className="flex flex-wrap gap-3">
+                {metadata?.image && (
+                  <DownloadButton
+                    onClick={downloadImage}
+                    icon={ImageIcon}
+                    label="Download Image"
+                    variant="primary"
+                  />
+                )}
+                {metadata?.animation_url && (
+                  <DownloadButton
+                    onClick={downloadAnimation}
+                    icon={Play}
+                    label="Download Animation"
+                    variant="secondary"
+                  />
+                )}
+                <DownloadButton
+                  onClick={downloadMetadata}
+                  icon={File}
+                  label="Download Metadata"
+                  variant="tertiary"
+                />
+              </div>
             </div>
           </div>
+
           {/* NFT Details Card */}
           <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
             <div className="flex items-center gap-3 mb-6">
