@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"bytes"
 	"context"
 	"log"
 	"log/slog"
@@ -182,6 +183,32 @@ func (r *BlockDataRepo) GetByBlockTransactionTimestamp(ctx context.Context, time
 
 		for _, tx := range blockdata.Trans {
 			if tx.TimeStamp == timestamp {
+				res = blockdata
+				return nil // Complete early the loop iteration.
+			}
+		}
+
+		// Return nil to indicate success because non-nil's indicate error.
+		return nil
+	})
+	return res, err
+}
+
+func (r *BlockDataRepo) GetByTransactionNonce(ctx context.Context, txNonce *big.Int) (*domain.BlockData, error) {
+	var res *domain.BlockData
+	err := r.dbClient.Iterate(func(key, value []byte) error {
+		blockdata, err := domain.NewBlockDataFromDeserialize(value)
+		if err != nil {
+			r.logger.Error("failed to deserialize",
+				slog.Any("txNonce", txNonce),
+				slog.String("key", string(key)),
+				slog.String("value", string(value)),
+				slog.Any("error", err))
+			return err
+		}
+
+		for _, tx := range blockdata.Trans {
+			if bytes.Compare(tx.SignedTransaction.Transaction.NonceBytes, txNonce.Bytes()) == 0 {
 				res = blockdata
 				return nil // Complete early the loop iteration.
 			}
