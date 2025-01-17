@@ -236,38 +236,42 @@ const NFTListPage = () => {
               {transactions.map((tx) => {
                 const isReceived = tx.to.toLowerCase() === currentWallet.address.toLowerCase();
                 return (
-                  <div key={tx.id} className="p-6 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <ImageIcon className="w-8 h-8 text-purple-300" />
-                      </div>
-
-                      <div className="flex-grow">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-gray-900">NFT #{tx.tokenId || 'Unknown'}</h3>
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            isReceived ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {isReceived ? 'Received' : 'Sent'}
-                          </span>
+                    <Link
+                      key={tx.id}
+                      to={`/nft/${tx.tokenId}`}
+                      className="block p-6 hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <ImageIcon className="w-8 h-8 text-purple-300" />
                         </div>
 
-                        <div className="text-sm text-gray-500 space-y-1">
-                          <p>Transaction: {tx.id.slice(0, 8)}...{tx.id.slice(-6)}</p>
-                          <p>
-                            {isReceived ? 'From: ' : 'To: '}
-                            {isReceived ? tx.from.slice(0, 8) : tx.to.slice(0, 8)}...
-                            {isReceived ? tx.from.slice(-6) : tx.to.slice(-6)}
-                          </p>
+                        <div className="flex-grow">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-medium text-gray-900">NFT #{tx.tokenId || 'Unknown'}</h3>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              isReceived ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {isReceived ? 'Received' : 'Sent'}
+                            </span>
+                          </div>
+
+                          <div className="text-sm text-gray-500 space-y-1">
+                            <p>Transaction: {tx.id.slice(0, 8)}...{tx.id.slice(-6)}</p>
+                            <p>
+                              {isReceived ? 'From: ' : 'To: '}
+                              {isReceived ? tx.from.slice(0, 8) : tx.to.slice(0, 8)}...
+                              {isReceived ? tx.from.slice(-6) : tx.to.slice(-6)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors">
+                          View Details
+                          <ArrowRight className="w-4 h-4" />
                         </div>
                       </div>
-
-                      <button className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-                        View Details
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+                    </Link>
                 );
               })}
             </div>
