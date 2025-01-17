@@ -1,23 +1,12 @@
 import React from 'react';
-import {
-  Monitor,
-  Smartphone,
-  Github,
-  Download,
-  Apple,
-  Globe,
-  Coins,
-  AlertCircle
-} from 'lucide-react';
+import { Monitor, Globe, ArrowRight, Shield, Github, CheckCircle } from 'lucide-react';
+import { Link } from "react-router-dom";
 
-const DownloadNativeWalletPage = () => {
+const WindowsDownloadPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      {/* Skip to main content link for keyboard users */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
-      >
+      {/* Skip to main content link */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50">
         Skip to main content
       </a>
 
@@ -25,218 +14,140 @@ const DownloadNativeWalletPage = () => {
       <div className="bg-purple-900 text-white py-3 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-center sm:text-left">
           <div className="flex items-center gap-2 mb-2 sm:mb-0">
-            <Monitor className="h-5 w-5" />
-            <span>Native Wallet Downloads - <strong>v1.2.0</strong></span>
+            <Globe className="h-5 w-5" />
+            <span>You're viewing the <strong>Native Wallet Download</strong> page</span>
           </div>
-          <a
-            href="/"
+          <Link
+            to="/"
             className="text-purple-200 hover:text-white flex items-center gap-1 text-sm"
           >
             <Globe className="h-4 w-4" />
-            Switch to Web Wallet
-          </a>
+            Switch to Web Wallet →
+          </Link>
         </div>
       </div>
 
-      {/* Header Navigation */}
-      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white" role="navigation">
+      {/* Navigation */}
+      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center space-x-2">
-              <Coins className="h-8 w-8" />
+              <Monitor className="h-8 w-8" />
               <span className="text-2xl font-bold" style={{fontFamily: 'Comic Sans MS, cursive'}}>
                 ComicCoin Native Wallet
               </span>
             </div>
             <div className="flex space-x-4">
-              <a href="/help" className="text-white hover:text-purple-200 px-3 py-2">Help</a>
-              <a href="/" className="text-white hover:text-purple-200 px-3 py-2">Home</a>
+              <Link to="/" className="text-white hover:text-purple-200 px-3 py-2">
+                Home
+              </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      <main id="main-content" className="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-purple-800 mb-6" style={{fontFamily: 'Comic Sans MS, cursive'}}>
-            Download Native Wallet
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Get the full ComicCoin experience on your preferred device
-          </p>
-        </div>
-
-        {/* Important Notice */}
-        <div className="mb-12 p-6 bg-yellow-50 border border-yellow-200 rounded-xl" role="alert">
-          <div className="flex items-start gap-4">
-            <AlertCircle className="h-6 w-6 text-yellow-600 mt-1 shrink-0" />
-            <div>
-              <h2 className="font-bold text-yellow-800 mb-2">Important Notice</h2>
-              <p className="text-yellow-700">
-                Only download the ComicCoin wallet from official sources listed on this page.
-                Verify the blockchain address matches: <code className="bg-yellow-100 px-2 py-1 rounded font-mono">0xd4e4078ca3495DE5B1d4dB434BEbc5a986197782</code>
+      <main id="main-content" className="flex-grow">
+        {/* Hero Section */}
+        <div className="bg-gradient-to-b from-indigo-600 to-indigo-500 text-white py-16 mb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6" style={{fontFamily: 'Comic Sans MS, cursive'}}>
+                Download ComicCoin Wallet for Windows
+              </h1>
+              <p className="text-xl text-indigo-100 max-w-2xl mx-auto mb-8">
+                Get the official ComicCoin Wallet from the Microsoft Store
               </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Desktop Downloads */}
-        <div className="bg-white rounded-xl p-8 border-2 border-purple-200 mb-8">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="p-4 bg-purple-100 rounded-xl">
-              <Monitor className="h-8 w-8 text-purple-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Desktop Wallet</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Windows */}
-            <div className="p-6 border border-gray-200 rounded-xl hover:border-purple-300 transition-colors">
-              <img
-                src="/api/placeholder/48/48"
-                alt="Windows Logo"
-                className="mb-4 mx-auto"
-              />
-              <h3 className="font-bold text-lg text-center mb-2">Windows</h3>
-              <p className="text-sm text-gray-600 text-center mb-4">Windows 10/11 (64-bit)</p>
-              <a
-                href="https://comiccoin.ca/download/windows"
-                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Download .exe
-              </a>
-            </div>
-
-            {/* macOS */}
-            <div className="p-6 border border-gray-200 rounded-xl hover:border-purple-300 transition-colors">
-              <img
-                src="/api/placeholder/48/48"
-                alt="macOS Logo"
-                className="mb-4 mx-auto"
-              />
-              <h3 className="font-bold text-lg text-center mb-2">macOS</h3>
-              <p className="text-sm text-gray-600 text-center mb-4">Intel & Apple Silicon</p>
-              <a
-                href="https://comiccoin.ca/download/macos"
-                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Download .dmg
-              </a>
-            </div>
-
-            {/* Linux */}
-            <div className="p-6 border border-gray-200 rounded-xl hover:border-purple-300 transition-colors">
-              <img
-                src="/api/placeholder/48/48"
-                alt="Linux Logo"
-                className="mb-4 mx-auto"
-              />
-              <h3 className="font-bold text-lg text-center mb-2">Linux</h3>
-              <p className="text-sm text-gray-600 text-center mb-4">Ubuntu, Debian & more</p>
-              <div className="space-y-2">
-                <a
-                  href="https://comiccoin.ca/download/linux/appimage"
-                  className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Download .AppImage
-                </a>
-                <a
-                  href="https://comiccoin.ca/download/linux/deb"
-                  className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                  .deb package
-                </a>
+              <div className="inline-flex items-center bg-indigo-700 text-sm px-3 py-1 rounded-full">
+                <span className="mr-2">Latest Version:</span>
+                <span className="font-mono font-bold">v{process.env.REACT_APP_NATIVE_BINARY_VERSION}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile Downloads */}
-        <div className="bg-white rounded-xl p-8 border-2 border-purple-200 mb-12">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="p-4 bg-purple-100 rounded-xl">
-              <Smartphone className="h-8 w-8 text-purple-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Mobile Wallet</h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* iOS */}
-            <div className="flex items-center gap-6 p-6 border border-gray-200 rounded-xl hover:border-purple-300 transition-colors">
-              <div className="flex-shrink-0">
-                <img
-                  src="/api/placeholder/120/120"
-                  alt="QR Code for iOS App Store"
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="flex-grow">
-                <h3 className="font-bold text-lg mb-2">iOS App</h3>
-                <p className="text-sm text-gray-600 mb-4">iPhone & iPad</p>
-                <a
-                  href="https://apps.apple.com/app/comiccoin-wallet"
-                  className="w-full px-4 py-2 bg-black hover:bg-gray-900 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-                >
-                  <Apple className="h-4 w-4" />
-                  Download on App Store
-                </a>
-              </div>
-            </div>
-
-            {/* Android */}
-            <div className="flex items-center gap-6 p-6 border border-gray-200 rounded-xl hover:border-purple-300 transition-colors">
-              <div className="flex-shrink-0">
-                <img
-                  src="/api/placeholder/120/120"
-                  alt="QR Code for Google Play Store"
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="flex-grow">
-                <h3 className="font-bold text-lg mb-2">Android App</h3>
-                <p className="text-sm text-gray-600 mb-4">Android 8.0+</p>
-                <div className="space-y-2">
-                  <a
-                    href="https://play.google.com/store/apps/details?id=ca.comiccoin.wallet"
-                    className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-                  >
-                    Get on Play Store
-                  </a>
-                  <a
-                    href="https://comiccoin.ca/download/android/apk"
-                    className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
-                  >
-                    Direct APK Download
-                  </a>
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Download Card */}
+          <div className="max-w-3xl mx-auto mb-12">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-purple-100">
+              <div className="p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-purple-100 rounded-xl">
+                    <Monitor className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Windows App</h2>
+                    <p className="text-purple-600">Available on Microsoft Store</p>
+                  </div>
                 </div>
+
+                <div className="space-y-6 mb-8">
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-4">Features:</h3>
+                    <ul className="grid md:grid-cols-2 gap-4">
+                      <li className="flex items-start gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                        <span className="text-gray-600">Full blockchain node support</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                        <span className="text-gray-600">Automatic updates</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                        <span className="text-gray-600">Enhanced security features</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                        <span className="text-gray-600">Offline transaction signing</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="flex items-start gap-3 bg-blue-50 p-4 rounded-xl">
+                    <Shield className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                    <p className="text-sm text-blue-700">
+                      Download only from the Microsoft Store to ensure you're getting the genuine, verified ComicCoin Wallet app.
+                    </p>
+                  </div>
+                </div>
+
+                <a
+                  href={process.env.REACT_APP_NATIVE_BINARY_WINDOWS_DOWNLOAD_LINK}
+                  className="w-full bg-purple-600 text-white px-6 py-4 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-4"
+                >
+                  Download from Microsoft Store
+                  <ArrowRight className="h-5 w-5" />
+                </a>
+
+                <p className="text-center text-sm text-gray-500">
+                  By downloading, you agree to our Terms of Service and Privacy Policy
+                </p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Additional Information */}
-        <div className="bg-gray-50 rounded-xl p-6">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="font-bold text-lg mb-2">System Requirements</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>• Windows 10/11 (64-bit)</li>
-                <li>• macOS 11.0 or later</li>
-                <li>• Linux: Ubuntu 20.04+, Debian 11+</li>
-                <li>• iOS 14.0 or later</li>
-                <li>• Android 8.0 or later</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold text-lg mb-2">Blockchain Information</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>• Full node: ~2GB storage required</li>
-                <li>• Light node: ~100MB storage required</li>
-                <li>• Initial sync time: 10-15 minutes</li>
+          {/* System Requirements */}
+          <div className="max-w-3xl mx-auto mb-12">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">System Requirements</h3>
+            <div className="bg-white rounded-xl border-2 border-purple-100 p-6">
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-purple-600">•</span>
+                  <span className="text-gray-600">Windows 10 version 17763.0 or higher</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-purple-600">•</span>
+                  <span className="text-gray-600">64-bit processor (x64)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-purple-600">•</span>
+                  <span className="text-gray-600">4 GB RAM minimum (8 GB recommended)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-purple-600">•</span>
+                  <span className="text-gray-600">1 GB available hard disk space</span>
+                </li>
               </ul>
             </div>
           </div>
@@ -244,7 +155,7 @@ const DownloadNativeWalletPage = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-8 mt-12">
+      <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-8 mt-auto">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div className="text-center md:text-left">
@@ -257,9 +168,7 @@ const DownloadNativeWalletPage = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="https://comiccoin.ca" className="hover:text-purple-200">
-                    Project Website
-                  </a>
+                  <a href="https://comiccoin.ca" className="hover:text-purple-200">Project Website</a>
                 </li>
               </ul>
             </div>
@@ -287,7 +196,7 @@ const DownloadNativeWalletPage = () => {
             </div>
           </div>
           <div className="text-center pt-4 border-t border-purple-500">
-            <p>© 2025 ComicCoin Native Wallet. All rights reserved.</p>
+            <p>© 2025 ComicCoin Wallet. All rights reserved.</p>
           </div>
         </div>
       </footer>
@@ -295,4 +204,4 @@ const DownloadNativeWalletPage = () => {
   );
 };
 
-export default DownloadNativeWalletPage;
+export default WindowsDownloadPage;
