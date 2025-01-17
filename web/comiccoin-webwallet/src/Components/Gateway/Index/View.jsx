@@ -1,7 +1,17 @@
-// src/Components/Gateway/Index/View.jsx
 import React from 'react';
 import { Link } from "react-router-dom";
-import { Shield, Wallet, Key, RefreshCw, Github, ArrowRight, Monitor, Globe, CheckCircle } from 'lucide-react';
+import {
+  Shield,
+  Wallet,
+  Key,
+  RefreshCw,
+  Github,
+  ArrowRight,
+  Monitor,
+  Globe,
+  CheckCircle,
+  Apple
+} from 'lucide-react';
 import FooterMenu from "../FooterMenu/View";
 
 const IndexPage = () => {
@@ -25,7 +35,7 @@ const IndexPage = () => {
             aria-label="Download Native Wallet"
           >
             <Monitor aria-hidden="true" className="h-4 w-4" />
-            Looking for our Native Wallet? Get it here
+            Looking for our Desktop Wallet? Get it here
             <span aria-hidden="true">→</span>
           </a>
         </div>
@@ -64,7 +74,7 @@ const IndexPage = () => {
             Your ComicCoin Wallet<br />Anywhere You Need It
           </h1>
           <p className="text-xl text-gray-700 max-w-2xl mx-auto">
-            Choose between our secure web wallet for instant access or download our Windows app
+            Choose between our secure web wallet for instant access or download our desktop app
             for enhanced features and security.
           </p>
         </div>
@@ -108,7 +118,7 @@ const IndexPage = () => {
               </div>
             </div>
 
-            {/* Windows App Card */}
+            {/* Desktop App Card */}
             <div className="border-2 border-purple-500 rounded-xl p-6 bg-purple-50">
               <div className="flex flex-col h-full">
                 <div className="flex items-center gap-3 mb-4">
@@ -116,7 +126,7 @@ const IndexPage = () => {
                     <Monitor className="h-8 w-8 text-purple-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-purple-800">Windows App</h3>
+                    <h3 className="text-xl font-bold text-purple-800">Desktop App</h3>
                     <p className="text-purple-600">v{process.env.REACT_APP_NATIVE_BINARY_VERSION}</p>
                   </div>
                 </div>
@@ -134,13 +144,24 @@ const IndexPage = () => {
                     <span>Offline transaction signing</span>
                   </li>
                 </ul>
-                <a
-                  href={process.env.REACT_APP_NATIVE_BINARY_WINDOWS_DOWNLOAD_LINK}
-                  className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                >
-                  Download from Microsoft Store
-                  <ArrowRight className="w-5 h-5" />
-                </a>
+                <div className="space-y-3">
+                  <a
+                    href={process.env.REACT_APP_NATIVE_BINARY_WINDOWS_DOWNLOAD_LINK}
+                    className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Monitor className="w-5 h-5" />
+                    Download from Microsoft Store
+                    <ArrowRight className="w-5 h-5" />
+                  </a>
+                  <a
+                    href={process.env.REACT_APP_NATIVE_BINARY_MACOS_DOWNLOAD_LINK}
+                    className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Apple className="w-5 h-5" />
+                    Download for MacOS
+                    <ArrowRight className="w-5 h-5" />
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -205,7 +226,7 @@ const IndexPage = () => {
         </section>
       </main>
 
-     <FooterMenu />
+      <FooterMenu />
     </div>
   );
 };
