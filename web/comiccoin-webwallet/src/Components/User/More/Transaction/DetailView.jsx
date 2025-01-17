@@ -1,4 +1,5 @@
 // src/Components/User/More/Transaction/DetailView.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import {
@@ -24,6 +25,9 @@ import { formatBytes, base64ToHex } from '../../../../Utils/byteUtils';
 import NavigationMenu from "../../NavigationMenu/View";
 import FooterMenu from "../../FooterMenu/View";
 import walletService from '../../../../Services/WalletService';
+
+
+const NFT_STORAGE_API_URL = process.env.REACT_APP_NFTSTORAGE_API_URL || 'http://localhost:9000';
 
 function TransactionDetailPage() {
     const { nonceString } = useParams();
@@ -213,7 +217,7 @@ function TransactionDetailPage() {
                                 <ImageIcon className="w-6 h-6 text-purple-600" />
                             )}
                             <h2 className="text-xl font-bold">
-                                {currentTransaction.type === 'coin' ? 'Coin Transfer' : 'NFT Transaction'}
+                                {currentTransaction.type === 'coin' ? 'Coin Transaction' : 'NFT Transaction'}
                             </h2>
                         </div>
                     </div>
@@ -304,42 +308,83 @@ function TransactionDetailPage() {
                         </div>
 
                         {currentTransaction.type === 'token' && (
-                            <div className="border-t border-gray-100 pt-6">
-                                <h3 className="text-lg font-bold text-gray-900 mb-4">NFT Details</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <h4 className="text-sm font-medium text-gray-500 mb-2">Token ID</h4>
-                                        <p className="text-lg font-bold text-gray-900">
-                                            {currentTransaction.token_id_string || formatBytes(currentTransaction.token_id_bytes)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <h4 className="text-sm font-medium text-gray-500 mb-2">Token Nonce</h4>
-                                        <p className="text-lg font-bold text-gray-900">
-                                            {currentTransaction.token_nonce_string || formatBytes(currentTransaction.token_nonce_bytes)}
-                                        </p>
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <h4 className="text-sm font-medium text-gray-500 mb-2">Metadata URI</h4>
-                                        <div className="flex items-center gap-2">
-                                            <code className="text-sm bg-gray-50 p-2 rounded flex-1 break-all">
-                                                {currentTransaction.token_metadata_uri || 'N/A'}
-                                            </code>
-                                            {currentTransaction.token_metadata_uri && (
-                                                <a
-                                                    href={currentTransaction.token_metadata_uri}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                                >
-                                                    <ExternalLink className="w-4 h-4" />
-                                                </a>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+    <div className="border-t border-gray-100 pt-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">NFT Details</h3>
+
+        {/* NFT Preview Link */}
+        <div className="mb-6">
+            <Link
+                to={`/nft?token_id=${currentTransaction.token_id_string}&token_metadata_uri=${currentTransaction.token_metadata_uri}`}
+                className="block p-6 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors"
+            >
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-purple-100 rounded-lg">
+                        <ImageIcon className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                        <h4 className="text-lg font-semibold text-purple-900">View NFT Details</h4>
+                        <p className="text-purple-600">Click to see the full NFT preview and metadata</p>
+                    </div>
+                    <ArrowLeft className="w-5 h-5 text-purple-600 ml-auto rotate-180" />
+                </div>
+            </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h4 className="text-sm font-medium text-gray-500 mb-2">Token ID</h4>
+                <p className="text-lg font-bold text-gray-900">
+                    {currentTransaction.token_id_string || formatBytes(currentTransaction.token_id_bytes)}
+                </p>
+            </div>
+            <div>
+                <h4 className="text-sm font-medium text-gray-500 mb-2">Token Nonce</h4>
+                <p className="text-lg font-bold text-gray-900">
+                    {currentTransaction.token_nonce_string || formatBytes(currentTransaction.token_nonce_bytes)}
+                </p>
+            </div>
+            <div className="md:col-span-2">
+                <h4 className="text-sm font-medium text-gray-500 mb-2">Metadata URI</h4>
+                <div className="space-y-3">
+                    {/* IPFS Storage Link */}
+                    <div className="flex items-center gap-2">
+                        <code className="text-sm bg-gray-50 p-2 rounded flex-1 break-all">
+                            {currentTransaction.token_metadata_uri || 'N/A'}
+                        </code>
+                        {currentTransaction.token_metadata_uri && (
+                           <a
+                                href={`${NFT_STORAGE_API_URL}/ipfs/${currentTransaction.token_metadata_uri.replace('ipfs://', '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                title="View on NFT Storage"
+                            >
+                                <ExternalLink className="w-4 h-4" />
+                            </a>
                         )}
+                    </div>
+
+                    {/* Public IPFS Gateway Link */}
+                    {currentTransaction.token_metadata_uri && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <FileText className="w-4 h-4" />
+                            <span>View via public IPFS gateway:</span>
+                            <a
+
+                                href={`https://ipfs.io/ipfs/${currentTransaction.token_metadata_uri.replace('ipfs://', '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-700 hover:underline break-all"
+                            >
+                                ipfs.io gateway
+                            </a>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    </div>
+)}
 
                         {(currentTransaction.data || currentTransaction.data_string) && (
                             <div className="border-t border-gray-100 pt-6">
