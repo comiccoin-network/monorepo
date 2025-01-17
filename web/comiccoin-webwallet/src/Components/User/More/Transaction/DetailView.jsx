@@ -1,5 +1,4 @@
 // src/Components/User/More/Transaction/DetailView.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import {
@@ -25,9 +24,6 @@ import { formatBytes, base64ToHex } from '../../../../Utils/byteUtils';
 import NavigationMenu from "../../NavigationMenu/View";
 import FooterMenu from "../../FooterMenu/View";
 import walletService from '../../../../Services/WalletService';
-
-
-const NFT_STORAGE_API_URL = process.env.REACT_APP_NFTSTORAGE_API_URL || 'http://localhost:9000';
 
 function TransactionDetailPage() {
     const { nonceString } = useParams();
@@ -353,7 +349,7 @@ function TransactionDetailPage() {
                         </code>
                         {currentTransaction.token_metadata_uri && (
                            <a
-                                href={`${NFT_STORAGE_API_URL}/ipfs/${currentTransaction.token_metadata_uri.replace('ipfs://', '')}`}
+                                href={`${process.env.REACT_APP_NFTSTORAGE_API_URL}/ipfs/${currentTransaction.token_metadata_uri.replace('ipfs://', '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
