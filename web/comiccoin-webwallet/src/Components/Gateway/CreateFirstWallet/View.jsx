@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import { HDNodeWallet } from "ethers/wallet";
 
 import { useWallet } from '../../../Hooks/useWallet';
+import FooterMenu from "../FooterMenu/View";
 
 
 const CreateFirstWalletPage = () => {
@@ -445,13 +446,7 @@ const CreateFirstWalletPage = () => {
         </main>
 
         {/* Footer */}
-        <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-8 mt-auto">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center pt-4">
-              <p>© 2025 ComicCoin Web Wallet. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
+        <FooterMenu />
       </div>
     );
 };

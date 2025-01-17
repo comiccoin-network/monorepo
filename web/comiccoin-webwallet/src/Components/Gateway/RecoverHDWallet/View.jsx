@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { Link } from "react-router-dom";
 
+import FooterMenu from "../FooterMenu/View";
+
 const RecoverExistingWalletPage = () => {
   const [showPhrase, setShowPhrase] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -303,11 +305,7 @@ const RecoverExistingWalletPage = () => {
         </div>
       </main>
 
-      <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p>© 2025 ComicCoin Web Wallet. All rights reserved.</p>
-        </div>
-      </footer>
+      <FooterMenu />
     </div>
   );
 };
