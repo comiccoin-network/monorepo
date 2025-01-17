@@ -29,13 +29,13 @@ func NewBlockDataRepo(cfg *config.Configuration, logger *slog.Logger, client *mo
 	// ctx := context.Background()
 	uc := client.Database(cfg.DB.Name).Collection("blockdata")
 
-	// For debugging purposes only or if you are going to recreate new indexes.
-	if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
-		logger.Warn("failed deleting all indexes for blockdata",
-			slog.Any("err", err))
-
-		// Do not crash app, just continue.
-	}
+	// // For debugging purposes only or if you are going to recreate new indexes.
+	// if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
+	// 	logger.Warn("failed deleting all indexes for blockdata",
+	// 		slog.Any("err", err))
+	//
+	// 	// Do not crash app, just continue.
+	// }
 
 	// Note:
 	// * 1 for ascending
