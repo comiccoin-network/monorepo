@@ -128,6 +128,8 @@ const NFTListPage = () => {
     );
   }
 
+  console.log("transactions:", transactions);
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       <NavigationMenu onSignOut={handleSignOut} />
@@ -238,7 +240,7 @@ const NFTListPage = () => {
                 return (
                     <Link
                       key={tx.id}
-                      to={`/nft/${tx.tokenId}`}
+                      to={`/nft?token_id=${tx.tokenId}&token_metadata_uri=${tx.tokenMetadataURI}`}
                       className="block p-6 hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-6">
