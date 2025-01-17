@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 
 import FooterMenu from "../FooterMenu/View";
 
-const RecoverExistingWalletPage = () => {
+const RecoverHDWalletPage = () => {
   const [showPhrase, setShowPhrase] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -310,4 +310,4 @@ const RecoverExistingWalletPage = () => {
   );
 };
 
-export default RecoverExistingWalletPage;
+export default RecoverHDWalletPage;
