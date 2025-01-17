@@ -1,4 +1,3 @@
-// src/Components/User/ReceiveCoin/View.jsx
 import React, { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import {
@@ -109,7 +108,7 @@ const ReceivePage = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       <NavigationMenu />
 
-      <main className="flex-grow max-w-2xl mx-auto px-6 py-12 md:py-12 mb-16 md:mb-0">
+      <main className="flex-grow max-w-4xl mx-auto px-6 py-12 md:py-12 mb-16 md:mb-0">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-purple-800 mb-4">Receive</h1>
@@ -135,11 +134,11 @@ const ReceivePage = () => {
             {/* QR Code with enhanced size and actions */}
             <div className="relative">
               <div className="flex justify-center">
-                <div className="p-6 bg-white rounded-2xl border-2 border-gray-100 w-full max-w-md">
+                <div className="p-8 bg-white rounded-2xl border-2 border-gray-100 w-full max-w-2xl">
                   <QRCodeSVG
                     id="wallet-qr"
                     value={currentWallet.address}
-                    size={400}
+                    size={500}
                     className="w-full h-auto"
                     level="H"
                     includeMargin={true}
