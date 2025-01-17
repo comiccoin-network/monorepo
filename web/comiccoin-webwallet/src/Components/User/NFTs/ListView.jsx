@@ -24,9 +24,9 @@ const NFTCard = ({ nft, currentWallet }) => {
     <div className="group">
       <Link
         to={`/nft?token_id=${nft.tokenId}&token_metadata_uri=${lastTx.tokenMetadataURI}`}
-        className="block bg-white rounded-lg overflow-hidden transition-all duration-200 hover:shadow-xl border-2 border-purple-100 hover:border-purple-300"
+        className="block bg-white rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-xl border-2 border-purple-100 hover:border-purple-300"
       >
-        <div className="relative aspect-[2/3] overflow-hidden bg-gradient-to-b from-purple-50 to-white">
+        <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-purple-50 to-white">
           {imageUrl && !imageError ? (
             <img
               src={imageUrl}
@@ -36,13 +36,13 @@ const NFTCard = ({ nft, currentWallet }) => {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <ImageIcon className="w-16 h-16 text-purple-200" />
+              <ImageIcon className="w-24 h-24 text-purple-200" />
             </div>
           )}
 
           {/* Status Badge */}
-          <div className="absolute top-3 left-3">
-            <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+          <div className="absolute top-4 left-4">
+            <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
               isReceived
                 ? 'bg-green-100 text-green-800 border border-green-200'
                 : 'bg-blue-100 text-blue-800 border border-blue-200'
@@ -57,14 +57,14 @@ const NFTCard = ({ nft, currentWallet }) => {
           </div>
 
           {/* Hover Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-purple-900/80 via-purple-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="absolute bottom-4 left-4 right-4">
+          <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 via-purple-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute bottom-6 left-6 right-6">
               <div className="text-white">
-                <div className="flex items-center gap-2 mb-2">
-                  <Tag className="w-4 h-4" />
-                  <span className="text-sm">#{nft.tokenId}</span>
+                <div className="flex items-center gap-2 mb-3">
+                  <Tag className="w-5 h-5" />
+                  <span className="text-base font-medium">#{nft.tokenId}</span>
                 </div>
-                <p className="text-sm line-clamp-2 opacity-90">
+                <p className="text-base line-clamp-3 opacity-90">
                   {nft.metadata?.description || 'A unique comic book NFT'}
                 </p>
               </div>
@@ -72,18 +72,18 @@ const NFTCard = ({ nft, currentWallet }) => {
           </div>
         </div>
 
-        <div className="p-4">
-          <h3 className="font-bold text-gray-900 mb-1 line-clamp-1" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+        <div className="p-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
             {nft.metadata?.name || `Comic #${nft.tokenId}`}
           </h3>
 
-          <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
+          <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
             <Clock className="w-4 h-4" />
             <span>{new Date(lastTx.timestamp).toLocaleDateString()}</span>
             {nft.metadata?.attributes?.grade && (
               <>
                 <span className="w-1 h-1 rounded-full bg-gray-300" />
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-2">
                   <Coins className="w-4 h-4 text-yellow-500" />
                   Grade: {nft.metadata.attributes.grade}
                 </span>
@@ -240,89 +240,89 @@ const NFTListPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      <NavigationMenu onSignOut={handleSignOut} />
+   <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+     <NavigationMenu onSignOut={handleSignOut} />
 
-      <div className="flex-grow flex flex-col items-center px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="w-full max-w-[800px]">
-          <h1 className="text-4xl font-bold text-[#5D37AF] mb-2" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
-            My Comic Collection
-          </h1>
-          <p className="text-gray-600">
-            Manage and showcase your digital comic book collectibles
-          </p>
-        </div>
+     <div className="flex-grow flex flex-col items-center px-6 sm:px-8 lg:px-12 py-12">
+       {/* Header */}
+       <div className="w-full max-w-[1200px]">
+         <h1 className="text-4xl font-bold text-[#5D37AF] mb-2" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+           My Comic Collection
+         </h1>
+         <p className="text-gray-600">
+           Manage and showcase your digital comic book collectibles
+         </p>
+       </div>
 
-        {/* Search */}
-        {(searchTerm || filteredNFTs.length !== 0) &&<div className="w-full max-w-[800px] mt-8">
+       {/* Search */}
+        {(searchTerm || filteredNFTs.length !== 0) && <div className="w-full max-w-[1200px] mt-8">
           <SearchBar onSearch={setSearchTerm} />
         </div>}
 
         {/* NFT Container */}
-        <div className="w-full max-w-[800px] mt-8 bg-white rounded-xl">
-          <div className="flex items-center justify-between p-4 border-b border-gray-100">
-            <div className="flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-[#5D37AF]" />
-              <h2 className="text-lg font-semibold">Your Comics</h2>
-              <span className="text-sm text-gray-500">({filteredNFTs.length} total)</span>
-            </div>
+       <div className="w-full max-w-[1200px] mt-8 bg-white rounded-xl">
+         <div className="flex items-center justify-between p-6 border-b border-gray-100">
+           <div className="flex items-center gap-3">
+             <ImageIcon className="w-6 h-6 text-[#5D37AF]" />
+             <h2 className="text-xl font-semibold">Your Comics</h2>
+             <span className="text-sm text-gray-500">({filteredNFTs.length} total)</span>
+           </div>
 
-            <a
-              href="https://cpscapsule.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-[#5D37AF] text-white rounded-lg hover:bg-[#4D2D8F] transition-colors"
-            >
-              Grade New Comics
-              <ExternalLink className="w-4 h-4" />
-            </a>
-          </div>
+           <a
+             href="https://cpscapsule.com"
+             target="_blank"
+             rel="noopener noreferrer"
+             className="flex items-center gap-2 px-6 py-3 bg-[#5D37AF] text-white rounded-lg hover:bg-[#4D2D8F] transition-colors"
+           >
+             Grade New Comics
+             <ExternalLink className="w-4 h-4" />
+           </a>
+         </div>
 
-          <div className="p-4">
-            {nftLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-[#5D37AF]" />
-                <span className="ml-2 text-gray-600">Loading your comics...</span>
-              </div>
-            ) : filteredNFTs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-4">
-                  <ImageOff className="w-8 h-8 text-[#5D37AF]" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No Comics Found
-                </h3>
-                <p className="text-gray-500 mb-6 text-center">
-                  {searchTerm ? "Try adjusting your search" : "Start your collection by getting your comics professionally graded"}
-                </p>
-                <a
-                  href="https://cpscapsule.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#5D37AF] text-white rounded-lg hover:bg-[#4D2D8F] transition-colors"
-                >
-                  Submit Comics for Grading
-                  <ArrowUpRight className="w-4 h-4" />
-                </a>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredNFTs.map((nft) => (
-                  <NFTCard
-                    key={nft.tokenId}
-                    nft={nft}
-                    currentWallet={currentWallet}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+         <div className="p-6">
+           {nftLoading ? (
+             <div className="flex items-center justify-center py-12">
+               <Loader2 className="w-8 h-8 animate-spin text-[#5D37AF]" />
+               <span className="ml-3 text-gray-600">Loading your comics...</span>
+             </div>
+           ) : filteredNFTs.length === 0 ? (
+             <div className="flex flex-col items-center justify-center py-16">
+               <div className="w-20 h-20 bg-purple-50 rounded-full flex items-center justify-center mb-6">
+                 <ImageOff className="w-10 h-10 text-[#5D37AF]" />
+               </div>
+               <h3 className="text-xl font-medium text-gray-900 mb-3">
+                 No Comics Found
+               </h3>
+               <p className="text-gray-500 mb-8 text-center max-w-md">
+                 {searchTerm ? "Try adjusting your search" : "Start your collection by getting your comics professionally graded"}
+               </p>
+               <a
+                 href="https://cpscapsule.com"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="inline-flex items-center gap-2 px-8 py-4 bg-[#5D37AF] text-white rounded-lg hover:bg-[#4D2D8F] transition-colors"
+               >
+                 Submit Comics for Grading
+                 <ArrowUpRight className="w-5 h-5" />
+               </a>
+             </div>
+           ) : (
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8">
+               {filteredNFTs.map((nft) => (
+                 <NFTCard
+                   key={nft.tokenId}
+                   nft={nft}
+                   currentWallet={currentWallet}
+                 />
+               ))}
+             </div>
+           )}
+         </div>
+       </div>
+     </div>
 
-      <FooterMenu />
-    </div>
+     <FooterMenu />
+   </div>
   );
 };
 
