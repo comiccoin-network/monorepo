@@ -8,14 +8,109 @@ import {
   AlertCircle,
   Info,
   ArrowRight,
-  ImageOff
+  ImageOff,
+  Grid,
+  List,
+  ArrowUpRight,
+  Clock,
+  Tag
 } from 'lucide-react';
+
 import { useWallet } from '../../../Hooks/useWallet';
 import { useNFTCollection } from '../../../Hooks/useNFTCollection';
 import { convertIPFSToGatewayURL } from '../../../Services/NFTMetadataService';
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 import walletService from '../../../Services/WalletService';
+
+// NFT Card Component
+const NFTCard = ({ nft, currentWallet }) => {
+  const lastTx = nft.transactions[0];
+  const isReceived = lastTx.to.toLowerCase() === currentWallet.address.toLowerCase();
+  const imageUrl = getNFTImageUrl(nft);
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <Link
+      to={`/nft?token_id=${nft.tokenId}&token_metadata_uri=${lastTx.tokenMetadataURI}`}
+      className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border-2 border-gray-100 hover:border-purple-200"
+    >
+      {/* Image Container */}
+      <div className="aspect-square relative overflow-hidden bg-purple-50">
+        {imageUrl && !imageError ? (
+          <img
+            src={imageUrl}
+            alt={nft.metadata?.name || `NFT #${nft.tokenId}`}
+            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-200"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <ImageIcon className="w-12 h-12 text-purple-200" />
+          </div>
+        )}
+        <div className="absolute top-2 right-2">
+          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+            isReceived ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+          }`}>
+            {isReceived ? 'Received' : 'Sent'}
+          </span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        <h3 className="font-semibold text-gray-900 mb-1 truncate">
+          {nft.metadata?.name || `NFT #${nft.tokenId || 'Unknown'}`}
+        </h3>
+
+        <div className="space-y-2">
+          {/* Token ID */}
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Tag className="w-4 h-4" />
+            <span className="truncate">{nft.tokenId}</span>
+          </div>
+
+          {/* Last Transaction Time */}
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Clock className="w-4 h-4" />
+            <span>{new Date(lastTx.timestamp).toLocaleDateString()}</span>
+          </div>
+        </div>
+
+        {/* View Details Button */}
+        <div className="mt-4 flex items-center justify-end">
+          <span className="inline-flex items-center gap-1 text-sm font-medium text-purple-600 group-hover:text-purple-700">
+            View Details
+            <ArrowUpRight className="w-4 h-4" />
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+};
+
+// Helper function to get NFT image URL
+const getNFTImageUrl = (nft) => {
+  if (!nft) return null;
+
+  if (nft.metadata?.image) {
+    return convertIPFSToGatewayURL(nft.metadata.image);
+  }
+
+  if (nft.asset?.content) {
+    try {
+      const blob = new Blob([nft.asset.content], {
+        type: nft.asset.content_type || 'image/png'
+      });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error('Error creating blob URL:', error);
+    }
+  }
+
+  return null;
+};
 
 const NFTListPage = () => {
   const {
@@ -25,20 +120,18 @@ const NFTListPage = () => {
     error: serviceError
   } = useWallet();
 
-  // State management
   const [forceURL, setForceURL] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [error, setError] = useState(null);
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
 
-  // Get the wallet address
   const getWalletAddress = () => {
     if (!currentWallet) return "";
     return currentWallet.address;
   };
 
-  // Use our new NFT Collection hook instead of just transactions
   const {
     nftCollection,
     loading: nftLoading,
@@ -46,7 +139,6 @@ const NFTListPage = () => {
     statistics
   } = useNFTCollection(getWalletAddress());
 
-  // Session checking effect
   useEffect(() => {
     let mounted = true;
 
@@ -55,14 +147,10 @@ const NFTListPage = () => {
         if (!mounted) return;
         setIsLoading(true);
 
-        if (serviceLoading) {
-          return;
-        }
+        if (serviceLoading) return;
 
         if (!currentWallet) {
-          if (mounted) {
-            setForceURL("/login");
-          }
+          if (mounted) setForceURL("/login");
           return;
         }
 
@@ -74,18 +162,14 @@ const NFTListPage = () => {
           setForceURL("");
           setWalletAddress(getWalletAddress());
         }
-
       } catch (error) {
-        console.error('NFTListPage: Session check error:', error);
         if (error.message === "Session expired" && mounted) {
           handleSessionExpired();
         } else if (mounted) {
           setError(error.message);
         }
       } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
+        if (mounted) setIsLoading(false);
       }
     };
 
@@ -102,9 +186,7 @@ const NFTListPage = () => {
     setIsSessionExpired(true);
     logout();
     setError("Your session has expired. Please sign in again.");
-    setTimeout(() => {
-      setForceURL("/login");
-    }, 3000);
+    setTimeout(() => setForceURL("/login"), 3000);
   };
 
   const handleSignOut = () => {
@@ -125,37 +207,12 @@ const NFTListPage = () => {
     );
   }
 
-  // Create blob URL for NFT image
-  const getNFTImageUrl = (nft) => {
-    if (!nft) return null;
-
-    if (nft.asset?.content) {
-      try {
-        // If we have cached asset content, create a blob URL
-        const blob = new Blob([nft.asset.content], {
-          type: nft.asset.content_type || 'image/png'
-        });
-        return URL.createObjectURL(blob);
-      } catch (error) {
-        console.error('Error creating blob URL:', error);
-      }
-    }
-
-    if (nft.metadata?.image) {
-      // Use the existing helper function to convert IPFS URL
-      return convertIPFSToGatewayURL(nft.metadata.image);
-    }
-
-    return null;
-  };
-
-  // console.log("Debugging: nftCollection --->", nftCollection);
-
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       <NavigationMenu onSignOut={handleSignOut} />
 
-      <main className="flex-grow max-w-7xl mx-auto px-4 py-12 mb-16 md:mb-0">
+      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-12 mb-16 md:mb-0">
+        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-purple-800 mb-4">NFT Collection</h1>
           <p className="text-xl text-gray-600">View and manage your NFTs</p>
@@ -169,47 +226,56 @@ const NFTListPage = () => {
           </div>
         )}
 
-        {nftError && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-red-800">Error Loading NFTs</h3>
-                <p className="text-sm text-red-600">{nftError}</p>
+        {/* Stats Card */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-purple-100 rounded-xl">
+                <ImageIcon className="w-5 h-5 text-purple-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Collection Overview</h2>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600">Total NFTs</p>
+                <p className="text-2xl font-bold text-gray-900">{statistics?.totalNftCount || 0}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600">Transactions</p>
+                <p className="text-2xl font-bold text-gray-900">{statistics?.nftTransactionsCount || 0}</p>
               </div>
             </div>
           </div>
-        )}
 
-        {isSessionExpired && (
-          <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
-            <p className="text-yellow-800">Session expired. Redirecting to login...</p>
-          </div>
-        )}
-
-        {/* Stats Card */}
-        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6 mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-purple-100 rounded-xl">
-              <ImageIcon className="w-5 h-5 text-purple-600" />
+          <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-purple-100 rounded-xl">
+                <ArrowUpRight className="w-5 h-5 text-purple-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Quick Actions</h2>
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Collection Overview</h2>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600">Total NFTs Owned</p>
-              <p className="text-2xl font-bold text-gray-900">{statistics?.totalNftCount || 0}</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600">Total NFT Transactions</p>
-              <p className="text-2xl font-bold text-gray-900">{statistics?.nftTransactionsCount || 0}</p>
+            <div className="grid grid-cols-1 gap-4">
+              <a
+                href="https://cpscapsule.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <ArrowUpRight className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <span className="font-medium text-gray-900">Get Your Comics Graded</span>
+                </div>
+                <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+              </a>
             </div>
           </div>
         </div>
 
-        {/* NFT List */}
+        {/* NFT Grid */}
         <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
@@ -220,15 +286,28 @@ const NFTListPage = () => {
                 <h2 className="text-xl font-bold text-gray-900">Your NFTs</h2>
               </div>
 
-              <a
-                href="https://cpscapsule.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-              >
-                <span>Get Your Comics Graded</span>
-                <ExternalLink className="w-4 h-4" />
-              </a>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    viewMode === 'grid'
+                      ? 'bg-purple-100 text-purple-600'
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Grid className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-purple-100 text-purple-600'
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <List className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -255,59 +334,20 @@ const NFTListPage = () => {
               </a>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
-              {nftCollection.map((nft) => {
-                const lastTx = nft.transactions[0]; // Get most recent transaction
-                const isReceived = lastTx.to.toLowerCase() === currentWallet.address.toLowerCase();
-                const imageUrl = getNFTImageUrl(nft);
-
-                return (
-                  <Link
+            <div className="p-6">
+              <div className={`${
+                viewMode === 'grid'
+                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+                  : 'space-y-4'
+              }`}>
+                {nftCollection.map((nft) => (
+                  <NFTCard
                     key={nft.tokenId}
-                    to={`/nft?token_id=${nft.tokenId}&token_metadata_uri=${lastTx.tokenMetadataURI}`}
-                    className="block p-6 hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl}
-                            alt={nft.metadata?.name || `NFT #${nft.tokenId}`}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <ImageIcon className="w-8 h-8 text-purple-300" />
-                        )}
-                      </div>
-
-                      <div className="flex-grow">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-gray-900">
-                            {nft.metadata?.name || `NFT #${nft.tokenId || 'Unknown'}`}
-                          </h3>
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            isReceived ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {isReceived ? 'Received' : 'Sent'}
-                          </span>
-                        </div>
-
-                        <div className="text-sm text-gray-500 space-y-1">
-                          <p>Token ID: {nft.tokenId}</p>
-                          {nft.metadata?.description && (
-                            <p className="truncate max-w-md">{nft.metadata.description}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors">
-                        View Details
-                        <ArrowRight className="w-4 h-4" />
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+                    nft={nft}
+                    currentWallet={currentWallet}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>

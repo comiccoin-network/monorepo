@@ -1,3 +1,4 @@
+// src/Components/User/NFTs/DetailView.jsx
 import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import {
