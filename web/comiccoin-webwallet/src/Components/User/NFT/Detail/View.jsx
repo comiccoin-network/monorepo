@@ -141,7 +141,7 @@ const MediaTabs = ({ activeTab, onTabChange, metadata }) => {
   );
 };
 
-const ActionButtons = ({ tokenId }) => {
+const ActionButtons = ({ tokenId, tokenMetadataUri }) => {
   const navigate = useNavigate();
 
   return (
@@ -155,7 +155,7 @@ const ActionButtons = ({ tokenId }) => {
 
       <div className="grid grid-cols-2 gap-4">
         <button
-          onClick={() => navigate(`/transfer/${tokenId}`)}
+          onClick={() => navigate(`/nft/transfer?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`)}
           className="flex items-center justify-center gap-2 px-6 py-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors"
         >
           <SendHorizontal className="w-5 h-5" />
@@ -163,7 +163,7 @@ const ActionButtons = ({ tokenId }) => {
         </button>
 
         <button
-          onClick={() => navigate(`/burn/${tokenId}`)}
+          onClick={() => navigate(`/nft/burn?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`)}
           className="flex items-center justify-center gap-2 px-6 py-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
         >
           <Flame className="w-5 h-5" />
@@ -399,7 +399,7 @@ const NFTDetailPage = () => {
             </div>
 
             {/* New Action Buttons Section */}
-            <ActionButtons tokenId={tokenId} />
+            <ActionButtons tokenId={tokenId} tokenMetadataUri={tokenMetadataUri} />
 
             {/* Attributes Card */}
             <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">

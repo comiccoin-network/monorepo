@@ -5,6 +5,8 @@ import { RecoilRoot } from "recoil";
 import TransactionDetailPage from "./Components/User/More/Transaction/DetailView";
 import TransactionListPage from "./Components/User/More/Transaction/ListView";
 import MorePage from "./Components/User/More/View";
+import BurnNFTPage from "./Components/User/NFT/Burn/View";
+import TransferNFTPage from "./Components/User/NFT/Transfer/View";
 import NFTDetailPage from "./Components/User/NFT/Detail/View";
 import NFTListPage from "./Components/User/NFT/List/View";
 import TradePage from "./Components/User/Trade/View";
@@ -35,6 +37,8 @@ function AppRoute() {
             <Route exact path="/transaction/:nonceString" element={<TransactionDetailPage />} />
             <Route exact path="/transactions" element={<TransactionListPage />} />
             <Route exact path="/more" element={<MorePage />} />
+            <Route exact path="/nft/burn" element={<BurnNFTPage />} />
+            <Route exact path="/nft/transfer" element={<TransferNFTPage />} />
             <Route exact path="/nfts" element={<NFTListPage />} />
             <Route exact path="/nft" element={<NFTDetailPage />} />
             <Route exact path="/trade" element={<TradePage />} />
