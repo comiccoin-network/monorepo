@@ -1,3 +1,4 @@
+// src/Components/User/NFT/Transfer/View.jsx
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Navigate, Link } from 'react-router-dom';
 import {
