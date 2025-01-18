@@ -1,4 +1,3 @@
-// src/Components/User/NFT/Transfer/View.jsx
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Navigate, Link } from 'react-router-dom';
 import {
@@ -8,9 +7,12 @@ import {
   Loader2,
   Info,
   Key,
-  LinkIcon
+  LinkIcon,
+  Wallet,
+  Coins
 } from 'lucide-react';
 import { useWallet } from '../../../../Hooks/useWallet';
+import { useWalletTransactions } from '../../../../Hooks/useWalletTransactions';
 import { useNFTTransfer } from '../../../../Hooks/useNFTTransfer';
 import NavigationMenu from "../../NavigationMenu/View";
 import FooterMenu from "../../FooterMenu/View";
@@ -24,6 +26,7 @@ const TransferNFTPage = () => {
     loading: serviceLoading,
     error: serviceError
   } = useWallet();
+  const { statistics } = useWalletTransactions(currentWallet?.address);
   const { submitTransaction, loading: transactionLoading, error: transactionError } = useNFTTransfer(1);
   const [searchParams] = useSearchParams();
   const tokenId = searchParams.get('token_id');
@@ -119,6 +122,11 @@ const TransferNFTPage = () => {
       newErrors.tokenMetadataURI = 'Token metadata URI is required';
     }
 
+    // Check if we have enough balance for network fee
+    if ((statistics?.totalCoinValue || 0) < 1) {
+      newErrors.balance = 'Insufficient balance for network fee';
+    }
+
     setFormErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -192,7 +200,7 @@ const TransferNFTPage = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       <NavigationMenu />
 
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-16 md:mb-0">
+      <main className="flex-grow max-w-3xl mx-auto px-4 py-12 mb-16 md:mb-0">
         <Link
           to={`/nft?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`}
           className="inline-flex items-center text-purple-600 hover:text-purple-700 mb-6"
@@ -216,6 +224,7 @@ const TransferNFTPage = () => {
           </div>
         )}
 
+        {/* Form Errors */}
         {Object.keys(formErrors).length > 0 && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
             <div className="flex items-center gap-3">
@@ -234,166 +243,165 @@ const TransferNFTPage = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Transfer Form Section */}
-          <div className="lg:col-span-7">
-            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 rounded-xl">
-                      <Send className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <h2 className="text-xl font-bold text-gray-900">Transfer NFT</h2>
+        {/* Main Form Card */}
+        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden">
+          {/* Balance Section */}
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 rounded-xl">
+                <Wallet className="w-5 h-5 text-purple-600" />
+              </div>
+              <div className="flex-grow">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-bold text-gray-900">Available Balance</h2>
+                  <p className="text-2xl font-bold text-purple-600">{statistics?.totalCoinValue || 0} CC</p>
+                </div>
+                <div className="mt-2 pt-2 border-t space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-red-600">Network Fee</span>
+                    <span className="text-red-600">- 1 CC</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-medium">
+                    <span className="text-gray-600">Remaining Balance</span>
+                    <span className="text-gray-900">
+                      = {((statistics?.totalCoinValue || 0) - 1).toFixed(2)} CC
+                    </span>
                   </div>
                 </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
-                  <div>
-                    <label htmlFor="recipientAddress" className="block">
-                      <span className="text-sm font-medium text-gray-700">
-                        Recipient Address <span className="text-red-500">*</span>
-                      </span>
-                      <div className="mt-1 relative">
-                        <input
-                          type="text"
-                          id="recipientAddress"
-                          name="recipientAddress"
-                          value={formData.recipientAddress}
-                          onChange={handleInputChange}
-                          className={`block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                            formErrors.recipientAddress ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                          }`}
-                          placeholder="Enter recipient's wallet address"
-                          autoComplete="off"
-                        />
-                        {formErrors.recipientAddress && (
-                          <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4" />
-                            {formErrors.recipientAddress}
-                          </p>
-                        )}
-                      </div>
-                    </label>
-                  </div>
-
-                  <div>
-                    <label htmlFor="password" className="block">
-                      <span className="text-sm font-medium text-gray-700">
-                        Wallet Password <span className="text-red-500">*</span>
-                      </span>
-                      <div className="mt-1 relative">
-                        <input
-                          type="password"
-                          id="password"
-                          name="password"
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          className={`block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                            formErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                          }`}
-                          placeholder="Enter your wallet password"
-                          autoComplete="off"
-                        />
-                        {formErrors.password && (
-                          <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4" />
-                            {formErrors.password}
-                          </p>
-                        )}
-                      </div>
-                    </label>
-                  </div>
-
-                  <div className="flex gap-4 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/nft?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <ArrowLeft className="w-4 h-4" />
-                      Cancel
-                    </button>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4" />
-                          Transfer NFT
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
               </div>
             </div>
           </div>
 
-          {/* Details Section */}
-          <div className="lg:col-span-5 space-y-6">
-            {/* Transaction Details Card */}
-            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-purple-100 rounded-xl">
-                  <Info className="w-5 h-5 text-purple-600" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">Transaction Details</h2>
+          {/* Token Information */}
+          <div className="p-6 border-b border-gray-100">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <LinkIcon className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">NFT Information</span>
               </div>
-
-              <div className="space-y-4">
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <LinkIcon className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-600">NFT Information</span>
-                  </div>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="text-xs text-gray-500">Token ID</label>
-                      <div className="text-sm font-mono text-gray-900">{tokenId}</div>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                <div>
+                  <label className="text-xs text-gray-500">Token ID</label>
+                  <div className="text-sm font-mono text-gray-900">{tokenId}</div>
                 </div>
+              </div>
+            </div>
+          </div>
 
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
-                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-blue-800">
-                    <p>
-                      A network fee of 1 ComicCoin is required to support the
-                      blockchain infrastructure and ensure secure transaction processing.
+          {/* Important Notices */}
+          <div className="p-6 border-b border-gray-100 space-y-4">
+            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-amber-800">
+                <p className="font-semibold mb-1">Important Notice</p>
+                <p>All transactions are final and cannot be undone. Please verify all details before transferring.</p>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
+              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-semibold mb-1">Transaction Fee Information</p>
+                <p>A network fee of 1 CC will be deducted from your wallet to ensure timely processing.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Form Section */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-6" autoComplete="off">
+            <div>
+              <label htmlFor="recipientAddress" className="block">
+                <span className="text-sm font-medium text-gray-700">
+                  Transfer To <span className="text-red-500">*</span>
+                </span>
+                <div className="mt-1 relative">
+                  <input
+                    type="text"
+                    id="recipientAddress"
+                    name="recipientAddress"
+                    value={formData.recipientAddress}
+                    onChange={handleInputChange}
+                    className={`block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
+                      formErrors.recipientAddress ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                    }`}
+                    placeholder="Enter recipient's wallet address"
+                    autoComplete="off"
+                  />
+                  {formErrors.recipientAddress && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      {formErrors.recipientAddress}
                     </p>
-                  </div>
+                  )}
                 </div>
+              </label>
+            </div>
 
-                <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-amber-800">
-                    <p className="font-semibold mb-1">Important Notice</p>
-                    <p>All transactions are final and cannot be undone. Please verify all details before transferring.</p>
-                  </div>
+            <div>
+              <label htmlFor="password" className="block">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700">
+                    Wallet Password <span className="text-red-500">*</span>
+                  </span>
                 </div>
-
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Key className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-600">Security Information</span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Your wallet is encrypted and stored locally. The password is
-                    required to authorize this transaction.
+                <div className="mt-1 relative">
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className={`block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
+                      formErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                    }`}
+                    placeholder="Enter your wallet password"
+                    autoComplete="off"
+                  />
+                  {formErrors.password && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      {formErrors.password}
+                    </p>
+                  )}
+                  <p className="mt-2 text-sm text-gray-600 flex items-start gap-2">
+                    <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>
+                      Your wallet is encrypted and stored locally. The password is required to authorize this transaction.
+                    </span>
                   </p>
                 </div>
-              </div>
+              </label>
             </div>
-          </div>
+
+            <div className="flex gap-4 pt-4">
+              <button
+                type="button"
+                onClick={() => navigate(`/nft?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={isSubmitting || (statistics?.totalCoinValue || 0) < 1}
+                className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Transfer NFT
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </main>
 
@@ -409,7 +417,14 @@ const TransferNFTPage = () => {
               <div className="bg-gray-50 p-4 rounded-lg space-y-4">
                 <div>
                   <p className="text-sm text-gray-600">Network Fee</p>
-                  <p className="text-lg font-medium text-red-600">1 CC</p>
+                  <p className="text-lg font-medium text-red-600">- 1 CC</p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-gray-600">Remaining Balance</p>
+                  <p className="text-lg font-medium text-gray-900">
+                    {((statistics?.totalCoinValue || 0) - 1).toFixed(2)} CC
+                  </p>
                 </div>
 
                 <div>
