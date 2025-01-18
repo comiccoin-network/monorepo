@@ -268,6 +268,7 @@ func doRunDaemon() {
 		cfg,
 		logger,
 		getBlockchainStateUseCase,
+		getTokenUseCase,
 	)
 
 	// MempoolTransaction

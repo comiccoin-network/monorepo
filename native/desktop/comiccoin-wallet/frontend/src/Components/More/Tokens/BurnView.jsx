@@ -1,3 +1,4 @@
+// src/Components/More/Tokens/BurnView.jsx
 import { useState, useEffect } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { useRecoilState } from "recoil";

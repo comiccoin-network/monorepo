@@ -23,7 +23,7 @@ func init() {
 var rootCmd = &cobra.Command{
 	Use:   "comiccoin-authority",
 	Short: "ComicCoin Authority",
-	Long:  ``,
+	Long:  `ComicCoin Blockchain Authority`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do nothing.
 	},

@@ -11,6 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockchainstate"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -29,7 +30,10 @@ type PrepareTransactionRequestIDO struct {
 	Data string `json:"data"`
 
 	// ComicCoin: The type of transaction this is, either `coin` or `token`.
-	Type string `bson:"type" json:"type"`
+	Type string `json:"type"`
+
+	TokenIDString    string `json:"token_id_string"`
+	TokenMetadataURI string `json:"token_metadata_uri"`
 }
 
 type PrepareTransactionResponseIDO struct {
@@ -57,14 +61,16 @@ type prepareTransactionServiceImpl struct {
 	config                    *config.Configuration
 	logger                    *slog.Logger
 	getBlockchainStateUseCase uc_blockchainstate.GetBlockchainStateUseCase
+	getTokenUseCase           uc_token.GetTokenUseCase
 }
 
 func NewPrepareTransactionService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc uc_blockchainstate.GetBlockchainStateUseCase,
+	uc1 uc_blockchainstate.GetBlockchainStateUseCase,
+	uc2 uc_token.GetTokenUseCase,
 ) PrepareTransactionService {
-	return &prepareTransactionServiceImpl{cfg, logger, uc}
+	return &prepareTransactionServiceImpl{cfg, logger, uc1, uc2}
 }
 
 func (s *prepareTransactionServiceImpl) Execute(ctx context.Context, req *PrepareTransactionRequestIDO) (*PrepareTransactionResponseIDO, error) {
@@ -92,6 +98,13 @@ func (s *prepareTransactionServiceImpl) Execute(ctx context.Context, req *Prepar
 	} else {
 		if req.Type != "coin" && req.Type != "token" {
 			e["type"] = "Type must be either `coin` or `token`"
+		} else {
+			if req.Type == "token" && req.TokenIDString == "" {
+				e["token_id_string"] = "Token ID string is required"
+			}
+			if req.Type == "token" && req.TokenMetadataURI == "" {
+				e["token_metadata_uri"] = "Token metadata uri is required"
+			}
 		}
 	}
 	if len(e) != 0 {
@@ -145,6 +158,57 @@ func (s *prepareTransactionServiceImpl) Execute(ctx context.Context, req *Prepar
 		slog.Any("value", preparedTx.Value),
 		slog.Any("data_hex", hexutil.Encode(preparedTx.Data)),
 		slog.String("type", preparedTx.Type))
+
+	//
+	// STEP 4: Apply NFT preparation.
+	//
+
+	if req.Type == "token" {
+		n := new(big.Int)
+		tokID, ok := n.SetString(req.TokenIDString, 10)
+		if !ok {
+			s.logger.Error("Failed to get big integer from `token_id_string`")
+			return nil, httperror.NewForNotFoundWithSingleField("token_id_string", "Failed to get big integer from `token_id_string`")
+		}
+
+		tok, err := s.getTokenUseCase.Execute(ctx, tokID)
+		if err != nil {
+			s.logger.Debug("Failed to get token",
+				slog.Any("error", err))
+			return nil, err
+		}
+		if tok == nil {
+			errStr := fmt.Sprintf("Token does not exist for ID: %s", tokID.String())
+			s.logger.Error("Failed to get token", slog.Any("error", errStr))
+			return nil, httperror.NewForNotFoundWithSingleField("token_id_string", errStr)
+		}
+
+		//
+		// STEP 5:
+		// Increment token `nonce` - this is very important as it tells the
+		// blockchain that we are committing a transaction and hence the miner
+		// will execute the transfer. If we do not increment the nonce then no
+		// transaction happens!
+		//
+
+		nonce := tok.GetNonce()
+		nonce.Add(nonce, big.NewInt(1))
+		tok.SetNonce(nonce)
+
+		//
+		// STEP 6: Finish the preparation.
+		//
+
+		preparedTx.TokenIDBytes = tok.IDBytes
+		preparedTx.TokenIDString = tok.GetID().String()
+		preparedTx.TokenMetadataURI = tok.MetadataURI
+		preparedTx.TokenNonceBytes = tok.NonceBytes
+		preparedTx.TokenNonceString = tok.GetNonce().String()
+	}
+
+	//
+	// STEP 6: Return prepared transaction.
+	//
 
 	return preparedTx, nil
 }
