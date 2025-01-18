@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useWallet } from '../../../Hooks/useWallet';
 import { useWalletTransactions } from '../../../Hooks/useWalletTransactions';
-import { useTransactionSignAndSubmit } from '../../../Hooks/useTransactionSignAndSubmit';
+import { useCoinTransfer } from '../../../Hooks/useCoinTransfer';
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 import walletService from '../../../Services/WalletService';
@@ -26,7 +26,7 @@ const SendCoinsPage = () => {
     error: serviceError
   } = useWallet();
   const { statistics } = useWalletTransactions(currentWallet?.address);
-  const { submitTransaction, loading: transactionLoading, error: transactionError } = useTransactionSignAndSubmit(1);
+  const { submitTransaction, loading: transactionLoading, error: transactionError } = useCoinTransfer(1);
 
   // State for session management
   const [forceURL, setForceURL] = useState("");

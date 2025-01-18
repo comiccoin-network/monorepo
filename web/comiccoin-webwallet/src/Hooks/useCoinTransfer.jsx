@@ -1,16 +1,16 @@
-// src/Hooks/useTransactionSignAndSubmit.js
+// src/Hooks/useCoinTransfer.js
 import { useState, useEffect } from 'react';
 import { useWallet } from './useWallet';
-import transactionSignAndSubmitService from '../Services/TransactionSignAndSubmitService';
+import coinTransferService from '../Services/CoinTransferService';
 
-export const useTransactionSignAndSubmit = (chainId) => {
+export const useCoinTransfer = (chainId) => {
     const { error: walletError } = useWallet();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         if (chainId) {
-            transactionSignAndSubmitService.initialize(chainId);
+            coinTransferService.initialize(chainId);
         }
     }, [chainId]);
 
@@ -34,7 +34,7 @@ export const useTransactionSignAndSubmit = (chainId) => {
                 note
             });
 
-            const template = await transactionSignAndSubmitService.getTransactionTemplate(
+            const template = await coinTransferService.getTransactionTemplate(
                 currentWallet.address,
                 recipientAddress,
                 amount,
@@ -42,10 +42,10 @@ export const useTransactionSignAndSubmit = (chainId) => {
             );
             console.log('Got transaction template:', template);
 
-            const signedTransaction = await transactionSignAndSubmitService.signTransaction(template);
+            const signedTransaction = await coinTransferService.signTransaction(template);
             console.log('Transaction signed:', signedTransaction);
 
-            const result = await transactionSignAndSubmitService.submitSignedTransaction(signedTransaction);
+            const result = await coinTransferService.submitSignedTransaction(signedTransaction);
             console.log('Transaction submitted:', result);
 
             return result;
