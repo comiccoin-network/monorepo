@@ -245,7 +245,7 @@ function TransactionListPage() {
              {filteredTransactions.map((tx) => {
                     const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase();
                     const isBurned = tx.to.toLowerCase() === '0x0000000000000000000000000000000000000000';
-                    const displayValue = tx.type === 'coin' ? `${tx.value} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
+                    const displayValue = tx.type === 'coin' ? `${tx.actualValue} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
 
                     return (
                         <Link

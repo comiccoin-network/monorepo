@@ -302,7 +302,7 @@ function DashboardPage() {
                   {transactions.slice(0, 5).map((tx) => {
                     const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase();
                     const isBurned = tx.to.toLowerCase() === '0x0000000000000000000000000000000000000000';
-                    const displayValue = tx.type === 'coin' ? `${tx.value} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
+                    const displayValue = tx.type === 'coin' ? `${tx.actualValue} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
 
                     return (
                         <div key={tx.id} className="py-4 first:pt-0 last:pb-0">
