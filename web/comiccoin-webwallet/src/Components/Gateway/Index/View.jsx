@@ -10,7 +10,8 @@ import {
   Monitor,
   Globe,
   CheckCircle,
-  Apple
+  Apple,
+  HardDrive
 } from 'lucide-react';
 import FooterMenu from "../FooterMenu/View";
 
@@ -167,47 +168,62 @@ const IndexPage = () => {
           </div>
         </div>
 
-        {/* Feature Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 mb-12 md:mb-16">
-          {[
-            {
-              icon: <Shield className="h-8 w-8 text-purple-600" />,
-              title: "Bank-Grade Security",
-              description: "Client-side encryption ensures your keys never leave your device"
-            },
-            {
-              icon: <Wallet className="h-8 w-8 text-purple-600" />,
-              title: "HD Wallet Support",
-              description: "Generate multiple accounts from a single recovery phrase"
-            },
-            {
-              icon: <Key className="h-8 w-8 text-purple-600" />,
-              title: "Full Control",
-              description: "You hold your private keys and recovery phrase at all times"
-            },
-            {
-              icon: <RefreshCw className="h-8 w-8 text-purple-600" />,
-              title: "Easy Recovery",
-              description: "Restore your wallet anytime using your recovery phrase"
-            }
-          ].map((feature, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border-2 border-purple-200 p-6"
-            >
-              <div className="flex flex-col items-center text-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  {feature.icon}
+        {/* Feature Grid - Reorganized */}
+        <div className="mb-12 md:mb-16">
+          <h2 className="text-3xl font-bold text-purple-800 text-center mb-8" style={{fontFamily: 'Comic Sans MS'}}>
+            Key Features
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: <Shield className="h-8 w-8 text-purple-600" />,
+                title: "Bank-Grade Security",
+                description: "Client-side encryption ensures your keys never leave your device"
+              },
+              {
+                icon: <Monitor className="h-8 w-8 text-purple-600" />,
+                title: "Cross-Platform Support",
+                description: "Access via web browser or native desktop application"
+              },
+              {
+                icon: <HardDrive className="h-8 w-8 text-purple-600" />,
+                title: "IPFS Integration",
+                description: "Decentralized storage for NFTs using IPFS technology"
+              },
+              {
+                icon: <Wallet className="h-8 w-8 text-purple-600" />,
+                title: "HD Wallet Support",
+                description: "Generate multiple accounts from a single recovery phrase"
+              },
+              {
+                icon: <Key className="h-8 w-8 text-purple-600" />,
+                title: "Full Control",
+                description: "You hold your private keys and recovery phrase at all times"
+              },
+              {
+                icon: <RefreshCw className="h-8 w-8 text-purple-600" />,
+                title: "Easy Recovery",
+                description: "Restore your wallet anytime using your recovery phrase"
+              }
+            ].map((feature, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border-2 border-purple-100 p-6"
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-3 bg-purple-50 rounded-xl">
+                    {feature.icon}
+                  </div>
+                  <h3 className="mt-4 text-xl font-bold text-purple-800" style={{fontFamily: 'Comic Sans MS'}}>
+                    {feature.title}
+                  </h3>
+                  <p className="mt-2 text-gray-600">
+                    {feature.description}
+                  </p>
                 </div>
-                <h2 className="mt-4 text-xl font-bold text-purple-800" style={{fontFamily: 'Comic Sans MS'}}>
-                  {feature.title}
-                </h2>
-                <p className="mt-2 text-gray-700">
-                  {feature.description}
-                </p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* About Section */}
