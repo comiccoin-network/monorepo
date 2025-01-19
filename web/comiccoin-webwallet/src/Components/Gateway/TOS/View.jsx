@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Scale, Mail, Phone, MapPin, Globe, Monitor, Wallet } from 'lucide-react';
+import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
 function Terms() {
@@ -11,51 +12,8 @@ function Terms() {
           Skip to main content
         </a>
 
-        {/* Platform Selection Banner */}
-        <div className="bg-purple-900 text-white py-3 px-4" role="banner">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-center sm:text-left">
-            <div className="flex items-center gap-2 mb-2 sm:mb-0">
-              <Globe aria-hidden="true" className="h-5 w-5" />
-              <span>You're using the <strong>Web Wallet</strong> - Access your ComicCoin from any browser</span>
-            </div>
-            <a
-              href="/download-native-wallet"
-              className="text-purple-200 hover:text-white flex items-center gap-1 text-sm"
-              aria-label="Download Native Wallet"
-            >
-              <Monitor aria-hidden="true" className="h-4 w-4" />
-              Looking for our Desktop Wallet? Get it here
-              <span aria-hidden="true">→</span>
-            </a>
-          </div>
-        </div>
-
-        <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16 items-center">
-              <div className="flex items-center space-x-2">
-                <Wallet className="h-8 w-8" />
-                <span className="text-2xl font-bold" style={{fontFamily: 'Comic Sans MS'}}>
-                  ComicCoin Web Wallet
-                </span>
-              </div>
-              <div className="flex space-x-4">
-                <Link
-                  to="/create-wallet"
-                  className="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-bold border-2 border-white transition-colors"
-                >
-                  Create Wallet
-                </Link>
-                <Link
-                  to="/login"
-                  className="px-4 py-2 rounded-lg bg-white hover:bg-purple-50 text-purple-700 font-bold transition-colors"
-                >
-                  Access Wallet
-                </Link>
-              </div>
-            </div>
-          </div>
-        </nav>
+        {/* Navigation */}
+        <NavigationMenu />
 
       <main id="main-content" className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <Link to="/" className="inline-flex items-center text-purple-600 hover:text-purple-700 mb-6">

@@ -32,28 +32,28 @@ function Footer() {
             </h3>
             <ul className="space-y-4">
               <li>
-                <a
-                  href="https://github.com/comiccoin-network/monorepo"
+                <Link
+                  to="https://github.com/comiccoin-network/monorepo"
                   className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
                 >
                   <Github className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
                   <span>GitHub Repository</span>
                   <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://comiccoinnetwork.com"
+                <Link
+                  to="https://comiccoinnetwork.com"
                   className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
                 >
                   <Globe className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
                   <span>Project Website</span>
                   <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </a>
+                </Link>
               </li>
               {/*
               <li>
-                <a
+                <Link
                   href="/docs"
                   className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
                 >
@@ -114,24 +114,24 @@ function Footer() {
             </h3>
             <ul className="space-y-4">
               <li>
-                <a
-                  href="/terms"
+                <Link
+                  to="/terms"
                   className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
                 >
                   <FileText className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
                   <span>Terms of Service</span>
                   <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/privacy"
+                <Link
+                  to="/privacy"
                   className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
                 >
                   <BookOpen className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
                   <span>Privacy Policy</span>
                   <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
