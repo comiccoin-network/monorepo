@@ -19,6 +19,7 @@ import CreateHDWalletPage from "./Components/Gateway/CreateHDWallet/View";
 import DownloadNativeWalletPage from "./Components/Gateway/DownloadNativeWallet/View";
 import GetStartedPage from "./Components/Gateway/GettingStarted/View";
 import Index from "./Components/Gateway/Index/View";
+import HelpPage from "./Components/Gateway/Help/View";
 import Terms from "./Components/Gateway/TOS/View";
 import Privacy from "./Components/Gateway/Privacy/View";
 import NotImplementedError from "./Components/Misc/NotImplementedError";
@@ -52,6 +53,7 @@ function AppRoute() {
             <Route exact path="/get-started" element={<GetStartedPage />} />
             <Route exact path="/privacy" element={<Privacy />} />
             <Route exact path="/terms" element={<Terms />} />
+            <Route exact path="/help" element={<HelpPage />} />
             <Route exact path="/" element={<Index />} />
             <Route path="*" element={<NotFoundError />} />
           </Routes>
