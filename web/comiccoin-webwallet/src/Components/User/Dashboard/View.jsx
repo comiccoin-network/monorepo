@@ -304,73 +304,74 @@ function DashboardPage() {
                     const displayValue = tx.type === 'coin' ? `${tx.actualValue} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
 
                     return (
-                      <div key={tx.id} className="py-4 first:pt-0 last:pb-0">
-                        <div className="flex items-center justify-between">
-                          {/* Left side - Transaction type and direction */}
-                          <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${
-                              tx.type === 'coin'
-                                ? (isSent ? 'bg-red-100' : 'bg-green-100')
-                                : 'bg-purple-100'
-                            }`}>
-                              {tx.type === 'coin' ? (
-                                <Coins className={`w-5 h-5 ${
-                                  isSent ? 'text-red-600' : 'text-green-600'
-                                }`} />
-                              ) : (
-                                <Image className="w-5 h-5 text-purple-600" />
-                              )}
-                            </div>
+                        <div key={tx.id} className="py-4 first:pt-0 last:pb-0">
+                            <div className="flex items-center justify-between">
+                                {/* Left side - Transaction type and direction */}
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg ${
+                                        tx.type === 'coin'
+                                            ? (isSent ? 'bg-red-100' : 'bg-green-100')
+                                            : 'bg-purple-100'
+                                    }`}>
+                                        {tx.type === 'coin' ? (
+                                            <Coins className={`w-5 h-5 ${
+                                                isSent ? 'text-red-600' : 'text-green-600'
+                                            }`} />
+                                        ) : (
+                                            <Image className="w-5 h-5 text-purple-600" />
+                                        )}
+                                    </div>
 
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className={`font-medium ${
-                                  isSent ? 'text-red-600' : 'text-green-600'
-                                }`}>
-                                  {isSent ? 'Sent' : 'Received'} {tx.type === 'coin' ? 'Coins' : 'NFT'}
-                                </span>
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                  tx.status === 'confirmed'
-                                    ? 'bg-blue-50 text-blue-700'
-                                    : 'bg-yellow-50 text-yellow-700'
-                                }`}>
-                                  {tx.status}
-                                </span>
-                              </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`font-medium ${
+                                                isSent ? 'text-red-600' : 'text-green-600'
+                                            }`}>
+                                                {isSent ? 'Sent' : 'Received'} {tx.type === 'coin' ? 'Coins' : 'NFT'}
+                                            </span>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                                tx.status === 'confirmed'
+                                                    ? 'bg-blue-50 text-blue-700'
+                                                    : 'bg-yellow-50 text-yellow-700'
+                                            }`}>
+                                                {tx.status}
+                                            </span>
+                                        </div>
 
-                              {/* Time and Address */}
-                              <div className="mt-1 space-y-1">
-                                <div className="flex items-center gap-1 text-xs text-gray-500">
-                                  <Clock className="w-3 h-3" />
-                                  {new Date(tx.timestamp).toLocaleString()}
+                                        {/* Time and Address */}
+                                        <div className="mt-1 space-y-1">
+                                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                                                <Clock className="w-3 h-3" />
+                                                {new Date(tx.timestamp).toLocaleString()}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                {isSent
+                                                    ? `To: ${tx.to.slice(0, 8)}...${tx.to.slice(-6)}`
+                                                    : `From: ${tx.from.slice(0, 8)}...${tx.from.slice(-6)}`
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="text-xs text-gray-500">
-                                  {isSent
-                                    ? `To: ${tx.to.slice(0, 8)}...${tx.to.slice(-6)}`
-                                    : `From: ${tx.from.slice(0, 8)}...${tx.from.slice(-6)}`
-                                  }
-                                </div>
-                              </div>
-                            </div>
-                          </div>
 
-                          {/* Right side - Amount and fee */}
-                          <div className="text-right">
-                            <div className={`text-lg font-bold ${
-                              isSent ? 'text-red-600' : 'text-green-600'
-                            }`}>
-                              {isSent ? '-' : '+'}{displayValue}
+                                {/* Right side - Amount and fee */}
+                                <div className="text-right">
+                                    <div className={`text-lg font-bold ${
+                                        isSent ? 'text-red-600' : 'text-green-600'
+                                    }`}>
+                                        {isSent ? '-' : '+'}{displayValue}
+                                    </div>
+                                    {/* Always show fee for outgoing transactions */}
+                                    {isSent && (
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            Fee: {tx.fee} CC
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            {tx.type === 'coin' && (
-                              <div className="text-xs text-gray-500 mt-1">
-                                Fee: {tx.fee} CC
-                              </div>
-                            )}
-                          </div>
                         </div>
-                      </div>
                     );
-                  })}
+                })}
 
                   {/* Bottom action buttons */}
                   <div className="pt-4 mt-4 flex gap-4">

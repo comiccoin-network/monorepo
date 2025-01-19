@@ -61,7 +61,7 @@ export const useWalletTransactions = (walletAddress) => {
             if (tx.from.toLowerCase() === walletAddress?.toLowerCase()) {
                 return sum - Number(tx.value) - Number(tx.fee);
             } else if (tx.to.toLowerCase() === walletAddress?.toLowerCase()) {
-                return sum + Number(tx.value);
+                return sum + Number(tx.value) - Number(tx.fee);
             }
             return sum;
         }, 0);
