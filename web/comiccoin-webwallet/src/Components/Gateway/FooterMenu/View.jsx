@@ -140,7 +140,6 @@ function Footer() {
         {/* Copyright Section */}
         <div className="text-center pt-6 border-t border-purple-500/30">
           <p className="flex items-center justify-center gap-2 text-purple-200">
-            <Heart className="h-4 w-4 text-purple-300" />
             <span>© {currentYear} ComicCoin Network. All rights reserved.</span>
           </p>
         </div>
