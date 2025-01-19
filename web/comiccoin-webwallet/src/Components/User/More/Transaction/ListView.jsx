@@ -242,81 +242,98 @@ function TransactionListPage() {
             </div>
           ) : filteredTransactions?.length > 0 ? (
             <div className="divide-y divide-gray-100">
-              {filteredTransactions.map((tx) => {
-                const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase();
-                const displayValue = tx.type === 'coin' ? `${tx.actualValue} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
+             {filteredTransactions.map((tx) => {
+                    const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase();
+                    const isBurned = tx.to.toLowerCase() === '0x0000000000000000000000000000000000000000';
+                    const displayValue = tx.type === 'coin' ? `${tx.value} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
 
-                return (
-                  <Link
-                    key={tx.id}
-                    to={`/transaction/${tx.id}`}
-                    className="block p-6 hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
-                          tx.type === 'coin'
-                            ? (isSent ? 'bg-red-100' : 'bg-green-100')
-                            : 'bg-purple-100'
-                        }`}>
-                          {tx.type === 'coin' ? (
-                            <Coins className={`w-5 h-5 ${
-                              isSent ? 'text-red-600' : 'text-green-600'
-                            }`} />
-                          ) : (
-                            <Image className="w-5 h-5 text-purple-600" />
-                          )}
-                        </div>
+                    return (
+                        <Link
+                            key={tx.id}
+                            to={`/transaction/${tx.id}`}
+                            className="block p-6 hover:bg-gray-50 transition-colors cursor-pointer"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg ${
+                                        tx.type === 'coin'
+                                            ? (isSent ? 'bg-red-100' : 'bg-green-100')
+                                            : isBurned
+                                                ? 'bg-orange-100'
+                                                : 'bg-purple-100'
+                                    }`}>
+                                        {tx.type === 'coin' ? (
+                                            <Coins className={`w-5 h-5 ${
+                                                isSent ? 'text-red-600' : 'text-green-600'
+                                            }`} />
+                                        ) : (
+                                            <Image className={`w-5 h-5 ${
+                                                isBurned ? 'text-orange-600' : 'text-purple-600'
+                                            }`} />
+                                        )}
+                                    </div>
 
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className={`font-medium ${
-                              isSent ? 'text-red-600' : 'text-green-600'
-                            }`}>
-                              {isSent ? 'Sent' : 'Received'} {tx.type === 'coin' ? 'Coins' : 'NFT'}
-                            </span>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              tx.status === 'confirmed'
-                                ? 'bg-blue-50 text-blue-700'
-                                : 'bg-yellow-50 text-yellow-700'
-                            }`}>
-                              {tx.status}
-                            </span>
-                          </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`font-medium ${
+                                                tx.type === 'coin'
+                                                    ? (isSent ? 'text-red-600' : 'text-green-600')
+                                                    : isBurned
+                                                        ? 'text-orange-600'
+                                                        : (isSent ? 'text-red-600' : 'text-green-600')
+                                            }`}>
+                                                {isBurned
+                                                    ? `Burned ${tx.type === 'coin' ? 'Coins' : 'NFT'}`
+                                                    : `${isSent ? 'Sent' : 'Received'} ${tx.type === 'coin' ? 'Coins' : 'NFT'}`
+                                                }
+                                            </span>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                                tx.status === 'confirmed'
+                                                    ? 'bg-blue-50 text-blue-700'
+                                                    : 'bg-yellow-50 text-yellow-700'
+                                            }`}>
+                                                {tx.status}
+                                            </span>
+                                        </div>
 
-                          <div className="mt-2 space-y-1">
-                            <div className="flex items-center gap-1 text-sm text-gray-500">
-                              <Clock className="w-4 h-4" />
-                              {new Date(tx.timestamp).toLocaleString()}
+                                        <div className="mt-2 space-y-1">
+                                            <div className="flex items-center gap-1 text-sm text-gray-500">
+                                                <Clock className="w-4 h-4" />
+                                                {new Date(tx.timestamp).toLocaleString()}
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                                <div className="text-gray-500">
+                                                    From: {tx.from}
+                                                </div>
+                                                <div className="text-gray-500">
+                                                    {isBurned
+                                                        ? `To: Burned ${tx.type === 'coin' ? 'Coins' : 'NFT'} (Zero Address)`
+                                                        : `To: ${tx.to}`
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="text-right">
+                                    <div className={`text-lg font-bold ${
+                                        isBurned
+                                            ? 'text-orange-600'
+                                            : (isSent ? 'text-red-600' : 'text-green-600')
+                                    }`}>
+                                        {isBurned ? '🔥 ' : (isSent ? '-' : '+')}{displayValue}
+                                    </div>
+                                    {isSent && (
+                                        <div className="text-sm text-gray-500 mt-1">
+                                            Fee: {tx.fee} CC
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                              <div className="text-gray-500">
-                                From: {tx.from}
-                              </div>
-                              <div className="text-gray-500">
-                                To: {tx.to}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <div className={`text-lg font-bold ${
-                          isSent ? 'text-red-600' : 'text-green-600'
-                        }`}>
-                          {isSent ? '-' : '+'}{displayValue}
-                        </div>
-                        {tx.type === 'coin' && (
-                          <div className="text-sm text-gray-500 mt-1">
-                            Fee: {tx.fee} CC
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+                        </Link>
+                    );
+                })}
             </div>
           ) : (
             <div className="text-center py-12">

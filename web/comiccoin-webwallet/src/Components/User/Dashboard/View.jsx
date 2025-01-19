@@ -301,7 +301,8 @@ function DashboardPage() {
                 <div className="divide-y divide-gray-100">
                   {transactions.slice(0, 5).map((tx) => {
                     const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase();
-                    const displayValue = tx.type === 'coin' ? `${tx.actualValue} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
+                    const isBurned = tx.to.toLowerCase() === '0x0000000000000000000000000000000000000000';
+                    const displayValue = tx.type === 'coin' ? `${tx.value} CC` : `NFT #${tx.tokenId || 'Unknown'}`;
 
                     return (
                         <div key={tx.id} className="py-4 first:pt-0 last:pb-0">
@@ -311,23 +312,34 @@ function DashboardPage() {
                                     <div className={`p-2 rounded-lg ${
                                         tx.type === 'coin'
                                             ? (isSent ? 'bg-red-100' : 'bg-green-100')
-                                            : 'bg-purple-100'
+                                            : isBurned
+                                                ? 'bg-orange-100'
+                                                : 'bg-purple-100'
                                     }`}>
                                         {tx.type === 'coin' ? (
                                             <Coins className={`w-5 h-5 ${
                                                 isSent ? 'text-red-600' : 'text-green-600'
                                             }`} />
                                         ) : (
-                                            <Image className="w-5 h-5 text-purple-600" />
+                                            <Image className={`w-5 h-5 ${
+                                                isBurned ? 'text-orange-600' : 'text-purple-600'
+                                            }`} />
                                         )}
                                     </div>
 
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <span className={`font-medium ${
-                                                isSent ? 'text-red-600' : 'text-green-600'
+                                                tx.type === 'coin'
+                                                    ? (isSent ? 'text-red-600' : 'text-green-600')
+                                                    : isBurned
+                                                        ? 'text-orange-600'
+                                                        : (isSent ? 'text-red-600' : 'text-green-600')
                                             }`}>
-                                                {isSent ? 'Sent' : 'Received'} {tx.type === 'coin' ? 'Coins' : 'NFT'}
+                                                {isBurned
+                                                    ? `Burned ${tx.type === 'coin' ? 'Coins' : 'NFT'}`
+                                                    : `${isSent ? 'Sent' : 'Received'} ${tx.type === 'coin' ? 'Coins' : 'NFT'}`
+                                                }
                                             </span>
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                                 tx.status === 'confirmed'
@@ -345,9 +357,11 @@ function DashboardPage() {
                                                 {new Date(tx.timestamp).toLocaleString()}
                                             </div>
                                             <div className="text-xs text-gray-500">
-                                                {isSent
-                                                    ? `To: ${tx.to.slice(0, 8)}...${tx.to.slice(-6)}`
-                                                    : `From: ${tx.from.slice(0, 8)}...${tx.from.slice(-6)}`
+                                                {isBurned
+                                                    ? `Burned ${tx.type === 'coin' ? 'Coins' : 'NFT'} (Zero Address)`
+                                                    : isSent
+                                                        ? `To: ${tx.to.slice(0, 8)}...${tx.to.slice(-6)}`
+                                                        : `From: ${tx.from.slice(0, 8)}...${tx.from.slice(-6)}`
                                                 }
                                             </div>
                                         </div>
@@ -357,11 +371,12 @@ function DashboardPage() {
                                 {/* Right side - Amount and fee */}
                                 <div className="text-right">
                                     <div className={`text-lg font-bold ${
-                                        isSent ? 'text-red-600' : 'text-green-600'
+                                        isBurned
+                                            ? 'text-orange-600'
+                                            : (isSent ? 'text-red-600' : 'text-green-600')
                                     }`}>
-                                        {isSent ? '-' : '+'}{displayValue}
+                                        {isBurned ? '🔥 ' : (isSent ? '-' : '+')}{displayValue}
                                     </div>
-                                    {/* Always show fee for outgoing transactions */}
                                     {isSent && (
                                         <div className="text-xs text-gray-500 mt-1">
                                             Fee: {tx.fee} CC
