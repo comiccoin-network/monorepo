@@ -141,8 +141,8 @@ class NFTTransferService {
     console.log('Initial JSON (raw):', initialJson);
     console.log('Initial JSON bytes:', Array.from(ethers.toUtf8Bytes(initialJson)).map(b => b.toString(16).padStart(2, '0')));
 
-    // Create exact prefix as backend: \x19ComicNFT Signed Message:\n<length>
-    const prefix = `\x19ComicNFT Signed Message:\n${initialJson.length}`;
+    // Create exact prefix as backend: \x19ComicCoin Signed Message:\n<length>
+    const prefix = `\x19ComicCoin Signed Message:\n${initialJson.length}`;
     const stampBytes = ethers.toUtf8Bytes(prefix);
     const messageBytes = ethers.toUtf8Bytes(initialJson);
 
