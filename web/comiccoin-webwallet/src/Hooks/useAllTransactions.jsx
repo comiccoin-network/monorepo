@@ -15,7 +15,7 @@ export const useAllTransactions = (walletAddress) => {
 
         try {
             const txList = await blockchainService.fetchWalletTransactions(walletAddress);
-            const sortedTransactions = txList.sort((a, b) => b.timestamp - a.timestamp);
+            const sortedTransactions = txList.sort((a, b) => a.timestamp - b.timestamp);
             setTransactions(sortedTransactions);
         } catch (err) {
             setError(err.message);
@@ -45,15 +45,20 @@ export const useAllTransactions = (walletAddress) => {
             return sum;
         }, 0);
 
-        // Calculate NFT ownership
-        const ownedNfts = new Set();
+        // Create a map to track the current ownership of each NFT
+        const nftOwnership = new Map();
+
+        // Process transactions in chronological order to track ownership
         nftTxs.forEach(tx => {
-            if (tx.from.toLowerCase() === walletAddress?.toLowerCase()) {
-                ownedNfts.delete(tx.tokenId);
-            } else if (tx.to.toLowerCase() === walletAddress?.toLowerCase()) {
-                ownedNfts.add(tx.tokenId);
-            }
+            nftOwnership.set(tx.tokenId, tx.to.toLowerCase());
         });
+
+        // Count only NFTs where the current owner is this wallet
+        const ownedNfts = new Set(
+            Array.from(nftOwnership.entries())
+                .filter(([_, owner]) => owner === walletAddress?.toLowerCase())
+                .map(([tokenId]) => tokenId)
+        );
 
         return {
             totalTransactions: transactions.length,
@@ -64,8 +69,10 @@ export const useAllTransactions = (walletAddress) => {
         };
     }, [transactions, walletAddress]);
 
+    // Return values in ascending order by default (oldest first)
+    // Consumers can sort as needed
     return {
-        transactions,
+        transactions: transactions.sort((a, b) => b.timestamp - a.timestamp), // newest first for display
         loading,
         error,
         refresh: fetchAllTransactions,
