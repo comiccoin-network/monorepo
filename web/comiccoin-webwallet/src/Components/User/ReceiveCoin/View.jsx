@@ -16,7 +16,7 @@ import { useWallet } from '../../../Hooks/useWallet';
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
-const ReceivePage = () => {
+const ReceiveCoinPage = () => {
   const {
     currentWallet,
     loading: serviceLoading,
@@ -217,4 +217,4 @@ const ReceivePage = () => {
   );
 };
 
-export default ReceivePage;
+export default ReceiveCoinPage;

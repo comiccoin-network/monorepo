@@ -5,7 +5,7 @@ import { Globe, Monitor ,ArrowLeft, Shield, Wallet } from 'lucide-react';
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
-function Privacy() {
+function PrivacyPage() {
   return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
         {/* Skip to main content link for keyboard users */}
@@ -118,4 +118,4 @@ function Privacy() {
   );
 }
 
-export default Privacy;
+export default PrivacyPage;

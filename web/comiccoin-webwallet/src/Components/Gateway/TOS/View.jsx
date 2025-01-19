@@ -4,7 +4,7 @@ import { ArrowLeft, Scale, Mail, Phone, MapPin, Globe, Monitor, Wallet } from 'l
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
-function Terms() {
+function TermsPage() {
   return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
         {/* Skip to main content link for keyboard users */}
@@ -389,4 +389,4 @@ function Terms() {
   );
 }
 
-export default Terms;
+export default TermsPage;

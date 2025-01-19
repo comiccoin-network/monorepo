@@ -10,7 +10,7 @@ import TransferNFTPage from "./Components/User/NFT/Transfer/View";
 import NFTDetailPage from "./Components/User/NFT/Detail/View";
 import NFTListPage from "./Components/User/NFT/List/View";
 import TradePage from "./Components/User/Trade/View";
-import ReceiveCoin from "./Components/User/ReceiveCoin/View";
+import ReceiveCoinPage from "./Components/User/ReceiveCoin/View";
 import SendCoinsPage from "./Components/User/SendCoin/View";
 import DashboardPage from "./Components/User/Dashboard/View";
 import LoginHDWalletPage from "./Components/Gateway/LoginHDWallet/View";
@@ -18,10 +18,10 @@ import RecoverHDWalletPage from "./Components/Gateway/RecoverHDWallet/View";
 import CreateHDWalletPage from "./Components/Gateway/CreateHDWallet/View";
 import DownloadNativeWalletPage from "./Components/Gateway/DownloadNativeWallet/View";
 import GetStartedPage from "./Components/Gateway/GettingStarted/View";
-import Index from "./Components/Gateway/Index/View";
+import IndexPage from "./Components/Gateway/Index/View";
 import HelpPage from "./Components/Gateway/Help/View";
-import Terms from "./Components/Gateway/TOS/View";
-import Privacy from "./Components/Gateway/Privacy/View";
+import TermsPage from "./Components/Gateway/TOS/View";
+import PrivacyPage from "./Components/Gateway/Privacy/View";
 import NotImplementedError from "./Components/Misc/NotImplementedError";
 import NotFoundError from "./Components/Misc/NotFoundError";
 
@@ -43,7 +43,7 @@ function AppRoute() {
             <Route exact path="/nfts" element={<NFTListPage />} />
             <Route exact path="/nft" element={<NFTDetailPage />} />
             <Route exact path="/trade" element={<TradePage />} />
-            <Route exact path="/receive-coins" element={<ReceiveCoin />} />
+            <Route exact path="/receive-coins" element={<ReceiveCoinPage />} />
             <Route exact path="/send-coins" element={<SendCoinsPage />} />
             <Route exact path="/dashboard" element={<DashboardPage />} />
             <Route exact path="/login" element={<LoginHDWalletPage />} />
@@ -51,10 +51,10 @@ function AppRoute() {
             <Route exact path="/create-wallet" element={<CreateHDWalletPage />} />
             <Route exact path="/download-native-wallet" element={<DownloadNativeWalletPage />} />
             <Route exact path="/get-started" element={<GetStartedPage />} />
-            <Route exact path="/privacy" element={<Privacy />} />
-            <Route exact path="/terms" element={<Terms />} />
+            <Route exact path="/privacy" element={<PrivacyPage />} />
+            <Route exact path="/terms" element={<TermsPage />} />
             <Route exact path="/help" element={<HelpPage />} />
-            <Route exact path="/" element={<Index />} />
+            <Route exact path="/" element={<IndexPage />} />
             <Route path="*" element={<NotFoundError />} />
           </Routes>
         </Router>
