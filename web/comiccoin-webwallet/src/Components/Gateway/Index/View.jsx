@@ -4,6 +4,7 @@ import {
   Shield, Wallet, Key, RefreshCw, Github, ArrowRight,
   Monitor, Globe, CheckCircle, Apple, HardDrive, Image
 } from 'lucide-react';
+import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
 const IndexPage = () => {
@@ -14,51 +15,8 @@ const IndexPage = () => {
         Skip to main content
       </a>
 
-      {/* Platform Selection Banner */}
-      <div className="bg-purple-900 text-white py-4 px-4" role="banner">
-        <div className="max-w-6xl mx-auto flex flex-col space-y-2 sm:space-y-0 sm:flex-row items-center justify-between text-center sm:text-left">
-          <div className="flex items-center gap-2">
-            <Globe aria-hidden="true" className="h-5 w-5" />
-            <span className="text-sm sm:text-base">You're using the <strong>Web Wallet</strong></span>
-          </div>
-          <a
-            href="/download-native-wallet"
-            className="text-purple-200 hover:text-white flex items-center gap-1 text-sm whitespace-nowrap"
-          >
-            <Monitor className="h-4 w-4" />
-            <span>Desktop Wallet</span>
-            <ArrowRight className="h-4 w-4" />
-          </a>
-        </div>
-      </div>
-
       {/* Navigation */}
-      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-            <div className="flex items-center space-x-2">
-              <Wallet className="h-6 w-6 sm:h-8 sm:w-8" />
-              <span className="text-xl sm:text-2xl font-bold">
-                ComicCoin Web Wallet
-              </span>
-            </div>
-            <div className="flex space-x-3 w-full sm:w-auto">
-              <Link
-                to="/create-wallet"
-                className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-bold text-center"
-              >
-                Create Wallet
-              </Link>
-              <Link
-                to="/login"
-                className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-white hover:bg-purple-50 text-purple-700 font-bold text-center"
-              >
-                Access Wallet
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <NavigationMenu />
 
       <main id="main-content" className="flex-grow">
         <div className="max-w-6xl mx-auto px-4 py-6 sm:py-12">

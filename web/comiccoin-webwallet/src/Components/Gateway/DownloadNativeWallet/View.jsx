@@ -2,6 +2,7 @@
 import React from 'react';
 import { Wallet, Monitor, Globe, ArrowRight, Shield, Github, CheckCircle, Apple } from 'lucide-react';
 import { Link } from "react-router-dom";
+import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
 const DownloadNativeWalletPage = () => {
@@ -12,41 +13,8 @@ const DownloadNativeWalletPage = () => {
         Skip to main content
       </a>
 
-      {/* Platform Selection Banner */}
-      <div className="bg-purple-900 text-white py-3 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-center sm:text-left">
-          <div className="flex items-center gap-2 mb-2 sm:mb-0">
-            <Globe className="h-5 w-5" />
-            <span>You're viewing the <strong>Native Wallet Download</strong> page</span>
-          </div>
-          <Link
-            to="/"
-            className="text-purple-200 hover:text-white flex items-center gap-1 text-sm"
-          >
-            <Globe className="h-4 w-4" />
-            Switch to Web Wallet →
-          </Link>
-        </div>
-      </div>
-
       {/* Navigation */}
-      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-2">
-              <Wallet className="h-8 w-8" />
-              <span className="text-2xl font-bold" style={{fontFamily: 'Comic Sans MS'}}>
-                ComicCoin Web Wallet
-              </span>
-            </div>
-            <div className="flex space-x-4">
-              <Link to="/" className="text-white hover:text-purple-200 px-3 py-2">
-                Home
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <NavigationMenu />
 
       <main id="main-content" className="flex-grow">
         {/* Hero Section */}
