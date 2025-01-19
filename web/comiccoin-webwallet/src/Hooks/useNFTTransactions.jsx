@@ -15,8 +15,24 @@ export const useNFTTransactions = (walletAddress) => {
 
         try {
             const txList = await blockchainService.fetchWalletTransactions(walletAddress, 'token');
-            const sortedTransactions = txList.sort((a, b) => b.timestamp - a.timestamp);
-            setTransactions(sortedTransactions);
+
+            // Create a map to track the latest owner of each NFT
+            const nftOwnership = new Map();
+
+            // Sort transactions by timestamp in ascending order to process oldest first
+            const sortedTransactions = txList.sort((a, b) => a.timestamp - b.timestamp);
+
+            // Track ownership changes
+            sortedTransactions.forEach(tx => {
+                nftOwnership.set(tx.tokenId, tx.to.toLowerCase());
+            });
+
+            // Filter transactions to only include those where you're still the owner
+            const filteredTransactions = txList
+                .filter(tx => nftOwnership.get(tx.tokenId) === walletAddress.toLowerCase())
+                .sort((a, b) => b.timestamp - a.timestamp); // Sort by newest first for display
+
+            setTransactions(filteredTransactions);
         } catch (err) {
             setError(err.message);
             setTransactions([]);
@@ -32,12 +48,12 @@ export const useNFTTransactions = (walletAddress) => {
 
     // Calculate NFT-specific statistics
     const statistics = useMemo(() => {
-        // Calculate NFT ownership
+        // Create a map of currently owned NFTs
         const ownedNfts = new Set();
-        transactions.forEach(tx => {
-            if (tx.from.toLowerCase() === walletAddress?.toLowerCase()) {
-                ownedNfts.delete(tx.tokenId);
-            } else if (tx.to.toLowerCase() === walletAddress?.toLowerCase()) {
+        const processedTransactions = [...transactions].sort((a, b) => a.timestamp - b.timestamp);
+
+        processedTransactions.forEach(tx => {
+            if (tx.to.toLowerCase() === walletAddress?.toLowerCase()) {
                 ownedNfts.add(tx.tokenId);
             }
         });
