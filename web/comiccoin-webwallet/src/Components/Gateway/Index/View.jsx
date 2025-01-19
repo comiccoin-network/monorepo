@@ -11,7 +11,8 @@ import {
   Globe,
   CheckCircle,
   Apple,
-  HardDrive
+  HardDrive,
+  Image
 } from 'lucide-react';
 import FooterMenu from "../FooterMenu/View";
 
@@ -204,7 +205,12 @@ const IndexPage = () => {
                 icon: <RefreshCw className="h-8 w-8 text-purple-600" />,
                 title: "Easy Recovery",
                 description: "Restore your wallet anytime using your recovery phrase"
-              }
+            },
+            {
+              icon: <Image className="h-8 w-8 text-purple-600" />,
+              title: "NFT Support",
+              description: "View, transfer and burn non-fungible tokens you own"
+            }
             ].map((feature, index) => (
               <div
                 key={index}
