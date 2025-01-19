@@ -40,7 +40,7 @@ const MorePage = () => {
       link: "/transactions",
       isExternal: false
     },
-
+    
     // TODO: UNCOMMENT WHEN READY
     // {
     //   title: "Recovery Key",
