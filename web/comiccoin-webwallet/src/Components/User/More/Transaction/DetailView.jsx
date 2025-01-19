@@ -47,6 +47,8 @@ function TransactionDetailPage() {
     const { metadata: nftMetadata, loading: nftLoading, error: nftError } = useNFTMetadata(
         currentTransaction?.type === 'token' ? currentTransaction.token_metadata_uri : null
     );
+    const isNFTTransferredAway = currentTransaction?.type === 'token' &&
+    currentTransaction.from.toLowerCase() === currentWallet?.address.toLowerCase();
 
     // Session checking effect
     useEffect(() => {
@@ -314,7 +316,7 @@ function TransactionDetailPage() {
         <h3 className="text-lg font-bold text-gray-900 mb-4">NFT Details</h3>
 
         {/* NFT Preview Link */}
-        <div className="mb-6">
+        {!isNFTTransferredAway && ( <div className="mb-6">
             <Link
                 to={`/nft?token_id=${currentTransaction.token_id_string}&token_metadata_uri=${currentTransaction.token_metadata_uri}`}
                 className="block p-6 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors"
@@ -331,6 +333,7 @@ function TransactionDetailPage() {
                 </div>
             </Link>
         </div>
+        )}
 
         <div className="grid grid-cols-1 gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -388,7 +391,7 @@ function TransactionDetailPage() {
             </div>
 
             {/* NFT Metadata Display */}
-            <div>
+            {!isNFTTransferredAway && (<div>
                 <h4 className="text-sm font-medium text-gray-500 mb-2">NFT Metadata</h4>
                 <div className="bg-gray-50 rounded-lg p-4">
                     {nftLoading && (
@@ -408,7 +411,7 @@ function TransactionDetailPage() {
                         </pre>
                     )}
                 </div>
-            </div>
+            </div>)}
         </div>
     </div>
 )}
