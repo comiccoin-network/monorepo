@@ -136,7 +136,7 @@ const DownloadNativeWalletPage = () => {
                 </a>
 
                 <p className="text-center text-sm text-gray-500">
-                  Requires macOS 11.0 (Big Sur) or higher
+                  Requires macOS 15.2 (Sequoia) or higher
                 </p>
               </div>
             </div>
