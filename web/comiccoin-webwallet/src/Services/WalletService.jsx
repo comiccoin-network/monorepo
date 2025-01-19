@@ -43,9 +43,11 @@ class WalletService {
     async createWalletFromMnemonic(mnemonic, password) {
         try {
             const normalizedMnemonic = mnemonic.trim().toLowerCase();
-
-            // Create HD wallet from mnemonic
             const hdWallet = HDNodeWallet.fromPhrase(normalizedMnemonic);
+
+            // Developers Note: Don't store the mnemonic phrase,
+            // Most web3 wallets (like MetaMask) do NOT store the mnemonic
+            // phrase but require users to write it down during wallet creation.
 
             const walletData = {
                 id: crypto.randomUUID(),
