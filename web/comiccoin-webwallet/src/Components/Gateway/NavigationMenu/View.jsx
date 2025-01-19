@@ -85,7 +85,7 @@ const NavigationMenu = (props) => {
       return (
          <>
          {/* Platform Selection Banner */}
-         {location.pathname === "/" ?
+         {location.pathname !== "/download-native-wallet" ?
           <div className="bg-purple-900 text-white py-4 px-4" role="banner">
            <div className="max-w-6xl mx-auto flex flex-col space-y-2 sm:space-y-0 sm:flex-row items-center justify-between text-center sm:text-left">
              <div className="flex items-center gap-2">
