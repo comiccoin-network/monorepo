@@ -99,7 +99,7 @@ export const useWalletTransactions = (walletAddress) => {
             totalTransactions: transactions.length,
             coinTransactionsCount: coinTxs.length,
             nftTransactionsCount: nftTxs.length,
-            totalCoinValue: Math.max(0, parseFloat(totalCoinValue.toFixed(6))), // Ensure non-negative with 6 decimal precision
+            totalCoinValue: Math.max(0, totalCoinValue), // Ensure non-negative.
             totalNftCount: ownedNfts.size,
         };
     }, [transactions, walletAddress]);

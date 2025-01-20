@@ -31,79 +31,74 @@ export const useAllTransactions = (walletAddress) => {
 
     // Calculate comprehensive statistics with corrected fee handling
     const statistics = useMemo(() => {
-        const coinTxs = transactions.filter(tx => tx.type === 'coin');
-        const nftTxs = transactions.filter(tx => tx.type === 'token');
+    const coinTxs = transactions.filter(tx => tx.type === 'coin');
+    const nftTxs = transactions.filter(tx => tx.type === 'token');
 
-        // Calculate total coin value with proper fee handling
-        const totalCoinValue = transactions.reduce((sum, tx) => {
-            const txValue = Number(tx.value) || 0;
-            const txFee = Number(tx.fee) || 0;
-            const currentAddress = walletAddress?.toLowerCase();
+    // Calculate total coin value with proper fee handling, using integer math
+    const totalCoinValue = transactions.reduce((sum, tx) => {
+        const txValue = Math.floor(Number(tx.value)) || 0;
+        const txFee = Math.floor(Number(tx.fee)) || 0;
+        const currentAddress = walletAddress?.toLowerCase();
 
-            if (tx.type === 'coin') {
-                if (tx.from.toLowerCase() === currentAddress) {
-                    // When sending coins - value already includes fee deduction
-                    return sum - txValue;
-                } else if (tx.to.toLowerCase() === currentAddress) {
-                    // When receiving coins - subtract fee from received amount
-                    return sum + (txValue - txFee);
-                }
-            } else {
-                // For NFT transactions:
-                if (tx.from.toLowerCase() === currentAddress) {
-                    // When sending NFTs, fee is included in the transaction
-                    return sum;
-                } else if (tx.to.toLowerCase() === currentAddress) {
-                    // When receiving NFTs, subtract the fee
-                    return sum - txFee;
-                }
+        if (tx.type === 'coin') {
+            if (tx.from.toLowerCase() === currentAddress) {
+                return sum - txValue;
+            } else if (tx.to.toLowerCase() === currentAddress) {
+                return sum + (txValue - txFee);
             }
-            return sum;
-        }, 0);
+        } else {
+            if (tx.from.toLowerCase() === currentAddress) {
+                return sum;
+            } else if (tx.to.toLowerCase() === currentAddress) {
+                return sum - txFee;
+            }
+        }
+        return sum;
+    }, 0);
 
-        // Track NFT ownership
-        const nftOwnership = new Map();
-        nftTxs.forEach(tx => {
-            nftOwnership.set(tx.tokenId, tx.to.toLowerCase());
-        });
+    // Track NFT ownership (unchanged as it's already using integers)
+    const nftOwnership = new Map();
+    nftTxs.forEach(tx => {
+        nftOwnership.set(tx.tokenId, tx.to.toLowerCase());
+    });
 
-        const ownedNfts = new Set(
-            Array.from(nftOwnership.entries())
-                .filter(([_, owner]) => owner === walletAddress?.toLowerCase())
-                .map(([tokenId]) => tokenId)
-        );
+    const ownedNfts = new Set(
+        Array.from(nftOwnership.entries())
+            .filter(([_, owner]) => owner === walletAddress?.toLowerCase())
+            .map(([tokenId]) => tokenId)
+    );
+
+    return {
+        totalTransactions: transactions.length,
+        coinTransactionsCount: coinTxs.length,
+        nftTransactionsCount: nftTxs.length,
+        totalCoinValue: Math.max(0, Math.floor(totalCoinValue)),
+        totalNftCount: ownedNfts.size
+    };
+}, [transactions, walletAddress]);
+
+// Process transactions for display with integer values
+const processedTransactions = useMemo(() => {
+    return transactions.map(tx => {
+        const isSender = tx.from.toLowerCase() === walletAddress?.toLowerCase();
+        const txValue = Math.floor(Number(tx.value)) || 0;
+        const txFee = Math.floor(Number(tx.fee)) || 0;
+
+        let actualValue;
+        if (tx.type === 'token') {
+            actualValue = 0;
+        } else if (isSender) {
+            actualValue = txValue;
+        } else {
+            actualValue = txValue - txFee;
+        }
 
         return {
-            totalTransactions: transactions.length,
-            coinTransactionsCount: coinTxs.length,
-            nftTransactionsCount: nftTxs.length,
-            totalCoinValue: Math.max(0, parseFloat(totalCoinValue.toFixed(6))), // Ensure non-negative with 6 decimal precision
-            totalNftCount: ownedNfts.size
+            ...tx,
+            actualValue: Math.floor(actualValue)
         };
-    }, [transactions, walletAddress]);
-
-    // Process transactions for display with corrected actual value calculation
-    const processedTransactions = useMemo(() => {
-        return transactions.map(tx => {
-            const isSender = tx.from.toLowerCase() === walletAddress?.toLowerCase();
-            const txValue = Number(tx.value) || 0;
-            const txFee = Number(tx.fee) || 0;
-
-            let actualValue;
-            if (tx.type === 'token') {
-                actualValue = 0; // NFTs don't have a CC value
-            } else if (isSender) {
-                actualValue = txValue; // For sent transactions, show the total amount (fee already included)
-            } else {
-                actualValue = txValue - txFee; // For received transactions, subtract the fee
-            }
-
-            return {
-                ...tx,
-                actualValue: parseFloat(actualValue.toFixed(6))
-            };
-        });
-    }, [transactions, walletAddress]);
+    });
+}, [transactions, walletAddress]);
 
     return {
         transactions: processedTransactions,

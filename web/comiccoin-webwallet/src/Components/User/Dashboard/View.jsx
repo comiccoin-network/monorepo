@@ -137,8 +137,8 @@ function DashboardPage() {
                 {recentTransactions.map((tx) => {
                     const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase();
                     const isBurned = tx.to.toLowerCase() === '0x0000000000000000000000000000000000000000';
-                    const txValue = Number(tx.value) || 0;
-                    const txFee = Number(tx.fee) || 0;
+                    const txValue = Math.floor(Number(tx.value)) || 0;
+                    const txFee = Math.floor(Number(tx.fee)) || 0;
                     const isNFT = tx.type === 'token';
 
                     return (
@@ -252,7 +252,7 @@ function DashboardPage() {
                                                     </div>
                                                     <div className="flex justify-between items-center pt-1 border-t border-gray-100 text-sm sm:text-base">
                                                         <span className="font-medium text-gray-600">Actual Received:</span>
-                                                        <span className="font-bold text-green-600">{(txValue - txFee).toFixed(6)} CC</span>
+                                                        <span className="font-bold text-green-600">{txValue - txFee} CC</span>
                                                     </div>
                                                 </>
                                             )}
