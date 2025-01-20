@@ -47,10 +47,12 @@ export const useAllTransactions = (walletAddress) => {
                 return sum + (txValue - txFee);
             }
         } else {
+            // Developers note: NFTs do not affect sum as transaction fee
+            // subtracts any ComicCoin value. NFTs have no ComicCoin value.
             if (tx.from.toLowerCase() === currentAddress) {
                 return sum;
             } else if (tx.to.toLowerCase() === currentAddress) {
-                return sum - txFee;
+                return sum;
             }
         }
         return sum;

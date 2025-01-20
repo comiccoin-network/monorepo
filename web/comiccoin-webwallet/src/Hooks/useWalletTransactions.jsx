@@ -72,11 +72,13 @@ export const useWalletTransactions = (walletAddress) => {
             } else {
                 // For NFT transactions:
                 if (tx.from.toLowerCase() === currentAddress) {
-                    // When sending NFTs, fee is included in the transaction
+                    // Developers note: NFTs do not affect sum as transaction fee
+                    // subtracts any ComicCoin value. NFTs have no ComicCoin value.
                     return sum;
                 } else if (tx.to.toLowerCase() === currentAddress) {
-                    // When receiving NFTs, subtract the fee
-                    return sum - txFee;
+                    // Developers note: NFTs do not affect sum as transaction fee
+                    // subtracts any ComicCoin value. NFTs have no ComicCoin value.
+                    return sum;
                 }
             }
             return sum;
