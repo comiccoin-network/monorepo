@@ -313,20 +313,25 @@ const SendCoinsPage = () => {
              Pay To <span className="text-red-500">*</span>
            </span>
            <input
-             type="text"
-             id="recipientAddress"
-             name="recipientAddress"
-             value={formData.recipientAddress}
-             onChange={handleInputChange}
-             className={`mt-2 block w-full px-3 md:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm md:text-base font-mono ${
-               formErrors.recipientAddress ? 'border-red-300 bg-red-50' : 'border-gray-200'
-             }`}
-             placeholder="Enter recipient's wallet address"
-             inputMode="text"
-             autoCapitalize="none"
-             autoCorrect="off"
-             spellCheck="false"
-           />
+  type="text"
+  id="recipientAddress"
+  name="recipientAddress"
+  value={formData.recipientAddress}
+  onChange={handleInputChange}
+  className={`mt-2 block w-full px-3 md:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-base font-mono ${
+    formErrors.recipientAddress ? 'border-red-300 bg-red-50' : 'border-gray-200'
+  }`}
+  placeholder="Enter recipient's wallet address"
+  inputMode="text"
+  autoCapitalize="none"
+  autoCorrect="off"
+  spellCheck="false"
+  enterKeyHint="next"
+  // Add these attributes
+  data-lpignore="true"
+  autoComplete="off"
+/>
+
            {formErrors.recipientAddress && (
              <p className="mt-2 text-xs md:text-sm text-red-600 flex items-center gap-2">
                <AlertCircle className="w-4 h-4" />
@@ -349,20 +354,23 @@ const SendCoinsPage = () => {
              </span>
            </div>
            <input
-             type="number"
-             id="amount"
-             name="amount"
-             value={formData.amount}
-             onChange={handleInputChange}
-             max={statistics?.totalCoinValue}
-             className={`block w-full px-3 md:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm md:text-base ${
-               formErrors.amount ? 'border-red-300 bg-red-50' : 'border-gray-200'
-             }`}
-             placeholder="Enter amount"
-             inputMode="decimal"
-             step="0.000001"
-             min="0"
-           />
+   type="number"
+   id="amount"
+   name="amount"
+   value={formData.amount}
+   onChange={handleInputChange}
+   className={`block w-full px-3 md:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-base ${
+     formErrors.amount ? 'border-red-300 bg-red-50' : 'border-gray-200'
+   }`}
+   placeholder="Enter amount"
+   inputMode="decimal"
+   step="0.000001"
+   min="0"
+   enterKeyHint="next"
+   // Add these attributes
+   data-lpignore="true"
+   autoComplete="off"
+ />
            {formErrors.amount ? (
              <p className="mt-2 text-xs md:text-sm text-red-600 flex items-center gap-2">
                <AlertCircle className="w-4 h-4" />
@@ -393,14 +401,19 @@ const SendCoinsPage = () => {
              </span>
            </div>
            <textarea
-             id="note"
-             name="note"
-             value={formData.note}
-             onChange={handleInputChange}
-             rows={3}
-             className="mt-1 block w-full px-3 md:px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm md:text-base"
-             placeholder="Add a message to this transaction"
-           />
+   id="note"
+   name="note"
+   value={formData.note}
+   onChange={handleInputChange}
+   rows={3}
+   className="mt-1 block w-full px-3 md:px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-base"
+   placeholder="Add a message to this transaction"
+   enterKeyHint="next"
+   // Add these attributes
+   data-lpignore="true"
+   autoComplete="off"
+ />
+
            <p className="mt-1 text-xs text-gray-500">
              This message will be visible to the recipient.
            </p>
@@ -416,17 +429,20 @@ const SendCoinsPage = () => {
              </span>
            </div>
            <input
-             type="password"
-             id="password"
-             name="password"
-             value={formData.password}
-             onChange={handleInputChange}
-             className={`block w-full px-3 md:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm md:text-base ${
-               formErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
-             }`}
-             placeholder="Enter your wallet password"
-             autoComplete="off"
-           />
+   type="password"
+   id="password"
+   name="password"
+   value={formData.password}
+   onChange={handleInputChange}
+   className={`block w-full px-3 md:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-base ${
+     formErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
+   }`}
+   placeholder="Enter your wallet password"
+   enterKeyHint="done"
+   // Add these attributes
+   data-lpignore="true"
+   autoComplete="off"
+ />
            {formErrors.password && (
              <p className="mt-2 text-xs md:text-sm text-red-600 flex items-center gap-2">
                <AlertCircle className="w-4 h-4" />

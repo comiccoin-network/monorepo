@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Prevent iOS input zoom */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* iOS viewport fix (caused by iOS input zoom issue) */
+@supports (-webkit-touch-callout: none) {
+  .footer-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

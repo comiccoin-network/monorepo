@@ -321,16 +321,23 @@ const TransferNFTPage = () => {
               </span>
               <div className="mt-1 relative">
                 <input
-                  type="text"
-                  id="recipientAddress"
-                  name="recipientAddress"
-                  value={formData.recipientAddress}
-                  onChange={handleInputChange}
-                  className={`block w-full px-3 md:px-4 py-2 md:py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm md:text-base ${
-                    formErrors.recipientAddress ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                  }`}
-                  placeholder="Enter recipient's wallet address"
-                  autoComplete="off"
+                type="text"
+                id="recipientAddress"
+                name="recipientAddress"
+                value={formData.recipientAddress}
+                onChange={handleInputChange}
+                className={`mt-2 block w-full px-3 md:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-base font-mono ${
+                  formErrors.recipientAddress ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                }`}
+                placeholder="Enter recipient's wallet address"
+                inputMode="text"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
+                enterKeyHint="next"
+                // Add these attributes
+                data-lpignore="true"
+                autoComplete="off"
                 />
                 {formErrors.recipientAddress && (
                   <p className="mt-1 text-xs md:text-sm text-red-600 flex items-center gap-1 md:gap-2">
@@ -351,16 +358,19 @@ const TransferNFTPage = () => {
               </div>
               <div className="mt-1 relative">
                 <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={`block w-full px-3 md:px-4 py-2 md:py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm md:text-base ${
-                    formErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                  }`}
-                  placeholder="Enter your wallet password"
-                  autoComplete="off"
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`block w-full px-3 md:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-base ${
+                  formErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                }`}
+                placeholder="Enter your wallet password"
+                enterKeyHint="done"
+                // Add these attributes
+                data-lpignore="true"
+                autoComplete="off"
                 />
                 {formErrors.password && (
                   <p className="mt-1 text-xs md:text-sm text-red-600 flex items-center gap-1 md:gap-2">
