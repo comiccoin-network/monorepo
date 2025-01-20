@@ -79,7 +79,7 @@ const MorePage = () => {
 
     {
       title: "ComicCoin Faucet",
-      description: "Get free test coins for development",
+      description: "Get free coins for your wallet",
       icon: Droplets,
       link: "https://comiccoinfaucet.com",
       isExternal: true
@@ -208,49 +208,87 @@ const MorePage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
-      >
-        Skip to main content
-      </a>
+  <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+    <a
+      href="#main-content"
+      className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
+    >
+      Skip to main content
+    </a>
 
-      <NavigationMenu onSignOut={handleSignOut} />
+    <NavigationMenu onSignOut={handleSignOut} />
 
-      <main id="main-content" className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-12 mb-16 md:mb-0">
+    <main id="main-content" className="flex-grow flex flex-col px-4 md:px-6 lg:px-8 py-6 md:py-12">
+      <div className="w-full max-w-7xl mx-auto">
         {/* Error Messages */}
         {error && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            <p className="text-red-800">{error}</p>
+          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm md:text-base text-red-800">{error}</p>
           </div>
         )}
 
         {isSessionExpired && (
-          <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
-            <p className="text-yellow-800">Session expired. Redirecting to login...</p>
+          <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm md:text-base text-yellow-800">Session expired. Redirecting to login...</p>
           </div>
         )}
 
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-purple-800 mb-4">More Options</h1>
-          <p className="text-xl text-gray-600">Access additional features and settings</p>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-purple-800 mb-2 md:mb-4">More Options</h1>
+          <p className="text-lg md:text-xl text-gray-600">Access additional features and settings</p>
         </div>
 
         {/* Menu Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {menuItems.map((item, index) => (
-            <MenuCard key={index} item={item} />
-          ))}
-        </div>
-      </main>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-24 md:pb-0">
+          {menuItems.map((item, index) => {
+            const Icon = item.icon;
+            const CardContent = () => (
+              <div className="flex items-start gap-4 p-4 md:p-6 bg-white rounded-xl border-2 border-gray-100 hover:border-purple-200 transition-colors group touch-manipulation">
+                <div className="p-3 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+                  <Icon className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 md:mb-2">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-900 truncate">{item.title}</h3>
+                    {item.isExternal && (
+                      <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
+                </div>
+              </div>
+            );
 
-      <FooterMenu />
-    </div>
-  );
+            return item.isExternal ? (
+            <a
+                key={index}
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block transition-transform active:scale-[0.98]"
+              >
+                <CardContent />
+              </a>
+            ) : (
+              <Link
+                key={index}
+                to={item.link}
+                className="block transition-transform active:scale-[0.98]"
+              >
+                <CardContent />
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </main>
+
+    <FooterMenu />
+  </div>
+);
 };
 
 export default MorePage;
