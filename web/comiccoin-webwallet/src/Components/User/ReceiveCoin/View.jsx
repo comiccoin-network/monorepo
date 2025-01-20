@@ -117,87 +117,83 @@ const ReceiveCoinPage = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       <NavigationMenu />
 
-      <main className="flex-grow w-full mx-auto px-4 sm:px-6 py-6 sm:py-12 mb-20 sm:mb-0">
-        <div className="max-w-4xl mx-auto">
+      <main className="flex-grow w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 mb-20 sm:mb-0">
+        <div className="max-w-[800px] mx-auto">
           {/* Page Header */}
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-purple-800 mb-2 sm:mb-4">Receive</h1>
-            <p className="text-lg sm:text-xl text-gray-600">Accept ComicCoins and NFTs to your wallet</p>
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-purple-800 mb-1 sm:mb-2">Receive</h1>
+            <p className="text-base sm:text-lg text-gray-600">Accept ComicCoins and NFTs to your wallet</p>
           </div>
 
-          <div className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden">
-            <div className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="p-2 bg-purple-100 rounded-xl">
-                    <QrCode className="w-5 h-5 text-purple-600" aria-hidden="true" />
-                  </div>
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">Receive ComicCoins</h2>
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-gray-100">
+              <div className="flex items-center gap-2 sm:gap-3 mb-1.5">
+                <div className="p-1.5 bg-purple-50 rounded-lg">
+                  <QrCode className="w-4 h-4 text-purple-600" aria-hidden="true" />
                 </div>
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">Receive ComicCoins</h2>
               </div>
               <p className="text-sm text-gray-500">
                 Share your wallet address or QR code to receive coins and NFTs.
               </p>
             </div>
 
-            <div className="px-4 sm:px-6 pb-6 space-y-6 sm:space-y-8">
-              {/* QR Code with enhanced size and actions */}
-              <div className="relative">
-                <div className="flex justify-center">
-                  <div className="p-4 sm:p-8 bg-white rounded-2xl border-2 border-gray-100 w-full">
-                    <QRCodeSVG
-                      id="wallet-qr"
-                      value={currentWallet.address}
-                      size={280}
-                      className="w-full h-auto max-w-[280px] mx-auto"
-                      level="H"
-                      includeMargin={true}
-                    />
-                    {/* Action buttons below QR */}
-                    <div className="mt-4 flex justify-center gap-3">
-                      <button
-                        onClick={handlePrintQR}
-                        className="flex items-center justify-center gap-2 h-12 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors touch-manipulation"
-                        title="Print QR Code"
-                      >
-                        <Printer className="w-5 h-5" />
-                        <span className="text-sm">Print</span>
-                      </button>
-                      <button
-                        onClick={handleDownloadQR}
-                        className="flex items-center justify-center gap-2 h-12 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors touch-manipulation"
-                        title="Download QR Code"
-                      >
-                        <Download className="w-5 h-5" />
-                        <span className="text-sm">Download</span>
-                      </button>
-                    </div>
+            <div className="p-4 sm:p-5 space-y-5">
+              {/* QR Code section */}
+              <div className="flex flex-col items-center">
+                <div className="bg-white rounded-xl border border-gray-100 p-6 sm:p-8 w-full max-w-sm">
+                  <QRCodeSVG
+                    id="wallet-qr"
+                    value={currentWallet.address}
+                    size={240}
+                    className="w-full h-auto"
+                    level="H"
+                    includeMargin={true}
+                  />
+                  {/* Action buttons */}
+                  <div className="mt-4 flex justify-center gap-2">
+                    <button
+                      onClick={handlePrintQR}
+                      className="flex items-center justify-center gap-1.5 h-9 px-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation"
+                      title="Print QR Code"
+                    >
+                      <Printer className="w-4 h-4" />
+                      <span className="text-sm">Print</span>
+                    </button>
+                    <button
+                      onClick={handleDownloadQR}
+                      className="flex items-center justify-center gap-1.5 h-9 px-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation"
+                      title="Download QR Code"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span className="text-sm">Download</span>
+                    </button>
                   </div>
                 </div>
               </div>
 
               {/* Wallet Address */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-gray-700">
                   Your Wallet Address
                 </label>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="flex-grow relative">
+                  <div className="flex-grow">
                     <input
                       type="text"
                       readOnly
                       value={currentWallet.address}
-                      className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-lg font-mono text-sm text-gray-800"
+                      className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg font-mono text-sm text-gray-800"
                     />
                   </div>
                   <button
                     onClick={handleCopyAddress}
-                    className="flex items-center justify-center gap-2 h-12 px-6 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors touch-manipulation"
+                    className="flex items-center justify-center gap-1.5 h-10 px-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors touch-manipulation whitespace-nowrap"
                   >
                     {copied ? (
-                      <CheckCircle2 className="w-5 h-5" />
+                      <CheckCircle2 className="w-4 h-4" />
                     ) : (
-                      <Copy className="w-5 h-5" />
+                      <Copy className="w-4 h-4" />
                     )}
                     <span className="text-sm">{copied ? 'Copied!' : 'Copy'}</span>
                   </button>
@@ -212,7 +208,7 @@ const ReceiveCoinPage = () => {
                     href="https://comiccoinfaucet.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-purple-600 hover:text-purple-700 underline"
+                    className="text-purple-600 hover:text-purple-700"
                   >
                     ComicCoin Faucet
                   </a>
