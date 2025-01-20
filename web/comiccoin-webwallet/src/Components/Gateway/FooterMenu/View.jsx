@@ -51,18 +51,17 @@ function Footer() {
                   <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               </li>
-              {/*
+
               <li>
                 <Link
-                  href="/docs"
+                  to="https://comiccoinfaucet.com"
                   className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
                 >
-                  <BookMarked className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
-                  <span>Documentation</span>
+                  <Coins className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                  <span>Faucet</span>
                   <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </a>
+                </Link>
               </li>
-            */}
           </ul>
           </div>
 
