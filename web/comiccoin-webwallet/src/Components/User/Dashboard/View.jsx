@@ -150,17 +150,18 @@ function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
-      >
-        Skip to main content
-      </a>
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
+        >
+          Skip to main content
+        </a>
 
-      <NavigationMenu onSignOut={handleSignOut} />
+        <NavigationMenu onSignOut={handleSignOut} />
 
-      <main id="main-content" className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 mb-20 sm:mb-0">
+        <main id="main-content" className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 mb-20 sm:mb-0">
+
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 sm:mb-12">
             <h1 className="text-3xl sm:text-4xl font-bold text-purple-800 mb-2 sm:mb-4">Dashboard</h1>
@@ -304,38 +305,7 @@ function DashboardPage() {
           )}
         </div>
       </main>
-
-      {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 sm:hidden">
-        <div className="flex justify-around items-center h-16">
-          <Link to="/" className="flex flex-col items-center px-3 py-2 text-purple-600">
-            <Monitor className="w-6 h-6" />
-            <span className="text-xs mt-1">Desktop</span>
-          </Link>
-          <Link to="/receive-coins" className="flex flex-col items-center px-3 py-2 text-gray-600">
-            <ArrowDownRight className="w-6 h-6" />
-            <span className="text-xs mt-1">Receive</span>
-          </Link>
-          <Link to="/send-coins" className="flex flex-col items-center px-3 py-2 text-gray-600">
-            <Send className="w-6 h-6" />
-            <span className="text-xs mt-1">Send</span>
-          </Link>
-          <Link to="/trade" className="flex flex-col items-center px-3 py-2 text-gray-600">
-            <ArrowUpRight className="w-6 h-6" />
-            <span className="text-xs mt-1">Trade</span>
-          </Link>
-          <Link to="/nfts" className="flex flex-col items-center px-3 py-2 text-gray-600">
-            <Image className="w-6 h-6" />
-            <span className="text-xs mt-1">NFTs</span>
-          </Link>
-          <Link to="/more" className="flex flex-col items-center px-3 py-2 text-gray-600">
-            <MoreHorizontal className="w-6 h-6" />
-            <span className="text-xs mt-1">More</span>
-          </Link>
-        </div>
-      </nav>
-
-      <FooterMenu className="hidden sm:block" />
+      <FooterMenu />
     </div>
   );
 }
