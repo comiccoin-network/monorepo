@@ -37,7 +37,7 @@ const NavigationMenu = ({ onSignOut }) => {
           <div className="flex items-center space-x-2">
             <Wallet aria-hidden="true" className="h-8 w-8" />
             <span className="text-2xl font-bold hidden sm:inline">ComicCoin Web Wallet</span>
-            <span className="text-2xl font-bold sm:hidden">CCW</span>
+            <span className="text-2xl font-bold sm:hidden">ComicCoin Wallet</span>
           </div>
 
           {/* Desktop Navigation */}
