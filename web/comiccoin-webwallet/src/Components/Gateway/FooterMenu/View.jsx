@@ -58,7 +58,7 @@ function Footer() {
                   className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
                 >
                   <Coins className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
-                  <span>Faucet</span>
+                  <span>Official Faucet</span>
                   <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               </li>
