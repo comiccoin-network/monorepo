@@ -22,7 +22,6 @@ const NavigationMenu = ({ onSignOut }) => {
     { name: 'Dashboard', icon: Home, path: '/dashboard' },
     { name: 'Receive', icon: ArrowDownRight, path: '/receive-coins' },
     { name: 'Send', icon: Send, path: '/send-coins' },
-    { name: 'Trade', icon: ArrowUpRight, path: '/trade' },
     { name: 'NFTs', icon: ImageIcon, path: '/nfts' },
     { name: 'More', icon: MoreHorizontal, path: '/more' }
   ];
