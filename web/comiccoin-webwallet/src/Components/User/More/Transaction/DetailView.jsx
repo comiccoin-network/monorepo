@@ -186,258 +186,252 @@ function TransactionDetailPage() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-            <NavigationMenu />
+  <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+    <NavigationMenu />
 
-            <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-16 md:mb-0">
-                {isSessionExpired && (
-                    <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-6 h-6 text-yellow-500 flex-shrink-0" />
-                            <p className="text-yellow-800">Session expired. Redirecting to login...</p>
-                        </div>
-                    </div>
-                )}
-
-                <Link
-                    to="/transactions"
-                    className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 mb-6"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to Transactions
-                </Link>
-
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-purple-800 mb-4">Transaction Details</h1>
-                    <p className="text-xl text-gray-600">
-                        Block #{blockData.header.number_string} • Transaction Nonce: {currentTransaction.nonce_string || formatBytes(currentTransaction.nonce_bytes)}
-                    </p>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden">
-                    <div className={`px-6 py-4 ${
-                        currentTransaction.type === 'coin' ? 'bg-blue-50' : 'bg-purple-50'
-                    }`}>
-                        <div className="flex items-center gap-3">
-                            {currentTransaction.type === 'coin' ? (
-                                <Coins className="w-6 h-6 text-blue-600" />
-                            ) : (
-                                <ImageIcon className="w-6 h-6 text-purple-600" />
-                            )}
-                            <h2 className="text-xl font-bold">
-                                {currentTransaction.type === 'coin' ? 'Coin Transaction' : 'NFT Transaction'}
-                            </h2>
-                        </div>
-                    </div>
-
-                    <div className="p-6 space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">From Address</h3>
-                                <div className="flex items-center gap-2">
-                                    <code className="text-sm bg-gray-50 p-2 rounded flex-1 break-all">
-                                        {currentTransaction.from}
-                                    </code>
-                                    <button
-                                        onClick={() => copyToClipboard(currentTransaction.from)}
-                                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">To Address</h3>
-                                <div className="flex items-center gap-2">
-                                    <code className="text-sm bg-gray-50 p-2 rounded flex-1 break-all">
-                                        {currentTransaction.to}
-                                    </code>
-                                    <button
-                                        onClick={() => copyToClipboard(currentTransaction.to)}
-                                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">Value</h3>
-                                <p className="text-lg font-bold text-gray-900">
-                                    {currentTransaction.value} CC
-                                </p>
-                            </div>
-
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">Transaction Fee</h3>
-                                <p className="text-lg font-bold text-gray-900">
-                                    {currentTransaction.fee} CC
-                                </p>
-                            </div>
-
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">Chain ID</h3>
-                                <p className="text-lg font-bold text-gray-900">
-                                    {currentTransaction.chain_id}
-                                </p>
-                            </div>
-
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">Timestamp</h3>
-                                <p className="text-lg font-bold text-gray-900">
-                                    {new Date(currentTransaction.timestamp).toLocaleString()}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="border-t border-gray-100 pt-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Signature Details</h3>
-                            <div className="grid grid-cols-1 gap-4">
-                                <div>
-                                    <h4 className="text-sm font-medium text-gray-500 mb-1">V (Recovery Identifier)</h4>
-                                    <code className="text-sm bg-gray-50 p-2 rounded block break-all">
-                                        {formatBytes(currentTransaction.v_bytes)}
-                                    </code>
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-medium text-gray-500 mb-1">R (First Coordinate)</h4>
-                                    <code className="text-sm bg-gray-50 p-2 rounded block break-all">
-                                        {formatBytes(currentTransaction.r_bytes)}
-                                    </code>
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-medium text-gray-500 mb-1">S (Second Coordinate)</h4>
-                                    <code className="text-sm bg-gray-50 p-2 rounded block break-all">
-                                        {formatBytes(currentTransaction.s_bytes)}
-                                    </code>
-                                </div>
-                            </div>
-                        </div>
-
-                        {currentTransaction.type === 'token' && (
-    <div className="border-t border-gray-100 pt-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">NFT Details</h3>
-
-        {/* NFT Preview Link */}
-        {!isNFTTransferredAway && ( <div className="mb-6">
-            <Link
-                to={`/nft?token_id=${currentTransaction.token_id_string}&token_metadata_uri=${currentTransaction.token_metadata_uri}`}
-                className="block p-6 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors"
-            >
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-purple-100 rounded-lg">
-                        <ImageIcon className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <div>
-                        <h4 className="text-lg font-semibold text-purple-900">View NFT Details</h4>
-                        <p className="text-purple-600">Click to see the full NFT preview and metadata</p>
-                    </div>
-                    <ArrowLeft className="w-5 h-5 text-purple-600 ml-auto rotate-180" />
-                </div>
-            </Link>
-        </div>
+    <main className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
+      <div className="max-w-4xl mx-auto">
+        {/* Session Expired Warning */}
+        {isSessionExpired && (
+          <div className="mb-4 md:mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm md:text-base text-yellow-800">Session expired. Redirecting to login...</p>
+            </div>
+          </div>
         )}
 
-        <div className="grid grid-cols-1 gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">Token ID</h4>
-                    <p className="text-lg font-bold text-gray-900">
-                        {currentTransaction.token_id_string || formatBytes(currentTransaction.token_id_bytes)}
-                    </p>
+        {/* Back Button */}
+        <Link
+          to="/transactions"
+          className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 mb-4 md:mb-6 touch-manipulation"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-base">Back to Transactions</span>
+        </Link>
+
+        {/* Header */}
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-4xl font-bold text-purple-800 mb-2 md:mb-3">Transaction Details</h1>
+          <p className="text-base md:text-lg text-gray-600">
+            Block #{blockData.header.number_string} • Transaction Nonce: {currentTransaction.nonce_string || formatBytes(currentTransaction.nonce_bytes)}
+          </p>
+        </div>
+
+        {/* Main Card */}
+        <div className="bg-white rounded-xl shadow-sm border-2 border-gray-100 overflow-hidden">
+          {/* Card Header */}
+          <div className={`p-4 md:p-6 ${
+            currentTransaction.type === 'coin' ? 'bg-blue-50' : 'bg-purple-50'
+          }`}>
+            <div className="flex items-center gap-3">
+              {currentTransaction.type === 'coin' ? (
+                <Coins className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+              ) : (
+                <ImageIcon className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
+              )}
+              <h2 className="text-lg md:text-xl font-bold">
+                {currentTransaction.type === 'coin' ? 'Coin Transaction' : 'NFT Transaction'}
+              </h2>
+            </div>
+          </div>
+
+          {/* Card Content */}
+          <div className="p-4 md:p-6 space-y-6">
+            {/* Transaction Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              {/* From Address */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-500">From Address</h3>
+                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2 md:p-3">
+                  <code className="text-sm flex-1 break-all">
+                    {currentTransaction.from}
+                  </code>
+                  <button
+                    onClick={() => copyToClipboard(currentTransaction.from)}
+                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
                 </div>
-                <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">Token Nonce</h4>
-                    <p className="text-lg font-bold text-gray-900">
-                        {currentTransaction.token_nonce_string || formatBytes(currentTransaction.token_nonce_bytes)}
-                    </p>
+              </div>
+
+              {/* To Address */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-500">To Address</h3>
+                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2 md:p-3">
+                  <code className="text-sm flex-1 break-all">
+                    {currentTransaction.to}
+                  </code>
+                  <button
+                    onClick={() => copyToClipboard(currentTransaction.to)}
+                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
                 </div>
+              </div>
+
+              {/* Value and Fee Section */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-500">Value</h3>
+                <p className="text-lg font-bold text-gray-900 bg-gray-50 rounded-lg p-2 md:p-3">
+                  {currentTransaction.value} CC
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-500">Transaction Fee</h3>
+                <p className="text-lg font-bold text-gray-900 bg-gray-50 rounded-lg p-2 md:p-3">
+                  {currentTransaction.fee} CC
+                </p>
+              </div>
+
+              {/* Chain ID and Timestamp */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-500">Chain ID</h3>
+                <p className="text-lg font-bold text-gray-900 bg-gray-50 rounded-lg p-2 md:p-3">
+                  {currentTransaction.chain_id}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-500">Timestamp</h3>
+                <p className="text-base md:text-lg font-bold text-gray-900 bg-gray-50 rounded-lg p-2 md:p-3">
+                  {new Date(currentTransaction.timestamp).toLocaleString()}
+                </p>
+              </div>
             </div>
 
-            <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-2">Metadata URI</h4>
-                <div className="space-y-3">
-                    {/* IPFS Storage Link */}
-                    <div className="flex items-center gap-2">
-                        <code className="text-sm bg-gray-50 p-2 rounded flex-1 break-all">
-                            {currentTransaction.token_metadata_uri || 'N/A'}
+            {/* Signature Details */}
+            <div className="border-t border-gray-100 pt-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Signature Details</h3>
+              <div className="space-y-4">
+                {[
+                  { label: 'V (Recovery Identifier)', value: formatBytes(currentTransaction.v_bytes) },
+                  { label: 'R (First Coordinate)', value: formatBytes(currentTransaction.r_bytes) },
+                  { label: 'S (Second Coordinate)', value: formatBytes(currentTransaction.s_bytes) }
+                ].map((item, index) => (
+                  <div key={index} className="space-y-1">
+                    <h4 className="text-sm font-medium text-gray-500">{item.label}</h4>
+                    <code className="text-sm bg-gray-50 p-2 md:p-3 rounded block break-all">
+                      {item.value}
+                    </code>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* NFT Details Section */}
+            {currentTransaction.type === 'token' && (
+              <div className="border-t border-gray-100 pt-6 space-y-6">
+                <h3 className="text-lg font-bold text-gray-900">NFT Details</h3>
+
+                {/* NFT Preview Link */}
+                {!isNFTTransferredAway && (
+                  <Link
+                    to={`/nft?token_id=${currentTransaction.token_id_string}&token_metadata_uri=${currentTransaction.token_metadata_uri}`}
+                    className="block p-4 md:p-6 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors touch-manipulation"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-purple-100 rounded-lg">
+                        <ImageIcon className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-base md:text-lg font-semibold text-purple-900">View NFT Details</h4>
+                        <p className="text-sm text-purple-600">Click to see the full NFT preview and metadata</p>
+                      </div>
+                      <ArrowLeft className="w-5 h-5 text-purple-600 rotate-180" />
+                    </div>
+                  </Link>
+                )}
+
+                {/* NFT Metadata Section */}
+                <div className="space-y-6">
+                  {/* Token Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-gray-500">Token ID</h4>
+                      <p className="text-base md:text-lg font-bold text-gray-900 bg-gray-50 rounded-lg p-2 md:p-3">
+                        {currentTransaction.token_id_string || formatBytes(currentTransaction.token_id_bytes)}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-gray-500">Token Nonce</h4>
+                      <p className="text-base md:text-lg font-bold text-gray-900 bg-gray-50 rounded-lg p-2 md:p-3">
+                        {currentTransaction.token_nonce_string || formatBytes(currentTransaction.token_nonce_bytes)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Metadata URI */}
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-500">Metadata URI</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2 md:p-3">
+                        <code className="text-sm flex-1 break-all">
+                          {currentTransaction.token_metadata_uri || 'N/A'}
                         </code>
                         {currentTransaction.token_metadata_uri && (
-                            <a
-                                href={convertIPFSToGatewayURL(currentTransaction.token_metadata_uri)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                title="View on NFT Storage"
-                            >
-                                <ExternalLink className="w-4 h-4" />
-                            </a>
+                        <a
+                            href={convertIPFSToGatewayURL(currentTransaction.token_metadata_uri)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
                         )}
+                      </div>
                     </div>
+                  </div>
 
-                    {/* Public IPFS Gateway Link */}
-                    {currentTransaction.token_metadata_uri && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <FileText className="w-4 h-4" />
-                            <span>View via public IPFS gateway:</span>
-                            <a
-                                href={`https://ipfs.io/ipfs/${currentTransaction.token_metadata_uri.replace('ipfs://', '')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-700 hover:underline break-all"
-                            >
-                                ipfs.io gateway
-                            </a>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* NFT Metadata Display */}
-            {!isNFTTransferredAway && (<div>
-                <h4 className="text-sm font-medium text-gray-500 mb-2">NFT Metadata</h4>
-                <div className="bg-gray-50 rounded-lg p-4">
-                    {nftLoading && (
-                        <div className="flex items-center justify-center py-4">
-                            <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+                  {/* NFT Metadata Display */}
+                  {!isNFTTransferredAway && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-gray-500">NFT Metadata</h4>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        {nftLoading ? (
+                          <div className="flex items-center justify-center py-4">
+                            <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin text-purple-600" />
                             <span className="ml-2 text-gray-600">Loading metadata...</span>
-                        </div>
-                    )}
-                    {nftError && (
-                        <div className="text-red-600 py-2">
+                          </div>
+                        ) : nftError ? (
+                          <div className="text-red-600 py-2 text-sm">
                             Failed to load metadata: {nftError}
-                        </div>
-                    )}
-                    {nftMetadata && (
-                        <pre className="text-sm overflow-x-auto whitespace-pre-wrap break-all text-gray-800">
+                          </div>
+                        ) : nftMetadata && (
+                          <pre className="text-sm overflow-x-auto whitespace-pre-wrap break-all text-gray-800">
                             {JSON.stringify(nftMetadata, null, 2)}
-                        </pre>
-                    )}
-                </div>
-            </div>)}
-        </div>
-    </div>
-)}
-
-                        {(currentTransaction.data || currentTransaction.data_string) && (
-                            <div className="border-t border-gray-100 pt-6">
-                                <h3 className="text-lg font-bold text-gray-900 mb-4">Additional Data</h3>
-                                <div>
-                                    <h4 className="text-sm font-medium text-gray-500 mb-2">Data Payload</h4>
-                                    <code className="text-sm bg-gray-50 p-2 rounded block break-all">
-                                        {currentTransaction.data_string || formatBytes(currentTransaction.data)}
-                                    </code>
-                                </div>
-                            </div>
+                          </pre>
                         )}
+                      </div>
                     </div>
+                  )}
                 </div>
-            </main>
+              </div>
+            )}
 
-            <FooterMenu />
+            {/* Additional Data Section */}
+            {(currentTransaction.data || currentTransaction.data_string) && (
+              <div className="border-t border-gray-100 pt-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Additional Data</h3>
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-gray-500">Data Payload</h4>
+                  <code className="text-sm bg-gray-50 p-2 md:p-3 rounded block break-all">
+                    {currentTransaction.data_string || formatBytes(currentTransaction.data)}
+                  </code>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-    );
+      </div>
+    </main>
+
+    <FooterMenu />
+  </div>
+);
 }
 
 export default TransactionDetailPage;
