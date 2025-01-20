@@ -168,7 +168,7 @@ function LoginHDWalletPage() {
                         <select
                             value={selectedWalletId}
                             onChange={(e) => setSelectedWalletId(e.target.value)}
-                            className="mt-1 block w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm sm:text-base"
+                            className="mt-1 block w-full px-3 sm:px-4 h-[42px] sm:h-[46px] bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm sm:text-base appearance-none"
                             disabled={isLoading || serviceLoading}
                         >
                             <option value="">Select a wallet</option>
@@ -189,15 +189,17 @@ function LoginHDWalletPage() {
                             Enter your wallet password
                         </p>
                         <div className="relative mt-1">
+                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                <Key className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                            </div>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="block w-full px-3 sm:px-4 py-2.5 sm:py-3 pl-10 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm sm:text-base"
+                                className="block w-full px-3 sm:px-4 py-2.5 sm:py-3 pl-9 sm:pl-10 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm sm:text-base"
                                 placeholder="Enter your wallet password"
                                 disabled={isLoading || serviceLoading}
                             />
-                            <Key className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                         </div>
                     </div>
 
