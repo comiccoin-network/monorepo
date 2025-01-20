@@ -19,6 +19,17 @@ import {
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
+// Common input styles to prevent iOS zoom
+const inputStyles = {
+  base: `block w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border
+         border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500
+         focus:border-transparent transition-colors text-base`,
+  select: `mt-1 block w-full px-3 sm:px-4 h-[42px] sm:h-[46px] bg-white
+          border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500
+          focus:border-transparent transition-colors text-base appearance-none`,
+  withIcon: `pl-9 sm:pl-10`
+};
+
 function LoginHDWalletPage() {
   const {
     wallets,
@@ -135,16 +146,14 @@ function LoginHDWalletPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
-      >
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50">
         Skip to main content
       </a>
 
       <NavigationMenu />
 
       <main id="main-content" className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 max-w-xl">
+        {/* Title Section */}
         <div className="text-center mb-6 sm:mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold text-purple-800 mb-2 sm:mb-4">
             Access Your Wallet
@@ -154,6 +163,7 @@ function LoginHDWalletPage() {
           </p>
         </div>
 
+        {/* Error Message */}
         {(error || serviceError) && (
           <div className="mb-4 sm:mb-6 bg-red-50 border-l-4 border-red-500 p-3 sm:p-4 rounded-r-lg">
             <div className="flex items-start gap-2 sm:gap-3">
@@ -164,6 +174,7 @@ function LoginHDWalletPage() {
         )}
 
         <div className="bg-white rounded-xl shadow-sm border-2 border-gray-100">
+          {/* Header Section */}
           <div className="p-4 sm:p-6">
             <div className="flex items-center gap-2 sm:gap-3 mb-2">
               <div className="p-1.5 sm:p-2 bg-purple-100 rounded-xl">
@@ -197,7 +208,7 @@ function LoginHDWalletPage() {
                 </div>
               </div>
 
-              {/* Wallet Selection */}
+              {/* Wallet Selection - Updated with new styles */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Select Wallet
@@ -208,7 +219,7 @@ function LoginHDWalletPage() {
                 <select
                   value={selectedWalletId}
                   onChange={(e) => setSelectedWalletId(e.target.value)}
-                  className="mt-1 block w-full px-3 sm:px-4 h-[42px] sm:h-[46px] bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm sm:text-base appearance-none"
+                  className={inputStyles.select}
                   disabled={isLoading || serviceLoading}
                 >
                   <option value="">Select a wallet</option>
@@ -220,7 +231,7 @@ function LoginHDWalletPage() {
                 </select>
               </div>
 
-              {/* Password Input */}
+              {/* Password Input - Updated with new styles */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Password
@@ -236,17 +247,11 @@ function LoginHDWalletPage() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full px-3 sm:px-4 py-2.5 sm:py-3 pl-9 sm:pl-10 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm sm:text-base"
+                    className={`${inputStyles.base} ${inputStyles.withIcon}`}
                     placeholder="Enter your wallet password"
                     disabled={isLoading || serviceLoading}
-                    inputMode="password"
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    spellCheck="false"
-                    enterKeyHint="done"
-                    // Add these attributes
-                    data-lpignore="true"
                     autoComplete="off"
+                    data-lpignore="true"
                   />
                 </div>
               </div>
@@ -286,5 +291,6 @@ function LoginHDWalletPage() {
     </div>
   );
 }
+
 
 export default LoginHDWalletPage;
