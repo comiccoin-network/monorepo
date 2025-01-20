@@ -202,255 +202,255 @@ const TransferNFTPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      <NavigationMenu />
+  <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+    <NavigationMenu />
 
-      <main className="flex-grow max-w-3xl mx-auto px-4 py-12 mb-16 md:mb-0">
-        <Link
-          to={`/nft?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`}
-          className="inline-flex items-center text-purple-600 hover:text-purple-700 mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to NFT Details
-        </Link>
+    <main className="flex-grow w-full max-w-3xl mx-auto px-3 py-6 md:px-4 md:py-12 mb-16 md:mb-0">
+      <Link
+        to={`/nft?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`}
+        className="inline-flex items-center text-purple-600 hover:text-purple-700 mb-4 md:mb-6 text-sm md:text-base"
+      >
+        <ArrowLeft className="w-4 h-4 mr-1 md:mr-2" />
+        Back to NFT Details
+      </Link>
 
-        {/* Error Messages */}
-        {generalError && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            <p className="text-red-800">{generalError}</p>
-          </div>
-        )}
+      {/* Error Messages */}
+      {generalError && (
+        <div className="mb-4 md:mb-6 bg-red-50 border-l-4 border-red-500 p-3 md:p-4 rounded-r-lg flex items-start gap-2 md:gap-3">
+          <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <p className="text-red-800 text-sm md:text-base">{generalError}</p>
+        </div>
+      )}
 
-        {isSessionExpired && (
-          <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
-            <p className="text-yellow-800">Session expired. Redirecting to login...</p>
-          </div>
-        )}
+      {isSessionExpired && (
+        <div className="mb-4 md:mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-3 md:p-4 rounded-r-lg flex items-start gap-2 md:gap-3">
+          <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <p className="text-yellow-800 text-sm md:text-base">Session expired. Redirecting to login...</p>
+        </div>
+      )}
 
-        {/* Form Errors */}
-        {Object.keys(formErrors).length > 0 && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-red-800">Transaction Error</h3>
-                <div className="text-sm text-red-600 mt-1">
-                  {Object.values(formErrors).map((error, index) => (
-                    <p key={index} className="flex items-center gap-2">
-                      <span>•</span> {error}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Main Form Card */}
-        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden">
-          {/* Balance Section */}
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-xl">
-                <Wallet className="w-5 h-5 text-purple-600" />
-              </div>
-              <div className="flex-grow">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-bold text-gray-900">Available Balance</h2>
-                  <p className="text-2xl font-bold text-purple-600">{statistics?.totalCoinValue || 0} CC</p>
-                </div>
-                <div className="mt-2 pt-2 border-t space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-red-600">Network Fee</span>
-                    <span className="text-red-600">- 1 CC</span>
-                  </div>
-                  <div className="flex justify-between text-sm font-medium">
-                    <span className="text-gray-600">Remaining Balance</span>
-                    <span className="text-gray-900">
-                      = {((statistics?.totalCoinValue || 0) - 1).toFixed(2)} CC
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Token Information */}
-          <div className="p-6 border-b border-gray-100">
-            <div className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <LinkIcon className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-600">NFT Information</span>
-              </div>
-              <div className="space-y-2">
-                <div>
-                  <label className="text-xs text-gray-500">Token ID</label>
-                  <div className="text-sm font-mono text-gray-900">{tokenId}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Important Notices */}
-          <div className="p-6 border-b border-gray-100 space-y-4">
-            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-amber-800">
-                <p className="font-semibold mb-1">Important Notice</p>
-                <p>All transactions are final and cannot be undone. Please verify all details before transferring.</p>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
-              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold mb-1">Transaction Fee Information</p>
-                <p>A network fee of 1 CC will be deducted from your wallet to ensure timely processing.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Form Section */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-6" autoComplete="off">
+      {/* Form Errors */}
+      {Object.keys(formErrors).length > 0 && (
+        <div className="mb-4 md:mb-6 bg-red-50 border-l-4 border-red-500 p-3 md:p-4 rounded-r-lg">
+          <div className="flex items-start gap-2 md:gap-3">
+            <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
-              <label htmlFor="recipientAddress" className="block">
-                <span className="text-sm font-medium text-gray-700">
-                  Transfer To <span className="text-red-500">*</span>
-                </span>
-                <div className="mt-1 relative">
-                  <input
-                    type="text"
-                    id="recipientAddress"
-                    name="recipientAddress"
-                    value={formData.recipientAddress}
-                    onChange={handleInputChange}
-                    className={`block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                      formErrors.recipientAddress ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                    }`}
-                    placeholder="Enter recipient's wallet address"
-                    autoComplete="off"
-                  />
-                  {formErrors.recipientAddress && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      {formErrors.recipientAddress}
-                    </p>
-                  )}
-                </div>
-              </label>
+              <h3 className="font-semibold text-red-800 text-sm md:text-base">Transaction Error</h3>
+              <div className="text-xs md:text-sm text-red-600 mt-1">
+                {Object.values(formErrors).map((error, index) => (
+                  <p key={index} className="flex items-center gap-2">
+                    <span>•</span> {error}
+                  </p>
+                ))}
+              </div>
             </div>
+          </div>
+        </div>
+      )}
 
-            <div>
-              <label htmlFor="password" className="block">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-700">
-                    Wallet Password <span className="text-red-500">*</span>
+      {/* Main Form Card */}
+      <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden">
+        {/* Balance Section */}
+        <div className="p-4 md:p-6 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-100 rounded-xl">
+              <Wallet className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
+            </div>
+            <div className="flex-grow">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900">Available Balance</h2>
+                <p className="text-xl md:text-2xl font-bold text-purple-600">{statistics?.totalCoinValue || 0} CC</p>
+              </div>
+              <div className="mt-2 pt-2 border-t space-y-1">
+                <div className="flex justify-between text-xs md:text-sm">
+                  <span className="text-red-600">Network Fee</span>
+                  <span className="text-red-600">- 1 CC</span>
+                </div>
+                <div className="flex justify-between text-xs md:text-sm font-medium">
+                  <span className="text-gray-600">Remaining Balance</span>
+                  <span className="text-gray-900">
+                    = {((statistics?.totalCoinValue || 0) - 1)} CC
                   </span>
                 </div>
-                <div className="mt-1 relative">
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className={`block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                      formErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                    }`}
-                    placeholder="Enter your wallet password"
-                    autoComplete="off"
-                  />
-                  {formErrors.password && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      {formErrors.password}
-                    </p>
-                  )}
-                  <p className="mt-2 text-sm text-gray-600 flex items-start gap-2">
-                    <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    <span>
-                      Your wallet is encrypted and stored locally. The password is required to authorize this transaction.
-                    </span>
-                  </p>
-                </div>
-              </label>
+              </div>
             </div>
-
-            <div className="flex gap-4 pt-4">
-              <button
-                type="button"
-                onClick={() => navigate(`/nft?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                disabled={isSubmitting || (statistics?.totalCoinValue || 0) < 1}
-                className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Transfer NFT
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
-      </main>
 
-      <FooterMenu />
+        {/* Token Information */}
+        <div className="p-4 md:p-6 border-b border-gray-100">
+          <div className="bg-gray-50 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <LinkIcon className="w-4 h-4 text-gray-500" />
+              <span className="text-xs md:text-sm font-medium text-gray-600">NFT Information</span>
+            </div>
+            <div className="space-y-2">
+              <div>
+                <label className="text-xs text-gray-500">Token ID</label>
+                <div className="text-xs md:text-sm font-mono text-gray-900 break-all">{tokenId}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Important Notices */}
+        <div className="p-4 md:p-6 border-b border-gray-100 space-y-4">
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 md:p-4 flex gap-2 md:gap-3">
+            <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="text-xs md:text-sm text-amber-800">
+              <p className="font-semibold mb-1">Important Notice</p>
+              <p>All transactions are final and cannot be undone. Please verify all details before transferring.</p>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 md:p-4 flex gap-2 md:gap-3">
+            <Info className="w-4 h-4 md:w-5 md:h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="text-xs md:text-sm text-blue-800">
+              <p className="font-semibold mb-1">Transaction Fee Information</p>
+              <p>A network fee of 1 CC will be deducted from your wallet to ensure timely processing.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Form Section */}
+        <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 md:space-y-6" autoComplete="off">
+          <div>
+            <label htmlFor="recipientAddress" className="block">
+              <span className="text-xs md:text-sm font-medium text-gray-700">
+                Transfer To <span className="text-red-500">*</span>
+              </span>
+              <div className="mt-1 relative">
+                <input
+                  type="text"
+                  id="recipientAddress"
+                  name="recipientAddress"
+                  value={formData.recipientAddress}
+                  onChange={handleInputChange}
+                  className={`block w-full px-3 md:px-4 py-2 md:py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm md:text-base ${
+                    formErrors.recipientAddress ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                  }`}
+                  placeholder="Enter recipient's wallet address"
+                  autoComplete="off"
+                />
+                {formErrors.recipientAddress && (
+                  <p className="mt-1 text-xs md:text-sm text-red-600 flex items-center gap-1 md:gap-2">
+                    <AlertCircle className="w-3 h-3 md:w-4 md:h-4" />
+                    {formErrors.recipientAddress}
+                  </p>
+                )}
+              </div>
+            </label>
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs md:text-sm font-medium text-gray-700">
+                  Wallet Password <span className="text-red-500">*</span>
+                </span>
+              </div>
+              <div className="mt-1 relative">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className={`block w-full px-3 md:px-4 py-2 md:py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm md:text-base ${
+                    formErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                  }`}
+                  placeholder="Enter your wallet password"
+                  autoComplete="off"
+                />
+                {formErrors.password && (
+                  <p className="mt-1 text-xs md:text-sm text-red-600 flex items-center gap-1 md:gap-2">
+                    <AlertCircle className="w-3 h-3 md:w-4 md:h-4" />
+                    {formErrors.password}
+                  </p>
+                )}
+                <p className="mt-2 text-xs md:text-sm text-gray-600 flex items-start gap-1 md:gap-2">
+                  <Info className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Your wallet is encrypted and stored locally. The password is required to authorize this transaction.
+                  </span>
+                </p>
+              </div>
+            </label>
+          </div>
+
+          <div className="flex gap-3 md:gap-4 pt-2 md:pt-4">
+            <button
+              type="button"
+              onClick={() => navigate(`/nft?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`)}
+              className="flex-1 px-3 md:px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1 md:gap-2 text-sm md:text-base"
+            >
+              <ArrowLeft className="w-3 h-3 md:w-4 md:h-4" />
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting || (statistics?.totalCoinValue || 0) < 1}
+              className="flex-1 bg-purple-600 text-white py-2 px-3 md:px-4 rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-1 md:gap-2 text-sm md:text-base"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Send className="w-3 h-3 md:w-4 md:h-4" />
+                  Transfer NFT
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <FooterMenu />
 
       {/* Confirmation Modal */}
       {showConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Confirm NFT Transfer</h3>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 md:p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-3 p-4 md:p-6">
+            <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Confirm NFT Transfer</h3>
 
             <div className="space-y-4 mb-6">
-              <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+              <div className="bg-gray-50 p-3 md:p-4 rounded-lg space-y-3 md:space-y-4">
                 <div>
-                  <p className="text-sm text-gray-600">Network Fee</p>
-                  <p className="text-lg font-medium text-red-600">- 1 CC</p>
+                  <p className="text-xs md:text-sm text-gray-600">Network Fee</p>
+                  <p className="text-base md:text-lg font-medium text-red-600">- 1 CC</p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-gray-600">Remaining Balance</p>
-                  <p className="text-lg font-medium text-gray-900">
-                    {((statistics?.totalCoinValue || 0) - 1).toFixed(2)} CC
+                  <p className="text-xs md:text-sm text-gray-600">Remaining Balance</p>
+                  <p className="text-base md:text-lg font-medium text-gray-900">
+                    {((statistics?.totalCoinValue || 0) - 1)} CC
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-gray-600">Transfer To</p>
-                  <p className="text-lg font-medium text-gray-900 break-all">{formData.recipientAddress}</p>
+                  <p className="text-xs md:text-sm text-gray-600">Transfer To</p>
+                  <p className="text-base md:text-lg font-medium text-gray-900 break-all">{formData.recipientAddress}</p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-gray-600">Token ID</p>
-                  <p className="text-lg font-medium text-gray-900">{formData.tokenID}</p>
+                  <p className="text-xs md:text-sm text-gray-600">Token ID</p>
+                  <p className="text-base md:text-lg font-medium text-gray-900 break-all">{formData.tokenID}</p>
                 </div>
               </div>
 
-              <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
-                <p className="text-sm text-amber-800">
+              <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 md:p-4">
+                <p className="text-xs md:text-sm text-amber-800">
                   Please verify all details before confirming. This action cannot be undone.
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-3 md:gap-4">
               <button
                 onClick={() => setShowConfirmation(false)}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
