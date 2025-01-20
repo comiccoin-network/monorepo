@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Shield, Wallet, Key, RefreshCw, Github, ArrowRight,
-  Monitor, Globe, CheckCircle, Apple, HardDrive, Image
+  Monitor, Globe, CheckCircle, Apple, HardDrive, Image, Coins, ArrowUpRight
 } from 'lucide-react';
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
@@ -171,6 +171,26 @@ const IndexPage = () => {
                   icon: <Image className="h-8 w-8 text-purple-600" />,
                   title: "NFT Support",
                   description: "View, transfer and burn non-fungible tokens you own"
+                },
+                {
+                  icon: <Github className="h-8 w-8 text-purple-600" />,
+                  title: "Open Source",
+                  description: "Licensed under GNU AGPL v3.0, fostering transparency and community collaboration"
+                },
+                {
+                  icon: <Coins className="h-8 w-8 text-purple-600" />,
+                  title: "Free ComicCoins",
+                  description: <>Get started with free ComicCoins from our {' '}
+                    <a
+                      href="https://comiccoinfaucet.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-600 hover:text-purple-800 inline-flex items-center gap-1"
+                    >
+                      official faucet
+                      <ArrowUpRight className="w-3 h-3" />
+                    </a>
+                  </>
                 }
               ].map((feature, index) => (
                 <div
