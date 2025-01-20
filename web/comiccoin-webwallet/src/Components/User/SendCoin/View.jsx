@@ -28,6 +28,9 @@ const SendCoinsPage = () => {
   const { statistics } = useWalletTransactions(currentWallet?.address);
   const { submitTransaction, loading: transactionLoading, error: transactionError } = useCoinTransfer(1);
 
+  // For debugging purposes only.
+  console.log("SendCoinsPage: statistics:", statistics,"\nAddr:", currentWallet?.address);
+
   // State for session management
   const [forceURL, setForceURL] = useState("");
   const [generalError, setGeneralError] = useState(null);

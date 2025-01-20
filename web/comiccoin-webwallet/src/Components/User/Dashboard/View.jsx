@@ -24,11 +24,6 @@ function DashboardPage() {
         error: serviceError
     } = useWallet();
 
-    const getWalletAddress = () => {
-        if (!currentWallet) return "";
-        return currentWallet.address;
-    };
-
     const {
         transactions,
         loading: txloading,
@@ -37,7 +32,10 @@ function DashboardPage() {
         statistics,
         coinTransactions,
         nftTransactions
-    } = useAllTransactions(getWalletAddress());
+    } = useAllTransactions(currentWallet?.address);
+
+    // For debugging purposes only.
+    console.log("DashboardPage: statistics:", statistics, "\nAddr:", currentWallet?.address);
 
     const [forceURL, setForceURL] = useState("");
     const [walletAddress, setWalletAddress] = useState("");
@@ -72,7 +70,7 @@ function DashboardPage() {
 
                 if (mounted) {
                     setForceURL("");
-                    setWalletAddress(getWalletAddress());
+                    setWalletAddress(currentWallet?.address);
                 }
             } catch (error) {
                 if (error.message === "Session expired" && mounted) {

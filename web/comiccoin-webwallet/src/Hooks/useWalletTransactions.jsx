@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import blockchainService from '../Services/BlockchainService';
 
-// In useWalletTransactions.js
 export const useWalletTransactions = (walletAddress) => {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -51,17 +50,34 @@ export const useWalletTransactions = (walletAddress) => {
         fetchTransactions();
     }, [fetchTransactions]);
 
-    // Calculate statistics from transactions
+    // Calculate statistics from transactions with corrected fee handling
     const statistics = useMemo(() => {
         const coinTxs = transactions.filter(tx => tx.type === 'coin');
         const nftTxs = transactions.filter(tx => tx.type === 'token');
+        const currentAddress = walletAddress?.toLowerCase();
 
-        // Calculate total coin value
-        const totalCoinValue = coinTxs.reduce((sum, tx) => {
-            if (tx.from.toLowerCase() === walletAddress?.toLowerCase()) {
-                return sum - Number(tx.value) - Number(tx.fee);
-            } else if (tx.to.toLowerCase() === walletAddress?.toLowerCase()) {
-                return sum + Number(tx.value) - Number(tx.fee);
+        // Calculate total coin value with proper fee handling
+        const totalCoinValue = transactions.reduce((sum, tx) => {
+            const txValue = Number(tx.value) || 0;
+            const txFee = Number(tx.fee) || 0;
+
+            if (tx.type === 'coin') {
+                if (tx.from.toLowerCase() === currentAddress) {
+                    // When sending coins - value already includes fee deduction
+                    return sum - txValue;
+                } else if (tx.to.toLowerCase() === currentAddress) {
+                    // When receiving coins - subtract fee from received amount
+                    return sum + (txValue - txFee);
+                }
+            } else {
+                // For NFT transactions:
+                if (tx.from.toLowerCase() === currentAddress) {
+                    // When sending NFTs, fee is included in the transaction
+                    return sum;
+                } else if (tx.to.toLowerCase() === currentAddress) {
+                    // When receiving NFTs, subtract the fee
+                    return sum - txFee;
+                }
             }
             return sum;
         }, 0);
@@ -69,9 +85,12 @@ export const useWalletTransactions = (walletAddress) => {
         // Calculate NFT ownership
         const ownedNfts = new Set();
         nftTxs.forEach(tx => {
-            if (tx.from.toLowerCase() === walletAddress?.toLowerCase()) {
+            // Don't count burned NFTs
+            const isBurned = tx.to.toLowerCase() === '0x0000000000000000000000000000000000000000';
+
+            if (tx.from.toLowerCase() === currentAddress) {
                 ownedNfts.delete(tx.tokenId);
-            } else if (tx.to.toLowerCase() === walletAddress?.toLowerCase()) {
+            } else if (tx.to.toLowerCase() === currentAddress && !isBurned) {
                 ownedNfts.add(tx.tokenId);
             }
         });
@@ -80,13 +99,36 @@ export const useWalletTransactions = (walletAddress) => {
             totalTransactions: transactions.length,
             coinTransactionsCount: coinTxs.length,
             nftTransactionsCount: nftTxs.length,
-            totalCoinValue,
+            totalCoinValue: Math.max(0, parseFloat(totalCoinValue.toFixed(6))), // Ensure non-negative with 6 decimal precision
             totalNftCount: ownedNfts.size,
         };
     }, [transactions, walletAddress]);
 
+    // Process transactions for display
+    const processedTransactions = useMemo(() => {
+        return transactions.map(tx => {
+            const isSender = tx.from.toLowerCase() === walletAddress?.toLowerCase();
+            const txValue = Number(tx.value) || 0;
+            const txFee = Number(tx.fee) || 0;
+
+            let actualValue;
+            if (tx.type === 'token') {
+                actualValue = 0; // NFTs don't have a CC value
+            } else if (isSender) {
+                actualValue = txValue; // For sent transactions, show the total amount (fee already included)
+            } else {
+                actualValue = txValue - txFee; // For received transactions, subtract the fee
+            }
+
+            return {
+                ...tx,
+                actualValue: parseFloat(actualValue.toFixed(6))
+            };
+        });
+    }, [transactions, walletAddress]);
+
     return {
-        transactions,
+        transactions: processedTransactions,
         loading,
         error,
         refresh: fetchTransactions,
