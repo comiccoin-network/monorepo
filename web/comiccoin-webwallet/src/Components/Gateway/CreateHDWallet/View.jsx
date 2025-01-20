@@ -58,6 +58,11 @@ const CreateHDWalletPage = () => {
         };
     }, []);
 
+    // Add new useEffect to handle scrolling when step changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [step]);
+
     const onGenerateMnemonic = (e) => {
         e.preventDefault();
         try {
@@ -355,7 +360,7 @@ const CreateHDWalletPage = () => {
                                                 name="mnemonic"
                                                 value={formData.mnemonic}
                                                 onChange={handleInputChange}
-                                                rows={2}
+                                                rows={4}
                                                 className={`block w-full px-3 sm:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors resize-none ${
                                                     errors.mnemonic ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                                 }`}
