@@ -132,6 +132,11 @@ function TransactionDetailPage() {
         navigator.clipboard.writeText(text);
     };
 
+    const handleSignOut = () => {
+        logout();
+        setForceURL("/login");
+    };
+
     if (forceURL !== "" && !serviceLoading) {
         return <Navigate to={forceURL} />;
     }
@@ -187,7 +192,7 @@ function TransactionDetailPage() {
 
     return (
   <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-    <NavigationMenu />
+    <NavigationMenu onSignOut={handleSignOut} />
 
     <main className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 pb-safe">
       <div className="max-w-4xl mx-auto">

@@ -140,6 +140,11 @@ function TransactionListPage() {
       : new Date(a.timestamp) - new Date(b.timestamp);
   });
 
+  const handleSignOut = () => {
+      logout();
+      setForceURL("/login");
+  };
+
   if (forceURL !== "" && !serviceLoading) {
     return <Navigate to={forceURL} />;
   }
@@ -162,7 +167,7 @@ function TransactionListPage() {
       Skip to main content
     </a>
 
-    <NavigationMenu />
+    <NavigationMenu onSignOut={handleSignOut} />
 
     <main id="main-content" className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-safe">
       <div className="max-w-7xl mx-auto">

@@ -191,6 +191,11 @@ const SendCoinsPage = () => {
     }
   };
 
+  const handleSignOut = () => {
+      logout();
+      setForceURL("/login");
+  };
+
   if (forceURL !== "" && !serviceLoading) {
     console.log('SendCoinsPage: Navigating to:', forceURL);
     return <Navigate to={forceURL} />;
@@ -207,7 +212,7 @@ const SendCoinsPage = () => {
 
   return (
 <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
- <NavigationMenu />
+<NavigationMenu onSignOut={handleSignOut} />
 
  <main className="flex-grow w-full max-w-3xl mx-auto px-4 pt-6 pb-24 md:py-12 md:mb-0">
    {/* Error Messages */}

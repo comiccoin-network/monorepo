@@ -20,11 +20,13 @@ import FooterMenu from "../FooterMenu/View";
 const ReceiveCoinPage = () => {
   const {
     currentWallet,
+    logout,
     loading: serviceLoading,
     error: serviceError
   } = useWallet();
 
   const [copied, setCopied] = useState(false);
+  const [forceURL, setForceURL] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -100,6 +102,11 @@ const ReceiveCoinPage = () => {
     `);
   };
 
+  const handleSignOut = () => {
+      logout();
+      setForceURL("/login");
+  };
+
   if (serviceLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -113,9 +120,14 @@ const ReceiveCoinPage = () => {
     return <Navigate to="/login" />;
   }
 
+  if (forceURL !== "" && !serviceLoading) {
+    console.log('SendCoinsPage: Navigating to:', forceURL);
+    return <Navigate to={forceURL} />;
+  }
+
   return (
   <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-    <NavigationMenu />
+    <NavigationMenu onSignOut={handleSignOut} />
 
     <main className="flex-grow w-full max-w-3xl mx-auto px-4 pt-6 pb-24 md:py-12 md:mb-0">
       <div className="max-w-[800px] mx-auto">

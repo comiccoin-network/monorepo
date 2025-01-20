@@ -182,6 +182,11 @@ const BurnNFTPage = () => {
     }
   };
 
+  const handleSignOut = () => {
+      logout();
+      setForceURL("/login");
+  };
+
   if (forceURL !== "" && !serviceLoading) {
     return <Navigate to={forceURL} />;
   }
@@ -197,7 +202,7 @@ const BurnNFTPage = () => {
 
   return (
   <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-    <NavigationMenu />
+    <NavigationMenu onSignOut={handleSignOut} />
 
     <main className="flex-grow w-full max-w-3xl mx-auto px-3 py-6 md:px-4 md:py-12 mb-16 md:mb-0">
       <Link

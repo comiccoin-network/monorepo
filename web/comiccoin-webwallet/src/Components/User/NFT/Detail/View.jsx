@@ -21,11 +21,14 @@ import {
   Link as LinkIcon
 } from 'lucide-react';
 
+import { useWallet } from '../../../../Hooks/useWallet';
 import { useNFTMetadata } from '../../../../Hooks/useNFTMetadata';
 import { convertIPFSToGatewayURL } from '../../../../Services/NFTMetadataService';
 import NavigationMenu from "../../../User/NavigationMenu/View";
 import FooterMenu from "../../../User/FooterMenu/View";
 import IPFSInfoModal from "./IPFSInfoModal";
+import walletService from '../../../../Services/WalletService';
+
 // ShareButton component
 const ShareButton = ({ tokenMetadataUri, metadata, tokenId }) => {
   const [shareState, setShareState] = useState('idle');
@@ -244,20 +247,85 @@ const NFTDetailPage = () => {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const tokenId = searchParams.get('token_id');
   const tokenMetadataUri = searchParams.get('token_metadata_uri');
+  const [forceURL, setForceURL] = useState("");
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const { metadata, loading, error } = useNFTMetadata(tokenMetadataUri);
+  const {
+  currentWallet,
+  logout,
+  loading: serviceLoading,
+  serviceError
+} = useWallet();
+
+  const { metadata, loading, metadataHookError } = useNFTMetadata(tokenMetadataUri);
+
+  const handleSessionExpired = () => {
+   setIsSessionExpired(true);
+   logout();
+   setError("Your session has expired. Please sign in again.");
+   setTimeout(() => {
+     setForceURL("/login");
+   }, 3000);
+ };
+
 
   useEffect(() => {
-      let mounted = true;
+   let mounted = true;
 
-      if (mounted) {
-          window.scrollTo(0, 0);
-      }
+   if (mounted) {
+     window.scrollTo(0, 0);
+   }
 
-      return () => {
-          mounted = false;
-      };
-  }, []);
+   const checkWalletSession = async () => {
+     try {
+       if (!mounted) return;
+       setIsLoading(true);
+
+       if (serviceLoading) return;
+
+       if (!currentWallet) {
+         if (mounted) {
+           setForceURL("/login");
+         }
+         return;
+       }
+
+       if (!walletService.checkSession()) {
+         throw new Error("Session expired");
+       }
+
+       if (mounted) {
+         setError(null);
+         setForceURL("");
+       }
+     } catch (error) {
+       if (error.message === "Session expired" && mounted) {
+         handleSessionExpired();
+       } else if (mounted) {
+         setError(error.message);
+       }
+     } finally {
+       if (mounted) {
+         setIsLoading(false);
+       }
+     }
+   };
+
+   checkWalletSession();
+   const sessionCheckInterval = setInterval(checkWalletSession, 60000);
+
+   return () => {
+     mounted = false;
+     clearInterval(sessionCheckInterval);
+   };
+ }, [currentWallet, serviceLoading, logout]);
+
+  const handleSignOut = () => {
+     logout();
+     setForceURL("/login");
+  };
 
   const downloadImage = async () => {
     if (!metadata?.image) throw new Error('No image available');
@@ -329,7 +397,7 @@ const NFTDetailPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      <NavigationMenu />
+      <NavigationMenu onSignOut={handleSignOut} />
 
       <main className="flex-grow w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-24 md:py-12">
         <Link
@@ -340,11 +408,35 @@ const NFTDetailPage = () => {
           Back to Collection
         </Link>
 
-        {error && (
-          <div className="mb-4 md:mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
+        {(error || serviceError || metadataHookError) && (
+            <div className="mb-4 md:mb-6 space-y-2">
+         {/* Wallet/Session Error */}
+         {(error || serviceError) && (
+           <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex items-start gap-2">
+             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+             <div className="space-y-1">
+               <p className="text-sm font-medium text-red-800">Wallet Error</p>
+               <p className="text-sm text-red-700">{error || serviceError}</p>
+             </div>
+           </div>
+         )}
+
+         {/* Metadata Error */}
+         {metadataHookError && (
+           <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-lg flex items-start gap-2">
+             <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+             <div className="space-y-1">
+               <p className="text-sm font-medium text-orange-800">NFT Data Error</p>
+               <p className="text-sm text-orange-700">
+                 {metadataHookError.includes('IPFS')
+                   ? 'Unable to load NFT data from IPFS. Please try again later.'
+                   : metadataHookError
+                 }
+               </p>
+             </div>
+           </div>
+         )}
+       </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
