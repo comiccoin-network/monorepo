@@ -210,382 +210,376 @@ const CreateHDWalletPage = () => {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-         <a
-             href="#main-content"
-             className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
-         >
-             Skip to main content
-         </a>
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50">
+            Skip to main content
+        </a>
 
-         {/* Navigation */}
-         <NavigationMenu />
+        <NavigationMenu />
 
-         <main id="main-content" className="flex-grow max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-             {/* Title Section */}
-             <div className="text-center mb-12">
-                 <h1 className="text-5xl md:text-6xl font-bold text-purple-800 mb-4" style={{fontFamily: 'Comic Sans MS'}}>
-                     Create Your Wallet
-                 </h1>
-                 <p className="text-xl text-gray-600">
-                     {step === 'create'
-                         ? 'Set up your secure ComicCoin wallet in just a few steps'
-                         : 'Verify your recovery phrase to continue'}
-                 </p>
-             </div>
+        <main id="main-content" className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 max-w-xl">
+            {/* Title Section */}
+            <div className="text-center mb-6 sm:mb-12">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-purple-800 mb-3" style={{fontFamily: 'Comic Sans MS'}}>
+                    Create Your Wallet
+                </h1>
+                <p className="text-lg sm:text-xl text-gray-600">
+                    {step === 'create' ? 'Set up your secure ComicCoin wallet' : 'Verify your recovery phrase'}
+                </p>
+            </div>
 
-             {/* Error Box */}
-             {Object.keys(allErrors).length > 0 && (
-                 <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 flex items-start gap-3">
-                     <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                     <div className="flex-grow">
-                         <h3 className="font-semibold text-red-800">Please fix the following errors:</h3>
-                         <div className="text-sm text-red-600 mt-1 space-y-1">
-                             {Object.values(allErrors).map((error, index) => (
-                                 <p key={index}>• {error}</p>
-                             ))}
-                         </div>
-                     </div>
-                 </div>
-             )}
+            {/* Error Box */}
+            {Object.keys(allErrors).length > 0 && (
+                <div className="mb-4 sm:mb-6 bg-red-50 border-l-4 border-red-500 rounded-lg p-3 sm:p-4">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                        <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-grow">
+                            <h3 className="font-semibold text-red-800 text-sm sm:text-base">Please fix the following errors:</h3>
+                            <div className="text-xs sm:text-sm text-red-600 mt-1 space-y-1">
+                                {Object.values(allErrors).map((error, index) => (
+                                    <p key={index}>• {error}</p>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
-             <div className="bg-white rounded-xl border-2 border-gray-100">
-                 {step === 'create' ? (
-                     <div>
-                         <div className="p-6">
-                             <div className="flex items-center gap-3 mb-2">
-                                 <div className="p-2 bg-purple-100 rounded-xl">
-                                     <KeyRound className="w-5 h-5 text-purple-600" aria-hidden="true" />
-                                 </div>
-                                 <h2 className="text-xl font-bold text-gray-900">Create Your HD Wallet</h2>
-                             </div>
-                             <p className="text-sm text-gray-500">
-                                 Set up your ComicCoin HD wallet by providing a label and secure password.
-                             </p>
-                         </div>
+            <div className="bg-white rounded-xl border-2 border-gray-100 shadow-sm">
+                {step === 'create' ? (
+                    <div>
+                        <div className="p-4 sm:p-6">
+                            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                                <div className="p-1.5 sm:p-2 bg-purple-100 rounded-xl">
+                                    <KeyRound className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" aria-hidden="true" />
+                                </div>
+                                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Create Your HD Wallet</h2>
+                            </div>
+                            <p className="text-xs sm:text-sm text-gray-500">
+                                Set up your ComicCoin HD wallet by providing a label and secure password.
+                            </p>
+                        </div>
 
-                         <form className="p-6 space-y-8" onSubmit={handleSubmit}>
-                             {/* Combined Info Box with Tabs */}
-                             <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl">
-                                 <div className="border-b border-purple-100">
-                                     <div className="flex">
-                                         <button
-                                             type="button"
-                                             onClick={() => setInfoTab('password')}
-                                             className={`px-6 py-3 text-sm font-medium border-b-2 ${
-                                                 infoTab === 'password'
-                                                     ? 'border-purple-500 text-purple-600'
-                                                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                                             }`}
-                                         >
-                                             Password Guide
-                                         </button>
-                                         <button
-                                             type="button"
-                                             onClick={() => setInfoTab('mnemonic')}
-                                             className={`px-6 py-3 text-sm font-medium border-b-2 ${
-                                                 infoTab === 'mnemonic'
-                                                     ? 'border-purple-500 text-purple-600'
-                                                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                                             }`}
-                                         >
-                                             Recovery Phrase Guide
-                                         </button>
-                                     </div>
-                                 </div>
-                                 <div className="p-6">
-                                     {infoTab === 'password' ? (
-                                         <div className="flex gap-4">
-                                             <Info className="w-5 h-5 text-purple-600 flex-shrink-0 mt-1" />
-                                             <div className="text-sm text-gray-700">
-                                                 <p className="mb-3">Choose a strong password that:</p>
-                                                 <ul className="list-disc pl-4 space-y-1">
-                                                     <li>Is at least 12 characters long</li>
-                                                     <li>Contains uppercase and lowercase letters</li>
-                                                     <li>Includes numbers and special characters</li>
-                                                     <li>Is not used for any other accounts</li>
-                                                 </ul>
-                                             </div>
-                                         </div>
-                                     ) : (
-                                         <div className="flex gap-4">
-                                             <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-1" />
-                                             <div className="text-sm text-amber-800">
-                                                 <p className="mb-3">Important information about your recovery phrase:</p>
-                                                 <ul className="list-disc pl-4 space-y-1">
-                                                     <li>Write down your phrase and keep it safe</li>
-                                                     <li>Never share it with anyone</li>
-                                                     <li>Lost phrases cannot be recovered</li>
-                                                     <li>All funds will be lost if you lose the phrase</li>
-                                                 </ul>
-                                             </div>
-                                         </div>
-                                     )}
-                                 </div>
-                             </div>
-
-                             <div className="space-y-6">
-                                 {/* Wallet Label */}
-                                 <div>
-                                     <label className="block text-sm font-medium text-gray-700" htmlFor="wallet-label">
-                                         Wallet Label
-                                     </label>
-                                     <input
-                                         type="text"
-                                         id="wallet-label"
-                                         name="label"
-                                         value={formData.label}
-                                         onChange={handleInputChange}
-                                         className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
-                                             errors.label ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                                         }`}
-                                         placeholder="Enter a name for your wallet"
-                                     />
-                                     {errors.label && (
-                                         <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                                             <AlertCircle className="w-4 h-4" />
-                                             {errors.label}
-                                         </p>
-                                     )}
-                                 </div>
-
-                                 {/* Recovery Phrase */}
-                                 <div>
-                                     <label className="block">
-                                         <span className="text-sm font-medium text-gray-700">Recovery Phrase</span>
-                                         <div className="mt-1 flex gap-2">
-                                             <textarea
-                                                 readOnly={true}
-                                                 name="mnemonic"
-                                                 value={formData.mnemonic}
-                                                 onChange={handleInputChange}
-                                                 rows={2}
-                                                 className={`block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors resize-none ${
-                                                     errors.mnemonic ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                                                 }`}
-                                                 placeholder="Your recovery phrase will appear here"
-                                             />
-                                             <button
-                                                 onClick={onGenerateMnemonic}
-                                                 type="button"
-                                                 className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                                             >
-                                                 Generate
-                                             </button>
-                                         </div>
-                                         {errors.mnemonic && (
-                                             <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                                                 <AlertCircle className="w-4 h-4" />
-                                                 {errors.mnemonic}
-                                             </p>
-                                         )}
-                                     </label>
-
-                                     {formData.mnemonic && (
-                                         <div className="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                                             <div className="flex items-start">
-                                                 <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
-                                                 <div className="ml-3">
-                                                     <h3 className="text-sm font-medium text-yellow-800">
-                                                         Important: Write Down Your Recovery Phrase
-                                                     </h3>
-                                                     <div className="mt-2 text-sm text-yellow-700">
-                                                         <p>This is your only chance to save these words. They cannot be recovered if lost!</p>
-                                                         <p className="mt-1">We recommend:</p>
-                                                         <ul className="list-disc ml-5 mt-1">
-                                                             <li>Writing them down on paper</li>
-                                                             <li>Storing in a secure location</li>
-                                                             <li>Never sharing with anyone</li>
-                                                         </ul>
-                                                     </div>
-                                                 </div>
-                                             </div>
-                                         </div>
-                                     )}
-                                 </div>
-
-                                 {/* Password */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700" htmlFor="password">
-                                            Password
-                                        </label>
-                                        <div className="relative">
-                                            <input
-                                                type={showPassword ? "text" : "password"}
-                                                id="password"
-                                                name="password"
-                                                value={formData.password}
-                                                onChange={handleInputChange}
-                                                className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors pr-12 ${
-                                                    errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                                                }`}
-                                                placeholder="Enter your password"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                                                aria-label={showPassword ? "Hide password" : "Show password"}
-                                            >
-                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                            </button>
-                                        </div>
-                                        {errors.password && (
-                                            <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                                                <AlertCircle className="w-4 h-4" />
-                                                {errors.password}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Confirm Password */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700" htmlFor="repeat-password">
-                                            Confirm Password
-                                        </label>
-                                        <div className="relative">
-                                            <input
-                                                type={showConfirmPassword ? "text" : "password"}
-                                                id="repeat-password"
-                                                name="repeatPassword"
-                                                value={formData.repeatPassword}
-                                                onChange={handleInputChange}
-                                                className={`mt-1 block w-full px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors pr-12 ${
-                                                    errors.repeatPassword ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                                                }`}
-                                                placeholder="Confirm your password"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                                                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                                            >
-                                                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                            </button>
-                                        </div>
-                                        {errors.repeatPassword && (
-                                            <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                                                <AlertCircle className="w-4 h-4" />
-                                                {errors.repeatPassword}
-                                            </p>
-                                        )}
+                        <form className="p-4 sm:p-6 space-y-6" onSubmit={handleSubmit}>
+                            {/* Info Tabs */}
+                            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl">
+                                <div className="border-b border-purple-100">
+                                    <div className="flex">
+                                        <button
+                                            type="button"
+                                            onClick={() => setInfoTab('password')}
+                                            className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium border-b-2 flex-1 ${
+                                                infoTab === 'password'
+                                                    ? 'border-purple-500 text-purple-600'
+                                                    : 'border-transparent text-gray-500'
+                                            }`}
+                                        >
+                                            Password Guide
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setInfoTab('mnemonic')}
+                                            className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium border-b-2 flex-1 ${
+                                                infoTab === 'mnemonic'
+                                                    ? 'border-purple-500 text-purple-600'
+                                                    : 'border-transparent text-gray-500'
+                                            }`}
+                                        >
+                                            Recovery Guide
+                                        </button>
                                     </div>
                                 </div>
+                                <div className="p-4 sm:p-6">
+                                    {infoTab === 'password' ? (
+                                        <div className="flex gap-3 sm:gap-4">
+                                            <Info className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0 mt-1" />
+                                            <div className="text-xs sm:text-sm text-gray-700">
+                                                <p className="mb-2 sm:mb-3">Choose a strong password that:</p>
+                                                <ul className="list-disc pl-4 space-y-0.5 sm:space-y-1">
+                                                    <li>Is at least 12 characters long</li>
+                                                    <li>Contains mixed case letters</li>
+                                                    <li>Includes numbers and symbols</li>
+                                                    <li>Is unique to this wallet</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex gap-3 sm:gap-4">
+                                            <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-1" />
+                                            <div className="text-xs sm:text-sm text-amber-800">
+                                                <p className="mb-2 sm:mb-3">Important information about your recovery phrase:</p>
+                                                <ul className="list-disc pl-4 space-y-0.5 sm:space-y-1">
+                                                    <li>Write down your phrase and keep it safe</li>
+                                                    <li>Never share it with anyone</li>
+                                                    <li>Lost phrases cannot be recovered</li>
+                                                    <li>All funds will be lost if you lose the phrase</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
-                                {/* Submit Button */}
-                                <div className="flex justify-end gap-4">
-                                    <Link
-                                        to="/"
-                                        className="px-6 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                                    >
-                                        Cancel
-                                    </Link>
+                            <div className="space-y-4 sm:space-y-6">
+                                {/* Wallet Label */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="wallet-label">
+                                        Wallet Label
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="wallet-label"
+                                        name="label"
+                                        value={formData.label}
+                                        onChange={handleInputChange}
+                                        className={`mt-1 block w-full px-3 sm:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
+                                            errors.label ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                        }`}
+                                        placeholder="Enter a name for your wallet"
+                                    />
+                                    {errors.label && (
+                                        <p className="mt-1.5 text-xs sm:text-sm text-red-600 flex items-center gap-1.5">
+                                            <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                                            {errors.label}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Recovery Phrase */}
+                                <div>
+                                    <label className="block">
+                                        <span className="text-sm font-medium text-gray-700">Recovery Phrase</span>
+                                        <div className="mt-1 flex gap-2">
+                                            <textarea
+                                                readOnly
+                                                name="mnemonic"
+                                                value={formData.mnemonic}
+                                                onChange={handleInputChange}
+                                                rows={2}
+                                                className={`block w-full px-3 sm:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors resize-none ${
+                                                    errors.mnemonic ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                                }`}
+                                                placeholder="Your recovery phrase will appear here"
+                                            />
+                                            <button
+                                                onClick={onGenerateMnemonic}
+                                                type="button"
+                                                className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base whitespace-nowrap"
+                                            >
+                                                Generate
+                                            </button>
+                                        </div>
+                                    </label>
+                                    {errors.mnemonic && (
+                                        <p className="mt-1.5 text-xs sm:text-sm text-red-600 flex items-center gap-1.5">
+                                            <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                                            {errors.mnemonic}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {formData.mnemonic && (
+                                    <div className="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                                        <div className="flex items-start gap-3">
+                                            <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
+                                            <div>
+                                                <h3 className="text-sm font-medium text-yellow-800">
+                                                    Important: Write Down Your Recovery Phrase
+                                                </h3>
+                                                <div className="mt-2 text-xs sm:text-sm text-yellow-700">
+                                                    <p>This is your only chance to save these words. They cannot be recovered if lost!</p>
+                                                    <p className="mt-1">We recommend:</p>
+                                                    <ul className="list-disc ml-5 mt-1">
+                                                        <li>Writing them down on paper</li>
+                                                        <li>Storing in a secure location</li>
+                                                        <li>Never sharing with anyone</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Password */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="password">
+                                        Password
+                                    </label>
+                                    <div className="relative mt-1">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            id="password"
+                                            name="password"
+                                            value={formData.password}
+                                            onChange={handleInputChange}
+                                            className={`block w-full px-3 sm:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors pr-10 ${
+                                                errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                            }`}
+                                            placeholder="Enter your password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 p-1"
+                                        >
+                                            {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
+                                        </button>
+                                    </div>
+                                    {errors.password && (
+                                        <p className="mt-1.5 text-xs sm:text-sm text-red-600 flex items-center gap-1.5">
+                                            <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                                            {errors.password}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Confirm Password */}
+                               <div>
+                               <label className="block text-sm font-medium text-gray-700" htmlFor="repeat-password">
+                                    Confirm Password
+                                </label>
+                                <div className="relative mt-1">
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        id="repeat-password"
+                                        name="repeatPassword"
+                                        value={formData.repeatPassword}
+                                        onChange={handleInputChange}
+                                        className={`block w-full px-3 sm:px-4 py-3 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors pr-10 ${
+                                            errors.repeatPassword ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                        }`}
+                                        placeholder="Confirm your password"
+                                    />
                                     <button
-                                        type="submit"
-                                        disabled={isLoading || serviceLoading}
-                                        className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 p-1"
                                     >
-                                        {(isLoading || serviceLoading) ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                                Creating...
-                                            </>
-                                        ) : (
-                                            <>
-                                                Continue
-                                                <ChevronRight className="w-4 h-4" />
-                                            </>
-                                        )}
+                                        {showConfirmPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                                     </button>
                                 </div>
-                               </form>
-                           </div>
-                       ) : (
-                           // Verification Step
-                           <div className="p-6">
-                               <div className="flex items-center gap-3 mb-6">
-                                   <div className="p-2 bg-purple-100 rounded-xl">
-                                       <CheckCircle2 className="w-5 h-5 text-purple-600" aria-hidden="true" />
-                                   </div>
-                                   <h2 className="text-xl font-bold text-gray-900">Verify Recovery Phrase</h2>
-                               </div>
+                                {errors.repeatPassword && (
+                                    <p className="mt-1.5 text-xs sm:text-sm text-red-600 flex items-center gap-1.5">
+                                        <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                                        {errors.repeatPassword}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
 
-                               <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
-                                   <div className="flex">
-                                       <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5" />
-                                       <div className="ml-3">
-                                           <p className="text-sm text-amber-700">
-                                               Please enter the requested words from your recovery phrase to verify you've saved it correctly.
-                                           </p>
-                                       </div>
-                                   </div>
-                               </div>
+                        {/* Submit Button */}
+                        <div className="flex justify-end gap-3 sm:gap-4 pt-4">
+                            <Link
+                                to="/"
+                                className="px-4 sm:px-6 py-2.5 text-sm sm:text-base text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2"
+                            >
+                                Cancel
+                            </Link>
+                            <button
+                                type="submit"
+                                disabled={isLoading || serviceLoading}
+                                className="px-4 sm:px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {(isLoading || serviceLoading) ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    <>
+                                        Continue
+                                        <ChevronRight className="w-4 h-4" />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            ) : (
+                // Verification Step
+                <div className="p-4 sm:p-6">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-6">
+                        <div className="p-1.5 sm:p-2 bg-purple-100 rounded-xl">
+                            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" aria-hidden="true" />
+                        </div>
+                        <h2 className="text-lg sm:text-xl font-bold text-gray-900">Verify Recovery Phrase</h2>
+                    </div>
 
-                               <form onSubmit={handleSubmit} className="space-y-6">
-                                   <div className="grid grid-cols-1 gap-4">
-                                       {verificationWords.map(({ position, word }) => (
-                                           <div key={position}>
-                                               <label className="block text-sm font-medium text-gray-700">
-                                                   Word #{position}
-                                               </label>
-                                               <input
-                                                   type="text"
-                                                   value={userInputWords[position - 1] || ''}
-                                                   onChange={(e) => handleVerificationInputChange(position - 1, e.target.value)}
-                                                   className="mt-1 block w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                   placeholder={`Enter word #${position}`}
-                                               />
-                                           </div>
-                                       ))}
-                                   </div>
+                    <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 rounded-r-lg">
+                        <div className="flex gap-3">
+                            <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5" />
+                            <div>
+                                <p className="text-xs sm:text-sm text-amber-700">
+                                    Please enter the requested words from your recovery phrase to verify you've saved it correctly.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-                                   {errors.verify && (
-                                       <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                                           <div className="flex">
-                                               <AlertCircle className="w-5 h-5 text-red-400" />
-                                               <div className="ml-3">
-                                                   <p className="text-sm text-red-700">{errors.verify}</p>
-                                               </div>
-                                           </div>
-                                       </div>
-                                   )}
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 gap-4">
+                            {verificationWords.map(({ position, word }) => (
+                                <div key={position}>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Word #{position}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={userInputWords[position - 1] || ''}
+                                        onChange={(e) => handleVerificationInputChange(position - 1, e.target.value)}
+                                        className="mt-1 block w-full px-3 sm:px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        placeholder={`Enter word #${position}`}
+                                    />
+                                </div>
+                            ))}
+                        </div>
 
-                                   <div className="flex justify-between gap-4">
-                                       <button
-                                           type="button"
-                                           onClick={handleBack}
-                                           className="px-6 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors inline-flex items-center gap-2"
-                                       >
-                                           <ChevronLeft className="w-4 h-4" />
-                                           Back
-                                       </button>
-                                       <button
-                                           type="submit"
-                                           disabled={isLoading || serviceLoading}
-                                           className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                       >
-                                           {(isLoading || serviceLoading) ? (
-                                               <>
-                                                   <Loader2 className="w-4 h-4 animate-spin" />
-                                                   Creating...
-                                               </>
-                                           ) : (
-                                               <>
-                                                   Create Wallet
-                                                   <ChevronRight className="w-4 h-4" />
-                                               </>
-                                           )}
-                                       </button>
-                                   </div>
-                               </form>
-                           </div>
-                       )}
-                   </div>
-               </main>
-               <FooterMenu />
-           </div>
-       );
+                        {errors.verify && (
+                            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                                <div className="flex gap-3">
+                                    <AlertCircle className="w-5 h-5 text-red-400" />
+                                    <div>
+                                        <p className="text-xs sm:text-sm text-red-700">{errors.verify}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex justify-between gap-3 sm:gap-4">
+                            <button
+                                type="button"
+                                onClick={handleBack}
+                                className="px-4 sm:px-6 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors inline-flex items-center gap-2 text-sm sm:text-base"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                                Back
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isLoading || serviceLoading}
+                                className="px-4 sm:px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {(isLoading || serviceLoading) ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    <>
+                                        Create Wallet
+                                        <ChevronRight className="w-4 h-4" />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+        </div>
+    </main>
+    <FooterMenu />
+</div>
+);
    };
 
    export default CreateHDWalletPage;
