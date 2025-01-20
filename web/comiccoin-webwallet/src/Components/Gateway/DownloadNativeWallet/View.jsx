@@ -1,11 +1,23 @@
 // src/Components/Gateway/DownloadNativeWallet/View.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Wallet, Monitor, Globe, ArrowRight, Shield, Github, CheckCircle, Apple } from 'lucide-react';
 import { Link } from "react-router-dom";
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
 const DownloadNativeWalletPage = () => {
+  useEffect(() => {
+      let mounted = true;
+
+      if (mounted) {
+          window.scrollTo(0, 0);
+      }
+
+      return () => {
+          mounted = false;
+      };
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       {/* Skip to main content link */}

@@ -1,5 +1,5 @@
 // src/Components/Gateway/GettingStarted/View.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Wallet, Key, ArrowRight, AlertCircle,
   Plus, RefreshCw, Globe, Shield, Github,
@@ -10,6 +10,18 @@ import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
 const GetStartedPage = () => {
+  useEffect(() => {
+      let mounted = true;
+
+      if (mounted) {
+          window.scrollTo(0, 0);
+      }
+
+      return () => {
+          mounted = false;
+      };
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       {/* Skip to main content link */}

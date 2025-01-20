@@ -40,7 +40,7 @@ const MorePage = () => {
       link: "/transactions",
       isExternal: false
     },
-    
+
     // TODO: UNCOMMENT WHEN READY
     // {
     //   title: "Recovery Key",
@@ -90,6 +90,10 @@ const MorePage = () => {
   useEffect(() => {
     console.log('MorePage: Initial useEffect running');
     let mounted = true;
+
+    if (mounted) {
+        window.scrollTo(0, 0);
+    }
 
     const checkWalletSession = async () => {
       console.log('MorePage: checkWalletSession starting');

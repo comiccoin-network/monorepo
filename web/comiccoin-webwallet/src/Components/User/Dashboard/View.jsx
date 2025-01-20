@@ -65,6 +65,10 @@ function DashboardPage() {
     console.log('DashboardPage: Initial useEffect running');
     let mounted = true;
 
+    if (mounted) {
+        window.scrollTo(0, 0);
+    }
+
     const checkWalletSession = async () => {
       console.log('DashboardPage: checkWalletSession starting');
       try {

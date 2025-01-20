@@ -1,5 +1,5 @@
 // src/Components/Gateway/CreateWallet/View.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Wallet, Mnemonic } from 'ethers';
 import {
   Globe,
@@ -45,6 +45,18 @@ const CreateHDWalletPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [verificationWords, setVerificationWords] = useState([]);
     const [userInputWords, setUserInputWords] = useState({});
+
+    useEffect(() => {
+        let mounted = true;
+
+        if (mounted) {
+            window.scrollTo(0, 0);
+        }
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const onGenerateMnemonic = (e) => {
         e.preventDefault();

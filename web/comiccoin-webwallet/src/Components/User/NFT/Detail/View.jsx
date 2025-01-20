@@ -1,5 +1,5 @@
 // src/Components/User/NFTs/DetailView.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -183,6 +183,18 @@ const NFTDetailPage = () => {
   const tokenMetadataUri = searchParams.get('token_metadata_uri');
 
   const { metadata, loading, error } = useNFTMetadata(tokenMetadataUri);
+
+  useEffect(() => {
+      let mounted = true;
+
+      if (mounted) {
+          window.scrollTo(0, 0);
+      }
+
+      return () => {
+          mounted = false;
+      };
+  }, []);
 
   const downloadImage = async () => {
     if (!metadata?.image) throw new Error('No image available');

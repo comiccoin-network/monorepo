@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HDNodeWallet } from "ethers/wallet";
 import { useWallet } from '../../../Hooks/useWallet';
 import { Navigate, Link } from "react-router-dom";
@@ -32,6 +32,18 @@ const RecoverHDWalletPage = () => {
         repeatPassword: ''
     });
     const [errors, setErrors] = useState({});
+
+    useEffect(() => {
+        let mounted = true;
+
+        if (mounted) {
+            window.scrollTo(0, 0);
+        }
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const validateMnemonic = (phrase) => {
         try {

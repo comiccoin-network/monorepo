@@ -6,6 +6,10 @@ import Footer from "./Footer";
 const IndexPage = () => {
   const [forceURL, setForceURL] = useState("");
 
+  useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
   if (forceURL !== "") {
     return <Navigate to={forceURL} />;
   }

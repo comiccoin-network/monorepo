@@ -34,6 +34,17 @@ function LoginHDWalletPage() {
     if (wallets.length > 0 && !selectedWalletId) {
       setSelectedWalletId(wallets[0].id);
     }
+
+    let mounted = true;
+
+    if (mounted) {
+        window.scrollTo(0, 0);
+    }
+
+    return () => {
+        mounted = false;
+    };
+
   }, [wallets]);
 
   const handleLogin = async (e) => {

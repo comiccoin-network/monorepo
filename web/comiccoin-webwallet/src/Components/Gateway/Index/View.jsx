@@ -1,4 +1,5 @@
-import React from 'react';
+// src/Components/User/Index/View.jsx
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Shield, Wallet, Key, RefreshCw, Github, ArrowRight,
@@ -8,6 +9,19 @@ import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
 
 const IndexPage = () => {
+
+  useEffect(() => {
+      let mounted = true;
+
+      if (mounted) {
+          window.scrollTo(0, 0);
+      }
+
+      return () => {
+          mounted = false;
+      };
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       {/* Skip to main content link */}

@@ -49,6 +49,10 @@ const SendCoinsPage = () => {
     console.log('SendCoinsPage: Initial useEffect running');
     let mounted = true;
 
+    if (mounted) {
+        window.scrollTo(0, 0);
+    }
+
     const checkWalletSession = async () => {
       console.log('SendCoinsPage: checkWalletSession starting');
       try {

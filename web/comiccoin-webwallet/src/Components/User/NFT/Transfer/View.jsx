@@ -51,6 +51,10 @@ const TransferNFTPage = () => {
   useEffect(() => {
     let mounted = true;
 
+    if (mounted) {
+        window.scrollTo(0, 0);
+    }
+
     const checkWalletSession = async () => {
       try {
         if (!mounted) return;
