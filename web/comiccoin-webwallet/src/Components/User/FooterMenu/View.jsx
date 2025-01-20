@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
+  Home,
   Monitor,
   ArrowDownRight,
   Send,
@@ -15,7 +16,7 @@ const FooterMenu = () => {
   const location = useLocation();
 
   const navigationItems = [
-    { name: 'Desktop', icon: Monitor, path: '/dashboard' },
+    { name: 'Desktop', icon: Home, path: '/dashboard' },
     { name: 'Receive', icon: ArrowDownRight, path: '/receive-coins' },
     { name: 'Send', icon: Send, path: '/send-coins' },
     { name: 'Trade', icon: ArrowUpRight, path: '/trade' },
