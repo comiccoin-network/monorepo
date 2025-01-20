@@ -2,7 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent iOS input zoom */
+/*
+ * iOS Input Zoom Prevention
+ * ------------------------
+ * Safari on iOS automatically zooms into form inputs when their font-size is less than 16px.
+ * This is an accessibility feature by Apple to ensure text is readable when typing, but it can
+ * disrupt the layout and user experience of web applications.
+ *
+ * This media query:
+ * 1. Targets WebKit browsers (Safari on iOS) specifically
+ * 2. Sets a minimum font size of 16px for all form elements
+ * 3. Prevents the automatic zoom behavior while maintaining accessibility
+ * 4. Keeps your form layout consistent across all interactions
+ *
+ * Note: If you need smaller text visually, consider using transform: scale() instead of
+ * reducing font-size below 16px.
+ */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   input,
   select,
@@ -11,9 +26,58 @@
   }
 }
 
-/* iOS viewport fix (caused by iOS input zoom issue) */
+/*
+ * iOS Safe Area Bottom Spacing
+ * ---------------------------
+ * Modern iOS devices (iPhone X and newer) have a home indicator bar at the bottom
+ * of the screen. This creates a "safe area" that needs to be accounted for to prevent
+ * content from being obscured.
+ *
+ * This fix:
+ * 1. Only applies to iOS devices (via -webkit-touch-callout support check)
+ * 2. Uses env(safe-area-inset-bottom) to get the device-specific safe area height
+ * 3. Ensures fixed/sticky footers remain visible above the home indicator
+ * 4. Prevents important UI elements from being obscured by system gestures
+ *
+ * The .footer-safe class should be applied to bottom-fixed elements like navigation bars
+ * or footer content that needs to clear the home indicator area.
+ *
+ * Note: This is different from pb-safe as it doesn't include additional spacing for
+ * tab bars - use this for elements that need only the system safe area spacing.
+ */
 @supports (-webkit-touch-callout: none) {
   .footer-safe {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/*
+ * iOS Safe Area Bottom Padding Fix
+ * ------------------------------
+ * This CSS addresses several iOS-specific layout challenges:
+ *
+ * 1. Safari on iOS devices (especially newer models with no home button) has a "safe area"
+ *    at the bottom of the screen to avoid content being hidden behind the home indicator
+ *    or system gestures.
+ *
+ * 2. The @supports rule specifically targets iOS devices by checking for -webkit-touch-callout
+ *    support, ensuring these styles only apply where needed.
+ *
+ * 3. env(safe-area-inset-bottom) is an iOS-specific environment variable that provides the
+ *    exact pixel value needed to clear the bottom safe area on different devices.
+ *
+ * 4. The additional 4rem (64px) accounts for our app's bottom tab bar height, ensuring content
+ *    is fully scrollable and visible above both the safe area and the tab bar.
+ *
+ * Without this fix, users might experience:
+ * - Content being cut off or hidden behind the tab bar
+ * - Inability to scroll to the bottom of lists
+ * - Content being obscured by the iPhone's home indicator
+ *
+ * Usage: Add the 'pb-safe' class to your main content container when using a bottom tab bar.
+ */
+@supports (-webkit-touch-callout: none) {
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 4rem); /* 4rem accounts for tab bar height */
   }
 }

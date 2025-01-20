@@ -164,7 +164,7 @@ function TransactionListPage() {
 
     <NavigationMenu />
 
-    <main id="main-content" className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main id="main-content" className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-safe">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-6">
