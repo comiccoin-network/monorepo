@@ -212,6 +212,14 @@ const RecoverHDWalletPage = () => {
                                     errors.label ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                 }`}
                                 placeholder="Enter a name for your wallet"
+                                inputMode="text"
+                                autoCapitalize="none"
+                                autoCorrect="off"
+                                spellCheck="false"
+                                enterKeyHint="next"
+                                // Add these attributes
+                                data-lpignore="true"
+                                autoComplete="off"
                             />
                             {errors.label && (
                                 <p className="mt-1.5 text-xs sm:text-sm text-red-600 flex items-center gap-1.5">
@@ -236,6 +244,14 @@ const RecoverHDWalletPage = () => {
                                     errors.mnemonic ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                 }`}
                                 placeholder="Enter your 12 or 24-word recovery phrase"
+                                inputMode="text"
+                                autoCapitalize="none"
+                                autoCorrect="off"
+                                spellCheck="false"
+                                enterKeyHint="next"
+                                // Add these attributes
+                                data-lpignore="true"
+                                autoComplete="off"
                             />
                             {errors.mnemonic && (
                                 <p className="mt-1.5 text-xs sm:text-sm text-red-600 flex items-center gap-1.5">
@@ -261,6 +277,14 @@ const RecoverHDWalletPage = () => {
                                         errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                     }`}
                                     placeholder="Enter your new password"
+                                    inputMode="password"
+                                    autoCapitalize="none"
+                                    autoCorrect="off"
+                                    spellCheck="false"
+                                    enterKeyHint="next"
+                                    // Add these attributes
+                                    data-lpignore="true"
+                                    autoComplete="off"
                                 />
                                 <button
                                     type="button"
@@ -295,6 +319,14 @@ const RecoverHDWalletPage = () => {
                                         errors.repeatPassword ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                     }`}
                                     placeholder="Confirm your new password"
+                                    inputMode="password"
+                                    autoCapitalize="none"
+                                    autoCorrect="off"
+                                    spellCheck="false"
+                                    enterKeyHint="done"
+                                    // Add these attributes
+                                    data-lpignore="true"
+                                    autoComplete="off"
                                 />
                                 <button
                                     type="button"

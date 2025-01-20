@@ -341,6 +341,14 @@ const CreateHDWalletPage = () => {
                                             errors.label ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                         }`}
                                         placeholder="Enter a name for your wallet"
+                                        inputMode="text"
+                                        autoCapitalize="none"
+                                        autoCorrect="off"
+                                        spellCheck="false"
+                                        enterKeyHint="next"
+                                        // Add these attributes
+                                        data-lpignore="true"
+                                        autoComplete="off"
                                     />
                                     {errors.label && (
                                         <p className="mt-1.5 text-xs sm:text-sm text-red-600 flex items-center gap-1.5">
@@ -365,6 +373,14 @@ const CreateHDWalletPage = () => {
                                                     errors.mnemonic ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                                 }`}
                                                 placeholder="Your recovery phrase will appear here"
+                                                inputMode="text"
+                                                autoCapitalize="none"
+                                                autoCorrect="off"
+                                                spellCheck="false"
+                                                enterKeyHint="next"
+                                                // Add these attributes
+                                                data-lpignore="true"
+                                                autoComplete="off"
                                             />
                                             <button
                                                 onClick={onGenerateMnemonic}
@@ -421,6 +437,14 @@ const CreateHDWalletPage = () => {
                                                 errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                             }`}
                                             placeholder="Enter your password"
+                                            inputMode="password"
+                                            autoCapitalize="none"
+                                            autoCorrect="off"
+                                            spellCheck="false"
+                                            enterKeyHint="next"
+                                            // Add these attributes
+                                            data-lpignore="true"
+                                            autoComplete="off"
                                         />
                                         <button
                                             type="button"
@@ -454,6 +478,14 @@ const CreateHDWalletPage = () => {
                                             errors.repeatPassword ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                         }`}
                                         placeholder="Confirm your password"
+                                        inputMode="password"
+                                        autoCapitalize="none"
+                                        autoCorrect="off"
+                                        spellCheck="false"
+                                        enterKeyHint="done"
+                                        // Add these attributes
+                                        data-lpignore="true"
+                                        autoComplete="off"
                                     />
                                     <button
                                         type="button"

@@ -66,6 +66,7 @@ function LoginHDWalletPage() {
       setRedirectTo("/dashboard");
     } catch (err) {
       setError(err.message);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsLoading(false);
     }
@@ -238,6 +239,14 @@ function LoginHDWalletPage() {
                     className="block w-full px-3 sm:px-4 py-2.5 sm:py-3 pl-9 sm:pl-10 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-sm sm:text-base"
                     placeholder="Enter your wallet password"
                     disabled={isLoading || serviceLoading}
+                    inputMode="password"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    enterKeyHint="done"
+                    // Add these attributes
+                    data-lpignore="true"
+                    autoComplete="off"
                   />
                 </div>
               </div>
