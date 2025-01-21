@@ -1,5 +1,13 @@
 version: "3"
 
+vars:
+  APP_NAME: comiccoin-wallet
+  DISPLAY_NAME: ComicCoin Wallet
+  VERSION: 1.0.0
+  MAINTAINER: Collectible Protection Service <info@cpscapsule.com>
+  DESCRIPTION: Official desktop wallet for ComicCoin
+  URL: https://github.com/comiccoin-network/monorepo
+
 tasks:
   distlist:
     desc: List of possible platforms and chipsets to build with.
@@ -25,3 +33,98 @@ tasks:
     desc: Begin and run the daemon in the foreground of maintaining connection with the ComicCoin blockchain network.
     cmds:
       - wails dev
+
+  setup-fpm:
+    desc: Install FPM and required dependencies
+    cmds:
+      - sudo apt-get update
+      - sudo apt-get install -y ruby ruby-dev build-essential
+      - sudo gem install fpm
+
+  package-linux:
+    desc: Create DEB and RPM packages
+    deps: [buildlinux]
+    cmds:
+      # Clean up any existing staging directory and packages
+      - rm -rf staging
+      - rm -f *.deb *.rpm
+      # Create staging directory with proper permissions
+      - mkdir -p staging/usr/local/bin
+      - mkdir -p staging/usr/share/applications
+      - mkdir -p staging/usr/share/icons/hicolor/256x256/apps
+      - chmod -R 755 staging
+      # Copy binary with proper permissions
+      - cp build/bin/{{.APP_NAME}} staging/usr/local/bin/
+      - chmod 755 staging/usr/local/bin/{{.APP_NAME}}
+      # Copy application icon
+      - cp build/appicon.png staging/usr/share/icons/hicolor/256x256/apps/{{.APP_NAME}}.png
+      - chmod 644 staging/usr/share/icons/hicolor/256x256/apps/{{.APP_NAME}}.png
+      # Create desktop file with proper permissions
+      - |
+        cat > staging/usr/share/applications/{{.APP_NAME}}.desktop << EOL
+        [Desktop Entry]
+        Name={{.DISPLAY_NAME}}
+        Exec=/usr/local/bin/{{.APP_NAME}}
+        Icon={{.APP_NAME}}
+        Type=Application
+        Categories=Finance;Network;Blockchain;
+        Comment={{.DESCRIPTION}}
+        EOL
+      - chmod 644 staging/usr/share/applications/{{.APP_NAME}}.desktop
+      # Set proper ownership of staging directory
+      - |
+        if [ -n "$SUDO_USER" ]; then
+          sudo chown -R $SUDO_USER:$SUDO_USER staging
+        fi
+      # Create DEB package
+      - |
+        fpm -s dir -t deb \
+          -n {{.APP_NAME}} \
+          -v {{.VERSION}} \
+          --description "{{.DESCRIPTION}}" \
+          --maintainer "{{.MAINTAINER}}" \
+          --url "{{.URL}}" \
+          --license "GNU AFFERO GENERAL PUBLIC LICENSE" \
+          --depends "libwebkit2gtk-4.0-37" \
+          --depends "libgtk-3-0" \
+          --deb-priority "optional" \
+          --vendor "ComicCoin Network" \
+          --deb-no-default-config-files \
+          -C staging \
+          usr/
+      # Create RPM package
+      - |
+        fpm -s dir -t rpm \
+          -n {{.APP_NAME}} \
+          -v {{.VERSION}} \
+          --description "{{.DESCRIPTION}}" \
+          --maintainer "{{.MAINTAINER}}" \
+          --url "{{.URL}}" \
+          --license "GNU AFFERO GENERAL PUBLIC LICENSE" \
+          --depends "webkit2gtk3" \
+          --depends "gtk3" \
+          --vendor "ComicCoin Network" \
+          -C staging \
+          usr/
+      # Create dist directory and copy packages there
+      - |
+        mkdir -p dist
+        cp *.deb *.rpm dist/
+        echo "Package files created in ./dist/"
+      # Move packages to /tmp with proper permissions
+      - |
+        sudo mkdir -p /tmp/package-install
+        sudo cp {{.APP_NAME}}_{{.VERSION}}_amd64.deb /tmp/package-install/
+        sudo cp {{.APP_NAME}}-{{.VERSION}}-1.x86_64.rpm /tmp/package-install/
+        sudo chmod -R 777 /tmp/package-install
+        echo "Packages moved to /tmp/package-install/"
+        echo "To install, run: sudo apt install /tmp/package-install/{{.APP_NAME}}_{{.VERSION}}_amd64.deb"
+      # Clean up staging directory
+      - rm -rf staging
+
+  clean:
+    desc: Clean up generated packages and staging directory
+    cmds:
+      - rm -rf staging dist
+      - rm -f *.deb *.rpm
+      - sudo rm -rf /tmp/package-install
