@@ -4,9 +4,6 @@ vars:
   APP_NAME: comiccoin-wallet
   DISPLAY_NAME: ComicCoin Wallet
   VERSION: 1.0.0
-  MAINTAINER: Collectible Protection Service <info@cpscapsule.com>
-  DESCRIPTION: Official desktop wallet for ComicCoin
-  URL: https://github.com/comiccoin-network/monorepo
 
 tasks:
   distlist:
@@ -14,15 +11,8 @@ tasks:
     cmds:
       - go tool dist list
 
-  buildlinux:
-    desc: Build a linux executable.
-    cmds:
-      - GOOS=linux GOARCH=amd64 wails build -clean -o comiccoin-wallet
-
   buildmac:
     desc: Build a Apple Mac executable.
-    cmds:
-      - GOOS=darwin GOARCH=arm64 wails build -clean -o comiccoin-wallet
 
   buildwin:
     desc: Build a Microsoft Winows executable.
@@ -34,97 +24,76 @@ tasks:
     cmds:
       - wails dev
 
-  setup-fpm:
-    desc: Install FPM and required dependencies
+  buildlinux:
+    desc: Build a linux executable.
     cmds:
-      - sudo apt-get update
-      - sudo apt-get install -y ruby ruby-dev build-essential
-      - sudo gem install fpm
+      - GOOS=linux GOARCH=amd64 wails build
 
-  package-linux:
-    desc: Create DEB and RPM packages
-    deps: [buildlinux]
+  create-desktop:
+    desc: Create desktop entry file
     cmds:
-      # Clean up any existing staging directory and packages
-      - rm -rf staging
-      - rm -f *.deb *.rpm
-      # Create staging directory with proper permissions
-      - mkdir -p staging/usr/local/bin
-      - mkdir -p staging/usr/share/applications
-      - mkdir -p staging/usr/share/icons/hicolor/256x256/apps
-      - chmod -R 755 staging
-      # Copy binary with proper permissions
-      - cp build/bin/{{.APP_NAME}} staging/usr/local/bin/
-      - chmod 755 staging/usr/local/bin/{{.APP_NAME}}
-      # Copy application icon
-      - cp build/appicon.png staging/usr/share/icons/hicolor/256x256/apps/{{.APP_NAME}}.png
-      - chmod 644 staging/usr/share/icons/hicolor/256x256/apps/{{.APP_NAME}}.png
-      # Create desktop file with proper permissions
       - |
-        cat > staging/usr/share/applications/{{.APP_NAME}}.desktop << EOL
+        cat > desktop.desktop << EOL
         [Desktop Entry]
         Name={{.DISPLAY_NAME}}
-        Exec=/usr/local/bin/{{.APP_NAME}}
-        Icon={{.APP_NAME}}
+        Exec=comiccoin-wallet
+        Icon=comiccoin-wallet
         Type=Application
         Categories=Finance;Network;Blockchain;
-        Comment={{.DESCRIPTION}}
+        Comment=Official desktop wallet for ComicCoin
         EOL
-      - chmod 644 staging/usr/share/applications/{{.APP_NAME}}.desktop
-      # Set proper ownership of staging directory
+
+  # create-install-instructions:
+  #   desc: Create installation instructions
+  #   cmds:
+  #     - |
+  #       cat > dist/README.md << EOL
+  #       # ComicCoin Wallet Installation
+  #
+  #       ## Ubuntu/Debian:
+  #       ```bash
+  #       wget https://example.com/downloads/comiccoin-wallet_{{.VERSION}}_amd64.deb
+  #       sudo apt install ./comiccoin-wallet_{{.VERSION}}_amd64.deb
+  #       ```
+  #
+  #       ## Fedora/RHEL:
+  #       ```bash
+  #       wget https://example.com/downloads/comiccoin-wallet-{{.VERSION}}-1.x86_64.rpm
+  #       sudo dnf install ./comiccoin-wallet-{{.VERSION}}-1.x86_64.rpm
+  #       ```
+  #
+  #       ## Verify Checksum (Optional)
+  #       ```bash
+  #       sha256sum -c SHA256SUMS
+  #       ```
+  #       EOL
+
+  package:
+    desc: Create DEB and RPM packages with checksums
+    deps: [buildlinux, create-desktop, create-install-instructions]
+    cmds:
+      # Create dist directory
+      - mkdir -p dist
+
+      # Create packages
+      - nfpm pkg --packager deb --target dist/{{.APP_NAME}}_{{.VERSION}}_amd64.deb
+      - nfpm pkg --packager rpm --target dist/{{.APP_NAME}}-{{.VERSION}}-1.x86_64.rpm
+
+      # Create checksums
+      - cd dist && sha256sum * > SHA256SUMS
+
+      # Clean up temporary files
+      - rm -f desktop.desktop
+
+      # Print output location
       - |
-        if [ -n "$SUDO_USER" ]; then
-          sudo chown -R $SUDO_USER:$SUDO_USER staging
-        fi
-      # Create DEB package
-      - |
-        fpm -s dir -t deb \
-          -n {{.APP_NAME}} \
-          -v {{.VERSION}} \
-          --description "{{.DESCRIPTION}}" \
-          --maintainer "{{.MAINTAINER}}" \
-          --url "{{.URL}}" \
-          --license "GNU AFFERO GENERAL PUBLIC LICENSE" \
-          --depends "libwebkit2gtk-4.0-37" \
-          --depends "libgtk-3-0" \
-          --deb-priority "optional" \
-          --vendor "ComicCoin Network" \
-          --deb-no-default-config-files \
-          -C staging \
-          usr/
-      # Create RPM package
-      - |
-        fpm -s dir -t rpm \
-          -n {{.APP_NAME}} \
-          -v {{.VERSION}} \
-          --description "{{.DESCRIPTION}}" \
-          --maintainer "{{.MAINTAINER}}" \
-          --url "{{.URL}}" \
-          --license "GNU AFFERO GENERAL PUBLIC LICENSE" \
-          --depends "webkit2gtk3" \
-          --depends "gtk3" \
-          --vendor "ComicCoin Network" \
-          -C staging \
-          usr/
-      # Create dist directory and copy packages there
-      - |
-        mkdir -p dist
-        cp *.deb *.rpm dist/
-        echo "Package files created in ./dist/"
-      # Move packages to /tmp with proper permissions
-      - |
-        sudo mkdir -p /tmp/package-install
-        sudo cp {{.APP_NAME}}_{{.VERSION}}_amd64.deb /tmp/package-install/
-        sudo cp {{.APP_NAME}}-{{.VERSION}}-1.x86_64.rpm /tmp/package-install/
-        sudo chmod -R 777 /tmp/package-install
-        echo "Packages moved to /tmp/package-install/"
-        echo "To install, run: sudo apt install /tmp/package-install/{{.APP_NAME}}_{{.VERSION}}_amd64.deb"
-      # Clean up staging directory
-      - rm -rf staging
+        echo "Created in dist/:"
+        echo "- {{.APP_NAME}}_{{.VERSION}}_amd64.deb    (Ubuntu/Debian)"
+        echo "- {{.APP_NAME}}-{{.VERSION}}-1.x86_64.rpm (Fedora/RHEL)"
+        echo "- SHA256SUMS                              (Checksums)"
+    # echo "- README.md                               (Install Instructions)"
 
   clean:
-    desc: Clean up generated packages and staging directory
+    desc: Clean everything
     cmds:
-      - rm -rf staging dist
-      - rm -f *.deb *.rpm
-      - sudo rm -rf /tmp/package-install
+      - rm -rf dist build desktop.desktop
