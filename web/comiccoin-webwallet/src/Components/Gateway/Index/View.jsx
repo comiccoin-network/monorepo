@@ -1,9 +1,10 @@
 // src/Components/User/Index/View.jsx
+// src/Components/User/Index/View.jsx
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Shield, Wallet, Key, RefreshCw, Github, ArrowRight,
-  Monitor, Globe, CheckCircle, Apple, HardDrive, Image, Coins, ArrowUpRight
+  Monitor, Globe, CheckCircle, Apple, HardDrive, Image, Coins, ArrowUpRight, Server
 } from 'lucide-react';
 import NavigationMenu from "../NavigationMenu/View";
 import FooterMenu from "../FooterMenu/View";
@@ -92,7 +93,7 @@ const IndexPage = () => {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-purple-800">Desktop App</h3>
-                      <p className="text-purple-600">Available for Windows & MacOS</p>
+                      <p className="text-purple-600">Available for Windows, MacOS & Linux</p>
                     </div>
                   </div>
                   <ul className="space-y-3 mb-6 flex-grow">
@@ -110,8 +111,8 @@ const IndexPage = () => {
                     </li>
                   </ul>
                   <div className="space-y-3">
-                    <a
-                      href="/download-windows"
+                   <a
+                      href={process.env.REACT_APP_NATIVE_BINARY_WINDOWS_DOWNLOAD_LINK}
                       className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
                       <Monitor className="w-5 h-5" />
@@ -119,13 +120,21 @@ const IndexPage = () => {
                       <ArrowRight className="w-5 h-5" />
                     </a>
                     <a
-                      href="/download-macos"
+                      href={process.env.REACT_APP_NATIVE_BINARY_MACOS_DOWNLOAD_LINK}
                       className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
                       <Apple className="w-5 h-5" />
                       Download for MacOS
                       <ArrowRight className="w-5 h-5" />
                     </a>
+                    <Link
+                      to="/download-native-wallet"
+                      className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Server className="w-5 h-5" />
+                      Download for Linux
+                      <ArrowRight className="w-5 h-5" />
+                    </Link>
                   </div>
                 </div>
               </div>
