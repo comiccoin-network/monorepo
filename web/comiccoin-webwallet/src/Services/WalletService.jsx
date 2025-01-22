@@ -1,49 +1,49 @@
 // src/Services/WalletService.js
-import { HDNodeWallet, Wallet } from "ethers/wallet";
-import CryptoJS from 'crypto-js';
+import { HDNodeWallet, Wallet } from 'ethers/wallet'
+import CryptoJS from 'crypto-js'
 
 class WalletService {
     constructor() {
-        this.currentWallet = null;
-        this.wallets = [];
-        this.isInitialized = false;
-        this.sessionTimeout = 30 * 60 * 1000; // 30 minutes
-        this.lastActivity = Date.now();
+        this.currentWallet = null
+        this.wallets = []
+        this.isInitialized = false
+        this.sessionTimeout = 30 * 60 * 1000 // 30 minutes
+        this.lastActivity = Date.now()
     }
 
     async initialize() {
-        if (this.isInitialized) return;
+        if (this.isInitialized) return
 
         try {
-            const encryptedWallets = localStorage.getItem('comicCoinWallets');
+            const encryptedWallets = localStorage.getItem('comicCoinWallets')
             if (encryptedWallets) {
-                this.wallets = JSON.parse(encryptedWallets);
+                this.wallets = JSON.parse(encryptedWallets)
             }
 
             // Check for active session
-            const activeWalletData = localStorage.getItem('activeWallet');
+            const activeWalletData = localStorage.getItem('activeWallet')
             if (activeWalletData) {
-                const { id, wallet } = JSON.parse(activeWalletData);
+                const { id, wallet } = JSON.parse(activeWalletData)
                 if (this.checkSession()) {
                     // Create wallet directly from private key
-                    this.currentWallet = new Wallet(wallet.privateKey);
+                    this.currentWallet = new Wallet(wallet.privateKey)
                 } else {
                     // Clear expired session
-                    localStorage.removeItem('activeWallet');
+                    localStorage.removeItem('activeWallet')
                 }
             }
 
-            this.isInitialized = true;
+            this.isInitialized = true
         } catch (error) {
-            console.error('Failed to initialize wallet service:', error);
-            throw new Error('Wallet initialization failed');
+            console.error('Failed to initialize wallet service:', error)
+            throw new Error('Wallet initialization failed')
         }
     }
 
     async createWalletFromMnemonic(mnemonic, password) {
         try {
-            const normalizedMnemonic = mnemonic.trim().toLowerCase();
-            const hdWallet = HDNodeWallet.fromPhrase(normalizedMnemonic);
+            const normalizedMnemonic = mnemonic.trim().toLowerCase()
+            const hdWallet = HDNodeWallet.fromPhrase(normalizedMnemonic)
 
             // Developers Note: Don't store the mnemonic phrase,
             // Most web3 wallets (like MetaMask) do NOT store the mnemonic
@@ -54,110 +54,113 @@ class WalletService {
                 address: hdWallet.address,
                 encryptedPrivateKey: this.encryptData(hdWallet.privateKey, password),
                 createdAt: Date.now(),
-                lastAccessed: Date.now()
-            };
+                lastAccessed: Date.now(),
+            }
 
-            this.wallets.push(walletData);
-            this.saveWallets();
+            this.wallets.push(walletData)
+            this.saveWallets()
 
-            return walletData;
+            return walletData
         } catch (error) {
-            console.error('Wallet creation error:', error);
-            throw error;
+            console.error('Wallet creation error:', error)
+            throw error
         }
     }
 
     async loadWallet(id, password) {
         try {
-            const walletData = this.wallets.find(w => w.id === id);
+            const walletData = this.wallets.find((w) => w.id === id)
             if (!walletData) {
-                throw new Error('Wallet not found');
+                throw new Error('Wallet not found')
             }
 
             // Decrypt private key
-            const privateKey = this.decryptData(walletData.encryptedPrivateKey, password);
+            const privateKey = this.decryptData(walletData.encryptedPrivateKey, password)
 
             // Create wallet instance directly from private key
-            this.currentWallet = new Wallet(privateKey);
+            this.currentWallet = new Wallet(privateKey)
 
             // Verify address matches
             if (this.currentWallet.address.toLowerCase() !== walletData.address.toLowerCase()) {
-                throw new Error('Wallet address mismatch');
+                throw new Error('Wallet address mismatch')
             }
 
             // Update last accessed
-            walletData.lastAccessed = Date.now();
-            this.lastActivity = Date.now();
+            walletData.lastAccessed = Date.now()
+            this.lastActivity = Date.now()
 
             // Save active wallet session
-            localStorage.setItem('activeWallet', JSON.stringify({
-                id: walletData.id,
-                wallet: {
-                    address: this.currentWallet.address,
-                    privateKey: privateKey
-                }
-            }));
+            localStorage.setItem(
+                'activeWallet',
+                JSON.stringify({
+                    id: walletData.id,
+                    wallet: {
+                        address: this.currentWallet.address,
+                        privateKey: privateKey,
+                    },
+                })
+            )
 
-            this.saveWallets();
+            this.saveWallets()
 
-            return this.currentWallet;
+            return this.currentWallet
         } catch (error) {
-            console.error('Failed to load wallet:', error);
-            throw new Error('Failed to load wallet');
+            console.error('Failed to load wallet:', error)
+            throw new Error('Failed to load wallet')
         }
     }
 
     getCurrentWallet() {
         if (!this.checkSession()) {
-            throw new Error('Session expired');
+            throw new Error('Session expired')
         }
         if (!this.currentWallet) {
-            throw new Error('No wallet loaded');
+            throw new Error('No wallet loaded')
         }
-        return this.currentWallet;
+        return this.currentWallet
     }
 
     checkSession() {
-        const now = Date.now();
+        const now = Date.now()
         if (now - this.lastActivity > this.sessionTimeout) {
-            this.logout();
-            return false;
+            this.logout()
+            return false
         }
-        this.lastActivity = now;
-        return true;
+        this.lastActivity = now
+        return true
     }
 
     logout() {
-        this.currentWallet = null;
-        this.lastActivity = null;
-        localStorage.removeItem('activeWallet');
+        this.currentWallet = null
+        this.lastActivity = null
+        localStorage.removeItem('activeWallet')
     }
 
     encryptData(data, password) {
         try {
-            return CryptoJS.AES.encrypt(data, password).toString();
+            return CryptoJS.AES.encrypt(data, password).toString()
         } catch (error) {
-            console.error('Encryption failed:', error);
-            throw new Error('Encryption failed');
+            console.error('Encryption failed:', error)
+            throw new Error('Encryption failed')
         }
     }
 
     decryptData(encryptedData, password) {
         try {
-            const bytes = CryptoJS.AES.decrypt(encryptedData, password);
-            return bytes.toString(CryptoJS.enc.Utf8);
+            const bytes = CryptoJS.AES.decrypt(encryptedData, password)
+            return bytes.toString(CryptoJS.enc.Utf8)
         } catch (error) {
-            console.error('Decryption failed:', error);
-            throw new Error('Decryption failed');
+            console.error('Decryption failed:', error)
+            throw new Error('Decryption failed')
         }
     }
 
     saveWallets() {
         try {
-            localStorage.setItem('comicCoinWallets', JSON.stringify(this.wallets));
+            localStorage.setItem('comicCoinWallets', JSON.stringify(this.wallets))
         } catch (error) {
-            console.error('Failed to save wallets:', error);
-            throw new Error('Failed to save wallets');
+            console.error('Failed to save wallets:', error)
+            throw new Error('Failed to save wallets')
         }
     }
 
@@ -166,10 +169,10 @@ class WalletService {
             id,
             address,
             createdAt,
-            lastAccessed
-        }));
+            lastAccessed,
+        }))
     }
 }
 
-const walletService = new WalletService();
-export default walletService;
+const walletService = new WalletService()
+export default walletService

@@ -1,98 +1,98 @@
 // src/Hooks/useWallet.js
-import { useState, useEffect } from 'react';
-import walletService from '../Services/WalletService';
+import { useState, useEffect } from 'react'
+import walletService from '../Services/WalletService'
 
 export const useWallet = () => {
-    const [currentWallet, setCurrentWallet] = useState(null);
-    const [wallets, setWallets] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isInitialized, setIsInitialized] = useState(false);
+    const [currentWallet, setCurrentWallet] = useState(null)
+    const [wallets, setWallets] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const [isInitialized, setIsInitialized] = useState(false)
 
     useEffect(() => {
         const initializeWalletService = async () => {
             try {
-                await walletService.initialize();
-                setWallets(walletService.getWallets());
+                await walletService.initialize()
+                setWallets(walletService.getWallets())
 
                 try {
-                    const activeWallet = walletService.getCurrentWallet();
+                    const activeWallet = walletService.getCurrentWallet()
                     if (activeWallet) {
                         console.log('Active wallet found:', {
                             address: activeWallet.address,
                             hasAddress: !!activeWallet.address,
-                        });
-                        setCurrentWallet(activeWallet);
+                        })
+                        setCurrentWallet(activeWallet)
                     }
                 } catch (sessionError) {
-                    console.log('No active wallet session');
+                    console.log('No active wallet session')
                 }
 
-                setIsInitialized(true);
+                setIsInitialized(true)
             } catch (err) {
-                console.error('Wallet initialization error:', err);
-                setError('Failed to initialize wallet service');
+                console.error('Wallet initialization error:', err)
+                setError('Failed to initialize wallet service')
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        };
+        }
 
-        initializeWalletService();
-    }, []);
+        initializeWalletService()
+    }, [])
 
     const createWallet = async (mnemonic, password) => {
         try {
-            setError(null);
-            setLoading(true);
+            setError(null)
+            setLoading(true)
 
-            const newWallet = await walletService.createWalletFromMnemonic(mnemonic, password);
+            const newWallet = await walletService.createWalletFromMnemonic(mnemonic, password)
             console.log('New wallet created:', {
                 address: newWallet.address,
                 hasAddress: !!newWallet.address,
-            });
+            })
 
-            setWallets(walletService.getWallets());
+            setWallets(walletService.getWallets())
 
-            const loadedWallet = await walletService.loadWallet(newWallet.id, password);
+            const loadedWallet = await walletService.loadWallet(newWallet.id, password)
             console.log('Wallet loaded:', {
                 address: loadedWallet.address,
                 hasAddress: !!loadedWallet.address,
-            });
+            })
 
-            setCurrentWallet(loadedWallet);
+            setCurrentWallet(loadedWallet)
 
-            return newWallet;
+            return newWallet
         } catch (err) {
-            console.error('Wallet creation error:', err);
-            setError(err.message);
-            throw err;
+            console.error('Wallet creation error:', err)
+            setError(err.message)
+            throw err
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
 
     const loadWallet = async (id, password) => {
         try {
-            setError(null);
-            setLoading(true);
+            setError(null)
+            setLoading(true)
 
-            const wallet = await walletService.loadWallet(id, password);
+            const wallet = await walletService.loadWallet(id, password)
             console.log('Wallet loaded:', {
                 address: wallet.address,
                 hasAddress: !!wallet.address,
-            });
+            })
 
-            setCurrentWallet(wallet);
+            setCurrentWallet(wallet)
 
-            return wallet;
+            return wallet
         } catch (err) {
-            console.error('Wallet loading error:', err);
-            setError(err.message);
-            throw err;
+            console.error('Wallet loading error:', err)
+            setError(err.message)
+            throw err
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
 
     return {
         currentWallet,
@@ -103,9 +103,9 @@ export const useWallet = () => {
         createWallet,
         loadWallet,
         logout: () => {
-            walletService.logout();
-            setCurrentWallet(null);
+            walletService.logout()
+            setCurrentWallet(null)
         },
-        checkSession: walletService.checkSession.bind(walletService)
-    };
-};
+        checkSession: walletService.checkSession.bind(walletService),
+    }
+}

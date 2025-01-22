@@ -6,17 +6,17 @@
  * @returns {string} - Hex string with '0x' prefix
  */
 export function base64ToHex(base64) {
-  try {
-    // First decode base64 to binary string
-    const binaryString = window.atob(base64);
-    // Convert binary string to hex
-    const hexString = Array.from(binaryString)
-      .map(byte => ('0' + byte.charCodeAt(0).toString(16)).slice(-2))
-      .join('');
-    return `0x${hexString}`;
-  } catch (e) {
-    return 'Invalid format';
-  }
+    try {
+        // First decode base64 to binary string
+        const binaryString = window.atob(base64)
+        // Convert binary string to hex
+        const hexString = Array.from(binaryString)
+            .map((byte) => ('0' + byte.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        return `0x${hexString}`
+    } catch (e) {
+        return 'Invalid format'
+    }
 }
 
 /**
@@ -25,6 +25,6 @@ export function base64ToHex(base64) {
  * @returns {string} - Formatted hex string or 'N/A'
  */
 export function formatBytes(bytes) {
-  if (!bytes) return 'N/A';
-  return base64ToHex(bytes);
+    if (!bytes) return 'N/A'
+    return base64ToHex(bytes)
 }

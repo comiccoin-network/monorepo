@@ -1,28 +1,35 @@
 // src/Components/User/Dashboard/View.jsx
-import React, { useState, useEffect } from 'react';
-import { Navigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react'
+import { Navigate, Link } from 'react-router-dom'
 import {
-    Globe, Monitor, Wallet, AlertCircle, Copy,
-    Download, RefreshCw, Info, Loader2, LogOut,
-    Coins, LineChart, ArrowUpRight, ArrowDownRight,
-    Send, Image, MoreHorizontal, Clock
-} from 'lucide-react';
+    Globe,
+    Monitor,
+    Wallet,
+    AlertCircle,
+    Copy,
+    Download,
+    RefreshCw,
+    Info,
+    Loader2,
+    LogOut,
+    Coins,
+    LineChart,
+    ArrowUpRight,
+    ArrowDownRight,
+    Send,
+    Image,
+    MoreHorizontal,
+    Clock,
+} from 'lucide-react'
 
-import { useWallet } from '../../../Hooks/useWallet';
-import { useAllTransactions } from '../../../Hooks/useAllTransactions';
-import NavigationMenu from "../NavigationMenu/View";
-import FooterMenu from "../FooterMenu/View";
-import walletService from '../../../Services/WalletService';
+import { useWallet } from '../../../Hooks/useWallet'
+import { useAllTransactions } from '../../../Hooks/useAllTransactions'
+import NavigationMenu from '../NavigationMenu/View'
+import FooterMenu from '../FooterMenu/View'
+import walletService from '../../../Services/WalletService'
 
 function DashboardPage() {
-    const {
-        currentWallet,
-        wallets,
-        loadWallet,
-        logout,
-        loading: serviceLoading,
-        error: serviceError
-    } = useWallet();
+    const { currentWallet, wallets, loadWallet, logout, loading: serviceLoading, error: serviceError } = useWallet()
 
     const {
         transactions,
@@ -31,254 +38,283 @@ function DashboardPage() {
         refresh: txrefresh,
         statistics,
         coinTransactions,
-        nftTransactions
-    } = useAllTransactions(currentWallet?.address);
+        nftTransactions,
+    } = useAllTransactions(currentWallet?.address)
 
     // For debugging purposes only.
-    console.log("DashboardPage: statistics:", statistics, "\nAddr:", currentWallet?.address);
+    console.log('DashboardPage: statistics:', statistics, '\nAddr:', currentWallet?.address)
 
-    const [forceURL, setForceURL] = useState("");
-    const [walletAddress, setWalletAddress] = useState("");
-    const [error, setError] = useState(null);
-    const [isSessionExpired, setIsSessionExpired] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [forceURL, setForceURL] = useState('')
+    const [walletAddress, setWalletAddress] = useState('')
+    const [error, setError] = useState(null)
+    const [isSessionExpired, setIsSessionExpired] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
     // Session check effect remains the same...
     useEffect(() => {
-        let mounted = true;
+        let mounted = true
         if (mounted) {
-            window.scrollTo(0, 0);
+            window.scrollTo(0, 0)
         }
 
         const checkWalletSession = async () => {
             try {
-                if (!mounted) return;
-                setIsLoading(true);
+                if (!mounted) return
+                setIsLoading(true)
 
-                if (serviceLoading) return;
+                if (serviceLoading) return
 
                 if (!currentWallet) {
                     if (mounted) {
-                        setForceURL("/login");
+                        setForceURL('/login')
                     }
-                    return;
+                    return
                 }
 
                 if (!walletService.checkSession()) {
-                    throw new Error("Session expired");
+                    throw new Error('Session expired')
                 }
 
                 if (mounted) {
-                    setForceURL("");
-                    setWalletAddress(currentWallet?.address);
+                    setForceURL('')
+                    setWalletAddress(currentWallet?.address)
                 }
             } catch (error) {
-                if (error.message === "Session expired" && mounted) {
-                    handleSessionExpired();
+                if (error.message === 'Session expired' && mounted) {
+                    handleSessionExpired()
                 } else if (mounted) {
-                    setError(error.message);
+                    setError(error.message)
                 }
             } finally {
                 if (mounted) {
-                    setIsLoading(false);
+                    setIsLoading(false)
                 }
             }
-        };
+        }
 
-        checkWalletSession();
-        const sessionCheckInterval = setInterval(checkWalletSession, 60000);
+        checkWalletSession()
+        const sessionCheckInterval = setInterval(checkWalletSession, 60000)
 
         return () => {
-            mounted = false;
-            clearInterval(sessionCheckInterval);
-        };
-    }, [currentWallet, serviceLoading]);
+            mounted = false
+            clearInterval(sessionCheckInterval)
+        }
+    }, [currentWallet, serviceLoading])
 
     const handleSessionExpired = () => {
-        setIsSessionExpired(true);
-        logout();
-        setError("Your session has expired. Please sign in again.");
+        setIsSessionExpired(true)
+        logout()
+        setError('Your session has expired. Please sign in again.')
         setTimeout(() => {
-            setForceURL("/login");
-        }, 3000);
-    };
-
-    const handleSignOut = () => {
-        logout();
-        setForceURL("/login");
-    };
-
-    const TransactionList = ({ transactions }) => {
-    const recentTransactions = transactions?.slice(0, 5) || [];
-
-    if (!transactions || transactions.length === 0) {
-        return (
-            <div className="text-center py-6">
-                <Image className="w-12 h-12 mx-auto mb-2 text-gray-400 opacity-50" />
-                <h3 className="text-lg font-medium text-gray-900 mb-1">No Transactions Yet</h3>
-                <p className="text-sm text-gray-500 mb-4">Get started by claiming some free ComicCoins</p>
-                <a
-                    href="https://comiccoinfaucet.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm group"
-                >
-                    <Coins className="w-4 h-4" />
-                    Get Free ComicCoins
-                    <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
-            </div>
-        );
+            setForceURL('/login')
+        }, 3000)
     }
 
-    return (
-        <div className="space-y-2">
-            <div className="grid grid-cols-1 gap-2">
-                {recentTransactions.map((tx) => {
-                    const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase();
-                    const isBurned = tx.to.toLowerCase() === '0x0000000000000000000000000000000000000000';
-                    const txValue = Math.floor(Number(tx.value)) || 0;
-                    const txFee = Math.floor(Number(tx.fee)) || 0;
-                    const isNFT = tx.type === 'token';
+    const handleSignOut = () => {
+        logout()
+        setForceURL('/login')
+    }
 
-                    return (
-                        <Link
-                            key={tx.id || tx.hash}
-                            to={`/transaction/${tx.id}`}
-                            className="block hover:bg-gray-50 transition-colors cursor-pointer rounded-lg border border-gray-100"
-                        >
-                            <div className="p-3 sm:p-4">
-                                {/* Header Section */}
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`p-2 rounded-lg ${
-                                            isNFT
-                                                ? (isBurned ? 'bg-orange-100' : 'bg-purple-100')
-                                                : (isSent ? 'bg-red-100' : 'bg-green-100')
-                                        }`}>
-                                            {isNFT ? (
-                                                <Image className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                                                    isBurned ? 'text-orange-600' : 'text-purple-600'
-                                                }`} />
-                                            ) : (
-                                                <Coins className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                                                    isSent ? 'text-red-600' : 'text-green-600'
-                                                }`} />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <span className={`font-medium ${
-                                                isNFT
-                                                    ? (isBurned ? 'text-orange-600' : (isSent ? 'text-red-600' : 'text-green-600'))
-                                                    : (isSent ? 'text-red-600' : 'text-green-600')
-                                            }`}>
-                                                {isBurned
-                                                    ? `Burned ${isNFT ? 'NFT' : 'Coins'}`
-                                                    : `${isSent ? 'Sent' : 'Received'} ${isNFT ? 'NFT' : 'Coins'}`
-                                                }
+    const TransactionList = ({ transactions }) => {
+        const recentTransactions = transactions?.slice(0, 5) || []
+
+        if (!transactions || transactions.length === 0) {
+            return (
+                <div className="text-center py-6">
+                    <Image className="w-12 h-12 mx-auto mb-2 text-gray-400 opacity-50" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-1">No Transactions Yet</h3>
+                    <p className="text-sm text-gray-500 mb-4">Get started by claiming some free ComicCoins</p>
+                    <a
+                        href="https://comiccoinfaucet.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm group"
+                    >
+                        <Coins className="w-4 h-4" />
+                        Get Free ComicCoins
+                        <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </a>
+                </div>
+            )
+        }
+
+        return (
+            <div className="space-y-2">
+                <div className="grid grid-cols-1 gap-2">
+                    {recentTransactions.map((tx) => {
+                        const isSent = tx.from.toLowerCase() === currentWallet.address.toLowerCase()
+                        const isBurned = tx.to.toLowerCase() === '0x0000000000000000000000000000000000000000'
+                        const txValue = Math.floor(Number(tx.value)) || 0
+                        const txFee = Math.floor(Number(tx.fee)) || 0
+                        const isNFT = tx.type === 'token'
+
+                        return (
+                            <Link
+                                key={tx.id || tx.hash}
+                                to={`/transaction/${tx.id}`}
+                                className="block hover:bg-gray-50 transition-colors cursor-pointer rounded-lg border border-gray-100"
+                            >
+                                <div className="p-3 sm:p-4">
+                                    {/* Header Section */}
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <div
+                                                className={`p-2 rounded-lg ${
+                                                    isNFT
+                                                        ? isBurned
+                                                            ? 'bg-orange-100'
+                                                            : 'bg-purple-100'
+                                                        : isSent
+                                                          ? 'bg-red-100'
+                                                          : 'bg-green-100'
+                                                }`}
+                                            >
+                                                {isNFT ? (
+                                                    <Image
+                                                        className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                                                            isBurned ? 'text-orange-600' : 'text-purple-600'
+                                                        }`}
+                                                    />
+                                                ) : (
+                                                    <Coins
+                                                        className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                                                            isSent ? 'text-red-600' : 'text-green-600'
+                                                        }`}
+                                                    />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <span
+                                                    className={`font-medium ${
+                                                        isNFT
+                                                            ? isBurned
+                                                                ? 'text-orange-600'
+                                                                : isSent
+                                                                  ? 'text-red-600'
+                                                                  : 'text-green-600'
+                                                            : isSent
+                                                              ? 'text-red-600'
+                                                              : 'text-green-600'
+                                                    }`}
+                                                >
+                                                    {isBurned
+                                                        ? `Burned ${isNFT ? 'NFT' : 'Coins'}`
+                                                        : `${isSent ? 'Sent' : 'Received'} ${isNFT ? 'NFT' : 'Coins'}`}
+                                                </span>
+                                            </div>
+                                            <span
+                                                className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                                    tx.status === 'confirmed'
+                                                        ? 'bg-blue-50 text-blue-700'
+                                                        : 'bg-yellow-50 text-yellow-700'
+                                                }`}
+                                            >
+                                                {tx.status}
                                             </span>
                                         </div>
-                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
-                                            tx.status === 'confirmed'
-                                                ? 'bg-blue-50 text-blue-700'
-                                                : 'bg-yellow-50 text-yellow-700'
-                                        }`}>
-                                            {tx.status}
-                                        </span>
+                                        <div className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
+                                            <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                                            {new Date(tx.timestamp).toLocaleString()}
+                                        </div>
                                     </div>
-                                    <div className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
-                                        <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                                        {new Date(tx.timestamp).toLocaleString()}
-                                    </div>
-                                </div>
 
-                                {/* Transaction Details */}
-                                <div className="mt-2 pt-2 border-t border-gray-100">
-                                    {isSent ? (
-                                        // Sent Transaction Display
-                                        <div className="space-y-1">
-                                            {isNFT ? (
-                                                <>
+                                    {/* Transaction Details */}
+                                    <div className="mt-2 pt-2 border-t border-gray-100">
+                                        {isSent ? (
+                                            // Sent Transaction Display
+                                            <div className="space-y-1">
+                                                {isNFT ? (
+                                                    <>
+                                                        <div className="flex justify-between items-center text-sm sm:text-base">
+                                                            <span className="text-gray-600">Non-Fungible Token:</span>
+                                                            <span className="font-bold text-purple-600">
+                                                                Token ID: {tx.tokenId || 'Unknown'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center text-sm sm:text-base">
+                                                            <span className="text-gray-600">Fee Paid:</span>
+                                                            <span className="font-bold text-red-600">{txValue} CC</span>
+                                                        </div>
+                                                    </>
+                                                ) : (
                                                     <div className="flex justify-between items-center text-sm sm:text-base">
-                                                        <span className="text-gray-600">Non-Fungible Token:</span>
-                                                        <span className="font-bold text-purple-600">Token ID: {tx.tokenId || 'Unknown'}</span>
-                                                    </div>
-                                                    <div className="flex justify-between items-center text-sm sm:text-base">
-                                                        <span className="text-gray-600">Fee Paid:</span>
+                                                        <span className="text-gray-600">Sent Amount:</span>
                                                         <span className="font-bold text-red-600">{txValue} CC</span>
                                                     </div>
-                                                </>
-                                            ) : (
-                                                <div className="flex justify-between items-center text-sm sm:text-base">
-                                                    <span className="text-gray-600">Sent Amount:</span>
-                                                    <span className="font-bold text-red-600">{txValue} CC</span>
+                                                )}
+                                                <div className="text-xs sm:text-sm text-gray-500">
+                                                    Transaction fee is included in the amount
                                                 </div>
-                                            )}
-                                            <div className="text-xs sm:text-sm text-gray-500">
-                                                Transaction fee is included in the amount
                                             </div>
-                                        </div>
-                                    ) : (
-                                        // Received Transaction Display
-                                        <div className="space-y-1">
-                                            {isNFT ? (
-                                                <>
-                                                    <div className="flex justify-between items-center text-sm sm:text-base">
-                                                        <span className="text-gray-600">Non-Fungible Token:</span>
-                                                        <span className="font-bold text-purple-600">Token ID: {tx.tokenId || 'Unknown'}</span>
-                                                    </div>
-                                                    <div className="flex justify-between items-center text-sm sm:text-base">
-                                                        <span className="text-gray-600">Initial Amount:</span>
-                                                        <span className="text-gray-900">{txValue} CC</span>
-                                                    </div>
-                                                    <div className="flex justify-between items-center text-sm sm:text-base">
-                                                        <span className="text-gray-600">Network Fee:</span>
-                                                        <span className="text-red-600">- {txFee} CC</span>
-                                                    </div>
-                                                    <div className="flex justify-between items-center pt-1 border-t border-gray-100 text-sm sm:text-base">
-                                                        <span className="font-medium text-gray-600">Actually Received:</span>
-                                                        <span className="font-bold text-grey-900">0 CC</span>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <div className="flex justify-between items-center text-sm sm:text-base">
-                                                        <span className="text-gray-600">Initial Amount:</span>
-                                                        <span className="text-gray-900">{txValue} CC</span>
-                                                    </div>
-                                                    <div className="flex justify-between items-center text-sm sm:text-base text-red-600">
-                                                        <span>Network Fee:</span>
-                                                        <span>- {txFee} CC</span>
-                                                    </div>
-                                                    <div className="flex justify-between items-center pt-1 border-t border-gray-100 text-sm sm:text-base">
-                                                        <span className="font-medium text-gray-600">Actual Received:</span>
-                                                        <span className="font-bold text-green-600">{txValue - txFee} CC</span>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    )}
+                                        ) : (
+                                            // Received Transaction Display
+                                            <div className="space-y-1">
+                                                {isNFT ? (
+                                                    <>
+                                                        <div className="flex justify-between items-center text-sm sm:text-base">
+                                                            <span className="text-gray-600">Non-Fungible Token:</span>
+                                                            <span className="font-bold text-purple-600">
+                                                                Token ID: {tx.tokenId || 'Unknown'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center text-sm sm:text-base">
+                                                            <span className="text-gray-600">Initial Amount:</span>
+                                                            <span className="text-gray-900">{txValue} CC</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center text-sm sm:text-base">
+                                                            <span className="text-gray-600">Network Fee:</span>
+                                                            <span className="text-red-600">- {txFee} CC</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center pt-1 border-t border-gray-100 text-sm sm:text-base">
+                                                            <span className="font-medium text-gray-600">
+                                                                Actually Received:
+                                                            </span>
+                                                            <span className="font-bold text-grey-900">0 CC</span>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="flex justify-between items-center text-sm sm:text-base">
+                                                            <span className="text-gray-600">Initial Amount:</span>
+                                                            <span className="text-gray-900">{txValue} CC</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center text-sm sm:text-base text-red-600">
+                                                            <span>Network Fee:</span>
+                                                            <span>- {txFee} CC</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center pt-1 border-t border-gray-100 text-sm sm:text-base">
+                                                            <span className="font-medium text-gray-600">
+                                                                Actual Received:
+                                                            </span>
+                                                            <span className="font-bold text-green-600">
+                                                                {txValue - txFee} CC
+                                                            </span>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        </Link>
-                    );
-                })}
+                            </Link>
+                        )
+                    })}
+                </div>
+
+                {transactions.length > 5 && (
+                    <Link
+                        to="/transactions"
+                        className="block text-center py-3 text-purple-600 hover:text-purple-700 font-medium text-sm border-t border-gray-100"
+                    >
+                        View All Transactions ({transactions.length})
+                    </Link>
+                )}
             </div>
+        )
+    }
 
-            {transactions.length > 5 && (
-                <Link
-                    to="/transactions"
-                    className="block text-center py-3 text-purple-600 hover:text-purple-700 font-medium text-sm border-t border-gray-100"
-                >
-                    View All Transactions ({transactions.length})
-                </Link>
-            )}
-        </div>
-    );
-};
-
-    if (forceURL !== "" && !serviceLoading) {
-        return <Navigate to={forceURL} />;
+    if (forceURL !== '' && !serviceLoading) {
+        return <Navigate to={forceURL} />
     }
 
     if (serviceLoading) {
@@ -287,7 +323,7 @@ function DashboardPage() {
                 <Loader2 className="w-6 h-6 animate-spin" />
                 <span className="ml-2">Loading wallet...</span>
             </div>
-        );
+        )
     }
 
     // Rest of the component remains the same...
@@ -457,7 +493,7 @@ function DashboardPage() {
             </main>
             <FooterMenu />
         </div>
-    );
+    )
 }
 
-export default DashboardPage;
+export default DashboardPage

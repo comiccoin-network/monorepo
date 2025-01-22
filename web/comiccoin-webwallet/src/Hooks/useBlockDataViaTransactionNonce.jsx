@@ -1,6 +1,6 @@
 // src/Hooks/useBlockDataViaTransactionNonce.js
-import { useState, useEffect } from 'react';
-import blockDataViaTransactionNonceService from '../Services/BlockDataViaTransactionNonceService';
+import { useState, useEffect } from 'react'
+import blockDataViaTransactionNonceService from '../Services/BlockDataViaTransactionNonceService'
 
 /**
  * @typedef {Object} BlockData
@@ -25,44 +25,44 @@ import blockDataViaTransactionNonceService from '../Services/BlockDataViaTransac
  * @returns {UseBlockDataResult} Block data, loading state, error state, and control functions
  */
 export function useBlockDataViaTransactionNonce(initialTransactionNonce) {
-  const [transactionNonce, setTransactionNonce] = useState(initialTransactionNonce);
-  const [blockData, setBlockData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+    const [transactionNonce, setTransactionNonce] = useState(initialTransactionNonce)
+    const [blockData, setBlockData] = useState(null)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
 
-  const fetchBlockData = async () => {
-    // Reset states
-    setError(null);
-    setLoading(true);
+    const fetchBlockData = async () => {
+        // Reset states
+        setError(null)
+        setLoading(true)
 
-    try {
-      // Validate header number
-      if (!blockDataViaTransactionNonceService.validateTransactionNonce(transactionNonce)) {
-        throw new Error('Invalid header number');
-      }
+        try {
+            // Validate header number
+            if (!blockDataViaTransactionNonceService.validateTransactionNonce(transactionNonce)) {
+                throw new Error('Invalid header number')
+            }
 
-      const data = await blockDataViaTransactionNonceService.getBlockDataByTransactionNonce(transactionNonce);
-      setBlockData(data);
-    } catch (err) {
-      setError(err.message);
-      setBlockData(null);
-    } finally {
-      setLoading(false);
+            const data = await blockDataViaTransactionNonceService.getBlockDataByTransactionNonce(transactionNonce)
+            setBlockData(data)
+        } catch (err) {
+            setError(err.message)
+            setBlockData(null)
+        } finally {
+            setLoading(false)
+        }
     }
-  };
 
-  // Fetch data when header number changes
-  useEffect(() => {
-    fetchBlockData();
-  }, [transactionNonce]);
+    // Fetch data when header number changes
+    useEffect(() => {
+        fetchBlockData()
+    }, [transactionNonce])
 
-  return {
-    blockData,
-    loading,
-    error,
-    refetch: fetchBlockData,
-    setTransactionNonce
-  };
+    return {
+        blockData,
+        loading,
+        error,
+        refetch: fetchBlockData,
+        setTransactionNonce,
+    }
 }
 
 // Example usage:

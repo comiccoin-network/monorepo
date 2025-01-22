@@ -1,6 +1,6 @@
 // src/Hooks/useBlockDataViaHeaderNumber.js
-import { useState, useEffect } from 'react';
-import blockDataViaHeaderNumberService from '../Services/BlockDataViaHeaderNumberService';
+import { useState, useEffect } from 'react'
+import blockDataViaHeaderNumberService from '../Services/BlockDataViaHeaderNumberService'
 
 /**
  * @typedef {Object} BlockData
@@ -25,44 +25,44 @@ import blockDataViaHeaderNumberService from '../Services/BlockDataViaHeaderNumbe
  * @returns {UseBlockDataResult} Block data, loading state, error state, and control functions
  */
 export function useBlockDataViaHeaderNumber(initialHeaderNumber) {
-  const [headerNumber, setHeaderNumber] = useState(initialHeaderNumber);
-  const [blockData, setBlockData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+    const [headerNumber, setHeaderNumber] = useState(initialHeaderNumber)
+    const [blockData, setBlockData] = useState(null)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
 
-  const fetchBlockData = async () => {
-    // Reset states
-    setError(null);
-    setLoading(true);
+    const fetchBlockData = async () => {
+        // Reset states
+        setError(null)
+        setLoading(true)
 
-    try {
-      // Validate header number
-      if (!blockDataViaHeaderNumberService.validateHeaderNumber(headerNumber)) {
-        throw new Error('Invalid header number');
-      }
+        try {
+            // Validate header number
+            if (!blockDataViaHeaderNumberService.validateHeaderNumber(headerNumber)) {
+                throw new Error('Invalid header number')
+            }
 
-      const data = await blockDataViaHeaderNumberService.getBlockDataByHeaderNumber(headerNumber);
-      setBlockData(data);
-    } catch (err) {
-      setError(err.message);
-      setBlockData(null);
-    } finally {
-      setLoading(false);
+            const data = await blockDataViaHeaderNumberService.getBlockDataByHeaderNumber(headerNumber)
+            setBlockData(data)
+        } catch (err) {
+            setError(err.message)
+            setBlockData(null)
+        } finally {
+            setLoading(false)
+        }
     }
-  };
 
-  // Fetch data when header number changes
-  useEffect(() => {
-    fetchBlockData();
-  }, [headerNumber]);
+    // Fetch data when header number changes
+    useEffect(() => {
+        fetchBlockData()
+    }, [headerNumber])
 
-  return {
-    blockData,
-    loading,
-    error,
-    refetch: fetchBlockData,
-    setHeaderNumber
-  };
+    return {
+        blockData,
+        loading,
+        error,
+        refetch: fetchBlockData,
+        setHeaderNumber,
+    }
 }
 
 // Example usage:
