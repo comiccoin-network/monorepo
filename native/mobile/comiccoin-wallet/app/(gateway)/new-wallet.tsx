@@ -13,7 +13,10 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+
 import { LinearGradient } from "expo-linear-gradient";
+import { Wallet, Mnemonic } from "ethers";
+import { useWallet } from "../../hooks/useWallet";
 
 // Component for form input fields with error handling
 const FormInput = ({
@@ -100,6 +103,8 @@ const InfoTab = ({
 );
 
 export default function NewWallet() {
+  const { createWallet, loading, error } = useWallet();
+
   const [formData, setFormData] = useState({
     label: "",
     mnemonic: "",
