@@ -1,4 +1,5 @@
 // monorepo/native/mobile/comiccoin-wallet/services/wallet/WalletService.ts
+import "react-native-get-random-values"; // 🐞 Bugfix: This must be above `ethers.js` or else we'll get a `platform does not support secure random numbers` error from our app. --> https://github.com/ethers-io/ethers.js/issues/1118#issuecomment-715511944
 import { ethers } from "ethers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Crypto from "expo-crypto";
