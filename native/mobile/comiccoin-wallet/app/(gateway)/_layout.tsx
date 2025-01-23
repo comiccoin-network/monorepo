@@ -1,19 +1,51 @@
+// monorepo/native/mobile/comiccoin-wallet/app/(gateway)/_layout.tsx
 import { Stack } from "expo-router";
+import { Platform, Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 export default function GatewayLayout() {
+  const router = useRouter();
+
   return (
-    // Another Stack navigator for moving between wallet setup screens
     <Stack
       screenOptions={{
-        // Show headers in the Gateway section for navigation clarity
         headerShown: true,
-        // Allow users to go back during wallet setup
         gestureEnabled: true,
-        // Style the headers consistently
         headerStyle: {
-          backgroundColor: "#ffffff",
+          backgroundColor: "#F3E8FF",
         },
-        headerTintColor: "#000000",
+        headerShadowVisible: false,
+        headerTitle: "",
+        headerLeft: () => (
+          <Pressable
+            onPress={() => router.back()}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.7 : 1,
+              paddingVertical: 8,
+              paddingHorizontal: Platform.OS === "ios" ? 8 : 16,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+            })}
+          >
+            <Ionicons name="chevron-back" size={24} color="#7C3AED" />
+            {/* We show the Back text on iOS as per platform convention */}
+            {Platform.OS === "ios" && (
+              <Text
+                style={{
+                  color: "#7C3AED",
+                  fontSize: 17, // iOS default size
+                  fontWeight: "400",
+                }}
+              >
+                Back
+              </Text>
+            )}
+          </Pressable>
+        ),
+        headerTopInsetEnabled: true,
+        headerStatusBarHeight: Platform.OS === "ios" ? 44 : 0,
       }}
     />
   );

@@ -1,3 +1,4 @@
+// monorepo/native/mobile/comiccoin-wallet/app/(gateway)/new-wallet.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -123,6 +124,11 @@ export default function NewWallet() {
     "Lost phrases cannot be recovered",
     "All funds will be lost if you lose the phrase",
   ];
+
+  const handleCreateWallet = () => {
+    // For testing purposes, let's just try to navigate
+    router.replace("/overview"); // Changed from "/(user)/overview"
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -267,7 +273,7 @@ export default function NewWallet() {
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </Pressable>
               <Pressable
-                onPress={() => {}} // Add your submit logic here
+                onPress={handleCreateWallet}
                 style={styles.continueButton}
               >
                 <Text style={styles.continueButtonText}>Continue</Text>
