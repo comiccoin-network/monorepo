@@ -1,5 +1,5 @@
 // monorepo/native/mobile/comiccoin-wallet/app/index.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -9,9 +9,10 @@ import {
   StyleSheet,
   Platform,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useWallet } from "../hooks/useWallet";
 
 // Enhanced wallet option component with pressed state handling
 const WalletOption = ({
@@ -47,7 +48,6 @@ const WalletOption = ({
             <Text style={styles.walletOptionTitle}>{title}</Text>
             <Text style={styles.walletOptionDescription}>{description}</Text>
           </View>
-          {/* Adding right arrow icon to match web version */}
           <Ionicons
             name="arrow-forward"
             size={20}
@@ -70,6 +70,41 @@ const SecurityItem = ({ text }: { text: string }) => (
 );
 
 export default function Index() {
+  // Get router for programmatic navigation
+  const router = useRouter();
+
+  // Get wallet state from useWallet hook
+  const { currentWallet, loading, isInitialized } = useWallet();
+
+  // Effect to handle automatic redirect when wallet is available
+  useEffect(() => {
+    // Only proceed if the wallet service is initialized and not loading
+    if (isInitialized && !loading) {
+      // If we have a current wallet, redirect to the overview page
+      if (currentWallet) {
+        router.replace("/overview");
+      }
+    }
+  }, [currentWallet, loading, isInitialized, router]);
+
+  // If we're still loading the wallet state, we could show a loading state
+  // This prevents flash of content before redirect
+  if (loading || !isInitialized) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <LinearGradient
+          colors={["#F3E8FF", "#FFFFFF"]}
+          style={styles.loadingContainer}
+        >
+          <View style={styles.loadingContent}>
+            <Text style={styles.loadingText}>Loading wallet status...</Text>
+          </View>
+        </LinearGradient>
+      </SafeAreaView>
+    );
+  }
+
+  // If we have no wallet or loading is complete, show the normal content
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient colors={["#F3E8FF", "#FFFFFF"]} style={styles.gradient}>
