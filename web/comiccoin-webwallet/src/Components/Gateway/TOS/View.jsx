@@ -1,4 +1,4 @@
-// src/Components/Gateway/TOS/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/Gateway/TOS/View.jsx
 import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Scale, Mail, Phone, MapPin, Globe, Monitor, Wallet } from 'lucide-react'

@@ -1,4 +1,4 @@
-// src/Components/User/NFTs/DetailView.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/NFTs/DetailView.jsx
 import React, { useState, useEffect, useRef } from 'react'
 import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import {

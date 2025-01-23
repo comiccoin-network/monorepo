@@ -1,4 +1,4 @@
-// src/Components/User/NFT/Transfer/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/NFT/Transfer/View.jsx
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate, Navigate, Link } from 'react-router-dom'
 import { AlertCircle, ArrowLeft, Send, Loader2, Info, Key, LinkIcon, Wallet, Coins } from 'lucide-react'

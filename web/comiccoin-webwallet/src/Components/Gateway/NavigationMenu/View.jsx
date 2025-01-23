@@ -1,4 +1,4 @@
-// src/Components/User/NavigationMenu/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/NavigationMenu/View.jsx
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Wallet, Menu, X, Home, HelpCircle, Globe, Monitor, ArrowRight } from 'lucide-react'

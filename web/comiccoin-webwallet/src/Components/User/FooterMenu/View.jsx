@@ -1,4 +1,4 @@
-// src/Components/User/FooterMenu/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/FooterMenu/View.jsx
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Home, ArrowDownRight, Send, Image, MoreHorizontal } from 'lucide-react'

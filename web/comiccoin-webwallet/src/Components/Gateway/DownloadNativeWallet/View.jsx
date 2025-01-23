@@ -1,4 +1,4 @@
-// src/Components/Gateway/DownloadNativeWallet/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/Gateway/DownloadNativeWallet/View.jsx
 import React, { useEffect } from 'react'
 import {
     Wallet,

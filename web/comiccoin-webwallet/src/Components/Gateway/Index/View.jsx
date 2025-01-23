@@ -1,5 +1,5 @@
-// src/Components/User/Index/View.jsx
-// src/Components/User/Index/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/Index/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/Index/View.jsx
 import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {

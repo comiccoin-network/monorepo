@@ -1,4 +1,4 @@
-// src/Components/User/ReceiveCoin/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/ReceiveCoin/View.jsx
 import React, { useState, useEffect } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { Wallet, Copy, Loader2, QrCode, Send, MoreHorizontal, CheckCircle2, Download, Printer } from 'lucide-react'

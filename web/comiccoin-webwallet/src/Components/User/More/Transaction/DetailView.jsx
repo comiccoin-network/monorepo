@@ -1,4 +1,4 @@
-// src/Components/User/More/Transaction/DetailView.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/More/Transaction/DetailView.jsx
 import React, { useState, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import {

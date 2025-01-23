@@ -1,4 +1,4 @@
-// src/Components/User/Trade/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/Trade/View.jsx
 import React, { useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Loader2, ArrowLeftRight, AlertCircle, Rocket } from 'lucide-react'

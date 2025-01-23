@@ -1,4 +1,4 @@
-// src/Components/Gateway/RecoverHDWallet/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/Gateway/RecoverHDWallet/View.jsx
 import React, { useState, useEffect } from 'react'
 import { HDNodeWallet } from 'ethers/wallet'
 import { useWallet } from '../../../Hooks/useWallet'

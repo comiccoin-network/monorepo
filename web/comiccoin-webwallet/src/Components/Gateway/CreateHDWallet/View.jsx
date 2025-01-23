@@ -1,4 +1,4 @@
-// src/Components/Gateway/CreateWallet/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/Gateway/CreateWallet/View.jsx
 import React, { useState, useEffect } from 'react'
 import { Wallet, Mnemonic } from 'ethers'
 import {

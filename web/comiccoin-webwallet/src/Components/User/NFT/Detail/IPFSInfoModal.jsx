@@ -1,4 +1,4 @@
-// src/Components/User/NFTs/IPFSInfoModal.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/NFTs/IPFSInfoModal.jsx
 import React, { useState } from 'react'
 import { Info, ExternalLink, X } from 'lucide-react'
 
