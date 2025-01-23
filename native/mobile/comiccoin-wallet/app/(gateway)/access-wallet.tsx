@@ -1,5 +1,4 @@
-// monorepo/native/mobile/comiccoin-wallet/app/(gateway)/access-wallet.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,10 +9,14 @@ import {
   StyleSheet,
   Platform,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from "react-native";
 import { router, Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { Dropdown } from "react-native-element-dropdown";
+
+import { useWallet } from "../../hooks/useWallet";
 
 // Empty state component when no wallets are found
 const EmptyWalletState = () => (
@@ -88,10 +91,66 @@ const SecurityNotice = () => (
 );
 
 export default function AccessWallet() {
-  const [selectedWallet, setSelectedWallet] = useState("");
+  const {
+    wallets,
+    loadWallet,
+    loading: serviceLoading,
+    error: serviceError,
+  } = useWallet();
+
+  const formatDate = (timestamp) => {
+    return new Date(timestamp).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const [selectedWalletId, setSelectedWalletId] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const hasWallets = true; // This would be determined by your wallet logic
+
+  // Now we can safely use formatDate in the walletOptions transformation
+  const walletOptions = wallets.map((wallet) => ({
+    label: `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)} - Last accessed: ${formatDate(wallet.lastAccessed)}`,
+    value: wallet.id,
+  }));
+
+  // When wallets are loaded, select the first one by default
+  useEffect(() => {
+    if (wallets.length > 0 && !selectedWalletId) {
+      setSelectedWalletId(wallets[0].id);
+    }
+  }, [wallets]);
+
+  const handleLogin = async () => {
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      if (!selectedWalletId) {
+        throw new Error("Please select a wallet");
+      }
+      if (!password) {
+        throw new Error("Please enter your password");
+      }
+
+      await loadWallet(selectedWalletId, password);
+      router.replace("/overview");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (wallets.length === 0 && !serviceLoading) {
+    return <EmptyWalletState />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -104,15 +163,21 @@ export default function AccessWallet() {
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
           >
-            {/* Header Section */}
             <View style={styles.header}>
               <Text style={styles.title}>Access Your Wallet</Text>
               <Text style={styles.subtitle}>Login to your existing wallet</Text>
             </View>
 
-            {/* Main Content Card */}
+            {(error || serviceError) && (
+              <View style={styles.errorBox}>
+                <Ionicons name="alert-circle" size={20} color="#EF4444" />
+                <View style={styles.errorContent}>
+                  <Text style={styles.errorText}>{error || serviceError}</Text>
+                </View>
+              </View>
+            )}
+
             <View style={styles.card}>
-              {/* Card Header */}
               <View style={styles.cardHeader}>
                 <View style={styles.cardHeaderIcon}>
                   <Ionicons name="key" size={20} color="#7C3AED" />
@@ -125,82 +190,102 @@ export default function AccessWallet() {
                 </View>
               </View>
 
-              {!hasWallets ? (
-                <EmptyWalletState />
-              ) : (
-                <View style={styles.formContainer}>
-                  <SecurityNotice />
+              <View style={styles.formContainer}>
+                <SecurityNotice />
 
-                  {/* Wallet Selection */}
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>Select Wallet</Text>
-                    <Text style={styles.inputHelper}>
-                      Choose the wallet you want to access
-                    </Text>
-                    <Pressable style={styles.select}>
-                      <Text style={styles.selectText}>
-                        {selectedWallet || "Select a wallet"}
-                      </Text>
-                      <Ionicons name="chevron-down" size={20} color="#6B7280" />
-                    </Pressable>
-                  </View>
-
-                  {/* Password Input */}
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>Password</Text>
-                    <Text style={styles.inputHelper}>
-                      Enter your wallet password
-                    </Text>
-                    <View style={styles.inputWrapper}>
-                      <View style={styles.inputIconContainer}>
-                        <Ionicons
-                          name="key-outline"
-                          size={20}
-                          color="#9CA3AF"
-                        />
-                      </View>
-                      <TextInput
-                        style={styles.input}
-                        value={password}
-                        onChangeText={setPassword}
-                        placeholder="Enter your wallet password"
-                        placeholderTextColor="#9CA3AF"
-                        secureTextEntry={!showPassword}
-                      />
-                      <Pressable
-                        onPress={() => setShowPassword(!showPassword)}
-                        style={styles.eyeIcon}
-                      >
-                        <Ionicons
-                          name={
-                            showPassword ? "eye-off-outline" : "eye-outline"
-                          }
-                          size={20}
-                          color="#6B7280"
-                        />
-                      </Pressable>
-                    </View>
-                  </View>
-
-                  {/* Action Buttons */}
-                  <View style={styles.actionButtons}>
-                    <Pressable
-                      onPress={() => router.back()}
-                      style={styles.cancelButton}
-                    >
-                      <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </Pressable>
-                    <Pressable style={styles.accessButton}>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Select Wallet</Text>
+                  <Text style={styles.inputHelper}>
+                    Choose the wallet you want to access
+                  </Text>
+                  <Dropdown
+                    style={[styles.dropdown, styles.select]}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    data={walletOptions}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select a wallet"
+                    value={selectedWalletId}
+                    onChange={(item) => setSelectedWalletId(item.value)}
+                    disable={isLoading || serviceLoading}
+                    renderLeftIcon={() => (
                       <Ionicons
-                        name="log-in-outline"
+                        name="wallet-outline"
                         size={20}
-                        color="#FFFFFF"
+                        color="#9CA3AF"
+                        style={styles.dropdownIcon}
                       />
-                      <Text style={styles.accessButtonText}>Access Wallet</Text>
+                    )}
+                  />
+                </View>
+
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Password</Text>
+                  <Text style={styles.inputHelper}>
+                    Enter your wallet password
+                  </Text>
+                  <View style={styles.inputWrapper}>
+                    <View style={styles.inputIconContainer}>
+                      <Ionicons name="key-outline" size={20} color="#9CA3AF" />
+                    </View>
+                    <TextInput
+                      style={styles.input}
+                      value={password}
+                      onChangeText={setPassword}
+                      placeholder="Enter your wallet password"
+                      placeholderTextColor="#9CA3AF"
+                      secureTextEntry={!showPassword}
+                      editable={!isLoading && !serviceLoading}
+                    />
+                    <Pressable
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={styles.eyeIcon}
+                      disabled={isLoading || serviceLoading}
+                    >
+                      <Ionicons
+                        name={showPassword ? "eye-off-outline" : "eye-outline"}
+                        size={20}
+                        color="#6B7280"
+                      />
                     </Pressable>
                   </View>
                 </View>
-              )}
+
+                <View style={styles.actionButtons}>
+                  <Pressable
+                    onPress={() => router.back()}
+                    style={styles.cancelButton}
+                    disabled={isLoading || serviceLoading}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={handleLogin}
+                    style={[
+                      styles.accessButton,
+                      (isLoading || serviceLoading) && styles.buttonDisabled,
+                    ]}
+                    disabled={isLoading || serviceLoading}
+                  >
+                    {isLoading || serviceLoading ? (
+                      <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                      <>
+                        <Ionicons
+                          name="log-in-outline"
+                          size={20}
+                          color="#FFFFFF"
+                        />
+                        <Text style={styles.accessButtonText}>
+                          Access Wallet
+                        </Text>
+                      </>
+                    )}
+                  </Pressable>
+                </View>
+              </View>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -210,6 +295,7 @@ export default function AccessWallet() {
 }
 
 const styles = StyleSheet.create({
+  // ... (keeping all existing styles)
   container: {
     flex: 1,
   },
@@ -260,7 +346,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   cardHeaderContent: {
-    flex: 1, // This is crucial - it allows the content to take remaining space
+    flex: 1,
   },
   cardTitle: {
     fontSize: 20,
@@ -278,6 +364,47 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 24,
   },
+  // New dropdown-specific styles
+  dropdown: {
+    height: 50,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+  },
+  dropdownIcon: {
+    marginRight: 8,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+    color: "#9CA3AF",
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+    color: "#111827",
+  },
+  // Additional existing styles...
+  errorBox: {
+    backgroundColor: "#FEF2F2",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  errorContent: {
+    flex: 1,
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 14,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  // ... (rest of the existing styles)
   securityNoticeContainer: {
     backgroundColor: "#FEF3C7",
     borderLeftWidth: 4,
