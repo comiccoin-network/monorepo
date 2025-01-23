@@ -10,12 +10,13 @@ import {
   StyleSheet,
   Platform,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
+import { ethers } from "ethers";
 import { LinearGradient } from "expo-linear-gradient";
-import { Wallet, Mnemonic } from "ethers";
+
 import { useWallet } from "../../hooks/useWallet";
 
 // Component for form input fields with error handling
@@ -103,7 +104,11 @@ const InfoTab = ({
 );
 
 export default function NewWallet() {
-  const { createWallet, loading, error } = useWallet();
+  const {
+    createWallet,
+    loading: serviceLoading,
+    error: serviceError,
+  } = useWallet();
 
   const [formData, setFormData] = useState({
     label: "",
@@ -130,9 +135,82 @@ export default function NewWallet() {
     "All funds will be lost if you lose the phrase",
   ];
 
-  const handleCreateWallet = () => {
-    // For testing purposes, let's just try to navigate
-    router.replace("/overview"); // Changed from "/(user)/overview"
+  const handleCreateWallet = async () => {
+    if (validateForm()) {
+      try {
+        await createWallet(formData.mnemonic, formData.password);
+        router.replace("/overview");
+      } catch (error: any) {
+        setErrors((prev) => ({
+          ...prev,
+          submit: error.message || "Failed to create wallet",
+        }));
+      }
+    }
+  };
+
+  const onGenerateMnemonic = () => {
+    try {
+      // Create a new random HD wallet
+      const wallet = ethers.HDNodeWallet.createRandom();
+      const mnemonic = wallet.mnemonic?.phrase;
+
+      if (mnemonic) {
+        setFormData((prev) => ({ ...prev, mnemonic }));
+        // Clear any existing mnemonic error
+        if (errors.mnemonic) {
+          setErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors.mnemonic;
+            return newErrors;
+          });
+        }
+      }
+    } catch (error) {
+      console.log("new-wallet.tsx -> onGenerateMnemonic -> 🐞 error:", error);
+      setErrors((prev) => ({
+        ...prev,
+        mnemonic: "Failed to generate mnemonic",
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Validate wallet label
+    if (!formData.label.trim()) {
+      newErrors.label = "Wallet label is required";
+    }
+
+    // Validate mnemonic
+    if (!formData.mnemonic.trim()) {
+      newErrors.mnemonic = "Recovery phrase is required";
+    } else {
+      try {
+        // Verify mnemonic is valid
+        ethers.Mnemonic.fromPhrase(formData.mnemonic.trim());
+      } catch (e) {
+        newErrors.mnemonic = "Invalid recovery phrase";
+      }
+    }
+
+    // Validate password
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 12) {
+      newErrors.password = "Password must be at least 12 characters long";
+    }
+
+    // Validate password confirmation
+    if (!formData.repeatPassword) {
+      newErrors.repeatPassword = "Please repeat your password";
+    } else if (formData.password !== formData.repeatPassword) {
+      newErrors.repeatPassword = "Passwords do not match";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   return (
@@ -153,6 +231,23 @@ export default function NewWallet() {
                 Set up your secure ComicCoin wallet
               </Text>
             </View>
+
+            {/* Error Message Box */}
+            {Object.keys(errors).length > 0 && (
+              <View style={styles.errorBox}>
+                <Ionicons name="alert-circle" size={20} color="#EF4444" />
+                <View style={styles.errorContent}>
+                  <Text style={styles.errorTitle}>
+                    Please fix the following errors:
+                  </Text>
+                  {Object.values(errors).map((error, index) => (
+                    <Text key={index} style={styles.errorText}>
+                      • {error}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+            )}
 
             {/* Info Tabs */}
             <View style={styles.tabsContainer}>
@@ -234,7 +329,10 @@ export default function NewWallet() {
                     placeholder="Your recovery phrase will appear here"
                     editable={false}
                   />
-                  <Pressable style={styles.generateButton}>
+                  <Pressable
+                    style={styles.generateButton}
+                    onPress={onGenerateMnemonic}
+                  >
                     <Text style={styles.generateButtonText}>Generate</Text>
                   </Pressable>
                 </View>
@@ -279,10 +377,24 @@ export default function NewWallet() {
               </Pressable>
               <Pressable
                 onPress={handleCreateWallet}
-                style={styles.continueButton}
+                style={[
+                  styles.continueButton,
+                  serviceLoading && styles.continueButtonDisabled,
+                ]}
+                disabled={serviceLoading}
               >
-                <Text style={styles.continueButtonText}>Continue</Text>
-                <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+                {serviceLoading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Text style={styles.continueButtonText}>Continue</Text>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color="#FFFFFF"
+                    />
+                  </>
+                )}
               </Pressable>
             </View>
           </ScrollView>
@@ -491,5 +603,31 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "600",
+  },
+  errorBox: {
+    backgroundColor: "#FEE2E2",
+    borderLeftWidth: 4,
+    borderLeftColor: "#EF4444",
+    padding: 12,
+    marginBottom: 16,
+    borderRadius: 8,
+    flexDirection: "row",
+  },
+  errorContent: {
+    marginLeft: 8,
+    flex: 1,
+  },
+  errorTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#991B1B",
+  },
+  errorText: {
+    fontSize: 12,
+    color: "#DC2626",
+    marginTop: 4,
+  },
+  continueButtonDisabled: {
+    opacity: 0.5,
   },
 });
