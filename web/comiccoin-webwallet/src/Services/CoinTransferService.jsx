@@ -1,4 +1,4 @@
-// src/Services/CoinTransferService.jsx
+// monorepo/web/comiccoin-webwallet/src/Services/CoinTransferService.jsx
 import { ethers } from 'ethers'
 import walletService from './WalletService'
 

@@ -1,4 +1,4 @@
-// src/Hooks/useWallet.js
+// monorepo/web/comiccoin-webwallet/src/Hooks/useWallet.js
 import { useState, useEffect } from 'react'
 import walletService from '../Services/WalletService'
 

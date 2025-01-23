@@ -1,4 +1,4 @@
-// src/Services/NFTMetadataService.jsx
+// monorepo/web/comiccoin-webwallet/src/Services/NFTMetadataService.jsx
 const NFT_STORAGE_API_URL = process.env.REACT_APP_NFTSTORAGE_API_URL || 'http://localhost:9000'
 
 export const convertIPFSToGatewayURL = (ipfsUri) => {

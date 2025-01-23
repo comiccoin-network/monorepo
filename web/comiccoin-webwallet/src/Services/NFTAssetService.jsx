@@ -1,4 +1,4 @@
-// src/Services/NFTAssetService.jsx
+// monorepo/web/comiccoin-webwallet/src/Services/NFTAssetService.jsx
 
 /**
  * @typedef {Object} NFTAsset

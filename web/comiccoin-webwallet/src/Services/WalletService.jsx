@@ -1,4 +1,4 @@
-// src/Services/WalletService.js
+// monorepo/web/comiccoin-webwallet/src/Services/WalletService.js
 import { HDNodeWallet, Wallet } from 'ethers/wallet'
 import CryptoJS from 'crypto-js'
 

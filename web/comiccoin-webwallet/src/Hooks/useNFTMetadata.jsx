@@ -1,4 +1,4 @@
-// src/Hooks/useNFTMetadata.jsx
+// monorepo/web/comiccoin-webwallet/src/Hooks/useNFTMetadata.jsx
 import { useState, useEffect } from 'react'
 import { fetchNFTMetadata } from '../Services/NFTMetadataService'
 import { useNFTCache } from './useNFTCache'

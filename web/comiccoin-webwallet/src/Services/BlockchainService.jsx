@@ -1,4 +1,4 @@
-// src/Services/BlockchainService.jsx
+// monorepo/web/comiccoin-webwallet/src/Services/BlockchainService.jsx
 
 const BASE_URL = process.env.REACT_APP_AUTHORITY_API_URL || 'http://localhost:8000'
 

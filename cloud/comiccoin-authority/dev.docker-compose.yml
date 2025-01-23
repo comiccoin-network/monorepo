@@ -96,7 +96,7 @@ services:
       - ME_CONFIG_MONGODB_PORT=27017
       - ME_CONFIG_MONGODB_URI=mongodb://db1:27017,db2:27018,db3:27019/?replicaSet=rs0
     ports:
-      - "8081:8081"
+      - "8091:8081" # Adjusted to work with `react-native` developer instance simulator.
     depends_on:
       - db1
       - db2
@@ -111,7 +111,7 @@ services:
     # https://pimylifeup.com/redis-docker/
     container_name: comiccoin_authority_cache
     image: redis:alpine
-    command: 'redis-server --save 60 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81 --protected-mode yes'
+    command: "redis-server --save 60 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81 --protected-mode yes"
     ports:
       - 6379:6379
     stdin_open: true
