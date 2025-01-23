@@ -14,94 +14,11 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import "react-native-get-random-values"; // 🐞 Bugfix: This must be above `ethers.js` or else we'll get a `platform does not support secure random numbers` error from our app. --> https://github.com/ethers-io/ethers.js/issues/1118#issuecomment-715511944
 import { ethers } from "ethers";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { useWallet } from "../../hooks/useWallet";
-
-// Component for form input fields with error handling
-const FormInput = ({
-  label,
-  value,
-  onChangeText,
-  error,
-  placeholder,
-  secureTextEntry,
-  onToggleSecure,
-  isPassword = false,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  error?: string;
-  placeholder: string;
-  secureTextEntry?: boolean;
-  onToggleSecure?: () => void;
-  isPassword?: boolean;
-}) => (
-  <View style={styles.inputContainer}>
-    <Text style={styles.inputLabel}>{label}</Text>
-    <View style={styles.inputWrapper}>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        style={[
-          styles.input,
-          error ? styles.inputError : null,
-          isPassword ? styles.inputWithIcon : null,
-        ]}
-        placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
-        secureTextEntry={secureTextEntry}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      {isPassword && (
-        <Pressable onPress={onToggleSecure} style={styles.eyeIcon}>
-          <Ionicons
-            name={secureTextEntry ? "eye-outline" : "eye-off-outline"}
-            size={20}
-            color="#6B7280"
-          />
-        </Pressable>
-      )}
-    </View>
-    {error && (
-      <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle" size={16} color="#DC2626" />
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    )}
-  </View>
-);
-
-// Information tab component
-const InfoTab = ({
-  title,
-  items,
-  icon,
-  color,
-}: {
-  title: string;
-  items: string[];
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-}) => (
-  <View style={styles.infoTabContainer}>
-    <View style={styles.infoTabHeader}>
-      <Ionicons name={icon} size={20} color={color} />
-      <Text style={[styles.infoTabTitle, { color }]}>{title}</Text>
-    </View>
-    <View style={styles.infoTabContent}>
-      {items.map((item, index) => (
-        <View key={index} style={styles.infoTabItem}>
-          <Text style={styles.bulletPoint}>•</Text>
-          <Text style={styles.infoTabText}>{item}</Text>
-        </View>
-      ))}
-    </View>
-  </View>
-);
 
 export default function NewWallet() {
   const {
@@ -631,3 +548,87 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 });
+
+// Component for form input fields with error handling
+const FormInput = ({
+  label,
+  value,
+  onChangeText,
+  error,
+  placeholder,
+  secureTextEntry,
+  onToggleSecure,
+  isPassword = false,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  error?: string;
+  placeholder: string;
+  secureTextEntry?: boolean;
+  onToggleSecure?: () => void;
+  isPassword?: boolean;
+}) => (
+  <View style={styles.inputContainer}>
+    <Text style={styles.inputLabel}>{label}</Text>
+    <View style={styles.inputWrapper}>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        style={[
+          styles.input,
+          error ? styles.inputError : null,
+          isPassword ? styles.inputWithIcon : null,
+        ]}
+        placeholder={placeholder}
+        placeholderTextColor="#9CA3AF"
+        secureTextEntry={secureTextEntry}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+      {isPassword && (
+        <Pressable onPress={onToggleSecure} style={styles.eyeIcon}>
+          <Ionicons
+            name={secureTextEntry ? "eye-outline" : "eye-off-outline"}
+            size={20}
+            color="#6B7280"
+          />
+        </Pressable>
+      )}
+    </View>
+    {error && (
+      <View style={styles.errorContainer}>
+        <Ionicons name="alert-circle" size={16} color="#DC2626" />
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    )}
+  </View>
+);
+
+// Information tab component
+const InfoTab = ({
+  title,
+  items,
+  icon,
+  color,
+}: {
+  title: string;
+  items: string[];
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+}) => (
+  <View style={styles.infoTabContainer}>
+    <View style={styles.infoTabHeader}>
+      <Ionicons name={icon} size={20} color={color} />
+      <Text style={[styles.infoTabTitle, { color }]}>{title}</Text>
+    </View>
+    <View style={styles.infoTabContent}>
+      {items.map((item, index) => (
+        <View key={index} style={styles.infoTabItem}>
+          <Text style={styles.bulletPoint}>•</Text>
+          <Text style={styles.infoTabText}>{item}</Text>
+        </View>
+      ))}
+    </View>
+  </View>
+);
