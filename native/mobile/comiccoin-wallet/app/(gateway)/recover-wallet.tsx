@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function RecoverWallet() {
   const router = useRouter();
@@ -99,192 +100,196 @@ export default function RecoverWallet() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.container}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+      <LinearGradient colors={["#F3E8FF", "#FFFFFF"]} style={styles.gradient}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.container}
         >
-          {/* Header Section */}
-          <View style={styles.headerContainer}>
-            <Text style={styles.title}>Recover Your Wallet</Text>
-            <Text style={styles.subtitle}>
-              Access your ComicCoin wallet using your recovery phrase
-            </Text>
-          </View>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Header Section */}
+            <View style={styles.headerContainer}>
+              <Text style={styles.title}>Recover Your Wallet</Text>
+              <Text style={styles.subtitle}>
+                Access your ComicCoin wallet using your recovery phrase
+              </Text>
+            </View>
 
-          {/* Error Display */}
-          {Object.keys(errors).length > 0 && (
-            <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={20} color="#EF4444" />
-              <View style={styles.errorContent}>
-                <Text style={styles.errorTitle}>
-                  Please fix the following errors:
-                </Text>
-                {Object.values(errors).map((error, index) => (
-                  <Text key={index} style={styles.errorText}>
-                    • {error}
+            {/* Error Display */}
+            {Object.keys(errors).length > 0 && (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={20} color="#EF4444" />
+                <View style={styles.errorContent}>
+                  <Text style={styles.errorTitle}>
+                    Please fix the following errors:
                   </Text>
-                ))}
+                  {Object.values(errors).map((error, index) => (
+                    <Text key={index} style={styles.errorText}>
+                      • {error}
+                    </Text>
+                  ))}
+                </View>
               </View>
-            </View>
-          )}
+            )}
 
-          {/* Main Form */}
-          <View style={styles.formContainer}>
-            {/* Info Box */}
-            <View style={styles.infoBox}>
-              <Ionicons name="information-circle" size={20} color="#6B46C1" />
-              <View style={styles.infoContent}>
-                <Text style={styles.infoTitle}>
-                  Important information about recovery:
-                </Text>
-                <Text style={styles.infoText}>
-                  • Enter your 12 or 24-word recovery phrase exactly
-                </Text>
-                <Text style={styles.infoText}>
-                  • Words must be in the correct order
-                </Text>
-                <Text style={styles.infoText}>
-                  • Each word should be lowercase and spelled correctly
-                </Text>
-                <Text style={styles.infoText}>
-                  • Choose a new strong password to secure your wallet
-                </Text>
+            {/* Main Form */}
+            <View style={styles.formContainer}>
+              {/* Info Box */}
+              <View style={styles.infoBox}>
+                <Ionicons name="information-circle" size={20} color="#6B46C1" />
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoTitle}>
+                    Important information about recovery:
+                  </Text>
+                  <Text style={styles.infoText}>
+                    • Enter your 12 or 24-word recovery phrase exactly
+                  </Text>
+                  <Text style={styles.infoText}>
+                    • Words must be in the correct order
+                  </Text>
+                  <Text style={styles.infoText}>
+                    • Each word should be lowercase and spelled correctly
+                  </Text>
+                  <Text style={styles.infoText}>
+                    • Choose a new strong password to secure your wallet
+                  </Text>
+                </View>
               </View>
-            </View>
 
-            {/* Form Fields */}
-            <View style={styles.formField}>
-              <Text style={styles.label}>Wallet Label</Text>
-              <TextInput
-                style={[styles.input, errors.label && styles.inputError]}
-                value={formData.label}
-                onChangeText={(value) => handleInputChange("label", value)}
-                placeholder="Enter a name for your wallet"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              {errors.label && (
-                <Text style={styles.fieldError}>{errors.label}</Text>
-              )}
-            </View>
-
-            <View style={styles.formField}>
-              <Text style={styles.label}>Recovery Phrase</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  styles.textArea,
-                  errors.mnemonic && styles.inputError,
-                ]}
-                value={formData.mnemonic}
-                onChangeText={(value) => handleInputChange("mnemonic", value)}
-                placeholder="Enter your 12 or 24-word recovery phrase"
-                multiline
-                numberOfLines={3}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              {errors.mnemonic && (
-                <Text style={styles.fieldError}>{errors.mnemonic}</Text>
-              )}
-            </View>
-
-            <View style={styles.formField}>
-              <Text style={styles.label}>New Password</Text>
-              <View style={styles.passwordContainer}>
+              {/* Form Fields */}
+              <View style={styles.formField}>
+                <Text style={styles.label}>Wallet Label</Text>
                 <TextInput
-                  style={[
-                    styles.input,
-                    styles.passwordInput,
-                    errors.password && styles.inputError,
-                  ]}
-                  value={formData.password}
-                  onChangeText={(value) => handleInputChange("password", value)}
-                  placeholder="Enter your new password"
-                  secureTextEntry={!showPassword}
+                  style={[styles.input, errors.label && styles.inputError]}
+                  value={formData.label}
+                  onChangeText={(value) => handleInputChange("label", value)}
+                  placeholder="Enter a name for your wallet"
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  <Ionicons
-                    name={showPassword ? "eye-off" : "eye"}
-                    size={24}
-                    color="#6B7280"
-                  />
-                </TouchableOpacity>
-              </View>
-              {errors.password && (
-                <Text style={styles.fieldError}>{errors.password}</Text>
-              )}
-            </View>
-
-            <View style={styles.formField}>
-              <Text style={styles.label}>Confirm Password</Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={[
-                    styles.input,
-                    styles.passwordInput,
-                    errors.repeatPassword && styles.inputError,
-                  ]}
-                  value={formData.repeatPassword}
-                  onChangeText={(value) =>
-                    handleInputChange("repeatPassword", value)
-                  }
-                  placeholder="Confirm your new password"
-                  secureTextEntry={!showConfirmPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  <Ionicons
-                    name={showConfirmPassword ? "eye-off" : "eye"}
-                    size={24}
-                    color="#6B7280"
-                  />
-                </TouchableOpacity>
-              </View>
-              {errors.repeatPassword && (
-                <Text style={styles.fieldError}>{errors.repeatPassword}</Text>
-              )}
-            </View>
-
-            {/* Buttons */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => router.back()}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.submitButton,
-                  isLoading && styles.submitButtonDisabled,
-                ]}
-                onPress={handleSubmit}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <Text style={styles.submitButtonText}>Recover Wallet</Text>
+                {errors.label && (
+                  <Text style={styles.fieldError}>{errors.label}</Text>
                 )}
-              </TouchableOpacity>
+              </View>
+
+              <View style={styles.formField}>
+                <Text style={styles.label}>Recovery Phrase</Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    styles.textArea,
+                    errors.mnemonic && styles.inputError,
+                  ]}
+                  value={formData.mnemonic}
+                  onChangeText={(value) => handleInputChange("mnemonic", value)}
+                  placeholder="Enter your 12 or 24-word recovery phrase"
+                  multiline
+                  numberOfLines={3}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                {errors.mnemonic && (
+                  <Text style={styles.fieldError}>{errors.mnemonic}</Text>
+                )}
+              </View>
+
+              <View style={styles.formField}>
+                <Text style={styles.label}>New Password</Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      styles.passwordInput,
+                      errors.password && styles.inputError,
+                    ]}
+                    value={formData.password}
+                    onChangeText={(value) =>
+                      handleInputChange("password", value)
+                    }
+                    placeholder="Enter your new password"
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  <TouchableOpacity
+                    style={styles.eyeButton}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off" : "eye"}
+                      size={24}
+                      color="#6B7280"
+                    />
+                  </TouchableOpacity>
+                </View>
+                {errors.password && (
+                  <Text style={styles.fieldError}>{errors.password}</Text>
+                )}
+              </View>
+
+              <View style={styles.formField}>
+                <Text style={styles.label}>Confirm Password</Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      styles.passwordInput,
+                      errors.repeatPassword && styles.inputError,
+                    ]}
+                    value={formData.repeatPassword}
+                    onChangeText={(value) =>
+                      handleInputChange("repeatPassword", value)
+                    }
+                    placeholder="Confirm your new password"
+                    secureTextEntry={!showConfirmPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  <TouchableOpacity
+                    style={styles.eyeButton}
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    <Ionicons
+                      name={showConfirmPassword ? "eye-off" : "eye"}
+                      size={24}
+                      color="#6B7280"
+                    />
+                  </TouchableOpacity>
+                </View>
+                {errors.repeatPassword && (
+                  <Text style={styles.fieldError}>{errors.repeatPassword}</Text>
+                )}
+              </View>
+
+              {/* Buttons */}
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => router.back()}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.submitButton,
+                    isLoading && styles.submitButtonDisabled,
+                  ]}
+                  onPress={handleSubmit}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.submitButtonText}>Recover Wallet</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -292,7 +297,7 @@ export default function RecoverWallet() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F3E8FF", // Light purple background
+    backgroundColor: "#F3E8FF",
   },
   container: {
     flex: 1,
@@ -307,8 +312,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: "bold",
-    color: "#6B46C1",
+    fontWeight: "800", // Change from "bold" to "800" to match
+    color: "#5B21B6",
     marginBottom: 8,
     textAlign: "center",
     fontFamily: Platform.OS === "ios" ? "Marker Felt" : "normal", // Comic Sans alternative
@@ -384,8 +389,8 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#D1D5DB",
-    borderRadius: 8,
+    borderColor: "#E5E7EB", // Update from #D1D5DB
+    borderRadius: 12, // Update from 8
     padding: 12,
     fontSize: 16,
     backgroundColor: "#FFFFFF",
@@ -424,16 +429,16 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     padding: 12,
-  },
-  cancelButtonText: {
-    color: "#4B5563",
-    fontSize: 16,
+    borderRadius: 12, // Add borderRadius to match
   },
   submitButton: {
-    backgroundColor: "#6B46C1",
+    backgroundColor: "#7C3AED",
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 12, // Update from 8 to 12
+    flexDirection: "row", // Add to match
+    alignItems: "center", // Add to match
+    gap: 8, // Add to match
   },
   submitButtonDisabled: {
     opacity: 0.5,
@@ -442,5 +447,8 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "500",
+  },
+  gradient: {
+    flex: 1,
   },
 });
