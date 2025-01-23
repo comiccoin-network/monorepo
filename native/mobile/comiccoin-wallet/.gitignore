@@ -38,12 +38,12 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-app-example
+# Ignore developer private app documentaiton and or learning notes.
+private*.md
 
 # DEVELOPESR NOTE:
 # The ignore files below this comment were copy and pasted from the following link:
 # https://github.com/facebook/react-native/blob/main/.gitignore
-
 
 # Xcode
 !**/*.xcodeproj
