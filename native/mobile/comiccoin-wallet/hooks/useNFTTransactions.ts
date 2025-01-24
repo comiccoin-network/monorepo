@@ -1,8 +1,8 @@
 // monorepo/native/mobile/comiccoin-wallet/hooks/useNFTTransactions.ts
 import { useState, useEffect, useCallback, useMemo } from "react";
-import blockchainService, {
+import transactionListService, {
   Transaction,
-} from "../services/blockchain/BlockchainService";
+} from "../services/blockchain/TransactionListService";
 
 // Define the statistics interface for NFT-specific calculations
 interface NFTStatistics {
@@ -49,7 +49,7 @@ export const useNFTTransactions = (
 
     try {
       // Fetch all token type transactions for the wallet
-      const txList = await blockchainService.fetchWalletTransactions(
+      const txList = await transactionListService.fetchWalletTransactions(
         walletAddress,
         "token",
       );

@@ -1,4 +1,4 @@
-// monorepo/native/mobile/comiccoin-wallet/services/blockchain/BlockchainService.ts
+// monorepo/native/mobile/comiccoin-wallet/services/blockchain/TransactionListService.ts
 import config from "../../config";
 
 interface TransactionSignature {
@@ -64,7 +64,7 @@ class ApiError extends Error {
   }
 }
 
-class BlockchainService {
+class TransactionListService {
   private readonly BASE_URL: string;
   private readonly defaultHeaders: HeadersInit;
 
@@ -78,7 +78,10 @@ class BlockchainService {
 
     // Log the configured URL in development mode
     if (__DEV__) {
-      console.log("BlockchainService initialized with URL:", this.BASE_URL);
+      console.log(
+        "TransactionListService initialized with URL:",
+        this.BASE_URL,
+      );
     }
   }
 
@@ -209,8 +212,8 @@ class BlockchainService {
 }
 
 // Create and export a singleton instance
-const blockchainService = new BlockchainService();
-export default blockchainService;
+const transactionListService = new TransactionListService();
+export default transactionListService;
 
 // Export types for use in other parts of the application
 export type { Transaction, TransactionSignature };

@@ -1,8 +1,8 @@
 // monorepo/native/mobile/comiccoin-wallet/hooks/useAllTransactions.ts
 import { useState, useEffect, useCallback, useMemo } from "react";
-import blockchainService, {
+import transactionListService, {
   Transaction,
-} from "../services/blockchain/BlockchainService";
+} from "../services/blockchain/TransactionListService";
 
 /**
  * Represents the calculated statistics for all wallet transactions.
@@ -65,7 +65,7 @@ export const useAllTransactions = (
 
     try {
       const txList =
-        await blockchainService.fetchWalletTransactions(walletAddress);
+        await transactionListService.fetchWalletTransactions(walletAddress);
       const sortedTransactions = txList.sort(
         (a, b) => b.timestamp - a.timestamp,
       );

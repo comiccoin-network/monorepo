@@ -1,8 +1,8 @@
 // monorepo/native/mobile/comiccoin-wallet/hooks/useCoinTransactions.ts
 import { useState, useEffect, useCallback, useMemo } from "react";
-import blockchainService, {
+import transactionListService, {
   Transaction,
-} from "../services/blockchain/BlockchainService";
+} from "../services/blockchain/TransactionListService";
 
 /**
  * Interface defining the structure of coin-specific transaction statistics.
@@ -56,7 +56,7 @@ export const useCoinTransactions = (
 
     try {
       // Fetch only coin transactions using the type parameter
-      const txList = await blockchainService.fetchWalletTransactions(
+      const txList = await transactionListService.fetchWalletTransactions(
         walletAddress,
         "coin",
       );
