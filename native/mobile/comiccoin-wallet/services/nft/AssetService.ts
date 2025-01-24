@@ -1,6 +1,10 @@
 // monorepo/native/mobile/comiccoin-wallet/services/nft/AssetService.ts
 import config from "../../config";
 
+interface FetchOptions {
+  onProgress?: (progress: number) => void;
+}
+
 interface NFTAsset {
   filename: string;
   content: Uint8Array;
@@ -33,16 +37,19 @@ class NFTAssetService {
     return "default-filename";
   }
 
-  async getNFTAsset(cid: string): Promise<NFTAsset> {
-    if (!cid) {
-      throw new Error("CID is required");
-    }
+  async getNFTAsset(
+    cid: string,
+    options: FetchOptions = {},
+  ): Promise<NFTAsset> {
+    if (!cid) throw new Error("CID is required");
 
     const endpoint = `${this.baseUrl}/ipfs/${cid}`;
+    console.log(
+      " monorepo/native/mobile/comiccoin-wallet/services/nft/AssetService.ts --> getNFTAsset --> endpoint:",
+      endpoint,
+    );
 
     try {
-      console.debug("Fetching from IPFS gateway:", endpoint);
-
       const response = await fetch(endpoint, {
         method: "GET",
         headers: {
@@ -55,31 +62,45 @@ class NFTAssetService {
       }
 
       const contentType = response.headers.get("content-type");
-      const contentDisposition = response.headers.get("content-disposition");
-      const filename = this.extractFilename(contentDisposition);
+      const contentLength = Number(response.headers.get("content-length")) || 0;
+      const reader = response.body?.getReader();
+      const chunks: Uint8Array[] = [];
+      let receivedLength = 0;
 
-      const content = await response.arrayBuffer();
-      const contentLength = content.byteLength;
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
 
-      const asset: NFTAsset = {
-        filename,
-        content: new Uint8Array(content),
+          if (done) break;
+
+          chunks.push(value);
+          receivedLength += value.length;
+
+          if (contentLength && options.onProgress) {
+            options.onProgress((receivedLength / contentLength) * 100);
+          }
+        }
+      }
+
+      // Combine chunks
+      const content = new Uint8Array(receivedLength);
+      let position = 0;
+      for (const chunk of chunks) {
+        content.set(chunk, position);
+        position += chunk.length;
+      }
+
+      return {
+        filename: this.extractFilename(
+          response.headers.get("content-disposition"),
+        ),
+        content,
         content_type: contentType,
-        content_length: contentLength,
+        content_length: receivedLength,
       };
-
-      console.debug("Fetched file content:", {
-        filename: asset.filename,
-        content_type: asset.content_type,
-        content_length: asset.content_length,
-      });
-
-      return asset;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
       console.error("Failed to fetch NFT asset:", error);
-      throw new Error(`Failed to fetch NFT asset: ${errorMessage}`);
+      throw error;
     }
   }
 }

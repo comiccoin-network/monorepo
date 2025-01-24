@@ -39,7 +39,10 @@ export const fetchNFTMetadata = async (
   tokenMetadataURI: string,
 ): Promise<NFTMetadata> => {
   try {
-    console.log("Fetching metadata for:", tokenMetadataURI);
+    console.log(
+      "monorepo/native/mobile/comiccoin-wallet/services/nft/MetadataService.ts --> Fetching metadata for:",
+      tokenMetadataURI,
+    );
     const cid = tokenMetadataURI.replace("ipfs://", "");
     const response = await fetch(`${NFT_STORAGE_API_URL}/ipfs/${cid}`);
 
@@ -50,7 +53,10 @@ export const fetchNFTMetadata = async (
     const contentType = response.headers.get("content-type");
     const content = await response.arrayBuffer();
     const metadata = JSON.parse(new TextDecoder().decode(content));
-    console.log("Parsed metadata:", metadata);
+    console.log(
+      "monorepo/native/mobile/comiccoin-wallet/services/nft/MetadataService.ts --> Parsed metadata:",
+      metadata,
+    );
 
     return {
       metadata,
@@ -61,7 +67,10 @@ export const fetchNFTMetadata = async (
       },
     };
   } catch (error) {
-    console.error("Error fetching NFT metadata:", error);
+    console.error(
+      "monorepo/native/mobile/comiccoin-wallet/services/nft/AssetService.ts --> Error fetching NFT metadata:",
+      error,
+    );
     throw error;
   }
 };

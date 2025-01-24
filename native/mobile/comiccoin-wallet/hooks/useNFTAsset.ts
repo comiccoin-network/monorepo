@@ -14,32 +14,44 @@ interface NFTAsset {
   content_length: number;
 }
 
+import { useState } from "react";
+
 export const useNFTAsset = (
   cid: string | null,
-  options: NFTAssetOptions = {},
+  options: { enabled?: boolean } = {},
 ) => {
-  const { cacheDuration = 24 * 60 * 60 * 1000 } = options;
-  const queryClient = useQueryClient();
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   return useQuery({
     queryKey: ["nft-asset", cid],
     queryFn: async () => {
-      if (!cid) {
-        throw new Error("CID is required");
-      }
+      if (!cid) throw new Error("CID is required");
 
-      const asset = await nftAssetService.getNFTAsset(cid);
-      return { asset, source: "network" as const };
+      try {
+        console.log("Starting to fetch NFT asset for CID:", cid);
+
+        const asset = await nftAssetService.getNFTAsset(cid, {
+          onProgress: (progress) => {
+            setLoadingProgress(progress);
+            console.log(`Loading asset progress: ${progress}%`);
+          },
+        });
+
+        console.log("asset:", asset);
+
+        console.log("Successfully fetched NFT asset:", {
+          contentType: asset.content_type,
+          contentLength: asset.content_length,
+        });
+
+        return { asset, source: "network" as const };
+      } catch (error) {
+        console.error("Failed to fetch NFT asset:", error);
+        throw error;
+      }
     },
-    enabled: !!cid && !!options.enabled,
-    staleTime: cacheDuration,
-    cacheTime: cacheDuration,
-    retry: (failureCount, error) => {
-      return (
-        error instanceof Error &&
-        !error.message.includes("CID is required") &&
-        failureCount < 3
-      );
-    },
+    enabled: !!cid && options.enabled,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 30,
   });
 };
