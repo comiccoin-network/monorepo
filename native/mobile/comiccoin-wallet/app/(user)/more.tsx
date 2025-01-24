@@ -1,3 +1,4 @@
+// monorepo/native/mobile/comiccoin-wallet/app/(user)/more.tsx
 import { View, Text } from "react-native";
 
 export default function More() {
