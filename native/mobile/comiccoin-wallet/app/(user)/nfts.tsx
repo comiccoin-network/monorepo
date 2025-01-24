@@ -20,6 +20,7 @@ import {
   Clock,
   Coins,
   CheckCircle,
+  ExternalLink,
 } from "lucide-react-native";
 import { useWallet } from "../../hooks/useWallet";
 import { useNFTCollection } from "../../hooks/useNFTCollection";
@@ -192,17 +193,14 @@ export default function NFTListScreen() {
             <ImageIcon size={64} color="#9CA3AF" />
             <Text style={styles.emptyTitle}>No Comics Found</Text>
             <Text style={styles.emptySubtitle}>
-              {searchTerm
-                ? "Try adjusting your search"
-                : "Start your collection by getting your comics graded"}
+              Start your NFT collection by getting your comics graded
             </Text>
             <Pressable
               onPress={() => Linking.openURL("https://cpscapsule.com")}
-              style={styles.submitButton}
+              style={styles.linkButton}
             >
-              <Text style={styles.submitButtonText}>
-                Submit Comics for Grading
-              </Text>
+              <Text style={styles.linkText}>Visit CPS Capsule</Text>
+              <ExternalLink size={18} color="#7C3AED" />
             </Pressable>
           </View>
         ) : (
@@ -406,5 +404,16 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+  },
+  linkButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 8,
+  },
+  linkText: {
+    color: "#7C3AED",
+    fontSize: 16,
+    fontWeight: "500",
   },
 });
