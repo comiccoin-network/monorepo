@@ -45,14 +45,6 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-// Define props for the TransactionList component
-interface TransactionListProps {
-  transactions: Transaction[];
-  currentWalletAddress: string;
-  onRefresh: () => void;
-  isRefreshing: boolean;
-}
-
 // Main Dashboard component
 const Dashboard: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
