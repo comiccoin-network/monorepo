@@ -3,22 +3,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { View, Platform } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
-import NavigationBar from "../../components/NavigationBar";
+import UserNavigationBar from "../../components/UserNavigationBar";
 
 export default function UserLayout() {
   const router = useRouter();
 
-  // Handle sign out - we'll navigate to the login screen
-  const handleSignOut = () => {
-    router.replace("/"); // Assuming "/" is your login screen
-  };
-
   return (
     <View style={{ flex: 1 }}>
-      <NavigationBar onSignOut={handleSignOut} />
+      <UserNavigationBar />
       <Tabs
         screenOptions={{
-          // Hide the header since we're using our custom NavigationBar
+          // Hide the header since we're using our custom UserNavigationBar
           headerShown: false,
 
           // Configure the tab bar style

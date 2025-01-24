@@ -117,11 +117,6 @@ const Dashboard: React.FC = () => {
     }, 3000);
   }, [logout, navigation]);
 
-  const handleSignOut = useCallback(() => {
-    logout();
-    navigation.navigate("Login");
-  }, [logout, navigation]);
-
   const copyToClipboard = async (text: string) => {
     await Clipboard.setStringAsync(text);
     Alert.alert("Copied", "Address copied to clipboard");

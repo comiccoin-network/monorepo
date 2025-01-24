@@ -1,5 +1,5 @@
-// monorepo/native/mobile/comiccoin-wallet/components/NavigationBar.tsx
-import React from "react";
+// monorepo/native/mobile/comiccoin-wallet/components/UserNavigationBar.tsx
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -10,13 +10,55 @@ import {
 } from "react-native";
 import { Share2, Wallet } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useWallet } from "../hooks/useWallet";
 
-interface NavigationBarProps {
-  onSignOut: () => void;
+// Define the navigation types for type safety
+type RootStackParamList = {
+  Login: undefined;
+  Dashboard: undefined;
+  // Add other routes as needed
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+// Component props type definition
+interface UserNavigationBarProps {
+  // We don't need onSignOut prop anymore as we're handling it internally
 }
 
-const NavigationBar: React.FC<NavigationBarProps> = ({ onSignOut }) => {
+const UserNavigationBar: React.FC<UserNavigationBarProps> = () => {
+  // Hooks for navigation and safe area
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NavigationProp>();
+
+  // Get wallet functionality from the hook
+  const { logout, loading: serviceLoading, error: serviceError } = useWallet();
+
+  // Handle sign out with proper error handling
+  const handleSignOut = useCallback(async () => {
+    try {
+      // First attempt to logout using the wallet service
+      await logout();
+
+      // If successful, navigate to login screen
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+    } catch (error) {
+      // Log the error for debugging
+      console.error("Sign out failed:", error);
+
+      // You might want to show an error message to the user here
+      // For now, still attempt to navigate to login for safety
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+    }
+  }, [logout, navigation]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -30,10 +72,13 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onSignOut }) => {
         <View style={styles.rightContainer}>
           <TouchableOpacity
             style={styles.signOutButton}
-            onPress={onSignOut}
+            onPress={handleSignOut}
             accessibilityLabel="Sign out"
+            disabled={serviceLoading} // Prevent multiple taps while loading
           >
-            <Text style={styles.signOutText}>Sign out</Text>
+            <Text style={styles.signOutText}>
+              {serviceLoading ? "Signing out..." : "Sign out"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -104,4 +149,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NavigationBar;
+export default UserNavigationBar;
