@@ -27,11 +27,11 @@ import QRCode from "react-native-qrcode-svg";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import * as Print from "expo-print";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import { useWallet } from "../../hooks/useWallet";
 
-// Define navigation types
+// Define navigation types for type safety
 type RootStackParamList = {
   Login: undefined;
   Receive: undefined;
@@ -39,10 +39,7 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const TAB_BAR_HEIGHT = Platform.OS === "ios" ? 88 : 60;
-
 const ReceiveScreen: React.FC = () => {
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp>();
   const { currentWallet, loading: serviceLoading } = useWallet();
   const [copied, setCopied] = useState(false);
@@ -130,6 +127,7 @@ const ReceiveScreen: React.FC = () => {
     }
   }, [qrRef, currentWallet?.address]);
 
+  // Show loading state while fetching wallet data
   if (serviceLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -139,122 +137,128 @@ const ReceiveScreen: React.FC = () => {
     );
   }
 
+  // Redirect to login if no wallet is found
   if (!currentWallet) {
     navigation.replace("Login");
     return null;
   }
 
   return (
-    <ScrollView
-      style={styles.scrollView}
-      contentContainerStyle={[
-        styles.content,
-        {
-          paddingBottom: TAB_BAR_HEIGHT + 16 + insets.bottom,
-        },
-      ]}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Receive ComicCoins</Text>
-          <Text style={styles.subtitle}>
-            Accept ComicCoins and NFTs to your wallet
-          </Text>
-        </View>
-
-        {/* QR Code Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardIconContainer}>
-              <QrCode size={20} color="#7C3AED" />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
+            {/* Header Section */}
+            <View style={styles.header}>
+              <Text style={styles.title}>Receive ComicCoins</Text>
+              <Text style={styles.subtitle}>
+                Accept ComicCoins and NFTs to your wallet
+              </Text>
             </View>
-            <Text style={styles.cardTitle}>Receive ComicCoins</Text>
-          </View>
 
-          {/* QR Code */}
-          <View style={styles.qrContainer}>
-            <QRCode
-              value={currentWallet.address}
-              size={240}
-              getRef={(ref) => setQrRef(ref)}
-            />
+            {/* QR Code Card */}
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <View style={styles.cardIconContainer}>
+                  <QrCode size={20} color="#7C3AED" />
+                </View>
+                <Text style={styles.cardTitle}>Receive ComicCoins</Text>
+              </View>
 
-            {/* QR Code Actions */}
-            <View style={styles.qrActions}>
+              {/* QR Code Display */}
+              <View style={styles.qrContainer}>
+                <QRCode
+                  value={currentWallet.address}
+                  size={240}
+                  getRef={(ref) => setQrRef(ref)}
+                />
+
+                {/* QR Code Actions */}
+                <View style={styles.qrActions}>
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={handlePrintQR}
+                  >
+                    <Printer size={20} color="#4B5563" />
+                    <Text style={styles.actionButtonText}>Print</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={handleDownloadQR}
+                  >
+                    <Download size={20} color="#4B5563" />
+                    <Text style={styles.actionButtonText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Wallet Address Section */}
+              <View style={styles.addressContainer}>
+                <Text style={styles.addressLabel}>Your Wallet Address</Text>
+                <View style={styles.addressInputContainer}>
+                  <TextInput
+                    style={styles.addressInput}
+                    value={currentWallet.address}
+                    editable={false}
+                    multiline
+                  />
+                  <TouchableOpacity
+                    style={styles.copyButton}
+                    onPress={handleCopyAddress}
+                  >
+                    {copied ? (
+                      <CheckCircle2 size={20} color="#7C3AED" />
+                    ) : (
+                      <Copy size={20} color="#7C3AED" />
+                    )}
+                    <Text style={styles.copyButtonText}>
+                      {copied ? "Copied!" : "Copy"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Share Button */}
               <TouchableOpacity
-                style={styles.actionButton}
-                onPress={handlePrintQR}
+                style={styles.shareButton}
+                onPress={handleShare}
               >
-                <Printer size={20} color="#4B5563" />
-                <Text style={styles.actionButtonText}>Print</Text>
+                <Text style={styles.shareButtonText}>Share Address</Text>
+                <ExternalLink size={20} color="#FFFFFF" />
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={handleDownloadQR}
-              >
-                <Download size={20} color="#4B5563" />
-                <Text style={styles.actionButtonText}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Wallet Address */}
-          <View style={styles.addressContainer}>
-            <Text style={styles.addressLabel}>Your Wallet Address</Text>
-            <View style={styles.addressInputContainer}>
-              <TextInput
-                style={styles.addressInput}
-                value={currentWallet.address}
-                editable={false}
-                multiline
-              />
-              <TouchableOpacity
-                style={styles.copyButton}
-                onPress={handleCopyAddress}
-              >
-                {copied ? (
-                  <CheckCircle2 size={20} color="#7C3AED" />
-                ) : (
-                  <Copy size={20} color="#7C3AED" />
-                )}
-                <Text style={styles.copyButtonText}>
-                  {copied ? "Copied!" : "Copy"}
+              {/* Promotional Message */}
+              <View style={styles.promoContainer}>
+                <Text style={styles.promoText}>
+                  Want to earn free ComicCoins? Visit ComicCoin Faucet
                 </Text>
-              </TouchableOpacity>
+              </View>
             </View>
           </View>
-
-          {/* Share Button */}
-          <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-            <Text style={styles.shareButtonText}>Share Address</Text>
-            <ExternalLink size={20} color="#FFFFFF" />
-          </TouchableOpacity>
-
-          {/* Promotional Message */}
-          <View style={styles.promoContainer}>
-            <Text style={styles.promoText}>
-              Want to earn free ComicCoins? Visit ComicCoin Faucet
-            </Text>
-          </View>
-        </View>
-      </View>
-    </ScrollView>
+        </ScrollView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F3FF",
+    backgroundColor: "#F5F3FF", // Light purple background
   },
   scrollView: {
     flex: 1,
   },
-  content: {
+  scrollViewContent: {
     padding: 16,
+  },
+  content: {
+    padding: 8,
   },
   loadingContainer: {
     flex: 1,
@@ -263,9 +267,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F3FF",
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 8,
     color: "#6B7280",
-    fontSize: 16,
   },
   header: {
     marginBottom: 24,
@@ -275,15 +278,24 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#5B21B6",
     marginBottom: 8,
+    ...Platform.select({
+      ios: { fontFamily: "System" },
+      android: { fontFamily: "Roboto" },
+    }),
   },
   subtitle: {
     fontSize: 16,
-    color: "#6B7280",
+    color: "#4B5563",
+    ...Platform.select({
+      ios: { fontFamily: "System" },
+      android: { fontFamily: "Roboto" },
+    }),
   },
   card: {
     backgroundColor: "white",
     borderRadius: 16,
-    padding: 16,
+    padding: 24,
+    marginBottom: 16,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -304,11 +316,11 @@ const styles = StyleSheet.create({
   cardIconContainer: {
     padding: 8,
     backgroundColor: "#F5F3FF",
-    borderRadius: 8,
+    borderRadius: 12,
     marginRight: 12,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
     color: "#111827",
   },
@@ -319,25 +331,32 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E5E7EB",
+    marginVertical: 16,
   },
   qrActions: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 12,
+    gap: 16,
     marginTop: 16,
   },
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#F9FAFB",
     borderRadius: 8,
     gap: 8,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   actionButtonText: {
     color: "#4B5563",
     fontSize: 14,
     fontWeight: "500",
+    ...Platform.select({
+      ios: { fontFamily: "System" },
+      android: { fontFamily: "Roboto" },
+    }),
   },
   addressContainer: {
     marginTop: 24,
@@ -345,19 +364,20 @@ const styles = StyleSheet.create({
   addressLabel: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#374151",
+    color: "#4B5563",
     marginBottom: 8,
   },
   addressInputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    backgroundColor: "#F9FAFB",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 8,
   },
   addressInput: {
     flex: 1,
     padding: 12,
-    backgroundColor: "#F3F4F6",
-    borderRadius: 8,
     color: "#111827",
     fontFamily: Platform.OS === "ios" ? "Courier" : "monospace",
     fontSize: 14,
@@ -369,11 +389,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F3FF",
     borderRadius: 8,
     gap: 8,
+    marginLeft: 8,
   },
   copyButtonText: {
     color: "#7C3AED",
     fontSize: 14,
     fontWeight: "500",
+    ...Platform.select({
+      ios: { fontFamily: "System" },
+      android: { fontFamily: "Roboto" },
+    }),
   },
   shareButton: {
     flexDirection: "row",
@@ -382,13 +407,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#7C3AED",
     padding: 16,
     borderRadius: 8,
-    marginTop: 16,
+    marginTop: 24,
     gap: 8,
   },
   shareButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+    ...Platform.select({
+      ios: { fontFamily: "System" },
+      android: { fontFamily: "Roboto" },
+    }),
   },
   promoContainer: {
     marginTop: 24,
