@@ -1,5 +1,4 @@
-// monorepo/native/mobile/comiccoin-wallet/app/(user)/overview_txtlist.tsx
-
+// monorepo/native/mobile/comiccoin-wallet/components/TransactionList.tsx
 import React from "react";
 import {
   View,
