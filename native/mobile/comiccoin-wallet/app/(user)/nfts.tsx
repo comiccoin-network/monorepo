@@ -64,11 +64,16 @@ const NFTCard = ({ nft, currentWallet }: { nft: NFT; currentWallet: any }) => {
 
   const imageUrl = getNFTImageUrl(nft);
 
+  // Extract the CID from the token.
+  const metadataCID = nft.tokenMetadataURI.replace("ipfs://", "");
+
+  // console.log("NFTCard --> nft:", metadataCID);
+
   return (
     <Pressable
       onPress={() =>
         router.push(
-          `/nft?token_id=${nft.tokenId}&token_metadata_uri=${lastTx.tokenMetadataURI}`,
+          `/(nft)/${metadataCID}?metadata_uri=${encodeURIComponent(lastTx.tokenMetadataURI)}`,
         )
       }
       style={styles.cardContainer}

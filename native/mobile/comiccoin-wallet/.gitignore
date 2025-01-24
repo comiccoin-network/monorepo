@@ -37,6 +37,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+.ts.swp
 
 # Ignore developer private app documentaiton and or learning notes.
 private*.md
