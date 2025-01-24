@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import transactionListService, {
   Transaction,
-} from "../services/blockchain/TransactionListService";
+} from "../services/transaction/ListService";
 
 /**
  * Interface defining the structure of coin-specific transaction statistics.

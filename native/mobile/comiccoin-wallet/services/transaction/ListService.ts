@@ -1,4 +1,4 @@
-// monorepo/native/mobile/comiccoin-wallet/services/blockchain/TransactionListService.ts
+// monorepo/native/mobile/comiccoin-wallet/services/transaction/ListService.ts
 import config from "../../config";
 
 interface TransactionSignature {

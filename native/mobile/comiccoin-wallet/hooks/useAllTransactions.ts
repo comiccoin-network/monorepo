@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import transactionListService, {
   Transaction,
-} from "../services/blockchain/TransactionListService";
+} from "../services/transaction/ListService";
 
 /**
  * Represents the calculated statistics for all wallet transactions.

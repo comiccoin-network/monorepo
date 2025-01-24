@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import transactionListService, {
   Transaction,
-} from "../services/blockchain/TransactionListService";
+} from "../services/transaction/ListService";
 
 // Define the statistics interface for NFT-specific calculations
 interface NFTStatistics {
