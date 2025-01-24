@@ -144,12 +144,17 @@ export default function NFTListScreen() {
     currentWallet?.address || null,
   );
 
-  const filteredNFTs = (nftCollection || []).filter(
-    (nft: NFT) =>
+  const filteredNFTs = (nftCollection || []).filter((nft: NFT) => {
+    const searchTermLower = searchTerm.toLowerCase();
+    const nftName = nft.metadata?.name || "";
+    const tokenId = nft.tokenId?.toString() || "";
+
+    return (
       !searchTerm ||
-      nft.metadata?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      nft.tokenId.toString().includes(searchTerm),
-  );
+      nftName.toLowerCase().includes(searchTermLower) ||
+      tokenId.includes(searchTermLower)
+    );
+  });
 
   useEffect(() => {
     if (!currentWallet && !serviceLoading) {

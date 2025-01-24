@@ -1,5 +1,6 @@
 // monorepo/native/mobile/comiccoin-wallet/src/hooks/useNFTCollection.ts
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect } from "react";
 import { useNFTTransactions } from "./useNFTTransactions";
 import { fetchNFTMetadata } from "../services/nft/MetadataService";
 
@@ -41,6 +42,7 @@ export const useNFTCollection = (walletAddress: string | null) => {
     loading: txLoading,
     error: txError,
     statistics,
+    refresh: refreshTransactions,
   } = useNFTTransactions(walletAddress);
 
   const getOwnedNFTs = (
@@ -125,18 +127,40 @@ export const useNFTCollection = (walletAddress: string | null) => {
     return { nftCollection: nftsWithMetadata, statistics };
   };
 
-  const { data, error, isLoading } = useQuery({
+  const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["nft-collection", walletAddress],
     queryFn: fetchNFTCollectionData,
-    enabled: !!walletAddress && !txLoading,
-    staleTime: 60 * 1000, // 1 minute
-    cacheTime: 24 * 60 * 60 * 1000, // 24 hours
+    enabled: !!walletAddress,
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: "always", // Refetch whenever component mounts
+    refetchOnWindowFocus: true,
+    initialData: () => {
+      // Return cached data if available
+      const cachedData = queryClient.getQueryData<NFTCollectionResponse>([
+        "nft-collection",
+        walletAddress,
+      ]);
+      return cachedData;
+    },
   });
+
+  // Background refresh function
+  const refresh = useCallback(async () => {
+    await refreshTransactions();
+    await refetch();
+  }, [refreshTransactions, refetch]);
+
+  useEffect(() => {
+    if (walletAddress) {
+      refresh();
+    }
+  }, [walletAddress, refresh]);
 
   return {
     nftCollection: data?.nftCollection ?? [],
     loading: isLoading || txLoading,
     error: error ?? txError,
     statistics: data?.statistics,
+    refresh,
   };
 };
