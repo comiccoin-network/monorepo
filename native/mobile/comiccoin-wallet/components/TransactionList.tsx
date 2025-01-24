@@ -19,15 +19,6 @@ import {
   ArrowUpRight,
 } from "lucide-react-native";
 
-// Define navigation types
-type RootStackParamList = {
-  Login: undefined;
-  Transaction: { id: string };
-  Transactions: undefined;
-};
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
 // Define props for the TransactionList component
 interface TransactionListProps {
   transactions: Transaction[];

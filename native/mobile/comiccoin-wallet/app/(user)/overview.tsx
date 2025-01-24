@@ -31,10 +31,10 @@ import {
 import { useWallet } from "../../hooks/useWallet";
 import { useAllTransactions } from "../../hooks/useAllTransactions";
 import walletService from "../../services/wallet/WalletService";
-import NavigationBar from "../../components/NavigationBar";
+// import NavigationBar from "../../components/NavigationBar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Transaction } from "../../services/transaction/ListService";
-import TransactionList from "./overview_txlist";
+import TransactionList from "../../components/TransactionList";
 
 // Define navigation types
 type RootStackParamList = {
@@ -141,8 +141,6 @@ const Dashboard: React.FC = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container} edges={["top"]}>
-        <NavigationBar onSignOut={handleSignOut} />
-
         <ScrollView style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>Dashboard</Text>
