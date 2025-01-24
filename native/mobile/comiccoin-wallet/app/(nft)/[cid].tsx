@@ -1,5 +1,5 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(user)/nft/[cid].tsx
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -11,26 +11,22 @@ import {
   Platform,
 } from "react-native";
 import { useLocalSearchParams, Stack, useRouter } from "expo-router";
-import {
-  Image as ImageIcon,
-  AlertCircle,
-  Play,
-  Star,
-  SendHorizontal,
-  Flame,
-} from "lucide-react-native";
+import { Image as ImageIcon, AlertCircle, Play } from "lucide-react-native";
 import { useNFTMetadata } from "../../hooks/useNFTMetadata";
 import { useNFTAsset } from "../../hooks/useNFTAsset";
 import { Video, ResizeMode } from "expo-av";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { arrayBufferToBase64 } from "../../utils/base64Utils";
+import nftAssetService from "../../services/nft/AssetService";
 
 export default function NFTDetailsScreen() {
   const router = useRouter();
   const { cid, metadata_uri } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState("image");
-  const [isImageLoading, setIsImageLoading] = useState(true);
+
+  // Remove the isImageLoading state since we'll use isChildLoading instead
   const [imageLoadError, setImageLoadError] = useState<string | null>(null);
+  const [isChildLoading, setIsChildLoading] = useState(false);
 
   // Fetch metadata first
   const {
@@ -40,69 +36,39 @@ export default function NFTDetailsScreen() {
   } = useNFTMetadata(metadata_uri as string);
 
   const metadata = metadataData?.metadata;
-
-  // Extract image CID from metadata
   const imageCid = metadata?.image
     ? metadata.image.replace("ipfs://", "")
     : null;
 
-  // Fetch image asset only when we have the CID
-  const {
-    data: imageAssetData,
-    isLoading: imageLoading,
-    error: imageError,
-  } = useNFTAsset(imageCid, {
-    enabled: !!imageCid && activeTab === "image",
-  });
-
-  const imageAsset = imageAssetData?.asset;
-
-  const getAssetSource = useCallback((asset) => {
-    if (!asset?.content || !asset?.content_type) {
-      console.log("Missing asset content or content type");
-      return null;
-    }
-
-    try {
-      console.log("Processing asset for display...");
-      const base64Data = arrayBufferToBase64(asset.content);
-      console.log("Successfully processed asset");
-      return {
-        uri: `data:${asset.content_type};base64,${base64Data}`,
-      };
-    } catch (error) {
-      console.error("Error processing asset:", error);
-      setImageLoadError("Failed to process image data");
-      return null;
-    }
+  // Handle child loading state changes
+  const handleLoadingChange = useCallback((isLoading: boolean) => {
+    console.log("Child loading state changed:", isLoading);
+    setIsChildLoading(isLoading);
   }, []);
 
-  // Render loading state
-  if (metadataLoading || (imageLoading && activeTab === "image")) {
+  // Render loading state only for metadata loading
+  if (metadataLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7C3AED" />
-        <Text style={styles.loadingText}>
-          {metadataLoading ? "Loading NFT details..." : "Loading image..."}
-        </Text>
+        <Text style={styles.loadingText}>Loading NFT details...</Text>
       </View>
     );
   }
 
   // Render error state
-  if (metadataError || imageError || imageLoadError) {
+  if (metadataError || imageLoadError) {
     return (
       <View style={styles.errorContainer}>
         <AlertCircle size={48} color="#EF4444" />
         <Text style={styles.errorTitle}>Error Loading NFT</Text>
         <Text style={styles.errorText}>
-          {metadataError?.message || imageError?.message || imageLoadError}
+          {metadataError?.message || imageLoadError}
         </Text>
       </View>
     );
   }
 
-  // In the render section, add more detailed error handling for the image:
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
       <Stack.Screen
@@ -122,50 +88,19 @@ export default function NFTDetailsScreen() {
 
             <View style={styles.mediaContent}>
               {activeTab === "image" && (
-                <>
-                  {imageAsset ? (
-                    <Image
-                      source={getAssetSource(imageAsset)}
-                      style={[
-                        styles.mediaImage,
-                        isImageLoading && styles.hidden,
-                      ]}
-                      resizeMode="contain"
-                      onLoadStart={() => {
-                        console.log("Image load starting");
-                        setIsImageLoading(true);
-                        setImageLoadError(null);
-                      }}
-                      onLoad={() => {
-                        console.log("Image loaded successfully");
-                        setIsImageLoading(false);
-                      }}
-                      onError={(error) => {
-                        console.error("Image loading error:", error);
-                        setIsImageLoading(false);
-                        setImageLoadError("Failed to load image");
-                      }}
-                    />
-                  ) : (
-                    <View style={styles.mediaPlaceholder}>
-                      <ImageIcon size={48} color="#E5E7EB" />
-                      <Text style={styles.placeholderText}>
-                        No image available
-                      </Text>
-                    </View>
-                  )}
-                  {isImageLoading && (
-                    <View style={styles.mediaLoading}>
-                      <ActivityIndicator size="large" color="#7C3AED" />
-                      <Text style={styles.loadingText}>Loading image...</Text>
-                    </View>
-                  )}
-                </>
+                <ImageDisplay
+                  cid={imageCid || ""}
+                  onLoadingChange={handleLoadingChange}
+                />
               )}
 
               {activeTab === "animation" && animationAssetData?.asset && (
                 <Video
-                  source={getAssetSource(animationAssetData.asset)}
+                  source={{
+                    uri: `data:${animationAssetData.asset.content_type};base64,${arrayBufferToBase64(
+                      animationAssetData.asset.content,
+                    )}`,
+                  }}
                   style={styles.mediaImage}
                   useNativeControls
                   resizeMode={ResizeMode.CONTAIN}
@@ -175,20 +110,222 @@ export default function NFTDetailsScreen() {
                 />
               )}
 
-              {isImageLoading && (
+              {/* Remove the isImageLoading condition since we now use isChildLoading */}
+              {isChildLoading && (
                 <View style={styles.mediaLoading}>
                   <ActivityIndicator size="large" color="#7C3AED" />
+                  <Text style={styles.loadingText}>Loading image...</Text>
                 </View>
               )}
             </View>
           </View>
-
-          {/* Rest of the component remains the same ... */}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const ImageDisplay = ({
+  cid,
+  onLoadingChange,
+}: {
+  cid: string;
+  onLoadingChange?: (isLoading: boolean) => void;
+}) => {
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isImageRendering, setIsImageRendering] = useState(false);
+
+  const isMounted = useRef(true);
+  const hasStartedRender = useRef(false);
+  const renderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Notify parent component of loading state changes
+  useEffect(() => {
+    const isInLoadingState =
+      isLoading || (isImageRendering && !hasStartedRender.current);
+    onLoadingChange?.(isInLoadingState);
+  }, [isLoading, isImageRendering, onLoadingChange]);
+
+  // Cleanup function
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+      if (renderTimeoutRef.current) {
+        clearTimeout(renderTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Reset render timeout when image URI changes
+  useEffect(() => {
+    if (imageUri && isImageRendering) {
+      renderTimeoutRef.current = setTimeout(() => {
+        if (isMounted.current && isImageRendering) {
+          console.log("Render timeout reached, forcing completion");
+          setIsImageRendering(false);
+          onLoadingChange?.(false);
+        }
+      }, 10000);
+    }
+    return () => {
+      if (renderTimeoutRef.current) {
+        clearTimeout(renderTimeoutRef.current);
+      }
+    };
+  }, [imageUri, isImageRendering, onLoadingChange]);
+
+  // Main image loading logic
+  useEffect(() => {
+    const loadImage = async () => {
+      if (!cid) {
+        setError("No image CID provided");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        setImageUri(null);
+        hasStartedRender.current = false;
+
+        console.log("Starting image data load for CID:", cid);
+        const asset = await nftAssetService.getNFTAsset(cid);
+
+        if (!isMounted.current) return;
+
+        console.log("Got asset, loading content...");
+        const base64Data = await asset.getContent();
+
+        if (!isMounted.current) return;
+
+        console.log("Content loaded, creating URI...");
+        const uri = `data:${asset.content_type || "image/png"};base64,${base64Data}`;
+
+        setImageUri(uri);
+        setIsImageRendering(true);
+
+        console.log("URI set, waiting for image to render...");
+      } catch (err) {
+        if (!isMounted.current) return;
+
+        console.error("Error loading image:", {
+          error: err,
+          message: err instanceof Error ? err.message : "Unknown error",
+          cid,
+        });
+        setError(err instanceof Error ? err.message : "Failed to load image");
+        setIsImageRendering(false);
+      } finally {
+        if (isMounted.current) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadImage();
+  }, [cid]);
+
+  if (isLoading || (isImageRendering && !hasStartedRender.current)) {
+    return (
+      <View style={styles.mediaLoading}>
+        <ActivityIndicator size="large" color="#7C3AED" />
+        <Text style={styles.loadingText}>
+          {isLoading ? "Loading image data..." : "Preparing image..."}
+        </Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.mediaPlaceholder}>
+        <AlertCircle size={48} color="#EF4444" />
+        <Text style={styles.placeholderText}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (!imageUri) {
+    return (
+      <View style={styles.mediaPlaceholder}>
+        <ImageIcon size={48} color="#E5E7EB" />
+        <Text style={styles.placeholderText}>No image available</Text>
+      </View>
+    );
+  }
+
+  return (
+    <Image
+      source={{ uri: imageUri }}
+      style={styles.mediaImage}
+      resizeMode="contain"
+      onLoadStart={() => {
+        console.log("Image render starting");
+        hasStartedRender.current = true;
+      }}
+      onLoad={() => {
+        console.log("Image rendered successfully");
+        if (isMounted.current) {
+          setIsImageRendering(false);
+          if (renderTimeoutRef.current) {
+            clearTimeout(renderTimeoutRef.current);
+          }
+        }
+      }}
+      onError={(error) => {
+        console.error("Image rendering error:", error.nativeEvent.error);
+        if (isMounted.current) {
+          setError("Failed to render image");
+          setIsImageRendering(false);
+          if (renderTimeoutRef.current) {
+            clearTimeout(renderTimeoutRef.current);
+          }
+        }
+      }}
+    />
+  );
+};
+
+const MediaTabs = ({ activeTab, onTabChange, metadata }) => {
+  const tabs = [
+    {
+      id: "image",
+      icon: ImageIcon,
+      label: "Cover",
+      show: !!metadata?.image,
+    },
+    {
+      id: "animation",
+      icon: Play,
+      label: "Animation",
+      show: !!metadata?.animation_url,
+    },
+  ].filter((tab) => tab.show);
+
+  if (tabs.length <= 1) return null;
+
+  return (
+    <View style={styles.tabContainer}>
+      {tabs.map(({ id, icon: Icon, label }) => (
+        <Pressable
+          key={id}
+          onPress={() => onTabChange(id)}
+          style={[styles.tab, activeTab === id && styles.activeTab]}
+        >
+          <Icon size={16} color={activeTab === id ? "#7C3AED" : "#6B7280"} />
+          <Text
+            style={[styles.tabLabel, activeTab === id && styles.activeTabLabel]}
+          >
+            {label}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -375,41 +512,3 @@ const styles = StyleSheet.create({
     color: "#6B7280",
   },
 });
-
-const MediaTabs = ({ activeTab, onTabChange, metadata }) => {
-  const tabs = [
-    {
-      id: "image",
-      icon: ImageIcon,
-      label: "Cover",
-      show: !!metadata?.image,
-    },
-    {
-      id: "animation",
-      icon: Play,
-      label: "Animation",
-      show: !!metadata?.animation_url,
-    },
-  ].filter((tab) => tab.show);
-
-  if (tabs.length <= 1) return null;
-
-  return (
-    <View style={styles.tabContainer}>
-      {tabs.map(({ id, icon: Icon, label }) => (
-        <Pressable
-          key={id}
-          onPress={() => onTabChange(id)}
-          style={[styles.tab, activeTab === id && styles.activeTab]}
-        >
-          <Icon size={16} color={activeTab === id ? "#7C3AED" : "#6B7280"} />
-          <Text
-            style={[styles.tabLabel, activeTab === id && styles.activeTabLabel]}
-          >
-            {label}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-};

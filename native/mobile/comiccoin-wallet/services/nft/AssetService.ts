@@ -1,59 +1,32 @@
 // monorepo/native/mobile/comiccoin-wallet/services/nft/AssetService.ts
 import config from "../../config";
 
-interface FetchOptions {
-  onProgress?: (progress: number) => void;
-}
-
 interface NFTAsset {
   filename: string;
-  content: Uint8Array;
   content_type: string | null;
   content_length: number;
+  getContent: () => Promise<string>; // Changed to return base64 string directly
 }
 
 class NFTAssetService {
   private baseUrl: string;
+  private readonly CHUNK_SIZE = 256 * 1024; // 256KB chunks
 
   constructor() {
     this.baseUrl = __DEV__ ? "http://localhost:9000" : "https://nftstorage.com";
   }
 
-  private extractFilename(contentDisposition: string | null): string {
-    if (!contentDisposition) return "default-filename";
-
-    if (contentDisposition.includes("filename*=")) {
-      const parts = contentDisposition.split("filename*=");
-      if (parts.length > 1) {
-        return parts[1].replace(/["']/g, "");
-      }
-    }
-
-    const filenameMatch = contentDisposition.match(/filename=['"]?([^'"]+)/);
-    if (filenameMatch) {
-      return filenameMatch[1];
-    }
-
-    return "default-filename";
-  }
-
-  async getNFTAsset(
-    cid: string,
-    options: FetchOptions = {},
-  ): Promise<NFTAsset> {
+  async getNFTAsset(cid: string): Promise<NFTAsset> {
     if (!cid) throw new Error("CID is required");
 
     const endpoint = `${this.baseUrl}/ipfs/${cid}`;
-    console.log(
-      " monorepo/native/mobile/comiccoin-wallet/services/nft/AssetService.ts --> getNFTAsset --> endpoint:",
-      endpoint,
-    );
+    console.log("Fetching NFT asset from endpoint:", endpoint);
 
     try {
       const response = await fetch(endpoint, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
+          Accept: "*/*",
         },
       });
 
@@ -62,41 +35,39 @@ class NFTAssetService {
       }
 
       const contentType = response.headers.get("content-type");
-      const contentLength = Number(response.headers.get("content-length")) || 0;
-      const reader = response.body?.getReader();
-      const chunks: Uint8Array[] = [];
-      let receivedLength = 0;
+      const contentLength = Number(response.headers.get("content-length"));
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
+      console.log("Response headers:", {
+        contentType,
+        contentLength,
+        status: response.status,
+      });
 
-          if (done) break;
+      // Instead of loading everything at once, return a function that can process the data
+      const getContent = async (): Promise<string> => {
+        // Get the response body as an array buffer
+        const arrayBuffer = await response.clone().arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
 
-          chunks.push(value);
-          receivedLength += value.length;
-
-          if (contentLength && options.onProgress) {
-            options.onProgress((receivedLength / contentLength) * 100);
-          }
+        // Process in chunks to avoid memory limits
+        let base64String = "";
+        for (let i = 0; i < uint8Array.length; i += this.CHUNK_SIZE) {
+          const chunk = uint8Array.slice(i, i + this.CHUNK_SIZE);
+          const binary = chunk.reduce(
+            (acc, byte) => acc + String.fromCharCode(byte),
+            "",
+          );
+          base64String += btoa(binary);
         }
-      }
 
-      // Combine chunks
-      const content = new Uint8Array(receivedLength);
-      let position = 0;
-      for (const chunk of chunks) {
-        content.set(chunk, position);
-        position += chunk.length;
-      }
+        return base64String;
+      };
 
       return {
-        filename: this.extractFilename(
-          response.headers.get("content-disposition"),
-        ),
-        content,
+        filename: `${cid}.${contentType?.split("/")[1] || "bin"}`,
         content_type: contentType,
-        content_length: receivedLength,
+        content_length: contentLength,
+        getContent,
       };
     } catch (error) {
       console.error("Failed to fetch NFT asset:", error);
@@ -105,5 +76,4 @@ class NFTAssetService {
   }
 }
 
-const nftAssetService = new NFTAssetService();
-export default nftAssetService;
+export default new NFTAssetService();
