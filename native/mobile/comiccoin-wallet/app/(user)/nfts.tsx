@@ -24,7 +24,7 @@ import {
 import { useWallet } from "../../hooks/useWallet";
 import { useNFTCollection } from "../../hooks/useNFTCollection";
 import { convertIPFSToGatewayURL } from "../../services/nft/MetadataService";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 
 interface NFT {
   tokenId: string;
@@ -166,57 +166,59 @@ export default function NFTListScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My NFT Collection</Text>
-        <Text style={styles.headerSubtitle}>
-          Manage and showcase your digital comic book collectibles
-        </Text>
-      </View>
-
-      {(searchTerm || filteredNFTs.length > 0) && (
-        <View style={styles.searchContainer}>
-          <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
-          <TextInput
-            placeholder="Search your comic collection..."
-            style={styles.searchInput}
-            onChangeText={setSearchTerm}
-            placeholderTextColor="#9CA3AF"
-          />
-        </View>
-      )}
-
-      {filteredNFTs.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <ImageIcon size={64} color="#9CA3AF" />
-          <Text style={styles.emptyTitle}>No Comics Found</Text>
-          <Text style={styles.emptySubtitle}>
-            {searchTerm
-              ? "Try adjusting your search"
-              : "Start your collection by getting your comics graded"}
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>My NFT Collection</Text>
+          <Text style={styles.headerSubtitle}>
+            Manage and showcase your digital comic book collectibles
           </Text>
-          <Pressable
-            onPress={() => Linking.openURL("https://cpscapsule.com")}
-            style={styles.submitButton}
-          >
-            <Text style={styles.submitButtonText}>
-              Submit Comics for Grading
-            </Text>
-          </Pressable>
         </View>
-      ) : (
-        <FlatList
-          data={filteredNFTs}
-          renderItem={({ item }) => (
-            <View style={styles.cardWrapper}>
-              <NFTCard nft={item} currentWallet={currentWallet} />
-            </View>
-          )}
-          keyExtractor={(item) => item.tokenId}
-          contentContainerStyle={styles.listContainer}
-        />
-      )}
-    </SafeAreaView>
+
+        {(searchTerm || filteredNFTs.length > 0) && (
+          <View style={styles.searchContainer}>
+            <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
+            <TextInput
+              placeholder="Search your comic collection..."
+              style={styles.searchInput}
+              onChangeText={setSearchTerm}
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+        )}
+
+        {filteredNFTs.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <ImageIcon size={64} color="#9CA3AF" />
+            <Text style={styles.emptyTitle}>No Comics Found</Text>
+            <Text style={styles.emptySubtitle}>
+              {searchTerm
+                ? "Try adjusting your search"
+                : "Start your collection by getting your comics graded"}
+            </Text>
+            <Pressable
+              onPress={() => Linking.openURL("https://cpscapsule.com")}
+              style={styles.submitButton}
+            >
+              <Text style={styles.submitButtonText}>
+                Submit Comics for Grading
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredNFTs}
+            renderItem={({ item }) => (
+              <View style={styles.cardWrapper}>
+                <NFTCard nft={item} currentWallet={currentWallet} />
+              </View>
+            )}
+            keyExtractor={(item) => item.tokenId}
+            contentContainerStyle={styles.listContainer}
+          />
+        )}
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -225,16 +227,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F3FF",
   },
+  content: {
+    flex: 1,
+  },
   header: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 14,
     paddingBottom: 16,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
     color: "#5B21B6",
-    marginBottom: 4,
+    marginBottom: 8,
     ...Platform.select({
       ios: { fontFamily: "System" },
       android: { fontFamily: "Roboto" },
