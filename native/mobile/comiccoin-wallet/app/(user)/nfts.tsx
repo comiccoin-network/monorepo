@@ -3,6 +3,7 @@ import { View, Text } from "react-native";
 import { nftAssetService } from "../../services/nft/MetadataService"; //TEMPORARY
 import { fetchNFTMetadata } from "../../services/nft/AssetService"; //TEMPORARY
 import { nftTransferService } from "../../services/nft/TransferService"; //TEMPORARY
+import { useNFTAsset } from "../../hooks/useNFTAsset"; //TEMPORARY
 
 export default function NFTs() {
   return (
