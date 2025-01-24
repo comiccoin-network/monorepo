@@ -14,7 +14,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   AlertCircle,
@@ -46,7 +46,7 @@ interface FormData {
 }
 
 const SendScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const router = useRouter();
   const { currentWallet, logout, loading: serviceLoading } = useWallet();
   const { statistics } = useWalletTransactions(currentWallet?.address);
   const { submitTransaction, loading: transactionLoading } = useCoinTransfer(1);
@@ -71,7 +71,7 @@ const SendScreen: React.FC = () => {
         if (serviceLoading) return;
 
         if (!currentWallet) {
-          navigation.replace("Login");
+          router.replace("/login");
           return;
         }
 
@@ -93,14 +93,14 @@ const SendScreen: React.FC = () => {
     const sessionCheckInterval = setInterval(checkWalletSession, 60000);
 
     return () => clearInterval(sessionCheckInterval);
-  }, [currentWallet, serviceLoading, navigation]);
+  }, [currentWallet, serviceLoading, router]);
 
   const handleSessionExpired = () => {
     setIsSessionExpired(true);
     logout();
     setGeneralError("Your session has expired. Please sign in again.");
     setTimeout(() => {
-      navigation.replace("Login");
+      router.replace("/login");
     }, 3000);
   };
 
@@ -157,7 +157,7 @@ const SendScreen: React.FC = () => {
       );
 
       Alert.alert("Success", "Transaction submitted successfully!");
-      navigation.navigate("Dashboard");
+      router.replace("/overview");
     } catch (error) {
       setFormErrors((prev) => ({
         ...prev,
@@ -165,7 +165,7 @@ const SendScreen: React.FC = () => {
       }));
       setShowConfirmation(false);
     }
-  }, [formData, currentWallet, navigation, submitTransaction]);
+  }, [formData, currentWallet, router, submitTransaction]);
 
   if (serviceLoading) {
     return (
@@ -177,7 +177,7 @@ const SendScreen: React.FC = () => {
   }
 
   if (!currentWallet) {
-    navigation.replace("Login");
+    router.replace("/login");
     return null;
   }
 

@@ -13,7 +13,7 @@ import {
   Platform,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   Copy,
@@ -31,7 +31,6 @@ import {
 import { useWallet } from "../../hooks/useWallet";
 import { useAllTransactions } from "../../hooks/useAllTransactions";
 import walletService from "../../services/wallet/WalletService";
-// import NavigationBar from "../../components/NavigationBar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Transaction } from "../../services/transaction/ListService";
 import TransactionList from "../../components/TransactionList";
@@ -47,7 +46,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 // Main Dashboard component
 const Dashboard: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const router = useRouter();
   const {
     currentWallet,
     wallets,
@@ -74,7 +73,7 @@ const Dashboard: React.FC = () => {
         if (serviceLoading) return;
 
         if (!currentWallet) {
-          navigation.navigate("Login");
+          router.replace("/login");
           return;
         }
 
@@ -98,16 +97,16 @@ const Dashboard: React.FC = () => {
     const sessionCheckInterval = setInterval(checkWalletSession, 60000);
 
     return () => clearInterval(sessionCheckInterval);
-  }, [currentWallet, serviceLoading, navigation]);
+  }, [currentWallet, serviceLoading, router]);
 
   const handleSessionExpired = useCallback(() => {
     setIsSessionExpired(true);
     logout();
     setError("Your session has expired. Please sign in again.");
     setTimeout(() => {
-      navigation.navigate("Login");
+      router.replace("/login");
     }, 3000);
-  }, [logout, navigation]);
+  }, [logout, router]);
 
   const copyToClipboard = async (text: string) => {
     await Clipboard.setStringAsync(text);

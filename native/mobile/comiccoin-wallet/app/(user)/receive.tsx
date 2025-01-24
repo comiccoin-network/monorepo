@@ -12,7 +12,6 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   Copy,
@@ -28,6 +27,7 @@ import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import * as Print from "expo-print";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 import { useWallet } from "../../hooks/useWallet";
 
@@ -40,7 +40,7 @@ type RootStackParamList = {
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const ReceiveScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const router = useRouter();
   const { currentWallet, loading: serviceLoading } = useWallet();
   const [copied, setCopied] = useState(false);
   const [qrRef, setQrRef] = useState<any>(null);
@@ -139,7 +139,7 @@ const ReceiveScreen: React.FC = () => {
 
   // Redirect to login if no wallet is found
   if (!currentWallet) {
-    navigation.replace("Login");
+    router.replace("/login");
     return null;
   }
 
