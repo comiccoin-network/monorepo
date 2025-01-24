@@ -1,6 +1,6 @@
 // monorepo/native/mobile/comiccoin-wallet/src/services/blockdata/BlockDataViaTransactionNonceService.ts
 import axios, { AxiosInstance, AxiosError } from "axios";
-import config from "../../../config";
+import config from "../../config";
 
 // Define interfaces for our response data
 interface BlockData {

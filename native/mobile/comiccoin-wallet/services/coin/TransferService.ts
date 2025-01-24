@@ -1,7 +1,7 @@
 // monorepo/native/mobile/comiccoin-wallet/src/services/coin/TransferService.ts
 import { ethers } from "ethers";
-import config from "../../../config";
-import walletService from "./WalletService";
+import config from "../../config";
+import walletService from "../wallet/WalletService";
 
 // Define interfaces for our transaction types
 interface TransactionTemplate {
