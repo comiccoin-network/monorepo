@@ -13,11 +13,12 @@ import {
 import { useLocalSearchParams, Stack, useRouter } from "expo-router";
 import { Image as ImageIcon, AlertCircle, Play } from "lucide-react-native";
 import { useNFTMetadata } from "../../hooks/useNFTMetadata";
-import { useNFTAsset } from "../../hooks/useNFTAsset";
+import { useNFTAsset, prefetchNFTAsset } from "../../hooks/useNFTAsset";
 import { Video, ResizeMode } from "expo-av";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { arrayBufferToBase64 } from "../../utils/base64Utils";
-import nftAssetService from "../../services/nft/AssetService";
+import { useQueryClient } from "@tanstack/react-query";
+import * as Progress from "react-native-progress";
 
 export default function NFTDetailsScreen() {
   const router = useRouter();
@@ -133,112 +134,95 @@ const ImageDisplay = ({
   onLoadingChange?: (isLoading: boolean) => void;
 }) => {
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isImageRendering, setIsImageRendering] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [loadingState, setLoadingState] = useState<
+    "preparing" | "downloading" | "rendering"
+  >("preparing");
 
+  const queryClient = useQueryClient();
   const isMounted = useRef(true);
   const hasStartedRender = useRef(false);
-  const renderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Notify parent component of loading state changes
-  useEffect(() => {
-    const isInLoadingState =
-      isLoading || (isImageRendering && !hasStartedRender.current);
-    onLoadingChange?.(isInLoadingState);
-  }, [isLoading, isImageRendering, onLoadingChange]);
-
-  // Cleanup function
-  useEffect(() => {
-    return () => {
-      isMounted.current = false;
-      if (renderTimeoutRef.current) {
-        clearTimeout(renderTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Reset render timeout when image URI changes
-  useEffect(() => {
-    if (imageUri && isImageRendering) {
-      renderTimeoutRef.current = setTimeout(() => {
-        if (isMounted.current && isImageRendering) {
-          console.log("Render timeout reached, forcing completion");
-          setIsImageRendering(false);
-          onLoadingChange?.(false);
+  // Use the NFTAsset hook with progress tracking
+  const { data: assetData, isLoading: isAssetLoading } = useNFTAsset(cid, {
+    enabled: !!cid,
+    onProgress: (progress) => {
+      if (isMounted.current) {
+        setDownloadProgress(progress);
+        if (progress > 0) {
+          setLoadingState("downloading");
         }
-      }, 10000);
-    }
-    return () => {
-      if (renderTimeoutRef.current) {
-        clearTimeout(renderTimeoutRef.current);
       }
-    };
-  }, [imageUri, isImageRendering, onLoadingChange]);
+    },
+  });
 
-  // Main image loading logic
+  // Effect to handle asset data changes
   useEffect(() => {
-    const loadImage = async () => {
-      if (!cid) {
-        setError("No image CID provided");
-        setIsLoading(false);
-        return;
-      }
+    const loadImageFromAsset = async () => {
+      if (!assetData?.asset || !isMounted.current) return;
 
       try {
-        setIsLoading(true);
-        setError(null);
-        setImageUri(null);
-        hasStartedRender.current = false;
-
-        console.log("Starting image data load for CID:", cid);
-        const asset = await nftAssetService.getNFTAsset(cid);
+        setLoadingState("rendering");
+        const base64Data = await assetData.asset.getContent();
 
         if (!isMounted.current) return;
 
-        console.log("Got asset, loading content...");
-        const base64Data = await asset.getContent();
-
-        if (!isMounted.current) return;
-
-        console.log("Content loaded, creating URI...");
-        const uri = `data:${asset.content_type || "image/png"};base64,${base64Data}`;
-
+        const uri = `data:${assetData.asset.content_type || "image/png"};base64,${base64Data}`;
         setImageUri(uri);
         setIsImageRendering(true);
-
-        console.log("URI set, waiting for image to render...");
       } catch (err) {
-        if (!isMounted.current) return;
-
-        console.error("Error loading image:", {
-          error: err,
-          message: err instanceof Error ? err.message : "Unknown error",
-          cid,
-        });
+        console.error("Error loading image from asset:", err);
         setError(err instanceof Error ? err.message : "Failed to load image");
-        setIsImageRendering(false);
-      } finally {
-        if (isMounted.current) {
-          setIsLoading(false);
-        }
       }
     };
 
-    loadImage();
-  }, [cid]);
+    loadImageFromAsset();
+  }, [assetData]);
 
-  if (isLoading || (isImageRendering && !hasStartedRender.current)) {
-    return (
-      <View style={styles.mediaLoading}>
-        <ActivityIndicator size="large" color="#7C3AED" />
-        <Text style={styles.loadingText}>
-          {isLoading ? "Loading image data..." : "Preparing image..."}
-        </Text>
+  // Notify parent of loading state changes
+  useEffect(() => {
+    const isInLoadingState = isAssetLoading || isImageRendering;
+    onLoadingChange?.(isInLoadingState);
+  }, [isAssetLoading, isImageRendering, onLoadingChange]);
+
+  // Loading overlay that shows progress
+  const LoadingOverlay = () => (
+    <View style={styles.mediaLoading}>
+      <View style={styles.loadingContent}>
+        <View style={styles.progressCircleContainer}>
+          <Progress.Circle
+            size={100}
+            indeterminate={downloadProgress === 0}
+            progress={downloadProgress / 100}
+            color="#7C3AED"
+            borderWidth={5}
+            strokeCap="round"
+            showsText={true}
+            formatText={(progress) => `${Math.round(downloadProgress)}%`}
+            textStyle={styles.progressText}
+          />
+        </View>
+        <View style={styles.progressTextContainer}>
+          <Text style={styles.progressState}>
+            {loadingState === "preparing"
+              ? "Preparing..."
+              : loadingState === "downloading"
+                ? "Downloading..."
+                : "Processing..."}
+          </Text>
+          {loadingState === "downloading" && (
+            <Text style={styles.progressPercentage}>
+              {Math.round(downloadProgress)}% Complete
+            </Text>
+          )}
+        </View>
       </View>
-    );
-  }
+    </View>
+  );
 
+  // Error state
   if (error) {
     return (
       <View style={styles.mediaPlaceholder}>
@@ -248,44 +232,43 @@ const ImageDisplay = ({
     );
   }
 
-  if (!imageUri) {
-    return (
-      <View style={styles.mediaPlaceholder}>
-        <ImageIcon size={48} color="#E5E7EB" />
-        <Text style={styles.placeholderText}>No image available</Text>
-      </View>
-    );
-  }
-
   return (
-    <Image
-      source={{ uri: imageUri }}
-      style={styles.mediaImage}
-      resizeMode="contain"
-      onLoadStart={() => {
-        console.log("Image render starting");
-        hasStartedRender.current = true;
-      }}
-      onLoad={() => {
-        console.log("Image rendered successfully");
-        if (isMounted.current) {
-          setIsImageRendering(false);
-          if (renderTimeoutRef.current) {
-            clearTimeout(renderTimeoutRef.current);
-          }
-        }
-      }}
-      onError={(error) => {
-        console.error("Image rendering error:", error.nativeEvent.error);
-        if (isMounted.current) {
-          setError("Failed to render image");
-          setIsImageRendering(false);
-          if (renderTimeoutRef.current) {
-            clearTimeout(renderTimeoutRef.current);
-          }
-        }
-      }}
-    />
+    <View style={styles.mediaContent}>
+      {imageUri && (
+        <Image
+          source={{ uri: imageUri }}
+          style={styles.mediaImage}
+          resizeMode="contain"
+          onLoadStart={() => {
+            hasStartedRender.current = true;
+          }}
+          onLoad={() => {
+            if (isMounted.current) {
+              setIsImageRendering(false);
+              setLoadingState("preparing");
+            }
+          }}
+          onError={(error) => {
+            if (isMounted.current) {
+              setError("Failed to render image");
+              setIsImageRendering(false);
+            }
+          }}
+        />
+      )}
+
+      {/* Show loading overlay while downloading or rendering */}
+      {(isAssetLoading || isImageRendering) && <LoadingOverlay />}
+    </View>
+  );
+};
+
+// Add Progress Bar component
+const ProgressBar = ({ progress }: { progress: number }) => {
+  return (
+    <View style={styles.progressContainer}>
+      <View style={[styles.progressBar, { width: `${progress}%` }]} />
+    </View>
   );
 };
 
@@ -341,9 +324,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   loadingText: {
-    marginTop: 12,
     fontSize: 16,
     color: "#6B7280",
+    fontWeight: "500",
   },
   errorContainer: {
     flex: 1,
@@ -405,10 +388,11 @@ const styles = StyleSheet.create({
   },
   mediaLoading: {
     ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(243, 244, 246, 0.97)",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F3F4F6",
   },
+
   mediaImage: {
     width: "100%",
     height: "100%",
@@ -510,5 +494,47 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
     color: "#6B7280",
+  },
+  progressContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "#7C3AED",
+    borderRadius: 2,
+  },
+  loadingContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    borderRadius: 20,
+    backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
+    minWidth: 200,
+  },
+  progressText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#7C3AED",
+  },
+  progressPercentage: {
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  progressCircleContainer: {
+    marginBottom: 16,
+  },
+  progressState: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#7C3AED",
+    marginBottom: 4,
   },
 });
