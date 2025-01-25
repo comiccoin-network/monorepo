@@ -86,30 +86,76 @@ const ShareButton = ({ tokenMetadataUri }) => {
 };
 
 const VideoPlayer = ({ src, style }) => {
-  // Initialize the video player
+  // Track our own source state since player.currentSrc might be undefined
+  const [currentSource, setCurrentSource] = useState(src);
+
+  // Initialize the video player with debug logging
   const player = useVideoPlayer(src, (player) => {
+    console.log("Configuring video player for:", src);
     player.volume = 1.0;
     player.aspectMode = "fit";
+
+    // Enable detailed debugging
+    if (__DEV__) {
+      player.debug = true;
+      // Log all player properties
+      console.log("Player initial state:", {
+        volume: player.volume,
+        aspectMode: player.aspectMode,
+        loading: player.loading,
+        error: player.error,
+        currentTime: player.currentTime,
+        duration: player.duration,
+      });
+    }
   });
 
-  // Track loading and error states
+  // Enhanced state tracking
   const { isLoading } = useEvent(player, "loadingChange", {
-    isLoading: player.loading,
+    isLoading: player.loading || false,
   });
   const { error } = useEvent(player, "error", {
     error: player.error,
   });
+  const { isPlaying } = useEvent(player, "playingChange", {
+    isPlaying: player.playing || false,
+  });
 
+  // Update current source if it changes
+  useEffect(() => {
+    setCurrentSource(src);
+  }, [src]);
+
+  // Comprehensive debug information
+  const debugInfo = __DEV__
+    ? {
+        source: currentSource,
+        playerSource: player.currentSrc,
+        loading: isLoading,
+        playing: isPlaying,
+        error: error?.message,
+        timestamp: new Date().toISOString(),
+      }
+    : null;
+
+  // Error display with full context
   if (error) {
+    console.error("Video player error:", { error, debugInfo });
     return (
       <View style={[styles.videoContainer, style]}>
         <View style={styles.errorContainer}>
           <AlertCircle size={32} color="#EF4444" />
           <Text style={styles.errorText}>
-            This video format is not supported on your device.
-            {Platform.OS === "ios" &&
-              " Please try viewing on desktop or downloading the file."}
+            {Platform.OS === "ios"
+              ? "This video format may not be supported on iOS. Please try downloading the file or viewing on another device."
+              : "Unable to play this video format. Please try downloading the file."}
           </Text>
+          {__DEV__ && (
+            <Text style={styles.debugText}>
+              Error details: {error.message}
+              {"\n"}Source: {currentSource}
+            </Text>
+          )}
         </View>
       </View>
     );
@@ -129,7 +175,17 @@ const VideoPlayer = ({ src, style }) => {
         player={player}
         allowsFullscreen
         allowsPictureInPicture
+        resizeMode="contain"
       />
+
+      {__DEV__ && (
+        <View style={styles.debugOverlay}>
+          <Text style={styles.debugText}>
+            {isLoading ? "Loading..." : isPlaying ? "Playing" : "Not Playing"}
+            {"\n"}Source: {currentSource || "No source"}
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -146,6 +202,22 @@ const videoStyles = {
   videoPlayer: {
     flex: 1,
     backgroundColor: "#000",
+  },
+  debugOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    padding: 8,
+  },
+  debugText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontFamily: Platform.select({
+      ios: "Menlo",
+      android: "monospace",
+    }),
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -228,14 +300,17 @@ export default function NFTDetailsScreen() {
         ) : null;
 
       case "animation":
-        return metadata.animation_url ? (
-          <View style={styles.mediaContainer}>
-            <VideoPlayer
-              src={convertIPFSToGatewayURL(metadata.animation_url)}
-              style={styles.mediaContent}
-            />
-          </View>
-        ) : null;
+        if (metadata.animation_url) {
+          const videoUrl = convertIPFSToGatewayURL(metadata.animation_url);
+          console.log("Processing video URL:", videoUrl); // Debug URL conversion
+
+          return (
+            <View style={styles.mediaContainer}>
+              <VideoPlayer src={videoUrl} style={styles.mediaContent} />
+            </View>
+          );
+        }
+        return null;
 
       case "youtube":
         return metadata.youtube_url ? (
