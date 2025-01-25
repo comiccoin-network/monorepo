@@ -1,5 +1,5 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(user)/nft/[cid].tsx
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,56 +8,254 @@ import {
   Pressable,
   Platform,
   StyleSheet,
+  Clipboard,
+  Linking,
 } from "react-native";
-import { useLocalSearchParams, Stack } from "expo-router";
+import { useLocalSearchParams, Stack, router } from "expo-router";
 import { Image } from "expo-image";
-import { Image as ImageIcon, AlertCircle, Play } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Image as ImageIcon,
+  AlertCircle,
+  Play,
+  Youtube,
+  Copy,
+  CheckCircle2,
+  XCircle,
+  TrendingUp,
+  SendHorizontal,
+  Flame,
+  FileText,
+  Star,
+} from "lucide-react-native";
 import { useNFTMetadata } from "../../hooks/useNFTMetadata";
-import { Video, ResizeMode } from "expo-av";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { useEvent } from "expo";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { convertIPFSToGatewayURL } from "../../services/nft/MetadataService";
+import WebView from "react-native-webview";
 
-// Placeholder image blur hash for better loading experience
+// Blur hash for image placeholder
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
+// ShareButton component with clipboard functionality
+const ShareButton = ({ tokenMetadataUri }) => {
+  const [shareState, setShareState] = useState("idle");
+
+  const handleShare = async () => {
+    if (!tokenMetadataUri) return;
+    setShareState("copying");
+    try {
+      await Clipboard.setString(tokenMetadataUri);
+      setShareState("success");
+      setTimeout(() => setShareState("idle"), 2000);
+    } catch (error) {
+      setShareState("error");
+      setTimeout(() => setShareState("idle"), 3000);
+    }
+  };
+
+  const getIconColor = () => {
+    switch (shareState) {
+      case "success":
+        return "#16A34A";
+      case "error":
+        return "#DC2626";
+      default:
+        return "#6B7280";
+    }
+  };
+
+  return (
+    <Pressable
+      onPress={handleShare}
+      disabled={shareState === "copying"}
+      style={styles.shareButton}
+    >
+      {shareState === "copying" && (
+        <ActivityIndicator size="small" color="#6B7280" />
+      )}
+      {shareState === "success" && (
+        <CheckCircle2 size={20} color={getIconColor()} />
+      )}
+      {shareState === "error" && <XCircle size={20} color={getIconColor()} />}
+      {shareState === "idle" && <Copy size={20} color={getIconColor()} />}
+    </Pressable>
+  );
+};
+
+const VideoPlayer = ({ src, style }) => {
+  // Initialize the video player
+  const player = useVideoPlayer(src, (player) => {
+    player.volume = 1.0;
+    player.aspectMode = "fit";
+  });
+
+  // Track loading and error states
+  const { isLoading } = useEvent(player, "loadingChange", {
+    isLoading: player.loading,
+  });
+  const { error } = useEvent(player, "error", {
+    error: player.error,
+  });
+
+  if (error) {
+    return (
+      <View style={[styles.videoContainer, style]}>
+        <View style={styles.errorContainer}>
+          <AlertCircle size={32} color="#EF4444" />
+          <Text style={styles.errorText}>
+            This video format is not supported on your device.
+            {Platform.OS === "ios" &&
+              " Please try viewing on desktop or downloading the file."}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.videoContainer, style]}>
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#7C3AED" />
+          <Text style={styles.loadingText}>Loading video...</Text>
+        </View>
+      )}
+
+      <VideoView
+        style={styles.videoPlayer}
+        player={player}
+        allowsFullscreen
+        allowsPictureInPicture
+      />
+    </View>
+  );
+};
+
+// Add these styles to your StyleSheet
+const videoStyles = {
+  videoContainer: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#000",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  videoPlayer: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(243, 244, 246, 0.97)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#F9FAFB",
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#6B7280",
+    textAlign: "center",
+    marginTop: 12,
+  },
+};
+
+// Attribute display component
+const AttributeItem = ({ trait_type, value }) => (
+  <View style={styles.attributeItem}>
+    <Text style={styles.attributeLabel}>{trait_type}</Text>
+    <Text style={styles.attributeValue}>{value.toString()}</Text>
+  </View>
+);
+
+// Main component
 export default function NFTDetailsScreen() {
   const { cid, metadata_uri } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState("image");
-  const [imageLoadError, setImageLoadError] = useState<string | null>(null);
   const [isImageLoading, setIsImageLoading] = useState(true);
 
-  // Fetch metadata using the custom hook
   const {
     data: metadataData,
     isLoading: metadataLoading,
     error: metadataError,
-  } = useNFTMetadata(metadata_uri as string);
+  } = useNFTMetadata(metadata_uri);
 
-  // Extract metadata and construct image URI
   const metadata = metadataData?.metadata;
-  const imageCid = metadata?.image
-    ? metadata.image.replace("ipfs://", "")
-    : null;
-  const baseUrl = __DEV__ ? "http://localhost:9000" : "https://nftstorage.com";
-  const imageUri = imageCid ? `${baseUrl}/ipfs/${imageCid}` : null;
 
-  // Handle image loading lifecycle
-  const handleImageLoadStart = useCallback(() => {
-    setIsImageLoading(true);
-    setImageLoadError(null);
-  }, []);
+  // Youtube URL conversion utility
+  const getYoutubeEmbedUrl = (url) => {
+    if (!url) return null;
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11
+      ? `https://www.youtube.com/embed/${match[2]}?autoplay=0&rel=0`
+      : null;
+  };
 
-  const handleImageLoadSuccess = useCallback(() => {
-    setIsImageLoading(false);
-    setImageLoadError(null);
-  }, []);
+  const getMediaContent = () => {
+    if (!metadata) return null;
 
-  const handleImageLoadError = useCallback((error: any) => {
-    setIsImageLoading(false);
-    setImageLoadError(error?.message || "Failed to load image");
-  }, []);
+    switch (activeTab) {
+      case "image":
+        return metadata.image ? (
+          <View style={styles.mediaContainer}>
+            {isImageLoading && (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color="#7C3AED" />
+                <Text style={styles.loadingText}>Loading image...</Text>
+              </View>
+            )}
+            <Image
+              source={{ uri: convertIPFSToGatewayURL(metadata.image) }}
+              style={styles.mediaContent}
+              contentFit="contain"
+              placeholder={blurhash}
+              transition={1000}
+              onLoadStart={() => setIsImageLoading(true)}
+              onLoad={() => setIsImageLoading(false)}
+            />
+          </View>
+        ) : null;
 
-  // Render loading state for metadata
+      case "animation":
+        return metadata.animation_url ? (
+          <View style={styles.mediaContainer}>
+            <VideoPlayer
+              src={convertIPFSToGatewayURL(metadata.animation_url)}
+              style={styles.mediaContent}
+            />
+          </View>
+        ) : null;
+
+      case "youtube":
+        return metadata.youtube_url ? (
+          <View style={styles.mediaContainer}>
+            <WebView
+              source={{ uri: getYoutubeEmbedUrl(metadata.youtube_url) }}
+              style={styles.mediaContent}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              allowsFullscreenVideo={true}
+            />
+          </View>
+        ) : null;
+
+      default:
+        return null;
+    }
+  };
+
+  // Loading state
   if (metadataLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -67,7 +265,7 @@ export default function NFTDetailsScreen() {
     );
   }
 
-  // Render metadata error state
+  // Error state
   if (metadataError) {
     return (
       <View style={styles.errorContainer}>
@@ -79,114 +277,262 @@ export default function NFTDetailsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
-      <Stack.Screen
-        options={{
-          title: metadata?.name || `Comic #${cid}`,
-          headerBackTitle: "Collection",
-        }}
-      />
-      <ScrollView>
-        <View style={styles.content}>
-          <View style={styles.mediaContent}>
-            {activeTab === "image" && (
-              <View style={styles.mediaContainer}>
-                {imageUri ? (
-                  <>
-                    <Image
-                      style={styles.mediaImage}
-                      source={{ uri: imageUri }}
-                      placeholder={blurhash}
-                      contentFit="contain"
-                      transition={1000}
-                      onLoadStart={handleImageLoadStart}
-                      onLoad={handleImageLoadSuccess}
-                      onError={handleImageLoadError}
-                      cachePolicy="memory-disk"
-                    />
-                    {isImageLoading && (
-                      <View style={styles.mediaLoading}>
-                        <ActivityIndicator size="large" color="#7C3AED" />
-                        <Text style={styles.loadingText}>Loading image...</Text>
-                      </View>
-                    )}
-                    {imageLoadError && (
-                      <View style={styles.errorContainer}>
-                        <AlertCircle size={48} color="#EF4444" />
-                        <Text style={styles.errorTitle}>
-                          Error Loading Image
-                        </Text>
-                        <Text style={styles.errorText}>{imageLoadError}</Text>
-                      </View>
-                    )}
-                  </>
-                ) : (
-                  <View style={styles.mediaPlaceholder}>
-                    <ImageIcon size={48} color="#9CA3AF" />
-                    <Text style={styles.placeholderText}>
-                      No image available
-                    </Text>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.content}>
+            {/* Preview Section */}
+            <View style={styles.previewCard}>
+              <View style={styles.headerContainer}>
+                <View style={styles.titleContainer}>
+                  <View style={styles.iconContainer}>
+                    <ImageIcon size={20} color="#7C3AED" />
                   </View>
-                )}
+                  <Text style={styles.sectionTitle}>NFT Detail</Text>
+                </View>
+                <ShareButton tokenMetadataUri={metadata_uri} />
+              </View>
+
+              {/* Media Tabs */}
+              <View style={styles.tabContainer}>
+                {[
+                  {
+                    id: "image",
+                    icon: ImageIcon,
+                    label: "Cover",
+                    show: !!metadata?.image,
+                  },
+                  {
+                    id: "animation",
+                    icon: Play,
+                    label: "Animation",
+                    show: !!metadata?.animation_url,
+                  },
+                  {
+                    id: "youtube",
+                    icon: Youtube,
+                    label: "Video",
+                    show: !!metadata?.youtube_url,
+                  },
+                ]
+                  .filter((tab) => tab.show)
+                  .map(({ id, icon: Icon, label }) => (
+                    <Pressable
+                      key={id}
+                      onPress={() => setActiveTab(id)}
+                      style={[styles.tab, activeTab === id && styles.activeTab]}
+                    >
+                      <Icon
+                        size={16}
+                        color={activeTab === id ? "#7C3AED" : "#6B7280"}
+                      />
+                      <Text
+                        style={[
+                          styles.tabLabel,
+                          activeTab === id && styles.activeTabLabel,
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  ))}
+              </View>
+
+              {/* Media Content */}
+              {getMediaContent()}
+            </View>
+
+            {/* NFT Details Section */}
+            <View style={styles.detailsCard}>
+              <View style={styles.headerContainer}>
+                <View style={styles.titleContainer}>
+                  <View style={styles.iconContainer}>
+                    <FileText size={20} color="#7C3AED" />
+                  </View>
+                  <Text style={styles.sectionTitle}>Details</Text>
+                </View>
+              </View>
+
+              <Text style={styles.nftTitle}>
+                {metadata?.name || `Comic #${cid}`}
+              </Text>
+              {metadata?.description && (
+                <Text style={styles.description}>{metadata.description}</Text>
+              )}
+            </View>
+
+            {/* Actions Section */}
+            <View style={styles.actionsCard}>
+              <View style={styles.headerContainer}>
+                <View style={styles.titleContainer}>
+                  <View style={styles.iconContainer}>
+                    <TrendingUp size={20} color="#7C3AED" />
+                  </View>
+                  <Text style={styles.sectionTitle}>Actions</Text>
+                </View>
+              </View>
+
+              <View style={styles.actionButtons}>
+                <Pressable
+                  style={[styles.actionButton, styles.transferButton]}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/nft/transfer",
+                      params: {
+                        token_id: cid,
+                        token_metadata_uri: metadata_uri,
+                      },
+                    })
+                  }
+                >
+                  <SendHorizontal size={20} color="#FFFFFF" />
+                  <Text style={styles.actionButtonText}>Transfer</Text>
+                </Pressable>
+
+                <Pressable
+                  style={[styles.actionButton, styles.burnButton]}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/nft/burn",
+                      params: {
+                        token_id: cid,
+                        token_metadata_uri: metadata_uri,
+                      },
+                    })
+                  }
+                >
+                  <Flame size={20} color="#FFFFFF" />
+                  <Text style={styles.actionButtonText}>Burn</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Attributes Section */}
+            {metadata?.attributes && metadata.attributes.length > 0 && (
+              <View style={styles.attributesCard}>
+                <View style={styles.headerContainer}>
+                  <View style={styles.titleContainer}>
+                    <View style={styles.iconContainer}>
+                      <Star size={20} color="#7C3AED" />
+                    </View>
+                    <Text style={styles.sectionTitle}>Attributes</Text>
+                  </View>
+                </View>
+
+                <View style={styles.attributesGrid}>
+                  {metadata.attributes.map((attr, index) => (
+                    <AttributeItem
+                      key={index}
+                      trait_type={attr.trait_type}
+                      value={attr.value}
+                    />
+                  ))}
+                </View>
               </View>
             )}
-            <MediaTabs
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              metadata={metadata}
-            />
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
-
-const MediaTabs = ({ activeTab, onTabChange, metadata }) => {
-  const tabs = [
-    {
-      id: "image",
-      icon: ImageIcon,
-      label: "Cover",
-      show: !!metadata?.image,
-    },
-    {
-      id: "animation",
-      icon: Play,
-      label: "Animation",
-      show: !!metadata?.animation_url,
-    },
-  ].filter((tab) => tab.show);
-
-  if (tabs.length <= 1) return null;
-
-  return (
-    <View style={styles.tabContainer}>
-      {tabs.map(({ id, icon: Icon, label }) => (
-        <Pressable
-          key={id}
-          onPress={() => onTabChange(id)}
-          style={[styles.tab, activeTab === id && styles.activeTab]}
-        >
-          <Icon size={16} color={activeTab === id ? "#7C3AED" : "#6B7280"} />
-          <Text
-            style={[styles.tabLabel, activeTab === id && styles.activeTabLabel]}
-          >
-            {label}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F3FF",
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
+    padding: 16,
+  },
+  previewCard: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconContainer: {
+    backgroundColor: "#F3E8FF",
+    padding: 8,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  mediaContainer: {
+    aspectRatio: 3 / 4,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
+    overflow: "hidden",
+    position: "relative",
+  },
+  mediaContent: {
+    width: "100%",
+    height: "100%",
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(243, 244, 246, 0.97)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  tabContainer: {
+    flexDirection: "row",
+    padding: 8,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 8,
+    margin: 16,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 8,
+    borderRadius: 6,
+    gap: 6,
+  },
+  activeTab: {
+    backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  tabLabel: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  activeTabLabel: {
+    color: "#7C3AED",
+  },
+  shareButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
   },
   loadingContainer: {
     flex: 1,
@@ -194,6 +540,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   loadingText: {
+    marginTop: 12,
     fontSize: 16,
     color: "#6B7280",
     fontWeight: "500",
@@ -216,70 +563,18 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     textAlign: "center",
   },
-  mediaContainer: {
+  detailsCard: {
     backgroundColor: "white",
     borderRadius: 12,
-    overflow: "hidden",
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-  tabContainer: {
-    flexDirection: "row",
-    padding: 8,
-    backgroundColor: "#F3F4F6",
-    borderRadius: 8,
-    margin: 16,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    gap: 6,
-  },
-  activeTab: {
-    backgroundColor: "white",
-  },
-  tabLabel: {
-    fontSize: 14,
-    color: "#6B7280",
-    fontWeight: "500",
-  },
-  activeTabLabel: {
-    color: "#7C3AED",
-  },
-  mediaContent: {
-    aspectRatio: 3 / 4,
-    backgroundColor: "#F9FAFB",
-  },
-  progressOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(243, 244, 246, 0.97)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  mediaLoading: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(243, 244, 246, 0.97)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  mediaImage: {
-    width: "100%",
-    height: "100%",
-  },
-  hidden: {
-    display: "none",
-  },
-  detailsContainer: {
     padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  title: {
+  nftTitle: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#111827",
@@ -293,26 +588,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#6B7280",
     marginBottom: 16,
+    lineHeight: 24,
   },
-  actionsContainer: {
+  actionsCard: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  actionButtons: {
     flexDirection: "row",
     gap: 12,
-    marginBottom: 24,
   },
   actionButton: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    padding: 12,
     borderRadius: 12,
     gap: 8,
   },
-  primaryButton: {
+  transferButton: {
     backgroundColor: "#7C3AED",
   },
-  dangerButton: {
+  burnButton: {
     backgroundColor: "#EF4444",
   },
   actionButtonText: {
@@ -320,23 +625,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  attributesContainer: {
+  attributesCard: {
     backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
     marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111827",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   attributesGrid: {
     flexDirection: "row",
@@ -346,13 +644,13 @@ const styles = StyleSheet.create({
   attributeItem: {
     flex: 1,
     minWidth: "45%",
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#F3E8FF",
     padding: 12,
     borderRadius: 8,
   },
   attributeLabel: {
     fontSize: 14,
-    color: "#6B7280",
+    color: "#7C3AED",
     marginBottom: 4,
   },
   attributeValue: {
@@ -360,57 +658,5 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111827",
   },
-  mediaPlaceholder: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F9FAFB",
-  },
-  placeholderText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: "#6B7280",
-  },
-  progressContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  progressBar: {
-    height: "100%",
-    backgroundColor: "#7C3AED",
-    borderRadius: 2,
-  },
-  loadingContent: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    borderRadius: 20,
-    backgroundColor: "white",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 5,
-    minWidth: 200,
-  },
-  progressText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#7C3AED",
-  },
-  progressPercentage: {
-    fontSize: 16,
-    color: "#6B7280",
-    fontWeight: "500",
-  },
-  progressCircleContainer: {
-    marginBottom: 16,
-  },
-  progressState: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#7C3AED",
-    marginBottom: 4,
-  },
+  ...videoStyles,
 });
