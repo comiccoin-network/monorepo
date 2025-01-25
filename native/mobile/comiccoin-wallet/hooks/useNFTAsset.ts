@@ -24,16 +24,6 @@ export const useNFTAsset = (
   cid: string | null,
   options: NFTAssetOptions = {},
 ) => {
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const queryClient = useQueryClient();
-
-  // Pass progress updates to the parent component
-  useEffect(() => {
-    if (options.onProgress) {
-      options.onProgress(loadingProgress);
-    }
-  }, [loadingProgress, options.onProgress]);
-
   return useQuery({
     queryKey: ["nft-asset", cid],
     queryFn: async ({ queryKey }) => {
@@ -43,8 +33,8 @@ export const useNFTAsset = (
       try {
         const asset = await nftAssetService.getNFTAsset(assetCid, {
           onProgress: (progress) => {
-            setLoadingProgress(progress);
-            console.log(`Loading asset progress: ${progress}%`);
+            // Immediately notify the parent component
+            options.onProgress?.(progress);
           },
         });
 
@@ -58,8 +48,8 @@ export const useNFTAsset = (
       }
     },
     enabled: !!cid && options.enabled !== false,
-    staleTime: options.cacheDuration || 1000 * 60 * 5, // 5 minutes default
-    cacheTime: 1000 * 60 * 30, // 30 minutes
+    staleTime: options.cacheDuration || 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 30,
     keepPreviousData: true,
   });
 };

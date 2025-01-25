@@ -1,53 +1,63 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(user)/nft/[cid].tsx
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
-  Image,
-  StyleSheet,
   ActivityIndicator,
   ScrollView,
   Pressable,
   Platform,
+  StyleSheet,
 } from "react-native";
-import { useLocalSearchParams, Stack, useRouter } from "expo-router";
+import { useLocalSearchParams, Stack } from "expo-router";
+import { Image } from "expo-image";
 import { Image as ImageIcon, AlertCircle, Play } from "lucide-react-native";
 import { useNFTMetadata } from "../../hooks/useNFTMetadata";
-import { useNFTAsset, prefetchNFTAsset } from "../../hooks/useNFTAsset";
 import { Video, ResizeMode } from "expo-av";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { arrayBufferToBase64 } from "../../utils/base64Utils";
-import { useQueryClient } from "@tanstack/react-query";
-import * as Progress from "react-native-progress";
+
+// Placeholder image blur hash for better loading experience
+const blurhash =
+  "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
 export default function NFTDetailsScreen() {
-  const router = useRouter();
   const { cid, metadata_uri } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState("image");
-
-  // Remove the isImageLoading state since we'll use isChildLoading instead
   const [imageLoadError, setImageLoadError] = useState<string | null>(null);
-  const [isChildLoading, setIsChildLoading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
-  // Fetch metadata first
+  // Fetch metadata using the custom hook
   const {
     data: metadataData,
     isLoading: metadataLoading,
     error: metadataError,
   } = useNFTMetadata(metadata_uri as string);
 
+  // Extract metadata and construct image URI
   const metadata = metadataData?.metadata;
   const imageCid = metadata?.image
     ? metadata.image.replace("ipfs://", "")
     : null;
+  const baseUrl = __DEV__ ? "http://localhost:9000" : "https://nftstorage.com";
+  const imageUri = imageCid ? `${baseUrl}/ipfs/${imageCid}` : null;
 
-  // Handle child loading state changes
-  const handleLoadingChange = useCallback((isLoading: boolean) => {
-    console.log("Child loading state changed:", isLoading);
-    setIsChildLoading(isLoading);
+  // Handle image loading lifecycle
+  const handleImageLoadStart = useCallback(() => {
+    setIsImageLoading(true);
+    setImageLoadError(null);
   }, []);
 
-  // Render loading state only for metadata loading
+  const handleImageLoadSuccess = useCallback(() => {
+    setIsImageLoading(false);
+    setImageLoadError(null);
+  }, []);
+
+  const handleImageLoadError = useCallback((error: any) => {
+    setIsImageLoading(false);
+    setImageLoadError(error?.message || "Failed to load image");
+  }, []);
+
+  // Render loading state for metadata
   if (metadataLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -57,15 +67,13 @@ export default function NFTDetailsScreen() {
     );
   }
 
-  // Render error state
-  if (metadataError || imageLoadError) {
+  // Render metadata error state
+  if (metadataError) {
     return (
       <View style={styles.errorContainer}>
         <AlertCircle size={48} color="#EF4444" />
         <Text style={styles.errorTitle}>Error Loading NFT</Text>
-        <Text style={styles.errorText}>
-          {metadataError?.message || imageLoadError}
-        </Text>
+        <Text style={styles.errorText}>{metadataError.message}</Text>
       </View>
     );
   }
@@ -80,197 +88,59 @@ export default function NFTDetailsScreen() {
       />
       <ScrollView>
         <View style={styles.content}>
-          <View style={styles.mediaContainer}>
+          <View style={styles.mediaContent}>
+            {activeTab === "image" && (
+              <View style={styles.mediaContainer}>
+                {imageUri ? (
+                  <>
+                    <Image
+                      style={styles.mediaImage}
+                      source={{ uri: imageUri }}
+                      placeholder={blurhash}
+                      contentFit="contain"
+                      transition={1000}
+                      onLoadStart={handleImageLoadStart}
+                      onLoad={handleImageLoadSuccess}
+                      onError={handleImageLoadError}
+                      cachePolicy="memory-disk"
+                    />
+                    {isImageLoading && (
+                      <View style={styles.mediaLoading}>
+                        <ActivityIndicator size="large" color="#7C3AED" />
+                        <Text style={styles.loadingText}>Loading image...</Text>
+                      </View>
+                    )}
+                    {imageLoadError && (
+                      <View style={styles.errorContainer}>
+                        <AlertCircle size={48} color="#EF4444" />
+                        <Text style={styles.errorTitle}>
+                          Error Loading Image
+                        </Text>
+                        <Text style={styles.errorText}>{imageLoadError}</Text>
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <View style={styles.mediaPlaceholder}>
+                    <ImageIcon size={48} color="#9CA3AF" />
+                    <Text style={styles.placeholderText}>
+                      No image available
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
             <MediaTabs
               activeTab={activeTab}
               onTabChange={setActiveTab}
               metadata={metadata}
             />
-
-            <View style={styles.mediaContent}>
-              {activeTab === "image" && (
-                <ImageDisplay
-                  cid={imageCid || ""}
-                  onLoadingChange={handleLoadingChange}
-                />
-              )}
-
-              {activeTab === "animation" && animationAssetData?.asset && (
-                <Video
-                  source={{
-                    uri: `data:${animationAssetData.asset.content_type};base64,${arrayBufferToBase64(
-                      animationAssetData.asset.content,
-                    )}`,
-                  }}
-                  style={styles.mediaImage}
-                  useNativeControls
-                  resizeMode={ResizeMode.CONTAIN}
-                  onError={(error) => {
-                    console.error("Video loading error:", error);
-                  }}
-                />
-              )}
-
-              {/* Remove the isImageLoading condition since we now use isChildLoading */}
-              {isChildLoading && (
-                <View style={styles.mediaLoading}>
-                  <ActivityIndicator size="large" color="#7C3AED" />
-                  <Text style={styles.loadingText}>Loading image...</Text>
-                </View>
-              )}
-            </View>
           </View>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const ImageDisplay = ({
-  cid,
-  onLoadingChange,
-}: {
-  cid: string;
-  onLoadingChange?: (isLoading: boolean) => void;
-}) => {
-  const [imageUri, setImageUri] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isImageRendering, setIsImageRendering] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState(0);
-  const [loadingState, setLoadingState] = useState<
-    "preparing" | "downloading" | "rendering"
-  >("preparing");
-
-  const queryClient = useQueryClient();
-  const isMounted = useRef(true);
-  const hasStartedRender = useRef(false);
-
-  // Use the NFTAsset hook with progress tracking
-  const { data: assetData, isLoading: isAssetLoading } = useNFTAsset(cid, {
-    enabled: !!cid,
-    onProgress: (progress) => {
-      if (isMounted.current) {
-        setDownloadProgress(progress);
-        if (progress > 0) {
-          setLoadingState("downloading");
-        }
-      }
-    },
-  });
-
-  // Effect to handle asset data changes
-  useEffect(() => {
-    const loadImageFromAsset = async () => {
-      if (!assetData?.asset || !isMounted.current) return;
-
-      try {
-        setLoadingState("rendering");
-        const base64Data = await assetData.asset.getContent();
-
-        if (!isMounted.current) return;
-
-        const uri = `data:${assetData.asset.content_type || "image/png"};base64,${base64Data}`;
-        setImageUri(uri);
-        setIsImageRendering(true);
-      } catch (err) {
-        console.error("Error loading image from asset:", err);
-        setError(err instanceof Error ? err.message : "Failed to load image");
-      }
-    };
-
-    loadImageFromAsset();
-  }, [assetData]);
-
-  // Notify parent of loading state changes
-  useEffect(() => {
-    const isInLoadingState = isAssetLoading || isImageRendering;
-    onLoadingChange?.(isInLoadingState);
-  }, [isAssetLoading, isImageRendering, onLoadingChange]);
-
-  // Loading overlay that shows progress
-  const LoadingOverlay = () => (
-    <View style={styles.mediaLoading}>
-      <View style={styles.loadingContent}>
-        <View style={styles.progressCircleContainer}>
-          <Progress.Circle
-            size={100}
-            indeterminate={downloadProgress === 0}
-            progress={downloadProgress / 100}
-            color="#7C3AED"
-            borderWidth={5}
-            strokeCap="round"
-            showsText={true}
-            formatText={(progress) => `${Math.round(downloadProgress)}%`}
-            textStyle={styles.progressText}
-          />
-        </View>
-        <View style={styles.progressTextContainer}>
-          <Text style={styles.progressState}>
-            {loadingState === "preparing"
-              ? "Preparing..."
-              : loadingState === "downloading"
-                ? "Downloading..."
-                : "Processing..."}
-          </Text>
-          {loadingState === "downloading" && (
-            <Text style={styles.progressPercentage}>
-              {Math.round(downloadProgress)}% Complete
-            </Text>
-          )}
-        </View>
-      </View>
-    </View>
-  );
-
-  // Error state
-  if (error) {
-    return (
-      <View style={styles.mediaPlaceholder}>
-        <AlertCircle size={48} color="#EF4444" />
-        <Text style={styles.placeholderText}>{error}</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.mediaContent}>
-      {imageUri && (
-        <Image
-          source={{ uri: imageUri }}
-          style={styles.mediaImage}
-          resizeMode="contain"
-          onLoadStart={() => {
-            hasStartedRender.current = true;
-          }}
-          onLoad={() => {
-            if (isMounted.current) {
-              setIsImageRendering(false);
-              setLoadingState("preparing");
-            }
-          }}
-          onError={(error) => {
-            if (isMounted.current) {
-              setError("Failed to render image");
-              setIsImageRendering(false);
-            }
-          }}
-        />
-      )}
-
-      {/* Show loading overlay while downloading or rendering */}
-      {(isAssetLoading || isImageRendering) && <LoadingOverlay />}
-    </View>
-  );
-};
-
-// Add Progress Bar component
-const ProgressBar = ({ progress }: { progress: number }) => {
-  return (
-    <View style={styles.progressContainer}>
-      <View style={[styles.progressBar, { width: `${progress}%` }]} />
-    </View>
-  );
-};
 
 const MediaTabs = ({ activeTab, onTabChange, metadata }) => {
   const tabs = [
@@ -385,6 +255,12 @@ const styles = StyleSheet.create({
   mediaContent: {
     aspectRatio: 3 / 4,
     backgroundColor: "#F9FAFB",
+  },
+  progressOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(243, 244, 246, 0.97)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   mediaLoading: {
     ...StyleSheet.absoluteFillObject,
