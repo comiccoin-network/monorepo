@@ -451,13 +451,12 @@ export default function NFTDetailsScreen() {
                 <Pressable
                   style={[styles.actionButton, styles.transferButton]}
                   onPress={() =>
-                    router.push({
-                      pathname: "/nft/transfer",
-                      params: {
-                        token_id: cid,
-                        token_metadata_uri: metadata_uri,
-                      },
-                    })
+                    router.push(
+                      "/transfer?token_id=" +
+                        cid +
+                        "&token_metadata_uri=" +
+                        encodeURIComponent(metadata_uri),
+                    )
                   }
                 >
                   <SendHorizontal size={20} color="#FFFFFF" />
@@ -467,13 +466,12 @@ export default function NFTDetailsScreen() {
                 <Pressable
                   style={[styles.actionButton, styles.burnButton]}
                   onPress={() =>
-                    router.push({
-                      pathname: "/nft/burn",
-                      params: {
-                        token_id: cid,
-                        token_metadata_uri: metadata_uri,
-                      },
-                    })
+                    router.push(
+                      "/burn?token_id=" +
+                        cid +
+                        "&token_metadata_uri=" +
+                        encodeURIComponent(metadata_uri),
+                    )
                   }
                 >
                   <Flame size={20} color="#FFFFFF" />

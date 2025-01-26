@@ -1,7 +1,7 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(nft)/_layout.tsx
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
@@ -13,13 +13,14 @@ export default function NFTDetailLayout() {
     <QueryClientProvider client={queryClient}>
       <Stack
         screenOptions={{
-          headerShown: true,
-          gestureEnabled: true,
           headerStyle: {
             backgroundColor: "#7e22ce",
           },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "600",
+          },
           headerShadowVisible: false,
-          headerTitle: "",
           headerLeft: () => (
             <Pressable
               onPress={() => router.back()}
@@ -33,24 +34,38 @@ export default function NFTDetailLayout() {
               })}
             >
               <Ionicons name="chevron-back" size={24} color="#fff" />
-              {/* We show the Back text on iOS as per platform convention */}
               {Platform.OS === "ios" && (
                 <Text
-                  style={{
-                    color: "#fff",
-                    fontSize: 17, // iOS default size
-                    fontWeight: "600",
-                  }}
+                  style={{ color: "#fff", fontSize: 17, fontWeight: "600" }}
                 >
                   Back
                 </Text>
               )}
             </Pressable>
           ),
-          headerTopInsetEnabled: true,
-          headerStatusBarHeight: Platform.OS === "ios" ? 44 : 0,
         }}
-      />
+      >
+        <Stack.Screen
+          name="[cid]"
+          options={{
+            headerTitle: "NFT Details",
+          }}
+        />
+        <Stack.Screen
+          name="burn/index"
+          options={{
+            headerTitle: "Burn NFT",
+            presentation: "modal",
+          }}
+        />
+        <Stack.Screen
+          name="transfer/index"
+          options={{
+            headerTitle: "Transfer NFT",
+            presentation: "modal",
+          }}
+        />
+      </Stack>
     </QueryClientProvider>
   );
 }
