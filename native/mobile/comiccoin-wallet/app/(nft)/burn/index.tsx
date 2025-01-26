@@ -1,3 +1,4 @@
+// monorepo/native/mobile/comiccoin-wallet/app/(user)/nft/burn/index.tsx
 import React, { useState } from "react";
 import {
   View,
