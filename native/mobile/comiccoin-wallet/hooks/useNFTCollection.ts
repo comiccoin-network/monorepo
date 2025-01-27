@@ -45,34 +45,37 @@ export const useNFTCollection = (walletAddress: string | null) => {
     refresh: refreshTransactions,
   } = useNFTTransactions(walletAddress);
 
-  const getOwnedNFTs = (
-    transactions: NFTTransaction[] | null,
-    address: string | null,
-  ): Map<string, NFT> => {
-    if (!transactions || !address) return new Map();
+  const getOwnedNFTs = useCallback(
+    (
+      transactions: NFTTransaction[] | null,
+      address: string | null,
+    ): Map<string, NFT> => {
+      if (!transactions || !address) return new Map();
 
-    const nftMap = new Map<string, NFT>();
-    const normalizedWallet = address.toLowerCase();
+      const nftMap = new Map<string, NFT>();
+      const normalizedWallet = address.toLowerCase();
 
-    for (const tx of transactions) {
-      const isOutgoing = tx.from.toLowerCase() === normalizedWallet;
-      const isIncoming = tx.to.toLowerCase() === normalizedWallet;
+      for (const tx of transactions) {
+        const isOutgoing = tx.from.toLowerCase() === normalizedWallet;
+        const isIncoming = tx.to.toLowerCase() === normalizedWallet;
 
-      if (isOutgoing) {
-        nftMap.delete(tx.tokenId);
-      } else if (isIncoming && !nftMap.has(tx.tokenId)) {
-        nftMap.set(tx.tokenId, {
-          tokenId: tx.tokenId,
-          tokenMetadataURI: tx.tokenMetadataURI,
-          transactions: [tx],
-        });
+        if (isOutgoing) {
+          nftMap.delete(tx.tokenId);
+        } else if (isIncoming && !nftMap.has(tx.tokenId)) {
+          nftMap.set(tx.tokenId, {
+            tokenId: tx.tokenId,
+            tokenMetadataURI: tx.tokenMetadataURI,
+            transactions: [tx],
+          });
+        }
       }
-    }
-    return nftMap;
-  };
+      return nftMap;
+    },
+    [],
+  );
 
   const fetchNFTCollectionData = async (): Promise<NFTCollectionResponse> => {
-    if (txLoading || !walletAddress) {
+    if (!walletAddress) {
       return { nftCollection: [], statistics };
     }
 
@@ -82,14 +85,13 @@ export const useNFTCollection = (walletAddress: string | null) => {
     await Promise.all(
       Array.from(ownedNFTs.values()).map(async (nft) => {
         try {
-          // Check for existing metadata and raw asset in cache
+          // Check cache first
           const cachedData = queryClient.getQueryData<NFTMetadata>([
             "nft-metadata",
             nft.tokenId,
           ]);
 
-          // Only fetch new metadata if we don't have it cached
-          if (cachedData?.rawAsset?.content) {
+          if (cachedData?.metadata) {
             nftsWithMetadata.push({
               ...nft,
               metadata: cachedData.metadata,
@@ -99,12 +101,10 @@ export const useNFTCollection = (walletAddress: string | null) => {
             return;
           }
 
-          // Fetch fresh metadata if not in cache
           const { metadata, rawAsset } = await fetchNFTMetadata(
             nft.tokenMetadataURI,
           );
 
-          // Cache the new metadata and raw asset
           queryClient.setQueryData(["nft-metadata", nft.tokenId], {
             metadata,
             rawAsset,
@@ -134,30 +134,44 @@ export const useNFTCollection = (walletAddress: string | null) => {
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["nft-collection", walletAddress],
     queryFn: fetchNFTCollectionData,
-    enabled: !!walletAddress,
-    staleTime: 0, // Always consider data stale
-    refetchOnMount: "always", // Refetch whenever component mounts
-    refetchOnWindowFocus: true,
+    enabled: !!walletAddress && transactions.length > 0, // Changed condition
+    staleTime: 300000, // 5 minutes
+    cacheTime: 300000, // 5 minutes
+    refetchOnMount: true, // Changed to true for initial load
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: 1,
+    initialData: { nftCollection: [], statistics },
   });
 
-  // Enhanced refresh function
-  const refresh = useCallback(async () => {
-    // Only invalidate transaction and collection data, not metadata
-    await queryClient.invalidateQueries(["nft-collection"]);
-    await queryClient.invalidateQueries(["nftTransactions"]);
-
-    // Force refetch transactions first
-    await refreshTransactions();
-
-    // Then refetch the collection data
-    await refetch();
-  }, [refreshTransactions, refetch, queryClient]);
-
+  // Force initial fetch when transactions are available
   useEffect(() => {
-    if (walletAddress) {
-      refresh();
+    if (walletAddress && transactions.length > 0) {
+      queryClient.prefetchQuery({
+        queryKey: ["nft-collection", walletAddress],
+        queryFn: fetchNFTCollectionData,
+      });
     }
-  }, [walletAddress, refresh]);
+  }, [walletAddress, transactions]);
+
+  const refresh = useCallback(async () => {
+    try {
+      // First refresh transactions
+      await refreshTransactions();
+
+      // Invalidate collection cache
+      await queryClient.invalidateQueries(["nft-collection", walletAddress]);
+
+      // Force a new collection fetch
+      return await queryClient.fetchQuery({
+        queryKey: ["nft-collection", walletAddress],
+        queryFn: fetchNFTCollectionData,
+      });
+    } catch (error) {
+      console.error("Error during refresh:", error);
+      throw error;
+    }
+  }, [refreshTransactions, walletAddress, queryClient, fetchNFTCollectionData]);
 
   return {
     nftCollection: data?.nftCollection ?? [],

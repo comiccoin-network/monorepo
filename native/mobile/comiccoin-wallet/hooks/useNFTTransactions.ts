@@ -1,6 +1,6 @@
 // monorepo/native/mobile/comiccoin-wallet/hooks/useNFTTransactions.ts
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import transactionListService, {
   Transaction,
 } from "../services/transaction/ListService";
@@ -24,75 +24,91 @@ export const useNFTTransactions = (
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
-  const { data: transactions = [], isLoading: loading } = useQuery({
-    queryKey: ["nftTransactions", walletAddress],
-    queryFn: async () => {
-      if (!walletAddress) {
-        return [];
-      }
+  const fetchTransactions = async () => {
+    if (!walletAddress) {
+      return [];
+    }
 
-      try {
-        const txList = await transactionListService.fetchWalletTransactions(
-          walletAddress,
-          "token",
-        );
+    try {
+      const txList = await transactionListService.fetchWalletTransactions(
+        walletAddress,
+        "token",
+      );
 
-        // Create a map to track current ownership
-        const nftOwnership = new Map<string, string>();
-        const currentAddress = walletAddress.toLowerCase();
+      const currentAddress = walletAddress.toLowerCase();
+      const nftOwnership = new Map<string, string>();
 
-        // Sort by timestamp to process in chronological order
-        const sortedTransactions = [...txList].sort(
-          (a, b) => a.timestamp - b.timestamp,
-        );
+      const sortedTransactions = [...txList].sort(
+        (a, b) => a.timestamp - b.timestamp,
+      );
 
-        sortedTransactions.forEach((tx) => {
-          if (tx.tokenId) {
-            const toAddress = tx.to.toLowerCase();
-            const fromAddress = tx.from.toLowerCase();
+      sortedTransactions.forEach((tx) => {
+        if (tx.tokenId) {
+          const toAddress = tx.to.toLowerCase();
+          const fromAddress = tx.from.toLowerCase();
 
-            // If current wallet is receiver and not sending to self
-            if (
-              toAddress === currentAddress &&
-              fromAddress !== currentAddress
-            ) {
-              nftOwnership.set(tx.tokenId, currentAddress);
-            }
-            // If current wallet is sender
-            else if (fromAddress === currentAddress) {
-              nftOwnership.delete(tx.tokenId);
-            }
+          if (toAddress === currentAddress && fromAddress !== currentAddress) {
+            nftOwnership.set(tx.tokenId, currentAddress);
+          } else if (fromAddress === currentAddress) {
+            nftOwnership.delete(tx.tokenId);
           }
-        });
-
-        // Filter transactions to only include NFTs currently owned
-        const filteredTransactions = txList
-          .filter((tx) => tx.tokenId && nftOwnership.has(tx.tokenId))
-          .sort((a, b) => b.timestamp - a.timestamp);
-
-        return filteredTransactions;
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unknown error occurred while fetching NFT transactions");
         }
-        return [];
+      });
+
+      const filteredTx = txList
+        .filter((tx) => tx.tokenId && nftOwnership.has(tx.tokenId))
+        .sort((a, b) => b.timestamp - a.timestamp);
+
+      return filteredTx;
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred while fetching NFT transactions");
       }
-    },
+      throw err;
+    }
+  };
+
+  const {
+    data: transactions = [],
+    isLoading: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: ["nftTransactions", walletAddress],
+    queryFn: fetchTransactions,
     enabled: !!walletAddress,
-    staleTime: 0, // Always consider data stale
-    cacheTime: 0, // Don't cache the data
+    staleTime: 300000, // 5 minutes
+    cacheTime: 300000, // 5 minutes
+    refetchOnMount: true, // Changed to true for initial load
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: 1,
+    initialData: [],
   });
 
-  const refresh = async () => {
-    // Invalidate all related queries
-    await queryClient.invalidateQueries(["nftTransactions"]);
-    await queryClient.invalidateQueries(["nft-collection"]);
-    await queryClient.invalidateQueries(["nft-metadata"]);
+  // Force initial fetch when wallet address is available
+  useEffect(() => {
+    if (walletAddress) {
+      queryClient.prefetchQuery({
+        queryKey: ["nftTransactions", walletAddress],
+        queryFn: fetchTransactions,
+      });
+    }
+  }, [walletAddress]);
 
-    // Force refetch
-    await queryClient.refetchQueries(["nftTransactions", walletAddress]);
+  const refresh = async () => {
+    try {
+      await queryClient.invalidateQueries(["nftTransactions", walletAddress]);
+      const result = await queryClient.fetchQuery({
+        queryKey: ["nftTransactions", walletAddress],
+        queryFn: fetchTransactions,
+      });
+      return result;
+    } catch (err) {
+      console.error("Error during refresh:", err);
+      throw err;
+    }
   };
 
   const statistics = useMemo((): NFTStatistics => {
@@ -106,7 +122,6 @@ export const useNFTTransactions = (
     const ownedNfts = new Set<string>();
     const currentAddress = walletAddress.toLowerCase();
 
-    // Process transactions chronologically
     const sortedTransactions = [...transactions].sort(
       (a, b) => a.timestamp - b.timestamp,
     );
@@ -117,12 +132,9 @@ export const useNFTTransactions = (
       const fromAddress = tx.from.toLowerCase();
       const toAddress = tx.to.toLowerCase();
 
-      // Remove from ownership if we sent it
       if (fromAddress === currentAddress) {
         ownedNfts.delete(tx.tokenId);
-      }
-      // Add to ownership if we received it
-      else if (toAddress === currentAddress) {
+      } else if (toAddress === currentAddress) {
         ownedNfts.add(tx.tokenId);
       }
     });
