@@ -1,29 +1,29 @@
 // monorepo/native/mobile/comiccoin-wallet/src/services/blockdata/BlockDataViaHeaderNumberService.ts
-import axios, { AxiosInstance, AxiosError } from "axios";
 import config from "../../config";
 
 // Define interfaces for our response data
 interface BlockData {
-  // Add specific block data properties here
-  // This is a placeholder - replace with actual block data structure
+  header: {
+    number_string: string;
+    time_string: string;
+    previous_header_hash_string: string;
+    merkle_root_hash_string: string;
+  };
+  trans: Array<any>; // Define specific transaction type if available
   [key: string]: any;
 }
 
 interface ApiError {
   message: string;
-  // Add other error properties as needed
+  code?: string;
+  details?: string;
 }
 
 class BlockDataViaHeaderNumberService {
-  private client: AxiosInstance;
+  private baseURL: string;
 
   constructor() {
-    this.client = axios.create({
-      baseURL: config.AUTHORITY_API_URL,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    this.baseURL = config.AUTHORITY_API_URL;
   }
 
   /**
@@ -41,27 +41,42 @@ class BlockDataViaHeaderNumberService {
     }
 
     try {
-      const response = await this.client.get<BlockData>(
-        `/api/v1/blockdata-via-header-number/${headerNumber}`,
+      const response = await fetch(
+        `${this.baseURL}/api/v1/blockdata-via-header-number/${headerNumber}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        },
       );
-      return response.data;
-    } catch (error) {
-      // Type guard to check if error is AxiosError
-      if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError<ApiError>;
 
-        if (axiosError.response) {
-          // Server responded with error
-          const errorMessage =
-            axiosError.response.data?.message || axiosError.message;
-          throw new Error(`Failed to fetch block data: ${errorMessage}`);
-        } else if (axiosError.request) {
-          // Request made but no response received
-          throw new Error("No response received from server");
+      if (!response.ok) {
+        let errorMessage = "Failed to fetch block data";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // If parsing error response fails, use status text
+          errorMessage = `${errorMessage}: ${response.statusText}`;
         }
+        throw new Error(errorMessage);
       }
-      // Generic error handling
-      throw new Error(`Error fetching block data: ${(error as Error).message}`);
+
+      const data: BlockData = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof TypeError) {
+        // Network error
+        throw new Error(
+          "Network request failed. Please check your connection.",
+        );
+      }
+      // Rethrow any other errors
+      throw error instanceof Error
+        ? error
+        : new Error("An unknown error occurred");
     }
   }
 

@@ -1,32 +1,29 @@
 // monorepo/native/mobile/comiccoin-wallet/src/services/blockdata/BlockDataViaTransactionNonceService.ts
-import axios, { AxiosInstance, AxiosError } from "axios";
 import config from "../../config";
 
 // Define interfaces for our response data
 interface BlockData {
-  // Add specific block data properties here based on your API response
-  // This is a placeholder - replace with actual block data structure
+  header: {
+    number_string: string;
+    time_string: string;
+    previous_header_hash_string: string;
+    merkle_root_hash_string: string;
+  };
+  trans: Array<any>; // Define specific transaction type if available
   [key: string]: any;
 }
 
 interface ApiError {
   message: string;
-  // Add other error properties that your API might return
   code?: string;
   details?: string;
 }
 
 class BlockDataViaTransactionNonceService {
-  private client: AxiosInstance;
+  private baseURL: string;
 
   constructor() {
-    // Initialize axios with configuration from our config file
-    this.client = axios.create({
-      baseURL: config.AUTHORITY_API_URL,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    this.baseURL = config.AUTHORITY_API_URL;
   }
 
   /**
@@ -44,29 +41,42 @@ class BlockDataViaTransactionNonceService {
     }
 
     try {
-      // Make the API request with proper typing
-      const response = await this.client.get<BlockData>(
-        `/api/v1/blockdata-via-tx-nonce/${transactionNonce}`,
+      const response = await fetch(
+        `${this.baseURL}/api/v1/blockdata-via-tx-nonce/${transactionNonce}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        },
       );
 
-      return response.data;
-    } catch (error) {
-      // Use type guard to handle Axios errors with proper typing
-      if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError<ApiError>;
-
-        if (axiosError.response) {
-          // Server responded with an error status code
-          const errorMessage =
-            axiosError.response.data?.message || axiosError.message;
-          throw new Error(`Failed to fetch block data: ${errorMessage}`);
-        } else if (axiosError.request) {
-          // Request was made but no response received (network error)
-          throw new Error("No response received from server");
+      if (!response.ok) {
+        let errorMessage = "Failed to fetch block data";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // If parsing error response fails, use status text
+          errorMessage = `${errorMessage}: ${response.statusText}`;
         }
+        throw new Error(errorMessage);
       }
-      // Handle any other types of errors
-      throw new Error(`Error fetching block data: ${(error as Error).message}`);
+
+      const data: BlockData = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof TypeError) {
+        // Network error
+        throw new Error(
+          "Network request failed. Please check your connection.",
+        );
+      }
+      // Rethrow any other errors
+      throw error instanceof Error
+        ? error
+        : new Error("An unknown error occurred");
     }
   }
 
@@ -75,7 +85,7 @@ class BlockDataViaTransactionNonceService {
    * @param transactionNonce - The transaction nonce to validate
    * @returns True if valid, false otherwise
    */
-  private validateTransactionNonce(transactionNonce: string | number): boolean {
+  validateTransactionNonce(transactionNonce: string | number): boolean {
     const num = Number(transactionNonce);
     // Ensure the nonce is a non-negative integer
     return !isNaN(num) && num >= 0 && Number.isInteger(num);
