@@ -1,6 +1,6 @@
 // monorepo/native/mobile/comiccoin-wallet/hooks/useNFTTransactions.ts
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import transactionListService, {
   Transaction,
 } from "../services/transaction/ListService";
@@ -24,43 +24,77 @@ export const useNFTTransactions = (
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
+  console.log("useNFTTransactions - Wallet Address:", walletAddress);
+
   const { data: transactions = [], isLoading: loading } = useQuery({
     queryKey: ["nftTransactions", walletAddress],
     queryFn: async () => {
-      if (!walletAddress) return [];
+      console.log(
+        "useNFTTransactions - queryFn starting with wallet:",
+        walletAddress,
+      );
+
+      if (!walletAddress) {
+        console.log("useNFTTransactions - No wallet address provided");
+        return [];
+      }
 
       try {
+        console.log(
+          "useNFTTransactions - Fetching transactions for address:",
+          walletAddress,
+        );
         const txList = await transactionListService.fetchWalletTransactions(
           walletAddress,
           "token",
         );
-        const nftOwnership = new Map<string, string>();
+        console.log("useNFTTransactions - Raw transaction list:", txList);
 
+        // Create a map to track the most recent owner of each NFT
+        const nftOwnership = new Map<string, string>();
+        const currentAddress = walletAddress.toLowerCase();
+
+        // Sort by timestamp to process in chronological order
         const sortedTransactions = [...txList].sort(
           (a, b) => a.timestamp - b.timestamp,
         );
 
         sortedTransactions.forEach((tx) => {
           if (tx.tokenId) {
-            const isBurned =
-              tx.to.toLowerCase() ===
-              "0x0000000000000000000000000000000000000000";
-            if (isBurned) {
+            const toAddress = tx.to.toLowerCase();
+            const fromAddress = tx.from.toLowerCase();
+
+            // If current wallet is receiver and not sending to self
+            if (
+              toAddress === currentAddress &&
+              fromAddress !== currentAddress
+            ) {
+              nftOwnership.set(tx.tokenId, currentAddress);
+            }
+            // If current wallet is sender
+            else if (fromAddress === currentAddress) {
               nftOwnership.delete(tx.tokenId);
-            } else {
-              nftOwnership.set(tx.tokenId, tx.to.toLowerCase());
             }
           }
         });
 
-        return txList
-          .filter(
-            (tx) =>
-              tx.tokenId &&
-              nftOwnership.get(tx.tokenId) === walletAddress.toLowerCase(),
-          )
+        console.log(
+          "useNFTTransactions - NFT Ownership map:",
+          Object.fromEntries(nftOwnership),
+        );
+
+        // Filter transactions to only include NFTs currently owned
+        const filteredTransactions = txList
+          .filter((tx) => tx.tokenId && nftOwnership.has(tx.tokenId))
           .sort((a, b) => b.timestamp - a.timestamp);
+
+        console.log(
+          "useNFTTransactions - Final filtered transactions:",
+          filteredTransactions,
+        );
+        return filteredTransactions;
       } catch (err) {
+        console.error("useNFTTransactions - Error:", err);
         if (err instanceof Error) {
           setError(err.message);
         } else {
@@ -75,6 +109,7 @@ export const useNFTTransactions = (
   });
 
   const refresh = async () => {
+    console.log("useNFTTransactions - Refreshing query");
     await queryClient.invalidateQueries(["nftTransactions", walletAddress]);
   };
 
@@ -85,11 +120,7 @@ export const useNFTTransactions = (
     );
 
     processedTransactions.forEach((tx) => {
-      if (
-        tx.tokenId &&
-        tx.to.toLowerCase() === walletAddress?.toLowerCase() &&
-        tx.to.toLowerCase() !== "0x0000000000000000000000000000000000000000"
-      ) {
+      if (tx.tokenId && tx.to.toLowerCase() === walletAddress?.toLowerCase()) {
         ownedNfts.add(tx.tokenId);
       }
     });

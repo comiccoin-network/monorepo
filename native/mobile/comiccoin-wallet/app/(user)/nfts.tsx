@@ -76,6 +76,10 @@ const NFTCard = ({ nft, currentWallet }: { nft: NFT; currentWallet: any }) => {
   const url = `/(nft)/${metadataCID}?metadata_uri=${encodeURIComponent(lastTx.tokenMetadataURI)}&token_id=${nft.tokenId}`;
   // console.log("NFTCard --> url:", url);
 
+  // For testing purposes only!
+  // const url = `/(nft)/verifysuccess?token_id=${nft.tokenId}&token_metadata_uri=${encodeURIComponent(lastTx.tokenMetadataURI)}`;
+  // console.log("NFTCard --> url:", url);
+
   return (
     <Pressable onPress={() => router.push(url)} style={styles.cardContainer}>
       <View style={styles.imageContainer}>

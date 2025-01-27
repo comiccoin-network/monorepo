@@ -52,8 +52,8 @@ export default function TransferNFTScreen() {
   // console.log("token_metadata_uri -->", token_metadata_uri);
 
   const [formData, setFormData] = useState<FormData>({
-    recipientAddress: "0x822F32093D7079E637f1A4FE4F76D9C3e4667913",
-    password: "123password123",
+    recipientAddress: "",
+    password: "",
     tokenID: token_id as string,
     tokenMetadataURI: token_metadata_uri as string,
   });
@@ -119,7 +119,10 @@ export default function TransferNFTScreen() {
                   [
                     {
                       text: "OK",
-                      onPress: () => router.push("/nfts"),
+                      onPress: () =>
+                        router.push(
+                          `/(nft)/verifysuccess?token_id=${token_id}&token_metadata_uri=${token_metadata_uri}`,
+                        ),
                     },
                   ],
                 );

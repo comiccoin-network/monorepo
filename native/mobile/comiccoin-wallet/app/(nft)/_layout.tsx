@@ -14,9 +14,9 @@ export default function NFTDetailLayout() {
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#7e22ce",
+            backgroundColor: "#7e22ce", // Purple background
           },
-          headerTintColor: "#fff",
+          headerTintColor: "#fff", // White text color
           headerTitleStyle: {
             fontWeight: "600",
           },
@@ -63,6 +63,20 @@ export default function NFTDetailLayout() {
           options={{
             headerTitle: "Transfer NFT",
             presentation: "modal",
+          }}
+        />
+        {/* Customize verifysuccess/index */}
+        <Stack.Screen
+          name="verifysuccess/index"
+          options={{
+            title: "Verifying...", // Updated title
+            headerLeft: () => null, // Hide the back button
+            headerTitleAlign: "center", // Center the title
+            headerShadowVisible: false, // Remove the shadow
+            headerStyle: {
+              backgroundColor: "#7e22ce", // Purple background
+            },
+            headerTintColor: "#fff", // White text color
           }}
         />
       </Stack>
