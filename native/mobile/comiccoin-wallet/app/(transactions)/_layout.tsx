@@ -1,42 +1,60 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(transactions)/_layout.tsx
-import { Stack, useRouter } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Pressable, Text, View, StyleSheet } from "react-native";
-import { ChevronLeft } from "lucide-react-native";
+import { Stack } from "expo-router";
+import { Platform, Pressable, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 export default function TransactionsLayout() {
-  const queryClient = new QueryClient();
   const router = useRouter();
+  const queryClient = new QueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack>
-        <Stack.Screen
-          name="index"
-          options={{
-            title: "Transactions",
-            headerShown: true,
-            headerLeft: () => (
-              <Pressable
-                onPress={() => router.back()}
-                style={({ pressed }) => [
-                  styles.backButton,
-                  pressed && styles.backButtonPressed,
-                ]}
-              >
-                <ChevronLeft size={24} color="#7C3AED" />
-                <Text style={styles.backButtonText}>More</Text>
-              </Pressable>
-            ),
-          }}
-        />
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: "#7e22ce", // Purple background
+          },
+          headerTintColor: "#fff", // White text color
+          headerTitleStyle: {
+            fontWeight: "600",
+          },
+          headerShadowVisible: false,
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.back()}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.7 : 1,
+                paddingVertical: 8,
+                paddingHorizontal: Platform.OS === "ios" ? 8 : 16,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+              })}
+            >
+              <Ionicons name="chevron-back" size={24} color="#fff" />
+              {Platform.OS === "ios" && (
+                <Text
+                  style={{ color: "#fff", fontSize: 17, fontWeight: "600" }}
+                >
+                  Back
+                </Text>
+              )}
+            </Pressable>
+          ),
+        }}
+      >
         <Stack.Screen
           name="[id]/index"
           options={{
-            title: "Transaction Details",
-            headerShown: true,
-            headerBackTitle: "Back",
-            headerBackVisible: true,
+            headerTitle: "NFT Details",
+          }}
+        />
+        <Stack.Screen
+          name="index"
+          options={{
+            headerTitle: "Transactions",
           }}
         />
       </Stack>
