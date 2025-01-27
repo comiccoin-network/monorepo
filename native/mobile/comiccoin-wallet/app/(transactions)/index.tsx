@@ -24,10 +24,7 @@ export default function TransactionsList() {
 
   const handleTransactionPress = (id: string) => {
     // Using the correct path structure for dynamic routes
-    router.push({
-      pathname: "/(transactions)/[id]",
-      params: { id },
-    });
+    router.push(`/(transactions)/${id}`);
   };
 
   if (loading) {

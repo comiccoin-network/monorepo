@@ -1,5 +1,6 @@
 // monorepo/native/mobile/comiccoin-wallet/components/TransactionList.tsx
 import React from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   Text,
@@ -33,6 +34,7 @@ const TransactionList = ({
   onRefresh,
   isRefreshing,
 }) => {
+  const router = useRouter();
   const navigation = useNavigation();
   const recentTransactions = transactions?.slice(0, 5) || [];
 
@@ -161,7 +163,9 @@ const TransactionList = ({
           <TouchableOpacity
             key={tx.id || tx.hash}
             style={styles.transactionCard}
-            onPress={() => navigation.navigate("Transaction", { id: tx.id })}
+            onPress={() => {
+              router.push(`/(transactions)/${tx.id}`);
+            }}
           >
             <View style={styles.transactionHeader}>
               <View style={styles.transactionTypeContainer}>
@@ -226,7 +230,10 @@ const TransactionList = ({
       {transactions.length > 5 && (
         <TouchableOpacity
           style={styles.viewAllButton}
-          onPress={() => navigation.navigate("Transactions")}
+          onPress={() => {
+            // Changed to use the correct path
+            router.push(`/(transactions)`);
+          }}
         >
           <Text style={styles.viewAllText}>
             View All Transactions ({transactions.length})
