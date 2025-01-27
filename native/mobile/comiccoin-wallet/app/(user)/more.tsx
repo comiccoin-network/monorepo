@@ -1,5 +1,3 @@
-// monorepo/native/mobile/comiccoin-wallet/app/(user)/more.tsx
-// monorepo/native/mobile/comiccoin-wallet/app/(user)/more.tsx
 import React from "react";
 import {
   View,
@@ -9,9 +7,10 @@ import {
   Platform,
   ScrollView,
   Linking,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { History, Droplets } from "lucide-react-native";
+import { History, Droplets, ExternalLink } from "lucide-react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 
 interface MenuOption {
@@ -31,7 +30,7 @@ export default function More() {
       id: "transactions",
       title: "Transactions",
       icon: <History size={24} color="#7C3AED" />,
-      route: "/(transactions)/", // Note: Changed this route
+      route: "/(transactions)/",
       description: "View your transaction history",
       isExternal: false,
     },
@@ -47,16 +46,32 @@ export default function More() {
 
   const handleOptionPress = async (option: MenuOption) => {
     if (option.isExternal) {
-      try {
-        const supported = await Linking.canOpenURL(option.route);
-        if (supported) {
-          await Linking.openURL(option.route);
-        } else {
-          console.error("Cannot open URL:", option.route);
-        }
-      } catch (error) {
-        console.error("Error opening URL:", error);
-      }
+      Alert.alert(
+        "Open External Link",
+        `You'll be redirected to ${option.route} in your default browser. Do you want to continue?`,
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Open",
+            onPress: async () => {
+              try {
+                const supported = await Linking.canOpenURL(option.route);
+                if (supported) {
+                  await Linking.openURL(option.route);
+                } else {
+                  Alert.alert("Error", "Cannot open this URL");
+                }
+              } catch (error) {
+                Alert.alert("Error", "Failed to open the link");
+              }
+            },
+          },
+        ],
+        { cancelable: true },
+      );
     } else {
       router.push(option.route);
     }
@@ -83,7 +98,17 @@ export default function More() {
                 ]}
                 onPress={() => handleOptionPress(option)}
               >
-                <View style={styles.iconContainer}>{option.icon}</View>
+                <View style={styles.itemHeader}>
+                  <View style={styles.iconContainer}>{option.icon}</View>
+                  {option.isExternal && (
+                    <View style={styles.externalBadge}>
+                      <ExternalLink size={12} color="#6B7280" />
+                      <Text style={styles.externalBadgeText}>
+                        External Link
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={styles.itemTitle}>{option.title}</Text>
                 <Text style={styles.itemDescription}>{option.description}</Text>
               </Pressable>
@@ -156,6 +181,12 @@ const styles = StyleSheet.create({
   gridItemPressed: {
     opacity: 0.7,
   },
+  itemHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
   iconContainer: {
     backgroundColor: "#F3E8FF",
     width: 48,
@@ -163,7 +194,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
+  },
+  externalBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  externalBadgeText: {
+    fontSize: 12,
+    color: "#6B7280",
+    fontWeight: "500",
   },
   itemTitle: {
     fontSize: 16,

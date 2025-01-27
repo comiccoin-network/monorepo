@@ -48,7 +48,7 @@ export default function TransactionsLayout() {
         <Stack.Screen
           name="[id]/index"
           options={{
-            headerTitle: "NFT Details",
+            headerTitle: "Transaction Detail",
           }}
         />
         <Stack.Screen

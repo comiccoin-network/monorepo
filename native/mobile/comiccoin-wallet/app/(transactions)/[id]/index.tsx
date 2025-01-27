@@ -28,7 +28,6 @@ export default function TransactionDetails() {
   const { transactions } = useWalletTransactions(currentWallet?.address);
 
   const transaction = transactions.find((t) => t.id === id);
-  console.log("id:", id);
 
   if (!transaction) {
     return (
