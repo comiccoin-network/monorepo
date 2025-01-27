@@ -82,12 +82,14 @@ export const useNFTCollection = (walletAddress: string | null) => {
     await Promise.all(
       Array.from(ownedNFTs.values()).map(async (nft) => {
         try {
+          // Check for existing metadata and raw asset in cache
           const cachedData = queryClient.getQueryData<NFTMetadata>([
             "nft-metadata",
             nft.tokenId,
           ]);
 
-          if (cachedData) {
+          // Only fetch new metadata if we don't have it cached
+          if (cachedData?.rawAsset?.content) {
             nftsWithMetadata.push({
               ...nft,
               metadata: cachedData.metadata,
@@ -97,10 +99,12 @@ export const useNFTCollection = (walletAddress: string | null) => {
             return;
           }
 
+          // Fetch fresh metadata if not in cache
           const { metadata, rawAsset } = await fetchNFTMetadata(
             nft.tokenMetadataURI,
           );
 
+          // Cache the new metadata and raw asset
           queryClient.setQueryData(["nft-metadata", nft.tokenId], {
             metadata,
             rawAsset,
@@ -134,21 +138,20 @@ export const useNFTCollection = (walletAddress: string | null) => {
     staleTime: 0, // Always consider data stale
     refetchOnMount: "always", // Refetch whenever component mounts
     refetchOnWindowFocus: true,
-    initialData: () => {
-      // Return cached data if available
-      const cachedData = queryClient.getQueryData<NFTCollectionResponse>([
-        "nft-collection",
-        walletAddress,
-      ]);
-      return cachedData;
-    },
   });
 
-  // Background refresh function
+  // Enhanced refresh function
   const refresh = useCallback(async () => {
+    // Only invalidate transaction and collection data, not metadata
+    await queryClient.invalidateQueries(["nft-collection"]);
+    await queryClient.invalidateQueries(["nftTransactions"]);
+
+    // Force refetch transactions first
     await refreshTransactions();
+
+    // Then refetch the collection data
     await refetch();
-  }, [refreshTransactions, refetch]);
+  }, [refreshTransactions, refetch, queryClient]);
 
   useEffect(() => {
     if (walletAddress) {

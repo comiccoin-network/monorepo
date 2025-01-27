@@ -158,6 +158,7 @@ export default function NFTListScreen() {
   } = useNFTCollection(currentWallet?.address || null);
 
   const handleRefresh = async () => {
+    console.log("Refreshing...");
     setIsRefreshing(true);
     try {
       await refresh();

@@ -115,18 +115,9 @@ export default function TransferNFTScreen() {
               );
 
               if (result.success) {
-                Alert.alert(
-                  "Success",
-                  "NFT has been transferred successfully",
-                  [
-                    {
-                      text: "OK",
-                      onPress: () =>
-                        router.push(
-                          `/(nft)/verifysuccess?token_id=${token_id}&token_metadata_uri=${token_metadata_uri}`,
-                        ),
-                    },
-                  ],
+                console.log("Successfully transfered NFT");
+                router.push(
+                  `/(nft)/verifysuccess?token_id=${token_id}&token_metadata_uri=${token_metadata_uri}`,
                 );
               }
             } catch (error) {
