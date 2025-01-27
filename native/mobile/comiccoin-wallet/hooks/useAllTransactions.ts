@@ -27,9 +27,10 @@ interface UseAllTransactionsReturn {
   nftTransactions: ProcessedTransaction[];
 }
 
-export const useAllTransactions = (
+// Make sure to use a named export here
+export function useAllTransactions(
   walletAddress: string | undefined,
-): UseAllTransactionsReturn => {
+): UseAllTransactionsReturn {
   const queryClient = useQueryClient();
 
   const {
@@ -57,37 +58,40 @@ export const useAllTransactions = (
     const currentAddress = walletAddress?.toLowerCase();
 
     const totalCoinValue = transactions.reduce((sum, tx) => {
-      const txValue = Math.floor(Number(tx.value)) || 0;
-      const txFee = Math.floor(Number(tx.fee)) || 0;
+      const txValue = Number(tx.value) || 0;
+      const txFee = Number(tx.fee) || 0;
 
-      if (tx.type === "coin") {
-        if (tx.from.toLowerCase() === currentAddress) {
-          return sum - txValue;
-        } else if (tx.to.toLowerCase() === currentAddress) {
-          return sum + (txValue - txFee);
-        }
+      if (tx.from.toLowerCase() === currentAddress) {
+        return sum - txValue;
+      } else if (tx.to.toLowerCase() === currentAddress) {
+        return sum + (txValue - txFee);
       }
       return sum;
     }, 0);
 
-    const nftOwnership = new Map<string, string>();
-    nftTxs.forEach((tx) => {
-      if (tx.tokenId) {
-        const isBurned =
-          tx.to.toLowerCase() === "0x0000000000000000000000000000000000000000";
-        if (!isBurned) {
-          nftOwnership.set(tx.tokenId, tx.to.toLowerCase());
-        } else {
-          nftOwnership.delete(tx.tokenId);
-        }
+    // Track NFT ownership chronologically
+    const ownedNfts = new Set<string>();
+
+    // Sort NFT transactions chronologically to properly track ownership
+    const sortedNftTxs = [...nftTxs].sort((a, b) => a.timestamp - b.timestamp);
+
+    sortedNftTxs.forEach((tx) => {
+      if (!tx.tokenId) return;
+
+      const fromAddress = tx.from.toLowerCase();
+      const toAddress = tx.to.toLowerCase();
+      const isBurned =
+        toAddress === "0x0000000000000000000000000000000000000000";
+
+      // If we sent the NFT, we no longer own it
+      if (fromAddress === currentAddress) {
+        ownedNfts.delete(tx.tokenId);
+      }
+      // If we received the NFT and it wasn't burned, we now own it
+      else if (toAddress === currentAddress && !isBurned) {
+        ownedNfts.add(tx.tokenId);
       }
     });
-
-    const ownedNfts = new Set(
-      Array.from(nftOwnership.entries())
-        .filter(([_, owner]) => owner === currentAddress)
-        .map(([tokenId]) => tokenId),
-    );
 
     return {
       totalTransactions: transactions.length,
@@ -136,4 +140,7 @@ export const useAllTransactions = (
     coinTransactions,
     nftTransactions,
   };
-};
+}
+
+// Also add a default export if needed
+export default useAllTransactions;

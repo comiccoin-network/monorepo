@@ -3,7 +3,6 @@ package poa
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"math/big"
 	"time"
@@ -153,7 +152,7 @@ func (s *proofOfAuthorityConsensusMechanismServiceImpl) Execute(ctx context.Cont
 	if err != nil {
 		s.logger.Error("start session error",
 			slog.Any("error", err))
-		log.Fatalf("Failed executing: %v\n", err)
+		return err
 	}
 	defer session.EndSession(ctx)
 
@@ -513,7 +512,7 @@ func (s *proofOfAuthorityConsensusMechanismServiceImpl) Execute(ctx context.Cont
 	if _, err := session.WithTransaction(ctx, transactionFunc); err != nil {
 		s.logger.Error("session failed error",
 			slog.Any("error", err))
-		log.Fatalf("Failed creating account: %v\n", err)
+		return err
 	}
 	return nil
 }

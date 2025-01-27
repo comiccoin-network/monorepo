@@ -93,12 +93,10 @@ export const useWalletTransactions = (
       const txValue = Number(tx.value) || 0;
       const txFee = Number(tx.fee) || 0;
 
-      if (tx.type === "coin") {
-        if (tx.from.toLowerCase() === currentAddress) {
-          return sum - txValue;
-        } else if (tx.to.toLowerCase() === currentAddress) {
-          return sum + (txValue - txFee);
-        }
+      if (tx.from.toLowerCase() === currentAddress) {
+        return sum - txValue;
+      } else if (tx.to.toLowerCase() === currentAddress) {
+        return sum + (txValue - txFee);
       }
       return sum;
     }, 0);

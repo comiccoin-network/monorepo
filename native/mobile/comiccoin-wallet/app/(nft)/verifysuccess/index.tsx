@@ -10,7 +10,7 @@ export default function VerifySuccessScreen() {
   const { token_id, token_metadata_uri } = useLocalSearchParams();
   const { currentWallet } = useWallet();
   const noMatchCounter = useRef(0);
-  const matchCounter = useRef(0); // Add counter for matches
+  const matchCounter = useRef(0);
 
   const {
     data: transactions = [],
@@ -53,40 +53,43 @@ export default function VerifySuccessScreen() {
         return;
       }
 
-      const matchingTransaction = transactions.find(
-        (tx) => tx.tokenId === token_id,
+      // Look for a transaction where we transferred this NFT (we were the sender)
+      const transferTransaction = transactions.find(
+        (tx) =>
+          tx.tokenId === token_id &&
+          tx.from.toLowerCase() === currentWallet.address.toLowerCase(),
       );
 
-      if (matchingTransaction) {
+      if (transferTransaction) {
         matchCounter.current += 1;
         console.log(
-          "✅ Found matching transaction (attempt " +
+          "✅ Found transfer transaction (attempt " +
             matchCounter.current +
-            "/30):",
+            "/3):",
           {
-            txTokenId: matchingTransaction.tokenId,
+            txTokenId: transferTransaction.tokenId,
             txTimestamp: new Date(
-              matchingTransaction.timestamp * 1000,
+              transferTransaction.timestamp * 1000,
             ).toISOString(),
-            txFrom: matchingTransaction.from,
-            txTo: matchingTransaction.to,
+            txFrom: transferTransaction.from,
+            txTo: transferTransaction.to,
           },
         );
 
-        if (matchCounter.current >= 30) {
-          console.log("✅ Verification complete after 30 successful checks");
-          router.replace("/nfts?submission_status=failure");
+        if (matchCounter.current >= 3) {
+          console.log("✅ Verification complete - NFT transfer confirmed");
+          router.replace("/nfts?submission_status=success");
         }
       } else {
         noMatchCounter.current += 1;
         console.log(
-          "⚠️ No match found - attempt:",
+          "⚠️ No transfer found - attempt:",
           noMatchCounter.current + "/10",
         );
 
         if (noMatchCounter.current >= 10) {
-          console.log("❌ Max attempts reached, redirecting to /nfts");
-          router.replace("/nfts?submission_status=success");
+          console.log("❌ Max attempts reached without finding transfer");
+          router.replace("/nfts?submission_status=failure");
         }
       }
     };

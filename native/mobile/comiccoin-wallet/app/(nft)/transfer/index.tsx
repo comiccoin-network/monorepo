@@ -64,6 +64,8 @@ export default function TransferNFTScreen() {
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
+    const currentBalance = statistics?.totalCoinValue || 0;
+    const requiredBalance = 1; // 1 CC for network fee
 
     if (!formData.recipientAddress) {
       newErrors.recipientAddress = "Recipient address is required";
@@ -76,8 +78,8 @@ export default function TransferNFTScreen() {
     }
 
     // Check if we have enough balance for network fee
-    if ((statistics?.totalCoinValue || 0) < 1) {
-      newErrors.balance = "Insufficient balance for network fee";
+    if (currentBalance < requiredBalance) {
+      newErrors.balance = `Insufficient balance. You need ${requiredBalance} CC for the network fee, but you only have ${currentBalance} CC`;
     }
 
     setFormErrors(newErrors);

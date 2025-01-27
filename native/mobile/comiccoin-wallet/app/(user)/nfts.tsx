@@ -21,6 +21,7 @@ import {
   Coins,
   CheckCircle,
   ExternalLink,
+  RotateCw,
 } from "lucide-react-native";
 import { useWallet } from "../../hooks/useWallet";
 import { useNFTCollection } from "../../hooks/useNFTCollection";
@@ -148,10 +149,22 @@ export default function NFTListScreen() {
   const router = useRouter();
   const { currentWallet, loading: serviceLoading } = useWallet();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const { nftCollection, loading: nftLoading } = useNFTCollection(
-    currentWallet?.address || null,
-  );
+  const {
+    nftCollection,
+    loading: nftLoading,
+    refresh,
+  } = useNFTCollection(currentWallet?.address || null);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const filteredNFTs = (nftCollection || []).filter((nft: NFT) => {
     const searchTermLower = searchTerm.toLowerCase();
@@ -184,7 +197,26 @@ export default function NFTListScreen() {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>My NFT Collection</Text>
+          <View style={styles.headerRow}>
+            <Text style={styles.headerTitle}>My NFT Collection</Text>
+            <Pressable
+              onPress={handleRefresh}
+              style={({ pressed }) => [
+                styles.refreshButton,
+                pressed && styles.refreshButtonPressed,
+              ]}
+              disabled={isRefreshing}
+            >
+              <RotateCw
+                size={24}
+                color="#7C3AED"
+                style={[
+                  isRefreshing && styles.rotating,
+                  { opacity: isRefreshing ? 0.5 : 1 },
+                ]}
+              />
+            </Pressable>
+          </View>
           <Text style={styles.headerSubtitle}>
             Manage and showcase your digital comic book collectibles
           </Text>
@@ -241,6 +273,23 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  refreshButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "#F5F3FF",
+  },
+  refreshButtonPressed: {
+    backgroundColor: "#EDE9FE",
+  },
+  rotating: {
+    transform: [{ rotate: "45deg" }],
   },
   header: {
     paddingHorizontal: 16,
