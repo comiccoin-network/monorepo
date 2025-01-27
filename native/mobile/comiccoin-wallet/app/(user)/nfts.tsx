@@ -62,22 +62,22 @@ const NFTCard = ({ nft, currentWallet }: { nft: NFT; currentWallet: any }) => {
     return null;
   };
 
+  // For debugging purposes only.
+  // console.log("NFTCard --> nft:", nft);
+  // console.log("NFTCard --> nft.tokenId:", nft.tokenId);
+
   const imageUrl = getNFTImageUrl(nft);
 
   // Extract the CID from the token.
   const metadataCID = nft.tokenMetadataURI.replace("ipfs://", "");
 
-  // console.log("NFTCard --> nft:", metadataCID);
+  // console.log("NFTCard --> nft.metadataCID:", metadataCID);
+  //
+  const url = `/(nft)/${metadataCID}?metadata_uri=${encodeURIComponent(lastTx.tokenMetadataURI)}&token_id=${nft.tokenId}`;
+  // console.log("NFTCard --> url:", url);
 
   return (
-    <Pressable
-      onPress={() =>
-        router.push(
-          `/(nft)/${metadataCID}?metadata_uri=${encodeURIComponent(lastTx.tokenMetadataURI)}`,
-        )
-      }
-      style={styles.cardContainer}
-    >
+    <Pressable onPress={() => router.push(url)} style={styles.cardContainer}>
       <View style={styles.imageContainer}>
         {imageUrl && !imageError ? (
           <Image

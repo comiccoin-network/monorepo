@@ -251,9 +251,11 @@ const AttributeItem = ({ trait_type, value }) => (
 
 // Main component
 export default function NFTDetailsScreen() {
-  const { cid, metadata_uri } = useLocalSearchParams();
+  const { cid, metadata_uri, token_id } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState("image");
   const [isImageLoading, setIsImageLoading] = useState(true);
+
+  // console.log("token_id ->", token_id);
 
   const {
     data: metadataData,
@@ -453,9 +455,11 @@ export default function NFTDetailsScreen() {
                   onPress={() =>
                     router.push(
                       "/transfer?token_id=" +
-                        cid +
+                        token_id +
                         "&token_metadata_uri=" +
-                        encodeURIComponent(metadata_uri),
+                        encodeURIComponent(metadata_uri) +
+                        "&cid=" +
+                        cid,
                     )
                   }
                 >
@@ -468,9 +472,11 @@ export default function NFTDetailsScreen() {
                   onPress={() =>
                     router.push(
                       "/burn?token_id=" +
-                        cid +
+                        token_id +
                         "&token_metadata_uri=" +
-                        encodeURIComponent(metadata_uri),
+                        encodeURIComponent(metadata_uri) +
+                        "&cid=" +
+                        cid,
                     )
                   }
                 >

@@ -1,4 +1,4 @@
-// monorepo/native/mobile/comiccoin-wallet/services/nft/AssetService.ts
+// monorepo/native/mobile/comiccoin-wallet/services/nft/TransferService.ts
 import { ethers } from "ethers";
 import config from "../../config";
 import walletService from "../wallet/WalletService";
@@ -127,7 +127,7 @@ class NFTTransferService {
     recipientAddress: string,
     amount: number | string,
     message: string = "",
-    tokenID: string | number,
+    tokenID: string,
     tokenMetadataURI: string,
   ): Promise<TransactionTemplate> {
     try {
@@ -151,6 +151,11 @@ class NFTTransferService {
       };
 
       console.log("Requesting template with payload:", requestPayload);
+      console.log(
+        "Request URL:",
+        `${this.BASE_URL}/api/v1/transaction/prepare`,
+      );
+      console.log("Request headers:", this.defaultHeaders);
 
       const response = await fetch(
         `${this.BASE_URL}/api/v1/transaction/prepare`,
@@ -161,12 +166,23 @@ class NFTTransferService {
         },
       );
 
+      console.log("Response status:", response.status);
+      const responseText = await response.text();
+      console.log("Response body:", responseText);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to get transaction template");
+        let errorMessage = "Failed to get transaction template";
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // If JSON parsing fails, use the raw response text
+          errorMessage = responseText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
-      return await response.json();
+      return JSON.parse(responseText);
     } catch (error) {
       console.error("getTransactionTemplate error:", error);
       throw error;
