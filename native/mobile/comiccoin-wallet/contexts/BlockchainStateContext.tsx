@@ -1,51 +1,51 @@
 // monorepo/native/mobile/comiccoin-wallet/contexts/BlockchainStateContext.tsx
-import React, { createContext, useContext, useState, useEffect } from "react";
-import BlockchainStateService from "../services/blockchain/BlockchainStateService";
-import { useWallet } from "../hooks/useWallet";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import BlockchainStateService, {
+  BlockchainState,
+} from "../services/blockchain/BlockchainStateService";
 
-interface BlockchainStateContextType {
-  latestHash: string | null;
+interface BlockchainContextType {
+  blockchainState: BlockchainState | null;
   isConnected: boolean;
   error: Error | null;
+  reconnect: () => void;
 }
 
-const BlockchainStateContext = createContext<BlockchainStateContextType>({
-  latestHash: null,
+const BlockchainContext = createContext<BlockchainContextType>({
+  blockchainState: null,
   isConnected: false,
   error: null,
+  reconnect: () => {},
 });
 
-export const BlockchainStateProvider: React.FC<{
+interface BlockchainProviderProps {
   children: React.ReactNode;
-}> = ({ children }) => {
-  const [latestHash, setLatestHash] = useState<string | null>(null);
+  chainId?: number;
+}
+
+export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({
+  children,
+  chainId = 1,
+}) => {
+  const [blockchainState, setBlockchainState] =
+    useState<BlockchainState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const { currentWallet } = useWallet();
 
   useEffect(() => {
-    if (!currentWallet) {
-      setIsConnected(false);
-      return;
-    }
-
-    const service = new BlockchainStateService(1); // Assuming chain_id 1
+    const service = new BlockchainStateService(chainId);
     let mounted = true;
 
     const handleMessage = (data: string) => {
       if (mounted) {
-        const newHash = data.trim();
-        // Only update if the hash has changed
-        if (newHash !== latestHash) {
-          setLatestHash(newHash);
-          // Dispatch a custom event that components can listen to
-          const event = new CustomEvent("blockchainStateChanged", {
-            detail: { latestHash: newHash },
-          });
-          window.dispatchEvent(event);
+        try {
+          const parsedState = JSON.parse(data) as BlockchainState;
+          setBlockchainState(parsedState);
+          setIsConnected(true);
+          setError(null);
+        } catch (e) {
+          setError(new Error("Failed to parse blockchain state"));
         }
-        setIsConnected(true);
-        setError(null);
       }
     };
 
@@ -64,11 +64,23 @@ export const BlockchainStateProvider: React.FC<{
       service.disconnect();
       setIsConnected(false);
     };
-  }, [currentWallet]);
+  }, [chainId]);
+
+  const reconnect = () => {
+    setIsConnected(false);
+    setTimeout(() => setIsConnected(true), 1000);
+  };
 
   return (
-    <BlockchainStateContext.Provider value={{ latestHash, isConnected, error }}>
+    <BlockchainContext.Provider
+      value={{
+        blockchainState,
+        isConnected,
+        error,
+        reconnect,
+      }}
+    >
       {children}
-    </BlockchainStateContext.Provider>
+    </BlockchainContext.Provider>
   );
 };

@@ -223,6 +223,7 @@ export default function NFTListScreen() {
           </Text>
         </View>
 
+        {/*
         {(searchTerm || filteredNFTs.length > 0) && (
           <View style={styles.searchContainer}>
             <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
@@ -234,6 +235,7 @@ export default function NFTListScreen() {
             />
           </View>
         )}
+        */}
 
         {filteredNFTs.length === 0 ? (
           <View style={styles.emptyContainer}>

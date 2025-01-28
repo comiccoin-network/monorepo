@@ -13,4 +13,9 @@ tasks:
   ios:
     desc: Start the developer instance for iOS
     cmds:
-      - npm run ios
+      - npx expo run:ios
+
+  android:
+    desc: Start the developer instance for Android
+    cmds:
+      - npx expo run:android

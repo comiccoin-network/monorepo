@@ -26,7 +26,7 @@ func NewListBlockTransactionsByAddressHTTPHandler(
 
 func (h *ListBlockTransactionsByAddressHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	h.logger.Debug("Blockchain state requested")
+	h.logger.Debug("Blocktx by address requested")
 
 	// Here is where you extract url parameters.
 	query := r.URL.Query()
