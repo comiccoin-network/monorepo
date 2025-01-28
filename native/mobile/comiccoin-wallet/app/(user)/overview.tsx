@@ -266,6 +266,7 @@ const Dashboard: React.FC = () => {
                   </View>
                 ) : (
                   <TransactionList
+                    limit={5}
                     transactions={transactions}
                     currentWalletAddress={currentWallet.address}
                     onRefresh={txrefresh}

@@ -19,24 +19,29 @@ import {
   ArrowUpRight,
 } from "lucide-react-native";
 
-// Define props for the TransactionList component
+// Updated props interface with optional limit
 interface TransactionListProps {
   transactions: Transaction[];
   currentWalletAddress: string;
   onRefresh: () => void;
   isRefreshing: boolean;
+  limit?: number; // Optional prop to control how many transactions to show
 }
 
-// PropTypes can be added if you want runtime type checking
 const TransactionList = ({
   transactions,
   currentWalletAddress,
   onRefresh,
   isRefreshing,
+  limit, // New prop
 }) => {
   const router = useRouter();
   const navigation = useNavigation();
-  const recentTransactions = transactions?.slice(0, 5) || [];
+
+  // If limit is provided, slice the transactions, otherwise show all
+  const displayedTransactions = limit
+    ? transactions?.slice(0, limit)
+    : transactions;
 
   // If there are no transactions, show the empty state
   if (!transactions || transactions.length === 0) {
@@ -152,7 +157,7 @@ const TransactionList = ({
       }
       style={styles.transactionList}
     >
-      {recentTransactions.map((tx) => {
+      {displayedTransactions.map((tx) => {
         const isSent =
           tx.from.toLowerCase() === currentWalletAddress.toLowerCase();
         const isBurned =
@@ -227,11 +232,11 @@ const TransactionList = ({
         );
       })}
 
-      {transactions.length > 5 && (
+      {/* Only show "View All" button if we're limiting results and there are more to show */}
+      {limit && transactions.length > limit && (
         <TouchableOpacity
           style={styles.viewAllButton}
           onPress={() => {
-            // Changed to use the correct path
             router.push(`/(transactions)`);
           }}
         >
