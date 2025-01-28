@@ -1,7 +1,13 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(user)/_layout.tsx
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Home,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Images,
+  Menu,
+} from "lucide-react-native"; // Changed from Ionicons to lucide-react-native
 import { View, Platform } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
@@ -17,10 +23,7 @@ export default function UserLayout() {
         <UserNavigationBar />
         <Tabs
           screenOptions={{
-            // Hide the header since we're using our custom UserNavigationBar
             headerShown: false,
-
-            // Configure the tab bar style
             tabBarStyle: {
               backgroundColor: "#ffffff",
               borderTopColor: "#e5e5e5",
@@ -53,7 +56,7 @@ export default function UserLayout() {
             options={{
               title: "Overview",
               tabBarIcon: ({ color, size }) => (
-                <Ionicons name="home-outline" size={size} color={color} />
+                <Home size={size} color={color} strokeWidth={2} />
               ),
             }}
           />
@@ -62,7 +65,7 @@ export default function UserLayout() {
             options={{
               title: "Send",
               tabBarIcon: ({ color, size }) => (
-                <Ionicons name="arrow-up-outline" size={size} color={color} />
+                <ArrowUpCircle size={size} color={color} strokeWidth={2} />
               ),
             }}
           />
@@ -71,7 +74,7 @@ export default function UserLayout() {
             options={{
               title: "Receive",
               tabBarIcon: ({ color, size }) => (
-                <Ionicons name="arrow-down-outline" size={size} color={color} />
+                <ArrowDownCircle size={size} color={color} strokeWidth={2} />
               ),
             }}
           />
@@ -80,7 +83,7 @@ export default function UserLayout() {
             options={{
               title: "NFTs",
               tabBarIcon: ({ color, size }) => (
-                <Ionicons name="images-outline" size={size} color={color} />
+                <Images size={size} color={color} strokeWidth={2} />
               ),
             }}
           />
@@ -89,7 +92,7 @@ export default function UserLayout() {
             options={{
               title: "More",
               tabBarIcon: ({ color, size }) => (
-                <Ionicons name="menu-outline" size={size} color={color} />
+                <Menu size={size} color={color} strokeWidth={2} />
               ),
             }}
           />

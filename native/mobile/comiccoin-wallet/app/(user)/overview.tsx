@@ -5,7 +5,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  RefreshControl,
   Alert,
   TextInput,
   ActivityIndicator,
@@ -16,16 +15,12 @@ import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
-  Copy,
-  RefreshCw,
-  Loader,
+  Copy as CopyIcon,
+  RefreshCcw,
   AlertCircle,
   Wallet as WalletIcon,
-  Coins,
+  Coins as CoinsIcon,
   Image as ImageIcon,
-  Clock,
-  ArrowUpRight,
-  ArrowDownRight,
 } from "lucide-react-native";
 
 import { useWallet } from "../../hooks/useWallet";
@@ -136,21 +131,21 @@ const Dashboard: React.FC = () => {
           {/* Error Messages */}
           {error && (
             <View style={styles.errorContainer}>
-              <AlertCircle size={20} color="#DC2626" />
+              <AlertCircle size={20} color="#DC2626" strokeWidth={2} />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
 
           {txerror && (
             <View style={styles.errorContainer}>
-              <AlertCircle size={20} color="#DC2626" />
+              <AlertCircle size={20} color="#DC2626" strokeWidth={2} />
               <Text style={styles.errorText}>{txerror}</Text>
             </View>
           )}
 
           {isSessionExpired && (
             <View style={styles.warningContainer}>
-              <AlertCircle size={20} color="#D97706" />
+              <AlertCircle size={20} color="#D97706" strokeWidth={2} />
               <Text style={styles.warningText}>
                 Session expired. Redirecting to login...
               </Text>
@@ -163,7 +158,7 @@ const Dashboard: React.FC = () => {
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
                   <View style={styles.cardIconContainer}>
-                    <WalletIcon size={20} color="#7C3AED" />
+                    <WalletIcon size={20} color="#7C3AED" strokeWidth={2} />
                   </View>
                   <Text style={styles.cardTitle}>Wallet Details</Text>
                 </View>
@@ -180,7 +175,7 @@ const Dashboard: React.FC = () => {
                       style={styles.copyButton}
                       onPress={() => copyToClipboard(currentWallet.address)}
                     >
-                      <Copy size={20} color="#6B7280" />
+                      <CopyIcon size={20} color="#6B7280" strokeWidth={2} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -190,7 +185,7 @@ const Dashboard: React.FC = () => {
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
                   <View style={styles.cardIconContainer}>
-                    <WalletIcon size={20} color="#7C3AED" />
+                    <WalletIcon size={20} color="#7C3AED" strokeWidth={2} />
                   </View>
                   <Text style={styles.cardTitle}>Wallet Balance</Text>
                   <TouchableOpacity
@@ -199,9 +194,13 @@ const Dashboard: React.FC = () => {
                     disabled={txloading}
                   >
                     {txloading ? (
-                      <ActivityIndicator size="small" color="#6B7280" />
+                      <ActivityIndicator
+                        size="small"
+                        color="#6B7280"
+                        strokeWidth={2}
+                      />
                     ) : (
-                      <RefreshCw size={20} color="#6B7280" />
+                      <RefreshCcw size={20} color="#6B7280" strokeWidth={2} />
                     )}
                   </TouchableOpacity>
                 </View>
@@ -209,7 +208,7 @@ const Dashboard: React.FC = () => {
                 <View style={styles.balanceGrid}>
                   <View style={styles.balanceItem}>
                     <View style={styles.balanceHeader}>
-                      <Coins size={16} color="#2563EB" />
+                      <CoinsIcon size={16} color="#2563EB" strokeWidth={2} />
                       <Text style={styles.balanceLabel}>CC Balance</Text>
                     </View>
                     <Text style={styles.balanceValue}>
@@ -223,7 +222,7 @@ const Dashboard: React.FC = () => {
                     style={[styles.balanceItem, { backgroundColor: "#F5F3FF" }]}
                   >
                     <View style={styles.balanceHeader}>
-                      <ImageIcon size={16} color="#7C3AED" />
+                      <ImageIcon size={16} color="#7C3AED" strokeWidth={2} />
                       <Text style={[styles.balanceLabel, { color: "#7C3AED" }]}>
                         NFTs Owned
                       </Text>
@@ -252,7 +251,7 @@ const Dashboard: React.FC = () => {
                     {txloading ? (
                       <ActivityIndicator size="small" color="#6B7280" />
                     ) : (
-                      <RefreshCw size={20} color="#6B7280" />
+                      <RefreshCcw size={20} color="#6B7280" strokeWidth={2} />
                     )}
                   </TouchableOpacity>
                 </View>

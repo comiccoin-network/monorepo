@@ -1,0 +1,14 @@
+version: "3"
+tasks:
+  start:
+    desc: Start the developer instance
+    cmds:
+      - npm run start
+
+  xcode:
+    desc: Open up the Xcode project
+
+  ios:
+    desc: Start the developer instance for iOS
+    cmds:
+      - npm run ios
