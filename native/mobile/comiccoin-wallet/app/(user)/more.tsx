@@ -1,3 +1,4 @@
+// monorepo/native/mobile/comiccoin-wallet/app/(user)/more.tsx
 import React from "react";
 import {
   View,
@@ -10,20 +11,50 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { History, Droplets, ExternalLink } from "lucide-react-native";
+import { History, Droplets, ExternalLink, LogOut } from "lucide-react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
+import { useWallet } from "../../hooks/useWallet";
 
 interface MenuOption {
   id: string;
   title: string;
   icon: React.ReactNode;
-  route: string;
+  route?: string;
   description: string;
   isExternal?: boolean;
+  onPress?: () => void;
 }
 
 export default function More() {
   const router = useRouter();
+  const { logout } = useWallet();
+
+  const handleSignOut = async () => {
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to sign out from your wallet?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Sign Out",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await logout();
+              // Replace /login with / to go to the root index page
+              router.replace("/");
+            } catch (error) {
+              Alert.alert("Error", "Failed to sign out. Please try again.");
+            }
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  };
 
   const menuOptions: MenuOption[] = [
     {
@@ -42,10 +73,19 @@ export default function More() {
       description: "Get free coins for your wallet",
       isExternal: true,
     },
+    {
+      id: "signout",
+      title: "Sign Out",
+      icon: <LogOut size={24} color="#DC2626" />,
+      description: "Sign out from your wallet",
+      onPress: handleSignOut,
+    },
   ];
 
   const handleOptionPress = async (option: MenuOption) => {
-    if (option.isExternal) {
+    if (option.onPress) {
+      option.onPress();
+    } else if (option.isExternal) {
       Alert.alert(
         "Open External Link",
         `You'll be redirected to ${option.route} in your default browser. Do you want to continue?`,
@@ -58,9 +98,9 @@ export default function More() {
             text: "Open",
             onPress: async () => {
               try {
-                const supported = await Linking.canOpenURL(option.route);
+                const supported = await Linking.canOpenURL(option.route!);
                 if (supported) {
-                  await Linking.openURL(option.route);
+                  await Linking.openURL(option.route!);
                 } else {
                   Alert.alert("Error", "Cannot open this URL");
                 }
@@ -72,7 +112,7 @@ export default function More() {
         ],
         { cancelable: true },
       );
-    } else {
+    } else if (option.route) {
       router.push(option.route);
     }
   };
@@ -95,11 +135,19 @@ export default function More() {
                 style={({ pressed }) => [
                   styles.gridItem,
                   pressed && styles.gridItemPressed,
+                  option.id === "signout" && styles.signOutItem,
                 ]}
                 onPress={() => handleOptionPress(option)}
               >
                 <View style={styles.itemHeader}>
-                  <View style={styles.iconContainer}>{option.icon}</View>
+                  <View
+                    style={[
+                      styles.iconContainer,
+                      option.id === "signout" && styles.signOutIcon,
+                    ]}
+                  >
+                    {option.icon}
+                  </View>
                   {option.isExternal && (
                     <View style={styles.externalBadge}>
                       <ExternalLink size={12} color="#6B7280" />
@@ -109,7 +157,14 @@ export default function More() {
                     </View>
                   )}
                 </View>
-                <Text style={styles.itemTitle}>{option.title}</Text>
+                <Text
+                  style={[
+                    styles.itemTitle,
+                    option.id === "signout" && styles.signOutText,
+                  ]}
+                >
+                  {option.title}
+                </Text>
                 <Text style={styles.itemDescription}>{option.description}</Text>
               </Pressable>
             ))}
@@ -218,5 +273,16 @@ const styles = StyleSheet.create({
   itemDescription: {
     fontSize: 14,
     color: "#6B7280",
+  },
+  signOutItem: {
+    borderWidth: 1,
+    borderColor: "#FEE2E2",
+    backgroundColor: "#FEF2F2",
+  },
+  signOutIcon: {
+    backgroundColor: "#FEE2E2",
+  },
+  signOutText: {
+    color: "#DC2626",
   },
 });

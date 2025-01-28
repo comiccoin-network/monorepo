@@ -66,20 +66,7 @@ const UserNavigationBar: React.FC<UserNavigationBarProps> = () => {
       <View style={styles.content}>
         <View style={styles.logoContainer}>
           <Wallet color="#fff" size={24} style={styles.logoIcon} />
-          <Text style={styles.logoText}>ComicCoin</Text>
-        </View>
-
-        <View style={styles.rightContainer}>
-          <TouchableOpacity
-            style={styles.signOutButton}
-            onPress={handleSignOut}
-            accessibilityLabel="Sign out"
-            disabled={serviceLoading} // Prevent multiple taps while loading
-          >
-            <Text style={styles.signOutText}>
-              {serviceLoading ? "Signing out..." : "Sign out"}
-            </Text>
-          </TouchableOpacity>
+          <Text style={styles.logoText}>ComicCoin Wallet</Text>
         </View>
       </View>
     </View>
