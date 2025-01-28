@@ -6,7 +6,9 @@ tasks:
       - npm run start
 
   xcode:
-    desc: Open up the Xcode project
+    desc: Open iOS workspace in Xcode
+    cmds:
+      - xed ios
 
   ios:
     desc: Start the developer instance for iOS
