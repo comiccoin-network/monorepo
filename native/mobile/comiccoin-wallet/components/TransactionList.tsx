@@ -10,6 +10,7 @@ import {
   Alert,
   StyleSheet,
   Platform,
+  Linking,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import {
@@ -55,7 +56,23 @@ const TransactionList = ({
         <TouchableOpacity
           style={styles.getFreeCoinsButton}
           onPress={() =>
-            Alert.alert("Coming Soon", "Faucet feature will be available soon.")
+            Alert.alert(
+              "Open External Link",
+              `You'll be redirected to https://comiccoinfaucet.com in your default browser. Do you want to continue?`,
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel",
+                },
+                {
+                  text: "Open",
+                  onPress: async () => {
+                    await Linking.openURL("https://comiccoinfaucet.com");
+                  },
+                },
+              ],
+              { cancelable: true },
+            )
           }
         >
           <View style={styles.buttonContent}>
