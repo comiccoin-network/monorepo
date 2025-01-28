@@ -151,7 +151,7 @@ const IndexPage = () => {
                 Register Now
                 <ArrowRight className="w-5 h-5" />
               </button>
-              <a href="https://comiccoin.ca" className="px-6 py-3 bg-gray-600 hover:bg-white-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2">
+              <a href="https://comiccoinnetwork.com" className="px-6 py-3 bg-gray-600 hover:bg-white-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2">
                 Learn More&nbsp;<ExternalLink className="w-5 h-5" />
               </a>
             </div>

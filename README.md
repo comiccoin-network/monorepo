@@ -1,6 +1,6 @@
 # 🏢 ComicCoin Monorepo
 
-The purpose of this repository is to store all the open-source software developed (or currently developing) for [ComicCoin](https://comiccoin.ca).
+The purpose of this repository is to store all the open-source software developed (or currently developing) for [ComicCoin](https://comiccoinnetwork.com).
 
 ## 🗂️ Directory Structure
 
