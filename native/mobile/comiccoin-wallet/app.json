@@ -9,11 +9,16 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "usesAppleSignIn": false,
+      "usesIcloudStorage": false,
       "supportsTablet": false,
       "bundleIdentifier": "com.theshootingstarpress.comiccoinwallet",
-      "buildNumber": "1",
+      "usesNotificationPermissions": false,
       "config": {
         "usesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.developer.default-data-protection": "NSFileProtectionComplete"
       }
     },
     "android": {
