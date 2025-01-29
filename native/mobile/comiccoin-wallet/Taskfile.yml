@@ -28,3 +28,10 @@ tasks:
     desc: Perform a check on our expo codebase to discover an potential issue(s)
     cmds:
       - npx expo-doctor
+
+  upgrade:
+    desc: Uprade our core libraries
+    cmds:
+      - npm install react-native@latest
+      - npm install expo@latest
+      - npm install react-native-reanimated@latest
