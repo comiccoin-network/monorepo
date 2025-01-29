@@ -247,6 +247,7 @@ class BlockchainStateService {
       `${cleanBaseUrl}/api/v1/blockchain-state/sse?chain_id=` + this.chainId;
 
     if (!this.validateUrl(url)) {
+      console.error(`Invalid URL constructed: ${url}`);
       throw new Error(`Invalid URL constructed: ${url}`);
     }
 
