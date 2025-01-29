@@ -18,4 +18,13 @@ tasks:
   android:
     desc: Start the developer instance for Android
     cmds:
+      - export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
+      - export ANDROID_HOME=$HOME/Library/Android/sdk
+      - export PATH=$PATH:$ANDROID_HOME/emulator
+      - export PATH=$PATH:$ANDROID_HOME/platform-tools
       - npx expo run:android
+
+  doctor:
+    desc: Perform a check on our expo codebase to discover an potential issue(s)
+    cmds:
+      - npx expo-doctor
