@@ -1,5 +1,5 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(user)/overview.tsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, onStateChange } from "react";
 import {
   View,
   Text,
@@ -27,8 +27,8 @@ import { useWallet } from "../../hooks/useWallet";
 import { useAllTransactions } from "../../hooks/useAllTransactions";
 import walletService from "../../services/wallet/WalletService";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { Transaction } from "../../services/transaction/ListService";
 import TransactionList from "../../components/TransactionList";
+import { useBlockchainState } from "../../hooks/useBlockchainState";
 
 // Define navigation types
 type RootStackParamList = {
@@ -60,6 +60,16 @@ const Dashboard: React.FC = () => {
 
   const [error, setError] = useState<string | null>(null);
   const [isSessionExpired, setIsSessionExpired] = useState(false);
+
+  // Use the blockchain state hook with a callback
+  useBlockchainState({
+    onStateChange: () => {
+      if (currentWallet) {
+        console.log("Refreshing transactions because of SSE.");
+        txrefresh();
+      }
+    },
+  });
 
   // Check wallet session periodically
   useEffect(() => {

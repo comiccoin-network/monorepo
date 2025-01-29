@@ -27,6 +27,7 @@ import { useWallet } from "../../hooks/useWallet";
 import { useNFTCollection } from "../../hooks/useNFTCollection";
 import { convertIPFSToGatewayURL } from "../../services/nft/MetadataService";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
+import { useBlockchainState } from "../../hooks/useBlockchainState";
 
 interface NFT {
   tokenId: string;
@@ -156,6 +157,15 @@ export default function NFTListScreen() {
     loading: nftLoading,
     refresh,
   } = useNFTCollection(currentWallet?.address || null);
+
+  useBlockchainState({
+    onStateChange: () => {
+      if (currentWallet) {
+        console.log("Refreshing NFTs list because of SSE.");
+        handleRefresh();
+      }
+    },
+  });
 
   const handleRefresh = async () => {
     console.log("Refreshing...");

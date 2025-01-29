@@ -30,6 +30,7 @@ import { useWallet } from "../../hooks/useWallet";
 import { useWalletTransactions } from "../../hooks/useWalletTransactions";
 import { useCoinTransfer } from "../../hooks/useCoinTransfer";
 import walletService from "../../services/wallet/WalletService";
+import { useBlockchainState } from "../../hooks/useBlockchainState";
 
 type RootStackParamList = {
   Login: undefined;
@@ -48,8 +49,19 @@ interface FormData {
 const SendScreen: React.FC = () => {
   const router = useRouter();
   const { currentWallet, logout, loading: serviceLoading } = useWallet();
-  const { statistics } = useWalletTransactions(currentWallet?.address);
+  const { statistics, refresh: txrefresh } = useWalletTransactions(
+    currentWallet?.address,
+  );
   const { submitTransaction, loading: transactionLoading } = useCoinTransfer(1);
+
+  useBlockchainState({
+    onStateChange: () => {
+      if (currentWallet) {
+        console.log("Refreshing send coins because of SSE.");
+        txrefresh();
+      }
+    },
+  });
 
   // Form state
   const [formData, setFormData] = useState<FormData>({

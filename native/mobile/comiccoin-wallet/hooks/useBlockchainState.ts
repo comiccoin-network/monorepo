@@ -1,14 +1,16 @@
 // monorepo/native/mobile/comiccoin-wallet/hooks/useBlockchainState.ts
+// monorepo/native/mobile/comiccoin-wallet/hooks/useBlockchainState.ts
 import { useState, useEffect, useCallback } from "react";
 import BlockchainStateService from "../services/blockchain/BlockchainStateService";
 
 interface UseBlockchainStateOptions {
   chainId?: number;
   onError?: (error: any) => void;
+  onStateChange?: (latestHash: string | null) => void; // Add this line
 }
 
 export const useBlockchainState = (options: UseBlockchainStateOptions = {}) => {
-  const { chainId = 1, onError } = options;
+  const { chainId = 1, onError, onStateChange } = options;
   const [latestHash, setLatestHash] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -19,9 +21,15 @@ export const useBlockchainState = (options: UseBlockchainStateOptions = {}) => {
 
     const handleMessage = (data: string) => {
       if (mounted) {
-        setLatestHash(data.trim());
+        const newHash = data.trim();
+        setLatestHash(newHash);
         setIsConnected(true);
         setError(null);
+
+        // Invoke the callback if provided
+        if (onStateChange) {
+          onStateChange(newHash);
+        }
       }
     };
 
@@ -45,7 +53,7 @@ export const useBlockchainState = (options: UseBlockchainStateOptions = {}) => {
       service.disconnect();
       setIsConnected(false);
     };
-  }, [chainId, onError]);
+  }, [chainId, onError, onStateChange]); // Add onStateChange to the dependency array
 
   const reconnect = useCallback(() => {
     // Force a re-render by changing the key in the useEffect

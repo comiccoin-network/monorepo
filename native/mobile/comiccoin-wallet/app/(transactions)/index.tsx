@@ -5,9 +5,20 @@ import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useWalletTransactions } from "../../hooks/useWalletTransactions";
 import { useWallet } from "../../hooks/useWallet";
 import TransactionList from "../../components/TransactionList";
+import { useBlockchainState } from "../../hooks/useBlockchainState";
 
 export default function TransactionsList() {
   const { currentWallet } = useWallet();
+
+  useBlockchainState({
+    onStateChange: () => {
+      if (currentWallet) {
+        console.log("Refreshing transactions because of SSE.");
+        refresh();
+      }
+    },
+  });
+
   const { transactions, loading, error, refresh } = useWalletTransactions(
     currentWallet?.address,
   );

@@ -11,7 +11,7 @@ interface BlockchainContextType {
   reconnect: () => void;
 }
 
-const BlockchainContext = createContext<BlockchainContextType>({
+export const BlockchainContext = createContext<BlockchainContextType>({
   blockchainState: null,
   isConnected: false,
   error: null,
@@ -57,7 +57,6 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({
     };
 
     service.connect(handleMessage, handleError);
-    setIsConnected(true);
 
     return () => {
       mounted = false;
