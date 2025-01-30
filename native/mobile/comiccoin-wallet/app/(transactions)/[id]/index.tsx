@@ -287,6 +287,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
     backgroundColor: "white",
+    overflow: "hidden",
   },
   typeContainer: {
     flexDirection: "row",
@@ -320,6 +321,7 @@ const styles = StyleSheet.create({
     margin: 16,
     padding: 16,
     gap: 16,
+    overflow: "hidden",
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -328,7 +330,8 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
       },
     }),
   },
@@ -344,6 +347,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
+    ...Platform.select({
+      android: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+      },
+    }),
   },
   detailLabel: {
     fontSize: 14,
@@ -391,6 +401,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 8,
     gap: 8,
+    overflow: "hidden",
+    ...Platform.select({
+      android: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+      },
+    }),
   },
   addressText: {
     flex: 1,
@@ -418,6 +435,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
     borderRadius: 8,
     padding: 12,
+    overflow: "hidden",
+    ...Platform.select({
+      android: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+      },
+    }),
   },
   metadataLabel: {
     fontSize: 14,
@@ -437,6 +461,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     margin: 16,
+    overflow: "hidden",
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -445,7 +470,8 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
       },
     }),
   },

@@ -69,19 +69,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#F5F3FF", // Added for consistency
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
     color: "#6B7280",
+    textAlign: "center", // Added for better centering
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
+    backgroundColor: "#F5F3FF", // Added for consistency
   },
   errorText: {
+    fontSize: 16, // Added for consistency
     color: "#DC2626",
     textAlign: "center",
   },
