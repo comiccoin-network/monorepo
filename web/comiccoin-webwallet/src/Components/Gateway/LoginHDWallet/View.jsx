@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import NavigationMenu from '../NavigationMenu/View'
 import FooterMenu from '../FooterMenu/View'
+import { useLatestBlockTransactionSSE } from '../../../Contexts/LatestBlockTransactionSSEContext'
 
 // Common input styles to prevent iOS zoom
 const inputStyles = {
@@ -32,6 +33,7 @@ const inputStyles = {
 
 function LoginHDWalletPage() {
     const { wallets, loadWallet, loading: serviceLoading, error: serviceError } = useWallet()
+    const { connect, disconnect } = useLatestBlockTransactionSSE()
 
     const [selectedWalletId, setSelectedWalletId] = useState('')
     const [password, setPassword] = useState('')
@@ -68,9 +70,18 @@ function LoginHDWalletPage() {
                 throw new Error('Please enter your password')
             }
 
-            await loadWallet(selectedWalletId, password)
+            // First load the wallet
+            const loadedWallet = await loadWallet(selectedWalletId, password)
+
+            // Only after successful wallet loading, establish SSE connection
+            if (loadedWallet?.address) {
+                console.log('Establishing SSE connection for wallet:', loadedWallet.address)
+                connect(loadedWallet.address)
+            }
+
             setRedirectTo('/dashboard')
         } catch (err) {
+            disconnect() // Cleanup SSE connection if login fails
             setError(err.message)
             window.scrollTo({ top: 0, behavior: 'smooth' })
         } finally {

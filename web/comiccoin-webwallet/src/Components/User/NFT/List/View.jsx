@@ -159,7 +159,7 @@ const NFTListPage = () => {
 
     const handleSignOut = () => {
         logout()
-        setForceURL('/login')
+        setForceURL('/logout')
     }
 
     const getWalletAddress = () => {
@@ -193,7 +193,7 @@ const NFTListPage = () => {
                 if (serviceLoading) return
 
                 if (!currentWallet) {
-                    if (mounted) setForceURL('/login')
+                    if (mounted) setForceURL('/logout')
                     return
                 }
 
@@ -211,7 +211,7 @@ const NFTListPage = () => {
                     setIsSessionExpired(true)
                     logout()
                     setError('Your session has expired. Please sign in again.')
-                    setTimeout(() => setForceURL('/login'), 3000)
+                    setTimeout(() => setForceURL('/logout'), 3000)
                 } else if (mounted) {
                     setError(error.message)
                 }

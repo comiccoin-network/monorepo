@@ -89,7 +89,7 @@ const ReceiveCoinPage = () => {
 
     const handleSignOut = () => {
         logout()
-        setForceURL('/login')
+        setForceURL('/logout')
     }
 
     if (serviceLoading) {
@@ -102,7 +102,7 @@ const ReceiveCoinPage = () => {
     }
 
     if (!currentWallet) {
-        return <Navigate to="/login" />
+        return <Navigate to="/logout" />
     }
 
     if (forceURL !== '' && !serviceLoading) {

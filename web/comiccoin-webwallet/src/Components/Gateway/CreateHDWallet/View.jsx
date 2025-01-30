@@ -26,9 +26,11 @@ import { HDNodeWallet } from 'ethers/wallet'
 import { useWallet } from '../../../Hooks/useWallet'
 import NavigationMenu from '../NavigationMenu/View'
 import FooterMenu from '../FooterMenu/View'
+import { useLatestBlockTransactionSSE } from '../../../Contexts/LatestBlockTransactionSSEContext'
 
 const CreateHDWalletPage = () => {
     const { createWallet, loading: serviceLoading, error: serviceError } = useWallet()
+    const { connect, disconnect } = useLatestBlockTransactionSSE()
 
     const [step, setStep] = useState('create') // 'create' or 'verify'
     const [forceURL, setForceURL] = useState('')
@@ -184,9 +186,20 @@ const CreateHDWalletPage = () => {
 
             setIsLoading(true)
             try {
-                await createWallet(formData.mnemonic, formData.password)
+                const newWallet = await createWallet(formData.mnemonic, formData.password)
+
+                // Establish SSE connection with the new wallet's address
+                if (newWallet?.address) {
+                    const zeroAddress = '0x0000000000000000000000000000000000000000'
+                    if (newWallet.address.toLowerCase() !== zeroAddress.toLowerCase()) {
+                        console.log('Establishing SSE connection for new wallet:', newWallet.address)
+                        connect(newWallet.address)
+                    }
+                }
+
                 setForceURL('/dashboard')
             } catch (error) {
+                disconnect() // Cleanup SSE connection if wallet creation fails
                 setErrors((prev) => ({
                     ...prev,
                     submit: error.message || 'Failed to create wallet',

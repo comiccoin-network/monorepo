@@ -66,7 +66,7 @@ function DashboardPage() {
 
                 if (!currentWallet) {
                     if (mounted) {
-                        setForceURL('/login')
+                        setForceURL('/logout')
                     }
                     return
                 }
@@ -106,13 +106,13 @@ function DashboardPage() {
         logout()
         setError('Your session has expired. Please sign in again.')
         setTimeout(() => {
-            setForceURL('/login')
+            setForceURL('/logout')
         }, 3000)
     }
 
     const handleSignOut = () => {
         logout()
-        setForceURL('/login')
+        setForceURL('/logout')
     }
 
     const TransactionList = ({ transactions }) => {

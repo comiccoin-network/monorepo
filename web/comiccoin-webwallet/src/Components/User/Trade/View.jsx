@@ -31,7 +31,7 @@ const TradePage = () => {
     }
 
     if (!currentWallet) {
-        return <Navigate to="/login" />
+        return <Navigate to="/logout" />
     }
 
     return (

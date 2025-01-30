@@ -13,6 +13,7 @@ import TradePage from './Components/User/Trade/View'
 import ReceiveCoinPage from './Components/User/ReceiveCoin/View'
 import SendCoinsPage from './Components/User/SendCoin/View'
 import DashboardPage from './Components/User/Dashboard/View'
+import LogoutHDWalletPage from './Components/Gateway/LogoutHDWallet/View'
 import LoginHDWalletPage from './Components/Gateway/LoginHDWallet/View'
 import RecoverHDWalletPage from './Components/Gateway/RecoverHDWallet/View'
 import CreateHDWalletPage from './Components/Gateway/CreateHDWallet/View'
@@ -37,9 +38,14 @@ const AppRoute = () => {
 
     // Manage SSE connection at router level
     useEffect(() => {
-        if (currentWallet?.address) {
+        const zeroAddress = '0x0000000000000000000000000000000000000000'
+
+        if (currentWallet?.address && currentWallet.address.toLowerCase() !== zeroAddress.toLowerCase()) {
             console.log('Establishing SSE connection for wallet:', currentWallet.address)
             connect(currentWallet.address)
+        } else {
+            console.log('No valid wallet address, stopping SSE connection...')
+            disconnect()
         }
 
         return () => {
@@ -65,6 +71,7 @@ const AppRoute = () => {
                         <Route exact path="/send-coins" element={<SendCoinsPage />} />
                         <Route exact path="/dashboard" element={<DashboardPage />} />
                         <Route exact path="/login" element={<LoginHDWalletPage />} />
+                        <Route exact path="/logout" element={<LogoutHDWalletPage />} />
                         <Route exact path="/recover" element={<RecoverHDWalletPage />} />
                         <Route exact path="/create-wallet" element={<CreateHDWalletPage />} />
                         <Route exact path="/download-native-wallet" element={<DownloadNativeWalletPage />} />

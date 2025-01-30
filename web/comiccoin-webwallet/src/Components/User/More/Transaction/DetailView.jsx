@@ -67,7 +67,7 @@ function TransactionDetailPage() {
 
                 if (!currentWallet) {
                     if (mounted) {
-                        setForceURL('/login')
+                        setForceURL('/logout')
                     }
                     return
                 }
@@ -123,7 +123,7 @@ function TransactionDetailPage() {
         logout()
         setSessionError('Your session has expired. Please sign in again.')
         setTimeout(() => {
-            setForceURL('/login')
+            setForceURL('/logout')
         }, 3000)
     }
 
@@ -133,7 +133,7 @@ function TransactionDetailPage() {
 
     const handleSignOut = () => {
         logout()
-        setForceURL('/login')
+        setForceURL('/logout')
     }
 
     if (forceURL !== '' && !serviceLoading) {

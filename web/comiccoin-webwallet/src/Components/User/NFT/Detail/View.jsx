@@ -269,7 +269,7 @@ const NFTDetailPage = () => {
         logout()
         setError('Your session has expired. Please sign in again.')
         setTimeout(() => {
-            setForceURL('/login')
+            setForceURL('/logout')
         }, 3000)
     }
 
@@ -289,7 +289,7 @@ const NFTDetailPage = () => {
 
                 if (!currentWallet) {
                     if (mounted) {
-                        setForceURL('/login')
+                        setForceURL('/logout')
                     }
                     return
                 }
@@ -326,7 +326,7 @@ const NFTDetailPage = () => {
 
     const handleSignOut = () => {
         logout()
-        setForceURL('/login')
+        setForceURL('/logout')
     }
 
     const downloadImage = async () => {

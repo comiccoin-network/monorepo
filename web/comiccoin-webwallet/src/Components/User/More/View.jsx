@@ -91,7 +91,7 @@ const MorePage = () => {
                 if (!currentWallet) {
                     console.log('MorePage: No current wallet found, redirecting to login')
                     if (mounted) {
-                        setForceURL('/login')
+                        setForceURL('/logout')
                     }
                     return
                 }
@@ -132,13 +132,13 @@ const MorePage = () => {
         logout()
         setError('Your session has expired. Please sign in again.')
         setTimeout(() => {
-            setForceURL('/login')
+            setForceURL('/logout')
         }, 3000)
     }
 
     const handleSignOut = () => {
         logout()
-        setForceURL('/login')
+        setForceURL('/logout')
     }
 
     if (forceURL !== '' && !serviceLoading) {

@@ -50,7 +50,7 @@ const BurnNFTPage = () => {
 
                 if (!currentWallet) {
                     if (mounted) {
-                        setForceURL('/login')
+                        setForceURL('/logout')
                     }
                     return
                 }
@@ -90,7 +90,7 @@ const BurnNFTPage = () => {
         logout()
         setGeneralError('Your session has expired. Please sign in again.')
         setTimeout(() => {
-            setForceURL('/login')
+            setForceURL('/logout')
         }, 3000)
     }
 
@@ -170,7 +170,7 @@ const BurnNFTPage = () => {
 
     const handleSignOut = () => {
         logout()
-        setForceURL('/login')
+        setForceURL('/logout')
     }
 
     if (forceURL !== '' && !serviceLoading) {
