@@ -125,7 +125,7 @@ export const fetchNFTMetadata = async (
       };
     } catch (error) {
       lastError = error;
-      console.error(
+      console.log(
         `Error fetching NFT metadata (attempt ${attempt + 1}/${MAX_RETRIES}):`,
         error,
       );

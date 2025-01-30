@@ -180,7 +180,7 @@ class CoinTransferService {
 
       return await response.json();
     } catch (error) {
-      console.error("getTransactionTemplate error:", error);
+      console.log("getTransactionTemplate error:", error);
       throw error;
     }
   }
@@ -283,7 +283,7 @@ class CoinTransferService {
 
       return signedTx;
     } catch (error) {
-      console.error("signTransaction error:", error);
+      console.log("signTransaction error:", error);
       throw error;
     }
   }
@@ -350,7 +350,7 @@ class CoinTransferService {
           : "Recovered address does not match transaction sender",
       };
     } catch (error) {
-      console.error("Verification error:", error);
+      console.log("Verification error:", error);
       return {
         isValid: false,
         error: (error as Error).message,
@@ -419,8 +419,8 @@ class CoinTransferService {
 
       throw new Error(errorData.message || "Failed to submit transaction");
     } catch (error) {
-      console.error("submitSignedTransaction error:", error);
-      console.error("Error details:", {
+      console.log("submitSignedTransaction error:", error);
+      console.log("Error details:", {
         name: (error as Error).name,
         message: (error as Error).message,
         stack: (error as Error).stack,

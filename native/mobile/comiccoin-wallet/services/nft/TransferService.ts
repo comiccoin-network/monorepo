@@ -184,7 +184,7 @@ class NFTTransferService {
 
       return JSON.parse(responseText);
     } catch (error) {
-      console.error("getTransactionTemplate error:", error);
+      console.log("getTransactionTemplate error:", error);
       throw error;
     }
   }
@@ -276,7 +276,7 @@ class NFTTransferService {
 
       return signedTx;
     } catch (error) {
-      console.error("signTransaction error:", error);
+      console.log("signTransaction error:", error);
       throw error;
     }
   }
@@ -319,7 +319,7 @@ class NFTTransferService {
           : "Recovered address does not match transaction sender",
       };
     } catch (error) {
-      console.error("Verification error:", error);
+      console.log("Verification error:", error);
       return {
         isValid: false,
         error: (error as Error).message,
@@ -382,7 +382,7 @@ class NFTTransferService {
 
       throw new Error(errorData.message || "Failed to submit transaction");
     } catch (error) {
-      console.error("submitSignedTransaction error:", error);
+      console.log("submitSignedTransaction error:", error);
       throw error;
     }
   }

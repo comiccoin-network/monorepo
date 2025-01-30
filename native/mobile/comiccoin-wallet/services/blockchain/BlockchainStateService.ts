@@ -58,9 +58,7 @@ class BlockchainStateService {
     }
 
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error(
-        "[BlockchainStateService] Max reconnection attempts reached",
-      );
+      console.log("[BlockchainStateService] Max reconnection attempts reached");
       if (this.onErrorCallback) {
         this.onErrorCallback(new Error("Max reconnection attempts reached"));
       }
@@ -105,7 +103,7 @@ class BlockchainStateService {
 
     if (!this.baseUrl) {
       const error = new Error("AUTHORITY_API_URL is not configured in config");
-      console.error("[BlockchainStateService] Configuration Error:", error);
+      console.log("[BlockchainStateService] Configuration Error:", error);
       onError(error);
       return;
     }
@@ -154,7 +152,7 @@ class BlockchainStateService {
               );
             }
           } catch (error) {
-            console.error(
+            console.log(
               "[BlockchainStateService] Error in message callback:",
               error,
             );
@@ -198,7 +196,7 @@ class BlockchainStateService {
         }
       });
     } catch (error) {
-      console.error(
+      console.log(
         "[BlockchainStateService] Error creating EventSource:",
         error,
       );
@@ -224,10 +222,7 @@ class BlockchainStateService {
         this.eventSource.close();
         this.eventSource = null;
       } catch (error) {
-        console.error(
-          "[BlockchainStateService] Error during disconnect:",
-          error,
-        );
+        console.log("[BlockchainStateService] Error during disconnect:", error);
       }
     }
 
@@ -247,7 +242,7 @@ class BlockchainStateService {
       `${cleanBaseUrl}/api/v1/blockchain-state/sse?chain_id=` + this.chainId;
 
     if (!this.validateUrl(url)) {
-      console.error(`Invalid URL constructed: ${url}`);
+      console.log(`Invalid URL constructed: ${url}`);
       throw new Error(`Invalid URL constructed: ${url}`);
     }
 

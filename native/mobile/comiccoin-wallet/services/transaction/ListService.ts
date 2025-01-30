@@ -156,7 +156,7 @@ class TransactionListService {
 
       // Log unexpected errors in development
       if (__DEV__) {
-        console.error("Transaction fetch error:", error);
+        console.log("Transaction fetch error:", error);
       }
 
       // Re-throw as a generic error for unexpected cases

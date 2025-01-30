@@ -94,7 +94,7 @@ class NFTAssetService {
         getContent,
       };
     } catch (error) {
-      console.error("Failed to fetch NFT asset:", error);
+      console.log("Failed to fetch NFT asset:", error);
       throw error;
     }
   }

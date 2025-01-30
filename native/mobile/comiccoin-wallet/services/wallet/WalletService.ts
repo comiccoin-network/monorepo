@@ -47,7 +47,7 @@ class WalletService {
 
       this.isInitialized = true;
     } catch (error) {
-      console.error("Failed to initialize wallet service:", error);
+      console.log("Failed to initialize wallet service:", error);
       throw new Error("Wallet initialization failed");
     }
   }
@@ -75,7 +75,7 @@ class WalletService {
 
       return walletData;
     } catch (error) {
-      console.error("Wallet creation error:", error);
+      console.log("Wallet creation error:", error);
       throw error;
     }
   }
@@ -124,7 +124,7 @@ class WalletService {
 
       return this.currentWallet;
     } catch (error) {
-      console.error("Failed to load wallet:", error);
+      console.log("Failed to load wallet:", error);
       throw new Error("Failed to load wallet");
     }
   }
@@ -159,7 +159,7 @@ class WalletService {
     try {
       return CryptoJS.AES.encrypt(data, password).toString();
     } catch (error) {
-      console.error("Encryption failed:", error);
+      console.log("Encryption failed:", error);
       throw new Error("Encryption failed");
     }
   }
@@ -169,7 +169,7 @@ class WalletService {
       const bytes = CryptoJS.AES.decrypt(encryptedData, password);
       return bytes.toString(CryptoJS.enc.Utf8);
     } catch (error) {
-      console.error("Decryption failed:", error);
+      console.log("Decryption failed:", error);
       throw new Error("Decryption failed");
     }
   }
@@ -181,7 +181,7 @@ class WalletService {
         JSON.stringify(this.wallets),
       );
     } catch (error) {
-      console.error("Failed to save wallets:", error);
+      console.log("Failed to save wallets:", error);
       throw new Error("Failed to save wallets");
     }
   }
