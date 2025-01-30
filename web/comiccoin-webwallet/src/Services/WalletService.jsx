@@ -50,7 +50,7 @@ class WalletService {
             // phrase but require users to write it down during wallet creation.
 
             const walletData = {
-                id: crypto.randomUUID(),
+                id: this.generateUUID(),
                 address: hdWallet.address,
                 encryptedPrivateKey: this.encryptData(hdWallet.privateKey, password),
                 createdAt: Date.now(),
@@ -108,6 +108,24 @@ class WalletService {
             console.error('Failed to load wallet:', error)
             throw new Error('Failed to load wallet')
         }
+    }
+
+    // Developers note:
+    generateUUID() {
+        // First try the standard crypto.randomUUID()
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID()
+        }
+
+        // Fallback implementation
+        // The error 'crypto.randomUUID is not a function' occurs because
+        // crypto.randomUUID() is not universally supported on all browsers,
+        // particularly on older Android Chrome versions.
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = (Math.random() * 16) | 0
+            const v = c === 'x' ? r : (r & 0x3) | 0x8
+            return v.toString(16)
+        })
     }
 
     getCurrentWallet() {
