@@ -291,17 +291,15 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 2, // Reduced from 3
-        backgroundColor: "white",
         borderWidth: 1,
-        borderColor: "rgba(229, 231, 235, 0.9)", // Slightly more opaque border
+        borderColor: "#E5E7EB",
       },
     }),
   },
   signOutCard: {
     ...Platform.select({
       android: {
-        elevation: 1, // Reduced from 2
+        borderWidth: 1,
         backgroundColor: "#FEF2F2",
         borderColor: "#FEE2E2",
       },
