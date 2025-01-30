@@ -6,6 +6,10 @@ tasks:
         cmds:
             - npm run start:dev
 
+    android:
+        cmds:
+            - npm run start:dev-android
+
     fmt:
         desc: 'format the source code for better formatting'
         cmds:

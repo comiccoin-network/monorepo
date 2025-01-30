@@ -32,6 +32,7 @@
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "start:dev": "env-cmd -f ./environments/.dev.env react-scripts start",
+        "start:dev-android": "env-cmd -f ./environments/.dev.android.env react-scripts start",
         "build:dev": "env-cmd -f ./environments/.dev.env npm run-script build",
         "start:qa": "env-cmd -f ./environments/.qa.env react-scripts start",
         "build:qa": "env-cmd -f ./environments/.qa.env npm run-script build",
