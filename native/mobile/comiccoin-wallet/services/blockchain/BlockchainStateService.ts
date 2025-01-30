@@ -181,7 +181,7 @@ class BlockchainStateService {
             reconnectAttempt: this.reconnectAttempts,
           };
 
-          console.error(
+          console.log(
             "[BlockchainStateService] Error event received:",
             errorDetails,
           );
