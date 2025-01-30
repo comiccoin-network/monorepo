@@ -324,11 +324,23 @@ const styles = StyleSheet.create({
   mainContent: {
     gap: 16,
   },
+  cardWrapper: {
+    ...Platform.select({
+      android: {
+        elevation: 4,
+        backgroundColor: "transparent",
+        borderRadius: 16,
+        marginVertical: 1,
+        marginHorizontal: 1,
+      },
+    }),
+  },
   card: {
     backgroundColor: "white",
     borderRadius: 16,
     padding: 24,
     marginBottom: 16,
+    overflow: "hidden",
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -337,7 +349,9 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 4,
+        // Remove elevation from here
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
       },
     }),
   },
@@ -374,6 +388,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 8,
+    overflow: "hidden", // Add this to clip content
   },
   addressInput: {
     flex: 1,
@@ -394,6 +409,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#EFF6FF",
     borderRadius: 8,
     padding: 16,
+    overflow: "hidden", // Add this to clip content
+    borderWidth: 1,
+    borderColor: Platform.OS === "android" ? "#E5E7EB" : "transparent",
   },
   balanceHeader: {
     flexDirection: "row",
