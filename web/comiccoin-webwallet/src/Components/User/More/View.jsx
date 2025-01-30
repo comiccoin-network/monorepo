@@ -18,6 +18,7 @@ import NavigationMenu from '../NavigationMenu/View'
 import FooterMenu from '../FooterMenu/View'
 import walletService from '../../../Services/WalletService'
 // import { useLatestBlockTransactionSSE } from '../../../Contexts/LatestBlockTransactionSSEContext'
+import TransactionListener from '../TransactionListener'
 
 const MorePage = () => {
     const { currentWallet, logout, loading: serviceLoading, error: serviceError } = useWallet()
@@ -38,6 +39,11 @@ const MorePage = () => {
     //         console.log('sse results -->', latestData)
     //     }
     // }, [latestData])
+
+    const handleTransactionStream = (transaction) => {
+        // Handle stream transaction data
+        console.log('Transaction received:', transaction)
+    }
 
     // State for session management
     const [forceURL, setForceURL] = useState('')
@@ -159,6 +165,7 @@ const MorePage = () => {
             </a>
 
             <NavigationMenu onSignOut={handleSignOut} />
+            <TransactionListener onNewTransaction={handleTransactionStream} />
 
             <main id="main-content" className="flex-grow flex flex-col px-4 md:px-6 lg:px-8 py-6 md:py-12">
                 <div className="w-full max-w-7xl mx-auto">
