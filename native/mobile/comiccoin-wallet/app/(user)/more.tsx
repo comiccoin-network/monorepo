@@ -117,6 +117,12 @@ export default function More() {
     }
   };
 
+  const MenuCard = ({ children, isSignOut = false }) => (
+    <View style={[styles.menuCard, isSignOut && styles.signOutCard]}>
+      {children}
+    </View>
+  );
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container} edges={["top"]}>
@@ -130,43 +136,51 @@ export default function More() {
 
           <View style={styles.grid}>
             {menuOptions.map((option) => (
-              <Pressable
-                key={option.id}
-                style={({ pressed }) => [
-                  styles.gridItem,
-                  pressed && styles.gridItemPressed,
-                  option.id === "signout" && styles.signOutItem,
-                ]}
-                onPress={() => handleOptionPress(option)}
-              >
-                <View style={styles.itemHeader}>
-                  <View
-                    style={[
-                      styles.iconContainer,
-                      option.id === "signout" && styles.signOutIcon,
-                    ]}
-                  >
-                    {option.icon}
-                  </View>
-                  {option.isExternal && (
-                    <View style={styles.externalBadge}>
-                      <ExternalLink size={12} color="#6B7280" />
-                      <Text style={styles.externalBadgeText}>
-                        External Link
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <Text
-                  style={[
-                    styles.itemTitle,
-                    option.id === "signout" && styles.signOutText,
+              <MenuCard key={option.id} isSignOut={option.id === "signout"}>
+                <Pressable
+                  onPress={() => handleOptionPress(option)}
+                  android_ripple={{
+                    color:
+                      option.id === "signout"
+                        ? "rgba(220, 38, 38, 0.1)"
+                        : "rgba(124, 58, 237, 0.1)",
+                  }}
+                  style={({ pressed }) => [
+                    styles.pressable,
+                    pressed && styles.pressed,
                   ]}
                 >
-                  {option.title}
-                </Text>
-                <Text style={styles.itemDescription}>{option.description}</Text>
-              </Pressable>
+                  <View style={styles.itemHeader}>
+                    <View
+                      style={[
+                        styles.iconContainer,
+                        option.id === "signout" && styles.signOutIcon,
+                      ]}
+                    >
+                      {option.icon}
+                    </View>
+                    {option.isExternal && (
+                      <View style={styles.externalBadge}>
+                        <ExternalLink size={12} color="#6B7280" />
+                        <Text style={styles.externalBadgeText}>
+                          External Link
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text
+                    style={[
+                      styles.itemTitle,
+                      option.id === "signout" && styles.signOutText,
+                    ]}
+                  >
+                    {option.title}
+                  </Text>
+                  <Text style={styles.itemDescription}>
+                    {option.description}
+                  </Text>
+                </Pressable>
+              </MenuCard>
             ))}
           </View>
         </ScrollView>
@@ -212,30 +226,9 @@ const styles = StyleSheet.create({
   },
   grid: {
     padding: 16,
-    flexDirection: "row",
-    flexWrap: "wrap",
     gap: 16,
   },
-  gridItem: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 16,
-    width: "100%",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  gridItemPressed: {
-    opacity: 0.7,
-  },
+
   itemHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -284,5 +277,40 @@ const styles = StyleSheet.create({
   },
   signOutText: {
     color: "#DC2626",
+  },
+  menuCard: {
+    width: "100%",
+    backgroundColor: "white",
+    borderRadius: 16,
+    overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2, // Reduced from 3
+        backgroundColor: "white",
+        borderWidth: 1,
+        borderColor: "rgba(229, 231, 235, 0.9)", // Slightly more opaque border
+      },
+    }),
+  },
+  signOutCard: {
+    ...Platform.select({
+      android: {
+        elevation: 1, // Reduced from 2
+        backgroundColor: "#FEF2F2",
+        borderColor: "#FEE2E2",
+      },
+      ios: {
+        backgroundColor: "#FEF2F2",
+      },
+    }),
+  },
+  pressable: {
+    padding: 16,
   },
 });
