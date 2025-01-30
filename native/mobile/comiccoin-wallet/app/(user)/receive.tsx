@@ -246,6 +246,12 @@ const ReceiveScreen: React.FC = () => {
   );
 };
 
+const Card = ({ children, style }) => (
+  <View style={[styles.cardWrapper, style]}>
+    <View style={styles.card}>{children}</View>
+  </View>
+);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -291,11 +297,23 @@ const styles = StyleSheet.create({
       android: { fontFamily: "Roboto" },
     }),
   },
+  cardWrapper: {
+    ...Platform.select({
+      android: {
+        elevation: 4,
+        backgroundColor: "transparent",
+        borderRadius: 16,
+        marginVertical: 1,
+        marginHorizontal: 1,
+      },
+    }),
+  },
   card: {
     backgroundColor: "white",
     borderRadius: 16,
     padding: 24,
     marginBottom: 16,
+    overflow: "hidden",
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -304,7 +322,8 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 4,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
       },
     }),
   },
@@ -332,6 +351,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     marginVertical: 16,
+    overflow: "hidden",
   },
   qrActions: {
     flexDirection: "row",
@@ -348,6 +368,7 @@ const styles = StyleSheet.create({
     gap: 8,
     borderWidth: 1,
     borderColor: "#E5E7EB",
+    overflow: "hidden",
   },
   actionButtonText: {
     color: "#4B5563",
@@ -374,6 +395,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 8,
+    overflow: "hidden",
   },
   addressInput: {
     flex: 1,
@@ -390,6 +412,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 8,
     marginLeft: 8,
+    overflow: "hidden",
+    borderWidth: Platform.OS === "android" ? 1 : 0,
+    borderColor: "#E5E7EB",
   },
   copyButtonText: {
     color: "#7C3AED",
@@ -409,6 +434,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 24,
     gap: 8,
+    overflow: "hidden",
   },
   shareButtonText: {
     color: "white",
