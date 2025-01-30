@@ -205,3 +205,6 @@ vendor/
 
 # Experimentally generated TS type definitions
 /packages/react-native/new-types/
+
+# ComicCoin Project Specific.
+my-upload-key.keystore
