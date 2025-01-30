@@ -7,6 +7,7 @@ tasks:
             - npm run start:dev
 
     android:
+        desc: 'start the project (for android-simulator only)'
         cmds:
             - npm run start:dev-android
 
