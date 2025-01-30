@@ -537,6 +537,12 @@ const SendScreen: React.FC = () => {
   );
 };
 
+const Card = ({ children, style }) => (
+  <View style={[styles.cardWrapper, style]}>
+    <View style={styles.card}>{children}</View>
+  </View>
+);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -600,10 +606,22 @@ const styles = StyleSheet.create({
   warningText: {
     color: "#92400E",
   },
+  cardWrapper: {
+    ...Platform.select({
+      android: {
+        elevation: 4,
+        backgroundColor: "transparent",
+        borderRadius: 16,
+        marginVertical: 1,
+        marginHorizontal: 1,
+      },
+    }),
+  },
   card: {
     backgroundColor: "white",
     borderRadius: 16,
     padding: 16,
+    overflow: "hidden",
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -612,7 +630,8 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 4,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
       },
     }),
   },
@@ -638,6 +657,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F3FF",
     borderRadius: 12,
     marginBottom: 16,
+    overflow: "hidden",
+    borderWidth: Platform.OS === "android" ? 1 : 0,
+    borderColor: "#E5E7EB",
   },
   balanceIconContainer: {
     padding: 8,
@@ -700,6 +722,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     marginBottom: 12,
+    overflow: "hidden",
+    borderWidth: Platform.OS === "android" ? 1 : 0,
+    borderColor: "#F59E0B",
   },
   noticeText: {
     marginLeft: 12,
@@ -714,6 +739,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     marginBottom: 16,
+    overflow: "hidden",
+    borderWidth: Platform.OS === "android" ? 1 : 0,
+    borderColor: "#60A5FA",
   },
   infoText: {
     marginLeft: 12,
@@ -826,6 +854,14 @@ const styles = StyleSheet.create({
     padding: 20,
     width: "100%",
     maxWidth: 400,
+    overflow: "hidden",
+    ...Platform.select({
+      android: {
+        elevation: 8,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+      },
+    }),
   },
   modalTitle: {
     fontSize: 20,
@@ -838,6 +874,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    overflow: "hidden",
+    borderWidth: Platform.OS === "android" ? 1 : 0,
+    borderColor: "#E5E7EB",
   },
   modalDetailRow: {
     flexDirection: "row",
