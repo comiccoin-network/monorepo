@@ -309,7 +309,8 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
       },
     }),
   },
@@ -374,6 +375,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        borderWidth: 0,
+      },
+      android: {
+        borderWidth: 1,
+        borderColor: "#FED7AA", // Slightly darker border for warning card
+      },
+    }),
   },
   warningText: {
     flex: 1,
@@ -395,8 +406,17 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     gap: 12,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
+    overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+      },
+      android: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+      },
+    }),
   },
   inputError: {
     borderColor: "#DC2626",
@@ -430,6 +450,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+    overflow: "hidden",
+    ...Platform.select({
+      android: {
+        elevation: 0, // Remove any potential elevation
+      },
+    }),
   },
   transferButtonDisabled: {
     opacity: 0.5,
