@@ -14,7 +14,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useWallet } from "../hooks/useWallet";
 
-// Enhanced wallet option component with pressed state handling
 const WalletOption = ({
   href,
   icon,
@@ -27,32 +26,40 @@ const WalletOption = ({
   description: string;
 }) => (
   <Link href={href} asChild>
-    <Pressable>
+    <Pressable
+      android_ripple={{
+        color: "rgba(124, 58, 237, 0.1)",
+        borderless: false,
+        foreground: true,
+      }}
+    >
       {({ pressed }) => (
-        <View
-          style={[styles.walletOption, pressed && styles.walletOptionPressed]}
-        >
+        <View style={styles.walletOptionWrapper}>
           <View
-            style={[
-              styles.iconContainer,
-              pressed && styles.iconContainerPressed,
-            ]}
+            style={[styles.walletOption, pressed && styles.walletOptionPressed]}
           >
+            <View
+              style={[
+                styles.iconContainer,
+                pressed && styles.iconContainerPressed,
+              ]}
+            >
+              <Ionicons
+                name={icon}
+                size={24}
+                color={pressed ? "#6D28D9" : "#7C3AED"}
+              />
+            </View>
+            <View style={styles.walletOptionContent}>
+              <Text style={styles.walletOptionTitle}>{title}</Text>
+              <Text style={styles.walletOptionDescription}>{description}</Text>
+            </View>
             <Ionicons
-              name={icon}
-              size={24}
+              name="arrow-forward"
+              size={20}
               color={pressed ? "#6D28D9" : "#7C3AED"}
             />
           </View>
-          <View style={styles.walletOptionContent}>
-            <Text style={styles.walletOptionTitle}>{title}</Text>
-            <Text style={styles.walletOptionDescription}>{description}</Text>
-          </View>
-          <Ionicons
-            name="arrow-forward"
-            size={20}
-            color={pressed ? "#6D28D9" : "#7C3AED"}
-          />
         </View>
       )}
     </Pressable>
@@ -245,6 +252,12 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     gap: 16,
+    paddingHorizontal: 1, // Add slight padding to prevent shadow clipping
+  },
+  walletOptionWrapper: {
+    borderRadius: 24,
+    backgroundColor: Platform.OS === "android" ? "#F5F3FF" : "transparent", // Very light purple background for Android
+    padding: Platform.OS === "android" ? 1 : 0, // Tiny padding for the shadow effect
   },
   walletOption: {
     backgroundColor: "#FFFFFF",
@@ -253,7 +266,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "#E9D5FF", // Matches web purple-200
+    borderColor: "#E9D5FF",
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -262,7 +275,9 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        // Remove all elevation and shadow properties
+        borderWidth: 2,
+        borderColor: "#E9D5FF",
       },
     }),
   },
