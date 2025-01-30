@@ -474,6 +474,68 @@ func (r *BlockDataRepo) GetByBlockTransactionTimestamp(ctx context.Context, time
 	return &blockData, nil
 }
 
+func (r *BlockDataRepo) GetLatestBlockTransactionByAddress(ctx context.Context, address *common.Address) (*domain.BlockTransaction, error) {
+	// Dereference the address pointer for the query
+	if address == nil {
+		return nil, fmt.Errorf("address cannot be nil")
+	}
+
+	// Decode the hex string (strip "0x" prefix)
+	addressBytes, err := hex.DecodeString(address.Hex()[2:])
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode address: %v", err)
+	}
+
+	// MongoDB aggregation pipeline to:
+	// 1. Unwind the `trans` array to work with individual transactions.
+	// 2. Match transactions involving the given address.
+	// 3. Sort transactions by timestamp in descending order.
+	// 4. Limit the result to 1 (latest transaction).
+	pipeline := []bson.M{
+		{"$unwind": "$trans"},
+		{"$match": bson.M{
+			"$or": []bson.M{
+				{"trans.signedtransaction.transaction.from": addressBytes},
+				{"trans.signedtransaction.transaction.to": addressBytes},
+			},
+		}},
+		{"$sort": bson.M{"trans.timestamp": -1}},
+		{"$limit": 1},
+		{"$replaceRoot": bson.M{"newRoot": "$trans"}}, // Promote the transaction to the root level
+	}
+
+	// Execute the aggregation pipeline
+	cursor, err := r.collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute aggregation pipeline: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	// Decode the result into a BlockTransaction
+	if cursor.Next(ctx) {
+		var blockTx domain.BlockTransaction
+		if err := cursor.Decode(&blockTx); err != nil {
+			return nil, fmt.Errorf("failed to decode transaction: %v", err)
+		}
+
+		// Set additional fields if needed
+		if !blockTx.SignedTransaction.IsNonceZero() {
+			blockTx.SignedTransaction.NonceString = blockTx.SignedTransaction.GetNonce().String()
+		}
+		if !blockTx.IsTokenIDZero() {
+			blockTx.SignedTransaction.TokenIDString = blockTx.SignedTransaction.GetTokenID().String()
+		}
+		if !blockTx.IsTokenNonceZero() {
+			blockTx.SignedTransaction.TokenNonceString = blockTx.SignedTransaction.GetTokenNonce().String()
+		}
+
+		return &blockTx, nil
+	}
+
+	// If no matching transaction is found
+	return nil, nil
+}
+
 func (r *BlockDataRepo) OpenTransaction() error {
 	defer log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
 	return nil

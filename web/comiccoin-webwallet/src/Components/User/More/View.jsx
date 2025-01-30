@@ -17,9 +17,27 @@ import { useWallet } from '../../../Hooks/useWallet'
 import NavigationMenu from '../NavigationMenu/View'
 import FooterMenu from '../FooterMenu/View'
 import walletService from '../../../Services/WalletService'
+// import { useLatestBlockTransactionSSE } from '../../../Contexts/LatestBlockTransactionSSEContext'
 
 const MorePage = () => {
     const { currentWallet, logout, loading: serviceLoading, error: serviceError } = useWallet()
+    // const { connect, disconnect, latestData, sseError, isConnected } = useLatestBlockTransactionSSE()
+
+    // // Connect with our backend server and receive SSE stream for latest txs
+    // useEffect(() => {
+    //     if (currentWallet?.address) {
+    //         console.log('SSE connecting to:', currentWallet?.address)
+    //         connect(currentWallet?.address)
+    //     }
+    //     return () => disconnect()
+    // }, [currentWallet?.address])
+
+    // // Handle incoming data
+    // useEffect(() => {
+    //     if (latestData) {
+    //         console.log('sse results -->', latestData)
+    //     }
+    // }, [latestData])
 
     // State for session management
     const [forceURL, setForceURL] = useState('')
@@ -35,43 +53,6 @@ const MorePage = () => {
             link: '/transactions',
             isExternal: false,
         },
-
-        // TODO: UNCOMMENT WHEN READY
-        // {
-        //   title: "Recovery Key",
-        //   description: "View and backup your wallet recovery key",
-        //   icon: Key,
-        //   link: "/recovery-key",
-        //   isExternal: false
-        // },
-
-        // TODO: UNCOMMENT WHEN READY
-        // {
-        //   title: "Password Change",
-        //   description: "Update your wallet password",
-        //   icon: KeyRound,
-        //   link: "/change-password",
-        //   isExternal: false
-        // },
-
-        // TODO: UNCOMMENT WHEN READY
-        // {
-        //   title: "Network Settings",
-        //   description: "Configure blockchain network settings",
-        //   icon: Network,
-        //   link: "/network-settings",
-        //   isExternal: false
-        // },
-
-        // TODO: UNCOMMENT WHEN READY
-        // {
-        //   title: "Block Explorer",
-        //   description: "View detailed blockchain transactions",
-        //   icon: BarChart3,
-        //   link: "https://explorer.comiccoin.com",
-        //   isExternal: true
-        // },
-
         {
             title: 'ComicCoin Faucet',
             description: 'Get free coins for your wallet',
@@ -152,34 +133,6 @@ const MorePage = () => {
     const handleSignOut = () => {
         logout()
         setForceURL('/login')
-    }
-
-    const MenuCard = ({ item }) => {
-        const Icon = item.icon
-        const CardContent = () => (
-            <div className="flex items-start gap-4 p-6 bg-white rounded-xl border-2 border-gray-100 hover:border-purple-200 transition-colors group">
-                <div className="p-3 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
-                    <Icon className="w-6 h-6 text-purple-600" />
-                </div>
-                <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
-                        {item.isExternal && <ExternalLink className="w-4 h-4 text-gray-400" />}
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                </div>
-            </div>
-        )
-
-        return item.isExternal ? (
-            <a href={item.link} target="_blank" rel="noopener noreferrer" className="block">
-                <CardContent />
-            </a>
-        ) : (
-            <Link to={item.link} className="block">
-                <CardContent />
-            </Link>
-        )
     }
 
     if (forceURL !== '' && !serviceLoading) {

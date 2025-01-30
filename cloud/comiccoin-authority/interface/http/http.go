@@ -35,19 +35,20 @@ type httpServerImpl struct {
 	// server is the underlying HTTP server.
 	server *http.Server
 
-	getVersionHTTPHandler                                     *handler.GetVersionHTTPHandler
-	getHealthCheckHTTPHandler                                 *handler.GetHealthCheckHTTPHandler
-	getGenesisBlockDataHTTPHandler                            *handler.GetGenesisBlockDataHTTPHandler
-	getBlockchainStateHTTPHandler                             *handler.GetBlockchainStateHTTPHandler
-	getBlockDataHTTPHandler                                   *handler.GetBlockDataHTTPHandler
-	listBlockTransactionsByAddressHTTPHandler                 *handler.ListBlockTransactionsByAddressHTTPHandler
-	prepareTransactionHTTPHandler                             *handler.PrepareTransactionHTTPHandler
-	signedTransactionSubmissionHTTPHandler                    *handler.SignedTransactionSubmissionHTTPHandler
-	mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler
-	blockchainStateChangeEventDTOHTTPHandler                  *handler.BlockchainStateChangeEventDTOHTTPHandler
-	blockchainStateServerSentEventsHTTPHandler                *handler.BlockchainStateServerSentEventsHTTPHandler
-	tokenListByOwnerHTTPHandler                               *handler.TokenListByOwnerHTTPHandler
-	tokenMintServiceHTTPHandler                               *handler.TokenMintServiceHTTPHandler
+	getVersionHTTPHandler                                         *handler.GetVersionHTTPHandler
+	getHealthCheckHTTPHandler                                     *handler.GetHealthCheckHTTPHandler
+	getGenesisBlockDataHTTPHandler                                *handler.GetGenesisBlockDataHTTPHandler
+	getBlockchainStateHTTPHandler                                 *handler.GetBlockchainStateHTTPHandler
+	getBlockDataHTTPHandler                                       *handler.GetBlockDataHTTPHandler
+	listBlockTransactionsByAddressHTTPHandler                     *handler.ListBlockTransactionsByAddressHTTPHandler
+	prepareTransactionHTTPHandler                                 *handler.PrepareTransactionHTTPHandler
+	signedTransactionSubmissionHTTPHandler                        *handler.SignedTransactionSubmissionHTTPHandler
+	mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler     *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler
+	blockchainStateChangeEventDTOHTTPHandler                      *handler.BlockchainStateChangeEventDTOHTTPHandler
+	blockchainStateServerSentEventsHTTPHandler                    *handler.BlockchainStateServerSentEventsHTTPHandler
+	getLatestBlockTransactionByAddressServerSentEventsHTTPHandler *handler.GetLatestBlockTransactionByAddressServerSentEventsHTTPHandler
+	tokenListByOwnerHTTPHandler                                   *handler.TokenListByOwnerHTTPHandler
+	tokenMintServiceHTTPHandler                                   *handler.TokenMintServiceHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -62,12 +63,13 @@ func NewHTTPServer(
 	http5 *handler.ListBlockTransactionsByAddressHTTPHandler,
 	http6 *handler.BlockchainStateChangeEventDTOHTTPHandler,
 	http7 *handler.BlockchainStateServerSentEventsHTTPHandler,
-	http8 *handler.GetBlockDataHTTPHandler,
-	http9 *handler.PrepareTransactionHTTPHandler,
-	http10 *handler.SignedTransactionSubmissionHTTPHandler,
-	http11 *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
-	http12 *handler.TokenListByOwnerHTTPHandler,
-	http13 *handler.TokenMintServiceHTTPHandler,
+	http8 *handler.GetLatestBlockTransactionByAddressServerSentEventsHTTPHandler,
+	http9 *handler.GetBlockDataHTTPHandler,
+	http10 *handler.PrepareTransactionHTTPHandler,
+	http11 *handler.SignedTransactionSubmissionHTTPHandler,
+	http12 *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
+	http13 *handler.TokenListByOwnerHTTPHandler,
+	http14 *handler.TokenMintServiceHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.IP == "" {
@@ -99,15 +101,16 @@ func NewHTTPServer(
 		getHealthCheckHTTPHandler:      http2,
 		getGenesisBlockDataHTTPHandler: http3,
 		getBlockchainStateHTTPHandler:  http4,
-		listBlockTransactionsByAddressHTTPHandler:                 http5,
-		blockchainStateChangeEventDTOHTTPHandler:                  http6,
-		blockchainStateServerSentEventsHTTPHandler:                http7,
-		getBlockDataHTTPHandler:                                   http8,
-		prepareTransactionHTTPHandler:                             http9,
-		signedTransactionSubmissionHTTPHandler:                    http10,
-		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler: http11,
-		tokenListByOwnerHTTPHandler:                               http12,
-		tokenMintServiceHTTPHandler:                               http13,
+		listBlockTransactionsByAddressHTTPHandler:                     http5,
+		blockchainStateChangeEventDTOHTTPHandler:                      http6,
+		blockchainStateServerSentEventsHTTPHandler:                    http7,
+		getLatestBlockTransactionByAddressServerSentEventsHTTPHandler: http8,
+		getBlockDataHTTPHandler:                                       http9,
+		prepareTransactionHTTPHandler:                                 http10,
+		signedTransactionSubmissionHTTPHandler:                        http11,
+		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler:     http12,
+		tokenListByOwnerHTTPHandler:                                   http13,
+		tokenMintServiceHTTPHandler:                                   http14,
 	}
 
 	// Attach the HTTP server controller to the ServeMux.
@@ -180,6 +183,8 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 	// "Does App Platform support SSE (Server-Sent Events) application?" via https://www.digitalocean.com/community/questions/does-app-platform-support-sse-server-sent-events-application
 	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockchain-state" && p[3] == "sse" && r.Method == http.MethodPost:
 		port.blockchainStateServerSentEventsHTTPHandler.Execute(w, r)
+	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "latest-block-transaction" && p[3] == "sse" && r.Method == http.MethodPost:
+		port.getLatestBlockTransactionByAddressServerSentEventsHTTPHandler.Execute(w, r)
 
 	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "blockdata" && r.Method == http.MethodGet:
 		port.getBlockDataHTTPHandler.ExecuteByHash(w, r, p[3])

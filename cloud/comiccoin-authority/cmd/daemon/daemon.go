@@ -136,6 +136,11 @@ func doRunDaemon() {
 		logger,
 		bdRepo,
 	)
+	getLatestBlockTransactionsByAddressUseCase := uc_blocktx.NewGetLatestBlockTransactionsByAddressUseCase(
+		cfg,
+		logger,
+		bdRepo,
+	)
 
 	// Wallet Utils
 	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
@@ -258,6 +263,11 @@ func doRunDaemon() {
 		logger,
 		listBlockTransactionsByAddressUseCase,
 	)
+	getLatestBlockTransactionByAddressService := sv_blocktx.NewGetLatestBlockTransactionByAddressService(
+		cfg,
+		logger,
+		getLatestBlockTransactionsByAddressUseCase,
+	)
 
 	// Coins
 	signedTransactionSubmissionService := sv_signedtx.NewSignedTransactionSubmissionService(
@@ -375,6 +385,9 @@ func doRunDaemon() {
 	blockchainStateServerSentEventsHTTPHandler := httphandler.NewBlockchainStateServerSentEventsHTTPHandler(
 		logger,
 		getBlockchainStateService)
+	getLatestBlockTransactionByAddressServerSentEventsHTTPHandler := httphandler.NewGetLatestBlockTransactionByAddressServerSentEventsHTTPHandler(
+		logger,
+		getLatestBlockTransactionByAddressService)
 	prepareTransactionHTTPHandler := httphandler.NewPrepareTransactionHTTPHandler(
 		logger,
 		prepareTransactionService)
@@ -411,6 +424,7 @@ func doRunDaemon() {
 		listBlockTransactionsByAddressHTTPHandler,
 		blockchainStateChangeEventsHTTPHandler,
 		blockchainStateServerSentEventsHTTPHandler,
+		getLatestBlockTransactionByAddressServerSentEventsHTTPHandler,
 		getBlockDataHTTPHandler,
 		prepareTransactionHTTPHandler,
 		signedTransactionSubmissionHTTPHandler,

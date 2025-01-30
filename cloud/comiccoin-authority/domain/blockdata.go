@@ -65,6 +65,9 @@ type BlockDataRepository interface {
 
 	GetByBlockTransactionTimestamp(ctx context.Context, timestamp uint64) (*BlockData, error)
 
+	// GetLatestBlockTransactionByAddress will return the most recent block transaction for the particular address.
+	GetLatestBlockTransactionByAddress(ctx context.Context, address *common.Address) (*BlockTransaction, error)
+
 	OpenTransaction() error
 	CommitTransaction() error
 	DiscardTransaction()

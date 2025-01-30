@@ -1,4 +1,4 @@
-import { React, useState } from 'react'
+import { React, useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 
@@ -24,12 +24,30 @@ import TermsPage from './Components/Gateway/TOS/View'
 import PrivacyPage from './Components/Gateway/Privacy/View'
 import NotImplementedError from './Components/Misc/NotImplementedError'
 import NotFoundError from './Components/Misc/NotFoundError'
+import { useWallet } from './Hooks/useWallet'
+import { useLatestBlockTransactionSSE } from './Contexts/LatestBlockTransactionSSEContext'
 
 // //-----------------//
 // //    App Routes   //
 // //-----------------//
 
-function AppRoute() {
+const AppRoute = () => {
+    const { currentWallet } = useWallet()
+    const { connect, disconnect } = useLatestBlockTransactionSSE()
+
+    // Manage SSE connection at router level
+    useEffect(() => {
+        if (currentWallet?.address) {
+            console.log('Establishing SSE connection for wallet:', currentWallet.address)
+            connect(currentWallet.address)
+        }
+
+        return () => {
+            console.log('Cleaning up SSE connection')
+            disconnect()
+        }
+    }, [currentWallet?.address])
+
     return (
         <div>
             <RecoilRoot>
