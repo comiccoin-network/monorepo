@@ -194,6 +194,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 24,
+    overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+      },
+    }),
   },
   title: {
     fontSize: 24,
@@ -217,6 +230,19 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 24,
+    overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        borderWidth: 1,
+        borderColor: "#FEE2E2", // Slightly darker red border
+      },
+    }),
   },
   checkListItem: {
     fontSize: 14,
@@ -232,9 +258,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 12,
     gap: 8,
+    overflow: "hidden",
+    ...Platform.select({
+      android: {
+        elevation: 0, // Remove elevation
+      },
+    }),
   },
   blockchainButton: {
     backgroundColor: "#DC2626",
+    ...Platform.select({
+      android: {
+        elevation: 0, // Ensure no elevation on this variant too
+      },
+    }),
   },
   buttonText: {
     color: "white",
