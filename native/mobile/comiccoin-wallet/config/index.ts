@@ -4,39 +4,48 @@ import { Platform } from "react-native";
 // First, let's define our configuration type for better type safety
 interface Config {
   AUTHORITY_API_URL: string;
+  IPFS_GATEWAY_URL: string;
   // Add other configuration values as needed
 }
 
 // Helper function to get the correct base URL for development
 const getDevelopmentBaseUrl = (): string => {
   if (__DEV__) {
-    // Use Platform to detect the OS
     if (Platform.OS === "android") {
-      // Use 10.0.2.2 for Android emulator (points to localhost on the host machine)
       return "http://10.0.2.2:8000";
     } else if (Platform.OS === "ios" || Platform.OS === "web") {
-      // Use localhost for iOS and web
       return "http://localhost:8000";
     }
   }
-
-  // Default to localhost if platform is not specified or not in development mode
   return "http://localhost:8000";
+};
+
+// Helper function to get IPFS gateway URL for development
+const getDevelopmentIPFSUrl = (): string => {
+  if (__DEV__) {
+    if (Platform.OS === "android") {
+      return "http://10.0.2.2:9000";
+    } else if (Platform.OS === "ios" || Platform.OS === "web") {
+      return "http://localhost:9000";
+    }
+  }
+  return "http://localhost:9000";
 };
 
 // Development configuration
 const developmentConfig: Config = {
   AUTHORITY_API_URL: getDevelopmentBaseUrl(),
+  IPFS_GATEWAY_URL: getDevelopmentIPFSUrl(),
 };
 
 // Production configuration
 const productionConfig: Config = {
   AUTHORITY_API_URL: "https://comiccoinauthority.com",
+  IPFS_GATEWAY_URL: "https://nftstorage.com",
 };
 
 // Here we determine which configuration to use based on the environment
 const getConfig = (): Config => {
-  // __DEV__ is a global variable in React Native that is true when running in development mode
   if (__DEV__) {
     console.log("Loading development configuration");
     return developmentConfig;

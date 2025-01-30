@@ -24,11 +24,6 @@ class MetadataError extends Error {
   }
 }
 
-// Constants
-const NFT_STORAGE_API_URL = __DEV__
-  ? "http://localhost:9000"
-  : "https://nftstorage.com";
-
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
 
@@ -54,7 +49,7 @@ export const convertIPFSToGatewayURL = (ipfsUri: string): string => {
   }
 
   const cid = ipfsUri.replace("ipfs://", "");
-  return `${NFT_STORAGE_API_URL}/ipfs/${cid}`;
+  return `${config.IPFS_GATEWAY_URL}/ipfs/${cid}`;
 };
 
 /**
@@ -74,7 +69,7 @@ export const fetchNFTMetadata = async (
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       const cid = tokenMetadataURI.replace("ipfs://", "");
-      const url = `${NFT_STORAGE_API_URL}/ipfs/${cid}`;
+      const url = `${config.IPFS_GATEWAY_URL}/ipfs/${cid}`;
 
       console.log(
         `Fetching metadata (attempt ${attempt + 1}/${MAX_RETRIES}):`,

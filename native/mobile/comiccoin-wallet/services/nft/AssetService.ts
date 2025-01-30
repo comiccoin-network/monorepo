@@ -13,12 +13,7 @@ interface FetchOptions {
 }
 
 class NFTAssetService {
-  private baseUrl: string;
   private readonly CHUNK_SIZE = 256 * 1024; // 256KB chunks for processing
-
-  constructor() {
-    this.baseUrl = __DEV__ ? "http://localhost:9000" : "https://nftstorage.com";
-  }
 
   async getNFTAsset(
     cid: string,
@@ -26,7 +21,7 @@ class NFTAssetService {
   ): Promise<NFTAsset> {
     if (!cid) throw new Error("CID is required");
 
-    const endpoint = `${this.baseUrl}/ipfs/${cid}`;
+    const endpoint = `${config.IPFS_GATEWAY_URL}/ipfs/${cid}`;
     console.log("Fetching NFT asset from endpoint:", endpoint);
 
     try {
