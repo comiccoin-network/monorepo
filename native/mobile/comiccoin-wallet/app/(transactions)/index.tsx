@@ -5,17 +5,39 @@ import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useWalletTransactions } from "../../hooks/useWalletTransactions";
 import { useWallet } from "../../hooks/useWallet";
 import TransactionList from "../../components/TransactionList";
-import { useBlockchainState } from "../../hooks/useBlockchainState";
+import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
 
 export default function TransactionsList() {
   const { currentWallet } = useWallet();
 
-  useBlockchainState({
-    onStateChange: () => {
+  useWalletTransactionMonitor({
+    walletAddress: currentWallet?.address,
+    onNewTransaction: () => {
       if (currentWallet) {
-        console.log("Refreshing transactions because of SSE.");
+        console.log(`
+ 💫 Transaction List Update 💫
+ ================================
+ 🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
+ 📊 Total Transactions: ${transactions?.length || 0}
+ ⏰ Time: ${new Date().toLocaleTimeString()}
+ ================================
+ 🔄 Refreshing transaction list...
+         `);
         refresh();
       }
+    },
+    onConnectionStateChange: (connected) => {
+      console.log(`
+ ${connected ? "🌟 Transaction Monitor Active" : "⚠️ Transaction Monitor Inactive"}
+ ================================
+ 🔗 Wallet: ${
+   currentWallet?.address
+     ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}`
+     : "No wallet"
+ }
+ ⏰ Time: ${new Date().toLocaleTimeString()}
+ 📡 Status: ${connected ? "Monitoring transactions" : "Connection lost"}
+ ================================`);
     },
   });
 

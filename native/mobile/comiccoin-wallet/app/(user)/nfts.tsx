@@ -27,7 +27,7 @@ import { useWallet } from "../../hooks/useWallet";
 import { useNFTCollection } from "../../hooks/useNFTCollection";
 import { convertIPFSToGatewayURL } from "../../services/nft/MetadataService";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
-import { useBlockchainState } from "../../hooks/useBlockchainState";
+import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
 
 interface NFT {
   tokenId: string;
@@ -158,12 +158,34 @@ export default function NFTListScreen() {
     refresh,
   } = useNFTCollection(currentWallet?.address || null);
 
-  useBlockchainState({
-    onStateChange: () => {
+  useWalletTransactionMonitor({
+    walletAddress: currentWallet?.address,
+    onNewTransaction: () => {
       if (currentWallet) {
-        console.log("Refreshing NFTs list because of SSE.");
+        console.log(`
+  📚 NFT Collection Update 📚
+  ================================
+  🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
+  🖼️  Collection Size: ${nftCollection?.length || 0} NFTs
+  ⏰ Time: ${new Date().toLocaleTimeString()}
+  ================================
+  🔄 Refreshing NFT collection...
+        `);
         handleRefresh();
       }
+    },
+    onConnectionStateChange: (connected) => {
+      console.log(`
+  ${connected ? "🌟 NFT Updates Connected" : "⚠️ NFT Updates Disconnected"}
+  ================================
+  🔗 Wallet: ${
+    currentWallet?.address
+      ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}`
+      : "No wallet"
+  }
+  ⏰ Time: ${new Date().toLocaleTimeString()}
+  📡 Status: ${connected ? "Monitoring NFT transfers" : "Connection lost"}
+  ================================`);
     },
   });
 

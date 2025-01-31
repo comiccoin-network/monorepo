@@ -30,7 +30,7 @@ import { useWallet } from "../../hooks/useWallet";
 import { useWalletTransactions } from "../../hooks/useWalletTransactions";
 import { useCoinTransfer } from "../../hooks/useCoinTransfer";
 import walletService from "../../services/wallet/WalletService";
-import { useBlockchainState } from "../../hooks/useBlockchainState";
+import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
 
 type RootStackParamList = {
   Login: undefined;
@@ -54,12 +54,33 @@ const SendScreen: React.FC = () => {
   );
   const { submitTransaction, loading: transactionLoading } = useCoinTransfer(1);
 
-  useBlockchainState({
-    onStateChange: () => {
+  useWalletTransactionMonitor({
+    walletAddress: currentWallet?.address,
+    onNewTransaction: () => {
       if (currentWallet) {
-        console.log("Refreshing send coins because of SSE.");
+        console.log(`
+  🔄 Refreshing Send Screen 🔄
+  ================================
+  🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
+  💰 Balance: ${statistics?.totalCoinValue || 0} CC
+  📊 Transactions: ${statistics?.coinTransactionsCount || 0}
+  ⏰ Time: ${new Date().toLocaleTimeString()}
+  ================================`);
         txrefresh();
       }
+    },
+    onConnectionStateChange: (connected) => {
+      // Optional: You could add visual feedback for connection state
+      console.log(`
+  ${connected ? "🌟 Live Updates Connected" : "⚠️ Live Updates Disconnected"}
+  ================================
+  🔗 Wallet: ${
+    currentWallet?.address
+      ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}`
+      : "No wallet"
+  }
+  ⏰ Time: ${new Date().toLocaleTimeString()}
+  ================================`);
     },
   });
 

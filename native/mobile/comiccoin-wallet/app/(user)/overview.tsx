@@ -1,5 +1,5 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(user)/overview.tsx
-import React, { useState, useEffect, useCallback, onStateChange } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -25,12 +25,12 @@ import {
 
 import { useWallet } from "../../hooks/useWallet";
 import { useAllTransactions } from "../../hooks/useAllTransactions";
+import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
 import walletService from "../../services/wallet/WalletService";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import TransactionList from "../../components/TransactionList";
-import { useBlockchainState } from "../../hooks/useBlockchainState";
 
-// Define navigation types
+// Define navigation types for type safety in our router usage
 type RootStackParamList = {
   Login: undefined;
   Transaction: { id: string };
@@ -42,6 +42,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 // Main Dashboard component
 const Dashboard: React.FC = () => {
   const router = useRouter();
+
+  // Core wallet management hook
   const {
     currentWallet,
     wallets,
@@ -50,6 +52,8 @@ const Dashboard: React.FC = () => {
     loading: serviceLoading,
     error: serviceError,
   } = useWallet();
+
+  // Transaction management hook for the current wallet
   const {
     transactions,
     loading: txloading,
@@ -58,26 +62,87 @@ const Dashboard: React.FC = () => {
     statistics,
   } = useAllTransactions(currentWallet?.address);
 
+  // Local state management
   const [error, setError] = useState<string | null>(null);
   const [isSessionExpired, setIsSessionExpired] = useState(false);
+  const [sseConnected, setSSEConnected] = useState(false);
 
-  // Use the blockchain state hook with a callback
-  useBlockchainState({
-    onStateChange: () => {
+  // Handle session expiration gracefully
+  const handleSessionExpired = useCallback(() => {
+    setIsSessionExpired(true);
+    logout();
+    setError("Your session has expired. Please sign in again.");
+    setTimeout(() => {
+      router.replace("/login");
+    }, 3000);
+  }, [logout, router]);
+
+  // Initialize our transaction monitor with proper callbacks
+  const { reconnect } = useWalletTransactionMonitor({
+    walletAddress: currentWallet?.address,
+    onNewTransaction: () => {
       if (currentWallet) {
-        console.log("Refreshing transactions because of SSE.");
+        console.log(`
+ 🎯 New Transaction Detected! 🎯
+ ================================
+ 🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
+ 💰 Current Balance: ${statistics?.totalCoinValue || 0} CC
+ 📊 Total Transactions: ${statistics?.coinTransactionsCount || 0}
+ ⏰ Time: ${new Date().toLocaleTimeString()}
+ ================================
+ 🔄 Refreshing transaction list...
+         `);
         txrefresh();
       }
     },
+    onConnectionStateChange: (connected) => {
+      const timestamp = new Date().toLocaleTimeString();
+      if (connected) {
+        console.log(`
+ 🌟 SSE Connection Established! 🌟
+ ================================
+ 🔗 Wallet: ${currentWallet?.address ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}` : "No wallet"}
+ ⏰ Time: ${timestamp}
+ 🚦 Status: Connected
+ ================================
+ 📡 Listening for blockchain updates...
+         `);
+      } else {
+        console.log(`
+ ⚠️ SSE Connection Changed ⚠️
+ ================================
+ 🔗 Wallet: ${currentWallet?.address ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}` : "No wallet"}
+ ⏰ Time: ${timestamp}
+ 🚦 Status: Disconnected
+ ================================
+ 🔄 Will attempt to reconnect...
+         `);
+      }
+      setSSEConnected(connected);
+    },
   });
 
-  // Check wallet session periodically
+  // Periodic session check to ensure wallet is still valid
   useEffect(() => {
     const checkWalletSession = async () => {
       try {
-        if (serviceLoading) return;
+        if (serviceLoading) {
+          console.log(`
+ ⏳ Service Loading ⏳
+ ================================
+ 🕒 Time: ${new Date().toLocaleTimeString()}
+ 📝 Status: Waiting for service...
+ ================================`);
+          return;
+        }
 
         if (!currentWallet) {
+          console.log(`
+ 🚫 No Active Wallet 🚫
+ ================================
+ ⏰ Time: ${new Date().toLocaleTimeString()}
+ 🔄 Action: Redirecting to login...
+ ================================`);
           router.replace("/login");
           return;
         }
@@ -85,10 +150,33 @@ const Dashboard: React.FC = () => {
         if (!walletService.checkSession()) {
           throw new Error("Session expired");
         }
+
+        console.log(`
+ ✅ Session Check Passed ✅
+ ================================
+ 🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
+ ⏰ Time: ${new Date().toLocaleTimeString()}
+ 🔐 Status: Session Valid
+ ================================`);
       } catch (error) {
         if (error instanceof Error && error.message === "Session expired") {
+          console.log(`
+ ⚠️ Session Expired ⚠️
+ ================================
+ 🔗 Wallet: ${currentWallet?.address ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}` : "No wallet"}
+ ⏰ Time: ${new Date().toLocaleTimeString()}
+ ❌ Status: Session Invalid
+ 🔄 Action: Redirecting to login...
+ ================================`);
           handleSessionExpired();
         } else {
+          console.log(`
+ ❌ Error Occurred ❌
+ ================================
+ 🔗 Wallet: ${currentWallet?.address ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}` : "No wallet"}
+ ⏰ Time: ${new Date().toLocaleTimeString()}
+ ❌ Error: ${error instanceof Error ? error.message : "Unknown error"}
+ ================================`);
           setError(
             error instanceof Error
               ? error.message
@@ -102,23 +190,37 @@ const Dashboard: React.FC = () => {
     const sessionCheckInterval = setInterval(checkWalletSession, 60000);
 
     return () => clearInterval(sessionCheckInterval);
-  }, [currentWallet, serviceLoading, router]);
+  }, [currentWallet, serviceLoading, router, handleSessionExpired]);
 
-  const handleSessionExpired = useCallback(() => {
-    setIsSessionExpired(true);
-    logout();
-    setError("Your session has expired. Please sign in again.");
-    setTimeout(() => {
-      router.replace("/login");
-    }, 3000);
-  }, [logout, router]);
-
+  // Utility function to copy wallet address
   const copyToClipboard = async (text: string) => {
     await Clipboard.setStringAsync(text);
+    console.log(`
+ 📋 Address Copied! 📋
+ ================================
+ 📝 Address: ${text.slice(0, 6)}...${text.slice(-4)}
+ ⏰ Time: ${new Date().toLocaleTimeString()}
+ ✅ Status: Copied to clipboard
+ ================================`);
     Alert.alert("Copied", "Address copied to clipboard");
   };
 
-  // Loading state
+  // Display connection status in the UI
+  const renderConnectionStatus = () => (
+    <View style={styles.connectionStatus}>
+      <View
+        style={[
+          styles.connectionIndicator,
+          sseConnected ? styles.connected : styles.disconnected,
+        ]}
+      />
+      <Text style={styles.connectionText}>
+        {sseConnected ? "Live Updates Active" : "Live Updates Inactive"}
+      </Text>
+    </View>
+  );
+
+  // Loading state handler
   if (serviceLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -136,6 +238,7 @@ const Dashboard: React.FC = () => {
           <View style={styles.header}>
             <Text style={styles.title}>Dashboard</Text>
             <Text style={styles.subtitle}>Manage your ComicCoin wallet</Text>
+            {renderConnectionStatus()}
           </View>
 
           {/* Error Messages */}
