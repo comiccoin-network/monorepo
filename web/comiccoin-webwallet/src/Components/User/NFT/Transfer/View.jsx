@@ -157,7 +157,7 @@ const TransferNFTPage = () => {
                 formData.tokenID,
                 formData.tokenMetadataURI
             )
-            navigate('/nfts', {
+            navigate(`/nft/transfer/verify?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`, {
                 state: {
                     transactionSuccess: true,
                     message: 'NFT transferred successfully!',

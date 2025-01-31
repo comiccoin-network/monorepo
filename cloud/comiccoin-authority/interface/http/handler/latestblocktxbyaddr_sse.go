@@ -71,11 +71,21 @@ func (h *GetLatestBlockTransactionByAddressServerSentEventsHTTPHandler) Execute(
 			if blocktx != nil {
 				var sssData string
 				if blocktx.From.String() == addr.String() {
+					if blocktx.Type == "coin" {
+						sssData = fmt.Sprintf("FROM|%v|%v|%v", blocktx.Type, blocktx.Value, blocktx.TimeStamp)
+					}
+					if blocktx.Type == "token" {
+						sssData = fmt.Sprintf("FROM|%v|%v|%v", blocktx.Type, blocktx.GetTokenID().String(), blocktx.TimeStamp)
+					}
 
-					sssData = fmt.Sprintf("FROM|%v|%v|%v", blocktx.Type, blocktx.Value, blocktx.TimeStamp)
 				}
 				if blocktx.To.String() == addr.String() {
-					sssData = fmt.Sprintf("TO|%v|%v|%v", blocktx.Type, blocktx.Value, blocktx.TimeStamp)
+					if blocktx.Type == "coin" {
+						sssData = fmt.Sprintf("TO|%v|%v|%v", blocktx.Type, blocktx.Value, blocktx.TimeStamp)
+					}
+					if blocktx.Type == "token" {
+						sssData = fmt.Sprintf("TO|%v|%v|%v", blocktx.Type, blocktx.GetTokenID().String(), blocktx.TimeStamp)
+					}
 				}
 
 				// For debugging purposes only. (Uncommenting will make for noisy console logs)

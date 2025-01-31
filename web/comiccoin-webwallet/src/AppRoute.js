@@ -5,6 +5,7 @@ import TransactionDetailPage from './Components/User/More/Transaction/DetailView
 import TransactionListPage from './Components/User/More/Transaction/ListView'
 import MorePage from './Components/User/More/View'
 import BurnNFTPage from './Components/User/NFT/Burn/View'
+import TransferNFTVerifyTransactionPage from './Components/User/NFT/Transfer/Verify/View'
 import TransferNFTPage from './Components/User/NFT/Transfer/View'
 import NFTDetailPage from './Components/User/NFT/Detail/View'
 import NFTListPage from './Components/User/NFT/List/View'
@@ -62,6 +63,7 @@ const AppRoute = () => {
                     <Route exact path="/transactions" element={<TransactionListPage />} />
                     <Route exact path="/more" element={<MorePage />} />
                     <Route exact path="/nft/burn" element={<BurnNFTPage />} />
+                    <Route exact path="/nft/transfer/verify" element={<TransferNFTVerifyTransactionPage />} />
                     <Route exact path="/nft/transfer" element={<TransferNFTPage />} />
                     <Route exact path="/nfts" element={<NFTListPage />} />
                     <Route exact path="/nft" element={<NFTDetailPage />} />
