@@ -14,13 +14,13 @@ import {
     Home,
     Bell, // Added for notification icon
 } from 'lucide-react'
-import WalletLatestBlockTransactionListener from '../../Shared/WalletLatestBlockTransactionListener'
+
 import { useWallet } from '../../../Hooks/useWallet'
-import { useTransactionNotification } from '../../../Hooks/useTransactionNotification'
+import { useTransactionNotifications } from '../../../Contexts/TransactionNotificationsContext'
 
 const NavigationMenu = ({ onSignOut }) => {
+    const { notification, clearNotification, handleNewTransaction } = useTransactionNotifications()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const [notification, setNotification] = useTransactionNotification()
     const location = useLocation()
 
     const navigationItems = [
@@ -35,44 +35,14 @@ const NavigationMenu = ({ onSignOut }) => {
 
     const { currentWallet } = useWallet()
 
-    // Clean up notification after timeout
     useEffect(() => {
-        if (notification) {
-            const timer = setTimeout(() => {
-                setNotification(null)
-            }, 15000) // 15 seconds
-
-            return () => clearTimeout(timer)
+        if (currentWallet) {
+            handleNewTransaction(currentWallet)
         }
-    }, [notification])
-
-    const handleNewTransaction = (transaction) => {
-        const { direction, type, value } = transaction
-
-        const action = direction === 'FROM' ? 'sent' : 'received'
-
-        let message
-        if (type.toLowerCase() === 'coin') {
-            message = `You've ${action} ${value} coins`
-        } else if (type.toLowerCase() === 'token') {
-            message = `You've ${action} an NFT`
-        } else {
-            message = `New transaction ${action}`
-        }
-
-        setNotification({
-            message: `${message}!`,
-            type: direction,
-        })
-    }
+    }, [currentWallet, handleNewTransaction])
 
     return (
         <>
-            <WalletLatestBlockTransactionListener
-                currentWallet={currentWallet}
-                onNewTransaction={handleNewTransaction}
-            />
-
             {/* Transaction Notification Banner */}
             {notification && (
                 <div
@@ -88,12 +58,6 @@ const NavigationMenu = ({ onSignOut }) => {
                             </div>
                             <span className="text-lg font-medium">{notification.message}</span>
                         </div>
-                        <button
-                            onClick={() => setNotification(null)}
-                            className="text-white hover:text-gray-100 bg-white bg-opacity-20 rounded-full p-2 transition-colors"
-                        >
-                            <X className="h-6 w-6" />
-                        </button>
                     </div>
                 </div>
             )}

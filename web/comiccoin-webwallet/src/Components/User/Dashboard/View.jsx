@@ -1,5 +1,5 @@
 // monorepo/web/comiccoin-webwallet/src/Components/User/Dashboard/View.jsx
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import {
     Globe,
@@ -27,6 +27,7 @@ import { useAllTransactions } from '../../../Hooks/useAllTransactions'
 import NavigationMenu from '../NavigationMenu/View'
 import FooterMenu from '../FooterMenu/View'
 import walletService from '../../../Services/WalletService'
+import { useTransactionNotifications } from '../../../Contexts/TransactionNotificationsContext'
 
 function DashboardPage() {
     const { currentWallet, wallets, loadWallet, logout, loading: serviceLoading, error: serviceError } = useWallet()
@@ -40,6 +41,25 @@ function DashboardPage() {
         coinTransactions,
         nftTransactions,
     } = useAllTransactions(currentWallet?.address)
+
+    // PART 1 of 3: Connect to ComicCoin Blockchain Authority and get SSE for latest updates. If our wallet has a new transcation (either we sent or received) then call the `txrefresh` function to fetch latest data for this page and this page will refresh with latest data.
+    const { handleNewTransaction } = useTransactionNotifications()
+
+    // PART 2 of 3: Use a stable callback reference with useCallback
+    const handleTransactionUpdate = useCallback(
+        (transactionData) => {
+            console.log('Transaction update received:', transactionData)
+            txrefresh() // Refresh the transactions list
+        },
+        [txrefresh]
+    )
+
+    // PART 3 of 3: Set up the transaction listener
+    useEffect(() => {
+        if (currentWallet) {
+            handleNewTransaction(currentWallet, handleTransactionUpdate)
+        }
+    }, [currentWallet, handleNewTransaction, handleTransactionUpdate])
 
     // For debugging purposes only.
     console.log('DashboardPage: statistics:', statistics, '\nAddr:', currentWallet?.address)
@@ -326,7 +346,6 @@ function DashboardPage() {
         )
     }
 
-    // Rest of the component remains the same...
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
             <a

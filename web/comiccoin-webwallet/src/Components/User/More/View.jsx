@@ -18,32 +18,10 @@ import NavigationMenu from '../NavigationMenu/View'
 import FooterMenu from '../FooterMenu/View'
 import walletService from '../../../Services/WalletService'
 // import { useLatestBlockTransactionSSE } from '../../../Contexts/LatestBlockTransactionSSEContext'
-import WalletLatestBlockTransactionListener from '../../Shared/WalletLatestBlockTransactionListener'
 
 const MorePage = () => {
     const { currentWallet, logout, loading: serviceLoading, error: serviceError } = useWallet()
     // const { connect, disconnect, latestData, sseError, isConnected } = useLatestBlockTransactionSSE()
-
-    // // Connect with our backend server and receive SSE stream for latest txs
-    // useEffect(() => {
-    //     if (currentWallet?.address) {
-    //         console.log('SSE connecting to:', currentWallet?.address)
-    //         connect(currentWallet?.address)
-    //     }
-    //     return () => disconnect()
-    // }, [currentWallet?.address])
-
-    // // Handle incoming data
-    // useEffect(() => {
-    //     if (latestData) {
-    //         console.log('sse results -->', latestData)
-    //     }
-    // }, [latestData])
-
-    const handleNewTransaction = (transaction) => {
-        // Handle stream transaction data
-        console.log('New Transaction received:', transaction)
-    }
 
     // State for session management
     const [forceURL, setForceURL] = useState('')
@@ -165,10 +143,6 @@ const MorePage = () => {
             </a>
 
             <NavigationMenu onSignOut={handleSignOut} />
-            <WalletLatestBlockTransactionListener
-                currentWallet={currentWallet}
-                onNewTransaction={handleNewTransaction}
-            />
 
             <main id="main-content" className="flex-grow flex flex-col px-4 md:px-6 lg:px-8 py-6 md:py-12">
                 <div className="w-full max-w-7xl mx-auto">
