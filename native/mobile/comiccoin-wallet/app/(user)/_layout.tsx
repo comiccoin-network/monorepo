@@ -14,13 +14,16 @@ import { useRouter } from "expo-router";
 import UserNavigationBar from "../../components/UserNavigationBar";
 import UserTransactionBanner from "../../components/UserTransactionBanner";
 import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
+import { useWallet } from "../../hooks/useWallet";
 
 export default function UserLayout() {
   const router = useRouter();
   const queryClient = new QueryClient();
 
+  // The following code will connect our open wallet with the authority and always be up-to-date with latest transactions for this wallet.
+  const { currentWallet } = useWallet();
   useWalletTransactionMonitor({
-    walletAddress: "0x417793769b45Df3313a24b241CDe48Ff9Bc99e51",
+    walletAddress: currentWallet?.address,
   });
 
   return (
