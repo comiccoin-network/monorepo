@@ -1,4 +1,5 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(user)/nfts.tsx
+
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -27,8 +28,9 @@ import { useWallet } from "../../hooks/useWallet";
 import { useNFTCollection } from "../../hooks/useNFTCollection";
 import { convertIPFSToGatewayURL } from "../../services/nft/MetadataService";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
-import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
+import { walletTransactionEventEmitter } from "../../utils/eventEmitter";
 
+// NFT Interface definition
 interface NFT {
   tokenId: string;
   tokenMetadataURI: string;
@@ -51,6 +53,7 @@ interface NFT {
   };
 }
 
+// NFTCard component with event handling capabilities
 const NFTCard = ({ nft, currentWallet }: { nft: NFT; currentWallet: any }) => {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
@@ -64,26 +67,23 @@ const NFTCard = ({ nft, currentWallet }: { nft: NFT; currentWallet: any }) => {
     return null;
   };
 
-  // For debugging purposes only.
-  // console.log("NFTCard --> nft:", nft);
-  // console.log("NFTCard --> nft.tokenId:", nft.tokenId);
-
   const imageUrl = getNFTImageUrl(nft);
-
-  // Extract the CID from the token.
   const metadataCID = nft.tokenMetadataURI.replace("ipfs://", "");
-
-  // console.log("NFTCard --> nft.metadataCID:", metadataCID);
-  //
   const url = `/(nft)/${metadataCID}?metadata_uri=${encodeURIComponent(lastTx.tokenMetadataURI)}&token_id=${nft.tokenId}`;
-  // console.log("NFTCard --> url:", url);
 
-  // For testing purposes only!
-  // const url = `/(nft)/verifysuccess?token_id=${nft.tokenId}&token_metadata_uri=${encodeURIComponent(lastTx.tokenMetadataURI)}`;
-  // console.log("NFTCard --> url:", url);
+  // Navigate and emit event when NFT is selected
+  const handleNFTSelect = () => {
+    walletTransactionEventEmitter.emit("nftSelected", {
+      walletAddress: currentWallet.address,
+      tokenId: nft.tokenId,
+      timestamp: Date.now(),
+    });
+    router.push(url);
+  };
 
   return (
-    <Pressable onPress={() => router.push(url)} style={styles.cardContainer}>
+    <Pressable onPress={handleNFTSelect} style={styles.cardContainer}>
+      {/* Rest of the NFTCard JSX remains the same */}
       <View style={styles.imageContainer}>
         {imageUrl && !imageError ? (
           <Image
@@ -146,6 +146,7 @@ const NFTCard = ({ nft, currentWallet }: { nft: NFT; currentWallet: any }) => {
   );
 };
 
+// Main NFTListScreen component
 export default function NFTListScreen() {
   const router = useRouter();
   const { currentWallet, loading: serviceLoading } = useWallet();
@@ -158,47 +159,66 @@ export default function NFTListScreen() {
     refresh,
   } = useNFTCollection(currentWallet?.address || null);
 
-  useWalletTransactionMonitor({
-    walletAddress: currentWallet?.address,
-    onNewTransaction: () => {
-      if (currentWallet) {
+  // Effect to listen for transaction events
+  useEffect(() => {
+    const handleNewTransaction = (data: {
+      walletAddress: string;
+      transaction: any;
+    }) => {
+      if (currentWallet && data.walletAddress === currentWallet.address) {
         console.log(`
-  📚 NFT Collection Update 📚
-  ================================
-  🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
-  🖼️  Collection Size: ${nftCollection?.length || 0} NFTs
-  ⏰ Time: ${new Date().toLocaleTimeString()}
-  ================================
-  🔄 Refreshing NFT collection...
-        `);
+🎭 NFT Transaction Event 🎭
+================================
+🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
+📚 Collection Size: ${nftCollection?.length || 0} NFTs
+⏰ Time: ${new Date().toLocaleTimeString()}
+🔄 Status: Refreshing collection
+================================`);
         handleRefresh();
       }
-    },
-    onConnectionStateChange: (connected) => {
+    };
+
+    const handleNFTSelected = (data: {
+      walletAddress: string;
+      tokenId: string;
+    }) => {
       console.log(`
-  ${connected ? "🌟 NFT Updates Connected" : "⚠️ NFT Updates Disconnected"}
-  ================================
-  🔗 Wallet: ${
-    currentWallet?.address
-      ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}`
-      : "No wallet"
-  }
-  ⏰ Time: ${new Date().toLocaleTimeString()}
-  📡 Status: ${connected ? "Monitoring NFT transfers" : "Connection lost"}
-  ================================`);
-    },
-  });
+🎯 NFT Selected 🎯
+================================
+🔗 Wallet: ${currentWallet?.address.slice(0, 6)}...${currentWallet?.address.slice(-4)}
+🎨 Token ID: ${data.tokenId}
+⏰ Time: ${new Date().toLocaleTimeString()}
+================================`);
+    };
+
+    // Subscribe to both transaction and selection events
+    walletTransactionEventEmitter.on("newTransaction", handleNewTransaction);
+    walletTransactionEventEmitter.on("nftSelected", handleNFTSelected);
+
+    return () => {
+      walletTransactionEventEmitter.off("newTransaction", handleNewTransaction);
+      walletTransactionEventEmitter.off("nftSelected", handleNFTSelected);
+    };
+  }, [currentWallet, nftCollection]);
 
   const handleRefresh = async () => {
-    console.log("Refreshing...");
     setIsRefreshing(true);
     try {
       await refresh();
+      // Emit refresh event
+      if (currentWallet) {
+        walletTransactionEventEmitter.emit("nftRefresh", {
+          walletAddress: currentWallet.address,
+          timestamp: Date.now(),
+          collectionSize: nftCollection?.length || 0,
+        });
+      }
     } finally {
       setIsRefreshing(false);
     }
   };
 
+  // Filter NFTs based on search term
   const filteredNFTs = (nftCollection || []).filter((nft: NFT) => {
     const searchTermLower = searchTerm.toLowerCase();
     const nftName = nft.metadata?.name || "";
@@ -211,6 +231,7 @@ export default function NFTListScreen() {
     );
   });
 
+  // Session management
   useEffect(() => {
     if (!currentWallet && !serviceLoading) {
       router.replace("/login");

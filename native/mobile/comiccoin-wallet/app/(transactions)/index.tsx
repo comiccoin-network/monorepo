@@ -1,49 +1,78 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(transactions)/index.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
+import { useQueryClient } from "@tanstack/react-query";
 import { useWalletTransactions } from "../../hooks/useWalletTransactions";
 import { useWallet } from "../../hooks/useWallet";
 import TransactionList from "../../components/TransactionList";
-import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
+import { walletTransactionEventEmitter } from "../../utils/eventEmitter";
 
 export default function TransactionsList() {
   const { currentWallet } = useWallet();
-
-  useWalletTransactionMonitor({
-    walletAddress: currentWallet?.address,
-    onNewTransaction: () => {
-      if (currentWallet) {
-        console.log(`
- 💫 Transaction List Update 💫
- ================================
- 🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
- 📊 Total Transactions: ${transactions?.length || 0}
- ⏰ Time: ${new Date().toLocaleTimeString()}
- ================================
- 🔄 Refreshing transaction list...
-         `);
-        refresh();
-      }
-    },
-    onConnectionStateChange: (connected) => {
-      console.log(`
- ${connected ? "🌟 Transaction Monitor Active" : "⚠️ Transaction Monitor Inactive"}
- ================================
- 🔗 Wallet: ${
-   currentWallet?.address
-     ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}`
-     : "No wallet"
- }
- ⏰ Time: ${new Date().toLocaleTimeString()}
- 📡 Status: ${connected ? "Monitoring transactions" : "Connection lost"}
- ================================`);
-    },
-  });
-
+  const queryClient = useQueryClient();
   const { transactions, loading, error, refresh } = useWalletTransactions(
     currentWallet?.address,
   );
+
+  // Listen for transaction events
+  useEffect(() => {
+    if (!currentWallet?.address) return;
+
+    const handleTransaction = async (data: {
+      walletAddress: string;
+      transaction: any;
+    }) => {
+      if (currentWallet.address === data.walletAddress) {
+        console.log(`
+💫 Transaction Update in List 💫
+================================
+🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
+📊 Current Count: ${transactions?.length || 0}
+⏰ Time: ${new Date().toLocaleTimeString()}
+================================`);
+
+        await refresh();
+      }
+    };
+
+    walletTransactionEventEmitter.on("newTransaction", handleTransaction);
+
+    return () => {
+      walletTransactionEventEmitter.off("newTransaction", handleTransaction);
+    };
+  }, [currentWallet?.address, refresh]);
+
+  // Enhanced refresh handler for manual refreshes
+  const handleRefresh = async () => {
+    if (!currentWallet) return;
+
+    console.log(`
+🔄 Manual Refresh Triggered 🔄
+================================
+🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
+📊 Current Count: ${transactions?.length || 0}
+⏰ Time: ${new Date().toLocaleTimeString()}
+================================`);
+
+    try {
+      // Invalidate and refetch in one go
+      await queryClient.invalidateQueries({
+        queryKey: ["transactions", currentWallet.address],
+        refetchType: "active",
+      });
+
+      await refresh();
+
+      walletTransactionEventEmitter.emit("transactionListRefresh", {
+        walletAddress: currentWallet.address,
+        timestamp: Date.now(),
+        transactionCount: transactions?.length || 0,
+      });
+    } catch (error) {
+      console.error("Refresh failed:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -69,7 +98,7 @@ export default function TransactionsList() {
           <TransactionList
             transactions={transactions || []}
             currentWalletAddress={currentWallet?.address || ""}
-            onRefresh={refresh}
+            onRefresh={handleRefresh}
             isRefreshing={loading}
           />
         </View>
@@ -91,23 +120,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5F3FF", // Added for consistency
+    backgroundColor: "#F5F3FF",
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
     color: "#6B7280",
-    textAlign: "center", // Added for better centering
+    textAlign: "center",
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
-    backgroundColor: "#F5F3FF", // Added for consistency
+    backgroundColor: "#F5F3FF",
   },
   errorText: {
-    fontSize: 16, // Added for consistency
+    fontSize: 16,
     color: "#DC2626",
     textAlign: "center",
   },

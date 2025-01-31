@@ -15,30 +15,16 @@ import {
   Keyboard,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import {
-  AlertCircle,
-  Send,
-  Loader2,
-  Info,
-  Wallet,
-  Coins,
-} from "lucide-react-native";
+import { AlertCircle, Send, Info, Wallet, Coins } from "lucide-react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import { useWallet } from "../../hooks/useWallet";
 import { useWalletTransactions } from "../../hooks/useWalletTransactions";
 import { useCoinTransfer } from "../../hooks/useCoinTransfer";
 import walletService from "../../services/wallet/WalletService";
-import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
+import { walletTransactionEventEmitter } from "../../utils/eventEmitter";
 
-type RootStackParamList = {
-  Login: undefined;
-  Dashboard: undefined;
-};
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
+// Form data interface
 interface FormData {
   recipientAddress: string;
   amount: string;
@@ -54,36 +40,6 @@ const SendScreen: React.FC = () => {
   );
   const { submitTransaction, loading: transactionLoading } = useCoinTransfer(1);
 
-  useWalletTransactionMonitor({
-    walletAddress: currentWallet?.address,
-    onNewTransaction: () => {
-      if (currentWallet) {
-        console.log(`
-  🔄 Refreshing Send Screen 🔄
-  ================================
-  🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
-  💰 Balance: ${statistics?.totalCoinValue || 0} CC
-  📊 Transactions: ${statistics?.coinTransactionsCount || 0}
-  ⏰ Time: ${new Date().toLocaleTimeString()}
-  ================================`);
-        txrefresh();
-      }
-    },
-    onConnectionStateChange: (connected) => {
-      // Optional: You could add visual feedback for connection state
-      console.log(`
-  ${connected ? "🌟 Live Updates Connected" : "⚠️ Live Updates Disconnected"}
-  ================================
-  🔗 Wallet: ${
-    currentWallet?.address
-      ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}`
-      : "No wallet"
-  }
-  ⏰ Time: ${new Date().toLocaleTimeString()}
-  ================================`);
-    },
-  });
-
   // Form state
   const [formData, setFormData] = useState<FormData>({
     recipientAddress: "",
@@ -98,6 +54,37 @@ const SendScreen: React.FC = () => {
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
 
+  // Effect to listen for transaction events
+  useEffect(() => {
+    const handleNewTransaction = (data: {
+      walletAddress: string;
+      transaction: any;
+    }) => {
+      // Only refresh if it's our wallet
+      if (currentWallet && data.walletAddress === currentWallet.address) {
+        console.log(`
+🔄 Transaction Event Detected 🔄
+================================
+🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
+💰 Balance: ${statistics?.totalCoinValue || 0} CC
+📊 Transactions: ${statistics?.coinTransactionsCount || 0}
+⏰ Time: ${new Date().toLocaleTimeString()}
+================================`);
+        // Refresh transaction data to update balances
+        txrefresh();
+      }
+    };
+
+    // Subscribe to transaction events
+    walletTransactionEventEmitter.on("newTransaction", handleNewTransaction);
+
+    // Cleanup subscription
+    return () => {
+      walletTransactionEventEmitter.off("newTransaction", handleNewTransaction);
+    };
+  }, [currentWallet, statistics, txrefresh]);
+
+  // Session management
   useEffect(() => {
     const checkWalletSession = async () => {
       try {
@@ -177,17 +164,29 @@ const SendScreen: React.FC = () => {
     [formErrors],
   );
 
+  // Handle transaction submission with event emission
   const handleConfirmTransaction = useCallback(async () => {
     try {
       if (!currentWallet) return;
 
-      await submitTransaction(
+      const result = await submitTransaction(
         formData.recipientAddress,
         formData.amount,
         formData.note,
         currentWallet,
         formData.password,
       );
+
+      // Emit transaction event
+      walletTransactionEventEmitter.emit("newTransaction", {
+        walletAddress: currentWallet.address,
+        transaction: {
+          direction: "outgoing",
+          type: "coin",
+          valueOrTokenID: parseFloat(formData.amount),
+          timestamp: Date.now(),
+        },
+      });
 
       Alert.alert("Success", "Transaction submitted successfully!");
       router.replace("/overview");

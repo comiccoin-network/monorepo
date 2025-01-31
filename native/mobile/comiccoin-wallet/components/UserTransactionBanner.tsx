@@ -67,7 +67,7 @@ const UserTransactionBanner = () => {
   }
 
   const getTransactionIcon = () => {
-    if (notification.direction === "incoming") {
+    if (notification.direction === "TO") {
       return <ArrowDownCircle size={24} color="#059669" strokeWidth={2} />;
     } else if (notification.direction === "outgoing") {
       return <ArrowUpCircle size={24} color="#DC2626" strokeWidth={2} />;
@@ -77,7 +77,7 @@ const UserTransactionBanner = () => {
 
   const getTransactionColor = () => {
     switch (notification.direction) {
-      case "incoming":
+      case "TO":
         return "#059669";
       case "outgoing":
         return "#DC2626";
@@ -92,7 +92,7 @@ const UserTransactionBanner = () => {
         ? `NFT #${notification.valueOrTokenID}`
         : `${notification.valueOrTokenID} CC`;
 
-    return notification.direction === "incoming"
+    return notification.direction === "TO"
       ? `Received ${value}`
       : `Sent ${value}`;
   };
