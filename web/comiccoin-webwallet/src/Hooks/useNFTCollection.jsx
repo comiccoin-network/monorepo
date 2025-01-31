@@ -1,5 +1,5 @@
 // monorepo/web/comiccoin-webwallet/src/Hooks/useNFTCollection.jsx
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNFTTransactions } from './useNFTTransactions'
 import { fetchNFTMetadata } from '../Services/NFTMetadataService'
 import { useNFTCache } from './useNFTCache'
@@ -8,10 +8,17 @@ export const useNFTCollection = (walletAddress) => {
     const [nftCollection, setNftCollection] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [reloadTrigger, setReloadTrigger] = useState(0)
 
     const { saveToCache, getFromCache } = useNFTCache()
 
-    const { transactions, loading: txLoading, error: txError, statistics } = useNFTTransactions(walletAddress)
+    const {
+        transactions,
+        loading: txLoading,
+        error: txError,
+        statistics,
+        reload: reloadTransactions,
+    } = useNFTTransactions(walletAddress)
 
     // Get owned NFTs from transactions
     const ownedNFTs = useMemo(() => {
@@ -36,9 +43,8 @@ export const useNFTCollection = (walletAddress) => {
         return nftMap
     }, [transactions, walletAddress])
 
-    // Fetch metadata for owned NFTs
-    useEffect(() => {
-        const fetchMetadataForNFTs = async () => {
+    const fetchMetadataForNFTs = useCallback(
+        async (skipCache = false) => {
             // Only set loading true if we're actually going to fetch something
             if (txLoading) return
 
@@ -58,7 +64,11 @@ export const useNFTCollection = (walletAddress) => {
                         try {
                             const cachedData = getFromCache(nft.tokenId)
 
-                            if (cachedData?.timestamp && Date.now() - cachedData.timestamp < 24 * 60 * 60 * 1000) {
+                            if (
+                                !skipCache &&
+                                cachedData?.timestamp &&
+                                Date.now() - cachedData.timestamp < 24 * 60 * 60 * 1000
+                            ) {
                                 nftsWithMetadata.push({
                                     ...nft,
                                     metadata: cachedData.metadata,
@@ -102,15 +112,37 @@ export const useNFTCollection = (walletAddress) => {
             } finally {
                 setLoading(false)
             }
-        }
+        },
+        [ownedNFTs, txLoading, getFromCache, saveToCache]
+    )
 
-        fetchMetadataForNFTs()
-    }, [ownedNFTs, txLoading])
+    // Fetch metadata for owned NFTs
+    useEffect(() => {
+        fetchMetadataForNFTs(false)
+    }, [fetchMetadataForNFTs, reloadTrigger])
+
+    const reload = useCallback(
+        async (options = { skipCache: false }) => {
+            // First reload the transactions
+            await reloadTransactions()
+
+            // Trigger a reload of the NFT metadata
+            if (options.skipCache) {
+                // Force skip cache by passing true
+                await fetchMetadataForNFTs(true)
+            } else {
+                // Use reloadTrigger to force effect to run
+                setReloadTrigger((prev) => prev + 1)
+            }
+        },
+        [reloadTransactions, fetchMetadataForNFTs]
+    )
 
     return {
         nftCollection,
         loading: loading || txLoading,
         error: error || txError,
         statistics,
+        reload,
     }
 }

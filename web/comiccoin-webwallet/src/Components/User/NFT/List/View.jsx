@@ -1,5 +1,5 @@
 // monorepo/web/comiccoin-webwallet/src/Components/User/NFTs/ListView.jsx
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import {
     Loader2,
@@ -20,6 +20,7 @@ import { convertIPFSToGatewayURL } from '../../../../Services/NFTMetadataService
 import NavigationMenu from '../../NavigationMenu/View'
 import FooterMenu from '../../FooterMenu/View'
 import walletService from '../../../../Services/WalletService'
+import { useTransactionNotifications } from '../../../../Contexts/TransactionNotificationsContext'
 
 // Comic Book NFT Card
 const NFTCard = ({ nft, currentWallet }) => {
@@ -228,6 +229,25 @@ const NFTListPage = () => {
             clearInterval(sessionCheckInterval)
         }
     }, [currentWallet, serviceLoading, logout])
+
+    // PART 1 of 3: Connect to ComicCoin Blockchain Authority and get SSE for latest updates. If our wallet has a new transcation (either we sent or received) then call the `txrefresh` function to fetch latest data for this page and this page will refresh with latest data.
+    const { handleNewTransaction } = useTransactionNotifications()
+
+    // PART 2 of 3: Use a stable callback reference with useCallback
+    const handleTransactionUpdate = useCallback(
+        (transactionData) => {
+            console.log('Transaction update received:', transactionData)
+            txrefresh() // Refresh the transactions list
+        },
+        [txrefresh]
+    )
+
+    // PART 3 of 3: Set up the transaction listener
+    useEffect(() => {
+        if (currentWallet) {
+            handleNewTransaction(currentWallet, handleTransactionUpdate)
+        }
+    }, [currentWallet, handleNewTransaction, handleTransactionUpdate])
 
     if (forceURL !== '' && !serviceLoading) {
         return <Navigate to={forceURL} />
