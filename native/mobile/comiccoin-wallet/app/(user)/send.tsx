@@ -23,6 +23,7 @@ import { useWalletTransactions } from "../../hooks/useWalletTransactions";
 import { useCoinTransfer } from "../../hooks/useCoinTransfer";
 import walletService from "../../services/wallet/WalletService";
 import { walletTransactionEventEmitter } from "../../utils/eventEmitter";
+import TransactionStatusModal from "../../components/TransactionStatusModal";
 
 // Form data interface
 interface FormData {
@@ -39,6 +40,7 @@ const SendScreen: React.FC = () => {
     currentWallet?.address,
   );
   const { submitTransaction, loading: transactionLoading } = useCoinTransfer(1);
+  const [showTransactionStatus, setShowTransactionStatus] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<FormData>({
@@ -169,6 +171,13 @@ const SendScreen: React.FC = () => {
     try {
       if (!currentWallet) return;
 
+      // Close the confirmation modal
+      setShowConfirmation(false);
+
+      // Show the transaction status modal
+      setShowTransactionStatus(true);
+
+      // Submit the transaction and wait for the response
       const result = await submitTransaction(
         formData.recipientAddress,
         formData.amount,
@@ -177,27 +186,39 @@ const SendScreen: React.FC = () => {
         formData.password,
       );
 
-      // Emit transaction event
-      walletTransactionEventEmitter.emit("newTransaction", {
-        walletAddress: currentWallet.address,
-        transaction: {
-          direction: "outgoing",
-          type: "coin",
-          valueOrTokenID: parseFloat(formData.amount),
-          timestamp: Date.now(),
-        },
-      });
+      // Only emit the event after successful backend confirmation
+      if (result) {
+        // Assuming your backend returns a success indicator
+        console.log(`
+  🚀 Transaction Confirmed 🚀
+  ================================
+  🔗 From: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
+  📤 To: ${formData.recipientAddress.slice(0, 6)}...${formData.recipientAddress.slice(-4)}
+  💰 Amount: ${formData.amount} CC
+  ⏰ Time: ${new Date().toLocaleTimeString()}
+  ================================`);
 
-      Alert.alert("Success", "Transaction submitted successfully!");
-      router.replace("/overview");
+        // Now we can safely emit the transaction event
+        walletTransactionEventEmitter.emit("newTransaction", {
+          walletAddress: currentWallet.address,
+          transaction: {
+            direction: "outgoing",
+            type: "coin",
+            valueOrTokenID: parseFloat(formData.amount),
+            timestamp: Date.now(),
+          },
+        });
+
+        // The modal will automatically handle the success case through its event listener
+      }
     } catch (error) {
+      setShowTransactionStatus(false);
       setFormErrors((prev) => ({
         ...prev,
         submit: error instanceof Error ? error.message : "Transaction failed",
       }));
-      setShowConfirmation(false);
     }
-  }, [formData, currentWallet, router, submitTransaction]);
+  }, [formData, currentWallet, submitTransaction]);
 
   if (serviceLoading) {
     return (
@@ -225,6 +246,17 @@ const SendScreen: React.FC = () => {
             contentContainerStyle={styles.scrollViewContent}
             keyboardShouldPersistTaps="handled"
           >
+            {/* Modal */}
+            <TransactionStatusModal
+              isVisible={showTransactionStatus}
+              onClose={() => setShowTransactionStatus(false)}
+              transactionData={{
+                amount: formData.amount,
+                recipientAddress: formData.recipientAddress,
+                walletAddress: currentWallet?.address || "",
+              }}
+            />
+
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.title}>Send ComicCoins</Text>
@@ -500,17 +532,13 @@ const SendScreen: React.FC = () => {
               <View style={[styles.modalDetailRow, styles.modalTotal]}>
                 <Text style={styles.modalLabel}>Total Deduction</Text>
                 <Text style={styles.modalTotalValue}>
-                  - {(parseFloat(formData.amount) + 1).toFixed(2)} CC
+                  - {parseFloat(formData.amount) + 1} CC
                 </Text>
               </View>
               <View style={[styles.modalDetailRow, styles.modalTotal]}>
                 <Text style={styles.modalLabel}>Remaining Balance</Text>
                 <Text style={styles.modalTotalValue}>
-                  {(
-                    statistics?.totalCoinValue -
-                    parseFloat(formData.amount) -
-                    1
-                  ).toFixed(2)}{" "}
+                  {statistics?.totalCoinValue - parseFloat(formData.amount) - 1}{" "}
                   CC
                 </Text>
               </View>
