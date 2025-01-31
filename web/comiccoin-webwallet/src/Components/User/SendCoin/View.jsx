@@ -181,8 +181,8 @@ const SendCoinsPage = () => {
                 formData.note || '',
                 currentWallet,
                 formData.password
-            )
-            navigate('/dashboard', {
+            ) // Note: amount + 1 because the 1 is the transaction fee applied.
+            navigate(`/send-coins/verify?amount=${parseInt(formData.amount) + 1}`, {
                 state: {
                     transactionSuccess: true,
                     message: 'Transaction submitted successfully!',

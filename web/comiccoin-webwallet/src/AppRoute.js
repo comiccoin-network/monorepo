@@ -11,6 +11,7 @@ import NFTListPage from './Components/User/NFT/List/View'
 import TradePage from './Components/User/Trade/View'
 import ReceiveCoinPage from './Components/User/ReceiveCoin/View'
 import SendCoinsPage from './Components/User/SendCoin/View'
+import SendCoinsVerifyTransactionPage from './Components/User/SendCoin/Verify/View'
 import DashboardPage from './Components/User/Dashboard/View'
 import LogoutHDWalletPage from './Components/Gateway/LogoutHDWallet/View'
 import LoginHDWalletPage from './Components/Gateway/LoginHDWallet/View'
@@ -67,6 +68,7 @@ const AppRoute = () => {
                     <Route exact path="/trade" element={<TradePage />} />
                     <Route exact path="/receive-coins" element={<ReceiveCoinPage />} />
                     <Route exact path="/send-coins" element={<SendCoinsPage />} />
+                    <Route exact path="/send-coins/verify" element={<SendCoinsVerifyTransactionPage />} />
                     <Route exact path="/dashboard" element={<DashboardPage />} />
                     <Route exact path="/login" element={<LoginHDWalletPage />} />
                     <Route exact path="/logout" element={<LogoutHDWalletPage />} />
