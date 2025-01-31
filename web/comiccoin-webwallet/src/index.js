@@ -3,14 +3,17 @@ import ReactDOM from 'react-dom/client'
 import reportWebVitals from './reportWebVitals'
 import './index.css'
 import AppRoute from './AppRoute'
+import { RecoilRoot } from 'recoil'
 import { LatestBlockTransactionSSEProvider } from './Contexts/LatestBlockTransactionSSEContext'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
     <React.StrictMode>
-        <LatestBlockTransactionSSEProvider>
-            <AppRoute />
-        </LatestBlockTransactionSSEProvider>
+        <RecoilRoot>
+            <LatestBlockTransactionSSEProvider>
+                <AppRoute />
+            </LatestBlockTransactionSSEProvider>
+        </RecoilRoot>
     </React.StrictMode>
 )
 
