@@ -12,13 +12,7 @@ export const useNFTCollection = (walletAddress) => {
 
     const { saveToCache, getFromCache } = useNFTCache()
 
-    const {
-        transactions,
-        loading: txLoading,
-        error: txError,
-        statistics,
-        reload: reloadTransactions,
-    } = useNFTTransactions(walletAddress)
+    const { transactions, loading: txLoading, error: txError, statistics } = useNFTTransactions(walletAddress)
 
     // Get owned NFTs from transactions
     const ownedNFTs = useMemo(() => {
@@ -45,17 +39,25 @@ export const useNFTCollection = (walletAddress) => {
 
     const fetchMetadataForNFTs = useCallback(
         async (skipCache = false) => {
-            // Only set loading true if we're actually going to fetch something
-            if (txLoading) return
-
-            // If transactions are loaded but there are no owned NFTs, we're done
-            if (!txLoading && ownedNFTs.size === 0) {
-                setLoading(false)
-                setNftCollection([])
+            // Don't fetch if we're still loading transactions
+            if (txLoading) {
+                console.log('Skipping metadata fetch - transactions still loading')
                 return
             }
 
-            setLoading(true)
+            // If transactions are loaded but there are no owned NFTs, we're done
+            if (!txLoading && ownedNFTs.size === 0) {
+                console.log('No owned NFTs found')
+                setNftCollection([])
+                setLoading(false)
+                return
+            }
+
+            console.log('Starting metadata fetch', {
+                skipCache,
+                nftCount: ownedNFTs.size,
+            })
+
             const nftsWithMetadata = []
 
             try {
@@ -116,26 +118,44 @@ export const useNFTCollection = (walletAddress) => {
         [ownedNFTs, txLoading, getFromCache, saveToCache]
     )
 
-    // Fetch metadata for owned NFTs
+    // Only fetch metadata when transactions change or reload is triggered
     useEffect(() => {
+        // Set loading state before starting fetch
+        if (!txLoading && ownedNFTs.size > 0) {
+            setLoading(true)
+        }
+
+        console.log('Effect triggered:', {
+            hasTransactions: !!transactions,
+            reloadTrigger,
+            nftCount: ownedNFTs.size,
+        })
+
         fetchMetadataForNFTs(false)
-    }, [fetchMetadataForNFTs, reloadTrigger])
+    }, [transactions, reloadTrigger]) // Only depend on transactions and reloadTrigger
 
     const reload = useCallback(
         async (options = { skipCache: false }) => {
-            // First reload the transactions
-            await reloadTransactions()
+            try {
+                console.log('Manual reload triggered', {
+                    skipCache: options.skipCache,
+                    nftCount: ownedNFTs.size,
+                })
 
-            // Trigger a reload of the NFT metadata
-            if (options.skipCache) {
-                // Force skip cache by passing true
-                await fetchMetadataForNFTs(true)
-            } else {
-                // Use reloadTrigger to force effect to run
-                setReloadTrigger((prev) => prev + 1)
+                if (options.skipCache) {
+                    setLoading(true)
+                    await fetchMetadataForNFTs(true)
+                } else {
+                    setReloadTrigger((prev) => prev + 1)
+                }
+
+                console.log('Reload completed successfully')
+            } catch (err) {
+                console.error('Error during reload:', err)
+                throw err
             }
         },
-        [reloadTransactions, fetchMetadataForNFTs]
+        [fetchMetadataForNFTs]
     )
 
     return {

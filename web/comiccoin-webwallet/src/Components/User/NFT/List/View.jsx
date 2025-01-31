@@ -168,7 +168,13 @@ const NFTListPage = () => {
         return currentWallet.address
     }
 
-    const { nftCollection, loading: nftLoading, error: nftError, statistics } = useNFTCollection(getWalletAddress())
+    const {
+        nftCollection,
+        loading: nftLoading,
+        error: nftError,
+        statistics,
+        reload: txrefresh,
+    } = useNFTCollection(getWalletAddress())
 
     // Filter NFTs based on search
     const filteredNFTs = (nftCollection || []).filter((nft) => {
