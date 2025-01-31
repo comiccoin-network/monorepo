@@ -1,3 +1,4 @@
+// monorepo/native/mobile/comiccoin-wallet/utils/eventEmitter.ts
 import { EventEmitter } from "events";
 
 // Create a global event emitter instance
