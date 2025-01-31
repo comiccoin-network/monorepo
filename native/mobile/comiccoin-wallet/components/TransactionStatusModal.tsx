@@ -1,5 +1,4 @@
-// monorepo/native/mobile/comiccoin-wallet/components/UserNavigationBar.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -7,16 +6,16 @@ import {
   ActivityIndicator,
   StyleSheet,
   Platform,
+  TouchableOpacity,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { CheckCircle, XCircle, Loader } from "lucide-react-native";
+import { CheckCircle, XCircle } from "lucide-react-native";
 import { walletTransactionEventEmitter } from "../utils/eventEmitter";
 
 interface TransactionStatusModalProps {
   isVisible: boolean;
   onClose: () => void;
   transactionData: {
-    amount: string;
+    amount: number;
     recipientAddress: string;
     walletAddress: string;
   };
@@ -27,59 +26,190 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   onClose,
   transactionData,
 }) => {
-  const router = useRouter();
+  // Core state management
   const [status, setStatus] = useState<"pending" | "success" | "error">(
     "pending",
   );
   const [message, setMessage] = useState("Processing your transaction...");
+  const [canClose, setCanClose] = useState(false);
 
+  // Modal lifecycle management
+  const modalState = useRef({
+    initialized: false,
+    hasSucceeded: false,
+    timeoutId: null as NodeJS.Timeout | null,
+  });
+
+  // Lifecycle logging
   useEffect(() => {
-    if (!isVisible) return;
+    console.log(`
+🔄 Component Lifecycle Update
+================================
+📍 Status: ${status}
+👁️ Visible: ${isVisible}
+🔒 Can Close: ${canClose}
+✨ Initialized: ${modalState.current.initialized}
+✅ Success: ${modalState.current.hasSucceeded}
+⏰ Time: ${new Date().toLocaleTimeString()}
+================================`);
+  }, [status, isVisible, canClose]);
 
-    // Reset state when modal opens
-    setStatus("pending");
-    setMessage("Processing your transaction...");
+  // Handle successful transaction
+  const handleTransactionSuccess = useCallback(() => {
+    modalState.current.hasSucceeded = true;
+    setStatus("success");
+    setMessage("Transaction completed successfully!");
+    setCanClose(true);
+  }, []);
 
-    const handleTransaction = (data: {
+  // Transaction matching logic
+  const handleTransaction = useCallback(
+    (data: {
       walletAddress: string;
-      transaction: any;
+      transaction: {
+        direction: string;
+        valueOrTokenID: number;
+      };
     }) => {
-      if (data.walletAddress === transactionData.walletAddress) {
-        // Check if this is our transaction by matching amount and direction
-        if (
-          data.transaction.direction === "outgoing" &&
-          data.transaction.valueOrTokenID === parseFloat(transactionData.amount)
-        ) {
-          setStatus("success");
-          setMessage("Transaction completed successfully!");
+      // Skip processing if already succeeded
+      if (modalState.current.hasSucceeded) {
+        console.log("Transaction already succeeded, skipping processing");
+        return;
+      }
 
-          // Navigate to overview after a short delay
-          setTimeout(() => {
-            onClose();
-            router.replace("/overview");
-          }, 2000);
+      console.log(`
+📥 Received Transaction Event
+================================
+🎯 Checking Transaction Match Conditions:
+
+1. Wallet Address Match:
+   Expected: ${transactionData.walletAddress}
+   Received: ${data.walletAddress}
+   Matches?: ${data.walletAddress === transactionData.walletAddress}
+
+2. Transaction Direction:
+   Expected: FROM
+   Received: ${data.transaction.direction}
+   Matches?: ${data.transaction.direction === "FROM"}
+
+3. Amount Match:
+   Expected: ${transactionData.amount} (${typeof transactionData.amount})
+   Received: ${data.transaction.valueOrTokenID} (${typeof data.transaction.valueOrTokenID})
+   Strict Match?: ${data.transaction.valueOrTokenID === transactionData.amount}
+
+⏰ Time: ${new Date().toLocaleTimeString()}
+================================`);
+
+      const walletMatch = data.walletAddress === transactionData.walletAddress;
+      const directionMatch = data.transaction.direction === "FROM";
+      const amountMatch =
+        data.transaction.valueOrTokenID === transactionData.amount;
+
+      console.log(`
+🔍 Match Results:
+================================
+✓ Wallet Match: ${walletMatch}
+✓ Direction Match: ${directionMatch}
+✓ Amount Match: ${amountMatch}
+✓ All Conditions Met: ${walletMatch && directionMatch && amountMatch}
+================================`);
+
+      if (walletMatch && directionMatch && amountMatch) {
+        console.log("🎉 Transaction match found - updating status to success");
+        handleTransactionSuccess();
+      }
+    },
+    [transactionData, handleTransactionSuccess],
+  );
+
+  // Modal visibility and listener management
+  useEffect(() => {
+    // Skip if modal isn't visible
+    if (!isVisible) {
+      console.log(`
+🚫 Modal not visible - skipping listener setup
+================================
+⏰ Time: ${new Date().toLocaleTimeString()}
+================================`);
+      return;
+    }
+
+    console.log(`
+🎯 Setting up transaction listener
+================================
+💰 Amount: ${transactionData?.amount}
+🏦 To: ${transactionData?.recipientAddress?.slice(0, 6)}...
+⚡ Listener Active: ${Boolean(walletTransactionEventEmitter.listenerCount("newTransaction"))}
+✨ Initialized: ${modalState.current.initialized}
+✅ Success: ${modalState.current.hasSucceeded}
+⏰ Time: ${new Date().toLocaleTimeString()}
+================================`);
+
+    // Only initialize state if not already done
+    if (!modalState.current.initialized) {
+      modalState.current.initialized = true;
+      modalState.current.hasSucceeded = false;
+      setStatus("pending");
+      setMessage("Processing your transaction...");
+      setCanClose(false);
+    }
+
+    // Set up error timeout only if not succeeded
+    if (!modalState.current.hasSucceeded && !modalState.current.timeoutId) {
+      modalState.current.timeoutId = setTimeout(() => {
+        if (!modalState.current.hasSucceeded) {
+          console.log("⏰ Transaction timeout - updating status to error");
+          setStatus("error");
+          setMessage(
+            "Transaction is taking longer than expected. Please check your transaction history for updates.",
+          );
+          setCanClose(true);
         }
-      }
-    };
+      }, 30000);
+    }
 
-    // Set up error timeout (e.g., 30 seconds)
-    const timeoutId = setTimeout(() => {
-      if (status === "pending") {
-        setStatus("error");
-        setMessage(
-          "Transaction is taking longer than expected. Please check your transaction history for updates.",
-        );
-      }
-    }, 30000);
-
+    // Subscribe to transaction events
     walletTransactionEventEmitter.on("newTransaction", handleTransaction);
 
+    // Cleanup function
     return () => {
-      clearTimeout(timeoutId);
+      console.log(`
+🧹 Cleaning up transaction listener
+================================
+📍 Status: ${status}
+✨ Initialized: ${modalState.current.initialized}
+✅ Success: ${modalState.current.hasSucceeded}
+🔄 Active Listeners: ${walletTransactionEventEmitter.listenerCount("newTransaction")}
+⏰ Time: ${new Date().toLocaleTimeString()}
+================================`);
+
+      if (modalState.current.timeoutId) {
+        clearTimeout(modalState.current.timeoutId);
+        modalState.current.timeoutId = null;
+      }
+
       walletTransactionEventEmitter.off("newTransaction", handleTransaction);
     };
-  }, [isVisible, transactionData, status]);
+  }, [isVisible, handleTransaction, transactionData]);
 
+  // Handle modal close
+  const handleClose = useCallback(() => {
+    if (canClose) {
+      console.log(`
+🚪 Modal closing
+================================
+📍 Final Status: ${status}
+⏰ Time: ${new Date().toLocaleTimeString()}
+================================`);
+
+      // Reset state for next use
+      modalState.current.initialized = false;
+      modalState.current.hasSucceeded = false;
+      onClose();
+    }
+  }, [canClose, status, onClose]);
+
+  // Helper function to render the appropriate icon based on status
   const renderIcon = () => {
     switch (status) {
       case "pending":
@@ -104,7 +234,12 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   };
 
   return (
-    <Modal visible={isVisible} transparent animationType="fade">
+    <Modal
+      visible={isVisible}
+      transparent
+      animationType="fade"
+      onRequestClose={handleClose}
+    >
       <View style={styles.overlay}>
         <View style={styles.modalContent}>
           {renderIcon()}
@@ -135,12 +270,29 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               history for the latest status.
             </Text>
           )}
+
+          {canClose && (
+            <TouchableOpacity
+              style={[
+                styles.closeButton,
+                status === "success"
+                  ? styles.successButton
+                  : styles.errorButton,
+              ]}
+              onPress={handleClose}
+            >
+              <Text style={styles.closeButtonText}>
+                {status === "success" ? "Done" : "Close"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </Modal>
   );
 };
 
+// Styles for the modal components
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -217,6 +369,25 @@ const styles = StyleSheet.create({
     color: "#991B1B",
     textAlign: "center",
     marginTop: 16,
+  },
+  closeButton: {
+    marginTop: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    width: "100%",
+    alignItems: "center",
+  },
+  successButton: {
+    backgroundColor: "#059669",
+  },
+  errorButton: {
+    backgroundColor: "#DC2626",
+  },
+  closeButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 

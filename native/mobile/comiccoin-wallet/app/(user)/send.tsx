@@ -171,13 +171,10 @@ const SendScreen: React.FC = () => {
     try {
       if (!currentWallet) return;
 
-      // Close the confirmation modal
       setShowConfirmation(false);
-
-      // Show the transaction status modal
       setShowTransactionStatus(true);
 
-      // Submit the transaction and wait for the response
+      // Submit to blockchain
       const result = await submitTransaction(
         formData.recipientAddress,
         formData.amount,
@@ -186,31 +183,12 @@ const SendScreen: React.FC = () => {
         formData.password,
       );
 
-      // Only emit the event after successful backend confirmation
-      if (result) {
-        // Assuming your backend returns a success indicator
-        console.log(`
-  🚀 Transaction Confirmed 🚀
-  ================================
-  🔗 From: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
-  📤 To: ${formData.recipientAddress.slice(0, 6)}...${formData.recipientAddress.slice(-4)}
-  💰 Amount: ${formData.amount} CC
-  ⏰ Time: ${new Date().toLocaleTimeString()}
-  ================================`);
+      // Instead of emitting immediately, we should wait for blockchain confirmation
+      // The SSE service (LatestBlockTransactionSSEService) should detect the actual
+      // blockchain confirmation and emit the event then
 
-        // Now we can safely emit the transaction event
-        walletTransactionEventEmitter.emit("newTransaction", {
-          walletAddress: currentWallet.address,
-          transaction: {
-            direction: "outgoing",
-            type: "coin",
-            valueOrTokenID: parseFloat(formData.amount),
-            timestamp: Date.now(),
-          },
-        });
-
-        // The modal will automatically handle the success case through its event listener
-      }
+      // DON'T emit here - let the SSE service handle it
+      // This prevents the "false success" state
     } catch (error) {
       setShowTransactionStatus(false);
       setFormErrors((prev) => ({
@@ -251,7 +229,7 @@ const SendScreen: React.FC = () => {
               isVisible={showTransactionStatus}
               onClose={() => setShowTransactionStatus(false)}
               transactionData={{
-                amount: formData.amount,
+                amount: parseInt(formData.amount) + 1,
                 recipientAddress: formData.recipientAddress,
                 walletAddress: currentWallet?.address || "",
               }}
