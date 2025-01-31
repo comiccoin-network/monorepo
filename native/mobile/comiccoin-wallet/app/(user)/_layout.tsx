@@ -12,15 +12,22 @@ import { View, Platform } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 import UserNavigationBar from "../../components/UserNavigationBar";
+import UserTransactionBanner from "../../components/UserTransactionBanner";
+import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
 
 export default function UserLayout() {
   const router = useRouter();
   const queryClient = new QueryClient();
 
+  useWalletTransactionMonitor({
+    walletAddress: "0x417793769b45Df3313a24b241CDe48Ff9Bc99e51",
+  });
+
   return (
     <QueryClientProvider client={queryClient}>
       <View style={{ flex: 1 }}>
         <UserNavigationBar />
+        <UserTransactionBanner />
         <Tabs
           screenOptions={{
             headerShown: false,

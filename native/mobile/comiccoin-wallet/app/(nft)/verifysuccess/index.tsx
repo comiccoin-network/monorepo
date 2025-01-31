@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Pressable,
   Linking,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import transactionListService from "../../../services/transaction/ListService";
