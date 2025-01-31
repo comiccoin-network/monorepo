@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-webwallet/src/Components/User/NFT/Transfer/Verify/View.jsx
+// monorepo/web/comiccoin-webwallet/src/Components/User/NFT/Burn/Verify/View.jsx
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
@@ -14,7 +14,7 @@ import {
 import { useTransactionNotifications } from '../../../../../Contexts/TransactionNotificationsContext'
 import { useWallet } from '../../../../../Hooks/useWallet'
 
-const TransferNFTVerifyTransactionPage = () => {
+const BurnNFTVerifyTransactionPage = () => {
     const { currentWallet } = useWallet()
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
@@ -189,7 +189,7 @@ const TransferNFTVerifyTransactionPage = () => {
                         <h2 className="text-2xl font-bold text-gray-900 mb-3">Transaction Successful!</h2>
 
                         <p className="text-gray-600 mb-8">
-                            Your transfer of <b>token ID {expectedTokenID}</b> has been successfully processed and
+                            Your burning of <b>token ID {expectedTokenID}</b> has been successfully processed and
                             confirmed on the blockchain network.
                         </p>
 
@@ -248,7 +248,7 @@ const TransferNFTVerifyTransactionPage = () => {
                         className="flex items-center text-purple-600 hover:text-purple-700 transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5 mr-2" />
-                        <span className="text-base font-medium">Back to Transfer</span>
+                        <span className="text-base font-medium">Back to Burn</span>
                     </button>
                 </div>
             </div>
@@ -349,4 +349,4 @@ const TransferNFTVerifyTransactionPage = () => {
     )
 }
 
-export default TransferNFTVerifyTransactionPage
+export default BurnNFTVerifyTransactionPage

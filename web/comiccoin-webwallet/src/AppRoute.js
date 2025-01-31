@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import TransactionDetailPage from './Components/User/More/Transaction/DetailView'
 import TransactionListPage from './Components/User/More/Transaction/ListView'
 import MorePage from './Components/User/More/View'
+import BurnNFTVerifyTransactionPage from './Components/User/NFT/Burn/Verify/View'
 import BurnNFTPage from './Components/User/NFT/Burn/View'
 import TransferNFTVerifyTransactionPage from './Components/User/NFT/Transfer/Verify/View'
 import TransferNFTPage from './Components/User/NFT/Transfer/View'
@@ -62,6 +63,7 @@ const AppRoute = () => {
                     <Route exact path="/transaction/:nonceString" element={<TransactionDetailPage />} />
                     <Route exact path="/transactions" element={<TransactionListPage />} />
                     <Route exact path="/more" element={<MorePage />} />
+                    <Route exact path="/nft/burn/verify" element={<BurnNFTVerifyTransactionPage />} />
                     <Route exact path="/nft/burn" element={<BurnNFTPage />} />
                     <Route exact path="/nft/transfer/verify" element={<TransferNFTVerifyTransactionPage />} />
                     <Route exact path="/nft/transfer" element={<TransferNFTPage />} />

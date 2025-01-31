@@ -152,7 +152,7 @@ const BurnNFTPage = () => {
                 formData.tokenID,
                 formData.tokenMetadataURI
             )
-            navigate('/nfts', {
+            navigate(`/nft/burn/verify?token_id=${tokenId}&token_metadata_uri=${tokenMetadataUri}`, {
                 state: {
                     transactionSuccess: true,
                     message: 'NFT burned successfully!',
@@ -257,9 +257,7 @@ const BurnNFTPage = () => {
                                     </div>
                                     <div className="flex justify-between text-xs md:text-sm font-medium">
                                         <span className="text-gray-600">Remaining Balance</span>
-                                        <span className="text-gray-900">
-                                            = {((statistics?.totalCoinValue || 0) - 1).toFixed(2)} CC
-                                        </span>
+                                        <span className="text-gray-900">= {statistics?.totalCoinValue || 0} CC</span>
                                     </div>
                                 </div>
                             </div>
