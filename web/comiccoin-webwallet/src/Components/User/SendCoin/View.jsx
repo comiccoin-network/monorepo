@@ -1,5 +1,5 @@
 // monorepo/web/comiccoin-webwallet/src/Components/User/SendCoin/View.jsx
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { AlertCircle, ArrowLeft, Send, Loader2, Info, Wallet, Coins } from 'lucide-react'
 import { useWallet } from '../../../Hooks/useWallet'
@@ -8,15 +8,35 @@ import { useCoinTransfer } from '../../../Hooks/useCoinTransfer'
 import NavigationMenu from '../NavigationMenu/View'
 import FooterMenu from '../FooterMenu/View'
 import walletService from '../../../Services/WalletService'
+import { useTransactionNotifications } from '../../../Contexts/TransactionNotificationsContext'
 
 const SendCoinsPage = () => {
     const navigate = useNavigate()
     const { currentWallet, logout, loading: serviceLoading, error: serviceError } = useWallet()
-    const { statistics } = useWalletTransactions(currentWallet?.address)
+    const { statistics, refresh: txrefresh } = useWalletTransactions(currentWallet?.address)
     const { submitTransaction, loading: transactionLoading, error: transactionError } = useCoinTransfer(1)
 
     // For debugging purposes only.
     console.log('SendCoinsPage: statistics:', statistics, '\nAddr:', currentWallet?.address)
+
+    // PART 1 of 3: Connect to ComicCoin Blockchain Authority and get SSE for latest updates. If our wallet has a new transcation (either we sent or received) then call the `txrefresh` function to fetch latest data for this page and this page will refresh with latest data.
+    const { handleNewTransaction } = useTransactionNotifications()
+
+    // PART 2 of 3: Use a stable callback reference with useCallback
+    const handleTransactionUpdate = useCallback(
+        (transactionData) => {
+            console.log('Transaction update received:', transactionData)
+            txrefresh() // Refresh the transactions list
+        },
+        [txrefresh]
+    )
+
+    // PART 3 of 3: Set up the transaction listener
+    useEffect(() => {
+        if (currentWallet) {
+            handleNewTransaction(currentWallet, handleTransactionUpdate)
+        }
+    }, [currentWallet, handleNewTransaction, handleTransactionUpdate])
 
     // State for session management
     const [forceURL, setForceURL] = useState('')
