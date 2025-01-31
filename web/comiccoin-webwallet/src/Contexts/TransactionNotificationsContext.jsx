@@ -23,53 +23,61 @@ export function TransactionNotificationsProvider({ children }) {
         }
 
         const latestData = latestDataRef.current
-        if (!latestData || !currentWallet?.address) return
+        if (latestData && currentWallet?.address) {
+            const parseTransactionData = (data) => {
+                const [direction, type, value, timestamp] = data.split('|')
+                return { direction, type, value, timestamp }
+            }
 
-        const parseTransactionData = (data) => {
-            const [direction, type, value, timestamp] = data.split('|')
-            return { direction, type, value, timestamp }
-        }
+            try {
+                const storageKey = `latest_tx_${currentWallet.address}`
+                const storedTransaction = localStorage.getItem(storageKey)
+                const parsedLatestData = parseTransactionData(latestData)
 
-        try {
-            const storageKey = `latest_tx_${currentWallet.address}`
-            const storedTransaction = localStorage.getItem(storageKey)
-            const parsedLatestData = parseTransactionData(latestData)
-
-            if (parsedLatestData.direction === 'FROM' || parsedLatestData.direction === 'TO') {
-                if (!storedTransaction) {
-                    localStorage.setItem(storageKey, latestData)
-                } else {
-                    const parsedStoredTransaction = parseTransactionData(storedTransaction)
-
-                    if (parsedStoredTransaction.timestamp !== parsedLatestData.timestamp) {
+                if (parsedLatestData.direction === 'FROM' || parsedLatestData.direction === 'TO') {
+                    if (!storedTransaction) {
                         localStorage.setItem(storageKey, latestData)
+                    } else {
+                        const parsedStoredTransaction = parseTransactionData(storedTransaction)
 
-                        // Create notification message
-                        const action = parsedLatestData.direction === 'FROM' ? 'sent' : 'received'
-                        let message
-                        if (parsedLatestData.type.toLowerCase() === 'coin') {
-                            message = `You've ${action} ${parsedLatestData.value} coins`
-                        } else if (parsedLatestData.type.toLowerCase() === 'token') {
-                            message = `You've ${action} an NFT`
-                        } else {
-                            message = `New transaction ${action}`
-                        }
+                        if (parsedStoredTransaction.timestamp !== parsedLatestData.timestamp) {
+                            localStorage.setItem(storageKey, latestData)
 
-                        setNotification({
-                            message: `${message}!`,
-                            type: parsedLatestData.direction,
-                        })
+                            // Create notification message
+                            const action = parsedLatestData.direction === 'FROM' ? 'sent' : 'received'
+                            let message
+                            if (parsedLatestData.type.toLowerCase() === 'coin') {
+                                message = `You've ${action} ${parsedLatestData.value} coins`
+                            } else if (parsedLatestData.type.toLowerCase() === 'token') {
+                                message = `You've ${action} an NFT`
+                            } else {
+                                message = `New transaction ${action}`
+                            }
 
-                        // Execute stored callback
-                        const storedCallback = callbacksRef.current.get(currentWallet.address)
-                        if (storedCallback) {
-                            storedCallback(parsedLatestData)
+                            setNotification({
+                                message: `${message}!`,
+                                type: parsedLatestData.direction,
+                            })
+
+                            // Execute stored callback
+                            const storedCallback = callbacksRef.current.get(currentWallet.address)
+                            if (storedCallback) {
+                                storedCallback(parsedLatestData)
+                            }
                         }
                     }
                 }
+            } catch (error) {
+                console.error('Error processing transaction:', error)
             }
-        } catch (error) {
-            console.error('Error processing transaction:', error)
+        }
+
+        // Always return a cleanup function
+        return () => {
+            if (currentWallet?.address) {
+                console.log('Removing transaction listener for:', currentWallet.address)
+                callbacksRef.current.delete(currentWallet.address)
+            }
         }
     }, [])
 

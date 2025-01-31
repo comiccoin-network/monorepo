@@ -74,13 +74,11 @@ const SendCoinsVerifyTransactionPage = () => {
     const { handleNewTransaction } = useTransactionNotifications()
 
     useEffect(() => {
-        console.log('Setting up transaction listener for wallet:', currentWallet?.address)
-
         if (currentWallet) {
             const cleanup = handleNewTransaction(currentWallet, handleTransactionUpdate)
             return () => {
                 console.log('Cleaning up transaction listener')
-                cleanup()
+                cleanup() // This line is causing the error because cleanup is undefined
             }
         }
     }, [currentWallet, handleNewTransaction, handleTransactionUpdate])
