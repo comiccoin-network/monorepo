@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { CheckCircle, XCircle } from "lucide-react-native";
 import { walletTransactionEventEmitter } from "../utils/eventEmitter";
+import { useRouter } from "expo-router";
 
 interface TransactionStatusModalProps {
   isVisible: boolean;
@@ -27,21 +28,19 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   onClose,
   transactionData,
 }) => {
-  // Core state management
+  const router = useRouter();
   const [status, setStatus] = useState<"pending" | "success" | "error">(
     "pending",
   );
   const [message, setMessage] = useState("Processing your transaction...");
   const [canClose, setCanClose] = useState(false);
 
-  // Modal lifecycle management
   const modalState = useRef({
     initialized: false,
     hasSucceeded: false,
     timeoutId: null as NodeJS.Timeout | null,
   });
 
-  // Lifecycle logging
   useEffect(() => {
     console.log(`
 🔄 Component Lifecycle Update
@@ -55,7 +54,6 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 ================================`);
   }, [status, isVisible, canClose]);
 
-  // Handle successful transaction
   const handleTransactionSuccess = useCallback(() => {
     modalState.current.hasSucceeded = true;
     setStatus("success");
@@ -63,7 +61,6 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     setCanClose(true);
   }, []);
 
-  // Transaction matching logic
   const handleTransaction = useCallback(
     (data: {
       walletAddress: string;
@@ -72,7 +69,6 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         valueOrTokenID: number;
       };
     }) => {
-      // Skip processing if already succeeded
       if (modalState.current.hasSucceeded) {
         console.log("Transaction already succeeded, skipping processing");
         return;
@@ -82,7 +78,6 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 📥 Received Transaction Event
 ================================
 🎯 Checking Transaction Match Conditions:
-
 1. Wallet Address Match:
    Expected: ${transactionData.walletAddress}
    Received: ${data.walletAddress}
@@ -94,26 +89,15 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
    Matches?: ${data.transaction.direction === "FROM"}
 
 3. Amount Match:
-   Expected: ${transactionData.amount} (${typeof transactionData.amount})
-   Received: ${data.transaction.valueOrTokenID} (${typeof data.transaction.valueOrTokenID})
-   Strict Match?: ${data.transaction.valueOrTokenID === transactionData.amount}
-
-⏰ Time: ${new Date().toLocaleTimeString()}
+   Expected: ${transactionData.amount}
+   Received: ${data.transaction.valueOrTokenID}
+   Matches?: ${data.transaction.valueOrTokenID === transactionData.amount}
 ================================`);
 
       const walletMatch = data.walletAddress === transactionData.walletAddress;
       const directionMatch = data.transaction.direction === "FROM";
       const amountMatch =
         data.transaction.valueOrTokenID === transactionData.amount;
-
-      console.log(`
-🔍 Match Results:
-================================
-✓ Wallet Match: ${walletMatch}
-✓ Direction Match: ${directionMatch}
-✓ Amount Match: ${amountMatch}
-✓ All Conditions Met: ${walletMatch && directionMatch && amountMatch}
-================================`);
 
       if (walletMatch && directionMatch && amountMatch) {
         console.log("🎉 Transaction match found - updating status to success");
@@ -123,30 +107,12 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     [transactionData, handleTransactionSuccess],
   );
 
-  // Modal visibility and listener management
   useEffect(() => {
-    // Skip if modal isn't visible
     if (!isVisible) {
-      console.log(`
-🚫 Modal not visible - skipping listener setup
-================================
-⏰ Time: ${new Date().toLocaleTimeString()}
-================================`);
+      console.log("🚫 Modal not visible - skipping listener setup");
       return;
     }
 
-    console.log(`
-🎯 Setting up transaction listener
-================================
-💰 Amount: ${transactionData?.amount}
-🏦 To: ${transactionData?.recipientAddress?.slice(0, 6)}...
-⚡ Listener Active: ${Boolean(walletTransactionEventEmitter.listenerCount("newTransaction"))}
-✨ Initialized: ${modalState.current.initialized}
-✅ Success: ${modalState.current.hasSucceeded}
-⏰ Time: ${new Date().toLocaleTimeString()}
-================================`);
-
-    // Only initialize state if not already done
     if (!modalState.current.initialized) {
       modalState.current.initialized = true;
       modalState.current.hasSucceeded = false;
@@ -155,7 +121,6 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
       setCanClose(false);
     }
 
-    // Set up error timeout only if not succeeded
     if (!modalState.current.hasSucceeded && !modalState.current.timeoutId) {
       modalState.current.timeoutId = setTimeout(() => {
         if (!modalState.current.hasSucceeded) {
@@ -169,48 +134,27 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
       }, 30000);
     }
 
-    // Subscribe to transaction events
     walletTransactionEventEmitter.on("newTransaction", handleTransaction);
 
-    // Cleanup function
     return () => {
-      console.log(`
-🧹 Cleaning up transaction listener
-================================
-📍 Status: ${status}
-✨ Initialized: ${modalState.current.initialized}
-✅ Success: ${modalState.current.hasSucceeded}
-🔄 Active Listeners: ${walletTransactionEventEmitter.listenerCount("newTransaction")}
-⏰ Time: ${new Date().toLocaleTimeString()}
-================================`);
-
       if (modalState.current.timeoutId) {
         clearTimeout(modalState.current.timeoutId);
         modalState.current.timeoutId = null;
       }
-
       walletTransactionEventEmitter.off("newTransaction", handleTransaction);
     };
   }, [isVisible, handleTransaction, transactionData]);
 
-  // Handle modal close
-  const handleClose = useCallback(() => {
-    if (canClose) {
-      console.log(`
-🚪 Modal closing
-================================
-📍 Final Status: ${status}
-⏰ Time: ${new Date().toLocaleTimeString()}
-================================`);
+  const handleNavigateToOverview = useCallback(() => {
+    console.log("🏠 Navigating to Overview");
+    router.push("/(overview)");
+  }, [router]);
 
-      // Reset state for next use
-      modalState.current.initialized = false;
-      modalState.current.hasSucceeded = false;
-      onClose();
-    }
-  }, [canClose, status, onClose]);
+  const handleSendAnother = useCallback(() => {
+    console.log("💸 Initiating another payment");
+    onClose();
+  }, [onClose]);
 
-  // Helper function to render the appropriate icon based on status
   const renderIcon = () => {
     switch (status) {
       case "pending":
@@ -239,7 +183,7 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
       visible={isVisible}
       transparent
       animationType="fade"
-      onRequestClose={handleClose}
+      onRequestClose={handleSendAnother}
     >
       <View style={styles.overlay}>
         <View style={styles.modalContent}>
@@ -272,19 +216,32 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
             </Text>
           )}
 
-          {canClose && (
+          {canClose && status === "success" && (
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[styles.button, styles.primaryButton]}
+                onPress={handleNavigateToOverview}
+              >
+                <Text style={styles.buttonText}>Back to Overview</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, styles.secondaryButton]}
+                onPress={handleSendAnother}
+              >
+                <Text style={[styles.buttonText, styles.secondaryButtonText]}>
+                  Send Another Payment
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {canClose && status === "error" && (
             <TouchableOpacity
-              style={[
-                styles.closeButton,
-                status === "success"
-                  ? styles.successButton
-                  : styles.errorButton,
-              ]}
-              onPress={handleClose}
+              style={[styles.button, styles.errorButton]}
+              onPress={handleSendAnother}
             >
-              <Text style={styles.closeButtonText}>
-                {status === "success" ? "Done" : "Close"}
-              </Text>
+              <Text style={styles.buttonText}>Close</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -293,7 +250,6 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   );
 };
 
-// Styles for the modal components
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -371,24 +327,37 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 16,
   },
-  closeButton: {
+  buttonContainer: {
+    width: "100%",
+    gap: 12,
     marginTop: 24,
+  },
+  button: {
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     width: "100%",
     alignItems: "center",
   },
-  successButton: {
-    backgroundColor: "#059669",
+  primaryButton: {
+    backgroundColor: "#7C3AED",
+  },
+  secondaryButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#7C3AED",
   },
   errorButton: {
     backgroundColor: "#DC2626",
+    marginTop: 24,
   },
-  closeButtonText: {
+  buttonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+  },
+  secondaryButtonText: {
+    color: "#7C3AED",
   },
 });
 
