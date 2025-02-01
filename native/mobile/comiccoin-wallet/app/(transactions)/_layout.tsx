@@ -6,10 +6,6 @@ import { Platform, Pressable, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-import UserTransactionBanner from "../../components/UserTransactionBanner";
-import { useWallet } from "../../hooks/useWallet";
-import { walletTransactionEventEmitter } from "../../utils/eventEmitter";
-
 // Create a stable QueryClient instance outside the component to maintain consistent caching
 // This prevents recreation of the client on every render and maintains our cache state
 const queryClient = new QueryClient({
@@ -29,49 +25,8 @@ const queryClient = new QueryClient({
 
 export default function TransactionsLayout() {
   const router = useRouter();
-  const { currentWallet } = useWallet();
-
-  // Set up event listener to handle new transactions and cache invalidation
-  useEffect(() => {
-    if (!currentWallet?.address) return;
-
-    const handleNewTransaction = async (data: {
-      walletAddress: string;
-      transaction: any;
-    }) => {
-      // Only handle transactions for the current wallet
-      if (currentWallet.address === data.walletAddress) {
-        console.log(`
-🔄 New Transaction Detected in Layout 🔄
-================================
-🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
-⏰ Time: ${new Date().toLocaleTimeString()}
-🔄 Invalidating queries...
-================================`);
-
-        // Invalidate queries and trigger refetch for this wallet's transactions
-        await queryClient.invalidateQueries({
-          queryKey: ["transactions", currentWallet.address],
-          // Ensure we refetch active queries immediately
-          refetchType: "active",
-        });
-      }
-    };
-
-    // Set up event listener for new transactions
-    walletTransactionEventEmitter.on("newTransaction", handleNewTransaction);
-
-    // Cleanup event listener when component unmounts or wallet changes
-    return () => {
-      walletTransactionEventEmitter.off("newTransaction", handleNewTransaction);
-    };
-  }, [currentWallet?.address]); // Only re-run if wallet address changes
-
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Transaction notification banner - shows new transaction alerts */}
-      <UserTransactionBanner />
-
       {/* Navigation stack configuration */}
       <Stack
         screenOptions={{

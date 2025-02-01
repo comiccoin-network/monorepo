@@ -62,7 +62,7 @@ const ReceiveScreen: React.FC = () => {
           message: `My ComicCoin wallet address: ${currentWallet.address}`,
         });
       } catch (error) {
-        console.error("Error sharing address:", error);
+        console.log("Error sharing address:", error);
       }
     }
   }, [currentWallet?.address]);
@@ -91,7 +91,7 @@ const ReceiveScreen: React.FC = () => {
         Alert.alert("Success", "QR code saved to your photos");
       }
     } catch (error) {
-      console.error("Error saving QR code:", error);
+      console.log("Error saving QR code:", error);
       Alert.alert("Error", "Failed to save QR code");
     }
   }, [qrRef]);
@@ -122,7 +122,7 @@ const ReceiveScreen: React.FC = () => {
         await Print.printAsync({ html });
       }
     } catch (error) {
-      console.error("Error printing QR code:", error);
+      console.log("Error printing QR code:", error);
       Alert.alert("Error", "Failed to print QR code");
     }
   }, [qrRef, currentWallet?.address]);

@@ -5,23 +5,11 @@ import { Platform, Pressable, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-import UserTransactionBanner from "../../components/UserTransactionBanner";
-import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
-import { useWallet } from "../../hooks/useWallet";
-
 export default function NFTDetailLayout() {
   const router = useRouter();
   const queryClient = new QueryClient();
-
-  // The following code will connect our open wallet with the authority and always be up-to-date with latest transactions for this wallet.
-  const { currentWallet } = useWallet();
-  useWalletTransactionMonitor({
-    walletAddress: currentWallet?.address,
-  });
-
   return (
     <QueryClientProvider client={queryClient}>
-      <UserTransactionBanner />
       <Stack
         screenOptions={{
           headerStyle: {

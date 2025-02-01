@@ -70,7 +70,7 @@ export default function TransactionsList() {
         transactionCount: transactions?.length || 0,
       });
     } catch (error) {
-      console.error("Refresh failed:", error);
+      console.log("Refresh failed:", error);
     }
   };
 

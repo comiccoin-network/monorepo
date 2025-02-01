@@ -132,7 +132,7 @@ export default function NFTsScreen() {
           await refreshCollection();
           console.log("✅ Transaction-triggered refresh complete");
         } catch (error) {
-          console.error("❌ Transaction-triggered refresh failed:", error);
+          console.log("❌ Transaction-triggered refresh failed:", error);
         } finally {
           setIsRefreshing(false);
           refreshingRef.current = false;
@@ -173,7 +173,7 @@ export default function NFTsScreen() {
       await refreshCollection();
       console.log("✅ Manual refresh complete");
     } catch (error) {
-      console.error("❌ Manual refresh failed:", error);
+      console.log("❌ Manual refresh failed:", error);
     } finally {
       setIsRefreshing(false);
       refreshingRef.current = false;

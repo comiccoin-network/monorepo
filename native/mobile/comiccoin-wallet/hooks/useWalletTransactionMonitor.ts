@@ -1,91 +1,105 @@
 // monorepo/native/mobile/comiccoin-wallet/hooks/useWalletTransactionMonitor.ts
 import { useEffect, useCallback, useRef } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useWalletStream } from "./useWalletStream";
-import { walletTransactionEventEmitter } from "../utils/eventEmitter"; // Import the event emitter
+import { transactionManager } from "../services/transaction/TransactionManager";
+import { walletTransactionEventEmitter } from "../utils/eventEmitter";
 import { LatestBlockTransaction } from "../services/transaction/LatestBlockTransactionSSEService";
-
-interface StoredTransaction {
-  timestamp: number;
-  walletAddress: string;
-}
 
 interface UseWalletTransactionMonitorOptions {
   walletAddress?: string;
+  debugMode?: boolean;
 }
 
 export function useWalletTransactionMonitor({
   walletAddress,
+  debugMode = __DEV__,
 }: UseWalletTransactionMonitorOptions) {
   const isInitialized = useRef<boolean>(false);
 
-  const getStorageKey = useCallback((address: string) => {
-    return `wallet_latest_transaction_${address}`;
-  }, []);
-
-  const isNewerTransaction = useCallback(
-    async (address: string, newTimestamp: number): Promise<boolean> => {
-      try {
-        const storedData = await AsyncStorage.getItem(getStorageKey(address));
-        if (!storedData) return true;
-
-        const stored: StoredTransaction = JSON.parse(storedData);
-        return newTimestamp > stored.timestamp;
-      } catch (error) {
-        console.log("Error checking transaction timestamp:", error);
-        return false;
+  const log = useCallback(
+    (message: string, data?: any) => {
+      if (debugMode) {
+        console.log(`${message}`, data ? data : "");
       }
     },
-    [getStorageKey],
-  );
-
-  const storeLatestTransaction = useCallback(
-    async (address: string, timestamp: number) => {
-      try {
-        const data: StoredTransaction = { timestamp, walletAddress: address };
-        await AsyncStorage.setItem(
-          getStorageKey(address),
-          JSON.stringify(data),
-        );
-      } catch (error) {
-        console.log("Error storing transaction:", error);
-      }
-    },
-    [getStorageKey],
+    [debugMode],
   );
 
   const handleTransaction = useCallback(
     async (transaction: LatestBlockTransaction) => {
-      if (!walletAddress) return;
+      if (!walletAddress) {
+        log("⚠️ No wallet address available");
+        return;
+      }
 
-      const isNewer = await isNewerTransaction(
+      log("📥 Received transaction", {
+        type: transaction.type,
+        timestamp: transaction.timestamp,
+      });
+
+      const processed = await transactionManager.processTransaction(
+        transaction,
         walletAddress,
-        transaction.timestamp,
       );
-      if (isNewer) {
-        await storeLatestTransaction(walletAddress, transaction.timestamp);
 
-        console.log("🔔 Emitting new transaction event...");
+      if (processed) {
+        log("🔔 Emitting transaction event");
         walletTransactionEventEmitter.emit("newTransaction", {
           walletAddress,
           transaction,
         });
+      } else {
+        log("⏭️ Transaction not processed");
       }
     },
-    [walletAddress, isNewerTransaction, storeLatestTransaction],
+    [walletAddress, log],
   );
 
-  useWalletStream({ onTransactionReceived: handleTransaction });
-
+  // Initialize monitor
   useEffect(() => {
+    if (!isInitialized.current && walletAddress) {
+      log("🚀 Initializing transaction monitor", {
+        address: walletAddress.slice(0, 6),
+      });
+
+      transactionManager.initialize().catch((error) => {
+        console.error("❌ Failed to initialize transaction manager:", error);
+      });
+
+      isInitialized.current = true;
+    }
+
     return () => {
       if (walletAddress) {
-        AsyncStorage.removeItem(getStorageKey(walletAddress)).catch(
-          console.error,
-        );
+        log("👋 Cleaning up transaction monitor", {
+          address: walletAddress.slice(0, 6),
+        });
+        isInitialized.current = false;
       }
     };
-  }, [walletAddress, getStorageKey]);
+  }, [walletAddress, log]);
 
-  return {};
+  const { isConnecting } = useWalletStream({
+    onTransactionReceived: handleTransaction,
+    onConnectionStateChange: (connected) => {
+      log(`${connected ? "🟢" : "🔴"} Stream connection state changed`, {
+        connected,
+      });
+    },
+    onError: (error) => {
+      console.error("❌ Stream error:", error);
+    },
+  });
+
+  return {
+    isConnecting,
+    clearTransactionHistory: useCallback(async () => {
+      if (walletAddress) {
+        log("🧹 Clearing transaction history", {
+          address: walletAddress.slice(0, 6),
+        });
+        await transactionManager.clearTransactionHistory(walletAddress);
+      }
+    }, [walletAddress, log]),
+  };
 }

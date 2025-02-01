@@ -12,25 +12,14 @@ import { View, Platform } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 import UserNavigationBar from "../../components/UserNavigationBar";
-import UserTransactionBanner from "../../components/UserTransactionBanner";
-import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
-import { useWallet } from "../../hooks/useWallet";
 
 export default function UserLayout() {
   const router = useRouter();
   const queryClient = new QueryClient();
-
-  // The following code will connect our open wallet with the authority and always be up-to-date with latest transactions for this wallet.
-  const { currentWallet } = useWallet();
-  useWalletTransactionMonitor({
-    walletAddress: currentWallet?.address,
-  });
-
   return (
     <QueryClientProvider client={queryClient}>
       <View style={{ flex: 1 }}>
         <UserNavigationBar />
-        <UserTransactionBanner />
         <Tabs
           screenOptions={{
             headerShown: false,

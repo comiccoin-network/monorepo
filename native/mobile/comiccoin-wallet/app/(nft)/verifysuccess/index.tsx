@@ -93,7 +93,7 @@ export default function VerifySuccessScreen() {
           checkTransaction();
         })
         .catch((err) => {
-          console.error("Error during refresh:", err);
+          console.log("Error during refresh:", err);
         });
     }, 5000);
 

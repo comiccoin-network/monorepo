@@ -1,19 +1,21 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(user)/more.tsx
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Pressable,
   Platform,
   ScrollView,
   Linking,
   Alert,
+  StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { History, Droplets, ExternalLink, LogOut } from "lucide-react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useWallet } from "../../hooks/useWallet";
+import { transactionManager } from "../../services/transaction/TransactionManager";
+import type { TransactionEvent } from "../../services/transaction/TransactionManager";
 
 interface MenuOption {
   id: string;
@@ -23,11 +25,48 @@ interface MenuOption {
   description: string;
   isExternal?: boolean;
   onPress?: () => void;
+  badge?: number;
 }
 
 export default function More() {
   const router = useRouter();
-  const { logout } = useWallet();
+  const { logout, currentWallet } = useWallet();
+  const [newTransactionCount, setNewTransactionCount] = useState(0);
+
+  // Handle new transactions
+  const handleNewTransaction = useCallback((event: TransactionEvent) => {
+    console.log("🔔 New transaction received in More screen:", {
+      type: event.transaction.type,
+      timestamp: event.timestamp,
+    });
+
+    // Increment transaction count for badge
+    setNewTransactionCount((prev) => prev + 1);
+  }, []);
+
+  // Set up transaction subscription
+  useEffect(() => {
+    if (!currentWallet?.address) {
+      console.log("👻 No wallet available for transaction monitoring");
+      return;
+    }
+
+    console.log("🎯 Setting up transaction monitoring in More screen", {
+      address: currentWallet.address.slice(0, 6),
+    });
+
+    const subscriberId = transactionManager.subscribe(
+      currentWallet.address,
+      handleNewTransaction,
+    );
+
+    return () => {
+      console.log("🧹 Cleaning up transaction subscription in More screen");
+      if (currentWallet?.address) {
+        transactionManager.unsubscribe(currentWallet.address, subscriberId);
+      }
+    };
+  }, [currentWallet?.address, handleNewTransaction]);
 
   const handleSignOut = async () => {
     Alert.alert(
@@ -43,10 +82,11 @@ export default function More() {
           style: "destructive",
           onPress: async () => {
             try {
+              console.log("🚪 Initiating sign out");
               await logout();
-              // Replace /login with / to go to the root index page
               router.replace("/");
             } catch (error) {
+              console.log("❌ Sign out failed:", error);
               Alert.alert("Error", "Failed to sign out. Please try again.");
             }
           },
@@ -56,14 +96,20 @@ export default function More() {
     );
   };
 
+  // Reset transaction count when navigating to transactions
+  const handleTransactionsPress = useCallback(() => {
+    setNewTransactionCount(0);
+    router.push("/(transactions)/");
+  }, [router]);
+
   const menuOptions: MenuOption[] = [
     {
       id: "transactions",
       title: "Transactions",
       icon: <History size={24} color="#7C3AED" />,
-      route: "/(transactions)/",
       description: "View your transaction history",
-      isExternal: false,
+      badge: newTransactionCount,
+      onPress: handleTransactionsPress,
     },
     {
       id: "faucet",
@@ -98,6 +144,7 @@ export default function More() {
             text: "Open",
             onPress: async () => {
               try {
+                console.log("🌐 Opening external link:", option.route);
                 const supported = await Linking.canOpenURL(option.route!);
                 if (supported) {
                   await Linking.openURL(option.route!);
@@ -105,6 +152,7 @@ export default function More() {
                   Alert.alert("Error", "Cannot open this URL");
                 }
               } catch (error) {
+                console.log("❌ Failed to open link:", error);
                 Alert.alert("Error", "Failed to open the link");
               }
             },
@@ -112,8 +160,6 @@ export default function More() {
         ],
         { cancelable: true },
       );
-    } else if (option.route) {
-      router.push(option.route);
     }
   };
 
@@ -122,7 +168,6 @@ export default function More() {
       {children}
     </View>
   );
-
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container} edges={["top"]}>

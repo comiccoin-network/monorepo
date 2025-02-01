@@ -140,7 +140,7 @@ const VideoPlayer = ({ src, style }) => {
 
   // Error display with full context
   if (error) {
-    console.error("Video player error:", { error, debugInfo });
+    console.log("Video player error:", { error, debugInfo });
     return (
       <View style={[styles.videoContainer, style]}>
         <View style={styles.errorContainer}>

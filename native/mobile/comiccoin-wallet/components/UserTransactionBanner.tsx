@@ -1,6 +1,5 @@
 // monorepo/native/mobile/comiccoin-wallet/components/UserTransactionBanner.tsx
-// monorepo/native/mobile/comiccoin-wallet/components/UserTransactionBanner.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, Animated, StyleSheet, Platform } from "react-native";
 import {
   ArrowUpCircle,
@@ -8,95 +7,125 @@ import {
   AlertCircle,
   Flame,
 } from "lucide-react-native";
-import { walletTransactionEventEmitter } from "../utils/eventEmitter";
-import { LatestBlockTransaction } from "../services/transaction/LatestBlockTransactionSSEService";
+import { useWallet } from "../hooks/useWallet";
+import { transactionManager } from "../services/transaction/TransactionManager";
+import type { TransactionEvent } from "../services/transaction/TransactionManager";
 
-interface TransactionNotification {
+interface BannerNotification {
   type: string;
   direction: string;
   valueOrTokenID: number;
-  to: string; // Add 'to' field to check for burn address
   timestamp: number;
-  walletAddress: string;
+  to?: string;
 }
 
 const BURN_ADDRESSES = [
   "0x0000000000000000000000000000000000000000",
   "0x000000000000000000000000000000000000dead",
-];
+  "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "0x000000000000000000000000000000000000000000000000000000000000dead",
+].map((addr) => addr.toLowerCase());
 
-const UserTransactionBanner = () => {
-  const [notification, setNotification] =
-    useState<TransactionNotification | null>(null);
+export function UserTransactionBanner() {
+  const { currentWallet } = useWallet();
+  const [notification, setNotification] = useState<BannerNotification | null>(
+    null,
+  );
   const [slideAnim] = useState(new Animated.Value(-100));
 
-  useEffect(() => {
-    const listener = (data: {
-      walletAddress: string;
-      transaction: LatestBlockTransaction;
-    }) => {
-      console.log("📢 New transaction detected in banner:", data);
+  const animateBanner = useCallback(() => {
+    Animated.sequence([
+      // Slide in
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      // Hold
+      Animated.delay(5000),
+      // Slide out
+      Animated.timing(slideAnim, {
+        toValue: -100,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      console.log("🎭 Banner animation complete");
+      setNotification(null);
+    });
+  }, [slideAnim]);
+
+  const handleTransaction = useCallback(
+    (event: TransactionEvent) => {
+      console.log("🔔 Transaction banner received event:", {
+        type: event.transaction.type,
+        value: event.transaction.valueOrTokenID,
+        timestamp: new Date(event.timestamp).toLocaleTimeString(),
+      });
 
       setNotification({
-        ...data.transaction,
-        walletAddress: data.walletAddress,
+        type: event.transaction.type,
+        direction: event.transaction.direction,
+        valueOrTokenID: event.transaction.valueOrTokenID,
+        timestamp: event.timestamp,
+        to: event.transaction.to,
       });
 
-      // Slide in animation
-      Animated.sequence([
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        // Hold the banner for 5 seconds
-        Animated.delay(5000),
-        // Slide out animation
-        Animated.timing(slideAnim, {
-          toValue: -100,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        // Clear notification after animation completes
-        setNotification(null);
-      });
-    };
+      animateBanner();
+    },
+    [animateBanner],
+  );
 
-    walletTransactionEventEmitter.on("newTransaction", listener);
+  useEffect(() => {
+    if (!currentWallet?.address) {
+      console.log("👻 Banner: No wallet available");
+      return;
+    }
+
+    console.log("🎯 Banner: Setting up transaction subscription", {
+      address: currentWallet.address.slice(0, 6),
+    });
+
+    const subscriberId = transactionManager.subscribe(
+      currentWallet.address,
+      handleTransaction,
+    );
 
     return () => {
-      walletTransactionEventEmitter.off("newTransaction", listener);
+      console.log("🧹 Banner: Cleaning up subscription");
+      if (currentWallet?.address) {
+        transactionManager.unsubscribe(currentWallet.address, subscriberId);
+      }
     };
-  }, [slideAnim]);
+  }, [currentWallet?.address, handleTransaction]);
 
   if (!notification) {
     return null;
   }
 
-  const isBurnTransaction = BURN_ADDRESSES.includes(
-    notification.to?.toLowerCase(),
-  );
+  const isBurnTransaction =
+    notification.to && BURN_ADDRESSES.includes(notification.to.toLowerCase());
 
   const getTransactionIcon = () => {
     if (isBurnTransaction) {
       return <Flame size={24} color="#DC2626" strokeWidth={2} />;
-    } else if (notification.direction === "TO") {
-      return <ArrowDownCircle size={24} color="#059669" strokeWidth={2} />;
-    } else if (notification.direction === "outgoing") {
-      return <ArrowUpCircle size={24} color="#DC2626" strokeWidth={2} />;
-    }
-    return <AlertCircle size={24} color="#D97706" strokeWidth={2} />;
-  };
-
-  const getTransactionColor = () => {
-    if (isBurnTransaction) {
-      return "#DC2626"; // Red color for burn transactions
     }
     switch (notification.direction) {
       case "TO":
+        return <ArrowDownCircle size={24} color="#059669" strokeWidth={2} />;
+      case "FROM":
+        return <ArrowUpCircle size={24} color="#DC2626" strokeWidth={2} />;
+      default:
+        return <AlertCircle size={24} color="#D97706" strokeWidth={2} />;
+    }
+  };
+
+  const getTransactionColor = () => {
+    if (isBurnTransaction) return "#DC2626";
+    switch (notification.direction) {
+      case "TO":
         return "#059669";
-      case "outgoing":
+      case "FROM":
         return "#DC2626";
       default:
         return "#D97706";
@@ -109,10 +138,7 @@ const UserTransactionBanner = () => {
         ? `NFT #${notification.valueOrTokenID}`
         : `${notification.valueOrTokenID} CC`;
 
-    if (isBurnTransaction) {
-      return `Burned ${value}`;
-    }
-
+    if (isBurnTransaction) return `Burned ${value}`;
     return notification.direction === "TO"
       ? `Received ${value}`
       : `Sent ${value}`;
@@ -140,7 +166,7 @@ const UserTransactionBanner = () => {
       </View>
     </Animated.View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -187,5 +213,3 @@ const styles = StyleSheet.create({
     }),
   },
 });
-
-export default UserTransactionBanner;

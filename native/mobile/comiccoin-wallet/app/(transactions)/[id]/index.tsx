@@ -59,7 +59,7 @@ export default function TransactionDetails() {
         await Linking.openURL(url);
       }
     } catch (error) {
-      console.error("Error opening explorer:", error);
+      console.log("Error opening explorer:", error);
     }
   };
 
