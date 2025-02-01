@@ -1,10 +1,12 @@
 // monorepo/native/mobile/comiccoin-wallet/components/UserTransactionBanner.tsx
+// monorepo/native/mobile/comiccoin-wallet/components/UserTransactionBanner.tsx
 import React, { useEffect, useState } from "react";
 import { View, Text, Animated, StyleSheet, Platform } from "react-native";
 import {
   ArrowUpCircle,
   ArrowDownCircle,
   AlertCircle,
+  Flame,
 } from "lucide-react-native";
 import { walletTransactionEventEmitter } from "../utils/eventEmitter";
 import { LatestBlockTransaction } from "../services/transaction/LatestBlockTransactionSSEService";
@@ -13,9 +15,15 @@ interface TransactionNotification {
   type: string;
   direction: string;
   valueOrTokenID: number;
+  to: string; // Add 'to' field to check for burn address
   timestamp: number;
   walletAddress: string;
 }
+
+const BURN_ADDRESSES = [
+  "0x0000000000000000000000000000000000000000",
+  "0x000000000000000000000000000000000000dead",
+];
 
 const UserTransactionBanner = () => {
   const [notification, setNotification] =
@@ -66,8 +74,14 @@ const UserTransactionBanner = () => {
     return null;
   }
 
+  const isBurnTransaction = BURN_ADDRESSES.includes(
+    notification.to?.toLowerCase(),
+  );
+
   const getTransactionIcon = () => {
-    if (notification.direction === "TO") {
+    if (isBurnTransaction) {
+      return <Flame size={24} color="#DC2626" strokeWidth={2} />;
+    } else if (notification.direction === "TO") {
       return <ArrowDownCircle size={24} color="#059669" strokeWidth={2} />;
     } else if (notification.direction === "outgoing") {
       return <ArrowUpCircle size={24} color="#DC2626" strokeWidth={2} />;
@@ -76,6 +90,9 @@ const UserTransactionBanner = () => {
   };
 
   const getTransactionColor = () => {
+    if (isBurnTransaction) {
+      return "#DC2626"; // Red color for burn transactions
+    }
     switch (notification.direction) {
       case "TO":
         return "#059669";
@@ -91,6 +108,10 @@ const UserTransactionBanner = () => {
       notification.type === "token"
         ? `NFT #${notification.valueOrTokenID}`
         : `${notification.valueOrTokenID} CC`;
+
+    if (isBurnTransaction) {
+      return `Burned ${value}`;
+    }
 
     return notification.direction === "TO"
       ? `Received ${value}`
@@ -112,7 +133,9 @@ const UserTransactionBanner = () => {
           <Text style={[styles.title, { color: getTransactionColor() }]}>
             {getTransactionText()}
           </Text>
-          <Text style={styles.subtitle}>Transaction confirmed</Text>
+          <Text style={styles.subtitle}>
+            {isBurnTransaction ? "Burn confirmed" : "Transaction confirmed"}
+          </Text>
         </View>
       </View>
     </Animated.View>

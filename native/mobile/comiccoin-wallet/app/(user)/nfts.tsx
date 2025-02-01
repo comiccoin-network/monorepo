@@ -1,11 +1,14 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(user)/nfts.tsx
-
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
-  Image,
-  TextInput,
   FlatList,
   Pressable,
   Linking,
@@ -14,235 +17,146 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
-import {
-  ImageIcon,
-  Search,
-  Tag,
-  Clock,
-  Coins,
-  CheckCircle,
-  ExternalLink,
-  RotateCw,
-} from "lucide-react-native";
+import { ImageIcon, ExternalLink, RotateCw } from "lucide-react-native";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useWallet } from "../../hooks/useWallet";
 import { useNFTCollection } from "../../hooks/useNFTCollection";
-import { convertIPFSToGatewayURL } from "../../services/nft/MetadataService";
-import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
+import { Image } from "expo-image";
 import { walletTransactionEventEmitter } from "../../utils/eventEmitter";
+import NFTCard from "../../components/NFTCard";
 
-// NFT Interface definition
-interface NFT {
-  tokenId: string;
-  tokenMetadataURI: string;
-  transactions: Array<{
-    to: string;
-    timestamp: string;
-    tokenMetadataURI: string;
-  }>;
-  metadata?: {
-    name?: string;
-    image?: string;
-    description?: string;
-    attributes?: {
-      grade?: string;
-    };
-  };
-  asset?: {
-    content: Uint8Array;
-    content_type: string;
-  };
-}
-
-// NFTCard component with event handling capabilities
-const NFTCard = ({ nft, currentWallet }: { nft: NFT; currentWallet: any }) => {
+export default function NFTsScreen() {
   const router = useRouter();
-  const [imageError, setImageError] = useState(false);
-  const lastTx = nft.transactions[0];
-  const isReceived =
-    lastTx.to.toLowerCase() === currentWallet.address.toLowerCase();
-
-  const getNFTImageUrl = (nft: NFT): string | null => {
-    if (!nft) return null;
-    if (nft.metadata?.image) return convertIPFSToGatewayURL(nft.metadata.image);
-    return null;
-  };
-
-  const imageUrl = getNFTImageUrl(nft);
-  const metadataCID = nft.tokenMetadataURI.replace("ipfs://", "");
-  const url = `/(nft)/${metadataCID}?metadata_uri=${encodeURIComponent(lastTx.tokenMetadataURI)}&token_id=${nft.tokenId}`;
-
-  // Navigate and emit event when NFT is selected
-  const handleNFTSelect = () => {
-    walletTransactionEventEmitter.emit("nftSelected", {
-      walletAddress: currentWallet.address,
-      tokenId: nft.tokenId,
-      timestamp: Date.now(),
-    });
-    router.push(url);
-  };
-
-  return (
-    <Pressable onPress={handleNFTSelect} style={styles.cardContainer}>
-      {/* Rest of the NFTCard JSX remains the same */}
-      <View style={styles.imageContainer}>
-        {imageUrl && !imageError ? (
-          <Image
-            source={{ uri: imageUrl }}
-            style={styles.image}
-            resizeMode="cover"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <View style={styles.placeholderContainer}>
-            <ImageIcon size={48} color="#E9D5FF" />
-          </View>
-        )}
-
-        <View style={styles.badgeContainer}>
-          <View
-            style={[
-              styles.badge,
-              isReceived ? styles.receivedBadge : styles.transferredBadge,
-            ]}
-          >
-            <View style={styles.badgeContent}>
-              {isReceived && <CheckCircle size={14} color="#166534" />}
-              <Text
-                style={[
-                  styles.badgeText,
-                  isReceived ? styles.receivedText : styles.transferredText,
-                ]}
-              >
-                {isReceived ? "In Collection" : "Transferred"}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.cardContent}>
-        <Text style={styles.title}>
-          {nft.metadata?.name || `Comic #${nft.tokenId}`}
-        </Text>
-        <View style={styles.metadataContainer}>
-          <Clock size={14} color="#6B7280" />
-          <Text style={styles.dateText}>
-            {new Date(lastTx.timestamp).toLocaleDateString()}
-          </Text>
-          {nft.metadata?.attributes?.grade && (
-            <>
-              <View style={styles.separator} />
-              <View style={styles.gradeContainer}>
-                <Coins size={14} color="#EAB308" />
-                <Text style={styles.gradeText}>
-                  Grade: {nft.metadata.attributes.grade}
-                </Text>
-              </View>
-            </>
-          )}
-        </View>
-      </View>
-    </Pressable>
-  );
-};
-
-// Main NFTListScreen component
-export default function NFTListScreen() {
-  const router = useRouter();
-  const { currentWallet, loading: serviceLoading } = useWallet();
-  const [searchTerm, setSearchTerm] = useState("");
+  const { currentWallet, loading: walletLoading } = useWallet();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const refreshingRef = useRef(false);
 
+  // Memoize wallet address to prevent unnecessary re-renders
+  const walletAddress = useMemo(
+    () => currentWallet?.address || null,
+    [currentWallet?.address],
+  );
+
+  // Get NFT collection data with memoized address
   const {
     nftCollection,
     loading: nftLoading,
-    refresh,
-  } = useNFTCollection(currentWallet?.address || null);
+    error,
+    refresh: refreshCollection,
+    getNFTImageUrl,
+  } = useNFTCollection(walletAddress);
 
-  // Effect to listen for transaction events
+  // Effect to handle transaction events
   useEffect(() => {
-    const handleNewTransaction = (data: {
+    if (!walletAddress) return;
+
+    const handleNewTransaction = async (data: {
       walletAddress: string;
-      transaction: any;
+      transaction: {
+        type: string;
+        timestamp: number;
+        valueOrTokenID: string;
+        to: string;
+      };
     }) => {
-      if (currentWallet && data.walletAddress === currentWallet.address) {
-        console.log(`
-🎭 NFT Transaction Event 🎭
-================================
-🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
-📚 Collection Size: ${nftCollection?.length || 0} NFTs
-⏰ Time: ${new Date().toLocaleTimeString()}
-🔄 Status: Refreshing collection
-================================`);
-        handleRefresh();
+      if (
+        data.walletAddress === walletAddress &&
+        data.transaction.type === "token" &&
+        !refreshingRef.current
+      ) {
+        console.log("🔍 NFT Screen received relevant transaction");
+        refreshingRef.current = true;
+        setIsRefreshing(true);
+
+        try {
+          await refreshCollection();
+          console.log("✅ Transaction-triggered refresh complete");
+        } catch (error) {
+          console.error("❌ Transaction-triggered refresh failed:", error);
+        } finally {
+          setIsRefreshing(false);
+          refreshingRef.current = false;
+        }
       }
     };
 
-    const handleNFTSelected = (data: {
-      walletAddress: string;
-      tokenId: string;
-    }) => {
-      console.log(`
-🎯 NFT Selected 🎯
-================================
-🔗 Wallet: ${currentWallet?.address.slice(0, 6)}...${currentWallet?.address.slice(-4)}
-🎨 Token ID: ${data.tokenId}
-⏰ Time: ${new Date().toLocaleTimeString()}
-================================`);
-    };
-
-    // Subscribe to both transaction and selection events
+    console.log("🎧 Setting up transaction listener in NFTs screen");
     walletTransactionEventEmitter.on("newTransaction", handleNewTransaction);
-    walletTransactionEventEmitter.on("nftSelected", handleNFTSelected);
 
     return () => {
+      console.log("🔌 Removing transaction listener from NFTs screen");
       walletTransactionEventEmitter.off("newTransaction", handleNewTransaction);
-      walletTransactionEventEmitter.off("nftSelected", handleNFTSelected);
     };
-  }, [currentWallet, nftCollection]);
+  }, [walletAddress, refreshCollection]);
 
-  const handleRefresh = async () => {
+  // Handle manual refresh with debounce
+  const handleRefresh = useCallback(async () => {
+    if (refreshingRef.current || isRefreshing) {
+      console.log("⚠️ Refresh already in progress, skipping");
+      return;
+    }
+
+    console.log("🔄 Starting manual refresh...");
+    refreshingRef.current = true;
     setIsRefreshing(true);
+
     try {
-      await refresh();
-      // Emit refresh event
-      if (currentWallet) {
-        walletTransactionEventEmitter.emit("nftRefresh", {
-          walletAddress: currentWallet.address,
-          timestamp: Date.now(),
-          collectionSize: nftCollection?.length || 0,
-        });
-      }
+      await refreshCollection();
+      console.log("✅ Manual refresh complete");
+    } catch (error) {
+      console.error("❌ Manual refresh failed:", error);
     } finally {
       setIsRefreshing(false);
+      refreshingRef.current = false;
     }
-  };
+  }, [refreshCollection, isRefreshing]);
 
-  // Filter NFTs based on search term
-  const filteredNFTs = (nftCollection || []).filter((nft: NFT) => {
-    const searchTermLower = searchTerm.toLowerCase();
-    const nftName = nft.metadata?.name || "";
-    const tokenId = nft.tokenId?.toString() || "";
-
-    return (
-      !searchTerm ||
-      nftName.toLowerCase().includes(searchTermLower) ||
-      tokenId.includes(searchTermLower)
-    );
-  });
-
-  // Session management
+  // Redirect to login if no wallet
   useEffect(() => {
-    if (!currentWallet && !serviceLoading) {
+    if (!currentWallet && !walletLoading) {
       router.replace("/login");
     }
-  }, [currentWallet, serviceLoading]);
+  }, [currentWallet, walletLoading, router]);
 
-  if (serviceLoading || nftLoading) {
+  // Handle NFT selection
+  const handleNFTSelect = useCallback(
+    (nft: any) => {
+      walletTransactionEventEmitter.emit("nftSelected", {
+        walletAddress: currentWallet?.address,
+        tokenId: nft.tokenId,
+        timestamp: Date.now(),
+      });
+
+      const metadataCID = nft.tokenMetadataURI.replace("ipfs://", "");
+      router.push(
+        `/(nft)/${metadataCID}?metadata_uri=${encodeURIComponent(
+          nft.transactions[0].tokenMetadataURI,
+        )}&token_id=${nft.tokenId}`,
+      );
+    },
+    [currentWallet?.address, router],
+  );
+
+  // Loading state
+  if (walletLoading || nftLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7C3AED" />
         <Text style={styles.loadingText}>Loading your collection...</Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>
+          Error loading collection: {error.message}
+        </Text>
+        <Pressable onPress={handleRefresh} style={styles.retryButton}>
+          <Text style={styles.retryText}>Retry</Text>
+        </Pressable>
       </View>
     );
   }
@@ -276,21 +190,7 @@ export default function NFTListScreen() {
           </Text>
         </View>
 
-        {/*
-        {(searchTerm || filteredNFTs.length > 0) && (
-          <View style={styles.searchContainer}>
-            <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
-            <TextInput
-              placeholder="Search your comic collection..."
-              style={styles.searchInput}
-              onChangeText={setSearchTerm}
-              placeholderTextColor="#9CA3AF"
-            />
-          </View>
-        )}
-        */}
-
-        {filteredNFTs.length === 0 ? (
+        {nftCollection.length === 0 ? (
           <View style={styles.emptyContainer}>
             <ImageIcon size={64} color="#9CA3AF" />
             <Text style={styles.emptyTitle}>No Comics Found</Text>
@@ -307,14 +207,21 @@ export default function NFTListScreen() {
           </View>
         ) : (
           <FlatList
-            data={filteredNFTs}
+            data={nftCollection}
             renderItem={({ item }) => (
               <View style={styles.cardWrapper}>
-                <NFTCard nft={item} currentWallet={currentWallet} />
+                <NFTCard
+                  nft={item}
+                  currentWallet={currentWallet}
+                  onPress={() => handleNFTSelect(item)}
+                />
               </View>
             )}
             keyExtractor={(item) => item.tokenId}
             contentContainerStyle={styles.listContainer}
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            progressViewOffset={Platform.OS === "android" ? 56 : 0}
           />
         )}
       </SafeAreaView>
@@ -327,8 +234,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F3FF",
   },
-  content: {
-    flex: 1,
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   headerRow: {
     flexDirection: "row",
@@ -336,27 +244,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
-  refreshButton: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: "#F5F3FF",
-  },
-  refreshButtonPressed: {
-    backgroundColor: "#EDE9FE",
-  },
-  rotating: {
-    transform: [{ rotate: "45deg" }],
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 16,
-  },
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
     color: "#5B21B6",
-    marginBottom: 8,
     ...Platform.select({
       ios: { fontFamily: "System" },
       android: { fontFamily: "Roboto" },
@@ -370,27 +261,16 @@ const styles = StyleSheet.create({
       android: { fontFamily: "Roboto" },
     }),
   },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    marginBottom: 16,
+  refreshButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "#F5F3FF",
   },
-  searchIcon: {
-    position: "absolute",
-    left: 28,
-    zIndex: 1,
+  refreshButtonPressed: {
+    backgroundColor: "#EDE9FE",
   },
-  searchInput: {
-    flex: 1,
-    height: 44,
-    backgroundColor: "white",
-    borderRadius: 12,
-    paddingLeft: 44,
-    paddingRight: 16,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
+  rotating: {
+    transform: [{ rotate: "45deg" }],
   },
   listContainer: {
     padding: 16,
@@ -398,6 +278,7 @@ const styles = StyleSheet.create({
   cardWrapper: {
     marginBottom: 16,
   },
+  // Card styles
   cardContainer: {
     backgroundColor: "white",
     borderRadius: 12,
@@ -419,6 +300,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#F3F4F6",
   },
+  cardContent: {
+    padding: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 8,
+  },
+  // Badge styles
   badgeContainer: {
     position: "absolute",
     top: 12,
@@ -430,11 +321,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
   },
-  badgeContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
   receivedBadge: {
     backgroundColor: "#DCFCE7",
     borderColor: "#BBF7D0",
@@ -443,23 +329,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#DBEAFE",
     borderColor: "#BFDBFE",
   },
+  badgeText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
   receivedText: {
     color: "#166534",
-    fontWeight: "500",
   },
   transferredText: {
     color: "#1E40AF",
-    fontWeight: "500",
   },
-  cardContent: {
-    padding: 16,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 8,
-  },
+  // Metadata styles
   metadataContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -475,15 +355,11 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: "#D1D5DB",
   },
-  gradeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
   gradeText: {
     fontSize: 14,
     color: "#6B7280",
   },
+  // Loading state
   loadingContainer: {
     flex: 1,
     alignItems: "center",
@@ -494,6 +370,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#6B7280",
   },
+  // Error state
+  errorContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#DC2626",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: "#7C3AED",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Empty state
   emptyContainer: {
     flex: 1,
     alignItems: "center",
@@ -512,17 +413,6 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     textAlign: "center",
     marginBottom: 24,
-  },
-  submitButton: {
-    backgroundColor: "#7C3AED",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  submitButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
   },
   linkButton: {
     flexDirection: "row",

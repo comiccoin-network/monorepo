@@ -1,22 +1,24 @@
-// monorepo/native/mobile/comiccoin-wallet/src/hooks/useNFTCollection.ts
+// monorepo/native/mobile/comiccoin-wallet/hooks/useNFTCollection.ts
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { useNFTTransactions } from "./useNFTTransactions";
 import { fetchNFTMetadata } from "../services/nft/MetadataService";
 
+// Types for our NFTs and transactions
 interface NFTTransaction {
   from: string;
   to: string;
   tokenId: string;
   tokenMetadataURI: string;
+  timestamp: string;
 }
 
 interface NFTMetadata {
-  metadata: any;
-  rawAsset: {
-    content: Uint8Array;
-    content_type: string | null;
-    content_length: number;
+  name?: string;
+  image?: string;
+  description?: string;
+  attributes?: {
+    grade?: string;
   };
 }
 
@@ -24,160 +26,171 @@ interface NFT {
   tokenId: string;
   tokenMetadataURI: string;
   transactions: NFTTransaction[];
-  metadata?: any;
-  rawAsset?: NFTMetadata["rawAsset"];
-  source?: "network" | "cache";
-  error?: string;
-}
-
-interface NFTCollectionResponse {
-  nftCollection: NFT[];
-  statistics: any;
+  metadata?: NFTMetadata;
 }
 
 export const useNFTCollection = (walletAddress: string | null) => {
   const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Get NFT transactions using the existing hook
   const {
     transactions,
     loading: txLoading,
     error: txError,
-    statistics,
     refresh: refreshTransactions,
   } = useNFTTransactions(walletAddress);
 
-  const getOwnedNFTs = useCallback(
-    (
-      transactions: NFTTransaction[] | null,
-      address: string | null,
-    ): Map<string, NFT> => {
-      if (!transactions || !address) return new Map();
+  // Helper function to process transactions and get currently owned NFTs
+  const processTransactions = useCallback(
+    (transactions: NFTTransaction[], walletAddress: string): NFT[] => {
+      // Keep track of current ownership state
+      const ownedNFTs = new Map<string, NFT>();
+      const normalizedWallet = walletAddress.toLowerCase();
 
-      const nftMap = new Map<string, NFT>();
-      const normalizedWallet = address.toLowerCase();
+      // Sort transactions by timestamp in descending order (newest first)
+      const sortedTransactions = [...transactions].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      );
 
-      for (const tx of transactions) {
-        const isOutgoing = tx.from.toLowerCase() === normalizedWallet;
-        const isIncoming = tx.to.toLowerCase() === normalizedWallet;
+      // Process each transaction to determine current ownership
+      for (const tx of sortedTransactions) {
+        const isReceived = tx.to.toLowerCase() === normalizedWallet;
+        const isSent = tx.from.toLowerCase() === normalizedWallet;
 
-        if (isOutgoing) {
-          nftMap.delete(tx.tokenId);
-        } else if (isIncoming && !nftMap.has(tx.tokenId)) {
-          nftMap.set(tx.tokenId, {
+        if (isReceived && !ownedNFTs.has(tx.tokenId)) {
+          // We received this NFT and haven't processed a more recent transaction for it
+          ownedNFTs.set(tx.tokenId, {
             tokenId: tx.tokenId,
             tokenMetadataURI: tx.tokenMetadataURI,
             transactions: [tx],
           });
+        } else if (isSent) {
+          // We sent this NFT away, remove it from our owned list
+          ownedNFTs.delete(tx.tokenId);
         }
       }
-      return nftMap;
+
+      return Array.from(ownedNFTs.values());
     },
     [],
   );
 
-  const fetchNFTCollectionData = async (): Promise<NFTCollectionResponse> => {
-    if (!walletAddress) {
-      return { nftCollection: [], statistics };
+  // Main query function to fetch NFT collection data
+  const fetchNFTCollection = useCallback(async () => {
+    if (!walletAddress || !transactions) {
+      console.log("⚠️ No wallet address or transactions, skipping fetch");
+      return [];
     }
 
-    const ownedNFTs = getOwnedNFTs(transactions, walletAddress);
-    const nftsWithMetadata: NFT[] = [];
+    console.log("🔄 Starting NFT collection fetch...");
 
-    await Promise.all(
-      Array.from(ownedNFTs.values()).map(async (nft) => {
+    // First get our owned NFTs from transaction history
+    const ownedNFTs = processTransactions(transactions, walletAddress);
+    console.log("📦 Found owned NFTs:", ownedNFTs.length);
+
+    // Then fetch metadata for each owned NFT
+    const nftsWithMetadata = await Promise.all(
+      ownedNFTs.map(async (nft) => {
         try {
-          // Check cache first
-          const cachedData = queryClient.getQueryData<NFTMetadata>([
-            "nft-metadata",
-            nft.tokenId,
-          ]);
-
-          if (cachedData?.metadata) {
-            nftsWithMetadata.push({
-              ...nft,
-              metadata: cachedData.metadata,
-              rawAsset: cachedData.rawAsset,
-              source: "cache",
-            });
-            return;
-          }
-
-          const { metadata, rawAsset } = await fetchNFTMetadata(
-            nft.tokenMetadataURI,
-          );
-
-          queryClient.setQueryData(["nft-metadata", nft.tokenId], {
-            metadata,
-            rawAsset,
-          });
-
-          nftsWithMetadata.push({
+          const { metadata } = await fetchNFTMetadata(nft.tokenMetadataURI);
+          return {
             ...nft,
             metadata,
-            rawAsset,
-            source: "network",
-          });
-        } catch (err) {
-          const error = err instanceof Error ? err.message : "Unknown error";
-          nftsWithMetadata.push({
-            ...nft,
-            metadata: null,
-            rawAsset: null,
+          };
+        } catch (error) {
+          console.error(
+            `Failed to fetch metadata for NFT ${nft.tokenId}:`,
             error,
-          });
+          );
+          return nft; // Return NFT without metadata if fetch fails
         }
       }),
     );
 
-    return { nftCollection: nftsWithMetadata, statistics };
-  };
+    console.log(
+      "✅ NFT collection fetch complete:",
+      nftsWithMetadata.length,
+      "NFTs",
+    );
+    return nftsWithMetadata;
+  }, [walletAddress, transactions, processTransactions]);
 
-  const { data, error, isLoading, refetch } = useQuery({
+  // Main query hook with stable configuration
+  const {
+    data: nftCollection = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["nft-collection", walletAddress],
-    queryFn: fetchNFTCollectionData,
-    enabled: !!walletAddress && transactions.length > 0, // Changed condition
-    staleTime: 300000, // 5 minutes
-    cacheTime: 300000, // 5 minutes
-    refetchOnMount: true, // Changed to true for initial load
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    retry: 1,
-    initialData: { nftCollection: [], statistics },
+    queryFn: fetchNFTCollection,
+    enabled: Boolean(walletAddress) && Boolean(transactions), // Removed !isRefreshing
+    staleTime: 30000,
+    cacheTime: 60000,
+    retry: 2,
   });
 
-  // Force initial fetch when transactions are available
-  useEffect(() => {
-    if (walletAddress && transactions.length > 0) {
-      queryClient.prefetchQuery({
-        queryKey: ["nft-collection", walletAddress],
-        queryFn: fetchNFTCollectionData,
-      });
-    }
-  }, [walletAddress, transactions]);
-
+  // Refresh function that coordinates transaction and collection updates
   const refresh = useCallback(async () => {
+    if (isRefreshing) {
+      console.log("⚠️ Refresh already in progress");
+      return;
+    }
+
+    setIsRefreshing(true);
+    console.log("🔄 Starting NFT collection refresh...");
+
     try {
       // First refresh transactions
+      console.log("1️⃣ Refreshing transactions...");
       await refreshTransactions();
 
-      // Invalidate collection cache
-      await queryClient.invalidateQueries(["nft-collection", walletAddress]);
+      // Then invalidate and immediately refetch
+      console.log("2️⃣ Invalidating and refetching queries...");
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["nft-collection", walletAddress],
+          exact: true,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["nft-transactions"],
+          exact: true,
+        }),
+      ]);
 
-      // Force a new collection fetch
-      return await queryClient.fetchQuery({
+      // Force an immediate refetch
+      await queryClient.refetchQueries({
         queryKey: ["nft-collection", walletAddress],
-        queryFn: fetchNFTCollectionData,
+        exact: true,
+        type: "active",
       });
+
+      console.log("✅ NFT refresh complete");
     } catch (error) {
-      console.error("Error during refresh:", error);
+      console.error("❌ Error during NFT collection refresh:", error);
       throw error;
+    } finally {
+      setIsRefreshing(false);
     }
-  }, [refreshTransactions, walletAddress, queryClient, fetchNFTCollectionData]);
+  }, [walletAddress, refreshTransactions, queryClient, isRefreshing]);
+
+  // Helper for NFT images
+  const getNFTImageUrl = useCallback((nft: NFT) => {
+    if (!nft?.metadata?.image) return null;
+    const imageUrl = nft.metadata.image;
+    return imageUrl.startsWith("ipfs://")
+      ? imageUrl.replace("ipfs://", "https://ipfs.io/ipfs/")
+      : imageUrl;
+  }, []);
 
   return {
-    nftCollection: data?.nftCollection ?? [],
-    loading: isLoading || txLoading,
-    error: error ?? txError,
-    statistics: data?.statistics,
+    nftCollection,
+    loading: isLoading || txLoading || isRefreshing,
+    error: error || txError,
     refresh,
+    getNFTImageUrl,
   };
 };
+
+export type { NFT, NFTTransaction, NFTMetadata };
