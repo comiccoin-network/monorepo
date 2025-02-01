@@ -58,13 +58,12 @@ export default function NFTsScreen() {
     return address;
   }, [currentWallet?.address]);
 
-  // Get NFT collection data with debug
+  // Get NFT collection data
   const {
     nftCollection,
     loading: nftLoading,
     error,
     refresh: refreshCollection,
-    getNFTImageUrl,
   } = useNFTCollection(walletAddress);
 
   // Debug state changes
@@ -87,7 +86,6 @@ export default function NFTsScreen() {
         tokens: nftCollection.map((nft) => ({
           tokenId: nft.tokenId,
           hasMetadata: !!nft.metadata,
-          imageUrl: getNFTImageUrl(nft),
         })),
       });
     } else {
@@ -97,7 +95,7 @@ export default function NFTsScreen() {
         isRefreshing,
       });
     }
-  }, [nftCollection, walletAddress, nftLoading, isRefreshing, getNFTImageUrl]);
+  }, [nftCollection, walletAddress, nftLoading, isRefreshing]);
 
   // Effect to handle transaction events with debug
   useEffect(() => {
@@ -195,7 +193,32 @@ export default function NFTsScreen() {
     }
   }, [currentWallet, walletLoading, router]);
 
-  // Rest of your existing JSX remains the same...
+  // Handle NFT selection
+  const onNFTSelect = useCallback(
+    (nft: NFT) => {
+      console.log("🎯 NFT selected:", {
+        tokenId: nft.tokenId,
+        walletAddress: currentWallet?.address,
+      });
+
+      // Emit selection event
+      walletTransactionEventEmitter.emit("nftSelected", {
+        walletAddress: currentWallet?.address,
+        tokenId: nft.tokenId,
+        timestamp: Date.now(),
+      });
+
+      // Navigate to NFT detail screen
+      const metadataCID = nft.tokenMetadataURI.replace("ipfs://", "");
+      router.push(
+        `/(nft)/${metadataCID}?metadata_uri=${encodeURIComponent(
+          nft.tokenMetadataURI,
+        )}&token_id=${nft.tokenId}`,
+      );
+    },
+    [currentWallet?.address, router],
+  );
+
   // Loading state
   if (walletLoading || nftLoading) {
     console.log("⏳ Rendering loading state", {
@@ -281,11 +304,7 @@ export default function NFTsScreen() {
             data={nftCollection}
             renderItem={({ item }) => (
               <View style={styles.cardWrapper}>
-                <NFTCard
-                  nft={item}
-                  currentWallet={currentWallet}
-                  onPress={() => handleNFTSelect(item)}
-                />
+                <NFTCard nft={item} onPress={() => onNFTSelect(item)} />
               </View>
             )}
             keyExtractor={(item) => item.tokenId}
