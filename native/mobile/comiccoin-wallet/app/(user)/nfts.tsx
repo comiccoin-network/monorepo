@@ -21,9 +21,9 @@ import { ImageIcon, ExternalLink, RotateCw } from "lucide-react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useWallet } from "../../hooks/useWallet";
 import { useNFTCollection } from "../../hooks/useNFTCollection";
-import { Image } from "expo-image";
-import { walletTransactionEventEmitter } from "../../utils/eventEmitter";
 import NFTCard from "../../components/NFTCard";
+import { transactionManager } from "../../services/transaction/TransactionManager";
+import type { TransactionEvent } from "../../services/transaction/TransactionManager";
 
 export default function NFTsScreen() {
   const router = useRouter();
@@ -97,61 +97,23 @@ export default function NFTsScreen() {
     }
   }, [nftCollection, walletAddress, nftLoading, isRefreshing]);
 
-  // Effect to handle transaction events with debug
-  useEffect(() => {
-    if (!walletAddress) {
-      console.log("🎧 Skip transaction listener - no wallet");
-      return;
-    }
+  // PART 1 OF 2: Background page refresh by latest tx.
+  const [newTransactionCount, setNewTransactionCount] = useState(0);
 
-    const handleNewTransaction = async (data: {
-      walletAddress: string;
-      transaction: {
-        type: string;
-        timestamp: number;
-        valueOrTokenID: string;
-        to: string;
-      };
-    }) => {
-      console.log("📨 New transaction received:", {
-        matchesWallet: data.walletAddress === walletAddress,
-        type: data.transaction.type,
-        isRefreshing: refreshingRef.current,
-      });
-
-      if (
-        data.walletAddress === walletAddress &&
-        data.transaction.type === "token" &&
-        !refreshingRef.current
-      ) {
-        console.log("🔍 Processing relevant transaction");
-        refreshingRef.current = true;
-        setIsRefreshing(true);
-
-        try {
-          await refreshCollection();
-          console.log("✅ Transaction-triggered refresh complete");
-        } catch (error) {
-          console.log("❌ Transaction-triggered refresh failed:", error);
-        } finally {
-          setIsRefreshing(false);
-          refreshingRef.current = false;
-        }
-      }
-    };
-
-    console.log("🎧 Setting up transaction listener in NFTs screen", {
-      walletAddress,
+  // PART 2 OF 2: Background page refresh by latest tx.
+  // Handle new transactions
+  const handleNewTransaction = useCallback((event: TransactionEvent) => {
+    console.log("🔔 New transaction received in NFTs screen:", {
+      type: event.transaction.type,
+      timestamp: event.timestamp,
     });
-    walletTransactionEventEmitter.on("newTransaction", handleNewTransaction);
 
-    return () => {
-      console.log("🔌 Removing transaction listener from NFTs screen", {
-        walletAddress,
-      });
-      walletTransactionEventEmitter.off("newTransaction", handleNewTransaction);
-    };
-  }, [walletAddress, refreshCollection]);
+    // Increment transaction count for badge
+    setNewTransactionCount((prev) => prev + 1);
+
+    // Refresh all the data on this page.
+    refreshCollection();
+  }, []);
 
   // Handle manual refresh with debug
   const handleRefresh = useCallback(async () => {
@@ -199,13 +161,6 @@ export default function NFTsScreen() {
       console.log("🎯 NFT selected:", {
         tokenId: nft.tokenId,
         walletAddress: currentWallet?.address,
-      });
-
-      // Emit selection event
-      walletTransactionEventEmitter.emit("nftSelected", {
-        walletAddress: currentWallet?.address,
-        tokenId: nft.tokenId,
-        timestamp: Date.now(),
       });
 
       // Navigate to NFT detail screen

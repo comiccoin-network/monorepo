@@ -1,12 +1,13 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(transactions)/index.tsx
-import React, { useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { useWalletTransactions } from "../../hooks/useWalletTransactions";
 import { useWallet } from "../../hooks/useWallet";
 import TransactionList from "../../components/TransactionList";
-import { walletTransactionEventEmitter } from "../../utils/eventEmitter";
+import { transactionManager } from "../../services/transaction/TransactionManager";
+import type { TransactionEvent } from "../../services/transaction/TransactionManager";
 
 export default function TransactionsList() {
   const { currentWallet } = useWallet();
@@ -15,64 +16,94 @@ export default function TransactionsList() {
     currentWallet?.address,
   );
 
-  // Listen for transaction events
-  useEffect(() => {
-    if (!currentWallet?.address) return;
+  const [newTransactionCount, setNewTransactionCount] = useState(0);
 
-    const handleTransaction = async (data: {
-      walletAddress: string;
-      transaction: any;
-    }) => {
-      if (currentWallet.address === data.walletAddress) {
-        console.log(`
-💫 Transaction Update in List 💫
-================================
-🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
-📊 Current Count: ${transactions?.length || 0}
-⏰ Time: ${new Date().toLocaleTimeString()}
-================================`);
+  const handleNewTransaction = useCallback(
+    async (event: TransactionEvent) => {
+      console.log("🔔 New transaction received in Transactions screen:", {
+        type: event.transaction.type,
+        timestamp: event.timestamp,
+      });
 
-        await refresh();
+      if (!currentWallet?.address) {
+        console.warn("No wallet address available for refresh");
+        return;
       }
-    };
 
-    walletTransactionEventEmitter.on("newTransaction", handleTransaction);
+      try {
+        // Explicitly invalidate the cache first
+        await queryClient.invalidateQueries({
+          queryKey: ["transactions", currentWallet.address],
+          exact: true,
+        });
 
-    return () => {
-      walletTransactionEventEmitter.off("newTransaction", handleTransaction);
-    };
-  }, [currentWallet?.address, refresh]);
+        // Force an immediate refetch
+        await queryClient.fetchQuery({
+          queryKey: ["transactions", currentWallet.address],
+          staleTime: 0,
+        });
 
-  // Enhanced refresh handler for manual refreshes
+        console.log("✅ Transaction refresh completed");
+        setNewTransactionCount((prev) => prev + 1);
+      } catch (error) {
+        console.error("❌ Transaction refresh failed:", error);
+      }
+    },
+    [currentWallet?.address, queryClient],
+  );
+
   const handleRefresh = async () => {
-    if (!currentWallet) return;
+    if (!currentWallet) {
+      console.warn("No wallet available for manual refresh");
+      return;
+    }
 
-    console.log(`
-🔄 Manual Refresh Triggered 🔄
-================================
-🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
-📊 Current Count: ${transactions?.length || 0}
-⏰ Time: ${new Date().toLocaleTimeString()}
-================================`);
+    console.log(
+      `🔄 Manual Refresh Triggered for ${currentWallet.address.slice(0, 6)}`,
+    );
 
     try {
-      // Invalidate and refetch in one go
       await queryClient.invalidateQueries({
         queryKey: ["transactions", currentWallet.address],
-        refetchType: "active",
+        exact: true,
       });
 
-      await refresh();
-
-      walletTransactionEventEmitter.emit("transactionListRefresh", {
-        walletAddress: currentWallet.address,
-        timestamp: Date.now(),
-        transactionCount: transactions?.length || 0,
+      await queryClient.fetchQuery({
+        queryKey: ["transactions", currentWallet.address],
+        staleTime: 0,
       });
+
+      setNewTransactionCount(0);
+      console.log("✅ Manual refresh completed");
     } catch (error) {
-      console.log("Refresh failed:", error);
+      console.error("❌ Manual refresh failed:", error);
     }
   };
+
+  useEffect(() => {
+    if (!currentWallet?.address) {
+      console.log("No wallet address available for subscription");
+      return;
+    }
+
+    console.log(
+      `🎧 Setting up transaction listener for ${currentWallet.address.slice(0, 6)}`,
+    );
+
+    const subscriberId = transactionManager.subscribe(
+      currentWallet.address,
+      handleNewTransaction,
+    );
+
+    return () => {
+      if (currentWallet?.address) {
+        console.log(
+          `👋 Cleaning up transaction listener for ${currentWallet.address.slice(0, 6)}`,
+        );
+        transactionManager.unsubscribe(currentWallet.address, subscriberId);
+      }
+    };
+  }, [currentWallet?.address, handleNewTransaction]);
 
   if (loading) {
     return (

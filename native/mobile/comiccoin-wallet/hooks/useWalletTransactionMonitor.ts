@@ -63,7 +63,7 @@ export function useWalletTransactionMonitor({
       });
 
       transactionManager.initialize().catch((error) => {
-        console.error("❌ Failed to initialize transaction manager:", error);
+        console.log("❌ Failed to initialize transaction manager:", error);
       });
 
       isInitialized.current = true;
@@ -87,7 +87,7 @@ export function useWalletTransactionMonitor({
       });
     },
     onError: (error) => {
-      console.error("❌ Stream error:", error);
+      console.log("❌ Stream error:", error);
     },
   });
 

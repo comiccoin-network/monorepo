@@ -47,7 +47,7 @@ class TransactionManager {
         });
       }
     } catch (error) {
-      console.error("❌ Failed to initialize TransactionManager:", error);
+      console.log("❌ Failed to initialize TransactionManager:", error);
     }
   }
 
@@ -160,7 +160,7 @@ class TransactionManager {
       try {
         callback(event);
       } catch (error) {
-        console.error("❌ Error in subscriber callback:", error);
+        console.log("❌ Error in subscriber callback:", error);
       }
     });
 
@@ -182,7 +182,7 @@ class TransactionManager {
       );
       console.log("💾 Persisted last processed transactions");
     } catch (error) {
-      console.error("❌ Failed to persist transaction data:", error);
+      console.log("❌ Failed to persist transaction data:", error);
     }
   }
 

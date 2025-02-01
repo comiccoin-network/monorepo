@@ -49,7 +49,7 @@ const UserNavigationBar: React.FC<UserNavigationBarProps> = () => {
       });
     } catch (error) {
       // Log the error for debugging
-      console.error("Sign out failed:", error);
+      console.log("Sign out failed:", error);
 
       // You might want to show an error message to the user here
       // For now, still attempt to navigate to login for safety

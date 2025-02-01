@@ -25,8 +25,8 @@ import {
 
 import { useWallet } from "../../hooks/useWallet";
 import { useAllTransactions } from "../../hooks/useAllTransactions";
-import { useWalletTransactionMonitor } from "../../hooks/useWalletTransactionMonitor";
-import { walletTransactionEventEmitter } from "../../utils/eventEmitter";
+import { transactionManager } from "../../services/transaction/TransactionManager";
+import type { TransactionEvent } from "../../services/transaction/TransactionManager";
 
 import walletService from "../../services/wallet/WalletService";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -106,6 +106,48 @@ const Overview: React.FC = () => {
     return () => clearInterval(sessionCheckInterval);
   }, [currentWallet, serviceLoading, router]);
 
+  // PART 1 OF 2: Background page refresh by latest tx.
+  const [newTransactionCount, setNewTransactionCount] = useState(0);
+
+  // PART 2 OF 2: Background page refresh by latest tx.
+  // Handle new transactions
+  const handleNewTransaction = useCallback((event: TransactionEvent) => {
+    console.log("🔔 New transaction received in Overview screen:", {
+      type: event.transaction.type,
+      timestamp: event.timestamp,
+    });
+
+    // Increment transaction count for badge
+    setNewTransactionCount((prev) => prev + 1);
+
+    // Refresh all the data on this page.
+    txrefresh();
+  }, []);
+
+  // Set up transaction subscription
+  useEffect(() => {
+    if (!currentWallet?.address) {
+      console.log("👻 No wallet available for transaction monitoring");
+      return;
+    }
+
+    console.log("🎯 Setting up transaction monitoring in More screen", {
+      address: currentWallet.address.slice(0, 6),
+    });
+
+    const subscriberId = transactionManager.subscribe(
+      currentWallet.address,
+      handleNewTransaction,
+    );
+
+    return () => {
+      console.log("🧹 Cleaning up transaction subscription in More screen");
+      if (currentWallet?.address) {
+        transactionManager.unsubscribe(currentWallet.address, subscriberId);
+      }
+    };
+  }, [currentWallet?.address, handleNewTransaction]);
+
   const handleSessionExpired = () => {
     setIsSessionExpired(true);
     logout();
@@ -114,23 +156,6 @@ const Overview: React.FC = () => {
       router.replace("/login");
     }, 3000);
   };
-
-  // IMPORTANT: EVENT LISTENR
-  useEffect(() => {
-    const listener = (data: { walletAddress: string }) => {
-      console.log(
-        `🚀 New transaction for wallet: ${data.walletAddress} in Dashboard`,
-      );
-      // Refresh transaction list
-      txrefresh();
-    };
-
-    walletTransactionEventEmitter.on("newTransaction", listener);
-
-    return () => {
-      walletTransactionEventEmitter.off("newTransaction", listener);
-    };
-  }, [txrefresh]);
 
   // Handle clipboard copy
   const copyToClipboard = async (text: string) => {

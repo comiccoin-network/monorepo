@@ -1,16 +1,57 @@
 // monorepo/native/mobile/comiccoin-wallet/src/services/blockdata/BlockDataViaTransactionNonceService.ts
 import config from "../../config";
 
-// Define interfaces for our response data
+interface BlockHeader {
+  chain_id: number;
+  number_bytes: string;
+  number_string: string;
+  prev_block_hash: string;
+  timestamp: number;
+  difficulty: number;
+  beneficiary: string;
+  transaction_fee: number;
+  state_root: string;
+  trans_root: string;
+  nonce_bytes: string;
+  nonce_string: string;
+  latest_token_id_bytes: string;
+  latest_token_id_string: string;
+  tokens_root: string;
+}
+
+interface Transaction {
+  chain_id: number;
+  nonce_bytes: string;
+  nonce_string: string;
+  from: string;
+  to: string;
+  value: number;
+  data: string;
+  data_string: string;
+  type: "coin" | "token";
+  token_id_bytes: string | null;
+  token_id_string: string;
+  token_metadata_uri: string;
+  token_nonce_bytes: string | null;
+  token_nonce_string: string;
+  v_bytes: string;
+  r_bytes: string;
+  s_bytes: string;
+  timestamp: number;
+  fee: number;
+}
+
+interface Validator {
+  id: string;
+  public_key_bytes: string;
+}
+
 interface BlockData {
-  header: {
-    number_string: string;
-    time_string: string;
-    previous_header_hash_string: string;
-    merkle_root_hash_string: string;
-  };
-  trans: Array<any>; // Define specific transaction type if available
-  [key: string]: any;
+  hash: string;
+  header: BlockHeader;
+  header_signature_bytes: string;
+  trans: Transaction[];
+  validator: Validator;
 }
 
 interface ApiError {
@@ -24,78 +65,138 @@ class BlockDataViaTransactionNonceService {
 
   constructor() {
     this.baseURL = config.AUTHORITY_API_URL;
+    console.log("🏗️ BlockDataViaTransactionNonceService initialized:", {
+      baseURL: this.baseURL,
+    });
   }
 
-  /**
-   * Fetches block data for a specific transaction nonce
-   * @param transactionNonce - The transaction nonce to fetch block data for
-   * @returns Promise resolving to block data
-   * @throws Error if the request fails or validation fails
-   */
   async getBlockDataByTransactionNonce(
     transactionNonce: string | number,
   ): Promise<BlockData> {
-    // Validate the transaction nonce before making the request
+    console.log("📤 Fetching block data for transaction:", {
+      nonce: transactionNonce,
+      timestamp: new Date().toISOString(),
+    });
+
     if (!this.validateTransactionNonce(transactionNonce)) {
+      console.error("❌ Invalid transaction nonce:", {
+        nonce: transactionNonce,
+        type: typeof transactionNonce,
+      });
       throw new Error("Invalid transaction nonce");
     }
 
+    const endpoint = `${this.baseURL}/api/v1/blockdata-via-tx-nonce/${transactionNonce}`;
+    console.log("🔗 Making API request:", {
+      endpoint: endpoint,
+      method: "GET",
+    });
+
     try {
-      const response = await fetch(
-        `${this.baseURL}/api/v1/blockdata-via-tx-nonce/${transactionNonce}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
+      const startTime = performance.now();
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-      );
+      });
+
+      const requestDuration = (performance.now() - startTime).toFixed(2);
+      console.log("⏱️ Request completed:", {
+        duration: `${requestDuration}ms`,
+        status: response.status,
+        ok: response.ok,
+      });
 
       if (!response.ok) {
         let errorMessage = "Failed to fetch block data";
         try {
           const errorData = await response.json();
+          console.error("🚫 API error response:", {
+            status: response.status,
+            errorData,
+            nonce: transactionNonce,
+          });
           errorMessage = errorData.message || errorMessage;
-        } catch {
-          // If parsing error response fails, use status text
+        } catch (parseError) {
+          console.error("⚠️ Failed to parse error response:", {
+            status: response.status,
+            statusText: response.statusText,
+            parseError,
+          });
           errorMessage = `${errorMessage}: ${response.statusText}`;
         }
         throw new Error(errorMessage);
       }
 
       const data: BlockData = await response.json();
+
+      console.log("✅ Successfully fetched block data:", {
+        blockNumber: data.header.number_string,
+        timestamp: data.header.time_string,
+        transactionsCount: data.trans.length,
+        requestDuration: `${requestDuration}ms`,
+      });
+
       return data;
     } catch (error) {
       if (error instanceof TypeError) {
-        // Network error
+        console.error("🌐 Network error:", {
+          error: error.message,
+          nonce: transactionNonce,
+          url: endpoint,
+        });
         throw new Error(
           "Network request failed. Please check your connection.",
         );
       }
-      // Rethrow any other errors
+
+      console.error("💥 Unexpected error during fetch:", {
+        errorType:
+          error instanceof Error ? error.constructor.name : typeof error,
+        message: error instanceof Error ? error.message : "Unknown error",
+        nonce: transactionNonce,
+      });
+
       throw error instanceof Error
         ? error
         : new Error("An unknown error occurred");
     }
   }
 
-  /**
-   * Validates the transaction nonce format
-   * @param transactionNonce - The transaction nonce to validate
-   * @returns True if valid, false otherwise
-   */
   validateTransactionNonce(transactionNonce: string | number): boolean {
+    console.log("🔍 Validating transaction nonce:", {
+      nonce: transactionNonce,
+      type: typeof transactionNonce,
+    });
+
     const num = Number(transactionNonce);
-    // Ensure the nonce is a non-negative integer
-    return !isNaN(num) && num >= 0 && Number.isInteger(num);
+    const isValid = !isNaN(num) && num >= 0 && Number.isInteger(num);
+
+    if (!isValid) {
+      console.warn("⚠️ Invalid transaction nonce:", {
+        nonce: transactionNonce,
+        parsed: num,
+        isNaN: isNaN(num),
+        isNegative: num < 0,
+        isInteger: Number.isInteger(num),
+      });
+    } else {
+      console.log("✅ Transaction nonce validation passed:", {
+        original: transactionNonce,
+        parsed: num,
+      });
+    }
+
+    return isValid;
   }
 }
 
 // Create and export a singleton instance
 const blockDataViaTransactionNonceService =
   new BlockDataViaTransactionNonceService();
-export default blockDataViaTransactionNonceService;
+console.log("🚀 BlockDataViaTransactionNonceService singleton created");
 
-// Export the class itself for testing purposes
+export default blockDataViaTransactionNonceService;
 export { BlockDataViaTransactionNonceService };

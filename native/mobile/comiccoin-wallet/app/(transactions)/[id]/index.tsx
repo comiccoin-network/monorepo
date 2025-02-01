@@ -1,5 +1,5 @@
 // monorepo/native/mobile/comiccoin-wallet/app/(transactions)/[id]/index.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -22,48 +22,120 @@ import {
   Receipt,
   Copy,
   AlertCircle,
+  Hash,
+  Blocks,
+  Link,
+  Trophy,
+  Settings,
+  Database,
+  Shield,
+  Key,
 } from "lucide-react-native";
 import * as Clipboard from "expo-clipboard";
+import type {
+  BlockData,
+  BlockHeader,
+  Transaction,
+  Validator,
+} from "../../../services/blockdata/BlockDataViaTransactionNonceService";
 import { useBlockDataViaTransactionNonce } from "../../../hooks/useBlockDataViaTransactionNonce";
 import { useWallet } from "../../../hooks/useWallet";
 import { useNFTMetadata } from "../../../hooks/useNFTMetadata";
 import { formatBytes, base64ToHex } from "../../../utils/byteUtils";
 
 export default function TransactionDetails() {
+  console.log("🏗️ Initializing Transaction Details View");
+
   const { id } = useLocalSearchParams();
   const { currentWallet } = useWallet();
+
+  console.log("📝 Transaction Details Parameters:", {
+    id,
+    hasWallet: !!currentWallet,
+    walletPreview: currentWallet?.address
+      ? `${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}`
+      : "none",
+  });
+
   const { blockData, loading, error } = useBlockDataViaTransactionNonce(
     id as string,
   );
-  const transaction = blockData?.trans?.find(
-    (tx) =>
-      tx.timestamp === parseInt(id as string) ||
+
+  const transaction = blockData?.trans?.find((tx: Transaction) => {
+    const found =
       tx.nonce_string === id ||
-      base64ToHex(tx.nonce_bytes || "") === id,
-  );
+      base64ToHex(tx.nonce_bytes || "") === id ||
+      tx.timestamp.toString() === id;
+
+    if (found) {
+      console.log("🎯 Found matching transaction:", {
+        type: tx.type,
+        timestamp: tx.timestamp,
+        value: tx.value,
+        nonce: tx.nonce_string,
+      });
+    }
+    return found;
+  });
 
   const { metadata: nftMetadata, loading: nftLoading } = useNFTMetadata(
     transaction?.type === "token" ? transaction.token_metadata_uri : null,
   );
 
+  useEffect(() => {
+    console.log("🔄 Transaction Details State Update:", {
+      loading,
+      hasError: !!error,
+      transactionFound: !!transaction,
+      isNFT: transaction?.type === "token",
+      nftLoading,
+    });
+  }, [loading, error, transaction, nftLoading]);
+
   const copyToClipboard = async (text: string) => {
-    await Clipboard.setStringAsync(text);
-    Alert.alert("Copied", "Text copied to clipboard");
+    try {
+      await Clipboard.setStringAsync(text);
+      console.log("📋 Copied to clipboard:", {
+        textLength: text.length,
+        preview: `${text.slice(0, 6)}...${text.slice(-4)}`,
+      });
+      Alert.alert("Copied", "Text copied to clipboard");
+    } catch (error) {
+      console.error("❌ Clipboard operation failed:", error);
+      Alert.alert("Error", "Failed to copy to clipboard");
+    }
   };
 
   const openExplorer = async () => {
-    const url = `https://explorer.comiccoin.com/tx/${transaction?.id}`;
+    if (!transaction?.id) {
+      console.warn("⚠️ Cannot open explorer - no transaction ID");
+      return;
+    }
+
+    const url = `https://explorer.comiccoin.com/tx/${transaction.id}`;
+    console.log("🔍 Attempting to open explorer:", {
+      transactionId: `${transaction.id.slice(0, 6)}...${transaction.id.slice(-4)}`,
+      url,
+    });
+
     try {
       const supported = await Linking.canOpenURL(url);
       if (supported) {
         await Linking.openURL(url);
+        console.log("✅ Explorer opened successfully");
+      } else {
+        console.warn("⚠️ URL scheme not supported:", { url });
       }
     } catch (error) {
-      console.log("Error opening explorer:", error);
+      console.error("❌ Failed to open explorer:", {
+        error,
+        url: url.slice(0, 30) + "...",
+      });
     }
   };
 
   if (loading) {
+    console.log("⏳ Loading transaction details...");
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7C3AED" />
@@ -73,6 +145,10 @@ export default function TransactionDetails() {
   }
 
   if (error) {
+    console.error("❌ Transaction details error:", {
+      error,
+      searchId: id,
+    });
     return (
       <View style={styles.errorContainer}>
         <AlertCircle size={24} color="#DC2626" />
@@ -82,6 +158,11 @@ export default function TransactionDetails() {
   }
 
   if (!transaction) {
+    console.warn("⚠️ Transaction not found:", {
+      searchId: id,
+      blockDataExists: !!blockData,
+      transactionsCount: blockData?.trans?.length || 0,
+    });
     return (
       <View style={styles.errorContainer}>
         <AlertCircle size={24} color="#DC2626" />
@@ -94,6 +175,22 @@ export default function TransactionDetails() {
     transaction.from.toLowerCase() === currentWallet?.address.toLowerCase();
   const formattedDate = new Date(transaction.timestamp).toLocaleDateString();
   const formattedTime = new Date(transaction.timestamp).toLocaleTimeString();
+
+  console.log("✨ Rendering transaction details:", {
+    type: transaction.type,
+    isOutgoing,
+    value: transaction.value,
+    timestamp: `${formattedDate} ${formattedTime}`,
+    isNFT: transaction.type === "token",
+    hasNFTMetadata: !!nftMetadata,
+  });
+
+  // Inside your return statement before SafeAreaProvider
+  console.log("🎨 Rendering transaction layout:", {
+    type: transaction.type,
+    hasNFTData: transaction.type === "token",
+    hasAdditionalData: !!(transaction.data || transaction.data_string),
+  });
 
   return (
     <SafeAreaProvider>
@@ -122,7 +219,7 @@ export default function TransactionDetails() {
             </Text>
           </View>
 
-          {/* Details Card */}
+          {/* Core Transaction Details */}
           <View style={styles.detailsCard}>
             {/* Date & Time */}
             <View style={styles.detailRow}>
@@ -152,13 +249,13 @@ export default function TransactionDetails() {
               </View>
               <View style={styles.idContainer}>
                 <View>
-                  <Text style={styles.detailLabel}>Transaction ID</Text>
+                  <Text style={styles.detailLabel}>Value</Text>
                   <Text
                     style={styles.detailValue}
                     numberOfLines={1}
                     ellipsizeMode="middle"
                   >
-                    {transaction.id}
+                    {transaction.value} CC
                   </Text>
                 </View>
                 <Pressable
@@ -170,7 +267,7 @@ export default function TransactionDetails() {
               </View>
             </View>
 
-            {/* Addresses */}
+            {/* Addresses Section */}
             <View style={styles.addressSection}>
               <Text style={styles.sectionTitle}>Addresses</Text>
               <View style={styles.addressRow}>
@@ -206,45 +303,60 @@ export default function TransactionDetails() {
                 </Pressable>
               </View>
             </View>
-
-            {/* NFT Details if applicable */}
-            {transaction.type === "token" && (
-              <View style={styles.nftSection}>
-                <Text style={styles.sectionTitle}>NFT Details</Text>
-                <View style={styles.nftDetail}>
-                  <Text style={styles.nftLabel}>Token ID:</Text>
-                  <Text style={styles.nftValue}>
-                    {transaction.token_id_string ||
-                      formatBytes(transaction.token_id_bytes)}
-                  </Text>
-                </View>
-                {nftLoading ? (
-                  <ActivityIndicator size="small" color="#7C3AED" />
-                ) : nftMetadata ? (
-                  <View style={styles.metadataContainer}>
-                    <Text style={styles.metadataLabel}>Metadata:</Text>
-                    <Text style={styles.metadataText}>
-                      {JSON.stringify(nftMetadata.metadata, null, 2)}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            )}
           </View>
 
-          {/* Explorer Button */}
-          {/*
-          <Pressable
-            style={({ pressed }) => [
-              styles.explorerButton,
-              pressed && styles.explorerButtonPressed,
-            ]}
-            onPress={openExplorer}
-          >
-            <ExternalLink size={20} color="#7C3AED" />
-            <Text style={styles.explorerButtonText}>View in Explorer</Text>
-          </Pressable>
-          */}
+          {/* Block Information */}
+          <View style={styles.detailsCard}>
+            <Text style={styles.sectionTitle}>Block Information</Text>
+            <View style={styles.detailRow}>
+              <View style={styles.detailIconContainer}>
+                <Blocks size={20} color="#6B7280" />
+              </View>
+              <View>
+                <Text style={styles.detailLabel}>Block Number</Text>
+                <Text style={styles.detailValue}>
+                  #{blockData?.header.number_string}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.detailRow}>
+              <View style={styles.detailIconContainer}>
+                <Settings size={20} color="#6B7280" />
+              </View>
+              <View>
+                <Text style={styles.detailLabel}>Network Details</Text>
+                <Text style={styles.detailValue}>
+                  Chain ID: {blockData?.header.chain_id} • Difficulty:{" "}
+                  {blockData?.header.difficulty}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* NFT Details if applicable */}
+          {transaction.type === "token" && (
+            <View style={styles.detailsCard}>
+              <Text style={styles.sectionTitle}>NFT Details</Text>
+              <View style={styles.nftDetail}>
+                <Text style={styles.nftLabel}>Token ID:</Text>
+                <Text style={styles.nftValue}>
+                  {transaction.token_id_string ||
+                    formatBytes(transaction.token_id_bytes)}
+                </Text>
+              </View>
+              {nftLoading ? (
+                <ActivityIndicator size="small" color="#7C3AED" />
+              ) : nftMetadata ? (
+                <View style={styles.metadataContainer}>
+                  <Text style={styles.metadataLabel}>Metadata:</Text>
+                  <Text style={styles.metadataText}>
+                    {JSON.stringify(nftMetadata.metadata, null, 2)}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -482,5 +594,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#7C3AED",
+  },
+  blockInfoSection: {
+    marginBottom: 16,
+  },
+  rootsContainer: {
+    gap: 4,
+  },
+  rootValue: {
+    fontSize: 12,
+    color: "#374151",
+    fontFamily: Platform.select({ ios: "Menlo", android: "monospace" }),
+  },
+  validatorSection: {
+    marginTop: 16,
   },
 });

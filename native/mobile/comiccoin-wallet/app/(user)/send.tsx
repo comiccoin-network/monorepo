@@ -22,8 +22,9 @@ import { useWallet } from "../../hooks/useWallet";
 import { useWalletTransactions } from "../../hooks/useWalletTransactions";
 import { useCoinTransfer } from "../../hooks/useCoinTransfer";
 import walletService from "../../services/wallet/WalletService";
-import { walletTransactionEventEmitter } from "../../utils/eventEmitter";
 import TransactionStatusModal from "../../components/TransactionStatusModal";
+import { transactionManager } from "../../services/transaction/TransactionManager";
+import type { TransactionEvent } from "../../services/transaction/TransactionManager";
 
 // Form data interface
 interface FormData {
@@ -56,35 +57,23 @@ const SendScreen: React.FC = () => {
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
 
-  // Effect to listen for transaction events
-  useEffect(() => {
-    const handleNewTransaction = (data: {
-      walletAddress: string;
-      transaction: any;
-    }) => {
-      // Only refresh if it's our wallet
-      if (currentWallet && data.walletAddress === currentWallet.address) {
-        console.log(`
-🔄 Transaction Event Detected 🔄
-================================
-🔗 Wallet: ${currentWallet.address.slice(0, 6)}...${currentWallet.address.slice(-4)}
-💰 Balance: ${statistics?.totalCoinValue || 0} CC
-📊 Transactions: ${statistics?.coinTransactionsCount || 0}
-⏰ Time: ${new Date().toLocaleTimeString()}
-================================`);
-        // Refresh transaction data to update balances
-        txrefresh();
-      }
-    };
+  // PART 1 OF 2: Background page refresh by latest tx.
+  const [newTransactionCount, setNewTransactionCount] = useState(0);
 
-    // Subscribe to transaction events
-    walletTransactionEventEmitter.on("newTransaction", handleNewTransaction);
+  // PART 2 OF 2: Background page refresh by latest tx.
+  // Handle new transactions
+  const handleNewTransaction = useCallback((event: TransactionEvent) => {
+    console.log("🔔 New transaction received in Send screen:", {
+      type: event.transaction.type,
+      timestamp: event.timestamp,
+    });
 
-    // Cleanup subscription
-    return () => {
-      walletTransactionEventEmitter.off("newTransaction", handleNewTransaction);
-    };
-  }, [currentWallet, statistics, txrefresh]);
+    // Increment transaction count for badge
+    setNewTransactionCount((prev) => prev + 1);
+
+    // Refresh all the data on this page.
+    txrefresh();
+  }, []);
 
   // Session management
   useEffect(() => {
