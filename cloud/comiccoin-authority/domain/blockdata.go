@@ -70,6 +70,8 @@ type BlockDataRepository interface {
 
 	GetLatestTokenIDByChainID(ctx context.Context, chainID uint16) (*big.Int, error)
 
+	ListOwnedTokenBlockTransactionsByAddress(ctx context.Context, address *common.Address) ([]*BlockTransaction, error)
+
 	OpenTransaction() error
 	CommitTransaction() error
 	DiscardTransaction()

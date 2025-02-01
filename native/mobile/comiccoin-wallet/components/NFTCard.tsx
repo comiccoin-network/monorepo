@@ -1,10 +1,9 @@
 // monorepo/native/mobile/comiccoin-wallet/components/NFTCard.tsx
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { ImageIcon } from "lucide-react-native";
 import { NFT } from "../hooks/useNFTCollection";
-import { getNFTImageUrl } from "../hooks/useNFTCollection";
 
 interface NFTCardProps {
   nft: NFT;
@@ -12,6 +11,15 @@ interface NFTCardProps {
 }
 
 const NFTCard = ({ nft, onPress }: NFTCardProps) => {
+  // Helper for NFT images
+  const getNFTImageUrl = useCallback((nft: NFT) => {
+    if (!nft?.metadata?.image) return null;
+    const imageUrl = nft.metadata.image;
+    return imageUrl.startsWith("ipfs://")
+      ? imageUrl.replace("ipfs://", "https://ipfs.io/ipfs/")
+      : imageUrl;
+  }, []);
+
   const [imageError, setImageError] = useState(false);
   const imageUrl = getNFTImageUrl(nft);
 

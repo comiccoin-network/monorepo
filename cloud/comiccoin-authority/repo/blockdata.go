@@ -14,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/signature"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/domain"
 )
@@ -594,6 +595,129 @@ func (r *BlockDataRepo) GetLatestTokenIDByChainID(ctx context.Context, chainID u
 	tokenID.SetBytes(result.TokenIDBytes)
 
 	return tokenID, nil
+}
+
+func (r *BlockDataRepo) ListOwnedTokenBlockTransactionsByAddress(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error) {
+	// Result slice
+	var blockTransactions []*domain.BlockTransaction
+
+	// Dereference the address pointer for the query
+	if address == nil {
+		return nil, fmt.Errorf("address cannot be nil")
+	}
+
+	// Decode the hex string (strip "0x" prefix)
+	addressBytes, err := hex.DecodeString(address.Hex()[2:])
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode address: %v", err)
+	}
+
+	// MongoDB filter
+	filter := bson.M{
+		"trans": bson.M{
+			"$elemMatch": bson.M{
+				"$or": []bson.M{
+					{"signedtransaction.transaction.from": addressBytes},
+					{"signedtransaction.transaction.to": addressBytes},
+				},
+			},
+		},
+	}
+
+	// Execute the query
+	cur, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	// Process transactions and collect them
+	for cur.Next(ctx) {
+		var blockData domain.BlockData
+		if err := cur.Decode(&blockData); err != nil {
+			return nil, err
+		}
+
+		// Filter transactions by `from` or `to` address
+		for _, blocktx := range blockData.Trans {
+			if (blocktx.SignedTransaction.Transaction.From != nil && bytes.Equal(blocktx.SignedTransaction.Transaction.From.Bytes(), addressBytes)) ||
+				(blocktx.SignedTransaction.Transaction.To != nil && bytes.Equal(blocktx.SignedTransaction.Transaction.To.Bytes(), addressBytes)) {
+
+				// Process nonce and token IDs
+				if !blocktx.SignedTransaction.IsNonceZero() {
+					blocktx.SignedTransaction.NonceString = blocktx.SignedTransaction.GetNonce().String()
+				}
+				if !blocktx.IsTokenIDZero() {
+					blocktx.SignedTransaction.TokenIDString = blocktx.SignedTransaction.GetTokenID().String()
+				}
+				if !blocktx.IsTokenNonceZero() {
+					blocktx.SignedTransaction.TokenNonceString = blocktx.SignedTransaction.GetTokenNonce().String()
+				}
+
+				blockTransactions = append(blockTransactions, &blocktx)
+			}
+		}
+	}
+
+	// Check for cursor errors
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
+	// Map to track owned NFTs
+	ownedNfts := make(map[string]bool)
+
+	for i := 0; i < len(blockTransactions); i++ {
+		tx := blockTransactions[i]
+
+		// Skip if no token ID
+		if tx.SignedTransaction.Transaction.IsTokenIDZero() {
+			continue
+		}
+
+		tokenID := tx.SignedTransaction.Transaction.GetTokenID().String()
+		fromAddress := tx.SignedTransaction.Transaction.From.Hex()
+		toAddress := tx.SignedTransaction.Transaction.To.Hex()
+
+		// Check if it's a burn address
+		isBurned := toAddress == signature.ZeroHash
+
+		// If we sent the NFT, we no longer own it
+		if fromAddress == address.Hex() {
+			delete(ownedNfts, tokenID)
+		} else if toAddress == address.Hex() && !isBurned {
+			// If we received the NFT and it wasn't burned, we now own it
+			ownedNfts[tokenID] = true
+		}
+
+		// Print current ownership state
+		var currentOwned []string
+		for id := range ownedNfts {
+			currentOwned = append(currentOwned, id)
+		}
+	}
+
+	// Filter transactions to only include owned NFTs
+	var ownedTransactions []*domain.BlockTransaction
+
+	for _, tx := range blockTransactions {
+		if !tx.SignedTransaction.Transaction.IsTokenIDZero() {
+			tokenID := tx.SignedTransaction.Transaction.GetTokenID().String()
+			if ownedNfts[tokenID] {
+				ownedTransactions = append(ownedTransactions, tx)
+			}
+		}
+	}
+	return ownedTransactions, nil
+
+}
+
+// Helper function to truncate addresses for cleaner logging
+func truncateAddress(addr string) string {
+	if len(addr) <= 10 {
+		return addr
+	}
+	return fmt.Sprintf("%s...%s", addr[:6], addr[len(addr)-4:])
 }
 
 func (r *BlockDataRepo) OpenTransaction() error {

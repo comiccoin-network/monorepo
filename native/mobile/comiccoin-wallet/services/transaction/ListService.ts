@@ -79,7 +79,7 @@ class TransactionListService {
     // Log the configured URL in development mode
     if (__DEV__) {
       console.log(
-        "TransactionListService initialized with URL:",
+        "🚀 TransactionListService initialized with URL:",
         this.BASE_URL,
       );
     }
@@ -100,7 +100,7 @@ class TransactionListService {
     try {
       // Log the request parameters in development
       if (__DEV__) {
-        console.log("fetchWalletTransactions called with:", {
+        console.log("📞 fetchWalletTransactions called with:", {
           address,
           type,
         });
@@ -115,7 +115,7 @@ class TransactionListService {
       const url = `${this.BASE_URL}/api/v1/block-transactions?${queryParams.toString()}`;
 
       if (__DEV__) {
-        console.log("Fetching from URL:", url);
+        console.log("🌐 Fetching from URL:", url);
       }
 
       // Make the API request
@@ -133,17 +133,24 @@ class TransactionListService {
         } catch {
           errorMessage = "Failed to fetch transactions";
         }
+        console.log("❌ API Error:", errorMessage);
         throw new ApiError(errorMessage, response.status);
       }
 
       // Parse the response
       const data: ApiTransaction[] = await response.json();
 
+      // Log successful response in development
+      if (__DEV__) {
+        console.log("✅ Successfully fetched transactions:", data.length);
+      }
+
       // Transform the API response into our Transaction type
       return this.transformTransactions(data);
     } catch (error) {
       // Handle specific error types
       if (error instanceof ApiError) {
+        console.log("🚨 API Error:", error.message);
         throw error;
       }
 
@@ -151,12 +158,13 @@ class TransactionListService {
         error instanceof TypeError &&
         error.message === "Network request failed"
       ) {
+        console.log("🌍 Network Error:", error.message);
         throw new NetworkError("Network error - please check your connection");
       }
 
       // Log unexpected errors in development
       if (__DEV__) {
-        console.log("Transaction fetch error:", error);
+        console.log("🔥 Unexpected Error:", error);
       }
 
       // Re-throw as a generic error for unexpected cases
@@ -174,6 +182,10 @@ class TransactionListService {
   private transformTransactions(
     apiTransactions: ApiTransaction[],
   ): Transaction[] {
+    if (__DEV__) {
+      console.log("🔄 Transforming transactions...");
+    }
+
     return apiTransactions.map(
       (tx): Transaction => ({
         id: tx.nonce_string || tx.nonce_bytes || "",
@@ -208,6 +220,10 @@ class TransactionListService {
       throw new Error("Base URL cannot be empty");
     }
     this.BASE_URL = url;
+
+    if (__DEV__) {
+      console.log("🔧 Base URL updated to:", this.BASE_URL);
+    }
   }
 }
 

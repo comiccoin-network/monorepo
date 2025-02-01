@@ -46,6 +46,15 @@ export default function NFTsScreen() {
     getNFTImageUrl,
   } = useNFTCollection(walletAddress);
 
+  // Log NFT collection data
+  useEffect(() => {
+    if (nftCollection.length > 0) {
+      console.log("📦 NFT Collection:", nftCollection);
+    } else {
+      console.log("📦 NFT Collection is empty");
+    }
+  }, [nftCollection]);
+
   // Effect to handle transaction events
   useEffect(() => {
     if (!walletAddress) return;

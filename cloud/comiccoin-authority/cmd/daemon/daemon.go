@@ -141,6 +141,11 @@ func doRunDaemon() {
 		logger,
 		bdRepo,
 	)
+	listOwnedTokenBlockTransactionsByAddressUseCase := uc_blocktx.NewListOwnedTokenBlockTransactionsByAddressUseCase(
+		cfg,
+		logger,
+		bdRepo,
+	)
 	getLatestBlockTransactionsByAddressUseCase := uc_blocktx.NewGetLatestBlockTransactionsByAddressUseCase(
 		cfg,
 		logger,
@@ -268,6 +273,11 @@ func doRunDaemon() {
 		logger,
 		listBlockTransactionsByAddressUseCase,
 	)
+	listOwnedTokenBlockTransactionsByAddressService := sv_blocktx.NewListOwnedTokenBlockTransactionsByAddressService(
+		cfg,
+		logger,
+		listOwnedTokenBlockTransactionsByAddressUseCase,
+	)
 	getLatestBlockTransactionByAddressService := sv_blocktx.NewGetLatestBlockTransactionByAddressService(
 		cfg,
 		logger,
@@ -385,6 +395,10 @@ func doRunDaemon() {
 		logger,
 		listBlockTransactionsByAddressService,
 	)
+	listOwnedTokenBlockTransactionsByAddressHTTPHandler := httphandler.NewListOwnedTokenBlockTransactionsByAddressHTTPHandler(
+		logger,
+		listOwnedTokenBlockTransactionsByAddressService,
+	)
 	blockchainStateChangeEventsHTTPHandler := httphandler.NewBlockchainStateChangeEventDTOHTTPHandler(
 		logger,
 		blockchainStateChangeSubscriptionService)
@@ -428,6 +442,7 @@ func doRunDaemon() {
 		getGenesisBlockDataHTTPHandler,
 		getBlockchainStateHTTPHandler,
 		listBlockTransactionsByAddressHTTPHandler,
+		listOwnedTokenBlockTransactionsByAddressHTTPHandler,
 		blockchainStateChangeEventsHTTPHandler,
 		blockchainStateServerSentEventsHTTPHandler,
 		getLatestBlockTransactionByAddressServerSentEventsHTTPHandler,

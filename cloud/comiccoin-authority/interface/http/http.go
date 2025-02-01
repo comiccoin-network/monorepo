@@ -41,6 +41,7 @@ type httpServerImpl struct {
 	getBlockchainStateHTTPHandler                                 *handler.GetBlockchainStateHTTPHandler
 	getBlockDataHTTPHandler                                       *handler.GetBlockDataHTTPHandler
 	listBlockTransactionsByAddressHTTPHandler                     *handler.ListBlockTransactionsByAddressHTTPHandler
+	listOwnedTokenBlockTransactionsByAddressHTTPHandler           *handler.ListOwnedTokenBlockTransactionsByAddressHTTPHandler
 	prepareTransactionHTTPHandler                                 *handler.PrepareTransactionHTTPHandler
 	signedTransactionSubmissionHTTPHandler                        *handler.SignedTransactionSubmissionHTTPHandler
 	mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler     *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler
@@ -61,15 +62,16 @@ func NewHTTPServer(
 	http3 *handler.GetGenesisBlockDataHTTPHandler,
 	http4 *handler.GetBlockchainStateHTTPHandler,
 	http5 *handler.ListBlockTransactionsByAddressHTTPHandler,
-	http6 *handler.BlockchainStateChangeEventDTOHTTPHandler,
-	http7 *handler.BlockchainStateServerSentEventsHTTPHandler,
-	http8 *handler.GetLatestBlockTransactionByAddressServerSentEventsHTTPHandler,
-	http9 *handler.GetBlockDataHTTPHandler,
-	http10 *handler.PrepareTransactionHTTPHandler,
-	http11 *handler.SignedTransactionSubmissionHTTPHandler,
-	http12 *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
-	http13 *handler.TokenListByOwnerHTTPHandler,
-	http14 *handler.TokenMintServiceHTTPHandler,
+	http6 *handler.ListOwnedTokenBlockTransactionsByAddressHTTPHandler,
+	http7 *handler.BlockchainStateChangeEventDTOHTTPHandler,
+	http8 *handler.BlockchainStateServerSentEventsHTTPHandler,
+	http9 *handler.GetLatestBlockTransactionByAddressServerSentEventsHTTPHandler,
+	http10 *handler.GetBlockDataHTTPHandler,
+	http11 *handler.PrepareTransactionHTTPHandler,
+	http12 *handler.SignedTransactionSubmissionHTTPHandler,
+	http13 *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
+	http14 *handler.TokenListByOwnerHTTPHandler,
+	http15 *handler.TokenMintServiceHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.IP == "" {
@@ -102,15 +104,16 @@ func NewHTTPServer(
 		getGenesisBlockDataHTTPHandler: http3,
 		getBlockchainStateHTTPHandler:  http4,
 		listBlockTransactionsByAddressHTTPHandler:                     http5,
-		blockchainStateChangeEventDTOHTTPHandler:                      http6,
-		blockchainStateServerSentEventsHTTPHandler:                    http7,
-		getLatestBlockTransactionByAddressServerSentEventsHTTPHandler: http8,
-		getBlockDataHTTPHandler:                                       http9,
-		prepareTransactionHTTPHandler:                                 http10,
-		signedTransactionSubmissionHTTPHandler:                        http11,
-		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler:     http12,
-		tokenListByOwnerHTTPHandler:                                   http13,
-		tokenMintServiceHTTPHandler:                                   http14,
+		listOwnedTokenBlockTransactionsByAddressHTTPHandler:           http6,
+		blockchainStateChangeEventDTOHTTPHandler:                      http7,
+		blockchainStateServerSentEventsHTTPHandler:                    http8,
+		getLatestBlockTransactionByAddressServerSentEventsHTTPHandler: http9,
+		getBlockDataHTTPHandler:                                       http10,
+		prepareTransactionHTTPHandler:                                 http11,
+		signedTransactionSubmissionHTTPHandler:                        http12,
+		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler:     http13,
+		tokenListByOwnerHTTPHandler:                                   http14,
+		tokenMintServiceHTTPHandler:                                   http15,
 	}
 
 	// Attach the HTTP server controller to the ServeMux.
@@ -200,6 +203,9 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "block-transactions" && r.Method == http.MethodGet:
 		port.listBlockTransactionsByAddressHTTPHandler.Execute(w, r)
+
+	case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "block-transactions" && p[3] == "owned-tokens" && r.Method == http.MethodGet:
+		port.listOwnedTokenBlockTransactionsByAddressHTTPHandler.Execute(w, r)
 
 	case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "signed-transaction" && r.Method == http.MethodPost:
 		port.signedTransactionSubmissionHTTPHandler.Execute(w, r)
