@@ -221,3 +221,6 @@ GeoLite2-Country.mmdb
 # Blacklist - Don't share items we banned from the server.
 static/blacklist/ips.json
 static/blacklist/urls.json
+
+# Do not save our temporary files.
+tmp

@@ -24,5 +24,8 @@ private.md
 private_*.md
 todo.txt
 
+# Do not save our temporary files.
+tmp
+
 # Do not store the keystore
 static/keystore

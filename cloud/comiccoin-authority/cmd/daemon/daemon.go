@@ -40,6 +40,7 @@ import (
 	uc_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blocktx"
 	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltx"
+	uc_nftok "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/nftok"
 	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/pow"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/token"
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/walletutil"
@@ -83,6 +84,8 @@ func doRunDaemon() {
 	bcStateRepo := repo.NewBlockchainStateRepo(cfg, logger, dbClient)
 	mempoolTxRepo := repo.NewMempoolTransactionRepo(cfg, logger, dbClient)
 	tokenRepo := repo.NewTokenRepo(cfg, logger, dbClient)
+	nftAssetRepoConfig := repo.NewNFTAssetRepoConfigurationProvider(cfg.NFTStore.URI, "")
+	nftAssetRepo := repo.NewNFTAssetRepo(nftAssetRepoConfig, logger)
 
 	// Genesis Block Data
 	getGenesisBlockDataUseCase := uc_genesisblockdata.NewGetGenesisBlockDataUseCase(
@@ -211,6 +214,11 @@ func doRunDaemon() {
 		tokenRepo,
 	)
 
+	// Token Assets
+	downloadNFTokMetadataUsecase := uc_nftok.NewDownloadMetadataNonFungibleTokenUseCase(
+		logger,
+		nftAssetRepo)
+
 	// Mempool Transaction
 	mempoolTransactionCreateUseCase := uc_mempooltx.NewMempoolTransactionCreateUseCase(
 		cfg,
@@ -277,6 +285,7 @@ func doRunDaemon() {
 		cfg,
 		logger,
 		listOwnedTokenBlockTransactionsByAddressUseCase,
+		downloadNFTokMetadataUsecase,
 	)
 	getLatestBlockTransactionByAddressService := sv_blocktx.NewGetLatestBlockTransactionByAddressService(
 		cfg,

@@ -142,6 +142,7 @@ services:
       COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC: ${COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC}
       COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PATH: ${COMICCOIN_AUTHORITY_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PATH}
       COMICCOIN_AUTHORITY_CACHE_URI: ${COMICCOIN_AUTHORITY_CACHE_URI}
+      COMICCOIN_AUTHORITY_NFT_STORAGE_URI: ${COMICCOIN_AUTHORITY_NFT_STORAGE_URI}
     build:
       context: .
       dockerfile: ./dev.Dockerfile
@@ -159,4 +160,4 @@ services:
       - db3
       - cache
     volumes: # Connect the local filesystem with the docker filesystem. DO NOT REMOVE.
-      - ./:/go/src/github.com/comiccoin-network/monorepo/cloud/comiccoin-authority # IMPORTANT: Required for hotreload via `CompileDaemon`.
+      - ./:/go/src/github.com/comiccoin-network/monorepo/cloud/comiccoin-authority # IMPORTANT: Required for hotreload via `CompileDaemon`. 

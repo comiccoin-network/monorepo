@@ -17,6 +17,7 @@ type Configuration struct {
 	Blockchain BlockchainConfig
 	Cache      CacheConf
 	DB         DBConfig
+	NFTStore   NFTStorageConfig
 }
 
 type CacheConf struct {
@@ -59,6 +60,10 @@ type DBConfig struct {
 	Name string
 }
 
+type NFTStorageConfig struct {
+	URI string
+}
+
 func NewProvider() *Configuration {
 	var c Configuration
 
@@ -92,6 +97,9 @@ func NewProvider() *Configuration {
 
 	// Cache
 	c.Cache.URI = getEnv("COMICCOIN_AUTHORITY_CACHE_URI", true)
+
+	// NFT Storage
+	c.NFTStore.URI = getEnv("COMICCOIN_AUTHORITY_NFT_STORAGE_URI", true)
 
 	return &c
 }
