@@ -88,7 +88,7 @@ const UserTransactionBanner = () => {
 
   const getTransactionText = () => {
     const value =
-      notification.type === "nft"
+      notification.type === "token"
         ? `NFT #${notification.valueOrTokenID}`
         : `${notification.valueOrTokenID} CC`;
 

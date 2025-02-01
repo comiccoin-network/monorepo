@@ -33,6 +33,7 @@ type tokenMintServiceImpl struct {
 	getProofOfAuthorityPrivateKeyService sv_poa.GetProofOfAuthorityPrivateKeyService
 	getBlockchainStateUseCase            uc_blockchainstate.GetBlockchainStateUseCase
 	upsertBlockchainStateUseCase         uc_blockchainstate.UpsertBlockchainStateUseCase
+	getLatestTokenIDUseCase              uc_blockdata.GetLatestTokenIDUseCase
 	getBlockDataUseCase                  uc_blockdata.GetBlockDataUseCase
 	mempoolTransactionCreateUseCase      uc_mempooltx.MempoolTransactionCreateUseCase
 }
@@ -45,10 +46,11 @@ func NewTokenMintService(
 	s1 sv_poa.GetProofOfAuthorityPrivateKeyService,
 	uc1 uc_blockchainstate.GetBlockchainStateUseCase,
 	uc2 uc_blockchainstate.UpsertBlockchainStateUseCase,
-	uc3 uc_blockdata.GetBlockDataUseCase,
-	uc4 uc_mempooltx.MempoolTransactionCreateUseCase,
+	uc3 uc_blockdata.GetLatestTokenIDUseCase,
+	uc4 uc_blockdata.GetBlockDataUseCase,
+	uc5 uc_mempooltx.MempoolTransactionCreateUseCase,
 ) TokenMintService {
-	return &tokenMintServiceImpl{cfg, logger, dmutex, client, s1, uc1, uc2, uc3, uc4}
+	return &tokenMintServiceImpl{cfg, logger, dmutex, client, s1, uc1, uc2, uc3, uc4, uc5}
 }
 
 func (s *tokenMintServiceImpl) Execute(
@@ -128,15 +130,16 @@ func (s *tokenMintServiceImpl) Execute(
 			return nil, fmt.Errorf("Latest block data does not exist")
 		}
 
-		// // We want to attach on-chain our identity.
-		// poaValidator := recentBlockData.Validator
-		//
-		// // Apply whatever fees we request by the authority...
-		// gasPrice := uint64(s.config.Blockchain.GasPrice)
-		// unitsOfGas := uint64(s.config.Blockchain.UnitsOfGas)
-		//
-		// // Variable used to create the transactions to store on the blockchain.
-		// trans := make([]domain.BlockTransaction, 0)
+		latestTokenID, err := s.getLatestTokenIDUseCase.ExecuteByChainID(sessCtx, s.config.Blockchain.ChainID)
+		if err != nil {
+			s.logger.Error("Failed getting latest token id",
+				slog.Any("error", err))
+			return nil, err
+		}
+
+		s.logger.Debug("Searched blockchain",
+			slog.Any("latest_token_id", latestTokenID),
+		)
 
 		//
 		// STEP 3:
@@ -144,7 +147,6 @@ func (s *tokenMintServiceImpl) Execute(
 		// token ID value and incrementing it by one.
 		//
 
-		latestTokenID := blockchainState.GetLatestTokenID()
 		latestTokenID.Add(latestTokenID, big.NewInt(1))
 
 		//
@@ -164,6 +166,19 @@ func (s *tokenMintServiceImpl) Execute(
 			TokenMetadataURI: metadataURI,
 			TokenNonceBytes:  big.NewInt(0).Bytes(), // Newly minted tokens always have their nonce start at value of zero.
 		}
+
+		s.logger.Debug("Created transaction",
+			slog.Any("chain_id", tx.ChainID),
+			slog.Any("nonce", tx.GetNonce),
+			slog.Any("from", tx.From),
+			slog.Any("to", tx.To),
+			slog.Any("value", tx.Value),
+			slog.Any("data", tx.Data),
+			slog.Any("type", tx.Type),
+			slog.Any("token_id", tx.GetTokenID()),
+			slog.Any("token_metadata_uri", tx.TokenMetadataURI),
+			slog.Any("token_nonce", tx.GetTokenNonce()),
+		)
 
 		stx, signingErr := tx.Sign(proofOfAuthorityPrivateKey)
 		if signingErr != nil {

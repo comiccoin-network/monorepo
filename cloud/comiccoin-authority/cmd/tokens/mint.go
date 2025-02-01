@@ -147,6 +147,11 @@ func doRunMintToken() {
 		logger,
 		bdRepo,
 	)
+	getLatestTokenIDUseCase := uc_blockdata.NewGetLatestTokenIDUseCase(
+		cfg,
+		logger,
+		bdRepo,
+	)
 	// upsertBlockDataUseCase := usecase.NewUpsertBlockDataUseCase(
 	// 	cfg,
 	// 	logger,
@@ -180,6 +185,7 @@ func doRunMintToken() {
 		getProofOfAuthorityPrivateKeyService,
 		getBlockchainStateUseCase,
 		upsertBlockchainStateUseCase,
+		getLatestTokenIDUseCase,
 		getBlockDataUseCase,
 		mempoolTransactionCreateUseCase,
 	)

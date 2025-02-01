@@ -126,6 +126,11 @@ func doRunDaemon() {
 		logger,
 		bdRepo,
 	)
+	getLatestTokenIDUseCase := uc_blockdata.NewGetLatestTokenIDUseCase(
+		cfg,
+		logger,
+		bdRepo,
+	)
 	upsertBlockDataUseCase := uc_blockdata.NewUpsertBlockDataUseCase(
 		cfg,
 		logger,
@@ -330,6 +335,7 @@ func doRunDaemon() {
 		getProofOfAuthorityPrivateKeyService,
 		getBlockchainStateUseCase,
 		upsertBlockchainStateUseCase,
+		getLatestTokenIDUseCase,
 		getBlockDataUseCase,
 		mempoolTransactionCreateUseCase,
 	)

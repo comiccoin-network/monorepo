@@ -536,6 +536,66 @@ func (r *BlockDataRepo) GetLatestBlockTransactionByAddress(ctx context.Context, 
 	return nil, nil
 }
 
+func (r *BlockDataRepo) GetLatestTokenIDByChainID(ctx context.Context, chainID uint16) (*big.Int, error) {
+	// Create an aggregation pipeline to find the latest token ID
+	pipeline := []bson.M{
+		// Unwind the transactions array to work with individual transactions
+		{"$unwind": "$trans"},
+
+		// Match only token transactions for the specified chain ID
+		{"$match": bson.M{
+			"trans.signedtransaction.transaction.chain_id": chainID,
+			"trans.signedtransaction.transaction.type":     "token",
+			"trans.signedtransaction.transaction.token_id_bytes": bson.M{
+				"$exists": true,
+				"$ne":     nil,
+			},
+		}},
+
+		// Sort by token_id_bytes in descending order to get the highest token ID
+		{"$sort": bson.M{"trans.signedtransaction.transaction.token_id_bytes": -1}},
+
+		// Take only the first result (highest token ID)
+		{"$limit": 1},
+
+		// Project only the token_id_bytes field
+		{"$project": bson.M{
+			"token_id_bytes": "$trans.signedtransaction.transaction.token_id_bytes",
+		}},
+	}
+
+	// Execute the aggregation pipeline
+	cursor, err := r.collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute aggregation pipeline: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	// Check if we found any results
+	if !cursor.Next(ctx) {
+		// No tokens found for this chain ID - return zero
+		return big.NewInt(0), nil
+	}
+
+	// Decode the result
+	var result struct {
+		TokenIDBytes []byte `bson:"token_id_bytes"`
+	}
+	if err := cursor.Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode token ID: %v", err)
+	}
+
+	// Convert the bytes back to a big.Int
+	if len(result.TokenIDBytes) == 0 {
+		return big.NewInt(0), nil
+	}
+
+	tokenID := new(big.Int)
+	tokenID.SetBytes(result.TokenIDBytes)
+
+	return tokenID, nil
+}
+
 func (r *BlockDataRepo) OpenTransaction() error {
 	defer log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
 	return nil
