@@ -30,14 +30,35 @@ export default function NFTsScreen() {
   const { currentWallet, loading: walletLoading } = useWallet();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const refreshingRef = useRef(false);
+  const mountCount = useRef(0);
 
-  // Memoize wallet address to prevent unnecessary re-renders
-  const walletAddress = useMemo(
-    () => currentWallet?.address || null,
-    [currentWallet?.address],
-  );
+  // Debug mounting
+  useEffect(() => {
+    mountCount.current += 1;
+    console.log("🎭 NFTs Screen mounted", {
+      mountCount: mountCount.current,
+      hasWallet: !!currentWallet,
+      walletLoading,
+    });
 
-  // Get NFT collection data with memoized address
+    return () => {
+      console.log("🎭 NFTs Screen unmounting", {
+        mountCount: mountCount.current,
+      });
+    };
+  }, [currentWallet, walletLoading]);
+
+  // Memoize wallet address with debug
+  const walletAddress = useMemo(() => {
+    const address = currentWallet?.address || null;
+    console.log("💼 Wallet address memo updated:", {
+      address,
+      hasWallet: !!currentWallet,
+    });
+    return address;
+  }, [currentWallet?.address]);
+
+  // Get NFT collection data with debug
   const {
     nftCollection,
     loading: nftLoading,
@@ -46,18 +67,44 @@ export default function NFTsScreen() {
     getNFTImageUrl,
   } = useNFTCollection(walletAddress);
 
-  // Log NFT collection data
+  // Debug state changes
+  useEffect(() => {
+    console.log("🔄 NFTs Screen state update:", {
+      walletAddress,
+      nftCount: nftCollection.length,
+      isLoading: nftLoading,
+      isRefreshing,
+      hasError: !!error,
+      timestamp: new Date().toISOString(),
+    });
+  }, [walletAddress, nftCollection, nftLoading, isRefreshing, error]);
+
+  // Log NFT collection data with more detail
   useEffect(() => {
     if (nftCollection.length > 0) {
-      console.log("📦 NFT Collection:", nftCollection);
+      console.log("📦 NFT Collection details:", {
+        count: nftCollection.length,
+        tokens: nftCollection.map((nft) => ({
+          tokenId: nft.tokenId,
+          hasMetadata: !!nft.metadata,
+          imageUrl: getNFTImageUrl(nft),
+        })),
+      });
     } else {
-      console.log("📦 NFT Collection is empty");
+      console.log("📦 NFT Collection is empty", {
+        walletAddress,
+        loading: nftLoading,
+        isRefreshing,
+      });
     }
-  }, [nftCollection]);
+  }, [nftCollection, walletAddress, nftLoading, isRefreshing, getNFTImageUrl]);
 
-  // Effect to handle transaction events
+  // Effect to handle transaction events with debug
   useEffect(() => {
-    if (!walletAddress) return;
+    if (!walletAddress) {
+      console.log("🎧 Skip transaction listener - no wallet");
+      return;
+    }
 
     const handleNewTransaction = async (data: {
       walletAddress: string;
@@ -68,12 +115,18 @@ export default function NFTsScreen() {
         to: string;
       };
     }) => {
+      console.log("📨 New transaction received:", {
+        matchesWallet: data.walletAddress === walletAddress,
+        type: data.transaction.type,
+        isRefreshing: refreshingRef.current,
+      });
+
       if (
         data.walletAddress === walletAddress &&
         data.transaction.type === "token" &&
         !refreshingRef.current
       ) {
-        console.log("🔍 NFT Screen received relevant transaction");
+        console.log("🔍 Processing relevant transaction");
         refreshingRef.current = true;
         setIsRefreshing(true);
 
@@ -89,23 +142,32 @@ export default function NFTsScreen() {
       }
     };
 
-    console.log("🎧 Setting up transaction listener in NFTs screen");
+    console.log("🎧 Setting up transaction listener in NFTs screen", {
+      walletAddress,
+    });
     walletTransactionEventEmitter.on("newTransaction", handleNewTransaction);
 
     return () => {
-      console.log("🔌 Removing transaction listener from NFTs screen");
+      console.log("🔌 Removing transaction listener from NFTs screen", {
+        walletAddress,
+      });
       walletTransactionEventEmitter.off("newTransaction", handleNewTransaction);
     };
   }, [walletAddress, refreshCollection]);
 
-  // Handle manual refresh with debounce
+  // Handle manual refresh with debug
   const handleRefresh = useCallback(async () => {
     if (refreshingRef.current || isRefreshing) {
-      console.log("⚠️ Refresh already in progress, skipping");
+      console.log("⚠️ Refresh skipped - already in progress", {
+        refreshingRef: refreshingRef.current,
+        isRefreshing,
+      });
       return;
     }
 
-    console.log("🔄 Starting manual refresh...");
+    console.log("🔄 Starting manual refresh", {
+      walletAddress,
+    });
     refreshingRef.current = true;
     setIsRefreshing(true);
 
@@ -120,34 +182,26 @@ export default function NFTsScreen() {
     }
   }, [refreshCollection, isRefreshing]);
 
-  // Redirect to login if no wallet
+  // Redirect to login if no wallet with debug
   useEffect(() => {
+    console.log("🔐 Checking wallet status:", {
+      hasWallet: !!currentWallet,
+      isLoading: walletLoading,
+    });
+
     if (!currentWallet && !walletLoading) {
+      console.log("🔄 Redirecting to login - no wallet");
       router.replace("/login");
     }
   }, [currentWallet, walletLoading, router]);
 
-  // Handle NFT selection
-  const handleNFTSelect = useCallback(
-    (nft: any) => {
-      walletTransactionEventEmitter.emit("nftSelected", {
-        walletAddress: currentWallet?.address,
-        tokenId: nft.tokenId,
-        timestamp: Date.now(),
-      });
-
-      const metadataCID = nft.tokenMetadataURI.replace("ipfs://", "");
-      router.push(
-        `/(nft)/${metadataCID}?metadata_uri=${encodeURIComponent(
-          nft.transactions[0].tokenMetadataURI,
-        )}&token_id=${nft.tokenId}`,
-      );
-    },
-    [currentWallet?.address, router],
-  );
-
+  // Rest of your existing JSX remains the same...
   // Loading state
   if (walletLoading || nftLoading) {
+    console.log("⏳ Rendering loading state", {
+      walletLoading,
+      nftLoading,
+    });
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7C3AED" />
@@ -158,6 +212,9 @@ export default function NFTsScreen() {
 
   // Error state
   if (error) {
+    console.log("❌ Rendering error state:", {
+      error: error.message,
+    });
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>
@@ -169,6 +226,11 @@ export default function NFTsScreen() {
       </View>
     );
   }
+
+  console.log("🎨 Rendering NFT collection view", {
+    collectionLength: nftCollection.length,
+    isRefreshing,
+  });
 
   return (
     <SafeAreaProvider>
