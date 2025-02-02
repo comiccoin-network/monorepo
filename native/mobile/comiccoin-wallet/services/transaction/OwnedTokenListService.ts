@@ -1,8 +1,25 @@
 // services/transaction/OwnedTokenListService.ts
 import config from "../../config";
 
+interface TokenMetadataAttribute {
+  display_type: string;
+  trait_type: string;
+  value: string;
+}
+
+interface TokenMetadata {
+  image: string;
+  external_url: string;
+  description: string;
+  name: string;
+  attributes: TokenMetadataAttribute[];
+  background_color: string;
+  animation_url?: string;
+  youtube_url?: string;
+}
+
 interface OwnedTokenTransactionSignature {
-  v: string;
+  v: string | null;
   r: string;
   s: string;
 }
@@ -19,6 +36,7 @@ interface OwnedTokenTransaction {
   chainId: string;
   tokenId: string | null;
   tokenMetadataURI: string | null;
+  tokenMetadata: TokenMetadata | null;
   tokenNonce: string | null;
   data: string;
   signature: OwnedTokenTransactionSignature;
@@ -37,10 +55,11 @@ interface ApiOwnedTokenTransaction {
   chain_id: string;
   token_id_string: string | null;
   token_metadata_uri: string | null;
+  token_metadata?: TokenMetadata;
   token_nonce_string: string | null;
   data_string?: string;
   data?: string;
-  v_bytes: string;
+  v_bytes: string | null;
   r_bytes: string;
   s_bytes: string;
 }
@@ -177,6 +196,7 @@ class OwnedTokenListService {
         chainId: tx.chain_id,
         tokenId: tx.token_id_string,
         tokenMetadataURI: tx.token_metadata_uri,
+        tokenMetadata: tx.token_metadata || null,
         tokenNonce: tx.token_nonce_string,
         data: tx.data_string || tx.data || "",
         signature: {
@@ -193,5 +213,10 @@ class OwnedTokenListService {
 const transactionListService = new OwnedTokenListService();
 export default transactionListService;
 
-export type { OwnedTokenTransaction, OwnedTokenTransactionSignature };
+export type {
+  OwnedTokenTransaction,
+  OwnedTokenTransactionSignature,
+  TokenMetadata,
+  TokenMetadataAttribute,
+};
 export { NetworkError, ApiError };

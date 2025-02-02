@@ -52,12 +52,17 @@ class TransactionManager {
   }
 
   subscribe(
-    walletAddress: string,
+    walletAddress: string | undefined,
     callback: (transaction: TransactionEvent) => void,
   ): string {
     if (!walletService.checkSession()) {
-      console.warn("⚠️ Cannot subscribe - no active wallet session");
+      console.log("⚠️ Cannot subscribe - no active wallet session");
       throw new Error("No active wallet session");
+    }
+
+    if (!walletAddress) {
+      console.log("⚠️ Cannot subscribe - wallet address is undefined");
+      throw new Error("Wallet address is undefined");
     }
 
     const subscriberId = `sub_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -81,7 +86,15 @@ class TransactionManager {
     return subscriberId;
   }
 
-  unsubscribe(walletAddress: string, subscriberId: string): boolean {
+  unsubscribe(
+    walletAddress: string | undefined,
+    subscriberId: string,
+  ): boolean {
+    if (!walletAddress) {
+      console.log("⚠️ Cannot unsubscribe - wallet address is undefined");
+      return false;
+    }
+
     const normalizedAddress = walletAddress.toLowerCase();
     const subscribers = this.subscribers.get(normalizedAddress);
 
@@ -116,10 +129,15 @@ class TransactionManager {
 
   async processTransaction(
     transaction: LatestBlockTransaction,
-    walletAddress: string,
+    walletAddress: string | undefined,
   ): Promise<boolean> {
     if (!walletService.checkSession()) {
-      console.warn("⚠️ Skipping transaction - no active session");
+      console.log("⚠️ Skipping transaction - no active session");
+      return false;
+    }
+
+    if (!walletAddress) {
+      console.log("⚠️ Skipping transaction - wallet address is undefined");
       return false;
     }
 
@@ -186,7 +204,14 @@ class TransactionManager {
     }
   }
 
-  async clearTransactionHistory(walletAddress: string): Promise<void> {
+  async clearTransactionHistory(
+    walletAddress: string | undefined,
+  ): Promise<void> {
+    if (!walletAddress) {
+      console.log("⚠️ Cannot clear history - wallet address is undefined");
+      return;
+    }
+
     const normalizedAddress = walletAddress.toLowerCase();
     this.lastProcessedTransactions.delete(normalizedAddress);
     await this.persistLastProcessed();
@@ -195,7 +220,10 @@ class TransactionManager {
     });
   }
 
-  getSubscriberCount(walletAddress: string): number {
+  getSubscriberCount(walletAddress: string | undefined): number {
+    if (!walletAddress) {
+      return 0;
+    }
     const normalizedAddress = walletAddress.toLowerCase();
     return this.subscribers.get(normalizedAddress)?.size || 0;
   }

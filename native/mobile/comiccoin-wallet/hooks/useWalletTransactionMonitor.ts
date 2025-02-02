@@ -28,28 +28,40 @@ export function useWalletTransactionMonitor({
   const handleTransaction = useCallback(
     async (transaction: LatestBlockTransaction) => {
       if (!walletAddress) {
-        log("⚠️ No wallet address available");
+        log("⚠️ No wallet address available for transaction processing");
         return;
       }
 
-      log("📥 Received transaction", {
-        type: transaction.type,
-        timestamp: transaction.timestamp,
-      });
-
-      const processed = await transactionManager.processTransaction(
-        transaction,
-        walletAddress,
-      );
-
-      if (processed) {
-        log("🔔 Emitting transaction event");
-        walletTransactionEventEmitter.emit("newTransaction", {
-          walletAddress,
-          transaction,
+      try {
+        log("📥 Received transaction", {
+          type: transaction.type,
+          timestamp: transaction.timestamp,
+          walletAddress: walletAddress.slice(0, 6),
         });
-      } else {
-        log("⏭️ Transaction not processed");
+
+        const processed = await transactionManager.processTransaction(
+          transaction,
+          walletAddress,
+        );
+
+        if (processed) {
+          log("🔔 Emitting transaction event", {
+            walletAddress: walletAddress.slice(0, 6),
+          });
+          walletTransactionEventEmitter.emit("newTransaction", {
+            walletAddress,
+            transaction,
+          });
+        } else {
+          log("⏭️ Transaction not processed", {
+            reason: "Already processed or invalid",
+          });
+        }
+      } catch (error) {
+        log("❌ Error processing transaction", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          walletAddress: walletAddress.slice(0, 6),
+        });
       }
     },
     [walletAddress, log],
@@ -57,13 +69,20 @@ export function useWalletTransactionMonitor({
 
   // Initialize monitor
   useEffect(() => {
-    if (!isInitialized.current && walletAddress) {
+    if (!walletAddress) {
+      log("⏳ Waiting for wallet address");
+      return;
+    }
+
+    if (!isInitialized.current) {
       log("🚀 Initializing transaction monitor", {
         address: walletAddress.slice(0, 6),
       });
 
       transactionManager.initialize().catch((error) => {
-        console.log("❌ Failed to initialize transaction manager:", error);
+        log("❌ Failed to initialize transaction manager:", {
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
       });
 
       isInitialized.current = true;
@@ -84,10 +103,14 @@ export function useWalletTransactionMonitor({
     onConnectionStateChange: (connected) => {
       log(`${connected ? "🟢" : "🔴"} Stream connection state changed`, {
         connected,
+        walletAddress: walletAddress ? walletAddress.slice(0, 6) : "none",
       });
     },
     onError: (error) => {
-      console.log("❌ Stream error:", error);
+      log("❌ Stream error:", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        walletAddress: walletAddress ? walletAddress.slice(0, 6) : "none",
+      });
     },
   });
 
@@ -99,6 +122,8 @@ export function useWalletTransactionMonitor({
           address: walletAddress.slice(0, 6),
         });
         await transactionManager.clearTransactionHistory(walletAddress);
+      } else {
+        log("⚠️ Cannot clear history - no wallet address available");
       }
     }, [walletAddress, log]),
   };

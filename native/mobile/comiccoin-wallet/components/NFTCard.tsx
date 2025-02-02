@@ -3,7 +3,14 @@ import React, { useState, useCallback } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { ImageIcon } from "lucide-react-native";
-import { NFT } from "../hooks/useNFTCollection";
+import type { TokenMetadata } from "../services/transaction/OwnedTokenListService";
+
+interface NFT {
+  tokenId: string;
+  tokenMetadataURI: string;
+  metadata: TokenMetadata;
+  transaction: any; // Type from OwnedTokenTransaction if needed
+}
 
 interface NFTCardProps {
   nft: NFT;
@@ -11,20 +18,59 @@ interface NFTCardProps {
 }
 
 const NFTCard = ({ nft, onPress }: NFTCardProps) => {
+  const [imageError, setImageError] = useState(false);
+
   // Helper for NFT images
   const getNFTImageUrl = useCallback((nft: NFT) => {
-    if (!nft?.metadata?.image) return null;
+    if (!nft?.metadata?.image) {
+      console.log("🖼️ No image found for NFT:", {
+        tokenId: nft.tokenId,
+        metadata: !!nft.metadata,
+      });
+      return null;
+    }
+
     const imageUrl = nft.metadata.image;
-    return imageUrl.startsWith("ipfs://")
+    const finalUrl = imageUrl.startsWith("ipfs://")
       ? imageUrl.replace("ipfs://", "https://ipfs.io/ipfs/")
       : imageUrl;
+
+    console.log("🖼️ Processed NFT image URL:", {
+      tokenId: nft.tokenId,
+      originalUrl: imageUrl,
+      finalUrl,
+    });
+
+    return finalUrl;
   }, []);
 
-  const [imageError, setImageError] = useState(false);
   const imageUrl = getNFTImageUrl(nft);
 
+  // Handle image error
+  const handleImageError = () => {
+    console.log("❌ Image loading error:", {
+      tokenId: nft.tokenId,
+      imageUrl,
+    });
+    setImageError(true);
+  };
+
+  // Find grade attribute
+  const gradeAttribute = nft.metadata?.attributes?.find(
+    (attr) => attr.trait_type.toLowerCase() === "grade",
+  );
+
   return (
-    <Pressable onPress={onPress} style={styles.container}>
+    <Pressable
+      onPress={() => {
+        console.log("👆 NFT Card pressed:", {
+          tokenId: nft.tokenId,
+          name: nft.metadata?.name,
+        });
+        onPress?.();
+      }}
+      style={styles.container}
+    >
       <View style={styles.imageContainer}>
         {imageUrl && !imageError ? (
           <Image
@@ -32,7 +78,7 @@ const NFTCard = ({ nft, onPress }: NFTCardProps) => {
             style={styles.image}
             contentFit="cover"
             transition={200}
-            onError={() => setImageError(true)}
+            onError={handleImageError}
           />
         ) : (
           <View style={styles.placeholder}>
@@ -45,10 +91,8 @@ const NFTCard = ({ nft, onPress }: NFTCardProps) => {
         <Text style={styles.title}>
           {nft.metadata?.name || `NFT #${nft.tokenId}`}
         </Text>
-        {nft.metadata?.attributes?.grade && (
-          <Text style={styles.grade}>
-            Grade: {nft.metadata.attributes.grade}
-          </Text>
+        {gradeAttribute && (
+          <Text style={styles.grade}>Grade: {gradeAttribute.value}</Text>
         )}
       </View>
     </Pressable>

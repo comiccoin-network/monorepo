@@ -20,7 +20,7 @@ import { useRouter } from "expo-router";
 import { ImageIcon, ExternalLink, RotateCw } from "lucide-react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useWallet } from "../../hooks/useWallet";
-import { useNFTCollection } from "../../hooks/useNFTCollection";
+import { useNFTTransactions } from "../../hooks/useNFTTransactions";
 import NFTCard from "../../components/NFTCard";
 import { transactionManager } from "../../services/transaction/TransactionManager";
 import type { TransactionEvent } from "../../services/transaction/TransactionManager";
@@ -31,155 +31,185 @@ export default function NFTsScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const refreshingRef = useRef(false);
   const mountCount = useRef(0);
+  const lastTransactionRef = useRef<string | null>(null);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Debug mounting
-  useEffect(() => {
-    mountCount.current += 1;
-    console.log("🎭 NFTs Screen mounted", {
-      mountCount: mountCount.current,
-      hasWallet: !!currentWallet,
-      walletLoading,
-    });
-
-    return () => {
-      console.log("🎭 NFTs Screen unmounting", {
-        mountCount: mountCount.current,
-      });
-    };
-  }, [currentWallet, walletLoading]);
-
-  // Memoize wallet address with debug
-  const walletAddress = useMemo(() => {
-    const address = currentWallet?.address || null;
-    console.log("💼 Wallet address memo updated:", {
-      address,
-      hasWallet: !!currentWallet,
-    });
-    return address;
-  }, [currentWallet?.address]);
-
-  // Get NFT collection data
-  const {
-    nftCollection,
-    loading: nftLoading,
-    error,
-    refresh: refreshCollection,
-  } = useNFTCollection(walletAddress);
-
-  // Debug state changes
-  useEffect(() => {
-    console.log("🔄 NFTs Screen state update:", {
-      walletAddress,
-      nftCount: nftCollection.length,
-      isLoading: nftLoading,
-      isRefreshing,
-      hasError: !!error,
-      timestamp: new Date().toISOString(),
-    });
-  }, [walletAddress, nftCollection, nftLoading, isRefreshing, error]);
-
-  // Log NFT collection data with more detail
-  useEffect(() => {
-    if (nftCollection.length > 0) {
-      console.log("📦 NFT Collection details:", {
-        count: nftCollection.length,
-        tokens: nftCollection.map((nft) => ({
-          tokenId: nft.tokenId,
-          hasMetadata: !!nft.metadata,
-        })),
-      });
-    } else {
-      console.log("📦 NFT Collection is empty", {
-        walletAddress,
-        loading: nftLoading,
-        isRefreshing,
-      });
-    }
-  }, [nftCollection, walletAddress, nftLoading, isRefreshing]);
-
-  // PART 1 OF 2: Background page refresh by latest tx.
-  const [newTransactionCount, setNewTransactionCount] = useState(0);
-
-  // PART 2 OF 2: Background page refresh by latest tx.
-  // Handle new transactions
-  const handleNewTransaction = useCallback((event: TransactionEvent) => {
-    console.log("🔔 New transaction received in NFTs screen:", {
-      type: event.transaction.type,
-      timestamp: event.timestamp,
-    });
-
-    // Increment transaction count for badge
-    setNewTransactionCount((prev) => prev + 1);
-
-    // Refresh all the data on this page.
-    refreshCollection();
-  }, []);
-
-  // Handle manual refresh with debug
-  const handleRefresh = useCallback(async () => {
-    if (refreshingRef.current || isRefreshing) {
-      console.log("⚠️ Refresh skipped - already in progress", {
-        refreshingRef: refreshingRef.current,
-        isRefreshing,
-      });
-      return;
-    }
-
-    console.log("🔄 Starting manual refresh", {
-      walletAddress,
-    });
-    refreshingRef.current = true;
-    setIsRefreshing(true);
-
-    try {
-      await refreshCollection();
-      console.log("✅ Manual refresh complete");
-    } catch (error) {
-      console.log("❌ Manual refresh failed:", error);
-    } finally {
-      setIsRefreshing(false);
-      refreshingRef.current = false;
-    }
-  }, [refreshCollection, isRefreshing]);
-
-  // Redirect to login if no wallet with debug
-  useEffect(() => {
-    console.log("🔐 Checking wallet status:", {
-      hasWallet: !!currentWallet,
-      isLoading: walletLoading,
-    });
-
-    if (!currentWallet && !walletLoading) {
-      console.log("🔄 Redirecting to login - no wallet");
-      router.replace("/login");
-    }
-  }, [currentWallet, walletLoading, router]);
-
-  // Handle NFT selection
   const onNFTSelect = useCallback(
-    (nft: NFT) => {
-      console.log("🎯 NFT selected:", {
+    (nft: (typeof nftCollection)[0]) => {
+      console.log("🎯 NFT selection initiated:", {
         tokenId: nft.tokenId,
-        walletAddress: currentWallet?.address,
+        name: nft.metadata?.name,
+        walletAddress: currentWallet?.address?.slice(0, 6),
       });
 
-      // Navigate to NFT detail screen
-      const metadataCID = nft.tokenMetadataURI.replace("ipfs://", "");
-      router.push(
-        `/(nft)/${metadataCID}?metadata_uri=${encodeURIComponent(
-          nft.tokenMetadataURI,
-        )}&token_id=${nft.tokenId}`,
-      );
+      try {
+        const metadataCID = nft.tokenMetadataURI.replace("ipfs://", "");
+        const navigationPath = `/(nft)/${metadataCID}`;
+        const queryParams = new URLSearchParams({
+          metadata_uri: nft.tokenMetadataURI,
+          token_id: nft.tokenId,
+        });
+
+        console.log("🔄 Navigating to NFT detail view:", {
+          path: navigationPath,
+          params: queryParams.toString(),
+        });
+
+        router.push(`${navigationPath}?${queryParams.toString()}`);
+      } catch (error) {
+        console.error("❌ Navigation error:", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          tokenId: nft.tokenId,
+        });
+      }
     },
     [currentWallet?.address, router],
   );
 
-  // Loading state
-  if (walletLoading || nftLoading) {
-    console.log("⏳ Rendering loading state", {
-      walletLoading,
-      nftLoading,
+  // Memoize wallet address
+  const walletAddress = useMemo(() => {
+    if (!currentWallet?.address) {
+      console.log("💼 No wallet address available");
+      return undefined;
+    }
+
+    const address = currentWallet.address.toLowerCase();
+    console.log("💼 Wallet address updated:", {
+      address: address.slice(0, 6),
+      hasWallet: true,
     });
+    return address;
+  }, [currentWallet?.address]);
+
+  // Get NFT transactions data with stable reference
+  const {
+    transactions: nftTransactions,
+    isLoading: nftLoading,
+    error,
+    refresh: softRefresh,
+    hardRefresh,
+  } = useNFTTransactions(walletAddress, {
+    enabled: Boolean(walletAddress),
+  });
+
+  // Transform transactions to NFT collection with stable reference
+  const nftCollection = useMemo(() => {
+    try {
+      console.log("🔄 Processing NFT collection", {
+        transactionCount: nftTransactions.length,
+      });
+
+      return nftTransactions
+        .filter((tx) => tx.tokenMetadata && tx.tokenId)
+        .map((tx) => ({
+          tokenId: tx.tokenId!,
+          tokenMetadataURI: tx.tokenMetadataURI!,
+          metadata: tx.tokenMetadata!,
+          transaction: tx,
+        }));
+    } catch (error) {
+      console.error("❌ Collection processing error:", error);
+      return [];
+    }
+  }, [nftTransactions]);
+
+  // Debounced refresh handler
+  const debouncedRefresh = useCallback(() => {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+
+    refreshTimeoutRef.current = setTimeout(() => {
+      console.log("🔄 Executing debounced refresh");
+      hardRefresh();
+    }, 1000);
+  }, [hardRefresh]);
+
+  // Handle new transactions with debouncing
+  const handleNewTransaction = useCallback(
+    (event: TransactionEvent) => {
+      const transactionId = `${event.timestamp}-${event.transaction.type}`;
+
+      if (lastTransactionRef.current === transactionId) {
+        console.log("⏭️ Skipping duplicate transaction event");
+        return;
+      }
+
+      console.log("🔔 New transaction received:", {
+        type: event.transaction.type,
+        timestamp: new Date(event.timestamp).toLocaleTimeString(),
+      });
+
+      lastTransactionRef.current = transactionId;
+      debouncedRefresh();
+    },
+    [debouncedRefresh],
+  );
+
+  // Clean up resources
+  useEffect(() => {
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Transaction subscription management
+  useEffect(() => {
+    if (!walletAddress) {
+      console.log("📡 No wallet address for subscription");
+      return;
+    }
+
+    console.log("📡 Setting up transaction subscription", {
+      address: walletAddress.slice(0, 6),
+    });
+
+    try {
+      const subscriberId = transactionManager.subscribe(
+        walletAddress,
+        handleNewTransaction,
+      );
+      return () => {
+        console.log("📡 Cleaning up subscription");
+        transactionManager.unsubscribe(walletAddress, subscriberId);
+      };
+    } catch (error) {
+      console.error("❌ Subscription error:", error);
+    }
+  }, [walletAddress, handleNewTransaction]);
+
+  // Manual refresh handler
+  const handleRefresh = useCallback(async () => {
+    if (refreshingRef.current || isRefreshing) {
+      console.log("⚠️ Refresh already in progress");
+      return;
+    }
+
+    if (!walletAddress) {
+      console.log("⚠️ No wallet address for refresh");
+      return;
+    }
+
+    console.log("🔄 Starting manual refresh");
+    refreshingRef.current = true;
+    setIsRefreshing(true);
+
+    try {
+      await softRefresh();
+      console.log("✅ Manual refresh complete");
+    } catch (error) {
+      console.error("❌ Refresh failed:", error);
+    } finally {
+      setIsRefreshing(false);
+      refreshingRef.current = false;
+    }
+  }, [softRefresh, isRefreshing, walletAddress]);
+
+  // Render loading state
+  if (walletLoading || nftLoading) {
+    console.log("⏳ Showing loading state");
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7C3AED" />
@@ -188,15 +218,14 @@ export default function NFTsScreen() {
     );
   }
 
-  // Error state
+  // Render error state
   if (error) {
-    console.log("❌ Rendering error state:", {
-      error: error.message,
-    });
+    console.log("❌ Showing error state:", error);
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>
-          Error loading collection: {error.message}
+          Error loading collection:{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
         </Text>
         <Pressable onPress={handleRefresh} style={styles.retryButton}>
           <Text style={styles.retryText}>Retry</Text>
@@ -205,8 +234,8 @@ export default function NFTsScreen() {
     );
   }
 
-  console.log("🎨 Rendering NFT collection view", {
-    collectionLength: nftCollection.length,
+  console.log("🎨 Rendering collection view", {
+    itemCount: nftCollection.length,
     isRefreshing,
   });
 

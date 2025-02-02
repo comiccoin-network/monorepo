@@ -32,69 +32,114 @@ export function UserTransactionBanner() {
     null,
   );
   const [slideAnim] = useState(new Animated.Value(-100));
+  const notificationTimeoutRef = React.useRef<NodeJS.Timeout>();
 
   const animateBanner = useCallback(() => {
+    console.log("🎬 Starting banner animation sequence");
+
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current);
+    }
+
     Animated.sequence([
-      // Slide in
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 500,
         useNativeDriver: true,
       }),
-      // Hold
       Animated.delay(5000),
-      // Slide out
       Animated.timing(slideAnim, {
         toValue: -100,
         duration: 500,
         useNativeDriver: true,
       }),
     ]).start(() => {
-      console.log("🎭 Banner animation complete");
-      setNotification(null);
+      console.log("🎭 Banner animation complete", {
+        finalPosition: -100,
+        notificationCleared: true,
+      });
+      notificationTimeoutRef.current = setTimeout(() => {
+        setNotification(null);
+      }, 100);
     });
   }, [slideAnim]);
 
+  useEffect(() => {
+    return () => {
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleTransaction = useCallback(
     (event: TransactionEvent) => {
-      console.log("🔔 Transaction banner received event:", {
+      console.log("🔔 Transaction received by banner:", {
         type: event.transaction.type,
+        direction: event.transaction.direction,
         value: event.transaction.valueOrTokenID,
         timestamp: new Date(event.timestamp).toLocaleTimeString(),
+        to: event.transaction.to?.slice(0, 6),
       });
 
-      setNotification({
+      const newNotification = {
         type: event.transaction.type,
         direction: event.transaction.direction,
         valueOrTokenID: event.transaction.valueOrTokenID,
         timestamp: event.timestamp,
         to: event.transaction.to,
-      });
+      };
 
+      console.log("🔄 Updating banner notification state");
+      setNotification(newNotification);
+      console.log("▶️ Triggering banner animation");
       animateBanner();
     },
     [animateBanner],
   );
 
   useEffect(() => {
+    console.log("🎯 Banner mount check:", {
+      hasWallet: !!currentWallet,
+      walletAddress: currentWallet?.address?.slice(0, 6) || "none",
+    });
+
     if (!currentWallet?.address) {
-      console.log("👻 Banner: No wallet available");
+      console.log("⚠️ Banner: No wallet available for subscription");
       return;
     }
 
-    console.log("🎯 Banner: Setting up transaction subscription", {
+    console.log("🔄 Banner: Initializing transaction subscription", {
       address: currentWallet.address.slice(0, 6),
+      timestamp: new Date().toISOString(),
     });
 
-    const subscriberId = transactionManager.subscribe(
-      currentWallet.address,
-      handleTransaction,
-    );
+    let subscriberId: string;
+    try {
+      subscriberId = transactionManager.subscribe(
+        currentWallet.address,
+        handleTransaction,
+      );
+      console.log("✅ Banner: Successfully subscribed to transactions", {
+        subscriberId,
+        address: currentWallet.address.slice(0, 6),
+      });
+    } catch (error) {
+      console.error("❌ Banner: Failed to subscribe to transactions", error);
+      return;
+    }
 
     return () => {
-      console.log("🧹 Banner: Cleaning up subscription");
-      if (currentWallet?.address) {
+      console.log("🧹 Banner: Starting cleanup process", {
+        subscriberId,
+        address: currentWallet.address.slice(0, 6),
+      });
+
+      try {
         transactionManager.unsubscribe(currentWallet.address, subscriberId);
+        console.log("✅ Banner: Successfully unsubscribed");
+      } catch (error) {
+        console.error("❌ Banner: Error during unsubscribe:", error);
       }
     };
   }, [currentWallet?.address, handleTransaction]);
@@ -106,7 +151,7 @@ export function UserTransactionBanner() {
   const isBurnTransaction =
     notification.to && BURN_ADDRESSES.includes(notification.to.toLowerCase());
 
-  const getTransactionIcon = () => {
+  const renderTransactionIcon = () => {
     if (isBurnTransaction) {
       return <Flame size={24} color="#DC2626" strokeWidth={2} />;
     }
@@ -146,15 +191,10 @@ export function UserTransactionBanner() {
 
   return (
     <Animated.View
-      style={[
-        styles.container,
-        {
-          transform: [{ translateY: slideAnim }],
-        },
-      ]}
+      style={[styles.container, { transform: [{ translateY: slideAnim }] }]}
     >
       <View style={styles.content}>
-        {getTransactionIcon()}
+        {renderTransactionIcon()}
         <View style={styles.textContainer}>
           <Text style={[styles.title, { color: getTransactionColor() }]}>
             {getTransactionText()}
