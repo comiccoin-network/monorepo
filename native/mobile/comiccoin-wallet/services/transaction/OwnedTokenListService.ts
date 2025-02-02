@@ -1,4 +1,4 @@
-// services/transaction/OwnedTokenListService.ts
+// monorepo/native/mobile/comiccoin-wallet/services/transaction/OwnedTokenListService.ts
 import config from "../../config";
 
 interface TokenMetadataAttribute {

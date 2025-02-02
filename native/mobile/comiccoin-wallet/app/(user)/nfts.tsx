@@ -128,22 +128,32 @@ export default function NFTsScreen() {
   // Handle new transactions with debouncing
   const handleNewTransaction = useCallback(
     (event: TransactionEvent) => {
-      const transactionId = `${event.timestamp}-${event.transaction.type}`;
+      console.log("🔔 NFT transaction received", {
+        type: event.transaction.type,
+        direction: event.transaction.direction,
+        tokenId: event.transaction.valueOrTokenID,
+      });
 
-      if (lastTransactionRef.current === transactionId) {
-        console.log("⏭️ Skipping duplicate transaction event");
+      if (event.transaction.type !== "token") {
+        console.log("⏭️ Ignoring non-token transaction");
         return;
       }
 
-      console.log("🔔 New transaction received:", {
-        type: event.transaction.type,
-        timestamp: new Date(event.timestamp).toLocaleTimeString(),
-      });
+      const transactionId = `${event.timestamp}-${event.transaction.valueOrTokenID}`;
 
+      if (lastTransactionRef.current === transactionId) {
+        console.log("⏭️ Skipping duplicate token event");
+        return;
+      }
+
+      console.log(
+        "🔄 Triggering refresh for new token",
+        event.transaction.valueOrTokenID,
+      );
       lastTransactionRef.current = transactionId;
-      debouncedRefresh();
+      hardRefresh();
     },
-    [debouncedRefresh],
+    [hardRefresh],
   );
 
   // Clean up resources
