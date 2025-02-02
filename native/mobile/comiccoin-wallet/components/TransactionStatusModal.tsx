@@ -147,7 +147,8 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
   const handleNavigateToOverview = useCallback(() => {
     console.log("🏠 Navigating to Overview");
-    router.push("/(overview)");
+    onClose();
+    router.push("/(user)/overview");
   }, [router]);
 
   const handleSendAnother = useCallback(() => {
