@@ -187,6 +187,25 @@ const SendScreen: React.FC = () => {
     }
   }, [formData, currentWallet, submitTransaction]);
 
+  const resetForm = useCallback(() => {
+    console.log("🧹 Resetting form fields");
+    setFormData({
+      recipientAddress: "",
+      amount: "",
+      note: "",
+      password: "",
+    });
+    setFormErrors({});
+    console.log("✨ Form fields cleared");
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    console.log("🔄 Processing modal close");
+    setShowTransactionStatus(false);
+    resetForm();
+    console.log("✅ Modal closed and form reset");
+  }, [resetForm]);
+
   if (serviceLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -216,7 +235,7 @@ const SendScreen: React.FC = () => {
             {/* Modal */}
             <TransactionStatusModal
               isVisible={showTransactionStatus}
-              onClose={() => setShowTransactionStatus(false)}
+              onClose={handleModalClose}
               transactionData={{
                 amount: parseInt(formData.amount) + 1,
                 recipientAddress: formData.recipientAddress,

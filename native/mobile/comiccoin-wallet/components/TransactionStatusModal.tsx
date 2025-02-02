@@ -137,22 +137,35 @@ const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     walletTransactionEventEmitter.on("newTransaction", handleTransaction);
 
     return () => {
+      console.log("🧹 Cleaning up modal resources");
       if (modalState.current.timeoutId) {
         clearTimeout(modalState.current.timeoutId);
         modalState.current.timeoutId = null;
       }
       walletTransactionEventEmitter.off("newTransaction", handleTransaction);
+
+      // Reset modal state when unmounting
+      modalState.current.initialized = false;
+      modalState.current.hasSucceeded = false;
+      console.log("✅ Modal cleanup complete");
     };
   }, [isVisible, handleTransaction, transactionData]);
 
   const handleNavigateToOverview = useCallback(() => {
     console.log("🏠 Navigating to Overview");
+    modalState.current.initialized = false;
+    modalState.current.hasSucceeded = false;
     onClose();
     router.push("/(user)/overview");
-  }, [router]);
+  }, [router, onClose]);
 
   const handleSendAnother = useCallback(() => {
     console.log("💸 Initiating another payment");
+    modalState.current.initialized = false;
+    modalState.current.hasSucceeded = false;
+    setStatus("pending");
+    setMessage("Processing your transaction...");
+    setCanClose(false);
     onClose();
   }, [onClose]);
 
