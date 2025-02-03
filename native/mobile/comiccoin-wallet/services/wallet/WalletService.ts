@@ -155,6 +155,36 @@ class WalletService {
     await AsyncStorage.removeItem(this.ACTIVE_WALLET_KEY);
   }
 
+  async deleteWallet(id: string): Promise<void> {
+    try {
+      // Find the wallet index
+      const walletIndex = this.wallets.findIndex((w) => w.id === id);
+      if (walletIndex === -1) {
+        throw new Error("Wallet not found");
+      }
+
+      // Remove the wallet
+      this.wallets.splice(walletIndex, 1);
+      await this.saveWallets();
+
+      // If this was the current wallet, log out
+      if (this.currentWallet) {
+        const activeWalletData = await AsyncStorage.getItem(
+          this.ACTIVE_WALLET_KEY,
+        );
+        if (activeWalletData) {
+          const { id: activeId } = JSON.parse(activeWalletData);
+          if (activeId === id) {
+            await this.logout();
+          }
+        }
+      }
+    } catch (error) {
+      console.log("Failed to delete wallet:", error);
+      throw new Error("Failed to delete wallet");
+    }
+  }
+
   private encryptData(data: string, password: string): string {
     try {
       return CryptoJS.AES.encrypt(data, password).toString();

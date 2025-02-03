@@ -11,7 +11,13 @@ import {
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { History, Droplets, ExternalLink, LogOut } from "lucide-react-native";
+import {
+  History,
+  Droplets,
+  ExternalLink,
+  LogOut,
+  Trash2,
+} from "lucide-react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useWallet } from "../../hooks/useWallet";
 import { transactionManager } from "../../services/transaction/TransactionManager";
@@ -30,7 +36,7 @@ interface MenuOption {
 
 export default function More() {
   const router = useRouter();
-  const { logout, currentWallet } = useWallet();
+  const { logout, deleteWallet, currentWallet, wallets } = useWallet();
   const [newTransactionCount, setNewTransactionCount] = useState(0);
 
   // Handle new transactions
@@ -102,6 +108,46 @@ export default function More() {
     router.push("/(transactions)/");
   }, [router]);
 
+  const handleDeleteWallet = () => {
+    if (!currentWallet?.address) return;
+
+    Alert.alert(
+      "Delete Wallet",
+      "Warning: This will permanently delete this wallet and all its data. You will be signed out. Make sure you have your recovery phrase saved before proceeding. Do you want to continue?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete Wallet",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const walletToDelete = wallets.find(
+                (w) =>
+                  w.address.toLowerCase() ===
+                  currentWallet.address.toLowerCase(),
+              );
+              if (!walletToDelete?.id) {
+                throw new Error("Wallet not found");
+              }
+              await deleteWallet(walletToDelete.id);
+              router.replace("/");
+            } catch (error) {
+              console.log("❌ Wallet deletion failed:", error);
+              Alert.alert(
+                "Error",
+                "Failed to delete wallet. Please try again.",
+              );
+            }
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  };
+
   const menuOptions: MenuOption[] = [
     {
       id: "transactions",
@@ -118,6 +164,13 @@ export default function More() {
       route: "https://comiccoinfaucet.com",
       description: "Get free coins for your wallet",
       isExternal: true,
+    },
+    {
+      id: "delete-wallet",
+      title: "Delete Wallet",
+      icon: <Trash2 size={24} color="#DC2626" />,
+      description: "Permanently delete this wallet",
+      onPress: handleDeleteWallet,
     },
     {
       id: "signout",

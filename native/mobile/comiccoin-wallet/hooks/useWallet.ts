@@ -17,6 +17,7 @@ interface WalletHookReturn {
   createWallet: (mnemonic: string, password: string) => Promise<any>;
   loadWallet: (id: string, password: string) => Promise<ethers.Wallet>;
   logout: () => Promise<void>;
+  deleteWallet: (id: string) => Promise<void>;
   checkSession: () => boolean;
 }
 
@@ -131,6 +132,46 @@ export const useWallet = (): WalletHookReturn => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const deleteWallet = async (id: string) => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      await walletService.deleteWallet(id);
+      setWallets(walletService.getWallets());
+
+      // If the deleted wallet was the current one, clear it
+      if (
+        currentWallet &&
+        wallets.find((w) => w.id === id)?.address === currentWallet.address
+      ) {
+        setCurrentWallet(null);
+      }
+    } catch (err: any) {
+      console.error("Wallet deletion error:", err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    currentWallet,
+    wallets,
+    loading,
+    error,
+    isInitialized,
+    createWallet,
+    loadWallet,
+    deleteWallet,
+    logout: async () => {
+      await walletService.logout();
+      setCurrentWallet(null);
+    },
+    checkSession: walletService.checkSession.bind(walletService),
   };
 
   return {
