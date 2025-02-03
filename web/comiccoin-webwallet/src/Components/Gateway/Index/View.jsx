@@ -50,6 +50,7 @@ const IndexPage = () => {
 
             <main id="main-content" className="flex-grow">
                 {/* Hero Section */}
+                {/* Hero Section */}
                 <div className="bg-gradient-to-b from-indigo-600 to-indigo-500 text-white py-12 sm:py-16 md:py-20 mb-6 sm:mb-8 md:mb-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
@@ -57,26 +58,19 @@ const IndexPage = () => {
                                 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6"
                                 style={{ fontFamily: 'Comic Sans MS' }}
                             >
-                                Access Your ComicCoin Wallet
+                                Start Your Blockchain Journey
                             </h1>
                             <p className="text-lg sm:text-xl text-indigo-100 max-w-2xl mx-auto mb-8 sm:mb-10">
-                                Secure, fast, and easy access to your digital assets through our web wallet
+                                Experience the future of digital collectibles with our secure and easy-to-use web
+                                wallet. No downloads required - get started in minutes.
                             </p>
-                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                                <Link
-                                    to="/login"
-                                    className="bg-white text-indigo-600 px-8 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2 text-lg w-full sm:w-auto"
-                                >
-                                    <Globe className="w-5 h-5" />
-                                    Login to Web Wallet
-                                    <ArrowRight className="w-5 h-5" />
-                                </Link>
+                            <div className="flex justify-center">
                                 <Link
                                     to="/get-started"
-                                    className="bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-800 transition-colors flex items-center justify-center gap-2 text-lg w-full sm:w-auto"
+                                    className="bg-white text-indigo-600 px-8 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2 text-lg"
                                 >
                                     <Wallet className="w-5 h-5" />
-                                    Create New Wallet
+                                    Get Started Now
                                     <ArrowRight className="w-5 h-5" />
                                 </Link>
                             </div>
