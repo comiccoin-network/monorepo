@@ -1,3 +1,5 @@
-# https://www.robotstxt.org/robotstxt.html
+# Welcome all web crawlers!
 User-agent: *
 Disallow:
+
+Sitemap: https://comiccoinwallet.com/sitemap.xml
