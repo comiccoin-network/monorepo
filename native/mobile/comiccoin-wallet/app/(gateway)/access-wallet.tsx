@@ -1,3 +1,4 @@
+// monorepo/native/mobile/comiccoin-wallet/app/(gateway)/access-wallet.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -154,6 +155,14 @@ export default function AccessWallet() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {isLoading && (
+        <View style={[StyleSheet.absoluteFill, styles.loadingOverlay]}>
+          <View style={styles.loadingContent}>
+            <ActivityIndicator size="large" color="#7C3AED" />
+            <Text style={styles.loadingText}>Accessing your wallet...</Text>
+          </View>
+        </View>
+      )}
       <LinearGradient colors={["#F3E8FF", "#FFFFFF"]} style={styles.gradient}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -594,5 +603,33 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     color: "#6B7280",
+  },
+  loadingOverlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+  },
+  loadingContent: {
+    backgroundColor: "white",
+    padding: 24,
+    borderRadius: 16,
+    alignItems: "center",
+    width: "80%",
+    maxWidth: 300,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#374151",
+    fontWeight: "500",
+    marginTop: 12,
   },
 });
