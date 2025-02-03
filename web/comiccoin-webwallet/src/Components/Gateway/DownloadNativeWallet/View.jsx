@@ -11,6 +11,7 @@ import {
     Apple,
     Terminal,
     Download,
+    Smartphone,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import NavigationMenu from '../NavigationMenu/View'
@@ -68,6 +69,130 @@ const DownloadNativeWalletPage = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Download Cards */}
                     <div className="grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto mb-6 sm:mb-8 md:mb-12">
+                        {/* Mobile Apps Section */}
+                        <div className="md:col-span-2 mt-8">
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Mobile Apps</h2>
+                            <div className="grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+                                {/* Android Download Card */}
+                                <div className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-xl overflow-hidden border-2 border-purple-100">
+                                    <div className="p-4 sm:p-6 md:p-8">
+                                        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                                            <div className="p-2 sm:p-3 bg-purple-100 rounded-xl">
+                                                <Smartphone className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                                                    Android App
+                                                </h2>
+                                                <p className="text-sm sm:text-base text-purple-600">
+                                                    Available on Google Play Store
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+                                            <div>
+                                                <h3 className="font-medium text-gray-900 mb-3 sm:mb-4">Features:</h3>
+                                                <ul className="space-y-2 sm:space-y-3">
+                                                    <li className="flex items-start gap-2">
+                                                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
+                                                        <span className="text-sm sm:text-base text-gray-600">
+                                                            Mobile-optimized interface
+                                                        </span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2">
+                                                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
+                                                        <span className="text-sm sm:text-base text-gray-600">
+                                                            Secure biometric authentication
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div className="flex items-start gap-2 sm:gap-3 bg-blue-50 p-3 sm:p-4 rounded-xl">
+                                                <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 mt-0.5 shrink-0" />
+                                                <p className="text-xs sm:text-sm text-blue-700">
+                                                    Download only from the Google Play Store to ensure you&apos;re
+                                                    getting the genuine, verified app.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <a
+                                            href="https://play.google.com/store/apps/details?id=com.theshootingstarpress.comiccoinwallet"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-full bg-purple-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
+                                        >
+                                            <Smartphone className="h-4 w-4 sm:h-5 sm:w-5" />
+                                            Download from Play Store
+                                            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                                        </a>
+
+                                        <p className="text-center text-xs sm:text-sm text-gray-500">
+                                            Requires Android 8.0 or higher
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* iOS Coming Soon Card */}
+                                <div className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-xl overflow-hidden border-2 border-purple-100">
+                                    <div className="p-4 sm:p-6 md:p-8">
+                                        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                                            <div className="p-2 sm:p-3 bg-purple-100 rounded-xl">
+                                                <Apple className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">iOS App</h2>
+                                                <p className="text-sm sm:text-base text-purple-600">Coming Soon</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+                                            <div>
+                                                <h3 className="font-medium text-gray-900 mb-3 sm:mb-4">
+                                                    Planned Features:
+                                                </h3>
+                                                <ul className="space-y-2 sm:space-y-3">
+                                                    <li className="flex items-start gap-2">
+                                                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
+                                                        <span className="text-sm sm:text-base text-gray-600">
+                                                            Native iOS design
+                                                        </span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2">
+                                                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
+                                                        <span className="text-sm sm:text-base text-gray-600">
+                                                            Face ID/Touch ID support
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div className="flex items-start gap-2 sm:gap-3 bg-blue-50 p-3 sm:p-4 rounded-xl">
+                                                <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 mt-0.5 shrink-0" />
+                                                <p className="text-xs sm:text-sm text-blue-700">
+                                                    Our iOS app is currently under development. Stay tuned for the App
+                                                    Store release!
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            disabled
+                                            className="w-full bg-gray-400 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold cursor-not-allowed flex items-center justify-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
+                                        >
+                                            <Apple className="h-4 w-4 sm:h-5 sm:w-5" />
+                                            Coming Soon to App Store
+                                        </button>
+
+                                        <p className="text-center text-xs sm:text-sm text-gray-500">
+                                            Will require iOS 18.0 or higher
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         {/* Microsoft Download Card */}
                         <div className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-xl overflow-hidden border-2 border-purple-100">
                             <div className="p-4 sm:p-6 md:p-8">

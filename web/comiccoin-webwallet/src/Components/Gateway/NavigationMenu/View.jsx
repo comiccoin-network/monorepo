@@ -29,7 +29,7 @@ const NavigationMenu = () => {
                                 className="text-purple-200 hover:text-white flex items-center gap-1 text-sm whitespace-nowrap"
                             >
                                 <Monitor className="h-4 w-4" />
-                                <span>Desktop Wallet</span>
+                                <span>Desktop or Mobile Wallet</span>
                                 <ArrowRight className="h-4 w-4" />
                             </Link>
                         </div>

@@ -18,6 +18,7 @@ import {
     Coins,
     ArrowUpRight,
     Server,
+    Smartphone,
 } from 'lucide-react'
 import NavigationMenu from '../NavigationMenu/View'
 import FooterMenu from '../FooterMenu/View'
@@ -129,6 +130,16 @@ const IndexPage = () => {
                                     </ul>
                                     <div className="space-y-3">
                                         <a
+                                            href="https://play.google.com/store/apps/details?id=com.theshootingstarpress.comiccoinwallet"
+                                            className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <Smartphone className="w-5 h-5" />
+                                            Download for Android
+                                            <ArrowRight className="w-5 h-5" />
+                                        </a>
+                                        <a
                                             href={process.env.REACT_APP_NATIVE_BINARY_WINDOWS_DOWNLOAD_LINK}
                                             className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
                                         >
@@ -144,6 +155,14 @@ const IndexPage = () => {
                                             Download for MacOS
                                             <ArrowRight className="w-5 h-5" />
                                         </a>
+                                        <Link
+                                            to="/download-native-wallet"
+                                            className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <Server className="w-5 h-5" />
+                                            Download for Linux
+                                            <ArrowRight className="w-5 h-5" />
+                                        </Link>
                                         <Link
                                             to="/download-native-wallet"
                                             className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
