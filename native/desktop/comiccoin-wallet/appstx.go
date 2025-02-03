@@ -3,7 +3,7 @@ package main
 import (
 	"log/slog"
 
-	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/domain"
 )
 
 func (a *App) ListAllPendingSignedTransactions() ([]*domain.PendingSignedTransaction, error) {

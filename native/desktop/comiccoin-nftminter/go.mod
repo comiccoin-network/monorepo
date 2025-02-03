@@ -54,6 +54,6 @@ require (
 	golang.org/x/text v0.19.0 // indirect
 )
 
-replace github.com/comiccoin-network/monorepo/native/desktop/comiccoin => ../comiccoin
+replace github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli => ../comiccoin-cli
 
 replace github.com/comiccoin-network/monorepo/cloud/comiccoin-authority => ../../../cloud/comiccoin-authority

@@ -3,7 +3,7 @@ go 1.23.0
 use (
 	./cloud/comiccoin-authority
 	./cloud/comiccoin-faucet
-	./native/desktop/comiccoin
+	./native/desktop/comiccoin-cli
 	./native/desktop/comiccoin-nftminter
 	./native/desktop/comiccoin-nftstorage
 	./native/desktop/comiccoin-wallet

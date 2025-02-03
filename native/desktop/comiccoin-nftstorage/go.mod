@@ -127,4 +127,4 @@ require (
 	lukechampine.com/blake3 v1.3.0 // indirect
 )
 
-replace github.com/comiccoin-network/monorepo/native/desktop/comiccoin => ../comiccoin
+replace github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli => ../comiccoin-cli

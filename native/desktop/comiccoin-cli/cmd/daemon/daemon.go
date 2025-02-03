@@ -1,14 +1,15 @@
-package main
+package daemon
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/logger"
 	disk "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/disk/leveldb"
 	inmemory "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/storage/memory/inmemory"
@@ -17,16 +18,17 @@ import (
 	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdatadto"
 	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
 	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltxdto"
+	"github.com/spf13/cobra"
 
+	pref "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/common/preferences"
+	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/interface/rpc"
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/repo"
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/account"
 	service_blockchain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/blockchain"
-	service_blockchainsyncstatus "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/blockchainsyncstatus"
 	service_blockdata "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/blockdata"
 	service_blocktx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/blocktx"
 	service_coin "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/coin"
 	service_nftok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/nftok"
-	service_pstx "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/pstx"
 	service_tok "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/tok"
 	service_wallet "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/wallet"
 	uc_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/usecase/account"
@@ -43,106 +45,74 @@ import (
 	uc_walletutil "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/usecase/walletutil"
 )
 
-// App struct
-type App struct {
-	ctx context.Context
+var (
+	preferences *pref.Preferences
+)
 
-	// Logger instance which provides detailed debugging information along
-	// with the console log messages.
-	logger *slog.Logger
+// Command line argument flags
+var (
+	flagDataDirectory     string
+	flagChainID           uint16
+	flagAuthorityAddress  string
+	flagNFTStorageAddress string
+)
 
-	kmutex kmutexutil.KMutexProvider
-
-	getBlockchainSyncStatusService                                  service_blockchainsyncstatus.GetBlockchainSyncStatusService
-	getAccountService                                               service_account.GetAccountService
-	createAccountService                                            service_account.CreateAccountService
-	accountListingByLocalWalletsService                             service_account.AccountListingByLocalWalletsService
-	coinTransferService                                             service_coin.CoinTransferService
-	tokenGetService                                                 service_tok.TokenGetService
-	tokenTransferService                                            service_tok.TokenTransferService
-	tokenBurnService                                                service_tok.TokenBurnService
-	getOrDownloadNonFungibleTokenService                            service_nftok.GetOrDownloadNonFungibleTokenService
-	listBlockTransactionsByAddressService                           service_blocktx.ListBlockTransactionsByAddressService
-	listWithLimitBlockTransactionsByAddressService                  service_blocktx.ListWithLimitBlockTransactionsByAddressService
-	getByBlockTransactionTimestampService                           service_blockdata.GetByBlockTransactionTimestampService
-	blockDataGetByHashService                                       service_blockdata.BlockDataGetByHashService
-	tokenListByOwnerService                                         service_tok.TokenListByOwnerService
-	tokenCountByOwnerService                                        service_tok.TokenCountByOwnerService
-	blockchainSyncService                                           service_blockchain.BlockchainSyncWithBlockchainAuthorityService
-	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService service_blockchain.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsService
-	walletsFilterByLocalService                                     service_wallet.WalletsFilterByLocalService
-	listNonFungibleTokensByOwnerService                             service_nftok.ListNonFungibleTokensByOwnerService
-	pendingSignedTransactionListService                             service_pstx.PendingSignedTransactionListService
-	exportWalletService                                             service_wallet.ExportWalletService
-	importWalletService                                             service_wallet.ImportWalletService
-	walletRecoveryService                                           service_wallet.WalletRecoveryService
+// Initialize function will be called when every command gets called.
+func init() {
+	preferences = pref.PreferencesInstance()
 }
 
-// NewApp creates a new App application struct
-func NewApp() *App {
-	logger := logger.NewProvider()
-	kmutex := kmutexutil.NewKMutexProvider()
-	return &App{
-		logger: logger,
-		kmutex: kmutex,
+func DaemonCmd() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "daemon",
+		Short: "Runs a full node on your machine which will automatically synchronize the local blockchain with the Global Blockchain Network on any new changes.",
+		Run: func(cmd *cobra.Command, args []string) {
+			// Developers Note:
+			// Before executing this command, check to ensure the user has
+			// configured our app before proceeding.
+			preferences.RunFatalIfHasAnyMissingFields()
+
+			// Load up our operating system interaction handlers, more specifically
+			// signals. The OS sends our application various signals based on the
+			// OS's state, we want to listen into the termination signals.
+			done := make(chan os.Signal, 1)
+			signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGUSR1)
+
+			go doRunDaemonCmd()
+
+			<-done
+		},
 	}
+	cmd.Flags().StringVar(&flagDataDirectory, "data-directory", preferences.DataDirectory, "The data directory to save to")
+	cmd.Flags().Uint16Var(&flagChainID, "chain-id", preferences.ChainID, "The blockchain to sync with")
+	cmd.Flags().StringVar(&flagAuthorityAddress, "authority-address", preferences.AuthorityAddress, "The BlockChain authority address to connect to")
+	cmd.Flags().StringVar(&flagNFTStorageAddress, "nftstorage-address", preferences.NFTStorageAddress, "The NFT storage service adress to connect to")
+
+	return cmd
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
-func (a *App) startup(ctx context.Context) {
-	// Ensure that this function executes only one time and never concurrently.
-	a.kmutex.Acquire("startup")
-	defer a.kmutex.Release("startup")
-
-	a.ctx = ctx
-	a.logger.Debug("Startup beginning...")
-
-	// DEVELOPERS NOTE:
-	// Before we startup our app, we need to make sure the `data directory` is
-	// set for this application by the user, else stop the app startup
-	// procedure. This is done on purpose because we need the user to specify
-	// the location they want to store instead of having one automatically set.
-	preferences := PreferencesInstance()
-	dataDir := preferences.DataDirectory
-	if dataDir == "" {
-		return
-	}
-
-	// DEVELOPERS NOTE:
-	// Defensive code for programmer in case all the required environment
-	// variables are not set then abort this program.
-	// preferences.RunFatalIfHasAnyMissingFields() // ONLY USE IN CLI, NOT GUI WALLET!
-
-	nftStorageAddress := preferences.NFTStorageAddress
-	chainID := preferences.ChainID
-	authorityAddress := preferences.AuthorityAddress
-
-	//
-	// DEVELOPERS NOTE:
-	// Load up our dependencies and configuration
-	//
-
+func doRunDaemonCmd() {
 	// ------ Common ------
 
 	logger := logger.NewProvider()
 	keystore := hdkeystore.NewAdapter()
 	memDB := inmemory.NewInMemoryStorage(logger)
-	walletDB := disk.NewDiskStorage(dataDir, "wallet", logger)
-	accountDB := disk.NewDiskStorage(dataDir, "account", logger)
-	genesisBlockDataDB := disk.NewDiskStorage(dataDir, "genesis_block_data", logger)
-	blockchainStateDB := disk.NewDiskStorage(dataDir, "blockchain_state", logger)
-	blockDataDB := disk.NewDiskStorage(dataDir, "block_data", logger)
-	tokDB := disk.NewDiskStorage(dataDir, "token", logger)
-	nftokDB := disk.NewDiskStorage(dataDir, "non_fungible_token", logger)
-	pstxDB := disk.NewDiskStorage(dataDir, "pending_signed_transaction", logger)
+	walletDB := disk.NewDiskStorage(flagDataDirectory, "wallet", logger)
+	accountDB := disk.NewDiskStorage(flagDataDirectory, "account", logger)
+	genesisBlockDataDB := disk.NewDiskStorage(flagDataDirectory, "genesis_block_data", logger)
+	blockchainStateDB := disk.NewDiskStorage(flagDataDirectory, "blockchain_state", logger)
+	blockDataDB := disk.NewDiskStorage(flagDataDirectory, "block_data", logger)
+	tokDB := disk.NewDiskStorage(flagDataDirectory, "token", logger)
+	nftokDB := disk.NewDiskStorage(flagDataDirectory, "non_fungible_token", logger)
+	pstxDB := disk.NewDiskStorage(flagDataDirectory, "pending_signed_transaction", logger)
 
 	// ------------ Repo ------------
 
-	blockchainStateServerSentEventsDTOConfigurationProvider := repo.NewBlockchainStateServerSentEventsDTOConfigurationProvider(preferences.AuthorityAddress)
+	blockchainStateServerSentEventsDTOConfigurationProvider := repo.NewBlockchainStateServerSentEventsDTOConfigurationProvider(flagAuthorityAddress)
 	blockchainStateServerSentEventsDTORepo := repo.NewBlockchainStateServerSentEventsDTORepository(
 		blockchainStateServerSentEventsDTOConfigurationProvider,
 		logger)
+
 	accountRepo := repo.NewAccountRepo(
 		logger,
 		accountDB)
@@ -155,37 +125,35 @@ func (a *App) startup(ctx context.Context) {
 	blockchainStateRepo := repo.NewBlockchainStateRepo(
 		logger,
 		blockchainStateDB)
-	blockchainStateDTORepoConfig := auth_repo.NewBlockchainStateDTOConfigurationProvider(authorityAddress)
+	blockchainStateDTORepoConfig := auth_repo.NewBlockchainStateDTOConfigurationProvider(flagAuthorityAddress)
 	blockchainStateDTORepo := auth_repo.NewBlockchainStateDTORepo(
 		blockchainStateDTORepoConfig,
 		logger)
-	genesisBlockDataDTORepoConfig := auth_repo.NewGenesisBlockDataDTOConfigurationProvider(authorityAddress)
+	genesisBlockDataDTORepoConfig := auth_repo.NewGenesisBlockDataDTOConfigurationProvider(flagAuthorityAddress)
 	genesisBlockDataDTORepo := auth_repo.NewGenesisBlockDataDTORepo(
 		genesisBlockDataDTORepoConfig,
 		logger)
 	blockDataRepo := repo.NewBlockDataRepo(
 		logger,
 		blockDataDB)
-	blockDataDTORepoConfig := auth_repo.NewBlockDataDTOConfigurationProvider(authorityAddress)
+	blockDataDTORepoConfig := auth_repo.NewBlockDataDTOConfigurationProvider(flagAuthorityAddress)
 	blockDataDTORepo := auth_repo.NewBlockDataDTORepo(
 		blockDataDTORepoConfig,
 		logger)
 	tokRepo := repo.NewTokenRepo(
 		logger,
 		tokDB)
-	nftokenRepo := repo.NewNonFungibleTokenRepo(logger, nftokDB)
-	nftAssetRepoConfig := repo.NewNFTAssetRepoConfigurationProvider(nftStorageAddress, "")
-	nftAssetRepo := repo.NewNFTAssetRepo(nftAssetRepoConfig, logger)
-	mempoolTxDTORepoConfig := auth_repo.NewMempoolTransactionDTOConfigurationProvider(authorityAddress)
-	mempoolTxDTORepo := auth_repo.NewMempoolTransactionDTORepo(mempoolTxDTORepoConfig, logger)
-	pstxRepo := repo.NewPendingSignedTransactionRepo(logger, pstxDB)
-	blockchainSyncStatusRepo := repo.NewBlockchainSyncStatusRepo(logger, memDB)
-
-	// DEPRECATED
-	// blockchainStateChangeEventDTOConfigurationProvider := auth_repo.NewBlockchainStateChangeEventDTOConfigurationProvider(authorityAddress)
+	// blockchainStateChangeEventDTOConfigurationProvider := auth_repo.NewBlockchainStateChangeEventDTOConfigurationProvider(flagAuthorityAddress)
 	// blockchainStateChangeEventDTORepo := auth_repo.NewBlockchainStateChangeEventDTORepo(
 	// 	blockchainStateChangeEventDTOConfigurationProvider,
 	// 	logger)
+	nftokenRepo := repo.NewNonFungibleTokenRepo(logger, nftokDB)
+	nftAssetRepoConfig := repo.NewNFTAssetRepoConfigurationProvider(flagNFTStorageAddress, "")
+	nftAssetRepo := repo.NewNFTAssetRepo(nftAssetRepoConfig, logger)
+	mempoolTxDTORepoConfig := auth_repo.NewMempoolTransactionDTOConfigurationProvider(flagAuthorityAddress)
+	mempoolTxDTORepo := auth_repo.NewMempoolTransactionDTORepo(mempoolTxDTORepoConfig, logger)
+	pstxRepo := repo.NewPendingSignedTransactionRepo(logger, pstxDB)
+	blockchainSyncStatusRepo := repo.NewBlockchainSyncStatusRepo(logger, memDB)
 
 	// ------------ Use-Case ------------
 
@@ -236,7 +204,7 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		keystore)
 
-	// // Wallet
+	// Wallet
 	createWalletUseCase := uc_wallet.NewCreateWalletUseCase(
 		logger,
 		walletRepo)
@@ -250,6 +218,7 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		walletRepo,
 	)
+	_ = listAllWalletUseCase
 
 	// Account
 	createAccountUseCase := uc_account.NewCreateAccountUseCase(
@@ -311,9 +280,6 @@ func (a *App) startup(ctx context.Context) {
 	listBlockTransactionsByAddressUseCase := uc_blocktx.NewListBlockTransactionsByAddressUseCase(
 		logger,
 		blockDataRepo)
-	listWithLimitBlockTransactionsByAddressUseCase := uc_blocktx.NewListWithLimitBlockTransactionsByAddressUseCase(
-		logger,
-		blockDataRepo)
 
 	// Block Data DTO
 	getBlockDataDTOFromBlockchainAuthorityUseCase := uc_blockdatadto.NewGetBlockDataDTOFromBlockchainAuthorityUseCase(
@@ -329,10 +295,6 @@ func (a *App) startup(ctx context.Context) {
 		tokRepo,
 	)
 	listTokensByOwnerUseCase := uc_tok.NewListTokensByOwnerUseCase(
-		logger,
-		tokRepo,
-	)
-	countTokensByOwnerUseCase := uc_tok.NewCountTokensByOwnerUseCase(
 		logger,
 		tokRepo,
 	)
@@ -353,9 +315,6 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		nftAssetRepo)
 	upsertNFTokUseCase := uc_nftok.NewUpsertNonFungibleTokenUseCase(
-		logger,
-		nftokenRepo)
-	listNonFungibleTokensWithFilterByTokenIDsyUseCase := uc_nftok.NewListNonFungibleTokensWithFilterByTokenIDsyUseCase(
 		logger,
 		nftokenRepo)
 
@@ -386,10 +345,6 @@ func (a *App) startup(ctx context.Context) {
 
 	// ------------ Service ------------
 
-	getBlockchainSyncStatusService := service_blockchainsyncstatus.NewGetBlockchainSyncStatusService(
-		logger,
-		getBlockchainSyncStatusUseCase,
-	)
 	getAccountService := service_account.NewGetAccountService(
 		logger,
 		getAccountUseCase,
@@ -456,7 +411,6 @@ func (a *App) startup(ctx context.Context) {
 		getTokUseCase,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	)
-
 	blockchainSyncService := service_blockchain.NewBlockchainSyncWithBlockchainAuthorityService(
 		logger,
 		getBlockchainSyncStatusUseCase,
@@ -475,7 +429,6 @@ func (a *App) startup(ctx context.Context) {
 		upsertTokenIfPreviousTokenNonceGTEUseCase,
 		deletePendingSignedTransactionUseCase,
 	)
-
 	blockchainSyncWithBlockchainAuthorityViaServerSentEventsService := service_blockchain.NewBlockchainSyncWithBlockchainAuthorityViaServerSentEventsService(
 		logger,
 		blockchainSyncService,
@@ -495,6 +448,7 @@ func (a *App) startup(ctx context.Context) {
 	// 	storageTransactionDiscardUseCase,
 	// 	subscribeToBlockchainStateChangeEventsFromBlockchainAuthorityUseCase,
 	// )
+	// _ = blockchainSyncManagerService // DEPRECATED
 
 	getOrDownloadNonFungibleTokenService := service_nftok.NewGetOrDownloadNonFungibleTokenService(
 		logger,
@@ -503,14 +457,9 @@ func (a *App) startup(ctx context.Context) {
 		downloadNFTokMetadataUsecase,
 		downloadNFTokAssetUsecase,
 		upsertNFTokUseCase)
-
 	listBlockTransactionsByAddressService := service_blocktx.NewListBlockTransactionsByAddressService(
 		logger,
 		listBlockTransactionsByAddressUseCase,
-	)
-	listWithLimitBlockTransactionsByAddressService := service_blocktx.NewListWithLimitBlockTransactionsByAddressService(
-		logger,
-		listWithLimitBlockTransactionsByAddressUseCase,
 	)
 	getByBlockTransactionTimestampService := service_blockdata.NewGetByBlockTransactionTimestampService(
 		logger,
@@ -524,24 +473,6 @@ func (a *App) startup(ctx context.Context) {
 		logger,
 		listTokensByOwnerUseCase,
 	)
-	tokenCountByOwnerService := service_tok.NewTokenCountByOwnerService(
-		logger,
-		countTokensByOwnerUseCase,
-	)
-	walletsFilterByLocalService := service_wallet.NewWalletsFilterByLocalService(
-		logger,
-		listAllWalletUseCase,
-	)
-	listNonFungibleTokensByOwnerService := service_nftok.NewListNonFungibleTokensByOwnerService(
-		logger,
-		listTokensByOwnerUseCase,
-		listNonFungibleTokensWithFilterByTokenIDsyUseCase,
-		getOrDownloadNonFungibleTokenService,
-	)
-	pendingSignedTransactionListService := service_pstx.NewPendingSignedTransactionListService(
-		logger,
-		listPendingSignedTransactionUseCase,
-	)
 	exportWalletService := service_wallet.NewExportWalletService(
 		logger,
 		getAccountUseCase,
@@ -554,107 +485,69 @@ func (a *App) startup(ctx context.Context) {
 		upsertAccountUseCase,
 		createWalletUseCase,
 	)
-	walletRecoveryService := service_wallet.NewWalletRecoveryService(
-		logger,
-		getWalletUseCase,
-		mnemonicFromEncryptedHDWalletUseCase,
-	)
 
 	// ------------ Interfaces ------------
 
-	a.getBlockchainSyncStatusService = getBlockchainSyncStatusService
-	a.getAccountService = getAccountService
-	a.createAccountService = createAccountService
-	a.accountListingByLocalWalletsService = accountListingByLocalWalletsService
-	a.coinTransferService = coinTransferService
-	a.tokenGetService = tokenGetService
-	a.tokenTransferService = tokenTransferService
-	a.tokenBurnService = tokenBurnService
-	a.blockchainSyncService = blockchainSyncService
-	a.blockchainSyncWithBlockchainAuthorityViaServerSentEventsService = blockchainSyncWithBlockchainAuthorityViaServerSentEventsService
-	a.getOrDownloadNonFungibleTokenService = getOrDownloadNonFungibleTokenService
-	a.listBlockTransactionsByAddressService = listBlockTransactionsByAddressService
-	a.listWithLimitBlockTransactionsByAddressService = listWithLimitBlockTransactionsByAddressService
-	a.getByBlockTransactionTimestampService = getByBlockTransactionTimestampService
-	a.blockDataGetByHashService = blockDataGetByHashService
-	a.tokenListByOwnerService = tokenListByOwnerService
-	a.tokenCountByOwnerService = tokenCountByOwnerService
-	a.walletsFilterByLocalService = walletsFilterByLocalService
-	a.listNonFungibleTokensByOwnerService = listNonFungibleTokensByOwnerService
-	a.pendingSignedTransactionListService = pendingSignedTransactionListService
-	a.exportWalletService = exportWalletService
-	a.importWalletService = importWalletService
-	a.walletRecoveryService = walletRecoveryService
+	rpcServerConfigurationProvider := rpc.NewRPCServerConfigurationProvider("localhost", "2233")
+	rpcServer := rpc.NewRPCServer(
+		rpcServerConfigurationProvider,
+		logger,
+		getAccountService,
+		createAccountService,
+		accountListingByLocalWalletsService,
+		coinTransferService,
+		tokenGetService,
+		tokenTransferService,
+		tokenBurnService,
+		getOrDownloadNonFungibleTokenService,
+		listBlockTransactionsByAddressService,
+		getByBlockTransactionTimestampService,
+		blockDataGetByHashService,
+		tokenListByOwnerService,
+		exportWalletService,
+		importWalletService,
+	)
 
 	//
 	// Execute.
 	//
-	go func(ctx context.Context, chainid uint16) {
-		// When the daemon starts up, the first thing we will do is one-time
-		/// full sync with the Global BlockChain Network to get all / any
-		// missing parts.
-		a.logger.Debug("Starting full-sync...")
-		if err := storageTransactionOpenUseCase.Execute(); err != nil {
-			log.Fatalf("Failed to open storage transaction: %v\n", err)
-		}
-		if err := blockchainSyncService.Execute(context.Background(), ComicCoinChainID); err != nil {
-			a.logger.Error("Failed full-sync", slog.Any("error", err))
-			storageTransactionDiscardUseCase.Execute()
-			log.Fatalf("Failed full-sync: %v\n", err)
-		}
-		if err := storageTransactionCommitUseCase.Execute(); err != nil {
-			log.Fatalf("Failed to commit storage transaction: %v\n", err)
-		}
-		a.logger.Debug("Finished full-sync")
 
+	// When the daemon starts up, the first thing we will do is one-time
+	/// full sync with the Global BlockChain Network to get all / any
+	// missing parts.
+	logger.Debug("Starting full-sync...")
+	if err := storageTransactionOpenUseCase.Execute(); err != nil {
+		log.Fatalf("Failed to open storage transaction: %v\n", err)
+	}
+	if err := blockchainSyncService.Execute(context.Background(), flagChainID); err != nil {
+		logger.Error("Failed full-sync", slog.Any("error", err))
+		storageTransactionDiscardUseCase.Execute()
+		log.Fatalf("Failed full-sync: %v\n", err)
+	}
+	if err := storageTransactionCommitUseCase.Execute(); err != nil {
+		log.Fatalf("Failed to commit storage transaction: %v\n", err)
+	}
+	logger.Debug("Finished full-sync")
+
+	go func() {
 		// Once we have successfully made a copy of the Global BlockChain
 		// Network locally, then we will subscribe to waiting and receiving
 		// any new changes that occur to update our local copy.
+
 		for {
-			a.logger.Debug("Starting partial sync via sse...")
-			if err := blockchainSyncWithBlockchainAuthorityViaServerSentEventsService.Execute(context.Background(), chainid); err != nil {
+			logger.Debug("Starting partial sync via sse...")
+			if err := blockchainSyncWithBlockchainAuthorityViaServerSentEventsService.Execute(context.Background(), flagChainID); err != nil {
 				logger.Error("Failed to manage syncing", slog.Any("error", err))
 			}
-			a.logger.Debug("Finished partial sync via sse, will restart in 15 seconds...")
+			logger.Debug("Finished partial sync via sse, will restart in 15 seconds...")
 			time.Sleep(15 * time.Second)
 		}
-	}(a.ctx, chainID)
+	}()
 
-	logger.Info("ComicCoin Wallet is running.")
-}
+	go func() {
+		rpcServer.Run("localhost", "2233")
+		defer rpcServer.Shutdown()
+	}()
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
-}
-
-func (a *App) shutdown(ctx context.Context) {
-	a.logger.Debug("Shutting down now...")
-	defer a.logger.Debug("Shutting down finished")
-
-	// DEVELOPERS NOTE:
-	// Before we startup our app, we need to make sure the `data directory` is
-	// set for this application by the user, else stop the app startup
-	// procedure. This is done on purpose because we need the user to specify
-	// the location they want to store instead of having one automatically set.
-	preferences := PreferencesInstance()
-	dataDir := preferences.DataDirectory
-	if dataDir == "" {
-		return
-	}
-
-}
-
-// IsSyncing returns true or false depending on if the wallet is synching with the current blockchain.
-func (a *App) IsSyncing() bool {
-	// Defensive code
-	if a.getBlockchainSyncStatusService == nil {
-		return false
-	}
-
-	blockchainSyncStatus, err := a.getBlockchainSyncStatusService.Execute(a.ctx)
-	if err != nil {
-		log.Fatalf("Failed to get blockchain sync status: %v\n", err)
-	}
-	return blockchainSyncStatus.IsSynching
+	logger.Info("ComicCoin CLI daemon is running.")
 }

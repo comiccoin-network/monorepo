@@ -10,7 +10,7 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/security/securestring"
 	"github.com/ethereum/go-ethereum/common"
 
-	comic_domain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin/domain"
+	comic_domain "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/domain"
 )
 
 func (a *App) TransferToken(

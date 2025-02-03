@@ -70,16 +70,16 @@ func GetDefaultDataDirectory() string {
 // was not set then trigger a failure.
 func (pref *Preferences) RunFatalIfHasAnyMissingFields() {
 	if pref.DataDirectory == "" {
-		log.Fatal("Missing configuration for ComicCoin: `DataDirectory` was not set. Please run in your console: `./comiccoin init`\n")
+		log.Fatal("Missing configuration for ComicCoin: `DataDirectory` was not set. Please run in your console: `./comiccoin-cli init`\n")
 	}
 	if pref.ChainID == 0 {
-		log.Fatal("You have already configured ComicCoin: `ChainID` was set. Please run in your console: `./comiccoin init`\n")
+		log.Fatal("You have already configured ComicCoin: `ChainID` was set. Please run in your console: `./comiccoin-cli init`\n")
 	}
 	if pref.AuthorityAddress == "" {
-		log.Fatal("You have already configured ComicCoin: `AuthorityAddress` was set. Please run in your console: `./comiccoin init`\n")
+		log.Fatal("You have already configured ComicCoin: `AuthorityAddress` was set. Please run in your console: `./comiccoin-cli init`\n")
 	}
 	if pref.NFTStorageAddress == "" {
-		log.Fatal("You have already configured ComicCoin: `NFTStorageAddress` was set. Please run in your console: `./comiccoin init`\n")
+		log.Fatal("You have already configured ComicCoin: `NFTStorageAddress` was set. Please run in your console: `./comiccoin-cli init`\n")
 	}
 }
 
