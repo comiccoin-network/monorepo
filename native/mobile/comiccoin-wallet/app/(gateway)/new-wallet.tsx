@@ -22,11 +22,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useWallet } from "../../hooks/useWallet";
 
 export default function NewWallet() {
-  const {
-    createWallet,
-    loading: serviceLoading,
-    error: serviceError,
-  } = useWallet();
+  const { createWallet, error: serviceError } = useWallet();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     label: "",
@@ -54,16 +51,28 @@ export default function NewWallet() {
   ];
 
   const handleCreateWallet = async () => {
-    if (validateForm()) {
-      try {
-        await createWallet(formData.mnemonic, formData.password);
-        router.replace("/overview");
-      } catch (error: any) {
-        setErrors((prev) => ({
-          ...prev,
-          submit: error.message || "Failed to create wallet",
-        }));
-      }
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    // Add a small delay to ensure the loading state is rendered
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    try {
+      // Await the wallet creation
+      await createWallet(formData.mnemonic, formData.password);
+
+      // Add a small delay before navigation to show the loading state
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      await router.replace("/overview");
+    } catch (error: any) {
+      setErrors((prev) => ({
+        ...prev,
+        submit: error.message || "Failed to create wallet",
+      }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -141,6 +150,14 @@ export default function NewWallet() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {isLoading && (
+        <View style={[StyleSheet.absoluteFill, styles.loadingOverlay]}>
+          <View style={styles.loadingContent}>
+            <ActivityIndicator size="large" color="#7C3AED" />
+            <Text style={styles.loadingText}>Creating your wallet...</Text>
+          </View>
+        </View>
+      )}
       <LinearGradient colors={["#F3E8FF", "#FFFFFF"]} style={styles.gradient}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -312,11 +329,11 @@ export default function NewWallet() {
                 onPress={handleCreateWallet}
                 style={[
                   styles.continueButton,
-                  serviceLoading && styles.continueButtonDisabled,
+                  isLoading && styles.continueButtonDisabled,
                 ]}
-                disabled={serviceLoading}
+                disabled={isLoading}
               >
-                {serviceLoading ? (
+                {isLoading ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <>
@@ -569,6 +586,34 @@ const styles = StyleSheet.create({
   },
   copyButton: {
     backgroundColor: "#4B5563", // A different color to distinguish from Generate
+  },
+  loadingOverlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+  },
+  loadingContent: {
+    backgroundColor: "white",
+    padding: 24,
+    borderRadius: 16,
+    alignItems: "center",
+    width: "80%",
+    maxWidth: 300,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#374151",
+    fontWeight: "500",
+    marginTop: 12,
   },
 });
 
