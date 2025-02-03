@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
+import Clipboard from "@react-native-clipboard/clipboard";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import "react-native-get-random-values"; // 🐞 Bugfix: This must be above `ethers.js` or else we'll get a `platform does not support secure random numbers` error from our app. --> https://github.com/ethers-io/ethers.js/issues/1118#issuecomment-715511944
@@ -89,6 +90,14 @@ export default function NewWallet() {
         ...prev,
         mnemonic: "Failed to generate mnemonic",
       }));
+    }
+  };
+
+  const handleCopyMnemonic = async () => {
+    if (formData.mnemonic) {
+      await Clipboard.setString(formData.mnemonic);
+      // Optional: Show some feedback that it was copied
+      Alert.alert("Copied!", "Recovery phrase copied to clipboard");
     }
   };
 
@@ -232,20 +241,27 @@ export default function NewWallet() {
               />
 
               {/* Recovery Phrase */}
-              <View style={styles.mnemonicContainer}>
-                <Text style={styles.inputLabel}>Recovery Phrase</Text>
-                <View style={styles.mnemonicInputContainer}>
-                  <TextInput
-                    value={formData.mnemonic}
-                    multiline
-                    numberOfLines={4}
-                    style={[
-                      styles.mnemonicInput,
-                      errors.mnemonic && styles.inputError,
-                    ]}
-                    placeholder="Your recovery phrase will appear here"
-                    editable={false}
-                  />
+              <View style={styles.mnemonicInputContainer}>
+                <TextInput
+                  value={formData.mnemonic}
+                  multiline
+                  numberOfLines={4}
+                  style={[
+                    styles.mnemonicInput,
+                    errors.mnemonic && styles.inputError,
+                  ]}
+                  placeholder="Your recovery phrase will appear here"
+                  editable={false}
+                />
+                <View style={styles.mnemonicButtons}>
+                  {formData.mnemonic && (
+                    <Pressable
+                      style={[styles.generateButton, styles.copyButton]}
+                      onPress={handleCopyMnemonic}
+                    >
+                      <Text style={styles.generateButtonText}>Copy</Text>
+                    </Pressable>
+                  )}
                   <Pressable
                     style={styles.generateButton}
                     onPress={onGenerateMnemonic}
@@ -466,6 +482,7 @@ const styles = StyleSheet.create({
   mnemonicInputContainer: {
     flexDirection: "row",
     gap: 12,
+    alignItems: "stretch",
   },
   mnemonicInput: {
     flex: 1,
@@ -546,6 +563,12 @@ const styles = StyleSheet.create({
   },
   continueButtonDisabled: {
     opacity: 0.5,
+  },
+  mnemonicButtons: {
+    gap: 8,
+  },
+  copyButton: {
+    backgroundColor: "#4B5563", // A different color to distinguish from Generate
   },
 });
 
