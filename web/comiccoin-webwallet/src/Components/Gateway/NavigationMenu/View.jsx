@@ -67,6 +67,32 @@ const NavigationMenu = () => {
 
     return (
         <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
+            {(location.pathname === '/create-wallet' ||
+                location.pathname === '/get-started' ||
+                location.pathname === '/login' ||
+                location.pathname === '/recover' ||
+                location.pathname === '/help' ||
+                location.pathname === '/terms' ||
+                location.pathname === '/privacy') && (
+                <div className="bg-purple-900 text-white py-4 px-4" role="banner">
+                    <div className="max-w-6xl mx-auto flex flex-col space-y-2 sm:space-y-0 sm:flex-row items-center justify-between text-center sm:text-left">
+                        <div className="flex items-center gap-2">
+                            <Globe aria-hidden="true" className="h-5 w-5" />
+                            <span className="text-sm sm:text-base">
+                                You're using the <strong>Web Wallet</strong>
+                            </span>
+                        </div>
+                        <Link
+                            to="/download-native-wallet"
+                            className="text-purple-200 hover:text-white flex items-center gap-1 text-sm whitespace-nowrap"
+                        >
+                            <Monitor className="h-4 w-4" />
+                            <span>Desktop or Mobile Wallet</span>
+                            <ArrowRight className="h-4 w-4" />
+                        </Link>
+                    </div>
+                </div>
+            )}
             <div className="max-w-6xl mx-auto px-4 py-4">
                 <div className="flex justify-between items-center">
                     {/* Logo and Title */}
