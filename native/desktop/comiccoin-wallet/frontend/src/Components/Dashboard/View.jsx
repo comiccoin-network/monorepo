@@ -296,10 +296,10 @@ function DashboardView() {
                         Recent Transactions
                       </h2>
                     </div>
-                    <button className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors text-lg">
+                    <Link to="/more/transactions" className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors text-lg">
                       See More
                       <ArrowRight className="w-5 h-5" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
 
