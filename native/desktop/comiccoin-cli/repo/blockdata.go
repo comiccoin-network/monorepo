@@ -220,6 +220,21 @@ func (r *BlockDataRepo) GetByTransactionNonce(ctx context.Context, txNonce *big.
 	return res, err
 }
 
+func (r *BlockDataRepo) GetLatestBlockTransactionByAddress(ctx context.Context, address *common.Address) (*domain.BlockTransaction, error) {
+	defer log.Fatal("Unsupported repository feature in the `comiccoin-cli` repository.")
+	return nil, nil
+}
+
+func (r *BlockDataRepo) GetLatestTokenIDByChainID(ctx context.Context, chainID uint16) (*big.Int, error) {
+	defer log.Fatal("Unsupported repository feature in the `comiccoin-cli` repository.")
+	return nil, nil
+}
+
+func (r *BlockDataRepo) ListOwnedTokenBlockTransactionsByAddress(ctx context.Context, address *common.Address) ([]*domain.BlockTransaction, error) {
+	defer log.Fatal("Unsupported repository feature in the `comiccoin-cli` repository.")
+	return nil, nil
+}
+
 func (r *BlockDataRepo) OpenTransaction() error {
 	return r.dbClient.OpenTransaction()
 }
