@@ -66,7 +66,7 @@ func (uc *listWithLimitBlockTransactionsByAddressUseCaseImpl) Execute(ctx contex
 		tx.TokenNonceString = tx.GetTokenNonce().String()
 	}
 
-	return res, nil
+	return res[:limit], nil
 }
 
 //

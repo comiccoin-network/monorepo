@@ -55,6 +55,8 @@ func (a *App) GetTotalTokens(address string) (int64, error) {
 func (a *App) GetRecentTransactions(address string) ([]*domain.BlockTransaction, error) {
 	addr := common.HexToAddress(strings.ToLower(address))
 
+	// a.logger.Debug("GetRecentTransactions", slog.Any("address", address))
+
 	// Defensive code
 	if address == "" {
 		return make([]*domain.BlockTransaction, 0), fmt.Errorf("failed because: address is null: %v", address)
@@ -65,6 +67,7 @@ func (a *App) GetRecentTransactions(address string) ([]*domain.BlockTransaction,
 		a.logger.Error("Failed listing", slog.Any("error", err))
 		return nil, err
 	}
+	// a.logger.Debug("GetRecentTransactions", slog.Any("txs", txs))
 
 	return txs, nil
 }
