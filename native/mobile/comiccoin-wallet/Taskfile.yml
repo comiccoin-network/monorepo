@@ -11,9 +11,14 @@ tasks:
       - xed ios
 
   ios:
-    desc: Start the developer instance for iOS
+    desc: Start the developer instance for iOS using Simulator
     cmds:
       - npx expo run:ios
+
+  ios_device:
+    desc: Start the developer instance for iOS using physical device (please make sure your device is connected via cable and registered with Apple Developer program)
+    cmds:
+      - npx expo run:ios --device
 
   android:
     desc: Start the developer instance for Android

@@ -2,7 +2,7 @@
   "expo": {
     "name": "ComicCoin Wallet",
     "slug": "comiccoin-wallet",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -51,7 +51,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-video"
+      "expo-video",
+      "expo-camera"
     ],
     "experiments": {
       "typedRoutes": true
