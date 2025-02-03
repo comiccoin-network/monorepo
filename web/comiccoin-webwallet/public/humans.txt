@@ -4,6 +4,6 @@
   Site: https://github.com/bartmika
   Location: London, Ontario, Canada
 
-  Designer: Rodolfo Martinez
+  Analyst & QA: Rodolfo Martinez
   Site: https://github.com/rodolfomartinez
   Location: London, Ontario, Canada
