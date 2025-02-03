@@ -105,15 +105,30 @@ export default function RecoverWallet() {
   const handleSubmit = async () => {
     if (validateForm()) {
       setIsLoading(true);
+
+      // Add a small delay to ensure the loading state is rendered
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       try {
         await createWallet(formData.mnemonic, formData.password);
-        router.push("/overview");
+
+        // Clear form data
+        setFormData({
+          label: "",
+          mnemonic: "",
+          password: "",
+          repeatPassword: "",
+        });
+
+        // Add a small delay before navigation to show the loading state
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        await router.push("/overview");
       } catch (error: any) {
         setErrors((prev) => ({
           ...prev,
           submit: error.message || "Failed to recover wallet",
         }));
-        // In React Native, we use scrollTo with a ref instead of window.scrollTo
       } finally {
         setIsLoading(false);
       }
