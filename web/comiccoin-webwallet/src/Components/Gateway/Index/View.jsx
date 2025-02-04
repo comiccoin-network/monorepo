@@ -50,7 +50,6 @@ const IndexPage = () => {
 
             <main id="main-content" className="flex-grow">
                 {/* Hero Section */}
-                {/* Hero Section */}
                 <div className="bg-gradient-to-b from-indigo-600 to-indigo-500 text-white py-12 sm:py-16 md:py-20 mb-6 sm:mb-8 md:mb-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
@@ -89,6 +88,44 @@ const IndexPage = () => {
 
                     {/* Download Options Grid */}
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {/* Apple */}
+                        <a
+                            href={process.env.REACT_APP_NATIVE_BINARY_APPLE_IOS_DOWNLOAD_LINK}
+                            className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border-2 border-purple-100 group"
+                        >
+                            <div className="flex flex-col items-center text-center">
+                                <div className="p-3 bg-purple-50 rounded-xl mb-4 group-hover:bg-purple-100 transition-colors">
+                                    <Apple className="h-8 w-8 text-purple-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-purple-800 mb-2">iOS App</h3>
+                                <p className="text-gray-600 mb-4">Available on Apple App Store</p>
+                                <span className="text-purple-600 font-semibold flex items-center gap-1">
+                                    Download Now
+                                    <ArrowRight className="w-4 h-4" />
+                                </span>
+                            </div>
+                        </a>
+
+                        {/* Android */}
+                        <a
+                            href={process.env.REACT_APP_NATIVE_BINARY_GOOGLE_ANDROID_DOWNLOAD_LINK}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border-2 border-purple-100 group"
+                        >
+                            <div className="flex flex-col items-center text-center">
+                                <div className="p-3 bg-purple-50 rounded-xl mb-4 group-hover:bg-purple-100 transition-colors">
+                                    <Smartphone className="h-8 w-8 text-purple-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-purple-800 mb-2">Android App</h3>
+                                <p className="text-gray-600 mb-4">Available on Play Store</p>
+                                <span className="text-purple-600 font-semibold flex items-center gap-1">
+                                    Download Now
+                                    <ArrowRight className="w-4 h-4" />
+                                </span>
+                            </div>
+                        </a>
+
                         {/* Windows */}
                         <a
                             href={process.env.REACT_APP_NATIVE_BINARY_WINDOWS_DOWNLOAD_LINK}
@@ -100,44 +137,6 @@ const IndexPage = () => {
                                 </div>
                                 <h3 className="text-xl font-bold text-purple-800 mb-2">Windows App</h3>
                                 <p className="text-gray-600 mb-4">Available on Microsoft Store</p>
-                                <span className="text-purple-600 font-semibold flex items-center gap-1">
-                                    Download Now
-                                    <ArrowRight className="w-4 h-4" />
-                                </span>
-                            </div>
-                        </a>
-
-                        {/* MacOS */}
-                        <a
-                            href={process.env.REACT_APP_NATIVE_BINARY_MACOS_DOWNLOAD_LINK}
-                            className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border-2 border-purple-100 group"
-                        >
-                            <div className="flex flex-col items-center text-center">
-                                <div className="p-3 bg-purple-50 rounded-xl mb-4 group-hover:bg-purple-100 transition-colors">
-                                    <Apple className="h-8 w-8 text-purple-600" />
-                                </div>
-                                <h3 className="text-xl font-bold text-purple-800 mb-2">MacOS App</h3>
-                                <p className="text-gray-600 mb-4">Native Apple Silicon support</p>
-                                <span className="text-purple-600 font-semibold flex items-center gap-1">
-                                    Download Now
-                                    <ArrowRight className="w-4 h-4" />
-                                </span>
-                            </div>
-                        </a>
-
-                        {/* Android */}
-                        <a
-                            href="https://play.google.com/store/apps/details?id=com.theshootingstarpress.comiccoinwallet"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border-2 border-purple-100 group"
-                        >
-                            <div className="flex flex-col items-center text-center">
-                                <div className="p-3 bg-purple-50 rounded-xl mb-4 group-hover:bg-purple-100 transition-colors">
-                                    <Smartphone className="h-8 w-8 text-purple-600" />
-                                </div>
-                                <h3 className="text-xl font-bold text-purple-800 mb-2">Android App</h3>
-                                <p className="text-gray-600 mb-4">Available on Play Store</p>
                                 <span className="text-purple-600 font-semibold flex items-center gap-1">
                                     Download Now
                                     <ArrowRight className="w-4 h-4" />

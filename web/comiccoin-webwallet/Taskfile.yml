@@ -1,8 +1,8 @@
 version: '3'
 
 tasks:
-    desc: 'start the project (for web-development only)'
     start:
+        desc: 'start the project (for web-development only)'
         cmds:
             - npm run start:dev
 

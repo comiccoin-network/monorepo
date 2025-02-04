@@ -119,7 +119,7 @@ const DownloadNativeWalletPage = () => {
                                         </div>
 
                                         <a
-                                            href="https://play.google.com/store/apps/details?id=com.theshootingstarpress.comiccoinwallet"
+                                            href={process.env.REACT_APP_NATIVE_BINARY_GOOGLE_ANDROID_DOWNLOAD_LINK}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="w-full bg-purple-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
@@ -135,7 +135,7 @@ const DownloadNativeWalletPage = () => {
                                     </div>
                                 </div>
 
-                                {/* iOS Coming Soon Card */}
+                                {/* iOS Download Card */}
                                 <div className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-xl overflow-hidden border-2 border-purple-100">
                                     <div className="p-4 sm:p-6 md:p-8">
                                         <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -144,7 +144,9 @@ const DownloadNativeWalletPage = () => {
                                             </div>
                                             <div>
                                                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900">iOS App</h2>
-                                                <p className="text-sm sm:text-base text-purple-600">Coming Soon</p>
+                                                <p className="text-sm sm:text-base text-purple-600">
+                                                    Available on Apple App Store
+                                                </p>
                                             </div>
                                         </div>
 
@@ -178,13 +180,14 @@ const DownloadNativeWalletPage = () => {
                                             </div>
                                         </div>
 
-                                        <button
-                                            disabled
-                                            className="w-full bg-gray-400 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold cursor-not-allowed flex items-center justify-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
+                                        <a
+                                            href={process.env.REACT_APP_NATIVE_BINARY_APPLE_IOS_DOWNLOAD_LINK}
+                                            className="w-full bg-purple-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
                                         >
                                             <Apple className="h-4 w-4 sm:h-5 sm:w-5" />
-                                            Coming Soon to App Store
-                                        </button>
+                                            Download from Appl App Store
+                                            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                                        </a>
 
                                         <p className="text-center text-xs sm:text-sm text-gray-500">
                                             Will require iOS 18.0 or higher
