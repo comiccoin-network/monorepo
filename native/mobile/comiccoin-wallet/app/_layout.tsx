@@ -3,13 +3,13 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import InternetProvider from "../providers/InternetProvider";
 import { WalletStreamProvider } from "../providers/WalletStreamProvider";
-import { UserTransactionBanner } from "../components/UserTransactionBanner";
+import { TransactionNotificationHandler } from "../components/TransactionNotificationHandler";
 
 export default function RootLayout() {
   return (
     <InternetProvider>
       <WalletStreamProvider />
-      <UserTransactionBanner />
+      <TransactionNotificationHandler />
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
