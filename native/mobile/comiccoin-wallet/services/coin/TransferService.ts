@@ -36,6 +36,10 @@ interface VerificationResult {
 interface TransactionSubmissionResult {
   success: boolean;
   transactionId: string;
+  nonce: {
+    bytes: number[];
+    string?: string;
+  };
 }
 
 interface TransactionTemplateRequest {
@@ -376,6 +380,7 @@ class CoinTransferService {
         from: mempoolTransaction.from,
         to: mempoolTransaction.to,
         value: mempoolTransaction.value,
+        nonce_bytes: mempoolTransaction.nonce_bytes,
         v_bytes: mempoolTransaction.v_bytes.map((b) =>
           b.toString(16).padStart(2, "0"),
         ),
@@ -407,6 +412,10 @@ class CoinTransferService {
         return {
           success: true,
           transactionId: mempoolTransaction.id,
+          nonce: {
+            bytes: mempoolTransaction.nonce_bytes,
+            string: base64ToBigInt(mempoolTransaction.nonce_bytes),
+          },
         };
       }
 
@@ -436,3 +445,22 @@ export default coinTransferService;
 
 // Export the class for testing purposes
 export { CoinTransferService };
+
+function base64ToBigInt(base64String) {
+  // Decode base64 to binary
+  const binaryString = atob(base64String);
+
+  // Convert to byte array
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  // Convert to hex string and then to BigInt
+  const hex = Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  // Convert BigInt to string to remove the 'n' suffix
+  return BigInt("0x" + hex).toString();
+}

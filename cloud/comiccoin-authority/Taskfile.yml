@@ -45,6 +45,27 @@ tasks:
       - go clean -cache
       - go clean -modcache
 
+  vendor:
+    desc: Save all the libraries into our code repository
+    cmds:
+      - go mod download
+      - go mod vendor
+
+  upgradelib:
+    desc: Update all the golang libraries (https://stackoverflow.com/a/67202539)
+    cmds:
+      - go get -u ./...
+
+  undelast:
+    desc: Undue last commit which was not pushed. Special thanks to https://www.nobledesktop.com/learn/git/undo-changes.
+    cmds:
+      - git reset --soft HEAD~
+
+  genkey:
+    desc: Generate a unique key.
+    cmds:
+      - openssl rand -hex 64.
+
   osxlisten:
     desc: "See what apps apps are running and listing to what ports. Aftwords use for example: kill -9 4097"
     cmds:
