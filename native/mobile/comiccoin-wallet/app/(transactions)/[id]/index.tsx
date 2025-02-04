@@ -42,6 +42,7 @@ import { useBlockDataViaTransactionNonce } from "../../../hooks/useBlockDataViaT
 import { useWallet } from "../../../hooks/useWallet";
 import { useNFTMetadata } from "../../../hooks/useNFTMetadata";
 import { formatBytes, base64ToHex } from "../../../utils/byteUtils";
+import { useBlockTransaction } from "../../../hooks/useBlockTransactionByNonce";
 
 export default function TransactionDetails() {
   console.log("🏗️ Initializing Transaction Details View");
@@ -59,6 +60,18 @@ export default function TransactionDetails() {
 
   const { blockData, loading, error } = useBlockDataViaTransactionNonce(
     id as string,
+  );
+
+  const { blockTxData, isBlockTxLoading, blockTxError, blockTxRefetch } =
+    useBlockTransaction(id + "123");
+
+  // 1738470723 ------------------> null false Error: Failed to fetch block transaction
+
+  console.log(
+    id + " ------------------>",
+    blockTxData,
+    isBlockTxLoading,
+    blockTxError,
   );
 
   const transaction = blockData?.trans?.find((tx: Transaction) => {
