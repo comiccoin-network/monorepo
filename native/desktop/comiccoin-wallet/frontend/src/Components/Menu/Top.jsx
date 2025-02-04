@@ -55,12 +55,14 @@ function Topbar() {
 
   // Render the following component GUI
   return (
+      <>
       <header className="bg-gradient-to-r from-purple-700 to-indigo-800 px-8 py-6 text-white shadow-lg">
         <div className="flex items-center justify-center gap-4">
           <WalletMinimal className="w-8 h-8" aria-hidden="true" />
           <h1 className="text-3xl font-bold">ComicCoin Wallet</h1>
         </div>
       </header>
+      </>
   );
 }
 

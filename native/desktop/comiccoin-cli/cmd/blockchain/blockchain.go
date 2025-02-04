@@ -30,6 +30,7 @@ func BlockchainCmd() *cobra.Command {
 	// Attach our sub-commands
 	cmd.AddCommand(BlockchainSyncCmd())
 	cmd.AddCommand(BlockDataGetByHashCmd())
+	cmd.AddCommand(LocalNotificationCmd())
 
 	return cmd
 }
