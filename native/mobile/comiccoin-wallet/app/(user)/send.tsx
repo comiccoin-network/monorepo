@@ -277,11 +277,9 @@ const SendScreen: React.FC = () => {
                         <Text style={styles.totalLabel}>Remaining Balance</Text>
                         <Text style={styles.totalValue}>
                           ={" "}
-                          {(
-                            statistics?.totalCoinValue -
-                            parseFloat(formData.amount || "0") -
-                            1
-                          ).toFixed(2)}{" "}
+                          {statistics?.totalCoinValue -
+                            parseInt(formData.amount || "0") -
+                            1}{" "}
                           CC
                         </Text>
                       </View>
@@ -374,7 +372,7 @@ const SendScreen: React.FC = () => {
                     <View style={styles.feeContainer}>
                       <Text style={styles.feeText}>Network Fee: 1 CC</Text>
                       <Text style={styles.totalText}>
-                        Total: {(parseFloat(formData.amount) + 1).toFixed(2)} CC
+                        Total: {parseInt(formData.amount) + 1} CC
                       </Text>
                     </View>
                   ) : null}
@@ -521,7 +519,7 @@ const SendScreen: React.FC = () => {
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Total Amount</Text>
                 <Text style={styles.totalValue}>
-                  {(parseFloat(formData.amount) + 1).toFixed(2)} CC
+                  {parseInt(formData.amount) + 1} CC
                 </Text>
               </View>
             </View>
