@@ -463,7 +463,6 @@ const SendScreen: React.FC = () => {
         visible={showConfirmation}
         transparent
         animationType="fade"
-        // Disable backdrop press when loading
         onRequestClose={() => {
           if (!transactionLoading) {
             setShowConfirmation(false);
@@ -471,9 +470,8 @@ const SendScreen: React.FC = () => {
         }}
       >
         <TouchableOpacity
-          activeOpacity={1} // Prevents opacity flash on press
+          activeOpacity={1}
           onPress={() => {
-            // Only allow closing if not loading
             if (!transactionLoading) {
               setShowConfirmation(false);
             }
@@ -482,31 +480,89 @@ const SendScreen: React.FC = () => {
         >
           <View
             style={styles.modalContent}
-            // Prevent touches on the overlay from closing the modal
             onStartShouldSetResponder={() => true}
             onTouchEnd={(e) => {
               e.stopPropagation();
             }}
           >
-            {/* Modal content remains the same */}
-            <Text style={styles.modalTitle}>
-              {transactionLoading
-                ? "Processing Transaction..."
-                : "Confirm Transaction"}
-            </Text>
+            {/* Transaction Status Header */}
+            <View style={styles.modalHeader}>
+              {transactionLoading ? (
+                <>
+                  <ActivityIndicator size="large" color="#7C3AED" />
+                  <Text style={styles.modalHeaderTitle}>
+                    Processing Transaction
+                  </Text>
+                  <Text style={styles.modalHeaderSubtitle}>
+                    Please wait while we process your transaction...
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Send size={32} color="#7C3AED" />
+                  <Text style={styles.modalHeaderTitle}>
+                    Review Transaction
+                  </Text>
+                  <Text style={styles.modalHeaderSubtitle}>
+                    Please verify all details before confirming
+                  </Text>
+                </>
+              )}
+            </View>
 
-            {/* ... rest of the modal content ... */}
+            {/* Transaction Amount Card */}
+            <View style={styles.amountCard}>
+              <Text style={styles.amountLabel}>You're sending</Text>
+              <Text style={styles.amountValue}>{formData.amount} CC</Text>
+              <View style={styles.feeRow}>
+                <Text style={styles.feeLabel}>Network Fee</Text>
+                <Text style={styles.feeValue}>1 CC</Text>
+              </View>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Total Amount</Text>
+                <Text style={styles.totalValue}>
+                  {(parseFloat(formData.amount) + 1).toFixed(2)} CC
+                </Text>
+              </View>
+            </View>
 
+            {/* Recipient Details */}
+            <View style={styles.detailsSection}>
+              <Text style={styles.detailsLabel}>To Address</Text>
+              <View style={styles.addressContainer}>
+                <Text style={styles.addressText} numberOfLines={1}>
+                  {formData.recipientAddress}
+                </Text>
+              </View>
+              {formData.note && (
+                <>
+                  <Text style={[styles.detailsLabel, styles.noteLabel]}>
+                    Message
+                  </Text>
+                  <Text style={styles.noteText}>{formData.note}</Text>
+                </>
+              )}
+            </View>
+
+            {/* Warning Notice */}
+            <View style={styles.warningContainer}>
+              <AlertCircle size={16} color="#D97706" />
+              <Text style={styles.warningText}>
+                This action cannot be undone. The transaction will be submitted
+                to the network immediately.
+              </Text>
+            </View>
+
+            {/* Action Buttons */}
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[
                   styles.modalButton,
                   styles.modalCancelButton,
-                  // Disable the cancel button visually when loading
                   transactionLoading && styles.disabledButton,
                 ]}
                 onPress={() => setShowConfirmation(false)}
-                disabled={transactionLoading} // Disable the button when loading
+                disabled={transactionLoading}
               >
                 <Text
                   style={[
@@ -517,6 +573,7 @@ const SendScreen: React.FC = () => {
                   Cancel
                 </Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[
                   styles.modalButton,
@@ -532,7 +589,12 @@ const SendScreen: React.FC = () => {
                     <Text style={styles.loadingButtonText}>Processing...</Text>
                   </View>
                 ) : (
-                  <Text style={styles.modalConfirmButtonText}>Confirm</Text>
+                  <>
+                    <Send size={16} color="white" />
+                    <Text style={styles.modalConfirmButtonText}>
+                      Confirm & Send
+                    </Text>
+                  </>
                 )}
               </TouchableOpacity>
             </View>
@@ -930,6 +992,129 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     fontWeight: "500",
+  },
+  modalHeader: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  modalHeaderTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#111827",
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  modalHeaderSubtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+  },
+  amountCard: {
+    backgroundColor: "#F5F3FF",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+  },
+  amountLabel: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginBottom: 4,
+  },
+  amountValue: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#111827",
+    marginBottom: 16,
+  },
+  feeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  feeLabel: {
+    fontSize: 14,
+    color: "#6B7280",
+  },
+  feeValue: {
+    fontSize: 14,
+    color: "#DC2626",
+    fontWeight: "500",
+  },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    paddingTop: 12,
+    marginTop: 8,
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#374151",
+  },
+  totalValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#111827",
+  },
+  detailsSection: {
+    marginBottom: 24,
+  },
+  detailsLabel: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginBottom: 8,
+  },
+  addressContainer: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  addressText: {
+    fontSize: 14,
+    color: "#111827",
+    fontFamily: Platform.select({
+      ios: "Menlo",
+      android: "monospace",
+    }),
+  },
+  noteLabel: {
+    marginTop: 16,
+  },
+  noteText: {
+    fontSize: 14,
+    color: "#111827",
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  warningContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 24,
+    gap: 8,
+  },
+  warningText: {
+    flex: 1,
+    fontSize: 12,
+    color: "#92400E",
+  },
+  modalButton: {
+    flex: 1,
+    borderRadius: 8,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
 });
 
