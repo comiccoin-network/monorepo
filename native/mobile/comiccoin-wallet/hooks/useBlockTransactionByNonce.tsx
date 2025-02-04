@@ -1,10 +1,10 @@
 // monorepo/native/mobile/comiccoin-wallet/src/hooks/useBlockTransaction.ts
 import { useState, useEffect, useCallback } from "react";
-import blockTransactionByOnceService from "../services/transaction/GetByNonceService";
+import blockTransactionByNonceService from "../services/transaction/GetByNonceService";
 
 // Return type matches exactly what component expects
 interface UseBlockTransactionReturn {
-  blockTxData: BlockTransactionByOnce | null;
+  blockTxData: BlockTransactionByNonce | null;
   isBlockTxLoading: boolean;
   blockTxError: Error | null;
   blockTxRefetch: () => Promise<void>;
@@ -20,9 +20,8 @@ const debugLog = (emoji: string, message: string, data?: any) => {
 export const useBlockTransaction = (
   nonce: string | number | null,
 ): UseBlockTransactionReturn => {
-  const [blockTxData, setBlockTxData] = useState<BlockTransactionByOnce | null>(
-    null,
-  );
+  const [blockTxData, setBlockTxData] =
+    useState<BlockTransactionByNonce | null>(null);
   const [isBlockTxLoading, setIsBlockTxLoading] = useState<boolean>(false);
   const [blockTxError, setBlockTxError] = useState<Error | null>(null);
 
@@ -42,7 +41,7 @@ export const useBlockTransaction = (
 
     try {
       const transaction =
-        await blockTransactionByOnceService.getBlockTransactionByOnce(nonce);
+        await blockTransactionByNonceService.getBlockTransactionByNonce(nonce);
       debugLog("✅", "Fetch successful", {
         nonce,
         transactionType: transaction.type,
@@ -91,31 +90,3 @@ export const useBlockTransaction = (
     blockTxRefetch,
   };
 };
-
-// Example usage:
-/*
-const MyComponent = () => {
-  const {
-    blockTxData,
-    isBlockTxLoading,
-    blockTxError,
-    blockTxRefetch
-  } = useBlockTransaction("1738470723");
-
-  console.log("Transaction data:", blockTxData);
-
-  if (isBlockTxLoading) return <ActivityIndicator size="large" />;
-  if (blockTxError) return <Text>Error: {blockTxError.message}</Text>;
-  if (!blockTxData) return <Text>No data found</Text>;
-
-  return (
-    <View>
-      <Text>Type: {blockTxData.type}</Text>
-      <Text>From: {blockTxData.from}</Text>
-      <Text>To: {blockTxData.to}</Text>
-      <Text>Value: {blockTxData.value}</Text>
-      <Button title="Refresh" onPress={blockTxRefetch} />
-    </View>
-  );
-};
-*/

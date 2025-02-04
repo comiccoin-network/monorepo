@@ -63,7 +63,7 @@ export default function TransactionDetails() {
   );
 
   const { blockTxData, isBlockTxLoading, blockTxError, blockTxRefetch } =
-    useBlockTransaction(id + "123");
+    useBlockTransaction(id);
 
   // 1738470723 ------------------> null false Error: Failed to fetch block transaction
 

@@ -24,7 +24,7 @@ interface SignedTransaction extends Transaction {
   s_bytes: string;
 }
 
-interface BlockTransactionByOnce extends SignedTransaction {
+interface BlockTransactionByNonce extends SignedTransaction {
   timestamp: number;
   fee: number;
 }
@@ -37,12 +37,12 @@ interface ApiError {
 
 const debugLog = (emoji: string, message: string, data?: any) => {
   console.log(
-    `${emoji} [BlockTransactionByOnceService] ${message}`,
+    `${emoji} [BlockTransactionByNonceService] ${message}`,
     data ? { timestamp: new Date().toISOString(), ...data } : "",
   );
 };
 
-class BlockTransactionByOnceService {
+class BlockTransactionByNonceService {
   private baseURL: string;
 
   constructor() {
@@ -53,9 +53,9 @@ class BlockTransactionByOnceService {
     });
   }
 
-  async getBlockTransactionByOnce(
+  async getBlockTransactionByNonce(
     transactionNonce: string | number,
-  ): Promise<BlockTransactionByOnce> {
+  ): Promise<BlockTransactionByNonce> {
     debugLog("📤", "Request initiated", {
       nonce: transactionNonce,
       requestId: Math.random().toString(36).substring(7),
@@ -133,7 +133,7 @@ class BlockTransactionByOnceService {
         hasData: !!responseData,
       });
 
-      const data: BlockTransactionByOnce = responseData;
+      const data: BlockTransactionByNonce = responseData;
 
       debugLog("✅", "Transaction processed", {
         nonce: transactionNonce,
@@ -203,8 +203,8 @@ class BlockTransactionByOnceService {
 }
 
 // Create and export a singleton instance
-const blockTransactionByOnceService = new BlockTransactionByOnceService();
+const blockTransactionByNonceService = new BlockTransactionByNonceService();
 debugLog("🚀", "Service singleton created");
 
-export default blockTransactionByOnceService;
-export { BlockTransactionByOnceService };
+export default blockTransactionByNonceService;
+export { BlockTransactionByNonceService };
