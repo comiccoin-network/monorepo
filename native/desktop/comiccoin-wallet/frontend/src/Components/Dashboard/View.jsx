@@ -27,7 +27,6 @@ import { toLower } from "lodash";
 
 import useSyncStatus from "../../Hooks/syncstatus";
 
-
 function DashboardView() {
   ////
   //// Global State
@@ -61,7 +60,7 @@ function DashboardView() {
       const [coinsResult, tokensResult, txsResult] = await Promise.all([
         GetTotalCoins(currentOpenWalletAtAddress),
         GetTotalTokens(currentOpenWalletAtAddress),
-        GetRecentTransactions(currentOpenWalletAtAddress)
+        GetRecentTransactions(currentOpenWalletAtAddress),
       ]);
 
       setTotalCoins(coinsResult);
@@ -158,54 +157,6 @@ function DashboardView() {
   if (forceURL !== "") {
     return <Navigate to={forceURL} />;
   }
-
-  // const recentTransactions = [
-  //   {
-  //     id: 1,
-  //     type: 'Received',
-  //     assetType: 'Coin',
-  //     amount: '+50',
-  //     from: '0x1234...5678',
-  //     timestamp: '2 mins ago',
-  //     description: 'Payment received from friend'
-  //   },
-  //   {
-  //     id: 2,
-  //     type: 'Sent',
-  //     assetType: 'NFT',
-  //     amount: 'Hero #123',
-  //     to: '0x8765...4321',
-  //     timestamp: '1 hour ago',
-  //     description: 'Sent NFT to marketplace'
-  //   },
-  //   {
-  //     id: 3,
-  //     type: 'Received',
-  //     assetType: 'Coin',
-  //     amount: '+100',
-  //     from: '0x9876...5432',
-  //     timestamp: '3 hours ago',
-  //     description: 'Salary payment'
-  //   },
-  //   {
-  //     id: 4,
-  //     type: 'Sent',
-  //     assetType: 'Coin',
-  //     amount: '-10',
-  //     to: '0x2468...1357',
-  //     timestamp: '5 hours ago',
-  //     description: 'Coffee purchase'
-  //   },
-  //   {
-  //     id: 5,
-  //     type: 'Received',
-  //     assetType: 'NFT',
-  //     amount: 'Villain #456',
-  //     from: '0x1357...2468',
-  //     timestamp: 'Yesterday',
-  //     description: 'NFT reward received'
-  //   }
-  // ];
 
   const handleTransactionClick = (tx) => {
     console.log(`Navigate to transaction ${tx}`);
@@ -343,7 +294,10 @@ function DashboardView() {
                         Recent Transactions
                       </h2>
                     </div>
-                    <Link to="/more/transactions" className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors text-lg">
+                    <Link
+                      to="/more/transactions"
+                      className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors text-lg"
+                    >
                       See More
                       <ArrowRight className="w-5 h-5" />
                     </Link>
