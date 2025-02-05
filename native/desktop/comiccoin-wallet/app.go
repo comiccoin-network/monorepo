@@ -657,7 +657,6 @@ func (a *App) startup(ctx context.Context) {
 			preferences := PreferencesInstance()
 			addr := common.HexToAddress(strings.ToLower(preferences.DefaultWalletAddress))
 
-			// Execute the notification service with our handler
 			err := a.localNotificationService.Execute(ctxWithCancel, &addr, func(direction string, typeOf string, valueOrTokenID *big.Int, timestamp uint64) {
 				// Create a structured notification
 				notification := map[string]interface{}{
@@ -667,16 +666,17 @@ func (a *App) startup(ctx context.Context) {
 					"timestamp":      timestamp,
 				}
 
-				// Emit to frontend using Wails v2 runtime
-				runtime.EventsEmit(a.ctx, "transaction:new", notification)
+				a.logger.Debug("Attempting to emit transaction:new event",
+					slog.Any("notification", notification))
 
-				// Keep console logging for debugging
-				a.logger.Debug("New transaction detected",
-					slog.String("direction", direction),
-					slog.String("type", typeOf),
-					slog.String("value", valueOrTokenID.String()),
-					slog.Uint64("timestamp", timestamp),
-				)
+				// Emit transaction notification
+				runtime.EventsEmit(a.ctx, "transaction:new", notification)
+				a.logger.Debug("Successfully emitted transaction:new event")
+
+				// Emit refresh event
+				a.logger.Debug("Attempting to emit view:refresh event")
+				runtime.EventsEmit(a.ctx, "view:refresh")
+				a.logger.Debug("Successfully emitted view:refresh event")
 			})
 			errChan <- err
 		}()

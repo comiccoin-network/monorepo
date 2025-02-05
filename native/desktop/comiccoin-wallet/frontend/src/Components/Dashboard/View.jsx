@@ -25,6 +25,9 @@ import { currentOpenWalletAtAddressState } from "../../AppState";
 import PageLoadingContent from "../Reusable/PageLoadingContent";
 import { toLower } from "lodash";
 
+import useSyncStatus from "../../Hooks/syncstatus";
+
+
 function DashboardView() {
   ////
   //// Global State
@@ -33,6 +36,7 @@ function DashboardView() {
   const [currentOpenWalletAtAddress] = useRecoilState(
     currentOpenWalletAtAddressState,
   );
+  const isSyncing = useSyncStatus(); // Set based on your sync status
 
   ////
   //// Component states.
@@ -43,10 +47,53 @@ function DashboardView() {
   const [totalCoins, setTotalCoins] = useState(0);
   const [totalTokens, setTotalTokens] = useState(0);
   const [transactions, setTransactions] = useState([]);
+  const [wasSyncing, setWasSyncing] = useState(false);
 
   ////
   //// Event handling.
   ////
+
+  const fetchDashboardData = async () => {
+    if (!currentOpenWalletAtAddress) return;
+
+    console.log("📊 Fetching fresh dashboard data...");
+    try {
+      const [coinsResult, tokensResult, txsResult] = await Promise.all([
+        GetTotalCoins(currentOpenWalletAtAddress),
+        GetTotalTokens(currentOpenWalletAtAddress),
+        GetRecentTransactions(currentOpenWalletAtAddress)
+      ]);
+
+      setTotalCoins(coinsResult);
+      setTotalTokens(tokensResult);
+      setTransactions(txsResult);
+      console.log("✅ Dashboard data refresh complete");
+    } catch (error) {
+      console.error("❌ Failed to fetch dashboard data:", error);
+      if (error.toString().includes("address is null")) {
+        return <Navigate to="/wallets" />;
+      }
+    }
+  };
+
+  // Effect to handle sync status changes
+  useEffect(() => {
+    // If we were syncing before and now we're not, refresh the data
+    if (wasSyncing && !isSyncing) {
+      console.log("🔄 Sync completed, refreshing dashboard data");
+      fetchDashboardData();
+    }
+
+    // Update our tracking of sync status
+    setWasSyncing(isSyncing);
+  }, [isSyncing, wasSyncing]);
+
+  // Initial data fetch
+  useEffect(() => {
+    if (!isSyncing) {
+      fetchDashboardData();
+    }
+  }, [currentOpenWalletAtAddress]);
 
   ////
   //// Misc.
