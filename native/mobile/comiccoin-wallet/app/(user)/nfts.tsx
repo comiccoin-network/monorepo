@@ -57,7 +57,7 @@ export default function NFTsScreen() {
 
         router.push(`${navigationPath}?${queryParams.toString()}`);
       } catch (error) {
-        console.error("❌ Navigation error:", {
+        console.log("❌ Navigation error:", {
           error: error instanceof Error ? error.message : "Unknown error",
           tokenId: nft.tokenId,
         });
@@ -108,7 +108,7 @@ export default function NFTsScreen() {
           transaction: tx,
         }));
     } catch (error) {
-      console.error("❌ Collection processing error:", error);
+      console.log("❌ Collection processing error:", error);
       return [];
     }
   }, [nftTransactions]);
@@ -186,7 +186,7 @@ export default function NFTsScreen() {
         transactionManager.unsubscribe(walletAddress, subscriberId);
       };
     } catch (error) {
-      console.error("❌ Subscription error:", error);
+      console.log("❌ Subscription error:", error);
     }
   }, [walletAddress, handleNewTransaction]);
 
@@ -210,7 +210,7 @@ export default function NFTsScreen() {
       await softRefresh();
       console.log("✅ Manual refresh complete");
     } catch (error) {
-      console.error("❌ Refresh failed:", error);
+      console.log("❌ Refresh failed:", error);
     } finally {
       setIsRefreshing(false);
       refreshingRef.current = false;

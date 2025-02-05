@@ -22,6 +22,7 @@ import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useWallet } from "../../hooks/useWallet";
 import { transactionManager } from "../../services/transaction/TransactionManager";
 import type { TransactionEvent } from "../../services/transaction/TransactionManager";
+// import { BackgroundFetchDebugger } from "../../components/BackgroundFetchDebugger";
 
 interface MenuOption {
   id: string;
@@ -231,7 +232,9 @@ export default function More() {
               Access additional features and settings
             </Text>
           </View>
-
+          {/*
+          <BackgroundFetchDebugger />
+          */}
           <View style={styles.grid}>
             {menuOptions.map((option) => (
               <MenuCard key={option.id} isSignOut={option.id === "signout"}>

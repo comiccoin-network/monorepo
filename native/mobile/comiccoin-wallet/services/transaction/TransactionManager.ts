@@ -227,6 +227,102 @@ class TransactionManager {
     const normalizedAddress = walletAddress.toLowerCase();
     return this.subscribers.get(normalizedAddress)?.size || 0;
   }
+
+  //---------------
+  // <BACKGROUND>
+  //--------------
+  private lastFetchTimestamp: { [walletAddress: string]: number } = {};
+  private readonly FETCH_INTERVAL = 60 * 1000; // 1 minute in milliseconds
+
+  /**
+   * Fetches the latest transactions for a given wallet address
+   * Only fetches if enough time has passed since the last fetch
+   */
+  async getLatestTransactions(
+    walletAddress: string,
+  ): Promise<LatestBlockTransaction[]> {
+    try {
+      console.log(`
+  📥 Fetching Latest Transactions 📥
+  ==========================================
+  🏦 Wallet: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}
+  ⏰ Time: ${new Date().toLocaleTimeString()}
+  ==========================================
+  `);
+
+      const now = Date.now();
+      const lastFetch = this.lastFetchTimestamp[walletAddress] || 0;
+
+      // Check if we should fetch based on the interval
+      if (now - lastFetch < this.FETCH_INTERVAL) {
+        console.log(`
+  ⏳ Skipping Transaction Fetch ⏳
+  ==========================================
+  🏦 Wallet: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}
+  ⌛ Last Fetch: ${new Date(lastFetch).toLocaleTimeString()}
+  ⏱️ Next Fetch In: ${Math.ceil((this.FETCH_INTERVAL - (now - lastFetch)) / 1000)}s
+  ==========================================
+  `);
+        return [];
+      }
+
+      // Update the last fetch timestamp
+      this.lastFetchTimestamp[walletAddress] = now;
+
+      // Here you would implement your actual transaction fetching logic
+      // This might involve calling your blockchain API or local database
+      const transactions = await this.fetchTransactionsFromAPI(walletAddress);
+
+      console.log(`
+  ✅ Transactions Fetched Successfully ✅
+  ==========================================
+  🏦 Wallet: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}
+  📊 Count: ${transactions.length}
+  ⏰ Time: ${new Date().toLocaleTimeString()}
+  ==========================================
+  `);
+
+      return transactions;
+    } catch (error) {
+      console.log(`
+  ❌ Transaction Fetch Failed ❌
+  ==========================================
+  🏦 Wallet: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}
+  ⚠️ Error: ${error instanceof Error ? error.message : "Unknown error"}
+  ⏰ Time: ${new Date().toLocaleTimeString()}
+  ==========================================
+  `);
+      throw error;
+    }
+  }
+
+  /**
+   * Implement your actual API call here
+   * This is where you would connect to your blockchain or database
+   */
+  private async fetchTransactionsFromAPI(
+    walletAddress: string,
+  ): Promise<LatestBlockTransaction[]> {
+    // Replace this with your actual API call implementation
+    // This is just a placeholder that returns an empty array
+    console.log(`
+  🔄 Calling Transaction API 🔄
+  ==========================================
+  🏦 Wallet: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}
+  📡 Status: Connecting to API
+  ⏰ Time: ${new Date().toLocaleTimeString()}
+  ==========================================
+  `);
+
+    // You would replace this with your actual API call
+    return [];
+  }
+
+  //---------------
+  // </BACKGROUND>
+  //--------------
+
+  //
 }
 
 export const transactionManager = TransactionManager.getInstance();

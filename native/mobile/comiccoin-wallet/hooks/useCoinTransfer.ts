@@ -107,7 +107,7 @@ export function useCoinTransfer(chainId?: number): UseCoinTransferResult {
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "An unknown error occurred";
-        console.error("Transaction error:", errorMessage);
+        console.log("Transaction error:", errorMessage);
         setError(errorMessage);
         throw err;
       } finally {

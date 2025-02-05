@@ -56,7 +56,7 @@ export const useWallet = (): WalletHookReturn => {
 
         setIsInitialized(true);
       } catch (err) {
-        console.error("Wallet initialization error:", err);
+        console.log("Wallet initialization error:", err);
         if (mounted) {
           setError("Failed to initialize wallet service");
         }
@@ -103,7 +103,7 @@ export const useWallet = (): WalletHookReturn => {
 
       return newWallet;
     } catch (err: any) {
-      console.error("Wallet creation error:", err);
+      console.log("Wallet creation error:", err);
       setError(err.message);
       throw err;
     } finally {
@@ -126,7 +126,7 @@ export const useWallet = (): WalletHookReturn => {
 
       return wallet;
     } catch (err: any) {
-      console.error("Wallet loading error:", err);
+      console.log("Wallet loading error:", err);
       setError(err.message);
       throw err;
     } finally {
@@ -150,7 +150,7 @@ export const useWallet = (): WalletHookReturn => {
         setCurrentWallet(null);
       }
     } catch (err: any) {
-      console.error("Wallet deletion error:", err);
+      console.log("Wallet deletion error:", err);
       setError(err.message);
       throw err;
     } finally {

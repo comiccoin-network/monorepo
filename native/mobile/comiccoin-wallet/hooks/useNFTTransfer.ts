@@ -87,7 +87,7 @@ export const useNFTTransfer = (chainId: number = 1) => {
 
       return result;
     } catch (err) {
-      console.error("NFT transfer error:", err);
+      console.log("NFT transfer error:", err);
 
       // Handle specific permission error
       const errorMessage =

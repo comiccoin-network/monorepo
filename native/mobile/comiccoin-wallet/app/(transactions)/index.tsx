@@ -8,6 +8,7 @@ import { useWallet } from "../../hooks/useWallet";
 import TransactionList from "../../components/TransactionList";
 import { transactionManager } from "../../services/transaction/TransactionManager";
 import type { TransactionEvent } from "../../services/transaction/TransactionManager";
+import { BackgroundFetchDebugger } from "../components/BackgroundFetchDebugger";
 
 export default function TransactionsList() {
   const { currentWallet } = useWallet();
@@ -46,7 +47,7 @@ export default function TransactionsList() {
         console.log("✅ Transaction refresh completed");
         setNewTransactionCount((prev) => prev + 1);
       } catch (error) {
-        console.error("❌ Transaction refresh failed:", error);
+        console.log("❌ Transaction refresh failed:", error);
       }
     },
     [currentWallet?.address, queryClient],
@@ -76,7 +77,7 @@ export default function TransactionsList() {
       setNewTransactionCount(0);
       console.log("✅ Manual refresh completed");
     } catch (error) {
-      console.error("❌ Manual refresh failed:", error);
+      console.log("❌ Manual refresh failed:", error);
     }
   };
 

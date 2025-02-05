@@ -58,7 +58,7 @@ function TransactionStateScreen() {
 
   useEffect(() => {
     if (!nonce) {
-      console.error("No transaction nonce provided");
+      console.log("No transaction nonce provided");
       router.replace("/(user)/overview");
       return;
     }

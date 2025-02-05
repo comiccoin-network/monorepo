@@ -22,7 +22,7 @@ export const arrayBufferToBase64 = (buffer: Uint8Array): string => {
   try {
     return btoa(binary);
   } catch (error) {
-    console.error("Base64 encoding failed:", error);
+    console.log("Base64 encoding failed:", error);
     throw new Error("Failed to encode image data to base64");
   }
 };

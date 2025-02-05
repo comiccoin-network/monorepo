@@ -79,7 +79,7 @@ class BlockDataViaTransactionNonceService {
     });
 
     if (!this.validateTransactionNonce(transactionNonce)) {
-      console.error("❌ Invalid transaction nonce:", {
+      console.log("❌ Invalid transaction nonce:", {
         nonce: transactionNonce,
         type: typeof transactionNonce,
       });
@@ -113,14 +113,14 @@ class BlockDataViaTransactionNonceService {
         let errorMessage = "Failed to fetch block data";
         try {
           const errorData = await response.json();
-          console.error("🚫 API error response:", {
+          console.log("🚫 API error response:", {
             status: response.status,
             errorData,
             nonce: transactionNonce,
           });
           errorMessage = errorData.message || errorMessage;
         } catch (parseError) {
-          console.error("⚠️ Failed to parse error response:", {
+          console.log("⚠️ Failed to parse error response:", {
             status: response.status,
             statusText: response.statusText,
             parseError,
@@ -142,7 +142,7 @@ class BlockDataViaTransactionNonceService {
       return data;
     } catch (error) {
       if (error instanceof TypeError) {
-        console.error("🌐 Network error:", {
+        console.log("🌐 Network error:", {
           error: error.message,
           nonce: transactionNonce,
           url: endpoint,
@@ -152,7 +152,7 @@ class BlockDataViaTransactionNonceService {
         );
       }
 
-      console.error("💥 Unexpected error during fetch:", {
+      console.log("💥 Unexpected error during fetch:", {
         errorType:
           error instanceof Error ? error.constructor.name : typeof error,
         message: error instanceof Error ? error.message : "Unknown error",

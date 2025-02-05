@@ -43,7 +43,7 @@ export const useNFTAsset = (
           source: "network" as const,
         };
       } catch (error) {
-        console.error("Failed to fetch NFT asset:", error);
+        console.log("Failed to fetch NFT asset:", error);
         throw error;
       }
     },

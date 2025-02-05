@@ -161,7 +161,7 @@ export const useNFTCollection = (walletAddress: string | null) => {
             console.log(`✅ Got metadata for NFT ${nft.tokenId}:`, metadata);
             return { ...nft, metadata };
           } catch (error) {
-            console.error(
+            console.log(
               `❌ Failed to fetch metadata for NFT ${nft.tokenId}:`,
               error,
             );
@@ -173,7 +173,7 @@ export const useNFTCollection = (walletAddress: string | null) => {
       console.log("🎉 NFT collection complete:", nftsWithMetadata);
       return nftsWithMetadata;
     } catch (error) {
-      console.error("💥 Error in fetchNFTCollection:", error);
+      console.log("💥 Error in fetchNFTCollection:", error);
       throw error;
     }
   }, [walletAddress, transactions, processTransactions]);
@@ -237,7 +237,7 @@ export const useNFTCollection = (walletAddress: string | null) => {
       });
       console.log("✅ Forced refresh complete");
     } catch (error) {
-      console.error("❌ Refresh failed:", error);
+      console.log("❌ Refresh failed:", error);
       throw error;
     } finally {
       setIsRefreshing(false);

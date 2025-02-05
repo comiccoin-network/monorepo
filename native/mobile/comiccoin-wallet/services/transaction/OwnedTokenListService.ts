@@ -127,7 +127,7 @@ class OwnedTokenListService {
 
       if (!response.ok) {
         const text = await response.text();
-        console.error("API Response:", {
+        console.log("API Response:", {
           status: response.status,
           statusText: response.statusText,
           body: text,
@@ -154,7 +154,7 @@ class OwnedTokenListService {
       return this.transformOwnedTokenTransactions(data);
     } catch (error) {
       if (__DEV__) {
-        console.error("🔥 Error details:", {
+        console.log("🔥 Error details:", {
           name: error.name,
           message: error.message,
           stack: error.stack,
