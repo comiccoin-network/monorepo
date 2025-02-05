@@ -22,7 +22,7 @@
       "UIBackgroundModes": ["fetch"]
     },
     "android": {
-      "versionCode": 6,
+      "versionCode": 8,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#e5e5e5"

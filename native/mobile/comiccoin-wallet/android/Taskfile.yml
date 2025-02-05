@@ -1,0 +1,11 @@
+version: "3"
+tasks:
+  clean:
+    desc: Clean all previous build instances of our Android build
+    cmds:
+      - ./gradlew clean
+
+  build:
+    desc: Build Android bundle so you can (manually) upload to Google Play Store
+    cmds:
+      - ./gradlew app:bundleRelease

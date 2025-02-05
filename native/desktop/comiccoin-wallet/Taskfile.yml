@@ -3,7 +3,7 @@ version: "3"
 vars:
   APP_NAME: comiccoin-wallet
   DISPLAY_NAME: ComicCoin Wallet
-  VERSION: 1.0.0
+  VERSION: 1.0.1
 
 tasks:
   distlist:

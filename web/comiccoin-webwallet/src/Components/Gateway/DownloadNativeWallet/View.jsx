@@ -1,4 +1,3 @@
-// monorepo/web/comiccoin-webwallet/src/Components/Gateway/DownloadNativeWallet/View.jsx
 import React, { useEffect } from 'react'
 import {
     Wallet,
@@ -12,6 +11,8 @@ import {
     Terminal,
     Download,
     Smartphone,
+    Cloud,
+    Server,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import NavigationMenu from '../NavigationMenu/View'
@@ -20,11 +21,9 @@ import FooterMenu from '../FooterMenu/View'
 const DownloadNativeWalletPage = () => {
     useEffect(() => {
         let mounted = true
-
         if (mounted) {
             window.scrollTo(0, 0)
         }
-
         return () => {
             mounted = false
         }
@@ -52,290 +51,313 @@ const DownloadNativeWalletPage = () => {
                             >
                                 Download ComicCoin Wallet
                             </h1>
-                            <p className="text-lg sm:text-xl text-indigo-100 max-w-2xl mx-auto mb-6 sm:mb-8">
-                                Get the official ComicCoin Wallet for your platform
+                            <p className="text-lg sm:text-xl text-indigo-100 max-w-2xl mx-auto">
+                                Choose the wallet type that best suits your needs
                             </p>
-                            <div className="inline-flex items-center bg-indigo-700 text-xs sm:text-sm px-3 py-1 rounded-full">
-                                <span className="mr-2">Latest Version:</span>
-                                <span className="font-mono font-bold">
-                                    v{process.env.REACT_APP_NATIVE_BINARY_VERSION}
-                                </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Wallet Type Explanation */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+                    <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                        <div className="bg-white rounded-xl p-6 border-2 border-purple-100 shadow-md">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 bg-purple-100 rounded-xl">
+                                    <Cloud className="h-6 w-6 text-purple-600" />
+                                </div>
+                                <h2 className="text-xl font-bold">Light Node Wallet</h2>
+                            </div>
+                            <p className="text-gray-600 mb-3">
+                                Perfect for mobile devices and casual users. Light nodes:
+                            </p>
+                            <ul className="space-y-2">
+                                <li className="flex items-start gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                    <span className="text-sm text-gray-600">
+                                        Don't require downloading the blockchain
+                                    </span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                    <span className="text-sm text-gray-600">Use minimal storage space</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                    <span className="text-sm text-gray-600">Start working instantly</span>
+                                </li>
+                            </ul>
+                            <div className="mt-4 text-sm text-purple-600 font-medium">Current Version: v1.0.5</div>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 border-2 border-purple-100 shadow-md">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 bg-purple-100 rounded-xl">
+                                    <Server className="h-6 w-6 text-purple-600" />
+                                </div>
+                                <h2 className="text-xl font-bold">Full Node Wallet</h2>
+                            </div>
+                            <p className="text-gray-600 mb-3">Ideal for advanced users and developers. Full nodes:</p>
+                            <ul className="space-y-2">
+                                <li className="flex items-start gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                    <span className="text-sm text-gray-600">
+                                        Download and verify the complete blockchain
+                                    </span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                    <span className="text-sm text-gray-600">Provide maximum security and privacy</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                    <span className="text-sm text-gray-600">Help maintain the network</span>
+                                </li>
+                            </ul>
+                            <div className="mt-4 text-sm text-purple-600 font-medium">Current Version: v1.0.1</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Light Node Downloads Section */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+                    <div className="text-center mb-8">
+                        <h2 className="text-2xl font-bold text-gray-900">Light Node Wallets</h2>
+                        <p className="text-gray-600 mt-2">Quick and easy mobile wallets for everyday use</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                        {/* Android Download Card */}
+                        <div className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-purple-100">
+                            <div className="p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-purple-100 rounded-xl">
+                                        <Smartphone className="h-6 w-6 text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-gray-900">Android App</h2>
+                                        <p className="text-sm text-purple-600">Light Node v1.0.5</p>
+                                    </div>
+                                </div>
+
+                                <ul className="space-y-2 mb-6">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">Optimized for mobile use</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">Biometric authentication</span>
+                                    </li>
+                                </ul>
+
+                                <a
+                                    href={process.env.REACT_APP_NATIVE_BINARY_GOOGLE_ANDROID_DOWNLOAD_LINK}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full bg-purple-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3"
+                                >
+                                    <Smartphone className="h-4 w-4" />
+                                    Download from Play Store
+                                    <ArrowRight className="h-4 w-4" />
+                                </a>
+
+                                <p className="text-center text-xs text-gray-500">Requires Android 8.0 or higher</p>
+                            </div>
+                        </div>
+
+                        {/* iOS Download Card */}
+                        <div className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-purple-100">
+                            <div className="p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-purple-100 rounded-xl">
+                                        <Apple className="h-6 w-6 text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-gray-900">iOS App</h2>
+                                        <p className="text-sm text-purple-600">Light Node v1.0.5</p>
+                                    </div>
+                                </div>
+
+                                <ul className="space-y-2 mb-6">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">Native iOS design</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">Face ID/Touch ID support</span>
+                                    </li>
+                                </ul>
+
+                                <a
+                                    href={process.env.REACT_APP_NATIVE_BINARY_APPLE_IOS_DOWNLOAD_LINK}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full bg-purple-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3"
+                                >
+                                    <Apple className="h-4 w-4" />
+                                    Download from App Store
+                                </a>
+
+                                <p className="text-center text-xs text-gray-500">Will require iOS 18.0 or higher</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Main Content */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Download Cards */}
-                    <div className="grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto mb-6 sm:mb-8 md:mb-12">
-                        {/* Mobile Apps Section */}
-                        <div className="md:col-span-2 mt-8">
-                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Mobile Apps</h2>
-                            <div className="grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-                                {/* Android Download Card */}
-                                <div className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-xl overflow-hidden border-2 border-purple-100">
-                                    <div className="p-4 sm:p-6 md:p-8">
-                                        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                                            <div className="p-2 sm:p-3 bg-purple-100 rounded-xl">
-                                                <Smartphone className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                                                    Android App
-                                                </h2>
-                                                <p className="text-sm sm:text-base text-purple-600">
-                                                    Available on Google Play Store
-                                                </p>
-                                            </div>
-                                        </div>
+                {/* Full Node Downloads Section */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+                    {/* Section header with clear description of full node capabilities */}
+                    <div className="text-center mb-8">
+                        <h2 className="text-2xl font-bold text-gray-900">Full Node Wallets</h2>
+                        <p className="text-gray-600 mt-2">
+                            Advanced desktop wallets with complete blockchain verification
+                        </p>
+                    </div>
 
-                                        <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
-                                            <div>
-                                                <h3 className="font-medium text-gray-900 mb-3 sm:mb-4">Features:</h3>
-                                                <ul className="space-y-2 sm:space-y-3">
-                                                    <li className="flex items-start gap-2">
-                                                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                                        <span className="text-sm sm:text-base text-gray-600">
-                                                            Mobile-optimized interface
-                                                        </span>
-                                                    </li>
-                                                    <li className="flex items-start gap-2">
-                                                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                                        <span className="text-sm sm:text-base text-gray-600">
-                                                            Secure biometric authentication
-                                                        </span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-
-                                            <div className="flex items-start gap-2 sm:gap-3 bg-blue-50 p-3 sm:p-4 rounded-xl">
-                                                <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 mt-0.5 shrink-0" />
-                                                <p className="text-xs sm:text-sm text-blue-700">
-                                                    Download only from the Google Play Store to ensure you&apos;re
-                                                    getting the genuine, verified app.
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <a
-                                            href={process.env.REACT_APP_NATIVE_BINARY_GOOGLE_ANDROID_DOWNLOAD_LINK}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="w-full bg-purple-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
-                                        >
-                                            <Smartphone className="h-4 w-4 sm:h-5 sm:w-5" />
-                                            Download from Play Store
-                                            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                                        </a>
-
-                                        <p className="text-center text-xs sm:text-sm text-gray-500">
-                                            Requires Android 8.0 or higher
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* iOS Download Card */}
-                                <div className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-xl overflow-hidden border-2 border-purple-100">
-                                    <div className="p-4 sm:p-6 md:p-8">
-                                        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                                            <div className="p-2 sm:p-3 bg-purple-100 rounded-xl">
-                                                <Apple className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">iOS App</h2>
-                                                <p className="text-sm sm:text-base text-purple-600">
-                                                    Available on Apple App Store
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
-                                            <div>
-                                                <h3 className="font-medium text-gray-900 mb-3 sm:mb-4">
-                                                    Planned Features:
-                                                </h3>
-                                                <ul className="space-y-2 sm:space-y-3">
-                                                    <li className="flex items-start gap-2">
-                                                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                                        <span className="text-sm sm:text-base text-gray-600">
-                                                            Native iOS design
-                                                        </span>
-                                                    </li>
-                                                    <li className="flex items-start gap-2">
-                                                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                                        <span className="text-sm sm:text-base text-gray-600">
-                                                            Face ID/Touch ID support
-                                                        </span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-
-                                            <div className="flex items-start gap-2 sm:gap-3 bg-blue-50 p-3 sm:p-4 rounded-xl">
-                                                <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 mt-0.5 shrink-0" />
-                                                <p className="text-xs sm:text-sm text-blue-700">
-                                                    Our iOS app is currently under development. Stay tuned for the App
-                                                    Store release!
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <a
-                                            href={process.env.REACT_APP_NATIVE_BINARY_APPLE_IOS_DOWNLOAD_LINK}
-                                            className="w-full bg-purple-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
-                                        >
-                                            <Apple className="h-4 w-4 sm:h-5 sm:w-5" />
-                                            Download from Appl App Store
-                                            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                                        </a>
-
-                                        <p className="text-center text-xs sm:text-sm text-gray-500">
-                                            Will require iOS 18.0 or higher
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {/* Microsoft Download Card */}
-                        <div className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-xl overflow-hidden border-2 border-purple-100">
-                            <div className="p-4 sm:p-6 md:p-8">
-                                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                                    <div className="p-2 sm:p-3 bg-purple-100 rounded-xl">
-                                        <Monitor className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+                    {/* Grid layout for desktop downloads, allowing two cards side-by-side on wider screens */}
+                    <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                        {/* Windows Download Card */}
+                        <div className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-purple-100">
+                            <div className="p-6">
+                                {/* Card header with Windows icon and version info */}
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-purple-100 rounded-xl">
+                                        <Monitor className="h-6 w-6 text-purple-600" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Windows App</h2>
-                                        <p className="text-sm sm:text-base text-purple-600">
-                                            Available on Microsoft Store
-                                        </p>
+                                        <h2 className="text-xl font-bold text-gray-900">Windows</h2>
+                                        <p className="text-sm text-purple-600">Full Node v1.0.1</p>
                                     </div>
                                 </div>
 
-                                <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
-                                    <div>
-                                        <h3 className="font-medium text-gray-900 mb-3 sm:mb-4">Features:</h3>
-                                        <ul className="space-y-2 sm:space-y-3">
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                                <span className="text-sm sm:text-base text-gray-600">
-                                                    Full blockchain node support
-                                                </span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                                <span className="text-sm sm:text-base text-gray-600">
-                                                    Automatic updates via Microsoft Store
-                                                </span>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                {/* Windows-specific features list */}
+                                <ul className="space-y-2 mb-6">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">Complete blockchain verification</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">
+                                            Automatic updates via Microsoft Store
+                                        </span>
+                                    </li>
+                                </ul>
 
-                                    <div className="flex items-start gap-2 sm:gap-3 bg-blue-50 p-3 sm:p-4 rounded-xl">
-                                        <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 mt-0.5 shrink-0" />
-                                        <p className="text-xs sm:text-sm text-blue-700">
-                                            Download only from the Microsoft Store to ensure you&apos;re getting the
-                                            genuine, verified app.
-                                        </p>
-                                    </div>
-                                </div>
-
+                                {/* Download button with Microsoft Store link */}
                                 <a
                                     href={process.env.REACT_APP_NATIVE_BINARY_WINDOWS_DOWNLOAD_LINK}
-                                    className="w-full bg-purple-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
+                                    className="w-full bg-purple-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3"
                                 >
-                                    <Monitor className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    <Monitor className="h-4 w-4" />
                                     Download from Microsoft Store
-                                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    <ArrowRight className="h-4 w-4" />
                                 </a>
 
-                                <p className="text-center text-xs sm:text-sm text-gray-500">
+                                {/* System requirements note */}
+                                <p className="text-center text-xs text-gray-500">
                                     Requires Windows 10 version 17763.0 or higher
                                 </p>
                             </div>
                         </div>
 
-                        {/* MacOS Download Card */}
-                        <div className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-xl overflow-hidden border-2 border-purple-100">
-                            <div className="p-4 sm:p-6 md:p-8">
-                                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                                    <div className="p-2 sm:p-3 bg-purple-100 rounded-xl">
-                                        <Apple className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+                        {/* MacOS Download Card - Structure mirrors Windows card for consistency */}
+                        <div className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-purple-100">
+                            <div className="p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-purple-100 rounded-xl">
+                                        <Apple className="h-6 w-6 text-purple-600" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">MacOS App</h2>
-                                        <p className="text-sm sm:text-base text-purple-600">
+                                        <h2 className="text-xl font-bold text-gray-900">MacOS</h2>
+                                        <p className="text-sm text-purple-600">Full Node v1.0.1</p>
+                                    </div>
+                                </div>
+
+                                <ul className="space-y-2 mb-6">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">
                                             Universal Binary (Intel/Apple Silicon)
-                                        </p>
-                                    </div>
+                                        </span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">
+                                            Complete blockchain verification capabilities
+                                        </span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">Native Apple M1/M2 optimization</span>
+                                    </li>
+                                </ul>
+
+                                {/* Security notice specifically for MacOS */}
+                                <div className="flex items-start gap-2 bg-blue-50 p-3 rounded-xl mb-6">
+                                    <Shield className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                                    <p className="text-xs text-blue-700">
+                                        Notarized by Apple for enhanced security and seamless installation
+                                    </p>
                                 </div>
 
-                                <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
-                                    <div>
-                                        <h3 className="font-medium text-gray-900 mb-3 sm:mb-4">Features:</h3>
-                                        <ul className="space-y-2 sm:space-y-3">
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                                <span className="text-sm sm:text-base text-gray-600">
-                                                    Native Apple Silicon support
-                                                </span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                                <span className="text-sm sm:text-base text-gray-600">
-                                                    Optimized for macOS performance
-                                                </span>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    <div className="flex items-start gap-2 sm:gap-3 bg-blue-50 p-3 sm:p-4 rounded-xl">
-                                        <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 mt-0.5 shrink-0" />
-                                        <p className="text-xs sm:text-sm text-blue-700">
-                                            App is notarized by Apple for enhanced security and seamless installation.
-                                        </p>
-                                    </div>
-                                </div>
-
+                                {/* MacOS download button */}
                                 <a
                                     href={process.env.REACT_APP_NATIVE_BINARY_MACOS_DOWNLOAD_LINK}
-                                    className="w-full bg-purple-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
+                                    className="w-full bg-purple-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 mb-3"
                                 >
-                                    <Apple className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    <Apple className="h-4 w-4" />
                                     Download for MacOS
-                                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    <ArrowRight className="h-4 w-4" />
                                 </a>
 
-                                <p className="text-center text-xs sm:text-sm text-gray-500">
+                                <p className="text-center text-xs text-gray-500">
                                     Requires macOS 15.2 (Sequoia) or higher
                                 </p>
                             </div>
                         </div>
 
-                        {/* Linux Download Card - Full Width */}
-                        <div className="md:col-span-2 bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-xl overflow-hidden border-2 border-purple-100">
-                            <div className="p-4 sm:p-6 md:p-8">
-                                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                                    <div className="p-2 sm:p-3 bg-purple-100 rounded-xl">
-                                        <Terminal className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+                        {/* Linux Download Card - Spans full width for better command display */}
+                        <div className="md:col-span-2 bg-white rounded-xl shadow-md overflow-hidden border-2 border-purple-100">
+                            <div className="p-6">
+                                {/* Linux header maintains consistent styling with other cards */}
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-purple-100 rounded-xl">
+                                        <Terminal className="h-6 w-6 text-purple-600" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                                            Linux Installation
-                                        </h2>
-                                        <p className="text-sm sm:text-base text-purple-600">
-                                            Available for Ubuntu/Debian and Fedora/RHEL systems
-                                        </p>
+                                        <h2 className="text-xl font-bold text-gray-900">Linux Installation</h2>
+                                        <p className="text-sm text-purple-600">Full Node v1.0.1</p>
                                     </div>
                                 </div>
 
+                                {/* Linux-specific features */}
+                                <ul className="space-y-2 mb-6">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">
+                                            Complete blockchain verification and network participation
+                                        </span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                                        <span className="text-sm text-gray-600">
+                                            Automated dependency management through package managers
+                                        </span>
+                                    </li>
+                                </ul>
+
+                                {/* Two-column layout for different Linux distributions */}
                                 <div className="grid md:grid-cols-2 gap-6">
-                                    {/* Ubuntu/Debian Instructions */}
+                                    {/* Ubuntu/Debian Installation Instructions */}
                                     <div className="space-y-4">
                                         <h3 className="font-medium text-gray-900">Ubuntu/Debian Installation:</h3>
                                         <div className="bg-gray-50 rounded-lg p-4">
                                             <pre className="text-sm overflow-x-auto">
                                                 <code className="text-gray-700">
-                                                    {`wget ${process.env.REACT_APP_NATIVE_BINARY_LINUX_DEB_DOWNLOAD_LINK}\nsudo apt install ./comiccoin-wallet_${process.env.REACT_APP_NATIVE_BINARY_VERSION}_amd64.deb`}
+                                                    {`wget ${process.env.REACT_APP_NATIVE_BINARY_LINUX_DEB_DOWNLOAD_LINK}\nsudo apt install ./comiccoin-wallet_1.0.1_amd64.deb`}
                                                 </code>
                                             </pre>
                                         </div>
@@ -347,13 +369,13 @@ const DownloadNativeWalletPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Fedora/RHEL Instructions */}
+                                    {/* Fedora/RHEL Installation Instructions */}
                                     <div className="space-y-4">
                                         <h3 className="font-medium text-gray-900">Fedora/RHEL Installation:</h3>
                                         <div className="bg-gray-50 rounded-lg p-4">
                                             <pre className="text-sm overflow-x-auto">
                                                 <code className="text-gray-700">
-                                                    {`wget ${process.env.REACT_APP_NATIVE_BINARY_LINUX_RPM_DOWNLOAD_LINK}\nsudo dnf install ./comiccoin-wallet-${process.env.REACT_APP_NATIVE_BINARY_VERSION}-1.x86_64.rpm`}
+                                                    {`wget ${process.env.REACT_APP_NATIVE_BINARY_LINUX_RPM_DOWNLOAD_LINK}\nsudo dnf install ./comiccoin-wallet-1.0.1-1.x86_64.rpm`}
                                                 </code>
                                             </pre>
                                         </div>
@@ -366,45 +388,6 @@ const DownloadNativeWalletPage = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Shared Features Section */}
-                    <div className="max-w-3xl mx-auto mb-6 sm:mb-8 md:mb-12 px-4 sm:px-0">
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Common Features</h3>
-                        <div className="bg-white rounded-xl border-2 border-purple-100 p-4 sm:p-6">
-                            <ul className="space-y-2 sm:space-y-3">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                    <span className="text-sm sm:text-base text-gray-600">
-                                        Full blockchain node support
-                                    </span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                    <span className="text-sm sm:text-base text-gray-600">
-                                        Enhanced security features
-                                    </span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                    <span className="text-sm sm:text-base text-gray-600">
-                                        Offline transaction signing
-                                    </span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                    <span className="text-sm sm:text-base text-gray-600">
-                                        4 GB RAM minimum (8 GB recommended)
-                                    </span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mt-0.5 shrink-0" />
-                                    <span className="text-sm sm:text-base text-gray-600">
-                                        1 GB available hard disk space
-                                    </span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
                 </div>
             </main>
 
@@ -412,5 +395,4 @@ const DownloadNativeWalletPage = () => {
         </div>
     )
 }
-
 export default DownloadNativeWalletPage
