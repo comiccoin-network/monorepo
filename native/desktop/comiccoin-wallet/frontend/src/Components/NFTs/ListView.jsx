@@ -5,8 +5,8 @@ import { WalletMinimal, Send, QrCode, MoreHorizontal, Clock, Coins, Wallet, Arro
 import { useRecoilState } from "recoil";
 import { toLower } from "lodash";
 
-import { GetNonFungibleTokensByOwnerAddress } from "../../../../wailsjs/go/main/App";
-import { currentOpenWalletAtAddressState } from "../../../AppState";
+import { GetNonFungibleTokensByOwnerAddress } from "../../../wailsjs/go/main/App";
+import { currentOpenWalletAtAddressState } from "../../AppState";
 
 
 function ListTokensView() {
@@ -30,7 +30,7 @@ function ListTokensView() {
 
     const handleTokenClick = (tokID) => {
         console.log("tokID->", tokID);
-        setForceURL("/more/token/"+tokID);
+        setForceURL("/token/"+tokID);
     }
 
     ////

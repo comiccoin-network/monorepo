@@ -8,8 +8,8 @@ import { AlertCircle, Info, Send, ArrowLeft, Loader2 } from "lucide-react";
 import {
   GetNonFungibleToken,
   TransferToken,
-} from "../../../../wailsjs/go/main/App";
-import { currentOpenWalletAtAddressState } from "../../../AppState";
+} from "../../../wailsjs/go/main/App";
+import { currentOpenWalletAtAddressState } from "../../AppState";
 
 /**
  * TokenTransferView component allows users to transfer a specific non-fungible token (NFT) to another wallet address.
@@ -100,7 +100,7 @@ function TokenTransferView() {
       )
         .then(() => {
           console.log("TransferToken: Success");
-          setForceURL("/more/token/" + tokenID + "/transfer-success");
+          setForceURL("/token/" + tokenID + "/transfer-success");
         })
         .catch((errorJsonString) => {
           console.log("TransferToken: errorJsonString:", errorJsonString);
@@ -311,7 +311,7 @@ function TokenTransferView() {
 
             <div className="flex gap-4 justify-end pt-4">
               <button
-                onClick={() => setForceURL("/more/token/" + tokenID)}
+                onClick={() => setForceURL("/token/" + tokenID)}
                 className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />

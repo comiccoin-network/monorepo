@@ -2,34 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { WalletMinimal, Send, QrCode, MoreHorizontal, Clock, Coins, Wallet, ArrowRight, ArrowUpRight, ArrowDownLeft, Ticket } from 'lucide-react';
 
-
 function BottomTabBar() {
-  ////
-  //// Global State
-  ////
-
-  // Do nothing.
-
-  ////
-  //// Local State
-  ////
-
-  ////
-  //// Events
-  ////
-
-  // Do nothing.
-
-  ////
-  //// Rendering.
-  ////
-
-  //-------------//
-  // CASE 1 OF 3 //
-  //-------------//
-
-  // Get the current location and if we are at specific URL paths then we
-  // will not render this component.
+  // The location hook and path checking logic remains the same
   const ignorePathsArr = [
     "/",
     "/pick-data-directory",
@@ -43,28 +17,15 @@ function BottomTabBar() {
   const location = useLocation();
   var arrayLength = ignorePathsArr.length;
   for (var i = 0; i < arrayLength; i++) {
-    // console.log(location.pathname, "===", ignorePathsArr[i], " EQUALS ", location.pathname === ignorePathsArr[i]);
     if (location.pathname === ignorePathsArr[i]) {
       return null;
     }
   }
 
-  // //-------------//
-  // // CASE 2 OF 3 //
-  // //-------------//
-  //
-  // if (currentUser === null) {
-  //   return null;
-  // }
-
-  //-------------//
-  // CASE 3 OF 3 //
-  //-------------//
-
-  // Render the following component GUI
   return (
       <nav className="fixed bottom-0 w-full bg-white border-t border-gray-200 shadow-lg" aria-label="Primary navigation">
-        <div className="grid grid-cols-4 h-20">
+        {/* Updated grid-cols-4 to grid-cols-5 to accommodate the new tab */}
+        <div className="grid grid-cols-5 h-20">
           <Link
             to="/dashboard"
             className={`flex flex-col items-center justify-center space-y-2 ${location.pathname.includes("dashboard") && "bg-purple-50"}`}
@@ -90,9 +51,18 @@ function BottomTabBar() {
             <QrCode className="w-7 h-7 text-gray-600" aria-hidden="true" />
             <span className="text-sm text-gray-600">Receive</span>
           </Link>
+          {/* Added new NFTs tab */}
+          <Link
+            to="/nfts"
+            className={`flex flex-col items-center justify-center space-y-2 ${location.pathname.includes("nfts") && "bg-purple-50"}`}
+            aria-label="NFTs tab"
+          >
+            <Ticket className="w-7 h-7 text-gray-600" aria-hidden="true" />
+            <span className="text-sm text-gray-600">NFTs</span>
+          </Link>
           <Link
             to="/more"
-            className={`flex flex-col items-center justify-center space-y-2 ${!location.pathname.includes("dashboard") && !location.pathname.includes("send") && !location.pathname.includes("receive") && "bg-purple-50"}`}
+            className={`flex flex-col items-center justify-center space-y-2 ${!location.pathname.includes("dashboard") && !location.pathname.includes("send") && !location.pathname.includes("receive") && !location.pathname.includes("nfts") && "bg-purple-50"}`}
             aria-label="More options tab"
           >
             <MoreHorizontal className="w-7 h-7 text-gray-600" aria-hidden="true" />

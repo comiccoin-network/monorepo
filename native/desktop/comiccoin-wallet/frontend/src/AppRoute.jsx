@@ -29,12 +29,12 @@ import ListWalletsView from "./Components/More/Wallets/ListView";
 import CreateWalletView from "./Components/More/Wallets/CreateView";
 import ListTransactionsView from "./Components/More/Transactions/ListView";
 import TransactionDetailView from "./Components/More/Transactions/DetailView";
-import ListTokensView from "./Components/More/Tokens/ListView";
-import TokenDetailView from "./Components/More/Tokens/DetailView";
-import TokenTransferView from "./Components/More/Tokens/TransferView";
-import TokenTransferSuccessView from "./Components/More/Tokens/TransferSuccessView";
-import TokenBurnView from "./Components/More/Tokens/BurnView";
-import TokenBurnSuccessView from "./Components/More/Tokens/BurnSuccessView";
+import ListTokensView from "./Components/NFTs/ListView";
+import TokenDetailView from "./Components/NFTs/DetailView";
+import TokenTransferView from "./Components/NFTs/TransferView";
+import TokenTransferSuccessView from "./Components/NFTs/TransferSuccessView";
+import TokenBurnView from "./Components/NFTs/BurnView";
+import TokenBurnSuccessView from "./Components/NFTs/BurnSuccessView";
 import SettingsView from "./Components/More/Settings/View";
 
 function AppRoute() {
@@ -86,6 +86,58 @@ function AppRoute() {
               exact
             />
             <Route path="/receive" element={<ReceiveView />} exact />
+            <Route path="/tokens" element={<ListTokensView />} exact />
+            <Route path="/nfts" element={<ListTokensView />} exact />
+            <Route
+              path="/token/:tokenID"
+              element={<TokenDetailView />}
+              exact
+            />
+            <Route
+              path="/nft/:tokenID"
+              element={<TokenDetailView />}
+              exact
+            />
+            <Route
+              path="/token/:tokenID/burn"
+              element={<TokenBurnView />}
+              exact
+            />
+            <Route
+              path="/nft/:tokenID/burn"
+              element={<TokenBurnView />}
+              exact
+            />
+            <Route
+              path="/token/:tokenID/burn-success"
+              element={<TokenBurnSuccessView />}
+              exact
+            />
+            <Route
+              path="/nft/:tokenID/burn-success"
+              element={<TokenBurnSuccessView />}
+              exact
+            />
+            <Route
+              path="/token/:tokenID/transfer"
+              element={<TokenTransferView />}
+              exact
+            />
+            <Route
+              path="/nft/:tokenID/transfer"
+              element={<TokenTransferView />}
+              exact
+            />
+            <Route
+              path="/token/:tokenID/transfer-success"
+              element={<TokenTransferSuccessView />}
+              exact
+            />
+            <Route
+              path="/nft/:tokenID/transfer-success"
+              element={<TokenTransferSuccessView />}
+              exact
+            />
             <Route path="/more" element={<MoreView />} exact />
             <Route path="/more/wallets" element={<ListWalletsView />} exact />
             <Route
@@ -101,32 +153,6 @@ function AppRoute() {
             <Route
               path="/more/transaction/:timestamp"
               element={<TransactionDetailView />}
-              exact
-            />
-            <Route path="/more/tokens" element={<ListTokensView />} exact />
-            <Route
-              path="/more/token/:tokenID"
-              element={<TokenDetailView />}
-              exact
-            />
-            <Route
-              path="/more/token/:tokenID/burn"
-              element={<TokenBurnView />}
-              exact
-            />
-            <Route
-              path="/more/token/:tokenID/burn-success"
-              element={<TokenBurnSuccessView />}
-              exact
-            />
-            <Route
-              path="/more/token/:tokenID/transfer"
-              element={<TokenTransferView />}
-              exact
-            />
-            <Route
-              path="/more/token/:tokenID/transfer-success"
-              element={<TokenTransferSuccessView />}
               exact
             />
             <Route path="/more/settings" element={<SettingsView />} exact />

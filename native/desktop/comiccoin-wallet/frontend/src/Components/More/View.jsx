@@ -59,21 +59,6 @@ function MoreView() {
             </div>
           </Link>
 
-          <Link
-            className="bg-white p-6 rounded-xl border-2 border-gray-100 hover:border-purple-200 transition-colors flex items-start gap-4 text-left"
-            to={`/more/tokens`}
-          >
-            <div className="p-3 bg-purple-100 rounded-xl">
-              <Tickets className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-gray-900 mb-1">Tokens</h2>
-              <p className="text-sm text-gray-500">
-                View and manage your tokens
-              </p>
-            </div>
-          </Link>
-
           {/*
           <Link
             className="bg-white p-6 rounded-xl border-2 border-gray-100 hover:border-purple-200 transition-colors flex items-start gap-4 text-left"

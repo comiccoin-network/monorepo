@@ -3,8 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { toLower } from "lodash";
 
-import { GetNonFungibleToken } from "../../../../wailsjs/go/main/App";
-import { currentOpenWalletAtAddressState } from "../../../AppState";
+import { GetNonFungibleToken } from "../../../wailsjs/go/main/App";
+import { currentOpenWalletAtAddressState } from "../../AppState";
 
 
 function TokenDetailView() {
@@ -94,10 +94,10 @@ function TokenDetailView() {
                   <p className="text-gray-600 mb-6">{token.metadata.description}</p>
 
                   <div className="flex gap-4 mb-6">
-                    <Link className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600" to={`/more/token/${tokenID}/burn`}>
+                    <Link className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600" to={`/token/${tokenID}/burn`}>
                       Burn
                     </Link>
-                    <Link className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600" to={`/more/token/${tokenID}/transfer`}>
+                    <Link className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600" to={`/token/${tokenID}/transfer`}>
                       Transfer to Another Address
                     </Link>
                   </div>

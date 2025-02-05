@@ -8,8 +8,8 @@ import { AlertCircle, Info, Trash2, ArrowLeft, Loader2 } from "lucide-react";
 import {
   GetNonFungibleToken,
   BurnToken,
-} from "../../../../wailsjs/go/main/App";
-import { currentOpenWalletAtAddressState } from "../../../AppState";
+} from "../../../wailsjs/go/main/App";
+import { currentOpenWalletAtAddressState } from "../../AppState";
 
 /**
  * TokenBurnView component allows users to burn a specific non-fungible token (NFT).
@@ -91,7 +91,7 @@ function TokenBurnView() {
        BurnToken(parseInt(tokenID), currentOpenWalletAtAddress, formData.password)
          .then(() => {
             console.log("TokenBurnView: Success");
-            setForceURL("/more/token/" + tokenID + "/burn-success");
+            setForceURL("/token/" + tokenID + "/burn-success");
          })
          .catch((errorRes) => {
            console.log("GetNonFungibleToken: errorRes:", errorRes);
@@ -264,7 +264,7 @@ function TokenBurnView() {
 
             <div className="flex gap-4 justify-end pt-4">
               <button
-                onClick={() => setForceURL("/more/token/" + tokenID)}
+                onClick={() => setForceURL("/token/" + tokenID)}
                 className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
