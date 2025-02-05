@@ -5,6 +5,11 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"math/big"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/common/blockchain/hdkeystore"
@@ -17,6 +22,7 @@ import (
 	uc_blockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/blockdatadto"
 	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
 	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltxdto"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/repo"
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/account"
@@ -76,6 +82,7 @@ type App struct {
 	exportWalletService                                             service_wallet.ExportWalletService
 	importWalletService                                             service_wallet.ImportWalletService
 	walletRecoveryService                                           service_wallet.WalletRecoveryService
+	localNotificationService                                        service_blocktx.AccountLocalNotificationService
 }
 
 // NewApp creates a new App application struct
@@ -138,6 +145,9 @@ func (a *App) startup(ctx context.Context) {
 	pstxDB := disk.NewDiskStorage(dataDir, "pending_signed_transaction", logger)
 
 	// ------------ Repo ------------
+
+	getLatestBlockTransactionByAddressServerSentEventsDTOConfigurationProvider := repo.NewGetLatestBlockTransactionByAddressServerSentEventsDTOConfigurationProvider(preferences.AuthorityAddress)
+	getLatestBlockTransactionByAddressServerSentEventsDTORepo := repo.NewGetLatestBlockTransactionByAddressServerSentEventsDTORepository(getLatestBlockTransactionByAddressServerSentEventsDTOConfigurationProvider, logger)
 
 	blockchainStateServerSentEventsDTOConfigurationProvider := repo.NewBlockchainStateServerSentEventsDTOConfigurationProvider(preferences.AuthorityAddress)
 	blockchainStateServerSentEventsDTORepo := repo.NewBlockchainStateServerSentEventsDTORepository(
@@ -314,6 +324,11 @@ func (a *App) startup(ctx context.Context) {
 	listWithLimitBlockTransactionsByAddressUseCase := uc_blocktx.NewListWithLimitBlockTransactionsByAddressUseCase(
 		logger,
 		blockDataRepo)
+
+	// Block Transactions DTO
+	getLatestBlockTransactionByAddressServerSentEventsDTOUseCase := uc_blocktx.NewSubscribeToGetLatestBlockTransactionByAddressServerSentEventsFromBlockchainAuthorityUseCase(
+		logger,
+		getLatestBlockTransactionByAddressServerSentEventsDTORepo)
 
 	// Block Data DTO
 	getBlockDataDTOFromBlockchainAuthorityUseCase := uc_blockdatadto.NewGetBlockDataDTOFromBlockchainAuthorityUseCase(
@@ -559,6 +574,7 @@ func (a *App) startup(ctx context.Context) {
 		getWalletUseCase,
 		mnemonicFromEncryptedHDWalletUseCase,
 	)
+	localNotificationService := service_blocktx.NewAccountLocalNotificationService(logger, memDB, getLatestBlockTransactionByAddressServerSentEventsDTOUseCase)
 
 	// ------------ Interfaces ------------
 
@@ -585,10 +601,12 @@ func (a *App) startup(ctx context.Context) {
 	a.exportWalletService = exportWalletService
 	a.importWalletService = importWalletService
 	a.walletRecoveryService = walletRecoveryService
+	a.localNotificationService = localNotificationService
 
 	//
 	// Execute.
 	//
+
 	go func(ctx context.Context, chainid uint16) {
 		// When the daemon starts up, the first thing we will do is one-time
 		/// full sync with the Global BlockChain Network to get all / any
@@ -618,6 +636,47 @@ func (a *App) startup(ctx context.Context) {
 			a.logger.Debug("Finished partial sync via sse, will restart in 15 seconds...")
 			time.Sleep(15 * time.Second)
 		}
+	}(a.ctx, chainID)
+
+	go func(ctx context.Context, chainid uint16) {
+		//
+		// NOTIFICATIONS
+		//
+
+		// Create context that we can cancel
+		ctxWithCancel, cancel := context.WithCancel(ctx)
+		defer cancel()
+
+		// Set up signal handling
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+		// Create error channel
+		errChan := make(chan error, 1)
+
+		// Start the service in a goroutine
+		go func() {
+			addr := common.HexToAddress(strings.ToLower(preferences.DefaultWalletAddress))
+			err := localNotificationService.Execute(ctxWithCancel, &addr, func(direction string, typeOf string, valueOrTokenID *big.Int, timestamp uint64) {
+				fmt.Printf("🔔 New transaction detected!\nDirection: %s\nTypeOf: %s\nValueOrTokenID: %v\nTimestamp: %v\n\n", direction, typeOf, valueOrTokenID, timestamp)
+			})
+			errChan <- err
+		}()
+
+		// Wait for either error or signal
+		select {
+		case err := <-errChan:
+			if err != nil {
+				log.Fatalf("Service error: %v", err)
+			}
+		case sig := <-sigChan:
+			fmt.Printf("\nReceived signal: %v\n", sig)
+			cancel() // Cancel the context
+			// Wait for service to clean up
+			<-errChan
+		}
+
+		fmt.Println("Shutting down gracefully...")
 	}(a.ctx, chainID)
 
 	logger.Info("ComicCoin Wallet is running.")
