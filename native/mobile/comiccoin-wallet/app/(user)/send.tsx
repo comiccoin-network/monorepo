@@ -24,7 +24,10 @@ import {
   Info,
   Wallet,
   Coins,
+  Camera,
 } from "lucide-react-native";
+import { CameraView } from "expo-camera";
+import { useCameraPermissions } from "expo-camera";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import { useWallet } from "../../hooks/useWallet";
@@ -67,6 +70,8 @@ const SendScreen: React.FC = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
 
   useEffect(() => {
     const checkWalletSession = async () => {
@@ -174,6 +179,89 @@ const SendScreen: React.FC = () => {
       );
     }
   };
+
+  const handleScanComplete = (data: string) => {
+    if (data && data.startsWith("0x")) {
+      handleInputChange("recipientAddress", data);
+      setShowScanner(false);
+    }
+  };
+
+  const renderQRScannerModal = () => (
+    <Modal visible={showScanner} transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.scannerModalContent}>
+          <View style={styles.scannerHeader}>
+            <Text style={styles.scannerTitle}>Scan QR Code</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowScanner(false)}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          <CameraView
+            style={styles.scanner}
+            facing="back"
+            barcodeScannerSettings={{
+              barcodeTypes: "qr",
+            }}
+            onBarcodeScanned={({ data }) => handleScanComplete(data)}
+          />
+
+          <Text style={styles.scannerHelper}>
+            Align QR code within the frame
+          </Text>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const renderRecipientField = () => (
+    <View style={styles.inputGroup}>
+      <Text style={styles.inputLabel}>
+        Pay To <Text style={styles.required}>*</Text>
+      </Text>
+      <View style={styles.addressInputContainer}>
+        <TextInput
+          style={[
+            styles.addressInput,
+            formErrors.recipientAddress && styles.inputError,
+          ]}
+          value={formData.recipientAddress}
+          onChangeText={(value) => handleInputChange("recipientAddress", value)}
+          placeholder="Enter recipient's wallet address"
+          placeholderTextColor="#9CA3AF"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <TouchableOpacity
+          style={styles.scanButton}
+          onPress={async () => {
+            if (!permission?.granted) {
+              const result = await requestPermission();
+              if (result.granted) {
+                setShowScanner(true);
+              }
+            } else {
+              setShowScanner(true);
+            }
+          }}
+        >
+          <Camera size={20} color="#7C3AED" />
+        </TouchableOpacity>
+      </View>
+      {formErrors.recipientAddress && (
+        <View style={styles.fieldError}>
+          <AlertCircle size={16} color="#DC2626" />
+          <Text style={styles.fieldErrorText}>
+            {formErrors.recipientAddress}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
 
   if (serviceLoading) {
     return (
@@ -309,33 +397,7 @@ const SendScreen: React.FC = () => {
               {/* Form Fields */}
               <View style={styles.formContainer}>
                 {/* Recipient Address Field */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>
-                    Pay To <Text style={styles.required}>*</Text>
-                  </Text>
-                  <TextInput
-                    style={[
-                      styles.input,
-                      formErrors.recipientAddress && styles.inputError,
-                    ]}
-                    value={formData.recipientAddress}
-                    onChangeText={(value) =>
-                      handleInputChange("recipientAddress", value)
-                    }
-                    placeholder="Enter recipient's wallet address"
-                    placeholderTextColor="#9CA3AF"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                  {formErrors.recipientAddress && (
-                    <View style={styles.fieldError}>
-                      <AlertCircle size={16} color="#DC2626" />
-                      <Text style={styles.fieldErrorText}>
-                        {formErrors.recipientAddress}
-                      </Text>
-                    </View>
-                  )}
-                </View>
+                {renderRecipientField()}
 
                 {/* Amount Field */}
                 <View style={styles.inputGroup}>
@@ -599,6 +661,7 @@ const SendScreen: React.FC = () => {
           </View>
         </TouchableOpacity>
       </Modal>
+      {renderQRScannerModal()}
     </SafeAreaProvider>
   );
 };
@@ -1113,6 +1176,64 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+  },
+  addressInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  addressInput: {
+    flex: 1,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: "#111827",
+  },
+  scanButton: {
+    padding: 12,
+    backgroundColor: "#F5F3FF",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  scannerModalContent: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    width: "90%",
+    height: "70%",
+    overflow: "hidden",
+  },
+  scannerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  scannerTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#111827",
+  },
+  closeButton: {
+    padding: 8,
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: "#6B7280",
+  },
+  scanner: {
+    width: "100%",
+    height: "80%",
+  },
+  scannerHelper: {
+    textAlign: "center",
+    padding: 16,
+    color: "#6B7280",
   },
 });
 
