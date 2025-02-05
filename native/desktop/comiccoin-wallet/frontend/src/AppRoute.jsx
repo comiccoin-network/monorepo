@@ -5,6 +5,9 @@ import { RecoilRoot } from "recoil";
 // CSS App Styling Override and extra.
 import "./App.css";
 
+// NOTIFICATION
+import TransactionNotifier from './Components/TransactionNotifier';
+
 // MENU
 import Topbar from "./Components/Menu/Top";
 import BottomTabBar from "./Components/Menu/BottomBar";
@@ -39,6 +42,7 @@ function AppRoute() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      <TransactionNotifier />
       <RecoilRoot>
 
         {isSyncing && (

@@ -23,6 +23,7 @@ import (
 	uc_genesisblockdatadto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/genesisblockdatadto"
 	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin-authority/usecase/mempooltxdto"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/repo"
 	service_account "github.com/comiccoin-network/monorepo/native/desktop/comiccoin-cli/service/account"
@@ -638,45 +639,80 @@ func (a *App) startup(ctx context.Context) {
 		}
 	}(a.ctx, chainID)
 
-	go func(ctx context.Context, chainid uint16) {
-		//
-		// NOTIFICATIONS
-		//
-
-		// Create context that we can cancel
+	// Start the notification service in a controlled goroutine
+	go func(ctx context.Context, chainID uint16) {
+		// Create a cancellable context that we'll use for cleanup
 		ctxWithCancel, cancel := context.WithCancel(ctx)
 		defer cancel()
 
-		// Set up signal handling
+		// Keep the signal handling for graceful shutdown
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-		// Create error channel
+		// Error channel for service communication
 		errChan := make(chan error, 1)
 
-		// Start the service in a goroutine
+		// Start the notification service
 		go func() {
+			preferences := PreferencesInstance()
 			addr := common.HexToAddress(strings.ToLower(preferences.DefaultWalletAddress))
-			err := localNotificationService.Execute(ctxWithCancel, &addr, func(direction string, typeOf string, valueOrTokenID *big.Int, timestamp uint64) {
-				fmt.Printf("🔔 New transaction detected!\nDirection: %s\nTypeOf: %s\nValueOrTokenID: %v\nTimestamp: %v\n\n", direction, typeOf, valueOrTokenID, timestamp)
+
+			// Execute the notification service with our handler
+			err := a.localNotificationService.Execute(ctxWithCancel, &addr, func(direction string, typeOf string, valueOrTokenID *big.Int, timestamp uint64) {
+				// Create a structured notification
+				notification := map[string]interface{}{
+					"direction":      direction,
+					"type":           typeOf,
+					"valueOrTokenID": valueOrTokenID.String(),
+					"timestamp":      timestamp,
+				}
+
+				// Emit to frontend using Wails v2 runtime
+				runtime.EventsEmit(a.ctx, "transaction:new", notification)
+
+				// Keep console logging for debugging
+				a.logger.Debug("New transaction detected",
+					slog.String("direction", direction),
+					slog.String("type", typeOf),
+					slog.String("value", valueOrTokenID.String()),
+					slog.Uint64("timestamp", timestamp),
+				)
 			})
 			errChan <- err
 		}()
 
-		// Wait for either error or signal
+		// Handle service lifecycle
 		select {
 		case err := <-errChan:
 			if err != nil {
-				log.Fatalf("Service error: %v", err)
+				// Log the error
+				a.logger.Error("Notification service error", slog.Any("error", err))
+
+				// Emit error to frontend
+				runtime.EventsEmit(a.ctx, "transaction:error", map[string]string{
+					"error": err.Error(),
+				})
+
+				// Don't fatal - instead, attempt reconnection
+				go func() {
+					time.Sleep(5 * time.Second) // Simple backoff
+					a.startup(ctx)              // Restart the service
+				}()
 			}
 		case sig := <-sigChan:
-			fmt.Printf("\nReceived signal: %v\n", sig)
+			a.logger.Info("Received shutdown signal", slog.String("signal", sig.String()))
 			cancel() // Cancel the context
-			// Wait for service to clean up
+
+			// Emit shutdown event to frontend
+			runtime.EventsEmit(a.ctx, "transaction:shutdown", map[string]string{
+				"message": "Notification service shutting down",
+			})
+
+			// Wait for service cleanup
 			<-errChan
 		}
 
-		fmt.Println("Shutting down gracefully...")
+		a.logger.Info("Notification service shut down gracefully")
 	}(a.ctx, chainID)
 
 	logger.Info("ComicCoin Wallet is running.")
