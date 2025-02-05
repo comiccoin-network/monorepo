@@ -3,7 +3,6 @@ package blocktx
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"math/big"
 	"strings"
@@ -36,115 +35,166 @@ func NewAccountLocalNotificationService(
 }
 
 func (s *accountLocalNotificationServiceImpl) Execute(ctx context.Context, address *common.Address, callback LocalNotificationCallback) error {
-	//
-	// STEP 1: Validation.
-	//
+	// STEP 1: Input validation
+	s.logger.Info("🔍 Starting local notification service...",
+		slog.String("address", address.String()))
 
 	e := make(map[string]string)
 	if address == nil {
 		e["address"] = "missing value"
 	}
 	if len(e) != 0 {
-		s.logger.Warn("Validation failed for getting account",
+		s.logger.Warn("❌ Validation failed for getting account",
 			slog.Any("error", e))
 		return httperror.NewForBadRequest(&e)
 	}
 
-	//
-	// STEP 2
-	//
+	// STEP 2: Subscribe to blockchain events
+	s.logger.Info("🔌 Connecting to blockchain events stream...",
+		slog.String("address", address.String()))
 
 	strCh, err := s.subscribeToGetLatestBlockTransactionByAddressServerSentEventsFromBlockchainAuthorityUseCase.Execute(ctx, address)
 	if err != nil {
-		log.Fatalf("Failed to load sse use-case with error: %v", err)
+		s.logger.Error("💥 Failed to connect to blockchain events",
+			slog.Any("error", err))
+		return fmt.Errorf("failed to load sse use-case: %w", err)
 	}
+
+	s.logger.Info("✅ Successfully connected to blockchain events stream",
+		slog.String("address", address.String()))
 
 	// Create a channel to handle program termination
 	done := make(chan struct{})
 
 	go func() {
+		defer close(done)
+		s.logger.Info("👀 Starting notification monitoring...",
+			slog.String("address", address.String()))
+
 		for {
 			select {
 			case newContent, ok := <-strCh:
 				if !ok {
-					s.logger.Info("Channel closed, stopping notification listener")
-					done <- struct{}{}
+					s.logger.Info("🚪 Channel closed, stopping notification listener",
+						slog.String("address", address.String()))
 					return
 				}
 
-				//
-				// Lookup our in-memory storage to see if we've received anything recently.
-				// If the recent content is the same as the new content then exit.
-				//
-
+				// Check our in-memory storage for recent content
 				recentContentBytes, err := s.mem.Get(fmt.Sprintf("latest_blocktx_for_%v", address.String()))
 				if err != nil {
 					if strings.Contains(err.Error(), "does not exist for") {
-
+						s.logger.Info("📝 First time seeing this address, initializing storage...",
+							slog.String("address", address.String()))
 						if err := s.mem.Set(fmt.Sprintf("latest_blocktx_for_%v", address.String()), []byte(newContent)); err != nil {
-							s.logger.Error("Error with getting from in-memory database, stopping notification listener", slog.Any("error", err))
-							done <- struct{}{}
+							s.logger.Error("💥 Error setting in-memory database",
+								slog.Any("error", err))
 							return
 						}
 					} else {
-						s.logger.Error("Error with getting from in-memory database, stopping notification listener", slog.Any("error", err))
-						done <- struct{}{}
+						s.logger.Error("💥 Error with getting from in-memory database",
+							slog.Any("error", err))
 						return
 					}
 				}
 				recentContent := string(recentContentBytes)
 
-				s.logger.Info("Received SSE",
+				s.logger.Debug("📡 Received blockchain event",
 					slog.Any("new_content", newContent),
 					slog.Any("recent_content", recentContent),
-					slog.String("account_address", address.String()))
+					slog.String("address", address.String()))
 
-				if newContent == recentContent {
-					s.logger.Info("No local notifications")
-					return
+				// Handle first notification
+				if recentContent == "" {
+					s.logger.Info("🎯 Received first notification, storing initial state...",
+						slog.String("address", address.String()))
+					if err := s.mem.Set(fmt.Sprintf("latest_blocktx_for_%v", address.String()), []byte(newContent)); err != nil {
+						s.logger.Error("💥 Error setting initial state",
+							slog.Any("error", err))
+						return
+					}
+					continue
 				}
 
-				//
-				//
-				//
+				// Skip if content hasn't changed
+				if newContent == recentContent {
+					s.logger.Debug("⏳ No new changes, continuing monitoring...",
+						slog.String("address", address.String()))
+					continue
+				}
 
+				// Parse the notification content
 				toks := strings.Split(newContent, "|")
+				if len(toks) != 4 {
+					s.logger.Error("⚠️ Invalid notification format",
+						slog.Any("content", newContent),
+						slog.String("address", address.String()))
+					continue
+				}
+
 				direction := toks[0]
 				typeOf := toks[1]
 				valueOrTokenID, ok := new(big.Int).SetString(toks[2], 10)
 				if !ok {
-					s.logger.Error("Failed to parse valueOrTokenID", slog.String("value", toks[2]))
-					return
+					s.logger.Error("⚠️ Failed to parse valueOrTokenID",
+						slog.String("value", toks[2]),
+						slog.String("address", address.String()))
+					continue
 				}
 				timestampBig, ok := new(big.Int).SetString(toks[3], 10)
 				if !ok {
-					s.logger.Error("Failed to parse timestamp", slog.String("value", toks[3]))
-					return
+					s.logger.Error("⚠️ Failed to parse timestamp",
+						slog.String("value", toks[3]),
+						slog.String("address", address.String()))
+					continue
 				}
 				timestamp := timestampBig.Uint64()
 
-				s.logger.Info("Received SSE",
-					slog.Any("toks", toks),
-					slog.Any("direction", direction),
-					slog.Any("typeOf", typeOf),
-					slog.Any("valueOrTokenID", valueOrTokenID),
-					slog.Any("timestamp", timestamp),
-					slog.String("account_address", address.String()))
+				s.logger.Info("🔄 Processing new blockchain event",
+					slog.String("direction", direction),
+					slog.String("type", typeOf),
+					slog.String("valueOrTokenID", valueOrTokenID.String()),
+					slog.Uint64("timestamp", timestamp),
+					slog.String("address", address.String()))
 
-				// Execute the callback
+				// Update stored content
+				if err := s.mem.Set(fmt.Sprintf("latest_blocktx_for_%v", address.String()), []byte(newContent)); err != nil {
+					s.logger.Error("💥 Error updating stored content",
+						slog.Any("error", err),
+						slog.String("address", address.String()))
+					return
+				}
+
+				s.logger.Debug("💾 Successfully updated stored content",
+					slog.String("address", address.String()))
+
+				// Execute the callback if provided
 				if callback != nil {
+					s.logger.Debug("📣 Executing notification callback...",
+						slog.String("address", address.String()))
 					callback(direction, typeOf, valueOrTokenID, timestamp)
 				}
+
 			case <-ctx.Done():
-				s.logger.Info("Context cancelled, stopping notification listener")
-				done <- struct{}{}
+				s.logger.Info("🛑 Context cancelled, stopping notification listener",
+					slog.String("address", address.String()))
 				return
 			}
 		}
 	}()
 
-	// Wait for termination
-	<-done
-
-	return nil
+	// Wait for either goroutine completion or context cancellation
+	select {
+	case <-done:
+		s.logger.Info("👋 Notification service completed normally",
+			slog.String("address", address.String()))
+		return nil
+	case <-ctx.Done():
+		s.logger.Info("🔚 Shutdown initiated, waiting for cleanup...",
+			slog.String("address", address.String()))
+		<-done // Wait for goroutine to finish cleanup
+		s.logger.Info("✨ Cleanup completed, service shutting down",
+			slog.String("address", address.String()))
+		return ctx.Err()
+	}
 }

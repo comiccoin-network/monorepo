@@ -54,18 +54,14 @@ func NewGetLatestBlockTransactionByAddressServerSentEventsDTORepository(
 }
 
 func (repo *GetLatestBlockTransactionByAddressServerSentEventsDTORepo) SubscribeToBlockchainAuthority(ctx context.Context, address *common.Address) (<-chan string, error) {
-	// Create the URL with the chain ID
+	// Create the URL with the address
 	modifiedURL := strings.ReplaceAll(getLatestBlockTransactionByAddressServerSentEventsURL, "${ADDRESS}", fmt.Sprintf("%v", address.String()))
 	httpEndpoint := fmt.Sprintf("%s%s", repo.config.GetAuthorityAddress(), modifiedURL)
 
-	repo.logger.Debug("Subscribing to the Authority blockchain server sent events stream for latest block transaction by address...",
+	repo.logger.Debug("Subscribing to the Authority blockchain SSE stream...",
 		slog.Any("http_endpoint", httpEndpoint))
 
-	// DEVELOPERS NOTE: Why are we using `POST` method? We are doing this to
-	// get our app working on DigitalOcean App Platform, see more for details:
-	// "Does App Platform support SSE (Server-Sent Events) application?" via https://www.digitalocean.com/community/questions/does-app-platform-support-sse-server-sent-events-application
-
-	// Create "POST" request (see "DEVELOPERS NOTES" above) with context.
+	// Create POST request with context
 	req, err := http.NewRequestWithContext(ctx, "POST", httpEndpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -77,9 +73,9 @@ func (repo *GetLatestBlockTransactionByAddressServerSentEventsDTORepo) Subscribe
 	req.Header.Set("Connection", "keep-alive")
 	req.Header.Set("X-Accel-Buffering", "no")
 
-	// Create an HTTP client with no timeout
+	// Create HTTP client with no timeout for streaming
 	client := &http.Client{
-		Timeout: 0, // Disable timeout for streaming
+		Timeout: 0,
 	}
 
 	// Make the request
@@ -88,22 +84,25 @@ func (repo *GetLatestBlockTransactionByAddressServerSentEventsDTORepo) Subscribe
 		return nil, fmt.Errorf("failed to connect to SSE endpoint: %w", err)
 	}
 
-	// Check response status
+	// Verify response status
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	// Create channel for hash values
-	hashChan := make(chan string)
+	// Create buffered channel for notifications
+	hashChan := make(chan string, 1)
 
 	// Start goroutine to read SSE stream
 	go func() {
-		repo.logger.Debug("Successfully connected to the Authority blockchain server sent events stream for latest block transaction by address",
-			slog.Any("http_endpoint", httpEndpoint))
+		// Ensure cleanup on goroutine exit
+		defer func() {
+			resp.Body.Close()
+			close(hashChan)
+		}()
 
-		defer resp.Body.Close()
-		defer close(hashChan)
+		repo.logger.Debug("Connected to Authority blockchain SSE stream",
+			slog.Any("http_endpoint", httpEndpoint))
 
 		scanner := bufio.NewScanner(resp.Body)
 		buf := make([]byte, 0, 1024*1024) // 1MB buffer
@@ -112,20 +111,18 @@ func (repo *GetLatestBlockTransactionByAddressServerSentEventsDTORepo) Subscribe
 		for scanner.Scan() {
 			select {
 			case <-ctx.Done():
-				repo.logger.Info("context canceled, stopping SSE client")
+				repo.logger.Info("Context canceled, stopping SSE client")
 				return
 			default:
 				line := scanner.Text()
 				if strings.HasPrefix(line, "data: ") {
 					hash := strings.TrimPrefix(line, "data: ")
-					// repo.logger.Debug("received hash from SSE",
-					// 	slog.String("hash", hash),
-					// 	slog.Uint64("chain_id", uint64(chainID)))
 
-					// Try to send the hash, but respect context cancellation
+					// Try to send the hash, respecting context cancellation
 					select {
 					case hashChan <- hash:
 					case <-ctx.Done():
+						repo.logger.Info("Context canceled while sending hash")
 						return
 					}
 				}
@@ -133,7 +130,7 @@ func (repo *GetLatestBlockTransactionByAddressServerSentEventsDTORepo) Subscribe
 		}
 
 		if err := scanner.Err(); err != nil {
-			repo.logger.Error("error reading SSE stream",
+			repo.logger.Error("Error reading SSE stream",
 				slog.Any("error", err),
 				slog.String("address", address.String()))
 		}
