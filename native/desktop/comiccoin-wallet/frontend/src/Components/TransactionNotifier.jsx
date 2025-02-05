@@ -34,19 +34,24 @@ const getTransactionTypeDetails = (type) => {
             return {
                 Icon: Coins,
                 label: 'Coins',
-                description: 'Coin Transaction'
+                description: 'Coin Transaction',
+                // Add formatter for coin values
+                formatValue: (value) => `${value} Coins`
             };
         case 'token':
             return {
                 Icon: Image,
                 label: 'NFT',
-                description: 'NFT Transaction'
+                description: 'NFT Transaction',
+                // Add formatter for NFT IDs
+                formatValue: (value) => `NFT #${value}`
             };
         default:
             return {
                 Icon: Coins,
                 label: type || 'Unknown',
-                description: 'Transaction'
+                description: 'Transaction',
+                formatValue: (value) => value
             };
     }
 };
@@ -198,40 +203,43 @@ const TransactionNotifier = () => {
             )}
 
             {notifications.map((notification) => {
-                const { Icon: DirectionIcon, color, label: directionLabel } =
-                    getTransactionDirection(notification.direction);
-                const { Icon: TypeIcon, label: typeLabel } =
-                    getTransactionTypeDetails(notification.type);
+    const { Icon: DirectionIcon, color, label: directionLabel } =
+        getTransactionDirection(notification.direction);
+    const { Icon: TypeIcon, label: typeLabel, formatValue } =
+        getTransactionTypeDetails(notification.type);
 
-                return (
-                    <CustomAlert
-                        key={notification.id}
-                        title={`${directionLabel} ${typeLabel}`}
-                        onClose={() => removeNotification(notification.timestamp)}
-                        hasProgress={true}
-                    >
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <DirectionIcon size={20} className={color} />
-                                <span className={`font-medium ${color}`}>
-                                    {directionLabel} {notification.value} {typeLabel}
-                                </span>
-                            </div>
+    return (
+        <CustomAlert
+       key={notification.id}
+       title={`${directionLabel} ${typeLabel}`}
+       onClose={() => removeNotification(notification.timestamp)}
+       hasProgress={true}
+   >
+       <div className="space-y-3">
+           {/* Main transaction info */}
+           <div className="flex items-center gap-2">
+               <DirectionIcon size={20} className={color} />
+               <span className={`font-medium ${color}`}>
+                   {directionLabel} {formatValue(notification.value)}
+               </span>
+           </div>
 
-                            <div className="flex items-center gap-2">
-                                <TypeIcon size={18} className="text-gray-600" />
-                                <span className="text-gray-600">
-                                    {directionLabel === 'Received' ? 'From' : 'To'} transaction
-                                </span>
-                            </div>
+           {/* Transaction type info */}
+           <div className="flex items-center gap-2">
+               <TypeIcon size={18} className="text-gray-600" />
+               <span className="text-gray-600">
+                   {directionLabel === 'Received' ? 'From' : 'To'} transaction
+               </span>
+           </div>
 
-                            <div className="text-gray-500">
-                                {formatDateTime(notification.timestamp)}
-                            </div>
-                        </div>
-                    </CustomAlert>
-                );
-            })}
+           {/* Timestamp - Previously missing for NFT transactions */}
+           <div className="text-gray-500">
+               {formatDateTime(notification.timestamp)}
+           </div>
+       </div>
+   </CustomAlert>
+    );
+})}
         </div>
     );
 };
