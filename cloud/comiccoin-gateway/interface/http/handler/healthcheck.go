@@ -21,6 +21,9 @@ type HealthCheckResponseIDO struct {
 }
 
 func (h *GetHealthCheckHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	// Set the content type of the response to application/json.
+	w.Header().Set("Content-Type", "application/json")
+
 	response := HealthCheckResponseIDO{Status: "running"}
 	json.NewEncoder(w).Encode(response)
 }

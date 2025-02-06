@@ -21,6 +21,9 @@ type VersionResponseIDO struct {
 }
 
 func (h *GetVersionHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	// Set the content type of the response to application/json.
+	w.Header().Set("Content-Type", "application/json")
+
 	h.logger.Debug("Version requested")
 	response := VersionResponseIDO{Version: "1.0"}
 	json.NewEncoder(w).Encode(response)

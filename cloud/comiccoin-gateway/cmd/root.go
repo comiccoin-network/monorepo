@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	// "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/account"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/clientdemo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/daemon"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/initialize"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/version"
@@ -32,6 +33,7 @@ func Execute() {
 	rootCmd.AddCommand(daemon.DaemonCmd())
 	rootCmd.AddCommand(version.VersionCmd())
 	rootCmd.AddCommand(initialize.InitCmd())
+	rootCmd.AddCommand(clientdemo.ServeCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

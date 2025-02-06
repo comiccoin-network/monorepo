@@ -5,3 +5,5 @@ This folder contains all the backend projects that are open sourced for [ComicCo
 * [`comiccoin-authority`](./comiccoin-authority)
 
 * [`comiccoin-faucet`](./comiccoin-faucet)
+
+* [`comiccoin-gateway`](./comiccoin-gateway)

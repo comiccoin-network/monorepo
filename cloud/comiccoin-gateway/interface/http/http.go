@@ -1,15 +1,19 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/http.go
 package http
 
 import (
 	"log"
 	"log/slog"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/rs/cors"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/oauth"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -37,6 +41,12 @@ type httpServerImpl struct {
 	getVersionHTTPHandler *handler.GetVersionHTTPHandler
 
 	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler
+
+	authorizeHandler *handler.AuthorizeHandler
+
+	loginHandler *handler.LoginHandler
+
+	tokenHandler *handler.TokenHandler
 
 	// gatewayUserRegisterHTTPHandler                *handler.GatewayUserRegisterHTTPHandler
 	// gatewayLoginHTTPHandler                       *handler.GatewayLoginHTTPHandler
@@ -111,13 +121,37 @@ func NewHTTPServer(
 	mux := http.NewServeMux()
 
 	// Set up CORS middleware to allow all origins.
-	handler := cors.AllowAll().Handler(mux)
+	corsHandler := cors.AllowAll().Handler(mux)
 
 	// Bind the HTTP server to the assigned address and port.
 	srv := &http.Server{
 		Addr:    cfg.App.HTTPAddress,
-		Handler: handler,
+		Handler: corsHandler,
 	}
+
+	// Initialize your implementations of the interfaces
+	clientService := NewClientService()
+	authStore := NewAuthStore()
+	userService := NewUserService()
+
+	// Create the handlers with the correct dependencies
+	authorizeHandler := handler.NewAuthorizeHandler(
+		logger,
+		clientService,
+		authStore,
+	)
+
+	loginHandler := handler.NewLoginHandler(
+		logger,
+		authStore,
+		userService,
+	)
+
+	tokenHandler := handler.NewTokenHandler(
+		logger,
+		clientService,
+		authStore,
+	)
 
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
@@ -127,6 +161,9 @@ func NewHTTPServer(
 		server:                    srv,
 		getVersionHTTPHandler:     h1,
 		getHealthCheckHTTPHandler: h2,
+		authorizeHandler:          authorizeHandler,
+		loginHandler:              loginHandler,
+		tokenHandler:              tokenHandler,
 		// gatewayUserRegisterHTTPHandler:                         h3,
 		// gatewayLoginHTTPHandler:                                h4,
 		// gatewayLogoutHTTPHandler:                               h5,
@@ -185,9 +222,6 @@ func (port *httpServerImpl) Shutdown() {
 
 // HandleRequests handles incoming HTTP requests.
 func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Request) {
-	// Set the content type of the response to application/json.
-	w.Header().Set("Content-Type", "application/json")
-
 	// Get the URL path tokens from the request context.
 	ctx := r.Context()
 	p := ctx.Value("url_split").([]string)
@@ -208,56 +242,12 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.getVersionHTTPHandler.Execute(w, r)
 	case n == 1 && p[0] == "health-check" && r.Method == http.MethodGet:
 		port.getHealthCheckHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "register" && p[3] == "user" && r.Method == http.MethodPost:
-	// 	port.gatewayUserRegisterHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "login" && r.Method == http.MethodPost:
-	// 	port.gatewayLoginHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "logout" && r.Method == http.MethodPost:
-	// 	port.gatewayLogoutHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "refresh-token" && r.Method == http.MethodPost:
-	// 	port.gatewayRefreshTokenHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "profile" && r.Method == http.MethodGet:
-	// 	port.gatewayProfileDetailHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "profile" && r.Method == http.MethodPut:
-	// 	port.gatewayProfileUpdateHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "verify" && r.Method == http.MethodPost:
-	// 	port.gatewayVerifyHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "profile" && p[3] == "change-password" && r.Method == http.MethodPut:
-	// 	port.gatewayChangePasswordHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "profile" && p[3] == "wallet-password" && r.Method == http.MethodPut:
-	// 	port.gatewayProfileWalletAddressHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "profile" && p[3] == "apply-for-verification" && r.Method == http.MethodPut:
-	// 	port.gatewayProfileApplyForVerificationHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "forgot-password" && r.Method == http.MethodPost:
-	// 	port.gatewayForgotPasswordHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "password-reset" && r.Method == http.MethodPost:
-	// 	port.gatewayResetPasswordHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "attachments" && r.Method == http.MethodPost:
-	// 	port.attachmentCreateHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "comic-submissions" && r.Method == http.MethodPost:
-	// 	port.comicSubmissionCreateHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "comic-submissions" && r.Method == http.MethodGet:
-	// 	port.comicSubmissionListByFilterHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "comic-submission" && r.Method == http.MethodGet:
-	// 	port.comicSubmissionGetHTTPHandler.Execute(w, r, p[3])
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "comic-submissions" && p[3] == "count" && r.Method == http.MethodGet:
-	// 	port.comicSubmissionCountByFilterHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "comic-submissions" && p[3] == "count-coins-reward" && r.Method == http.MethodGet:
-	// 	port.comicSubmissionCountCoinsRewardByFilterHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "comic-submissions" && p[3] == "count-total-created-today-by-user" && r.Method == http.MethodGet:
-	// 	port.comicSubmissionCountTotalCreatedTodayByUserHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "comic-submissions" && p[3] == "judge-operation" && r.Method == http.MethodPost:
-	// 	port.comicSubmissionJudgeOperationHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "comic-submissions" && p[3] == "total-coins-awarded" && r.Method == http.MethodGet:
-	// 	port.comicSubmissionTotalCoinsAwardedHTTPHandler.Execute(w, r)
-	// case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "users" && r.Method == http.MethodGet:
-	// 	port.userListByFilterHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "users" && p[3] == "count-joined-this-week" && r.Method == http.MethodGet:
-	// 	port.userCountJoinedThisWeekHTTPHandler.Execute(w, r)
-	// case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "users" && p[3] == "operations" && p[4] == "profile-verification-judge" && r.Method == http.MethodPost:
-	// 	port.userProfileVerificationJudgeOperationHTTPHandler.Execute(w, r)
-	// case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "gateway" && p[3] == "balance" && r.Method == http.MethodGet:
-	// 	port.gatewayBalanceHTTPHandler.Execute(w, r)
+	case n == 2 && p[0] == "oauth" && p[1] == "authorize" && r.Method == http.MethodGet:
+		port.authorizeHandler.Execute(w, r)
+	case n == 2 && p[0] == "oauth" && p[1] == "login" && r.Method == http.MethodPost:
+		port.loginHandler.Execute(w, r)
+	case n == 2 && p[0] == "oauth" && p[1] == "token" && r.Method == http.MethodPost:
+		port.tokenHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:
@@ -271,4 +261,184 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		// Return a 404 response.
 		http.NotFound(w, r)
 	}
+}
+
+// ClientServiceImpl implements the oauth.ClientService interface
+type ClientServiceImpl struct {
+	clients map[string]oauth.Client
+	mu      sync.RWMutex
+}
+
+func NewClientService() *ClientServiceImpl {
+	return &ClientServiceImpl{
+		clients: map[string]oauth.Client{
+			"test_client": {
+				ID:          "test_client",
+				Secret:      "test_secret",
+				RedirectURI: "http://localhost:8081/callback",
+			},
+		},
+	}
+}
+
+func (s *ClientServiceImpl) ValidateClient(clientID, redirectURI string) (bool, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	client, exists := s.clients[clientID]
+	if !exists {
+		return false, nil
+	}
+	return client.RedirectURI == redirectURI, nil
+}
+
+func (s *ClientServiceImpl) ValidateClientCredentials(clientID, clientSecret string) (bool, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	client, exists := s.clients[clientID]
+	if !exists {
+		return false, nil
+	}
+	return client.Secret == clientSecret, nil
+}
+
+// Add the missing GetClient method
+func (s *ClientServiceImpl) GetClient(clientID string) (*oauth.Client, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	client, exists := s.clients[clientID]
+	if !exists {
+		return nil, oauth.ErrInvalidClient
+	}
+	return &client, nil
+}
+
+// AuthStoreImpl implements the oauth.AuthorizationStore interface
+type AuthStoreImpl struct {
+	mu          sync.RWMutex
+	pendingAuth map[string]oauth.PendingAuthorization
+	authCodes   map[string]oauth.AuthorizationCode
+}
+
+func NewAuthStore() *AuthStoreImpl {
+	return &AuthStoreImpl{
+		pendingAuth: make(map[string]oauth.PendingAuthorization),
+		authCodes:   make(map[string]oauth.AuthorizationCode),
+	}
+}
+
+func (s *AuthStoreImpl) StorePendingAuth(authID string, auth oauth.PendingAuthorization) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.pendingAuth[authID] = auth
+
+	// Start a goroutine to clean up expired authorizations
+	go func() {
+		time.Sleep(time.Until(auth.ExpiresAt))
+		s.mu.Lock()
+		delete(s.pendingAuth, authID)
+		s.mu.Unlock()
+	}()
+
+	return nil
+}
+
+func (s *AuthStoreImpl) GetPendingAuth(authID string) (oauth.PendingAuthorization, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	auth, exists := s.pendingAuth[authID]
+	if !exists {
+		return oauth.PendingAuthorization{}, oauth.ErrAuthorizationNotFound
+	}
+
+	if time.Now().After(auth.ExpiresAt) {
+		delete(s.pendingAuth, authID)
+		return oauth.PendingAuthorization{}, oauth.ErrAuthorizationNotFound
+	}
+
+	return auth, nil
+}
+
+func (s *AuthStoreImpl) DeletePendingAuth(authID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if _, exists := s.pendingAuth[authID]; !exists {
+		return oauth.ErrAuthorizationNotFound
+	}
+
+	delete(s.pendingAuth, authID)
+	return nil
+}
+
+func (s *AuthStoreImpl) StoreAuthorizationCode(code string, auth oauth.AuthorizationCode) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.authCodes[code] = auth
+
+	// Clean up expired codes
+	go func() {
+		time.Sleep(time.Until(auth.ExpiresAt))
+		s.mu.Lock()
+		delete(s.authCodes, code)
+		s.mu.Unlock()
+	}()
+
+	return nil
+}
+
+func (s *AuthStoreImpl) GetAuthorizationCode(code string) (oauth.AuthorizationCode, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	auth, exists := s.authCodes[code]
+	if !exists {
+		return oauth.AuthorizationCode{}, oauth.ErrAuthorizationNotFound
+	}
+
+	if time.Now().After(auth.ExpiresAt) {
+		delete(s.authCodes, code)
+		return oauth.AuthorizationCode{}, oauth.ErrAuthorizationNotFound
+	}
+
+	return auth, nil
+}
+
+// Add the missing DeleteAuthorizationCode method
+func (s *AuthStoreImpl) DeleteAuthorizationCode(code string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if _, exists := s.authCodes[code]; !exists {
+		return oauth.ErrAuthorizationNotFound
+	}
+
+	delete(s.authCodes, code)
+	return nil
+}
+
+// UserServiceImpl implements the oauth.UserService interface
+type UserServiceImpl struct {
+	users map[string]string // username -> password
+}
+
+func NewUserService() *UserServiceImpl {
+	return &UserServiceImpl{
+		users: map[string]string{ // This is for test/learning purposes and absolutely not going to be used moving forward.
+			"testuser": "testpass", // This is for test/learning purposes and absolutely not going to be used moving forward.
+		},
+	}
+}
+
+func (s *UserServiceImpl) ValidateCredentials(username, password string) (bool, error) {
+	storedPassword, exists := s.users[username]
+	if !exists {
+		return false, nil
+	}
+	return storedPassword == password, nil
 }
