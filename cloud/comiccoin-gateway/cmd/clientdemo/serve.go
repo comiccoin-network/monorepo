@@ -291,3 +291,70 @@ func handleCallback(w http.ResponseWriter, r *http.Request) {
 	// Display the success page with token information
 	successTemplate.Execute(w, tokenResponse)
 }
+
+/*
+When your web app receives a request with a Bearer token, it should validate it using the introspection endpoint:
+
+```go
+// Example client code for token introspection
+func validateToken(token string) (*oauth.IntrospectionResponse, error) {
+    // Create the request
+    req, err := http.NewRequest("POST", "http://auth-server/oauth/introspect",
+        strings.NewReader("token="+url.QueryEscape(token)))
+    if err != nil {
+        return nil, err
+    }
+
+    // Add client authentication
+    req.SetBasicAuth("client_id", "client_secret")
+    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+    // Send the request
+    resp, err := http.DefaultClient.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    // Parse the response
+    var introspection oauth.IntrospectionResponse
+    if err := json.NewDecoder(resp.Body).Decode(&introspection); err != nil {
+        return nil, err
+    }
+
+    return &introspection, nil
+}
+```
+*/
+
+/*
+For refreshing tokens, your client should:
+
+Store both the access token and refresh token securely
+Monitor the access token's expiration
+Request a new access token using the refresh token when needed:
+
+go
+```
+func refreshAccessToken(refreshToken string) (*oauth.TokenResponse, error) {
+    data := url.Values{}
+    data.Set("grant_type", "refresh_token")
+    data.Set("refresh_token", refreshToken)
+    data.Set("client_id", "your_client_id")
+    data.Set("client_secret", "your_client_secret")
+
+    resp, err := http.PostForm("http://auth-server/oauth/token", data)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    var tokenResponse oauth.TokenResponse
+    if err := json.NewDecoder(resp.Body).Decode(&tokenResponse); err != nil {
+        return nil, err
+    }
+
+    return &tokenResponse, nil
+}
+```
+*/

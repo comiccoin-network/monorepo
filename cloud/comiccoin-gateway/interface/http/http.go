@@ -46,7 +46,9 @@ type httpServerImpl struct {
 
 	loginHandler *handler.LoginHandler
 
-	tokenHandler *handler.TokenHandler
+	tokenHandler         *handler.TokenHandler
+	introspectionHandler *handler.IntrospectionHandler
+	refreshTokenHandler  *handler.RefreshTokenHandler
 
 	// gatewayUserRegisterHTTPHandler                *handler.GatewayUserRegisterHTTPHandler
 	// gatewayLoginHTTPHandler                       *handler.GatewayLoginHTTPHandler
@@ -133,6 +135,7 @@ func NewHTTPServer(
 	clientService := NewClientService()
 	authStore := NewAuthStore()
 	userService := NewUserService()
+	tokenStore := NewTokenStore() // Add this line
 
 	// Create the handlers with the correct dependencies
 	authorizeHandler := handler.NewAuthorizeHandler(
@@ -153,6 +156,19 @@ func NewHTTPServer(
 		authStore,
 	)
 
+	refreshTokenHandler := handler.NewRefreshTokenHandler(
+		logger,
+		clientService,
+		tokenStore,
+		authStore,
+	)
+
+	introspectionHandler := handler.NewIntrospectionHandler(
+		logger,
+		clientService,
+		tokenStore,
+	)
+
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
 		cfg:                       cfg,
@@ -164,6 +180,8 @@ func NewHTTPServer(
 		authorizeHandler:          authorizeHandler,
 		loginHandler:              loginHandler,
 		tokenHandler:              tokenHandler,
+		introspectionHandler:      introspectionHandler,
+		refreshTokenHandler:       refreshTokenHandler,
 		// gatewayUserRegisterHTTPHandler:                         h3,
 		// gatewayLoginHTTPHandler:                                h4,
 		// gatewayLogoutHTTPHandler:                               h5,
@@ -248,6 +266,10 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.loginHandler.Execute(w, r)
 	case n == 2 && p[0] == "oauth" && p[1] == "token" && r.Method == http.MethodPost:
 		port.tokenHandler.Execute(w, r)
+	case n == 2 && p[0] == "oauth" && p[1] == "refresh" && r.Method == http.MethodPost:
+		port.refreshTokenHandler.Execute(w, r)
+	case n == 2 && p[0] == "oauth" && p[1] == "introspect" && r.Method == http.MethodPost:
+		port.introspectionHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:
@@ -441,4 +463,80 @@ func (s *UserServiceImpl) ValidateCredentials(username, password string) (bool, 
 		return false, nil
 	}
 	return storedPassword == password, nil
+}
+
+// TokenStoreImpl implements the oauth.TokenStore interface
+type TokenStoreImpl struct {
+	mu     sync.RWMutex
+	tokens map[string]*oauth.Token
+}
+
+func NewTokenStore() *TokenStoreImpl {
+	return &TokenStoreImpl{
+		tokens: make(map[string]*oauth.Token),
+	}
+}
+
+func (s *TokenStoreImpl) StoreToken(token *oauth.Token) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.tokens[token.TokenID] = token
+
+	// Start cleanup goroutine
+	go func() {
+		time.Sleep(time.Until(token.ExpiresAt))
+		s.mu.Lock()
+		delete(s.tokens, token.TokenID)
+		s.mu.Unlock()
+	}()
+
+	return nil
+}
+
+func (s *TokenStoreImpl) GetToken(tokenID string) (*oauth.Token, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	token, exists := s.tokens[tokenID]
+	if !exists {
+		return nil, oauth.ErrAuthorizationNotFound
+	}
+
+	if time.Now().After(token.ExpiresAt) {
+		delete(s.tokens, tokenID)
+		return nil, oauth.ErrAuthorizationNotFound
+	}
+
+	if token.IsRevoked {
+		return nil, oauth.ErrAuthorizationNotFound
+	}
+
+	return token, nil
+}
+
+func (s *TokenStoreImpl) RevokeToken(tokenID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	token, exists := s.tokens[tokenID]
+	if !exists {
+		return oauth.ErrAuthorizationNotFound
+	}
+
+	token.IsRevoked = true
+	return nil
+}
+
+func (s *TokenStoreImpl) RevokeAllUserTokens(userID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for _, token := range s.tokens {
+		if token.UserID == userID {
+			token.IsRevoked = true
+		}
+	}
+
+	return nil
 }

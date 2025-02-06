@@ -44,9 +44,47 @@ type Client struct {
 // TokenResponse represents the response sent to clients when they exchange
 // an authorization code for an access token.
 type TokenResponse struct {
-	AccessToken string `json:"access_token"` // The issued access token
-	TokenType   string `json:"token_type"`   // Always "Bearer" in our implementation
-	ExpiresIn   int    `json:"expires_in"`   // Token lifetime in seconds
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	Scope        string `json:"scope,omitempty"`
+}
+
+// Token represents a stored access or refresh token
+type Token struct {
+	TokenID   string    // The token itself
+	TokenType string    // "access" or "refresh"
+	UserID    string    // The user this token belongs to
+	ClientID  string    // The client this token was issued to
+	Scope     string    // The token's authorized scope
+	ExpiresAt time.Time // When this token expires
+	IsRevoked bool      // Whether this token has been revoked
+}
+
+// TokenStore manages access and refresh tokens
+type TokenStore interface {
+	// StoreToken stores a new token
+	StoreToken(token *Token) error
+
+	// GetToken retrieves a token by its ID
+	GetToken(tokenID string) (*Token, error)
+
+	// RevokeToken marks a token as revoked
+	RevokeToken(tokenID string) error
+
+	// RevokeAllUserTokens revokes all tokens for a user
+	RevokeAllUserTokens(userID string) error
+}
+
+// IntrospectionResponse represents the OAuth 2.0 token introspection response
+type IntrospectionResponse struct {
+	Active    bool   `json:"active"`              // Is the token active?
+	Scope     string `json:"scope,omitempty"`     // The token's scope
+	ClientID  string `json:"client_id,omitempty"` // Client ID the token was issued to
+	Username  string `json:"username,omitempty"`  // Username of the resource owner
+	ExpiresAt int64  `json:"exp,omitempty"`       // Token expiration timestamp
+	IssuedAt  int64  `json:"iat,omitempty"`       // When the token was issued
 }
 
 // ValidationError represents an OAuth 2.0 protocol error
