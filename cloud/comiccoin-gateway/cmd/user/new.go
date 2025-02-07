@@ -8,16 +8,18 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/logger"
+	passwordp "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/password"
+	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 	repo_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/user"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -82,9 +84,21 @@ func doRunCreateUser() {
 	cfg := config.NewProviderUsingEnvironmentVariables()
 	dbClient := mongodb.NewProvider(cfg, logger)
 
+	// Initialize the password provider for secure password handling
+	passp := passwordp.NewProvider()
+
 	// Initialize repository and use case
 	userRepo := repo_user.NewRepository(cfg, logger, dbClient)
 	userCreateUseCase := uc_user.NewUserCreateUseCase(cfg, logger, userRepo)
+
+	// Create a secure string from the password input
+	// This ensures the password is handled securely in memory
+	pass, err := sstring.NewSecureString(flagPassword)
+	if err != nil {
+		log.Fatalf("Failed securing password: %v\n", err)
+	}
+	// Note: We're not using defer pass.Wipe() here as it can cause hangs,
+	// similar to the note in the initialize.go code
 
 	// Create context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
@@ -103,6 +117,13 @@ func doRunCreateUser() {
 
 	// Define transaction function
 	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
+		// Generate password hash using the password provider
+		// This uses argon2id under the hood for secure password hashing
+		passHash, err := passp.GenerateHashFromPassword(pass)
+		if err != nil {
+			return nil, fmt.Errorf("failed generating password hash: %w", err)
+		}
+
 		// Parse created by user ID
 		createdByUserID, err := primitive.ObjectIDFromHex(flagCreatedByUserID)
 		if err != nil {
@@ -113,10 +134,13 @@ func doRunCreateUser() {
 		user := &dom_user.User{
 			ID:                    primitive.NewObjectID(),
 			Email:                 flagEmail,
+			WasEmailVerified:      true,
 			FirstName:             flagFirstName,
 			LastName:              flagLastName,
 			Name:                  fmt.Sprintf("%s %s", flagFirstName, flagLastName),
 			LexicalName:           fmt.Sprintf("%s, %s", flagLastName, flagFirstName),
+			PasswordHash:          passHash,              // Store the secure password hash
+			PasswordHashAlgorithm: passp.AlgorithmName(), // Store the algorithm name for future reference
 			Role:                  flagRole,
 			Phone:                 flagPhone,
 			Country:               flagCountry,
@@ -134,7 +158,7 @@ func doRunCreateUser() {
 			ModifiedAt:            time.Now(),
 		}
 
-		// Execute creation
+		// Execute user creation through the use case
 		err = userCreateUseCase.Execute(sessCtx, user)
 		if err != nil {
 			sessCtx.AbortTransaction(ctx)

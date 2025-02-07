@@ -113,11 +113,13 @@ func (s *authorizeServiceImpl) CreatePendingAuthorization(ctx context.Context, c
 	}
 
 	// Create an authorization code record
+	// Note: We're adding default values for required fields
 	authCode := &authorization.AuthorizationCode{
 		Code:        code,
 		AppID:       clientID,
 		RedirectURI: redirectURI,
-		Scope:       scope,
+		Scope:       "read",    // Set a default scope - adjust based on your needs
+		UserID:      "pending", // We'll update this after user login
 		ExpiresAt:   time.Now().Add(10 * time.Minute),
 		IsUsed:      false,
 		CreatedAt:   time.Now(),

@@ -12,6 +12,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/blacklist"
 	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/jwt"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/password"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
@@ -58,6 +59,7 @@ func doRunDaemon() {
 	jwtp := jwt.NewProvider(cfg)
 	cache := mongodbcache.NewCache(cfg, logger, dbClient)
 	ipcbp := ipcb.NewProvider(cfg, logger)
+	passp := password.NewProvider()
 
 	//
 	// Repository
@@ -179,6 +181,7 @@ func doRunDaemon() {
 	loginService := oauth.NewLoginService(
 		cfg,
 		logger,
+		passp,
 		userGetByEmailUseCase,
 		authFindByCodeUseCase,
 		authStoreCodeUseCase,
