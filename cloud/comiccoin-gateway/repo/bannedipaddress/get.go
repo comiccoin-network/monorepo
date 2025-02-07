@@ -5,17 +5,16 @@ import (
 	"log/slog"
 	"math/big"
 
+	dom_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/bannedipaddress"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
 )
 
-func (impl bannedIPAddressImpl) GetByID(ctx context.Context, id primitive.ObjectID) (*domain.BannedIPAddress, error) {
+func (impl bannedIPAddressImpl) GetByID(ctx context.Context, id primitive.ObjectID) (*dom_banip.BannedIPAddress, error) {
 	filter := bson.M{"_id": id}
 
-	var result domain.BannedIPAddress
+	var result dom_banip.BannedIPAddress
 	err := impl.Collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -28,10 +27,10 @@ func (impl bannedIPAddressImpl) GetByID(ctx context.Context, id primitive.Object
 	return &result, nil
 }
 
-func (impl bannedIPAddressImpl) GetByNonce(ctx context.Context, nonce *big.Int) (*domain.BannedIPAddress, error) {
+func (impl bannedIPAddressImpl) GetByNonce(ctx context.Context, nonce *big.Int) (*dom_banip.BannedIPAddress, error) {
 	filter := bson.M{"transaction.nonce_bytes": nonce.Bytes()}
 
-	var result domain.BannedIPAddress
+	var result dom_banip.BannedIPAddress
 	err := impl.Collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

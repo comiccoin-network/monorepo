@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/bannedipaddress"
 )
 
 type bannedIPAddressImpl struct {
@@ -18,7 +18,7 @@ type bannedIPAddressImpl struct {
 	Collection *mongo.Collection
 }
 
-func NewBannedIPAddressRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *mongo.Client) domain.BannedIPAddressRepository {
+func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *mongo.Client) dom_banip.Repository {
 	// ctx := context.Background()
 	uc := client.Database(appCfg.DB.Name).Collection("banned_ip_addresses")
 

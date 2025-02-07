@@ -63,8 +63,8 @@ func doRunDaemon() {
 	// Repository
 	//
 
-	banIPAddrRepo := r_banip.NewBannedIPAddressRepository(cfg, logger, dbClient)
-	userRepo := r_user.NewUserRepository(cfg, logger, dbClient)
+	banIPAddrRepo := r_banip.NewRepository(cfg, logger, dbClient)
+	userRepo := r_user.NewRepository(cfg, logger, dbClient)
 	_ = userRepo
 	// accountRepo := repo.NewAccountRepository(cfg, logger, dbClient)
 	// tenantRepo := repo.NewTenantRepository(cfg, logger, dbClient)

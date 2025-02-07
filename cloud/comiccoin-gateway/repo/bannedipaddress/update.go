@@ -6,10 +6,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/bannedipaddress"
 )
 
-func (impl bannedIPAddressImpl) UpdateByID(ctx context.Context, m *domain.BannedIPAddress) error {
+func (impl bannedIPAddressImpl) UpdateByID(ctx context.Context, m *dom_banip.BannedIPAddress) error {
 	filter := bson.M{"_id": m.ID}
 
 	update := bson.M{ // DEVELOPERS NOTE: https://stackoverflow.com/a/60946010

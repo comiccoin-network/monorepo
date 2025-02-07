@@ -1,13 +1,10 @@
 package domain
 
 import (
-	"context"
-	"log/slog"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const (
@@ -152,24 +149,4 @@ type UserFilterResult struct {
 	HasMore       bool               `json:"has_more"`
 	LastID        primitive.ObjectID `json:"last_id,omitempty"`
 	LastCreatedAt time.Time          `json:"last_created_at,omitempty"`
-}
-
-// UserStorer Interface for user.
-type UserRepository interface {
-	Create(ctx context.Context, m *User) error
-	GetByID(ctx context.Context, id primitive.ObjectID) (*User, error)
-	GetByEmail(ctx context.Context, email string) (*User, error)
-	GetByVerificationCode(ctx context.Context, verificationCode string) (*User, error)
-	DeleteByID(ctx context.Context, id primitive.ObjectID) error
-	CheckIfExistsByEmail(ctx context.Context, email string) (bool, error)
-	UpdateByID(ctx context.Context, m *User) error
-	// CountByFilter(ctx context.Context, filter *UserFilter) (uint64, error)
-	// ListByFilter(ctx context.Context, filter *UserFilter) (*UserFilterResult, error)
-	// // //TODO: Add more...
-}
-
-type UserStorerImpl struct {
-	Logger     *slog.Logger
-	DbClient   *mongo.Client
-	Collection *mongo.Collection
 }

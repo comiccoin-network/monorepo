@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/bannedipaddress"
 )
 
 type BannedIPAddressListAllValuesUseCase interface {
@@ -15,13 +15,13 @@ type BannedIPAddressListAllValuesUseCase interface {
 type bannedIPAddressListAllValuesUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
-	repo   domain.BannedIPAddressRepository
+	repo   dom_banip.Repository
 }
 
 func NewBannedIPAddressListAllValuesUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
-	repo domain.BannedIPAddressRepository,
+	repo dom_banip.Repository,
 ) BannedIPAddressListAllValuesUseCase {
 	return &bannedIPAddressListAllValuesUseCaseImpl{config, logger, repo}
 }

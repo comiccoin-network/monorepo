@@ -6,10 +6,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 )
 
-func (impl userStorerImpl) Create(ctx context.Context, u *domain.User) error {
+func (impl userStorerImpl) Create(ctx context.Context, u *dom_user.User) error {
 	// DEVELOPER NOTES:
 	// According to mongodb documentaiton:
 	//     Non-existent Databases and Collections

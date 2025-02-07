@@ -6,24 +6,24 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 )
 
 type UserCreateUseCase interface {
-	Execute(ctx context.Context, user *domain.User) error
+	Execute(ctx context.Context, user *dom_user.User) error
 }
 
 type userCreateUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
-	repo   domain.UserRepository
+	repo   dom_user.Repository
 }
 
-func NewUserCreateUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) UserCreateUseCase {
+func NewUserCreateUseCase(config *config.Configuration, logger *slog.Logger, repo dom_user.Repository) UserCreateUseCase {
 	return &userCreateUseCaseImpl{config, logger, repo}
 }
 
-func (uc *userCreateUseCaseImpl) Execute(ctx context.Context, user *domain.User) error {
+func (uc *userCreateUseCaseImpl) Execute(ctx context.Context, user *dom_user.User) error {
 	//
 	// STEP 1: Validation.
 	//

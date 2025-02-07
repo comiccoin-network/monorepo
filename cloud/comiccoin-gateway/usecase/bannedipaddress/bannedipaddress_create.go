@@ -6,28 +6,28 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/bannedipaddress"
 )
 
 type CreateBannedIPAddressUseCase interface {
-	Execute(ctx context.Context, bannedIPAddress *domain.BannedIPAddress) error
+	Execute(ctx context.Context, bannedIPAddress *dom_banip.BannedIPAddress) error
 }
 
 type createBannedIPAddressUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
-	repo   domain.BannedIPAddressRepository
+	repo   dom_banip.Repository
 }
 
 func NewCreateBannedIPAddressUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
-	repo domain.BannedIPAddressRepository,
+	repo dom_banip.Repository,
 ) CreateBannedIPAddressUseCase {
 	return &createBannedIPAddressUseCaseImpl{config, logger, repo}
 }
 
-func (uc *createBannedIPAddressUseCaseImpl) Execute(ctx context.Context, bannedIPAddress *domain.BannedIPAddress) error {
+func (uc *createBannedIPAddressUseCaseImpl) Execute(ctx context.Context, bannedIPAddress *dom_banip.BannedIPAddress) error {
 	//
 	// STEP 1: Validation.
 	//

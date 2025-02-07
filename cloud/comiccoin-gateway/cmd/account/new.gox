@@ -98,7 +98,7 @@ func doRunNewAccount() {
 	//
 
 	tenantRepo := repo.NewTenantRepository(cfg, logger, dbClient)
-	userRepo := repo.NewUserRepository(cfg, logger, dbClient)
+	userRepo := repo.NewRepository(cfg, logger, dbClient)
 
 	//
 	// Use-case

@@ -6,10 +6,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/bannedipaddress"
 )
 
-func (impl bannedIPAddressImpl) Create(ctx context.Context, u *domain.BannedIPAddress) error {
+func (impl bannedIPAddressImpl) Create(ctx context.Context, u *dom_banip.BannedIPAddress) error {
 	// DEVELOPER NOTES:
 	// According to mongodb documentaiton:
 	//     Non-existent Databases and Collections

@@ -6,7 +6,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 )
 
 // func (impl userStorerImpl) DeleteByID(ctx context.Context, id primitive.ObjectID) error {
@@ -39,7 +39,7 @@ import (
 // 	return count >= 1, nil
 // }
 
-func (impl userStorerImpl) UpdateByID(ctx context.Context, m *domain.User) error {
+func (impl userStorerImpl) UpdateByID(ctx context.Context, m *dom_user.User) error {
 	filter := bson.M{"_id": m.ID}
 
 	update := bson.M{ // DEVELOPERS NOTE: https://stackoverflow.com/a/60946010
@@ -60,7 +60,7 @@ func (impl userStorerImpl) UpdateByID(ctx context.Context, m *domain.User) error
 }
 
 // // buildCountMatchStage creates the match stage for the aggregation pipeline
-// func (s *userStorerImpl) buildCountMatchStage(filter *domain.UserFilter) bson.M {
+// func (s *userStorerImpl) buildCountMatchStage(filter *dom_user.UserFilter) bson.M {
 // 	match := bson.M{}
 //
 // 	if filter.Status != 0 {
@@ -88,14 +88,14 @@ func (impl userStorerImpl) UpdateByID(ctx context.Context, m *domain.User) error
 // }
 //
 // // hasActiveFilters checks if any filters besides tenant_id are active
-// func (s *userStorerImpl) hasActiveFilters(filter *domain.UserFilter) bool {
+// func (s *userStorerImpl) hasActiveFilters(filter *dom_user.UserFilter) bool {
 // 	return filter.Name != nil ||
 // 		filter.Status != 0 ||
 // 		filter.CreatedAtStart != nil ||
 // 		filter.CreatedAtEnd != nil
 // }
 //
-// func (s *userStorerImpl) CountByFilter(ctx context.Context, filter *domain.UserFilter) (uint64, error) {
+// func (s *userStorerImpl) CountByFilter(ctx context.Context, filter *dom_user.UserFilter) (uint64, error) {
 // 	if filter == nil {
 // 		return 0, errors.New("filter cannot be nil")
 // 	}
@@ -142,7 +142,7 @@ func (impl userStorerImpl) UpdateByID(ctx context.Context, m *domain.User) error
 // 	return uint64(count), nil
 // }
 //
-// func (impl userStorerImpl) buildMatchStage(filter *domain.UserFilter) bson.M {
+// func (impl userStorerImpl) buildMatchStage(filter *dom_user.UserFilter) bson.M {
 // 	match := bson.M{}
 //
 // 	// Handle cursor-based pagination
@@ -190,7 +190,7 @@ func (impl userStorerImpl) UpdateByID(ctx context.Context, m *domain.User) error
 // 	return match
 // }
 //
-// func (impl userStorerImpl) ListByFilter(ctx context.Context, filter *domain.UserFilter) (*domain.UserFilterResult, error) {
+// func (impl userStorerImpl) ListByFilter(ctx context.Context, filter *dom_user.UserFilter) (*dom_user.UserFilterResult, error) {
 // 	if filter == nil {
 // 		return nil, errors.New("filter cannot be nil")
 // 	}
@@ -230,7 +230,7 @@ func (impl userStorerImpl) UpdateByID(ctx context.Context, m *domain.User) error
 // 	defer cursor.Close(ctx)
 //
 // 	// Decode results
-// 	var Users []*domain.User
+// 	var Users []*dom_user.User
 // 	if err := cursor.All(ctx, &Users); err != nil {
 // 		return nil, err
 // 	}
@@ -239,8 +239,8 @@ func (impl userStorerImpl) UpdateByID(ctx context.Context, m *domain.User) error
 // 	if len(Users) == 0 {
 // 		// For debugging purposes only.
 // 		// impl.Logger.Debug("Empty list", slog.Any("filter", filter))
-// 		return &domain.UserFilterResult{
-// 			Users:   make([]*domain.User, 0),
+// 		return &dom_user.UserFilterResult{
+// 			Users:   make([]*dom_user.User, 0),
 // 			HasMore: false,
 // 		}, nil
 // 	}
@@ -255,7 +255,7 @@ func (impl userStorerImpl) UpdateByID(ctx context.Context, m *domain.User) error
 // 	// Get last document info for next page
 // 	lastDoc := Users[len(Users)-1]
 //
-// 	return &domain.UserFilterResult{
+// 	return &dom_user.UserFilterResult{
 // 		Users:         Users,
 // 		HasMore:       hasMore,
 // 		LastID:        lastDoc.ID,

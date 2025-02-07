@@ -9,11 +9,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 )
 
 type UserGetBySessionIDUseCase interface {
-	Execute(ctx context.Context, sessionID string) (*domain.User, error)
+	Execute(ctx context.Context, sessionID string) (*dom_user.User, error)
 }
 
 type userGetBySessionIDUseCaseImpl struct {
@@ -26,7 +26,7 @@ func NewUserGetBySessionIDUseCase(config *config.Configuration, logger *slog.Log
 	return &userGetBySessionIDUseCaseImpl{config, logger, ca}
 }
 
-func (uc *userGetBySessionIDUseCaseImpl) Execute(ctx context.Context, sessionID string) (*domain.User, error) {
+func (uc *userGetBySessionIDUseCaseImpl) Execute(ctx context.Context, sessionID string) (*dom_user.User, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -57,7 +57,7 @@ func (uc *userGetBySessionIDUseCaseImpl) Execute(ctx context.Context, sessionID 
 		uc.logger.Warn("record not found")
 		return nil, errors.New("record not found")
 	}
-	var user domain.User
+	var user dom_user.User
 	err = json.Unmarshal(userBytes, &user)
 	if err != nil {
 		uc.logger.Error("unmarshalling failed", slog.Any("err", err))

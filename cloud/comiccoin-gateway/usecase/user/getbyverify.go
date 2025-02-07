@@ -6,24 +6,24 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 )
 
 type UserGetByVerificationCodeUseCase interface {
-	Execute(ctx context.Context, verificationCode string) (*domain.User, error)
+	Execute(ctx context.Context, verificationCode string) (*dom_user.User, error)
 }
 
 type userGetByVerificationCodeUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
-	repo   domain.UserRepository
+	repo   dom_user.Repository
 }
 
-func NewUserGetByVerificationCodeUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) UserGetByVerificationCodeUseCase {
+func NewUserGetByVerificationCodeUseCase(config *config.Configuration, logger *slog.Logger, repo dom_user.Repository) UserGetByVerificationCodeUseCase {
 	return &userGetByVerificationCodeUseCaseImpl{config, logger, repo}
 }
 
-func (uc *userGetByVerificationCodeUseCaseImpl) Execute(ctx context.Context, verificationCode string) (*domain.User, error) {
+func (uc *userGetByVerificationCodeUseCaseImpl) Execute(ctx context.Context, verificationCode string) (*dom_user.User, error) {
 	//
 	// STEP 1: Validation.
 	//

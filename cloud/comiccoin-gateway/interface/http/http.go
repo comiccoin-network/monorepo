@@ -291,7 +291,6 @@ func (s *ClientServiceImpl) ValidateClientCredentials(clientID, clientSecret str
 	return client.Secret == clientSecret, nil
 }
 
-// Add the missing GetClient method
 func (s *ClientServiceImpl) GetClient(clientID string) (*oauth.Client, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

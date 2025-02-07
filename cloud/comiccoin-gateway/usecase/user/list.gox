@@ -6,28 +6,28 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 )
 
 type UserListByFilterUseCase interface {
-	Execute(ctx context.Context, filter *domain.UserFilter) (*domain.UserFilterResult, error)
+	Execute(ctx context.Context, filter *dom_user.UserFilter) (*dom_user.UserFilterResult, error)
 }
 
 type userListByFilterUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
-	repo   domain.UserRepository
+	repo   dom_user.Repository
 }
 
 func NewUserListByFilterUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
-	repo domain.UserRepository,
+	repo dom_user.Repository,
 ) UserListByFilterUseCase {
 	return &userListByFilterUseCaseImpl{config, logger, repo}
 }
 
-func (uc *userListByFilterUseCaseImpl) Execute(ctx context.Context, filter *domain.UserFilter) (*domain.UserFilterResult, error) {
+func (uc *userListByFilterUseCaseImpl) Execute(ctx context.Context, filter *dom_user.UserFilter) (*dom_user.UserFilterResult, error) {
 	//
 	// STEP 1: Validation.
 	//

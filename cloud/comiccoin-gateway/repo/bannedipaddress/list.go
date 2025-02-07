@@ -9,18 +9,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/bannedipaddress"
 )
 
 // hasActiveFilters checks if any filters besides tenant_id are active
-func (impl bannedIPAddressImpl) hasActiveFilters(filter *domain.BannedIPAddressFilter) bool {
+func (impl bannedIPAddressImpl) hasActiveFilters(filter *dom_banip.BannedIPAddressFilter) bool {
 	return !filter.UserID.IsZero() ||
 		filter.CreatedAtStart != nil ||
 		filter.CreatedAtEnd != nil
 }
 
 // buildCountMatchStage creates the match stage for the aggregation pipeline
-func (impl bannedIPAddressImpl) buildCountMatchStage(filter *domain.BannedIPAddressFilter) bson.M {
+func (impl bannedIPAddressImpl) buildCountMatchStage(filter *dom_banip.BannedIPAddressFilter) bson.M {
 	match := bson.M{}
 
 	if !filter.UserID.IsZero() {
@@ -42,7 +42,7 @@ func (impl bannedIPAddressImpl) buildCountMatchStage(filter *domain.BannedIPAddr
 	return match
 }
 
-func (impl bannedIPAddressImpl) CountByFilter(ctx context.Context, filter *domain.BannedIPAddressFilter) (uint64, error) {
+func (impl bannedIPAddressImpl) CountByFilter(ctx context.Context, filter *dom_banip.BannedIPAddressFilter) (uint64, error) {
 	if filter == nil {
 		return 0, errors.New("filter cannot be nil")
 	}
@@ -89,7 +89,7 @@ func (impl bannedIPAddressImpl) CountByFilter(ctx context.Context, filter *domai
 	return uint64(count), nil
 }
 
-func (impl bannedIPAddressImpl) buildMatchStage(filter *domain.BannedIPAddressFilter) bson.M {
+func (impl bannedIPAddressImpl) buildMatchStage(filter *dom_banip.BannedIPAddressFilter) bson.M {
 	match := bson.M{}
 
 	// Handle cursor-based pagination
@@ -130,7 +130,7 @@ func (impl bannedIPAddressImpl) buildMatchStage(filter *domain.BannedIPAddressFi
 	return match
 }
 
-func (impl bannedIPAddressImpl) ListByFilter(ctx context.Context, filter *domain.BannedIPAddressFilter) (*domain.BannedIPAddressFilterResult, error) {
+func (impl bannedIPAddressImpl) ListByFilter(ctx context.Context, filter *dom_banip.BannedIPAddressFilter) (*dom_banip.BannedIPAddressFilterResult, error) {
 	if filter == nil {
 		return nil, errors.New("filter cannot be nil")
 	}
@@ -170,7 +170,7 @@ func (impl bannedIPAddressImpl) ListByFilter(ctx context.Context, filter *domain
 	defer cursor.Close(ctx)
 
 	// Decode results
-	var bannedIPAddresss []*domain.BannedIPAddress
+	var bannedIPAddresss []*dom_banip.BannedIPAddress
 	if err := cursor.All(ctx, &bannedIPAddresss); err != nil {
 		return nil, err
 	}
@@ -178,8 +178,8 @@ func (impl bannedIPAddressImpl) ListByFilter(ctx context.Context, filter *domain
 	// Handle empty results case
 	if len(bannedIPAddresss) == 0 {
 		// impl.Logger.Debug("Empty list", slog.Any("filter", filter))
-		return &domain.BannedIPAddressFilterResult{
-			BannedIPAddresses: make([]*domain.BannedIPAddress, 0),
+		return &dom_banip.BannedIPAddressFilterResult{
+			BannedIPAddresses: make([]*dom_banip.BannedIPAddress, 0),
 			HasMore:           false,
 		}, nil
 	}
@@ -194,7 +194,7 @@ func (impl bannedIPAddressImpl) ListByFilter(ctx context.Context, filter *domain
 	// Get last document info for next page
 	lastDoc := bannedIPAddresss[len(bannedIPAddresss)-1]
 
-	return &domain.BannedIPAddressFilterResult{
+	return &dom_banip.BannedIPAddressFilterResult{
 		BannedIPAddresses: bannedIPAddresss,
 		HasMore:           hasMore,
 		LastID:            lastDoc.ID,
@@ -214,7 +214,7 @@ func (impl bannedIPAddressImpl) DeleteByID(ctx context.Context, id primitive.Obj
 
 func (impl bannedIPAddressImpl) ListAllValues(ctx context.Context) ([]string, error) {
 	// Create an empty collection to hold our results
-	var results []domain.BannedIPAddress
+	var results []dom_banip.BannedIPAddress
 
 	// Set up our find options to only get the "value" field
 	opts := options.Find().SetProjection(bson.D{{Key: "value", Value: 1}})

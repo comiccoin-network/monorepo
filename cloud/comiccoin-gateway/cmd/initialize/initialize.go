@@ -72,7 +72,7 @@ func doRunGatewayInit() {
 	// Repository
 	//
 
-	userRepo := repo_user.NewUserRepository(cfg, logger, dbClient)
+	userRepo := repo_user.NewRepository(cfg, logger, dbClient)
 
 	// //
 	// // Use-case

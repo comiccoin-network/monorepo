@@ -11,7 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/password"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
 )
 
@@ -80,17 +80,17 @@ func (s *gatewayInitServiceImpl) Execute(
 		return err
 	}
 
-	user := &domain.User{
+	user := &dom_user.User{
 		ID:                        userID,
 		FirstName:                 "System",
 		LastName:                  "Administrator",
 		Name:                      "System Administrator",
 		LexicalName:               "Administrator, System",
 		Email:                     email,
-		Status:                    domain.UserStatusActive,
+		Status:                    dom_user.UserStatusActive,
 		PasswordHash:              passwordHash,
 		PasswordHashAlgorithm:     s.passwordProvider.AlgorithmName(),
-		Role:                      domain.UserRoleRoot,
+		Role:                      dom_user.UserRoleRoot,
 		WasEmailVerified:          true,
 		CreatedByUserID:           userID,
 		CreatedByName:             "System Administrator",
@@ -98,7 +98,7 @@ func (s *gatewayInitServiceImpl) Execute(
 		ModifiedByUserID:          userID,
 		ModifiedByName:            "System Administrator",
 		ModifiedAt:                time.Now(),
-		ProfileVerificationStatus: domain.UserProfileVerificationStatusApproved,
+		ProfileVerificationStatus: dom_user.UserProfileVerificationStatusApproved,
 		Country:                   "Canada",
 		Timezone:                  "America/Toronto",
 		AgreeTermsOfService:       true,

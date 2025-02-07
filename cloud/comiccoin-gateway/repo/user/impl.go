@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 )
 
 type userStorerImpl struct {
@@ -18,7 +18,7 @@ type userStorerImpl struct {
 	Collection *mongo.Collection
 }
 
-func NewUserRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *mongo.Client) domain.UserRepository {
+func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *mongo.Client) dom_user.Repository {
 	// ctx := context.Background()
 	uc := client.Database(appCfg.DB.Name).Collection("users")
 

@@ -6,24 +6,24 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 )
 
 type UserGetByEmailUseCase interface {
-	Execute(ctx context.Context, email string) (*domain.User, error)
+	Execute(ctx context.Context, email string) (*dom_user.User, error)
 }
 
 type userGetByEmailUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
-	repo   domain.UserRepository
+	repo   dom_user.Repository
 }
 
-func NewUserGetByEmailUseCase(config *config.Configuration, logger *slog.Logger, repo domain.UserRepository) UserGetByEmailUseCase {
+func NewUserGetByEmailUseCase(config *config.Configuration, logger *slog.Logger, repo dom_user.Repository) UserGetByEmailUseCase {
 	return &userGetByEmailUseCaseImpl{config, logger, repo}
 }
 
-func (uc *userGetByEmailUseCaseImpl) Execute(ctx context.Context, email string) (*domain.User, error) {
+func (uc *userGetByEmailUseCaseImpl) Execute(ctx context.Context, email string) (*dom_user.User, error) {
 	//
 	// STEP 1: Validation.
 	//
