@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/oauth"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/oauth"
 )
 
 // LoginHandler handles the OAuth 2.0 login endpoint, which authenticates the user

@@ -13,7 +13,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/oauth"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/oauth"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.

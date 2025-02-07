@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/oauth"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/oauth"
 )
 
 // IntrospectionHandler implements OAuth 2.0 token introspection
