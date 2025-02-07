@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/gateway/gatewayinit.go
 package gateway
 
 import (
