@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler/oauth_introspect.go
-package handler
+package oauth
 
 import (
 	"encoding/json"

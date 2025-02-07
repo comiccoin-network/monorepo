@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth/authorize.go
-package handler
+package oauth
 
 import (
 	"errors"

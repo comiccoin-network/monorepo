@@ -50,10 +50,10 @@ func (mid *middleware) Attach(fn http.HandlerFunc) http.HandlerFunc {
 	// will start from the bottom and proceed upwards.
 	// Ex: `RateLimitMiddleware` will be executed first and
 	//     `ProtectedURLsMiddleware` will be executed last.
-	fn = mid.ProtectedURLsMiddleware(fn)
-	fn = mid.PostJWTProcessorMiddleware(fn) // Note: Must be above `JWTProcessorMiddleware`.
-	fn = mid.JWTProcessorMiddleware(fn)     // Note: Must be above `PreJWTProcessorMiddleware`.
-	fn = mid.PreJWTProcessorMiddleware(fn)  // Note: Must be above `URLProcessorMiddleware` and `IPAddressMiddleware`.
+	// fn = mid.ProtectedURLsMiddleware(fn) //TODO: INTEGRATE WHEN READY WITH OAUTH
+	// fn = mid.PostJWTProcessorMiddleware(fn) // Note: Must be above `JWTProcessorMiddleware`. //TODO: INTEGRATE WHEN READY WITH OAUTH
+	// fn = mid.JWTProcessorMiddleware(fn)     // Note: Must be above `PreJWTProcessorMiddleware`. //TODO: INTEGRATE WHEN READY WITH OAUTH
+	// fn = mid.PreJWTProcessorMiddleware(fn)  // Note: Must be above `URLProcessorMiddleware` and `IPAddressMiddleware`. //TODO: INTEGRATE WHEN READY WITH OAUTH
 	fn = mid.EnforceRestrictCountryIPsMiddleware(fn)
 	fn = mid.EnforceBlacklistMiddleware(fn)
 	fn = mid.IPAddressMiddleware(fn)

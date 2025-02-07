@@ -14,7 +14,6 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
-	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -43,11 +42,13 @@ type httpServerImpl struct {
 
 	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler
 
-	authorizeHandler     *http_oauth.AuthorizeHandler
-	loginHandler         *http_oauth.LoginHandler
-	tokenHandler         *http_oauth.TokenHandler
-	introspectionHandler *http_oauth.IntrospectionHandler
-	refreshTokenHandler  *http_oauth.RefreshTokenHandler
+	authorizeHandler *handler.AuthorizeHandler
+
+	loginHandler *handler.LoginHandler
+
+	tokenHandler         *handler.TokenHandler
+	introspectionHandler *handler.IntrospectionHandler
+	refreshTokenHandler  *handler.RefreshTokenHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -57,11 +58,6 @@ func NewHTTPServer(
 	mid mid.Middleware,
 	h1 *handler.GetVersionHTTPHandler,
 	h2 *handler.GetHealthCheckHTTPHandler,
-	authorizeHandler *http_oauth.AuthorizeHandler,
-	loginHandler *http_oauth.LoginHandler,
-	tokenHandler *http_oauth.TokenHandler,
-	introspectionHandler *http_oauth.IntrospectionHandler,
-	refreshTokenHandler *http_oauth.RefreshTokenHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -80,6 +76,44 @@ func NewHTTPServer(
 		Handler: corsHandler,
 	}
 
+	// Initialize your implementations of the interfaces
+	clientService := NewClientService()
+	authStore := NewAuthStore()
+	userService := NewUserService()
+	tokenStore := NewTokenStore() // Add this line
+
+	// Create the handlers with the correct dependencies
+	authorizeHandler := handler.NewAuthorizeHandler(
+		logger,
+		clientService,
+		authStore,
+	)
+
+	loginHandler := handler.NewLoginHandler(
+		logger,
+		authStore,
+		userService,
+	)
+
+	tokenHandler := handler.NewTokenHandler(
+		logger,
+		clientService,
+		authStore,
+	)
+
+	refreshTokenHandler := handler.NewRefreshTokenHandler(
+		logger,
+		clientService,
+		tokenStore,
+		authStore,
+	)
+
+	introspectionHandler := handler.NewIntrospectionHandler(
+		logger,
+		clientService,
+		tokenStore,
+	)
+
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
 		cfg:                       cfg,
@@ -93,6 +127,21 @@ func NewHTTPServer(
 		tokenHandler:              tokenHandler,
 		introspectionHandler:      introspectionHandler,
 		refreshTokenHandler:       refreshTokenHandler,
+		// gatewayUserRegisterHTTPHandler:                         h3,
+		// gatewayLoginHTTPHandler:                                h4,
+		// gatewayLogoutHTTPHandler:                               h5,
+		// gatewayRefreshTokenHTTPHandler:                         h6,
+		// gatewayProfileDetailHTTPHandler:                        h7,
+		// gatewayProfileUpdateHTTPHandler:                        h8,
+		// gatewayVerifyHTTPHandler:                               h9,
+		// gatewayChangePasswordHTTPHandler:                       h10,
+		// gatewayForgotPasswordHTTPHandler:                       h11,
+		// gatewayResetPasswordHTTPHandler:                        h12,
+		// gatewayProfileWalletAddressHTTPHandler:                 h13,
+		// gatewayProfileApplyForVerificationHTTPHandler:          h14,
+		// userCountJoinedThisWeekHTTPHandler:                     h24,
+		// userListByFilterHTTPHandler:                            h25,
+		// userProfileVerificationJudgeOperationHTTPHandler:       h27,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
