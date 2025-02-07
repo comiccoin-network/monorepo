@@ -14,7 +14,6 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
-	// h_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -50,22 +49,6 @@ type httpServerImpl struct {
 	tokenHandler         *handler.TokenHandler
 	introspectionHandler *handler.IntrospectionHandler
 	refreshTokenHandler  *handler.RefreshTokenHandler
-
-	// gatewayUserRegisterHTTPHandler                *handler.GatewayUserRegisterHTTPHandler
-	// gatewayLoginHTTPHandler                       *handler.GatewayLoginHTTPHandler
-	// gatewayLogoutHTTPHandler                      *handler.GatewayLogoutHTTPHandler
-	// gatewayRefreshTokenHTTPHandler                *handler.GatewayRefreshTokenHTTPHandler
-	// gatewayProfileDetailHTTPHandler               *handler.GatewayProfileDetailHTTPHandler
-	// gatewayProfileUpdateHTTPHandler               *handler.GatewayProfileUpdateHTTPHandler
-	// gatewayVerifyHTTPHandler                      *handler.GatewayVerifyHTTPHandler
-	// gatewayChangePasswordHTTPHandler              *handler.GatewayChangePasswordHTTPHandler
-	// gatewayForgotPasswordHTTPHandler              *handler.GatewayForgotPasswordHTTPHandler
-	// gatewayResetPasswordHTTPHandler               *handler.GatewayResetPasswordHTTPHandler
-	// gatewayProfileWalletAddressHTTPHandler        *handler.GatewayProfileWalletAddressHTTPHandler
-	// gatewayProfileApplyForVerificationHTTPHandler *handler.GatewayApplyProfileForVerificationHTTPHandler
-	// userCountJoinedThisWeekHTTPHandler               *handler.UserCountJoinedThisWeekHTTPHandler
-	// userListByFilterHTTPHandler                      *handler.UserListByFilterHTTPHandler
-	// userProfileVerificationJudgeOperationHTTPHandler *handler.UserProfileVerificationJudgeOperationHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -75,21 +58,6 @@ func NewHTTPServer(
 	mid mid.Middleware,
 	h1 *handler.GetVersionHTTPHandler,
 	h2 *handler.GetHealthCheckHTTPHandler,
-	// h3 *handler.GatewayUserRegisterHTTPHandler,
-	// h4 *handler.GatewayLoginHTTPHandler,
-	// h5 *handler.GatewayLogoutHTTPHandler,
-	// h6 *handler.GatewayRefreshTokenHTTPHandler,
-	// h7 *handler.GatewayProfileDetailHTTPHandler,
-	// h8 *handler.GatewayProfileUpdateHTTPHandler,
-	// h9 *handler.GatewayVerifyHTTPHandler,
-	// h10 *handler.GatewayChangePasswordHTTPHandler,
-	// h11 *handler.GatewayForgotPasswordHTTPHandler,
-	// h12 *handler.GatewayResetPasswordHTTPHandler,
-	// h13 *handler.GatewayProfileWalletAddressHTTPHandler,
-	// h14 *handler.GatewayApplyProfileForVerificationHTTPHandler,
-	// h24 *handler.UserCountJoinedThisWeekHTTPHandler,
-	// h25 *handler.UserListByFilterHTTPHandler,
-	// h27 *handler.UserProfileVerificationJudgeOperationHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {

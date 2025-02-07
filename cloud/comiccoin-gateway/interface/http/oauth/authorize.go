@@ -8,25 +8,87 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/oauth"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
+	base_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/oauth"
+	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
 )
 
-// AuthorizeHandler handles the OAuth 2.0 authorization endpoint
+const loginFormTemplate = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth 2.0 Authorization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form method="POST" action="/oauth/login">
+            <input type="hidden" name="auth_id" value="{{.AuthID}}">
+            <div class="form-group">
+                <label>Client: {{.ClientID}}</label>
+            </div>
+            <div class="form-group">
+                <label>Scope: {{.Scope}}</label>
+            </div>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Authorize</button>
+        </form>
+    </div>
+</body>
+</html>
+`
+
 type AuthorizeHandler struct {
 	logger           *slog.Logger
-	authorizeService oauth.AuthorizeService
+	authorizeService svc_oauth.AuthorizeService
 	loginTemplate    *template.Template
 }
 
-// NewAuthorizeHandler creates a new instance of AuthorizeHandler
 func NewAuthorizeHandler(
 	logger *slog.Logger,
-	authorizeService oauth.AuthorizeService,
+	authorizeService svc_oauth.AuthorizeService,
 ) *AuthorizeHandler {
-	// Parse and prepare the login form template
 	tmpl := template.Must(template.New("login").Parse(loginFormTemplate))
-
 	return &AuthorizeHandler{
 		logger:           logger,
 		authorizeService: authorizeService,
@@ -34,24 +96,28 @@ func NewAuthorizeHandler(
 	}
 }
 
-// Execute handles incoming authorization requests
 func (h *AuthorizeHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("handling authorize request",
 		"method", r.Method,
 		"path", r.URL.Path)
 
-	// Extract and validate the request parameters
-	authReq := &oauth.AuthorizeRequest{
-		ClientID:     r.URL.Query().Get("client_id"),
-		RedirectURI:  r.URL.Query().Get("redirect_uri"),
-		ResponseType: r.URL.Query().Get("response_type"),
-		State:        r.URL.Query().Get("state"),
-		Scope:        r.URL.Query().Get("scope"),
-	}
+	// Extract query parameters
+	clientID := r.URL.Query().Get("client_id")
+	redirectURI := r.URL.Query().Get("redirect_uri")
+	responseType := r.URL.Query().Get("response_type")
+	state := r.URL.Query().Get("state")
+	scope := r.URL.Query().Get("scope")
 
-	// Validate the request parameters using our service
-	if err := h.authorizeService.ValidateAuthorizationRequest(authReq); err != nil {
-		var validationErr *oauth.ValidationError
+	// Validate the request parameters using our service - note we pass individual parameters now
+	if err := h.authorizeService.ValidateAuthorizationRequest(
+		r.Context(),
+		clientID,
+		redirectURI,
+		responseType,
+		state,
+		scope,
+	); err != nil {
+		var validationErr *base_oauth.ValidationError
 		if errors.As(err, &validationErr) {
 			h.handleValidationError(w, r, validationErr)
 			return
@@ -59,17 +125,23 @@ func (h *AuthorizeHandler) Execute(w http.ResponseWriter, r *http.Request) {
 
 		h.logger.Error("internal server error",
 			"error", err,
-			"client_id", authReq.ClientID)
+			"client_id", clientID)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	// Create a pending authorization using our service
-	authID, err := h.authorizeService.CreatePendingAuthorization(authReq)
+	// Create a pending authorization using our service - note we pass individual parameters now
+	authID, err := h.authorizeService.CreatePendingAuthorization(
+		r.Context(),
+		clientID,
+		redirectURI,
+		state,
+		scope,
+	)
 	if err != nil {
 		h.logger.Error("failed to create pending authorization",
 			"error", err,
-			"client_id", authReq.ClientID)
+			"client_id", clientID)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -80,23 +152,22 @@ func (h *AuthorizeHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		AuthID   string
 		Scope    string
 	}{
-		ClientID: authReq.ClientID,
+		ClientID: clientID,
 		AuthID:   authID,
-		Scope:    authReq.Scope,
+		Scope:    scope,
 	}
 
 	// Render the login form
 	if err := h.loginTemplate.Execute(w, data); err != nil {
 		h.logger.Error("failed to render template",
 			"error", err,
-			"client_id", authReq.ClientID)
+			"client_id", clientID)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 }
 
-// handleValidationError handles OAuth 2.0 error responses
-func (h *AuthorizeHandler) handleValidationError(w http.ResponseWriter, r *http.Request, ve *oauth.ValidationError) {
+func (h *AuthorizeHandler) handleValidationError(w http.ResponseWriter, r *http.Request, ve *base_oauth.ValidationError) {
 	h.logger.Warn("validation error",
 		"error", ve.ErrorCode,
 		"description", ve.ErrorDescription)

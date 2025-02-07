@@ -1,84 +1,130 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler/oauth_token.go
-package handler
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth/token.go
+package oauth
 
 import (
-	"encoding/json"
+	"context"
+	"fmt"
 	"log/slog"
-	"net/http"
+	"time"
 
-	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
+	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/token"
+	uc_app "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/application"
+	uc_auth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/authorization"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/token"
 )
 
-// TokenHandler handles the OAuth 2.0 token endpoint
-type TokenHandler struct {
-	logger       *slog.Logger
-	tokenService svc_oauth.TokenService
+// TokenRequestDTO represents the incoming request for token exchange
+type TokenRequestDTO struct {
+	GrantType    string
+	Code         string
+	ClientID     string
+	ClientSecret string
+	RedirectURI  string
 }
 
-func NewTokenHandler(
+// TokenResponseDTO represents the response for a successful token exchange
+type TokenResponseDTO struct {
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	Scope        string `json:"scope,omitempty"`
+}
+
+// TokenErrorDTO represents an OAuth 2.0 error response
+type TokenErrorDTO struct {
+	Error            string `json:"error"`
+	ErrorDescription string `json:"error_description"`
+}
+
+type TokenService interface {
+	ExchangeToken(ctx context.Context, req *TokenRequestDTO) (*TokenResponseDTO, error)
+}
+
+type tokenServiceImpl struct {
+	cfg    *config.Configuration
+	logger *slog.Logger
+
+	appValidateCredentialsUseCase uc_app.ApplicationValidateCredentialsUseCase
+	authFindByCodeUseCase         uc_auth.AuthorizationFindByCodeUseCase
+	authMarkCodeAsUsedUseCase     uc_auth.AuthorizationMarkCodeAsUsedUseCase
+	tokenStoreUseCase             uc_token.TokenStoreUseCase
+}
+
+func NewTokenService(
+	cfg *config.Configuration,
 	logger *slog.Logger,
-	tokenService svc_oauth.TokenService,
-) *TokenHandler {
-	return &TokenHandler{
-		logger:       logger,
-		tokenService: tokenService,
+	appValidateCredentialsUseCase uc_app.ApplicationValidateCredentialsUseCase,
+	authFindByCodeUseCase uc_auth.AuthorizationFindByCodeUseCase,
+	authMarkCodeAsUsedUseCase uc_auth.AuthorizationMarkCodeAsUsedUseCase,
+	tokenStoreUseCase uc_token.TokenStoreUseCase,
+) TokenService {
+	return &tokenServiceImpl{
+		cfg:                           cfg,
+		logger:                        logger,
+		appValidateCredentialsUseCase: appValidateCredentialsUseCase,
+		authFindByCodeUseCase:         authFindByCodeUseCase,
+		authMarkCodeAsUsedUseCase:     authMarkCodeAsUsedUseCase,
+		tokenStoreUseCase:             tokenStoreUseCase,
 	}
 }
 
-func (h *TokenHandler) Execute(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info("handling token request",
-		"method", r.Method,
-		"path", r.URL.Path)
-
-	if r.Method != http.MethodPost {
-		h.sendError(w, "invalid_request", "Method not allowed")
-		return
+func (s *tokenServiceImpl) ExchangeToken(ctx context.Context, req *TokenRequestDTO) (*TokenResponseDTO, error) {
+	// Validate grant type
+	if req.GrantType != "authorization_code" {
+		return nil, fmt.Errorf("unsupported grant type: %s", req.GrantType)
 	}
 
-	if err := r.ParseForm(); err != nil {
-		h.logger.Error("failed to parse form data",
-			"error", err)
-		h.sendError(w, "invalid_request", "Invalid form data")
-		return
-	}
-
-	// Create token request DTO
-	req := &svc_oauth.TokenRequestDTO{
-		GrantType:    r.FormValue("grant_type"),
-		Code:         r.FormValue("code"),
-		ClientID:     r.FormValue("client_id"),
-		ClientSecret: r.FormValue("client_secret"),
-		RedirectURI:  r.FormValue("redirect_uri"),
-	}
-
-	// Validate required fields
-	if req.Code == "" || req.ClientID == "" || req.ClientSecret == "" || req.RedirectURI == "" {
-		h.sendError(w, "invalid_request", "Missing required parameters")
-		return
-	}
-
-	// Process the token exchange through the service
-	response, err := h.tokenService.ExchangeToken(r.Context(), req)
+	// Validate client credentials
+	valid, err := s.appValidateCredentialsUseCase.Execute(ctx, req.ClientID, req.ClientSecret)
 	if err != nil {
-		h.logger.Error("token exchange failed",
-			"error", err,
-			"client_id", req.ClientID)
-		h.sendError(w, "invalid_grant", "Failed to exchange token")
-		return
+		return nil, fmt.Errorf("failed to validate client credentials: %w", err)
+	}
+	if !valid {
+		return nil, fmt.Errorf("invalid client credentials")
 	}
 
-	// Send successful response
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "no-store")
-	json.NewEncoder(w).Encode(response)
-}
+	// Get and validate the authorization code
+	authCode, err := s.authFindByCodeUseCase.Execute(ctx, req.Code)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find authorization code: %w", err)
+	}
 
-func (h *TokenHandler) sendError(w http.ResponseWriter, error string, description string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(http.StatusBadRequest)
-	json.NewEncoder(w).Encode(&svc_oauth.TokenErrorDTO{
-		Error:            error,
-		ErrorDescription: description,
-	})
+	// Verify the client ID and redirect URI match
+	if authCode.AppID != req.ClientID {
+		return nil, fmt.Errorf("authorization code was not issued to this client")
+	}
+	if authCode.RedirectURI != req.RedirectURI {
+		return nil, fmt.Errorf("redirect URI mismatch")
+	}
+
+	// Mark the authorization code as used
+	if err := s.authMarkCodeAsUsedUseCase.Execute(ctx, req.Code); err != nil {
+		return nil, fmt.Errorf("failed to mark code as used: %w", err)
+	}
+
+	// Generate and store the access token
+	token := &dom_token.Token{
+		TokenType:  "access",
+		UserID:     authCode.UserID,
+		AppID:      authCode.AppID,
+		Scope:      authCode.Scope,
+		ExpiresAt:  time.Now().Add(time.Hour), // 1 hour expiration
+		IssuedAt:   time.Now(),
+		IsRevoked:  false,
+		LastUsedAt: time.Now(),
+	}
+
+	if err := s.tokenStoreUseCase.Execute(ctx, token); err != nil {
+		return nil, fmt.Errorf("failed to store token: %w", err)
+	}
+
+	// Return the token response
+	return &TokenResponseDTO{
+		AccessToken: token.TokenID,
+		TokenType:   "Bearer",
+		ExpiresIn:   3600, // 1 hour in seconds
+		Scope:       token.Scope,
+	}, nil
 }
