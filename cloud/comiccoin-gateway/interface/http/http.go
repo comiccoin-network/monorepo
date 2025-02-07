@@ -10,10 +10,10 @@ import (
 
 	"github.com/rs/cors"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/oauth"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/oauth"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -62,23 +62,9 @@ type httpServerImpl struct {
 	// gatewayResetPasswordHTTPHandler               *handler.GatewayResetPasswordHTTPHandler
 	// gatewayProfileWalletAddressHTTPHandler        *handler.GatewayProfileWalletAddressHTTPHandler
 	// gatewayProfileApplyForVerificationHTTPHandler *handler.GatewayApplyProfileForVerificationHTTPHandler
-	//
-	// attachmentCreateHTTPHandler *handler.AttachmentCreateHTTPHandler
-	//
-	// comicSubmissionCreateHTTPHandler                       *handler.ComicSubmissionCreateHTTPHandler
-	// comicSubmissionGetHTTPHandler                          *handler.ComicSubmissionGetHTTPHandler
-	// comicSubmissionListByFilterHTTPHandler                 *handler.ComicSubmissionListByFilterHTTPHandler
-	// comicSubmissionCountByFilterHTTPHandler                *handler.ComicSubmissionCountByFilterHTTPHandler
-	// comicSubmissionCountCoinsRewardByFilterHTTPHandler     *handler.ComicSubmissionCountCoinsRewardByFilterHTTPHandler
-	// comicSubmissionTotalCoinsAwardedHTTPHandler            *handler.ComicSubmissionTotalCoinsAwardedHTTPHandler
-	// comicSubmissionCountTotalCreatedTodayByUserHTTPHandler *handler.ComicSubmissionCountTotalCreatedTodayByUserHTTPHandler
-	// comicSubmissionJudgeOperationHTTPHandler               *handler.ComicSubmissionJudgeOperationHTTPHandler
-	//
 	// userCountJoinedThisWeekHTTPHandler               *handler.UserCountJoinedThisWeekHTTPHandler
 	// userListByFilterHTTPHandler                      *handler.UserListByFilterHTTPHandler
 	// userProfileVerificationJudgeOperationHTTPHandler *handler.UserProfileVerificationJudgeOperationHTTPHandler
-	//
-	// gatewayBalanceHTTPHandler *handler.FaucetBalanceHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -100,18 +86,8 @@ func NewHTTPServer(
 	// h12 *handler.GatewayResetPasswordHTTPHandler,
 	// h13 *handler.GatewayProfileWalletAddressHTTPHandler,
 	// h14 *handler.GatewayApplyProfileForVerificationHTTPHandler,
-	// h15 *handler.AttachmentCreateHTTPHandler,
-	// h16 *handler.ComicSubmissionCreateHTTPHandler,
-	// h17 *handler.ComicSubmissionGetHTTPHandler,
-	// h18 *handler.ComicSubmissionListByFilterHTTPHandler,
-	// h19 *handler.ComicSubmissionCountByFilterHTTPHandler,
-	// h20 *handler.ComicSubmissionCountCoinsRewardByFilterHTTPHandler,
-	// h21 *handler.ComicSubmissionTotalCoinsAwardedHTTPHandler,
-	// h22 *handler.ComicSubmissionCountTotalCreatedTodayByUserHTTPHandler,
-	// h23 *handler.ComicSubmissionJudgeOperationHTTPHandler,
 	// h24 *handler.UserCountJoinedThisWeekHTTPHandler,
 	// h25 *handler.UserListByFilterHTTPHandler,
-	// h26 *handler.FaucetBalanceHTTPHandler,
 	// h27 *handler.UserProfileVerificationJudgeOperationHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
@@ -194,18 +170,8 @@ func NewHTTPServer(
 		// gatewayResetPasswordHTTPHandler:                        h12,
 		// gatewayProfileWalletAddressHTTPHandler:                 h13,
 		// gatewayProfileApplyForVerificationHTTPHandler:          h14,
-		// attachmentCreateHTTPHandler:                            h15,
-		// comicSubmissionCreateHTTPHandler:                       h16,
-		// comicSubmissionGetHTTPHandler:                          h17,
-		// comicSubmissionListByFilterHTTPHandler:                 h18,
-		// comicSubmissionCountByFilterHTTPHandler:                h19,
-		// comicSubmissionCountCoinsRewardByFilterHTTPHandler:     h20,
-		// comicSubmissionTotalCoinsAwardedHTTPHandler:            h21,
-		// comicSubmissionCountTotalCreatedTodayByUserHTTPHandler: h22,
-		// comicSubmissionJudgeOperationHTTPHandler:               h23,
 		// userCountJoinedThisWeekHTTPHandler:                     h24,
 		// userListByFilterHTTPHandler:                            h25,
-		// gatewayBalanceHTTPHandler:                               h26,
 		// userProfileVerificationJudgeOperationHTTPHandler:       h27,
 	}
 	// Attach the HTTP server controller to the ServeMux.
