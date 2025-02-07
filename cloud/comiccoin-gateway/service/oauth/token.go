@@ -143,35 +143,55 @@ func (s *tokenServiceImpl) ExchangeToken(ctx context.Context, req *TokenRequestD
 		return nil, fmt.Errorf("failed to mark code as used: %w", err)
 	}
 
-	// Generate token ID using the same method from refresh.go
-	tokenID, err := generateToken() // Reuse the function from refresh.go
+	// Generate access token
+	accessTokenID, err := generateToken()
 	if err != nil {
-		s.logger.Error("failed to generate token ID", slog.Any("error", err))
-		return nil, fmt.Errorf("failed to generate token")
+		return nil, fmt.Errorf("failed to generate access token")
 	}
 
-	// Create and store access token
-	token := &dom_token.Token{
-		TokenID:    tokenID, // Add this line
+	// Generate refresh token
+	refreshTokenID, err := generateToken()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate refresh token")
+	}
+
+	// Store access token
+	accessToken := &dom_token.Token{
+		TokenID:    accessTokenID,
 		TokenType:  "access",
 		UserID:     authCode.UserID,
 		AppID:      authCode.AppID,
 		Scope:      authCode.Scope,
 		ExpiresAt:  time.Now().Add(time.Hour),
 		IssuedAt:   time.Now(),
-		IsRevoked:  false,
 		LastUsedAt: time.Now(),
 	}
 
-	if err := s.tokenStoreUseCase.Execute(ctx, token); err != nil {
-		return nil, fmt.Errorf("failed to store token: %w", err)
+	// Store refresh token
+	refreshToken := &dom_token.Token{
+		TokenID:    refreshTokenID,
+		TokenType:  "refresh",
+		UserID:     authCode.UserID,
+		AppID:      authCode.AppID,
+		Scope:      authCode.Scope,
+		ExpiresAt:  time.Now().Add(30 * 24 * time.Hour), // 30 days
+		IssuedAt:   time.Now(),
+		LastUsedAt: time.Now(),
 	}
 
-	// Return the token response
+	if err := s.tokenStoreUseCase.Execute(ctx, accessToken); err != nil {
+		return nil, fmt.Errorf("failed to store access token: %w", err)
+	}
+
+	if err := s.tokenStoreUseCase.Execute(ctx, refreshToken); err != nil {
+		return nil, fmt.Errorf("failed to store refresh token: %w", err)
+	}
+
 	return &TokenResponseDTO{
-		AccessToken: token.TokenID,
-		TokenType:   "Bearer",
-		ExpiresIn:   3600, // 1 hour in seconds
-		Scope:       token.Scope,
+		AccessToken:  accessTokenID,
+		TokenType:    "Bearer",
+		ExpiresIn:    3600,
+		RefreshToken: refreshTokenID,
+		Scope:        authCode.Scope,
 	}, nil
 }

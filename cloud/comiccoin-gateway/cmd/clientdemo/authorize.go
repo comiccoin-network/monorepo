@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/clientdemo/serve.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/clientdemo/authorize.go
 package clientdemo
 
 import (
@@ -23,18 +23,18 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 )
 
-func ServeCmd() *cobra.Command {
+func AuthorizeCmd() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "client-serve",
+		Use:   "authorize",
 		Short: "Run the sample client demonstration server",
 		Run: func(cmd *cobra.Command, args []string) {
-			doRunServe()
+			doRunAuthorize()
 		},
 	}
 	return cmd
 }
 
-func doRunServe() {
+func doRunAuthorize() {
 	//
 	// STEP 1
 	// Load up our dependencies and configuration
@@ -96,9 +96,11 @@ const (
 
 // TokenResponse represents the OAuth server's token response
 type TokenResponse struct {
-	AccessToken string `json:"access_token"`
-	TokenType   string `json:"token_type"`
-	ExpiresIn   int    `json:"expires_in"`
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
+	Scope        string `json:"scope"`
 }
 
 // Templates for different pages
@@ -204,10 +206,12 @@ const successPage = `
         </div>
 
         <div class="token-info">
-            <h3>Access Token Details</h3>
-            <p><strong>Access Token:</strong> {{.AccessToken}}</p>
-            <p><strong>Token Type:</strong> {{.TokenType}}</p>
-            <p><strong>Expires In:</strong> {{.ExpiresIn}} seconds</p>
+	  	    <h3>Access Token Details</h3>
+	  	    <p><strong>Access Token:</strong> {{.AccessToken}}</p>
+	  	    <p><strong>Token Type:</strong> {{.TokenType}}</p>
+	  	    <p><strong>Expires In:</strong> {{.ExpiresIn}} seconds</p>
+	  	    <p><strong>Refresh Token:</strong> {{.RefreshToken}}</p>
+	  	    <p><strong>Scope:</strong> {{.Scope}}</p>
         </div>
 
         <a href="/" class="btn">Back to Home</a>

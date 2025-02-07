@@ -34,7 +34,7 @@ func Execute() {
 	rootCmd.AddCommand(daemon.DaemonCmd())
 	rootCmd.AddCommand(version.VersionCmd())
 	rootCmd.AddCommand(initialize.InitCmd())
-	rootCmd.AddCommand(clientdemo.ServeCmd())
+	rootCmd.AddCommand(clientdemo.ClientDemoCmd())
 	rootCmd.AddCommand(application.ApplicationCmd())
 	rootCmd.AddCommand(user.UserCmd())
 
