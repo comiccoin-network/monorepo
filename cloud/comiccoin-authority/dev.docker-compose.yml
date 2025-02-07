@@ -96,7 +96,7 @@ services:
       - ME_CONFIG_MONGODB_PORT=27017
       - ME_CONFIG_MONGODB_URI=mongodb://db1:27017,db2:27018,db3:27019/?replicaSet=rs0
     ports:
-      - "8091:8081" # Adjusted to work with `react-native` developer instance simulator.
+      - "8001:8081" # Adjusted to work with `react-native` developer instance simulator.
     depends_on:
       - db1
       - db2
@@ -160,4 +160,4 @@ services:
       - db3
       - cache
     volumes: # Connect the local filesystem with the docker filesystem. DO NOT REMOVE.
-      - ./:/go/src/github.com/comiccoin-network/monorepo/cloud/comiccoin-authority # IMPORTANT: Required for hotreload via `CompileDaemon`. 
+      - ./:/go/src/github.com/comiccoin-network/monorepo/cloud/comiccoin-authority # IMPORTANT: Required for hotreload via `CompileDaemon`.

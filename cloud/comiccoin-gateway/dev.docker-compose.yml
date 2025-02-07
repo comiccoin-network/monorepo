@@ -96,7 +96,7 @@ services:
       - ME_CONFIG_MONGODB_PORT=37017
       - ME_CONFIG_MONGODB_URI=mongodb://db1:37017,db2:37018,db3:37019/?replicaSet=rs0
     ports:
-      - "9011:8081"
+      - "8090:8081"
     depends_on:
       - db1
       - db2
