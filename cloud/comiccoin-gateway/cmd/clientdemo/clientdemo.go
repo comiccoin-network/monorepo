@@ -12,9 +12,10 @@ func ClientDemoCmd() *cobra.Command {
 		},
 	}
 
-	// // Attach our sub-commands for `account`
+	// // Attach our sub-commands for `clientdemo`
 	cmd.AddCommand(AuthorizeCmd())
 	cmd.AddCommand(ResourceCmd())
+	cmd.AddCommand(RegisterCmd())
 
 	return cmd
 }

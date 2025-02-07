@@ -149,7 +149,9 @@ services:
       dockerfile: ./dev.Dockerfile
     restart: unless-stopped
     ports:
-      - "8081:8081" # Client
+      - "8083:8083" # Client (Do not open in production!)
+      - "8082:8082" # Client (Do not open in production!)
+      - "8081:8081" # Client (Do not open in production!)
       - "8080:8080" # Server
     depends_on:
       - db1

@@ -20,12 +20,14 @@ import (
 	httphandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
 	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth"
+	http_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/user"
 	r_application "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/application"
 	r_authorization "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/authorization"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/bannedipaddress"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/token"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/user"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/user"
 	uc_app "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/application"
 	uc_auth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/authorization"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/bannedipaddress"
@@ -220,6 +222,16 @@ func doRunDaemon() {
 		tokenFindByIDUseCase,
 	)
 
+	// User
+	registerService := user.NewRegisterService(
+		cfg,
+		logger,
+		passp,
+		userCreateUseCase,
+		appFindByAppIDUseCase,
+		authorizeService,
+	)
+
 	//
 	// Interface
 	//
@@ -236,6 +248,7 @@ func doRunDaemon() {
 	tokenHttpHandler := http_oauth.NewTokenHandler(logger, tokenService)
 	refreshTokenHttpHandler := http_oauth.NewRefreshTokenHandler(logger, refreshTokenService)
 	introspectionHttpHandler := http_oauth.NewIntrospectionHandler(logger, introspectionService)
+	registerHandler := http_user.NewRegisterHandler(logger, registerService)
 
 	// HTTP Middleware
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -259,6 +272,7 @@ func doRunDaemon() {
 		tokenHttpHandler,
 		introspectionHttpHandler,
 		refreshTokenHttpHandler,
+		registerHandler,
 	)
 
 	//
