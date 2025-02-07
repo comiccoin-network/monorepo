@@ -6,10 +6,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	// "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/account"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/application"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/clientdemo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/daemon"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/initialize"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/user"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/version"
 )
 
@@ -29,11 +30,12 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	// Attach sub-commands to our main root.
-	// rootCmd.AddCommand(account.AccountCmd())
 	rootCmd.AddCommand(daemon.DaemonCmd())
 	rootCmd.AddCommand(version.VersionCmd())
 	rootCmd.AddCommand(initialize.InitCmd())
 	rootCmd.AddCommand(clientdemo.ServeCmd())
+	rootCmd.AddCommand(application.ApplicationCmd())
+	rootCmd.AddCommand(user.UserCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

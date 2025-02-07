@@ -45,9 +45,16 @@ func (uc *applicationCreateUseCaseImpl) Execute(ctx context.Context, app *dom_ap
 		if len(app.RedirectURIs) == 0 {
 			e["redirect_uris"] = "at least one redirect URI required"
 		} else {
-			for i, uri := range app.RedirectURIs {
-				if !strings.HasPrefix(uri, "https://") {
-					e[fmt.Sprintf("redirect_uris[%d]", i)] = "must use HTTPS"
+			// DEVELOPERS NOTE:
+			// `TrustedApp=true` would indicate this is a first-party app, but in
+			// our case to simplify our development, we will use it to enforce
+			// `https` in the url, else if  `TrustedApp=false` then don't
+			// enforce it.
+			if app.TrustedApp {
+				for i, uri := range app.RedirectURIs {
+					if !strings.HasPrefix(uri, "https://") {
+						e[fmt.Sprintf("redirect_uris[%d]", i)] = "must use HTTPS"
+					}
 				}
 			}
 		}

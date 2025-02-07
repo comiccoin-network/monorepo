@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user/interface.go
 package domain
 
 import (
