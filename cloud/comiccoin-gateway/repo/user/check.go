@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/user/check.go
 package user
 
 import (

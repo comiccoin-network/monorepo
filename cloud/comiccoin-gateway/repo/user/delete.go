@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/user/delete.go
 package user
 
 import (
