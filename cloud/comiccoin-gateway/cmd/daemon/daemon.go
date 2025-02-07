@@ -129,12 +129,18 @@ func doRunDaemon() {
 		logger,
 		authorizationRepo,
 	)
+	_ = authStoreCodeUseCase
 	authMarkCodeAsUsedUseCase := uc_auth.NewAuthorizationMarkCodeAsUsedUseCase(
 		cfg,
 		logger,
 		authorizationRepo,
 	)
 	authDeleteExpiredCodesUseCase := uc_auth.NewAuthorizationDeleteExpiredCodesUseCase(
+		cfg,
+		logger,
+		authorizationRepo,
+	)
+	authUpdateCodeUseCase := uc_auth.NewAuthorizationUpdateCodeUseCase(
 		cfg,
 		logger,
 		authorizationRepo,
@@ -184,7 +190,7 @@ func doRunDaemon() {
 		passp,
 		userGetByEmailUseCase,
 		authFindByCodeUseCase,
-		authStoreCodeUseCase,
+		authUpdateCodeUseCase,
 		authDeleteExpiredCodesUseCase,
 	)
 

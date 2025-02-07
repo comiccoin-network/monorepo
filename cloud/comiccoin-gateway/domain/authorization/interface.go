@@ -16,4 +16,6 @@ type Repository interface {
 
 	// DeleteExpiredCodes removes expired authorization codes
 	DeleteExpiredCodes(ctx context.Context) error
+
+	UpdateCode(ctx context.Context, code *AuthorizationCode) error
 }

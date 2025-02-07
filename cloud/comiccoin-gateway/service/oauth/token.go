@@ -71,32 +71,71 @@ func NewTokenService(
 }
 
 func (s *tokenServiceImpl) ExchangeToken(ctx context.Context, req *TokenRequestDTO) (*TokenResponseDTO, error) {
-	// Validate grant type
-	if req.GrantType != "authorization_code" {
-		return nil, fmt.Errorf("unsupported grant type: %s", req.GrantType)
-	}
+	s.logger.Info("starting token exchange flow",
+		slog.String("code", req.Code),
+		slog.String("client_id", req.ClientID),
+		slog.String("redirect_uri", req.RedirectURI))
 
 	// Validate client credentials
 	valid, err := s.appValidateCredentialsUseCase.Execute(ctx, req.ClientID, req.ClientSecret)
 	if err != nil {
+		s.logger.Error("client credentials validation failed",
+			slog.String("client_id", req.ClientID),
+			slog.Any("error", err))
 		return nil, fmt.Errorf("failed to validate client credentials: %w", err)
 	}
 	if !valid {
+		s.logger.Error("invalid client credentials",
+			slog.String("client_id", req.ClientID))
 		return nil, fmt.Errorf("invalid client credentials")
 	}
+	s.logger.Debug("client credentials validated successfully")
 
 	// Get and validate the authorization code
 	authCode, err := s.authFindByCodeUseCase.Execute(ctx, req.Code)
 	if err != nil {
+		s.logger.Error("failed to find authorization code",
+			slog.String("code", req.Code),
+			slog.Any("error", err))
 		return nil, fmt.Errorf("failed to find authorization code: %w", err)
 	}
+	if authCode == nil {
+		s.logger.Error("authorization code not found",
+			slog.String("code", req.Code))
+		return nil, fmt.Errorf("authorization code not found")
+	}
+	s.logger.Debug("found authorization code",
+		slog.Any("auth_code", authCode))
 
-	// Verify the client ID and redirect URI match
+	// Verify client ID matches
 	if authCode.AppID != req.ClientID {
+		s.logger.Error("client ID mismatch",
+			slog.String("auth_code_client", authCode.AppID),
+			slog.String("request_client", req.ClientID))
 		return nil, fmt.Errorf("authorization code was not issued to this client")
 	}
+
+	// Verify redirect URI matches
 	if authCode.RedirectURI != req.RedirectURI {
+		s.logger.Error("redirect URI mismatch",
+			slog.String("auth_code_uri", authCode.RedirectURI),
+			slog.String("request_uri", req.RedirectURI))
 		return nil, fmt.Errorf("redirect URI mismatch")
+	}
+
+	// Check if code is already used
+	if authCode.IsUsed {
+		s.logger.Error("authorization code already used",
+			slog.String("code", req.Code))
+		return nil, fmt.Errorf("authorization code already used")
+	}
+
+	// Check if code is expired
+	if time.Now().After(authCode.ExpiresAt) {
+		s.logger.Error("authorization code expired",
+			slog.String("code", req.Code),
+			slog.Time("expired_at", authCode.ExpiresAt))
+		return nil, fmt.Errorf("authorization code expired")
 	}
 
 	// Mark the authorization code as used
@@ -104,13 +143,21 @@ func (s *tokenServiceImpl) ExchangeToken(ctx context.Context, req *TokenRequestD
 		return nil, fmt.Errorf("failed to mark code as used: %w", err)
 	}
 
-	// Generate and store the access token
+	// Generate token ID using the same method from refresh.go
+	tokenID, err := generateToken() // Reuse the function from refresh.go
+	if err != nil {
+		s.logger.Error("failed to generate token ID", slog.Any("error", err))
+		return nil, fmt.Errorf("failed to generate token")
+	}
+
+	// Create and store access token
 	token := &dom_token.Token{
+		TokenID:    tokenID, // Add this line
 		TokenType:  "access",
 		UserID:     authCode.UserID,
 		AppID:      authCode.AppID,
 		Scope:      authCode.Scope,
-		ExpiresAt:  time.Now().Add(time.Hour), // 1 hour expiration
+		ExpiresAt:  time.Now().Add(time.Hour),
 		IssuedAt:   time.Now(),
 		IsRevoked:  false,
 		LastUsedAt: time.Now(),

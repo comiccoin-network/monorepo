@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+
+	dom_auth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/authorization"
 )
 
 func (impl authorizationStorerImpl) MarkCodeAsUsed(ctx context.Context, code string) error {
@@ -32,4 +34,13 @@ func (impl authorizationStorerImpl) MarkCodeAsUsed(ctx context.Context, code str
 	}
 
 	return nil
+}
+
+func (r *authorizationStorerImpl) UpdateCode(ctx context.Context, code *dom_auth.AuthorizationCode) error {
+
+	filter := bson.M{"_id": code.ID}
+	update := bson.M{"$set": code}
+
+	_, err := r.Collection.UpdateOne(ctx, filter, update)
+	return err
 }
