@@ -21,6 +21,7 @@ import (
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
+	http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/token"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/bannedipaddress"
 	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/oauth"
 	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/registration"
@@ -28,6 +29,7 @@ import (
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
 	svc_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/login"
 	svc_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/registration"
+	svc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/token"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/bannedipaddress"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/oauth"
 	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/register"
@@ -170,7 +172,7 @@ func doRunDaemon() {
 	// Service
 	//
 
-	// --- Registration ---
+	// --- Authorization / Authentication / Etc ---
 
 	registration := svc_registration.NewRegistrationService(
 		cfg,
@@ -193,6 +195,15 @@ func doRunDaemon() {
 	)
 	_ = loginService
 
+	refreshTokenService := svc_token.NewRefreshTokenService(
+		cfg,
+		logger,
+		refreshTokenUseCase,
+		tokenGetByUserIDUseCase,
+		tokenUpsertByUserIDUseCase,
+	)
+	_ = refreshTokenService
+
 	//
 	// Interface
 	//
@@ -214,6 +225,11 @@ func doRunDaemon() {
 		logger,
 		loginService,
 	)
+	postTokenRefreshHTTPHandler := http_token.NewPostTokenRefreshHTTPHandler(
+		cfg,
+		logger,
+		refreshTokenService,
+	)
 
 	// HTTP Middleware
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -234,6 +250,7 @@ func doRunDaemon() {
 		getHealthCheckHTTPHandler,
 		registrationHTTPHandler,
 		postLoginHTTPHandler,
+		postTokenRefreshHTTPHandler,
 	)
 
 	//

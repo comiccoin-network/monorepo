@@ -13,6 +13,7 @@ import (
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
+	http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/token"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -42,6 +43,7 @@ type httpServerImpl struct {
 
 	postRegistrationHTTPHandler *http_registration.PostRegistrationHTTPHandler
 	postLoginHTTPHandler        *http_login.PostLoginHTTPHandler
+	postTokenRefreshHTTPHandler *http_token.PostTokenRefreshHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -53,6 +55,7 @@ func NewHTTPServer(
 	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler,
 	postRegistrationHTTPHandler *http_registration.PostRegistrationHTTPHandler,
 	postLoginHTTPHandler *http_login.PostLoginHTTPHandler,
+	postTokenRefreshHTTPHandler *http_token.PostTokenRefreshHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -81,6 +84,7 @@ func NewHTTPServer(
 		getHealthCheckHTTPHandler:   getHealthCheckHTTPHandler,
 		postRegistrationHTTPHandler: postRegistrationHTTPHandler,
 		postLoginHTTPHandler:        postLoginHTTPHandler,
+		postTokenRefreshHTTPHandler: postTokenRefreshHTTPHandler,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -138,6 +142,8 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.postRegistrationHTTPHandler.Execute(w, r)
 	case n == 2 && p[0] == "api" && p[1] == "login" && r.Method == http.MethodPost:
 		port.postLoginHTTPHandler.Execute(w, r)
+	case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "refresh" && r.Method == http.MethodPost:
+		port.postTokenRefreshHTTPHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:
