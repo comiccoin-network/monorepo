@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config/config.go
 package config
 
 import (

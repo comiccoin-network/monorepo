@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler/version.go
 package handler
 
 import (

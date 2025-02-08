@@ -19,11 +19,13 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http"
 	httphandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
+	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/bannedipaddress"
 	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/oauth"
 	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/registration"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/token"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
+	svc_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/registration"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/bannedipaddress"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/oauth"
 	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/register"
@@ -166,6 +168,19 @@ func doRunDaemon() {
 	// Service
 	//
 
+	// --- Registration ---
+
+	registration := svc_registration.NewRegistrationService(
+		cfg,
+		logger,
+		registerUseCase,
+		exchangeCodeUseCase,
+		userCreateUseCase,
+		userGetByEmailUseCase,
+		tokenUpsertByUserIDUseCase,
+	)
+	_ = registration
+
 	//
 	// Interface
 	//
@@ -176,6 +191,11 @@ func doRunDaemon() {
 	)
 	getHealthCheckHTTPHandler := httphandler.NewGetHealthCheckHTTPHandler(
 		logger,
+	)
+	registrationHTTPHandler := http_registration.NewPostRegistrationHTTPHandler(
+		cfg,
+		logger,
+		registration,
 	)
 
 	// HTTP Middleware
@@ -195,6 +215,7 @@ func doRunDaemon() {
 		httpMiddleware,
 		getVersionHTTPHandler,
 		getHealthCheckHTTPHandler,
+		registrationHTTPHandler,
 	)
 
 	//

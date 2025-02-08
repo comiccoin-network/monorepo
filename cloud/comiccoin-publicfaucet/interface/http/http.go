@@ -11,6 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
+	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -35,9 +36,10 @@ type httpServerImpl struct {
 	// server is the underlying HTTP server.
 	server *http.Server
 
-	getVersionHTTPHandler *handler.GetVersionHTTPHandler
-
+	getVersionHTTPHandler     *handler.GetVersionHTTPHandler
 	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler
+
+	postRegistrationHTTPHandler *http_registration.PostRegistrationHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -45,8 +47,9 @@ func NewHTTPServer(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	mid mid.Middleware,
-	h1 *handler.GetVersionHTTPHandler,
-	h2 *handler.GetHealthCheckHTTPHandler,
+	getVersionHTTPHandler *handler.GetVersionHTTPHandler,
+	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler,
+	postRegistrationHTTPHandler *http_registration.PostRegistrationHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -67,12 +70,13 @@ func NewHTTPServer(
 
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
-		cfg:                       cfg,
-		logger:                    logger,
-		middleware:                mid,
-		server:                    srv,
-		getVersionHTTPHandler:     h1,
-		getHealthCheckHTTPHandler: h2,
+		cfg:                         cfg,
+		logger:                      logger,
+		middleware:                  mid,
+		server:                      srv,
+		getVersionHTTPHandler:       getVersionHTTPHandler,
+		getHealthCheckHTTPHandler:   getHealthCheckHTTPHandler,
+		postRegistrationHTTPHandler: postRegistrationHTTPHandler,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -126,6 +130,8 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.getVersionHTTPHandler.Execute(w, r)
 	case n == 1 && p[0] == "health-check" && r.Method == http.MethodGet:
 		port.getHealthCheckHTTPHandler.Execute(w, r)
+	case n == 2 && p[0] == "api" && p[1] == "register":
+		port.postRegistrationHTTPHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:
