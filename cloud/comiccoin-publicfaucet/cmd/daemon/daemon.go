@@ -20,8 +20,14 @@ import (
 	httphandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/bannedipaddress"
+	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/oauth"
+	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/registration"
+	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/token"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/bannedipaddress"
+	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/oauth"
+	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/register"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/token"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
 )
 
@@ -60,19 +66,22 @@ func doRunDaemon() {
 
 	banIPAddrRepo := r_banip.NewRepository(cfg, logger, dbClient)
 	userRepo := r_user.NewRepository(cfg, logger, dbClient)
+	tokenRepo := r_token.NewRepository(cfg, logger, dbClient)
+	oauthRepo := r_oauth.NewRepository(cfg, logger)
+	registrationRepo := r_registration.NewRepository(cfg, logger)
 
 	//
 	// Use-case
 	//
 
-	// Banned IP Addresses
+	// --- Banned IP Addresses ---
 	bannedIPAddressListAllValuesUseCase := uc_bannedipaddress.NewBannedIPAddressListAllValuesUseCase(
 		cfg,
 		logger,
 		banIPAddrRepo,
 	)
 
-	// User Use Cases
+	// --- User ---
 	userGetBySessionIDUseCase := uc_user.NewUserGetBySessionIDUseCase(
 		cfg,
 		logger,
@@ -83,19 +92,75 @@ func doRunDaemon() {
 		logger,
 		userRepo,
 	)
-	_ = userGetByEmailUseCase
 	userCreateUseCase := uc_user.NewUserCreateUseCase(
 		cfg,
 		logger,
 		userRepo,
 	)
-	_ = userCreateUseCase //TODO: Utilize
 	userUpdateUseCase := uc_user.NewUserUpdateUseCase(
 		cfg,
 		logger,
 		userRepo,
 	)
-	_ = userUpdateUseCase //TODO: Utilize
+	_ = userUpdateUseCase     //TODO: Utilize
+	_ = userCreateUseCase     //TODO: Utilize
+	_ = userGetByEmailUseCase //TODO: Utilize
+
+	// --- Token ---
+	tokenUpsertByUserIDUseCase := uc_token.NewTokenUpsertByUserIDUseCase(
+		cfg,
+		logger,
+		tokenRepo,
+	)
+	tokenGetByUserIDUseCase := uc_token.NewTokenGetByUserIDUseCase(
+		cfg,
+		logger,
+		tokenRepo,
+	)
+	tokenDeleteExpiredUseCase := uc_token.NewTokenDeleteExpiredUseCase(
+		cfg,
+		logger,
+		tokenRepo,
+	)
+	_ = tokenDeleteExpiredUseCase  //TODO: Utilize
+	_ = tokenUpsertByUserIDUseCase //TODO: Utilize
+	_ = tokenGetByUserIDUseCase    //TODO: Utilize
+
+	// --- oAuth 2.0 ---
+	getAuthorizationURLUseCase := uc_oauth.NewGetAuthorizationURLUseCase(
+		cfg,
+		logger,
+		oauthRepo,
+	)
+	exchangeCodeUseCase := uc_oauth.NewExchangeCodeUseCase(
+		cfg,
+		logger,
+		oauthRepo,
+	)
+	refreshTokenUseCase := uc_oauth.NewRefreshTokenUseCase(
+		cfg,
+		logger,
+		oauthRepo,
+	)
+	introspectTokenUseCase := uc_oauth.NewIntrospectTokenUseCase(
+		cfg,
+		logger,
+		oauthRepo,
+	)
+
+	_ = getAuthorizationURLUseCase //TODO: Utilize
+	_ = exchangeCodeUseCase        //TODO: Utilize
+	_ = refreshTokenUseCase        //TODO: Utilize
+	_ = introspectTokenUseCase     //TODO: Utilize
+
+	// --- Registration ---
+
+	registerUseCase := uc_register.NewRegisterUseCase(
+		cfg,
+		logger,
+		registrationRepo,
+	)
+	_ = registerUseCase //TODO: Utilize
 
 	//
 	// Service

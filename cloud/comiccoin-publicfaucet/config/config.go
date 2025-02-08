@@ -71,9 +71,10 @@ type DBConfig struct {
 }
 
 type OAuthConfig struct {
-	ServerURL         string
-	ApplicationID     string
-	ApplicationSecret string
+	ServerURL    string
+	ClientID     string
+	ClientSecret string
+	RedirectURI  string
 }
 
 type MailgunConfig struct {
@@ -111,8 +112,9 @@ func NewProviderUsingEnvironmentVariables() *Configuration {
 
 	// OAuth 2.0
 	c.OAuth.ServerURL = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_SERVER_URL", true)
-	c.OAuth.ApplicationID = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_APPLICATION_ID", true)
-	c.OAuth.ApplicationSecret = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_APPLICATION_SECRET", true)
+	c.OAuth.ClientID = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_ID", true)
+	c.OAuth.ClientSecret = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_SECRET", true)
+	c.OAuth.RedirectURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_REDIRECT_URI", true)
 
 	// Amazon Web-Services Technology
 	c.AWS.AccessKey = getEnv("COMICCOIN_PUBLICFAUCET_AWS_ACCESS_KEY", true)
