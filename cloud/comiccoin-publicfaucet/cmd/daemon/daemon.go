@@ -25,6 +25,8 @@ import (
 	http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/token"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/bannedipaddress"
 	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/oauth"
+	r_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/oauthsession"
+	r_oauthstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/oauthstate"
 	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/registration"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/token"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
@@ -34,6 +36,8 @@ import (
 	svc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/token"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/bannedipaddress"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/oauth"
+	uc_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/oauthsession"
+	uc_oauthstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/oauthstate"
 	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/register"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/token"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
@@ -77,6 +81,8 @@ func doRunDaemon() {
 	tokenRepo := r_token.NewRepository(cfg, logger, dbClient)
 	oauthRepo := r_oauth.NewRepository(cfg, logger)
 	registrationRepo := r_registration.NewRepository(cfg, logger)
+	oauthsessionRepo := r_oauthsession.NewRepository(cfg, logger, dbClient)
+	oauthstateRepo := r_oauthstate.NewRepository(cfg, logger, dbClient)
 
 	//
 	// Use-case
@@ -174,6 +180,73 @@ func doRunDaemon() {
 		registrationRepo,
 	)
 	_ = registerUseCase //TODO: Utilize
+
+	// --- oAuth Session ---
+
+	createOAuthSessionUseCase := uc_oauthsession.NewCreateOAuthSessionUseCase(
+		cfg,
+		logger,
+		oauthsessionRepo,
+	)
+	deleteExpiredOAuthSessionsUseCase := uc_oauthsession.NewDeleteExpiredOAuthSessionsUseCase(
+		cfg,
+		logger,
+		oauthsessionRepo,
+	)
+	deleteOAuthSessionUseCase := uc_oauthsession.NewDeleteOAuthSessionUseCase(
+		cfg,
+		logger,
+		oauthsessionRepo,
+	)
+	getOAuthSessionByUserIDUseCase := uc_oauthsession.NewGetOAuthSessionByUserIDUseCase(
+		cfg,
+		logger,
+		oauthsessionRepo,
+	)
+	updateOAuthSessionUseCase := uc_oauthsession.NewUpdateOAuthSessionUseCase(
+		cfg,
+		logger,
+		oauthsessionRepo,
+	)
+
+	_ = createOAuthSessionUseCase         //TODO: Utilize
+	_ = deleteExpiredOAuthSessionsUseCase //TODO: Utilize
+	_ = deleteOAuthSessionUseCase         //TODO: Utilize
+	_ = getOAuthSessionByUserIDUseCase    //TODO: Utilize
+	_ = updateOAuthSessionUseCase         //TODO: Utilize
+
+	// --- oAuth state ---
+
+	createOAuthStateUseCase := uc_oauthstate.NewCreateOAuthStateUseCase(
+		cfg,
+		logger,
+		oauthstateRepo,
+	)
+	getOAuthStateUseCase := uc_oauthstate.NewGetOAuthStateUseCase(
+		cfg,
+		logger,
+		oauthstateRepo,
+	)
+	deleteOAuthStateUseCase := uc_oauthstate.NewDeleteOAuthStateUseCase(
+		cfg,
+		logger,
+		oauthstateRepo,
+	)
+	// deleteOAuthStateUseCase := uc_oauthstate.NewDeleteOAuthStateUseCase(
+	// 	cfg,
+	// 	logger,
+	// 	oauthstateRepo,
+	// )
+	deleteExpiredOAuthStatesUseCase := uc_oauthstate.NewDeleteExpiredOAuthStatesUseCase(
+		cfg,
+		logger,
+		oauthstateRepo,
+	)
+
+	_ = createOAuthStateUseCase         //TODO: Utilize
+	_ = getOAuthStateUseCase            //TODO: Utilize
+	_ = deleteOAuthStateUseCase         //TODO: Utilize
+	_ = deleteExpiredOAuthStatesUseCase //TODO: Utilize
 
 	//
 	// Service
