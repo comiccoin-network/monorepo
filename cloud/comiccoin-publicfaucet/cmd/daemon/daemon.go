@@ -18,6 +18,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http"
 	httphandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler"
+	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/bannedipaddress"
@@ -25,6 +26,7 @@ import (
 	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/registration"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/token"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
+	svc_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/login"
 	svc_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/registration"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/bannedipaddress"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/oauth"
@@ -181,6 +183,16 @@ func doRunDaemon() {
 	)
 	_ = registration
 
+	loginService := svc_login.NewLoginService(
+		cfg,
+		logger,
+		getAuthorizationURLUseCase,
+		exchangeCodeUseCase,
+		userGetByEmailUseCase,
+		tokenUpsertByUserIDUseCase,
+	)
+	_ = loginService
+
 	//
 	// Interface
 	//
@@ -196,6 +208,11 @@ func doRunDaemon() {
 		cfg,
 		logger,
 		registration,
+	)
+	postLoginHTTPHandler := http_login.NewPostLoginHTTPHandler(
+		cfg,
+		logger,
+		loginService,
 	)
 
 	// HTTP Middleware
@@ -216,6 +233,7 @@ func doRunDaemon() {
 		getVersionHTTPHandler,
 		getHealthCheckHTTPHandler,
 		registrationHTTPHandler,
+		postLoginHTTPHandler,
 	)
 
 	//

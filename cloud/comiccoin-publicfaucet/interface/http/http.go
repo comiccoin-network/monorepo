@@ -10,6 +10,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler"
+	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
 )
@@ -40,6 +41,7 @@ type httpServerImpl struct {
 	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler
 
 	postRegistrationHTTPHandler *http_registration.PostRegistrationHTTPHandler
+	postLoginHTTPHandler        *http_login.PostLoginHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -50,6 +52,7 @@ func NewHTTPServer(
 	getVersionHTTPHandler *handler.GetVersionHTTPHandler,
 	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler,
 	postRegistrationHTTPHandler *http_registration.PostRegistrationHTTPHandler,
+	postLoginHTTPHandler *http_login.PostLoginHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -77,6 +80,7 @@ func NewHTTPServer(
 		getVersionHTTPHandler:       getVersionHTTPHandler,
 		getHealthCheckHTTPHandler:   getHealthCheckHTTPHandler,
 		postRegistrationHTTPHandler: postRegistrationHTTPHandler,
+		postLoginHTTPHandler:        postLoginHTTPHandler,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -132,6 +136,8 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.getHealthCheckHTTPHandler.Execute(w, r)
 	case n == 2 && p[0] == "api" && p[1] == "register":
 		port.postRegistrationHTTPHandler.Execute(w, r)
+	case n == 2 && p[0] == "api" && p[1] == "login" && r.Method == http.MethodPost:
+		port.postLoginHTTPHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:
