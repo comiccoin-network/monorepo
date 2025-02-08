@@ -12,6 +12,7 @@ import (
 	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/introspection"
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
+	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/oauth"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
 	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/system"
 	http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/token"
@@ -39,13 +40,21 @@ type httpServerImpl struct {
 	// server is the underlying HTTP server.
 	server *http.Server
 
+	// Core handlers
 	getVersionHTTPHandler     *http_system.GetVersionHTTPHandler
 	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler
 
+	// Auth handlers
 	postRegistrationHTTPHandler       *http_registration.PostRegistrationHTTPHandler
 	postLoginHTTPHandler              *http_login.PostLoginHTTPHandler
 	postTokenRefreshHTTPHandler       *http_token.PostTokenRefreshHTTPHandler
 	postTokenIntrospectionHTTPHandler *http_introspection.PostTokenIntrospectionHTTPHandler
+
+	// OAuth handlers
+	getAuthURLHandler      *http_oauth.GetAuthURLHTTPHandler
+	oauthCallbackHandler   *http_oauth.CallbackHTTPHandler
+	stateManagementHandler *http_oauth.StateManagementHTTPHandler
+	sessionInfoHandler     *http_oauth.OAuthSessionInfoHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -59,6 +68,10 @@ func NewHTTPServer(
 	postLoginHTTPHandler *http_login.PostLoginHTTPHandler,
 	postTokenRefreshHTTPHandler *http_token.PostTokenRefreshHTTPHandler,
 	postTokenIntrospectionHTTPHandler *http_introspection.PostTokenIntrospectionHTTPHandler,
+	getAuthURLHandler *http_oauth.GetAuthURLHTTPHandler,
+	oauthCallbackHandler *http_oauth.CallbackHTTPHandler,
+	stateManagementHandler *http_oauth.StateManagementHTTPHandler,
+	sessionInfoHandler *http_oauth.OAuthSessionInfoHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -89,6 +102,10 @@ func NewHTTPServer(
 		postLoginHTTPHandler:              postLoginHTTPHandler,
 		postTokenRefreshHTTPHandler:       postTokenRefreshHTTPHandler,
 		postTokenIntrospectionHTTPHandler: postTokenIntrospectionHTTPHandler,
+		getAuthURLHandler:                 getAuthURLHandler,
+		oauthCallbackHandler:              oauthCallbackHandler,
+		stateManagementHandler:            stateManagementHandler,
+		sessionInfoHandler:                sessionInfoHandler,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -138,23 +155,35 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	// Handle the request based on the URL path tokens.
 	switch {
-	// System Endpoints
+	// System endpoints
 	case n == 1 && p[0] == "version" && r.Method == http.MethodGet:
 		port.getVersionHTTPHandler.Execute(w, r)
 	case n == 1 && p[0] == "health-check" && r.Method == http.MethodGet:
 		port.getHealthCheckHTTPHandler.Execute(w, r)
 
-	// Authentication & User Management
+	// Auth endpoints
 	case n == 2 && p[0] == "api" && p[1] == "register":
 		port.postRegistrationHTTPHandler.Execute(w, r)
 	case n == 2 && p[0] == "api" && p[1] == "login" && r.Method == http.MethodPost:
 		port.postLoginHTTPHandler.Execute(w, r)
 
-	// Token Management
+	// Token endpoints
 	case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "refresh" && r.Method == http.MethodPost:
 		port.postTokenRefreshHTTPHandler.Execute(w, r)
 	case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "introspect" && r.Method == http.MethodPost:
 		port.postTokenIntrospectionHTTPHandler.Execute(w, r)
+
+	// OAuth endpoints
+	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "authorize" && r.Method == http.MethodGet:
+		port.getAuthURLHandler.Execute(w, r)
+	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "callback" && r.Method == http.MethodGet:
+		port.oauthCallbackHandler.Execute(w, r)
+	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "state" && r.Method == http.MethodGet:
+		port.stateManagementHandler.VerifyState(w, r)
+	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "state" && r.Method == http.MethodDelete:
+		port.stateManagementHandler.CleanupExpiredStates(w, r)
+	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "session" && r.Method == http.MethodGet:
+		port.sessionInfoHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:

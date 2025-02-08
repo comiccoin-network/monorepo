@@ -10,29 +10,29 @@ import (
 	dom_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain/oauthsession"
 )
 
-type GetSessionUseCase interface {
+type GetOAuthSessionUseCase interface {
 	Execute(ctx context.Context, sessionID string) (*dom_oauthsession.OAuthSession, error)
 }
 
-type getSessionUseCaseImpl struct {
+type getOAuthSessionUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   dom_oauthsession.Repository
 }
 
-func NewGetSessionUseCase(
+func NewGetOAuthSessionUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo dom_oauthsession.Repository,
-) GetSessionUseCase {
-	return &getSessionUseCaseImpl{
+) GetOAuthSessionUseCase {
+	return &getOAuthSessionUseCaseImpl{
 		config: config,
 		logger: logger,
 		repo:   repo,
 	}
 }
 
-func (uc *getSessionUseCaseImpl) Execute(ctx context.Context, sessionID string) (*dom_oauthsession.OAuthSession, error) {
+func (uc *getOAuthSessionUseCaseImpl) Execute(ctx context.Context, sessionID string) (*dom_oauthsession.OAuthSession, error) {
 	// Validation
 	e := make(map[string]string)
 	if sessionID == "" {

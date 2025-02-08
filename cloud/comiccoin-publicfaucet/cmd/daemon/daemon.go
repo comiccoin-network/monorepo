@@ -20,6 +20,7 @@ import (
 	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/introspection"
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
+	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/oauth"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
 	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/system"
 	http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/token"
@@ -32,6 +33,7 @@ import (
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
 	svc_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/introspection"
 	svc_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/login"
+	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/oauth"
 	svc_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/registration"
 	svc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/token"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/bannedipaddress"
@@ -203,6 +205,11 @@ func doRunDaemon() {
 		logger,
 		oauthsessionRepo,
 	)
+	getOAuthSessionUseCase := uc_oauthsession.NewGetOAuthSessionUseCase(
+		cfg,
+		logger,
+		oauthsessionRepo,
+	)
 	updateOAuthSessionUseCase := uc_oauthsession.NewUpdateOAuthSessionUseCase(
 		cfg,
 		logger,
@@ -292,17 +299,52 @@ func doRunDaemon() {
 	)
 	_ = introspectionService
 
+	// OAuth services
+	oauthAuthURLService := svc_oauth.NewGetAuthURLService(
+		cfg,
+		logger,
+		getAuthorizationURLUseCase,
+		createOAuthStateUseCase,
+	)
+
+	oauthCallbackService := svc_oauth.NewCallbackService(
+		cfg,
+		logger,
+		exchangeCodeUseCase,
+		getOAuthStateUseCase,
+		deleteOAuthStateUseCase,
+		createOAuthSessionUseCase,
+	)
+
+	oauthStateManagementService := svc_oauth.NewStateManagementService(
+		cfg,
+		logger,
+		getOAuthStateUseCase,
+		deleteOAuthStateUseCase,
+		deleteExpiredOAuthStatesUseCase,
+	)
+
+	oauthSessionInfoService := svc_oauth.NewOAuthSessionInfoService(
+		cfg,
+		logger,
+		getOAuthSessionUseCase,
+		userGetByIDUseCase,
+		introspectTokenUseCase,
+	)
+
 	//
 	// Interface
 	//
 
-	// HTTP Handlers
+	// --- System ---
 	getVersionHTTPHandler := http_system.NewGetVersionHTTPHandler(
 		logger,
 	)
 	getHealthCheckHTTPHandler := http_system.NewGetHealthCheckHTTPHandler(
 		logger,
 	)
+
+	// --- Auth ---
 	registrationHTTPHandler := http_registration.NewPostRegistrationHTTPHandler(
 		cfg,
 		logger,
@@ -324,7 +366,30 @@ func doRunDaemon() {
 		introspectionService,
 	)
 
-	// HTTP Middleware
+	// --- oAuth 2.0 ---
+
+	getAuthURLHandler := http_oauth.NewGetAuthURLHTTPHandler(
+		cfg,
+		logger,
+		oauthAuthURLService,
+	)
+	oauthCallbackHandler := http_oauth.NewCallbackHTTPHandler(
+		cfg,
+		logger,
+		oauthCallbackService,
+	)
+	stateManagementHandler := http_oauth.NewStateManagementHTTPHandler(
+		cfg,
+		logger,
+		oauthStateManagementService,
+	)
+	sessionInfoHandler := http_oauth.NewOAuthSessionInfoHTTPHandler(
+		cfg,
+		logger,
+		oauthSessionInfoService,
+	)
+
+	// --- HTTP Middleware ---
 	httpMiddleware := httpmiddle.NewMiddleware(
 		logger,
 		blackp,
@@ -334,7 +399,7 @@ func doRunDaemon() {
 		bannedIPAddressListAllValuesUseCase,
 	)
 
-	// HTTP Server
+	// --- HTTP Server ---
 	httpServ := http.NewHTTPServer(
 		cfg,
 		logger,
@@ -345,6 +410,10 @@ func doRunDaemon() {
 		postLoginHTTPHandler,
 		postTokenRefreshHTTPHandler,
 		postTokenIntrospectionHTTPHandler,
+		getAuthURLHandler,
+		oauthCallbackHandler,
+		stateManagementHandler,
+		sessionInfoHandler,
 	)
 
 	//
