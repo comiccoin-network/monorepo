@@ -15,6 +15,7 @@ import (
 
 type Configuration struct {
 	App        AppConfig
+	OAuth      OAuthConfig
 	AWS        AWSConfig
 	Blockchain BlockchainConfig
 	DB         DBConfig
@@ -69,6 +70,12 @@ type DBConfig struct {
 	Name string
 }
 
+type OAuthConfig struct {
+	ServerURL         string
+	ApplicationID     string
+	ApplicationSecret string
+}
+
 type MailgunConfig struct {
 	APIKey           string
 	Domain           string
@@ -81,53 +88,58 @@ func NewProviderUsingEnvironmentVariables() *Configuration {
 	var c Configuration
 
 	// Application section.
-	c.App.DataDirectory = getEnv("COMICCOIN_PUBLICFAUCETAPP_DATA_DIRECTORY", true)
-	c.App.FrontendDomain = getEnv("COMICCOIN_PUBLICFAUCETAPP_FRONTEND_DOMAIN", true)
-	c.App.BackendDomain = getEnv("COMICCOIN_PUBLICFAUCETAPP_BACKEND_DOMAIN", true)
-	c.App.Port = getEnv("COMICCOIN_PUBLICFAUCETPORT", true)
-	c.App.IP = getEnv("COMICCOIN_PUBLICFAUCETIP", false)
+	c.App.DataDirectory = getEnv("COMICCOIN_PUBLICFAUCET_APP_DATA_DIRECTORY", true)
+	c.App.FrontendDomain = getEnv("COMICCOIN_PUBLICFAUCET_APP_FRONTEND_DOMAIN", true)
+	c.App.BackendDomain = getEnv("COMICCOIN_PUBLICFAUCET_APP_BACKEND_DOMAIN", true)
+	c.App.Port = getEnv("COMICCOIN_PUBLICFAUCET_PORT", true)
+	c.App.IP = getEnv("COMICCOIN_PUBLICFAUCET_IP", false)
 	c.App.HTTPAddress = fmt.Sprintf("%v:%v", c.App.IP, c.App.Port)
-	c.App.RegistrationCoinsReward = getUint64Env("COMICCOIN_PUBLICFAUCETAPP_REGISTRATION_COINS_REWARD", true)
-	c.App.ComicSubmissionCoinsReward = getUint64Env("COMICCOIN_PUBLICFAUCETAPP_COMIC_SUBMISSION_COINS_REWARD", true)
-	walletAddress := getEnv("COMICCOIN_PUBLICFAUCETWALLET_ADDRESS", false)
+	c.App.RegistrationCoinsReward = getUint64Env("COMICCOIN_PUBLICFAUCET_APP_REGISTRATION_COINS_REWARD", true)
+	c.App.ComicSubmissionCoinsReward = getUint64Env("COMICCOIN_PUBLICFAUCET_APP_COMIC_SUBMISSION_COINS_REWARD", true)
+	walletAddress := getEnv("COMICCOIN_PUBLICFAUCET_WALLET_ADDRESS", false)
 	if walletAddress != "" {
 		address := common.HexToAddress(walletAddress)
 		c.App.WalletAddress = &address
 	}
-	c.App.WalletMnemonic = getSecureStringEnv("COMICCOIN_PUBLICFAUCETWALLET_MNEMONIC", false)
-	c.App.WalletPath = getEnv("COMICCOIN_PUBLICFAUCETWALLET_PATH", true)
-	c.App.AuthorityHTTPAddress = getEnv("COMICCOIN_PUBLICFAUCETAUTHORITY_HTTP_ADDRESS", true)
-	c.App.NFTStorageHTTPAddress = getEnv("COMICCOIN_PUBLICFAUCETNFTSTORAGE_HTTP_ADDRESS", true)
-	c.App.HMACSecret = getSecureBytesEnv("COMICCOIN_PUBLICFAUCETHMAC_SECRET", true)
-	c.App.GeoLiteDBPath = getEnv("COMICCOIN_PUBLICFAUCETAPP_GEOLITE_DB_PATH", false)
-	c.App.BannedCountries = getStringsArrEnv("COMICCOIN_PUBLICFAUCETAPP_BANNED_COUNTRIES", false)
+	c.App.WalletMnemonic = getSecureStringEnv("COMICCOIN_PUBLICFAUCET_WALLET_MNEMONIC", false)
+	c.App.WalletPath = getEnv("COMICCOIN_PUBLICFAUCET_WALLET_PATH", true)
+	c.App.AuthorityHTTPAddress = getEnv("COMICCOIN_PUBLICFAUCET_AUTHORITY_HTTP_ADDRESS", true)
+	c.App.NFTStorageHTTPAddress = getEnv("COMICCOIN_PUBLICFAUCET_NFTSTORAGE_HTTP_ADDRESS", true)
+	c.App.HMACSecret = getSecureBytesEnv("COMICCOIN_PUBLICFAUCET_HMAC_SECRET", true)
+	c.App.GeoLiteDBPath = getEnv("COMICCOIN_PUBLICFAUCET_APP_GEOLITE_DB_PATH", false)
+	c.App.BannedCountries = getStringsArrEnv("COMICCOIN_PUBLICFAUCET_APP_BANNED_COUNTRIES", false)
+
+	// OAuth 2.0
+	c.OAuth.ServerURL = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_SERVER_URL", true)
+	c.OAuth.ApplicationID = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_APPLICATION_ID", true)
+	c.OAuth.ApplicationSecret = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_APPLICATION_SECRET", true)
 
 	// Amazon Web-Services Technology
-	c.AWS.AccessKey = getEnv("COMICCOIN_PUBLICFAUCETAWS_ACCESS_KEY", true)
-	c.AWS.SecretKey = getEnv("COMICCOIN_PUBLICFAUCETAWS_SECRET_KEY", true)
-	c.AWS.Endpoint = getEnv("COMICCOIN_PUBLICFAUCETAWS_ENDPOINT", true)
-	c.AWS.Region = getEnv("COMICCOIN_PUBLICFAUCETAWS_REGION", true)
-	c.AWS.BucketName = getEnv("COMICCOIN_PUBLICFAUCETAWS_BUCKET_NAME", true)
+	c.AWS.AccessKey = getEnv("COMICCOIN_PUBLICFAUCET_AWS_ACCESS_KEY", true)
+	c.AWS.SecretKey = getEnv("COMICCOIN_PUBLICFAUCET_AWS_SECRET_KEY", true)
+	c.AWS.Endpoint = getEnv("COMICCOIN_PUBLICFAUCET_AWS_ENDPOINT", true)
+	c.AWS.Region = getEnv("COMICCOIN_PUBLICFAUCET_AWS_REGION", true)
+	c.AWS.BucketName = getEnv("COMICCOIN_PUBLICFAUCET_AWS_BUCKET_NAME", true)
 
 	// Blockchain section.
-	chainID, _ := strconv.ParseUint(getEnv("COMICCOIN_PUBLICFAUCETBLOCKCHAIN_CHAIN_ID", true), 10, 16)
+	chainID, _ := strconv.ParseUint(getEnv("COMICCOIN_PUBLICFAUCET_BLOCKCHAIN_CHAIN_ID", true), 10, 16)
 	c.Blockchain.ChainID = uint16(chainID)
-	transPerBlock, _ := strconv.ParseUint(getEnv("COMICCOIN_PUBLICFAUCETBLOCKCHAIN_TRANS_PER_BLOCK", true), 10, 16)
+	transPerBlock, _ := strconv.ParseUint(getEnv("COMICCOIN_PUBLICFAUCET_BLOCKCHAIN_TRANS_PER_BLOCK", true), 10, 16)
 	c.Blockchain.TransPerBlock = uint16(transPerBlock)
-	difficulty, _ := strconv.ParseUint(getEnv("COMICCOIN_PUBLICFAUCETBLOCKCHAIN_DIFFICULTY", true), 10, 16)
+	difficulty, _ := strconv.ParseUint(getEnv("COMICCOIN_PUBLICFAUCET_BLOCKCHAIN_DIFFICULTY", true), 10, 16)
 	c.Blockchain.Difficulty = uint16(difficulty)
-	c.Blockchain.TransactionFee, _ = strconv.ParseUint(getEnv("COMICCOIN_PUBLICFAUCETBLOCKCHAIN_TRANSACTION_FEE", false), 10, 64)
+	c.Blockchain.TransactionFee, _ = strconv.ParseUint(getEnv("COMICCOIN_PUBLICFAUCET_BLOCKCHAIN_TRANSACTION_FEE", false), 10, 64)
 
 	// Database section.
-	c.DB.URI = getEnv("COMICCOIN_PUBLICFAUCETDB_URI", true)
-	c.DB.Name = getEnv("COMICCOIN_PUBLICFAUCETDB_NAME", true)
+	c.DB.URI = getEnv("COMICCOIN_PUBLICFAUCET_DB_URI", true)
+	c.DB.Name = getEnv("COMICCOIN_PUBLICFAUCET_DB_NAME", true)
 
 	// Mailgun section.
-	c.Emailer.APIKey = getEnv("COMICCOIN_PUBLICFAUCETMAILGUN_API_KEY", true)
-	c.Emailer.Domain = getEnv("COMICCOIN_PUBLICFAUCETMAILGUN_DOMAIN", true)
-	c.Emailer.APIBase = getEnv("COMICCOIN_PUBLICFAUCETMAILGUN_API_BASE", true)
-	c.Emailer.SenderEmail = getEnv("COMICCOIN_PUBLICFAUCETMAILGUN_SENDER_EMAIL", true)
-	c.Emailer.MaintenanceEmail = getEnv("COMICCOIN_PUBLICFAUCETMAILGUN_MAINTENANCE_EMAIL", true)
+	c.Emailer.APIKey = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_API_KEY", true)
+	c.Emailer.Domain = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_DOMAIN", true)
+	c.Emailer.APIBase = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_API_BASE", true)
+	c.Emailer.SenderEmail = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_SENDER_EMAIL", true)
+	c.Emailer.MaintenanceEmail = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_MAINTENANCE_EMAIL", true)
 
 	return &c
 }

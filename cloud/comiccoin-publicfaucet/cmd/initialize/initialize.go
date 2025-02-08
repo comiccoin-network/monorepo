@@ -61,8 +61,8 @@ func doRunPublicFaucetInit() {
 	// kmutex := kmutexutil.NewKMutexProvider()
 	cfg := &config.Configuration{
 		DB: config.DBConfig{
-			URI:  getEnv("COMICCOIN_PUBLICFAUCETDB_URI", true),
-			Name: getEnv("COMICCOIN_PUBLICFAUCETDB_NAME", true),
+			URI:  getEnv("COMICCOIN_PUBLICFAUCET_DB_URI", true),
+			Name: getEnv("COMICCOIN_PUBLICFAUCET_DB_NAME", true),
 		},
 	}
 	dbClient := mongodb.NewProvider(cfg, logger)
