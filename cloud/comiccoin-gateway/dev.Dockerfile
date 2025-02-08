@@ -21,7 +21,7 @@ RUN ["go", "get", "github.com/githubnemo/CompileDaemon"]
 RUN ["go", "install", "github.com/githubnemo/CompileDaemon"]
 
 # Run the server with log level set to DEBUG to see these detailed logs:
-export LOG_LEVEL=debug
+ENV LOG_LEVEL=debug
 
 ENTRYPOINT CompileDaemon -polling=true -log-prefix=false -build="go build ." -command="./comiccoin-gateway daemon" -directory="./"
 

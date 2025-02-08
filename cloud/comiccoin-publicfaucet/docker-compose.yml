@@ -28,7 +28,7 @@ services:
     ports:
       - 27017:27017
     extra_hosts:
-      - "host.docker.internal:host-publicfaucet"
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017',priority:1},{_id:1,host:'host.docker.internal:27018',priority:0.5},{_id:2,host:'host.docker.internal:27019',priority:0.5}]}) }" | mongosh --port 27017 --quiet
       interval: 5s
@@ -57,7 +57,7 @@ services:
     ports:
       - 27018:27018
     extra_hosts:
-      - "host.docker.internal:host-publicfaucet"
+      - "host.docker.internal:host-gateway"
     volumes:
       - "./data/db2/db:/data/db"
       - "./data/db2/configdb:/data/configdb"
@@ -79,7 +79,7 @@ services:
     ports:
       - 27019:27019
     extra_hosts:
-      - "host.docker.internal:host-publicfaucet"
+      - "host.docker.internal:host-gateway"
     volumes:
       - "./data/db3/db:/data/db"
       - "./data/db3/configdb:/data/configdb"
