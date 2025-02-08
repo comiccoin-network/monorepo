@@ -9,11 +9,11 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler"
 	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/introspection"
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
+	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/system"
 	http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/token"
 )
 
@@ -39,8 +39,8 @@ type httpServerImpl struct {
 	// server is the underlying HTTP server.
 	server *http.Server
 
-	getVersionHTTPHandler     *handler.GetVersionHTTPHandler
-	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler
+	getVersionHTTPHandler     *http_system.GetVersionHTTPHandler
+	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler
 
 	postRegistrationHTTPHandler       *http_registration.PostRegistrationHTTPHandler
 	postLoginHTTPHandler              *http_login.PostLoginHTTPHandler
@@ -53,8 +53,8 @@ func NewHTTPServer(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	mid mid.Middleware,
-	getVersionHTTPHandler *handler.GetVersionHTTPHandler,
-	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler,
+	getVersionHTTPHandler *http_system.GetVersionHTTPHandler,
+	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler,
 	postRegistrationHTTPHandler *http_registration.PostRegistrationHTTPHandler,
 	postLoginHTTPHandler *http_login.PostLoginHTTPHandler,
 	postTokenRefreshHTTPHandler *http_token.PostTokenRefreshHTTPHandler,

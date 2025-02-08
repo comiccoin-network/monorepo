@@ -17,11 +17,11 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http"
-	httphandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler"
 	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/introspection"
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
+	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/system"
 	http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/token"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/bannedipaddress"
 	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/oauth"
@@ -297,10 +297,10 @@ func doRunDaemon() {
 	//
 
 	// HTTP Handlers
-	getVersionHTTPHandler := httphandler.NewGetVersionHTTPHandler(
+	getVersionHTTPHandler := http_system.NewGetVersionHTTPHandler(
 		logger,
 	)
-	getHealthCheckHTTPHandler := httphandler.NewGetHealthCheckHTTPHandler(
+	getHealthCheckHTTPHandler := http_system.NewGetHealthCheckHTTPHandler(
 		logger,
 	)
 	registrationHTTPHandler := http_registration.NewPostRegistrationHTTPHandler(

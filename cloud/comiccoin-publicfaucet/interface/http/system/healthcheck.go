@@ -1,5 +1,5 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler/healthcheck.go
-package handler
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/system/healthcheck.go
+package system
 
 import (
 	"encoding/json"
