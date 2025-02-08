@@ -18,6 +18,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http"
 	httphandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler"
+	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/introspection"
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
@@ -27,6 +28,7 @@ import (
 	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/registration"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/token"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
+	svc_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/introspection"
 	svc_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/login"
 	svc_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/registration"
 	svc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/token"
@@ -94,6 +96,11 @@ func doRunDaemon() {
 		cache,
 	)
 	userGetByEmailUseCase := uc_user.NewUserGetByEmailUseCase(
+		cfg,
+		logger,
+		userRepo,
+	)
+	userGetByIDUseCase := uc_user.NewUserGetByIDUseCase(
 		cfg,
 		logger,
 		userRepo,
@@ -203,6 +210,14 @@ func doRunDaemon() {
 		tokenUpsertByUserIDUseCase,
 	)
 	_ = refreshTokenService
+	introspectionService := svc_introspection.NewIntrospectionService(
+		cfg,
+		logger,
+		introspectTokenUseCase,
+		tokenGetByUserIDUseCase,
+		userGetByIDUseCase,
+	)
+	_ = introspectionService
 
 	//
 	// Interface
@@ -230,6 +245,11 @@ func doRunDaemon() {
 		logger,
 		refreshTokenService,
 	)
+	postTokenIntrospectionHTTPHandler := http_introspection.NewPostTokenIntrospectionHTTPHandler(
+		cfg,
+		logger,
+		introspectionService,
+	)
 
 	// HTTP Middleware
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -251,6 +271,7 @@ func doRunDaemon() {
 		registrationHTTPHandler,
 		postLoginHTTPHandler,
 		postTokenRefreshHTTPHandler,
+		postTokenIntrospectionHTTPHandler,
 	)
 
 	//

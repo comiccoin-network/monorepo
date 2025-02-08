@@ -10,6 +10,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/handler"
+	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/introspection"
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
@@ -41,9 +42,10 @@ type httpServerImpl struct {
 	getVersionHTTPHandler     *handler.GetVersionHTTPHandler
 	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler
 
-	postRegistrationHTTPHandler *http_registration.PostRegistrationHTTPHandler
-	postLoginHTTPHandler        *http_login.PostLoginHTTPHandler
-	postTokenRefreshHTTPHandler *http_token.PostTokenRefreshHTTPHandler
+	postRegistrationHTTPHandler       *http_registration.PostRegistrationHTTPHandler
+	postLoginHTTPHandler              *http_login.PostLoginHTTPHandler
+	postTokenRefreshHTTPHandler       *http_token.PostTokenRefreshHTTPHandler
+	postTokenIntrospectionHTTPHandler *http_introspection.PostTokenIntrospectionHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -56,6 +58,7 @@ func NewHTTPServer(
 	postRegistrationHTTPHandler *http_registration.PostRegistrationHTTPHandler,
 	postLoginHTTPHandler *http_login.PostLoginHTTPHandler,
 	postTokenRefreshHTTPHandler *http_token.PostTokenRefreshHTTPHandler,
+	postTokenIntrospectionHTTPHandler *http_introspection.PostTokenIntrospectionHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -76,15 +79,16 @@ func NewHTTPServer(
 
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
-		cfg:                         cfg,
-		logger:                      logger,
-		middleware:                  mid,
-		server:                      srv,
-		getVersionHTTPHandler:       getVersionHTTPHandler,
-		getHealthCheckHTTPHandler:   getHealthCheckHTTPHandler,
-		postRegistrationHTTPHandler: postRegistrationHTTPHandler,
-		postLoginHTTPHandler:        postLoginHTTPHandler,
-		postTokenRefreshHTTPHandler: postTokenRefreshHTTPHandler,
+		cfg:                               cfg,
+		logger:                            logger,
+		middleware:                        mid,
+		server:                            srv,
+		getVersionHTTPHandler:             getVersionHTTPHandler,
+		getHealthCheckHTTPHandler:         getHealthCheckHTTPHandler,
+		postRegistrationHTTPHandler:       postRegistrationHTTPHandler,
+		postLoginHTTPHandler:              postLoginHTTPHandler,
+		postTokenRefreshHTTPHandler:       postTokenRefreshHTTPHandler,
+		postTokenIntrospectionHTTPHandler: postTokenIntrospectionHTTPHandler,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -134,16 +138,23 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	// Handle the request based on the URL path tokens.
 	switch {
+	// System Endpoints
 	case n == 1 && p[0] == "version" && r.Method == http.MethodGet:
 		port.getVersionHTTPHandler.Execute(w, r)
 	case n == 1 && p[0] == "health-check" && r.Method == http.MethodGet:
 		port.getHealthCheckHTTPHandler.Execute(w, r)
+
+	// Authentication & User Management
 	case n == 2 && p[0] == "api" && p[1] == "register":
 		port.postRegistrationHTTPHandler.Execute(w, r)
 	case n == 2 && p[0] == "api" && p[1] == "login" && r.Method == http.MethodPost:
 		port.postLoginHTTPHandler.Execute(w, r)
+
+	// Token Management
 	case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "refresh" && r.Method == http.MethodPost:
 		port.postTokenRefreshHTTPHandler.Execute(w, r)
+	case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "introspect" && r.Method == http.MethodPost:
+		port.postTokenIntrospectionHTTPHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:
