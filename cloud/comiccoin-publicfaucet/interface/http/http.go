@@ -9,6 +9,7 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
+	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/hello"
 	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/introspection"
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
@@ -55,6 +56,9 @@ type httpServerImpl struct {
 	oauthCallbackHandler   *http_oauth.CallbackHTTPHandler
 	stateManagementHandler *http_oauth.StateManagementHTTPHandler
 	sessionInfoHandler     *http_oauth.OAuthSessionInfoHTTPHandler
+
+	// Resources
+	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -72,6 +76,7 @@ func NewHTTPServer(
 	oauthCallbackHandler *http_oauth.CallbackHTTPHandler,
 	stateManagementHandler *http_oauth.StateManagementHTTPHandler,
 	sessionInfoHandler *http_oauth.OAuthSessionInfoHTTPHandler,
+	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -106,6 +111,7 @@ func NewHTTPServer(
 		oauthCallbackHandler:              oauthCallbackHandler,
 		stateManagementHandler:            stateManagementHandler,
 		sessionInfoHandler:                sessionInfoHandler,
+		getHelloHTTPHandler:               getHelloHTTPHandler,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -184,6 +190,10 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.stateManagementHandler.CleanupExpiredStates(w, r)
 	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "session" && r.Method == http.MethodGet:
 		port.sessionInfoHandler.Execute(w, r)
+
+	// Resources
+	case n == 2 && p[0] == "api" && p[1] == "say-hello" && r.Method == http.MethodPost:
+		port.getHelloHTTPHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:

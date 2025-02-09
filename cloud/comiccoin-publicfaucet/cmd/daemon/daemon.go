@@ -17,6 +17,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http"
+	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/hello"
 	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/introspection"
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
@@ -31,6 +32,7 @@ import (
 	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/registration"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/token"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
+	svc_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/hello"
 	svc_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/introspection"
 	svc_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/login"
 	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/oauth"
@@ -332,6 +334,14 @@ func doRunDaemon() {
 		introspectTokenUseCase,
 	)
 
+	// --- Resources ---
+
+	getHelloService := svc_hello.NewHelloService(
+		cfg,
+		logger,
+		userGetByIDUseCase,
+	)
+
 	//
 	// Interface
 	//
@@ -365,6 +375,11 @@ func doRunDaemon() {
 		logger,
 		introspectionService,
 	)
+	getHelloHTTPHandler := http_hello.NewGetHelloHTTPHandler(
+		cfg,
+		logger,
+		getHelloService,
+	)
 
 	// --- oAuth 2.0 ---
 
@@ -390,6 +405,12 @@ func doRunDaemon() {
 	)
 
 	// --- HTTP Middleware ---
+	authMiddleware := httpmiddle.NewAuthMiddleware(
+		cfg,
+		logger,
+		introspectionService,
+	)
+
 	httpMiddleware := httpmiddle.NewMiddleware(
 		logger,
 		blackp,
@@ -397,6 +418,7 @@ func doRunDaemon() {
 		jwtp,
 		userGetBySessionIDUseCase,
 		bannedIPAddressListAllValuesUseCase,
+		authMiddleware,
 	)
 
 	// --- HTTP Server ---
@@ -414,6 +436,7 @@ func doRunDaemon() {
 		oauthCallbackHandler,
 		stateManagementHandler,
 		sessionInfoHandler,
+		getHelloHTTPHandler,
 	)
 
 	//

@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware/middleware.go
 package middleware
 
 import (
@@ -23,6 +24,7 @@ type middleware struct {
 	userGetBySessionIDUseCase           uc_user.UserGetBySessionIDUseCase
 	bannedIPAddressListAllValuesUseCase uc_bannedipaddress.BannedIPAddressListAllValuesUseCase
 	IPCountryBlocker                    ipcb.Provider
+	authMiddleware                      *AuthMiddleware
 }
 
 func NewMiddleware(
@@ -32,6 +34,7 @@ func NewMiddleware(
 	jwtp jwt.Provider,
 	uc1 uc_user.UserGetBySessionIDUseCase,
 	uc2 uc_bannedipaddress.BannedIPAddressListAllValuesUseCase,
+	uc3 *AuthMiddleware,
 ) Middleware {
 	return &middleware{
 		logger:                              loggerp,
@@ -40,30 +43,52 @@ func NewMiddleware(
 		jwt:                                 jwtp,
 		userGetBySessionIDUseCase:           uc1,
 		bannedIPAddressListAllValuesUseCase: uc2,
+		authMiddleware:                      uc3,
 	}
+}
+
+// Define protected routes
+var protectedPaths = map[string]bool{
+	"/api/say-hello":        true,
+	"/api/token/introspect": true,
+	// Add other protected paths here
+}
+
+// Helper function to check if a path requires authentication
+func isProtectedPath(path string) bool {
+	return protectedPaths[path]
 }
 
 // Attach function attaches to HTTP router to apply for every API call.
 func (mid *middleware) Attach(fn http.HandlerFunc) http.HandlerFunc {
 	mid.logger.Debug("middleware executed")
-	// Attach our middleware handlers here. Please note that all our middleware
-	// will start from the bottom and proceed upwards.
-	// Ex: `RateLimitMiddleware` will be executed first and
-	//     `ProtectedURLsMiddleware` will be executed last.
-	// fn = mid.ProtectedURLsMiddleware(fn) //TODO: INTEGRATE WHEN READY WITH OAUTH
-	// fn = mid.PostJWTProcessorMiddleware(fn) // Note: Must be above `JWTProcessorMiddleware`. //TODO: INTEGRATE WHEN READY WITH OAUTH
-	// fn = mid.JWTProcessorMiddleware(fn)     // Note: Must be above `PreJWTProcessorMiddleware`. //TODO: INTEGRATE WHEN READY WITH OAUTH
-	// fn = mid.PreJWTProcessorMiddleware(fn)  // Note: Must be above `URLProcessorMiddleware` and `IPAddressMiddleware`. //TODO: INTEGRATE WHEN READY WITH OAUTH
-	fn = mid.EnforceRestrictCountryIPsMiddleware(fn)
-	fn = mid.EnforceBlacklistMiddleware(fn)
-	fn = mid.IPAddressMiddleware(fn)
-	fn = mid.URLProcessorMiddleware(fn)
-	fn = mid.RateLimitMiddleware(fn)
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Flow to the next middleware.
-		fn(w, r)
+		// Apply base middleware to all requests
+		handler := mid.applyBaseMiddleware(fn)
+
+		// Check if the path requires authentication
+		if isProtectedPath(r.URL.Path) {
+			// Apply auth middleware for protected paths
+			handler = mid.authMiddleware.Authenticate(handler)
+		}
+
+		handler(w, r)
 	}
+}
+
+// Attach function attaches to HTTP router to apply for every API call.
+func (mid *middleware) applyBaseMiddleware(fn http.HandlerFunc) http.HandlerFunc {
+	mid.logger.Debug("middleware executed")
+	// Apply middleware in reverse order (bottom up)
+	handler := fn
+	handler = mid.EnforceRestrictCountryIPsMiddleware(handler)
+	handler = mid.EnforceBlacklistMiddleware(handler)
+	handler = mid.IPAddressMiddleware(handler)
+	handler = mid.URLProcessorMiddleware(handler)
+	handler = mid.RateLimitMiddleware(handler)
+
+	return handler
 }
 
 // Shutdown shuts down the middleware.
