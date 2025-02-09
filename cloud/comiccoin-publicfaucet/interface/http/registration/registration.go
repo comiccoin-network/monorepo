@@ -74,16 +74,17 @@ func (h *PostRegistrationHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 
 	// Convert IDO to domain model
 	request := &dom_registration.RegistrationRequest{
-		Email:     requestIDO.Email,
-		Password:  requestIDO.Password,
-		FirstName: requestIDO.FirstName,
-		LastName:  requestIDO.LastName,
-		Phone:     requestIDO.Phone,
-		Country:   requestIDO.Country,
-		Timezone:  requestIDO.Timezone,
-		AgreeTOS:  requestIDO.AgreeTOS,
-		AppID:     requestIDO.AppID,
-		AuthFlow:  requestIDO.AuthFlow,
+		Email:       requestIDO.Email,
+		Password:    requestIDO.Password,
+		FirstName:   requestIDO.FirstName,
+		LastName:    requestIDO.LastName,
+		Phone:       requestIDO.Phone,
+		Country:     requestIDO.Country,
+		Timezone:    requestIDO.Timezone,
+		AgreeTOS:    requestIDO.AgreeTOS,
+		AppID:       h.config.OAuth.ClientID,
+		AuthFlow:    requestIDO.AuthFlow,
+		RedirectURI: h.config.OAuth.RedirectURI,
 	}
 
 	// Call service

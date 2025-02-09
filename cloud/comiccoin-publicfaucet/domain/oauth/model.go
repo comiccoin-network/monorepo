@@ -18,9 +18,9 @@ type TokenResponse struct {
 }
 
 type IntrospectionResponse struct {
-	Active    bool      `json:"active"`
-	Scope     string    `json:"scope"`
-	ClientID  string    `json:"client_id"`
-	ExpiresAt time.Time `json:"exp"`
-	IssuedAt  time.Time `json:"iat"`
+	Active    bool   `json:"active"`
+	Scope     string `json:"scope"`
+	ClientID  string `json:"client_id"`
+	ExpiresAt int64  `json:"exp"` // Change to int64 for Unix timestamp
+	IssuedAt  int64  `json:"iat"` // Change to int64 for Unix timestamp
 }

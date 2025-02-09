@@ -16,6 +16,12 @@ type oauthClientImpl struct {
 }
 
 func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger) dom_oauth.Client {
+	if appCfg == nil {
+		panic("configuration is required")
+	}
+	if loggerp == nil {
+		panic("logger is required")
+	}
 	return &oauthClientImpl{
 		Logger:     loggerp,
 		Config:     appCfg,

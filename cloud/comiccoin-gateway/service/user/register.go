@@ -78,6 +78,12 @@ func (s *registerServiceImpl) Register(ctx context.Context, req *RegisterRequest
 			return nil, fmt.Errorf("invalid application: %w", err)
 		}
 
+		// Log the validation process
+		s.logger.Debug("validating application registration",
+			slog.String("app_id", req.AppID),
+			slog.String("redirect_uri", req.RedirectURI),
+			slog.String("auth_flow", req.AuthFlow))
+
 		// Validate redirect URI
 		validRedirect := false
 		for _, uri := range app.RedirectURIs {
@@ -87,6 +93,9 @@ func (s *registerServiceImpl) Register(ctx context.Context, req *RegisterRequest
 			}
 		}
 		if !validRedirect {
+			s.logger.Error("invalid redirect URI",
+				slog.String("provided_uri", req.RedirectURI),
+				slog.Any("allowed_uris", app.RedirectURIs))
 			return nil, fmt.Errorf("invalid redirect URI")
 		}
 	}

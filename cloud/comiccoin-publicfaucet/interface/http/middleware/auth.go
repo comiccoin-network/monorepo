@@ -50,10 +50,10 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 
 		token := parts[1]
 
-		// Get user ID from the token introspection
+		// First, introspect token with OAuth server to get basic info
 		introspectResp, err := m.introspectionService.IntrospectToken(r.Context(), &introspection.IntrospectionRequest{
 			AccessToken: token,
-			UserID:      "", // This will be validated inside the service
+			// Don't require UserID for initial introspection
 		})
 		if err != nil {
 			m.logger.Error("failed to introspect token",
@@ -68,16 +68,13 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		if introspectResp.User == nil {
+		// Add user ID to context
+		if introspectResp.User != nil {
+			ctx := context.WithValue(r.Context(), "user_id", introspectResp.User.ID.Hex())
+			next.ServeHTTP(w, r.WithContext(ctx))
+		} else {
 			m.logger.Warn("no user associated with token")
 			httperror.ResponseError(w, httperror.NewForUnauthorizedWithSingleField("message", "no user associated with token"))
-			return
 		}
-
-		// Add user ID to context
-		ctx := context.WithValue(r.Context(), "user_id", introspectResp.User.ID.Hex())
-
-		// Call next handler with updated context
-		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }

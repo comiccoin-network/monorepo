@@ -4,6 +4,8 @@ package introspection
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log"
 	"log/slog"
 	"time"
 
@@ -25,8 +27,8 @@ type IntrospectionResponse struct {
 	Active      bool           `json:"active"`
 	Scope       string         `json:"scope"`
 	ClientID    string         `json:"client_id"`
-	ExpiresAt   time.Time      `json:"expires_at"`
-	IssuedAt    time.Time      `json:"issued_at"`
+	ExpiresAt   time.Time      `json:"expires_at"` // Keep as time.Time for service layer
+	IssuedAt    time.Time      `json:"issued_at"`  // Keep as time.Time for service layer
 	User        *dom_user.User `json:"user"`
 	RequiresOTP bool           `json:"requires_otp"`
 }
@@ -64,17 +66,37 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 	if req.AccessToken == "" {
 		return nil, errors.New("access_token is required")
 	}
-	if req.UserID == "" {
-		return nil, errors.New("user_id is required")
+
+	// Introspect token with OAuth server
+	introspectResp, err := s.introspectTokenUseCase.Execute(ctx, req.AccessToken)
+	if err != nil {
+		s.logger.Error("failed to introspect token with OAuth server",
+			slog.Any("error", err))
+		return nil, err
 	}
 
-	// Convert user_id string to ObjectID
+	// Convert Unix timestamps to time.Time
+	expiresAt := time.Unix(introspectResp.ExpiresAt, 0)
+	issuedAt := time.Unix(introspectResp.IssuedAt, 0)
+
+	// If user ID is not provided, return basic introspection response
+	if req.UserID == "" {
+		return &IntrospectionResponse{
+			Active:    introspectResp.Active,
+			Scope:     introspectResp.Scope,
+			ClientID:  introspectResp.ClientID,
+			ExpiresAt: expiresAt,
+			IssuedAt:  issuedAt,
+		}, nil
+	}
+
+	// If user ID is provided, continue with full validation
 	userID, err := primitive.ObjectIDFromHex(req.UserID)
 	if err != nil {
 		s.logger.Error("invalid user_id format",
 			slog.String("user_id", req.UserID),
 			slog.Any("error", err))
-		return nil, err
+		return nil, fmt.Errorf("invalid user ID format: %v", err)
 	}
 
 	// Get user details
@@ -83,7 +105,14 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		s.logger.Error("failed to get user",
 			slog.Any("user_id", userID),
 			slog.Any("error", err))
-		return nil, err
+		// Return base response instead of failing
+		return &IntrospectionResponse{
+			Active:    introspectResp.Active,
+			Scope:     introspectResp.Scope,
+			ClientID:  introspectResp.ClientID,
+			ExpiresAt: expiresAt,
+			IssuedAt:  issuedAt,
+		}, nil
 	}
 
 	// Get stored token to verify ownership
@@ -92,32 +121,25 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		s.logger.Error("failed to get stored token",
 			slog.Any("user_id", userID),
 			slog.Any("error", err))
-		return nil, err
+		// Return base response instead of failing
+		return &IntrospectionResponse{
+			Active:    introspectResp.Active,
+			Scope:     introspectResp.Scope,
+			ClientID:  introspectResp.ClientID,
+			ExpiresAt: expiresAt,
+			IssuedAt:  issuedAt,
+		}, nil
+	}
+
+	if storedToken == nil {
+		s.logger.Error("No stored token failure", slog.Any("userID", userID))
+		log.Fatalf("No stored token for userID: %v", userID)
 	}
 
 	// Verify token ownership
 	if storedToken.AccessToken != req.AccessToken {
 		s.logger.Warn("access token mismatch",
 			slog.Any("user_id", userID))
-		return &IntrospectionResponse{
-			Active: false,
-		}, nil
-	}
-
-	// Introspect token with OAuth server
-	introspectResp, err := s.introspectTokenUseCase.Execute(ctx, req.AccessToken)
-	if err != nil {
-		s.logger.Error("failed to introspect token with OAuth server",
-			slog.Any("user_id", userID),
-			slog.Any("error", err))
-		return nil, err
-	}
-
-	// Check if token is expired
-	if time.Now().After(introspectResp.ExpiresAt) {
-		s.logger.Info("token has expired",
-			slog.Any("user_id", userID),
-			slog.Time("expires_at", introspectResp.ExpiresAt))
 		return &IntrospectionResponse{
 			Active: false,
 		}, nil
@@ -134,21 +156,19 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		}, nil
 	}
 
-	// Build response with user details and 2FA status
-	response := &IntrospectionResponse{
+	// Build full response with user details
+	requiresOTP := false
+	if user != nil {
+		requiresOTP = user.OTPEnabled && !user.OTPValidated
+	}
+
+	return &IntrospectionResponse{
 		Active:      introspectResp.Active,
 		Scope:       introspectResp.Scope,
 		ClientID:    introspectResp.ClientID,
-		ExpiresAt:   introspectResp.ExpiresAt,
-		IssuedAt:    introspectResp.IssuedAt,
+		ExpiresAt:   expiresAt,
+		IssuedAt:    issuedAt,
 		User:        user,
-		RequiresOTP: user.OTPEnabled && !user.OTPValidated,
-	}
-
-	s.logger.Info("token introspection completed successfully",
-		slog.Any("user_id", userID),
-		slog.Bool("active", response.Active),
-		slog.Bool("requires_otp", response.RequiresOTP))
-
-	return response, nil
+		RequiresOTP: requiresOTP,
+	}, nil
 }

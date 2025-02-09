@@ -1,0 +1,102 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api/register.go
+package api
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"log/slog"
+
+	"github.com/spf13/cobra"
+
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/logger"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
+	dom_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain/registration"
+	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/registration"
+	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/register"
+)
+
+func RegisterCmd() *cobra.Command {
+	var email, firstName, lastName, phone, country, timezone, password string
+	var agreeTOS bool
+
+	var cmd = &cobra.Command{
+		Use:   "register",
+		Short: "Register a new user",
+		Long:  `Register a new user in the system with OAuth 2.0 client registration`,
+		Run: func(cmd *cobra.Command, args []string) {
+			doRunRegisterCmd(email, firstName, lastName, phone, country, timezone, password, agreeTOS)
+		},
+	}
+
+	// Required flags
+	cmd.Flags().StringVarP(&email, "email", "e", "", "User's email address")
+	cmd.Flags().StringVarP(&firstName, "first-name", "f", "", "User's first name")
+	cmd.Flags().StringVarP(&lastName, "last-name", "l", "", "User's last name")
+	cmd.Flags().StringVarP(&phone, "phone", "p", "", "User's phone number")
+	cmd.Flags().StringVarP(&country, "country", "c", "", "User's country (2-letter code)")
+	cmd.Flags().StringVarP(&timezone, "timezone", "t", "", "User's timezone")
+	cmd.Flags().StringVarP(&password, "password", "w", "", "User's password (min 8 characters)")
+	cmd.Flags().BoolVarP(&agreeTOS, "agree-tos", "a", false, "Agree to Terms of Service")
+
+	// Mark required flags
+	cmd.MarkFlagRequired("email")
+	cmd.MarkFlagRequired("first-name")
+	cmd.MarkFlagRequired("last-name")
+	cmd.MarkFlagRequired("phone")
+	cmd.MarkFlagRequired("country")
+	cmd.MarkFlagRequired("timezone")
+	cmd.MarkFlagRequired("password")
+	cmd.MarkFlagRequired("agree-tos")
+
+	return cmd
+}
+
+func doRunRegisterCmd(email, firstName, lastName, phone, country, timezone, password string, agreeTOS bool) {
+	// Setup basic dependencies
+	logger := logger.NewProvider()
+	cfg := config.NewProviderUsingEnvironmentVariables()
+	logger.Debug("configuration ready")
+
+	// Initialize context
+	ctx := context.Background()
+
+	// Initialize registration repository and use case
+	registrationRepo := r_registration.NewRepository(cfg, logger)
+	registerUseCase := uc_register.NewRegisterUseCase(cfg, logger, registrationRepo)
+
+	// Create registration request
+	req := &dom_registration.RegistrationRequest{
+		Email:     email,
+		Password:  password, // Add the password field
+		FirstName: firstName,
+		LastName:  lastName,
+		Phone:     phone,
+		Country:   country,
+		Timezone:  timezone,
+		AgreeTOS:  agreeTOS,
+		AppID:     cfg.OAuth.ClientID,
+		AuthFlow:  "auto",
+	}
+
+	// Process registration
+	resp, err := registerUseCase.Execute(ctx, req)
+	if err != nil {
+		logger.Error("failed to register user",
+			slog.String("email", email),
+			slog.Any("error", err))
+		log.Fatal(err)
+	}
+
+	logger.Info("user registered successfully",
+		slog.String("email", email),
+		slog.String("auth_code", resp.AuthCode),
+		slog.String("redirect_uri", resp.RedirectURI))
+
+	// Print success message with registration details
+	fmt.Printf("\nUser Registration Successful\n")
+	fmt.Printf("Email: %s\n", email)
+	fmt.Printf("Name: %s %s\n", firstName, lastName)
+	fmt.Printf("Auth Code: %s\n", resp.AuthCode)
+	fmt.Printf("Redirect URI: %s\n", resp.RedirectURI)
+}

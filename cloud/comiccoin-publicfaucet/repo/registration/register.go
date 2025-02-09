@@ -16,6 +16,15 @@ func (impl *registrationClientImpl) Register(ctx context.Context, req *dom_regis
 	// Create registration endpoint URL
 	registrationURL := fmt.Sprintf("%s/api/register", impl.Config.OAuth.ServerURL)
 
+	// Set the redirect URI from config if not already set
+	if req.RedirectURI == "" {
+		req.RedirectURI = impl.Config.OAuth.RedirectURI
+	}
+
+	impl.Logger.Debug("sending registration request",
+		slog.String("email", req.Email),
+		slog.String("redirect_uri", req.RedirectURI))
+
 	// Convert request to JSON
 	jsonData, err := json.Marshal(req)
 	if err != nil {

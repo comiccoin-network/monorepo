@@ -41,6 +41,8 @@ services:
     volumes:
       - "./data/db1/db:/data/db"
       - "./data/db1/configdb:/data/configdb"
+    networks:
+      - mongodb_network
 
   db2:
     container_name: comiccoin_gateway_db2
@@ -64,6 +66,8 @@ services:
     volumes:
       - "./data/db2/db:/data/db"
       - "./data/db2/configdb:/data/configdb"
+    networks:
+      - mongodb_network
 
   db3:
     container_name: comiccoin_gateway_db3
@@ -87,6 +91,8 @@ services:
     volumes:
       - "./data/db3/db:/data/db"
       - "./data/db3/configdb:/data/configdb"
+    networks:
+      - mongodb_network
 
   mongo-express:
     container_name: comiccoin_gateway_db_admin
@@ -106,6 +112,8 @@ services:
       - db2
       - db3
     restart: unless-stopped
+    networks:
+      - mongodb_network
 
   # The main application.
   app:
@@ -123,7 +131,7 @@ services:
       COMICCOIN_GATEWAY_NFTSTORAGE_HTTP_ADDRESS: ${COMICCOIN_GATEWAY_NFTSTORAGE_HTTP_ADDRESS}
       COMICCOIN_GATEWAY_HMAC_SECRET: ${COMICCOIN_GATEWAY_HMAC_SECRET}
       COMICCOIN_GATEWAY_IP: 0.0.0.0
-      COMICCOIN_GATEWAY_PORT: 8080
+      COMICCOIN_GATEWAY_PORT: ${COMICCOIN_GATEWAY_PORT}
       COMICCOIN_GATEWAY_APP_REGISTRATION_COINS_REWARD: ${COMICCOIN_GATEWAY_APP_REGISTRATION_COINS_REWARD}
       COMICCOIN_GATEWAY_APP_COMIC_SUBMISSION_COINS_REWARD: ${COMICCOIN_GATEWAY_APP_COMIC_SUBMISSION_COINS_REWARD}
       COMICCOIN_GATEWAY_APP_GEOLITE_DB_PATH: ${COMICCOIN_GATEWAY_APP_GEOLITE_DB_PATH}
@@ -167,3 +175,12 @@ services:
       - NET_ADMIN
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - mongodb_network
+      - comiccoin_network
+
+networks:
+  mongodb_network:
+    driver: bridge
+  comiccoin_network:
+    external: true
