@@ -10,10 +10,11 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/logger"
+	common_oauth_config "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
+	dom_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/registration"
+	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/registration"
+	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/register"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
-	dom_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain/registration"
-	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/registration"
-	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/register"
 )
 
 func RegisterCmd() *cobra.Command {
@@ -55,7 +56,19 @@ func RegisterCmd() *cobra.Command {
 func doRunRegisterCmd(email, firstName, lastName, phone, country, timezone, password string, agreeTOS bool) {
 	// Setup basic dependencies
 	logger := logger.NewProvider()
-	cfg := config.NewProviderUsingEnvironmentVariables()
+	originalCfg := config.NewProviderUsingEnvironmentVariables()
+	cfg := &common_oauth_config.Configuration{
+		OAuth: common_oauth_config.OAuthConfig{
+			ServerURL:    originalCfg.OAuth.ServerURL,
+			ClientID:     originalCfg.OAuth.ClientID,
+			ClientSecret: originalCfg.OAuth.ClientSecret,
+			RedirectURI:  originalCfg.OAuth.RedirectURI,
+		},
+		DB: common_oauth_config.DBConfig{
+			URI:  originalCfg.DB.URI,
+			Name: originalCfg.DB.Name,
+		},
+	}
 	logger.Debug("configuration ready")
 
 	// Initialize context

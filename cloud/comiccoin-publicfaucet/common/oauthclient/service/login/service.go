@@ -3,12 +3,13 @@ package login
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/token"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
 )
 
@@ -66,6 +67,14 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, req *LoginRequest) 
 	user, err := s.userGetByEmailUseCase.Execute(ctx, req.Email)
 	if err != nil {
 		s.logger.Error("failed to get user",
+			slog.String("email", req.Email),
+			slog.Any("error", err))
+		return nil, err
+	}
+
+	if user == nil {
+		err := errors.New("User account does not exist, please register this account")
+		s.logger.Error("User does not exist for email",
 			slog.String("email", req.Email),
 			slog.Any("error", err))
 		return nil, err

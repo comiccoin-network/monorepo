@@ -38,7 +38,13 @@ import (
 )
 
 type Manager interface {
+	// Database
 	GetLocalUserByID(ctx context.Context, id primitive.ObjectID) (*dom_user.User, error)
+
+	// Service
+	Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error)
+
+	// HTTP
 	AuthMiddleware() *http_mid.AuthMiddleware
 	PostRegistrationHTTPHandler() *http_registration.PostRegistrationHTTPHandler
 	PostLoginHTTPHandler() *http_login.PostLoginHTTPHandler
@@ -408,6 +414,10 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 
 func (m *managerImpl) GetLocalUserByID(ctx context.Context, id primitive.ObjectID) (*dom_user.User, error) {
 	return m.userGetByIDUseCase.Execute(ctx, id)
+}
+
+func (m *managerImpl) Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error) {
+	return m.loginService.ProcessLogin(ctx, loginReq)
 }
 
 func (m *managerImpl) AuthMiddleware() *http_mid.AuthMiddleware {

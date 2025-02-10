@@ -11,16 +11,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/logger"
+	common_oauth_config "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
+	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauth"
+	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/token"
+	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/user"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/introspection"
+	svc_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/introspection"
+	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
-	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/oauth"
-	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/token"
-	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/introspection"
-	svc_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/introspection"
-	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/oauth"
-	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/token"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
 )
 
 func VerifyTokenCmd() *cobra.Command {
@@ -44,11 +45,23 @@ func VerifyTokenCmd() *cobra.Command {
 func doRunVerifyToken(accessToken, userID string) {
 	// Setup dependencies
 	logger := logger.NewProvider()
-	cfg := config.NewProviderUsingEnvironmentVariables()
+	originalCfg := config.NewProviderUsingEnvironmentVariables()
+	cfg := &common_oauth_config.Configuration{
+		OAuth: common_oauth_config.OAuthConfig{
+			ServerURL:    originalCfg.OAuth.ServerURL,
+			ClientID:     originalCfg.OAuth.ClientID,
+			ClientSecret: originalCfg.OAuth.ClientSecret,
+			RedirectURI:  originalCfg.OAuth.RedirectURI,
+		},
+		DB: common_oauth_config.DBConfig{
+			URI:  originalCfg.DB.URI,
+			Name: originalCfg.DB.Name,
+		},
+	}
 	logger.Debug("configuration ready")
 
 	// Initialize MongoDB client
-	dbClient := mongodb.NewProvider(cfg, logger)
+	dbClient := mongodb.NewProvider(originalCfg, logger)
 	logger.Debug("mongodb client initialized")
 
 	// Initialize all repositories with debug logging

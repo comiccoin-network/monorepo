@@ -121,6 +121,7 @@ func (s *registerServiceImpl) Register(ctx context.Context, req *RegisterRequest
 		ModifiedByUserID:    userID,
 		ModifiedByName:      fmt.Sprintf("%v %v", req.FirstName, req.LastName),
 		ModifiedAt:          time.Now(),
+		Role:                dom_user.UserRoleCustomer,
 	}
 
 	if err := s.userCreateUseCase.Execute(ctx, user); err != nil {

@@ -14,6 +14,7 @@ func APICmd() *cobra.Command {
 
 	// Attach our sub-commands for `api`
 	cmd.AddCommand(RegisterCmd())
+	cmd.AddCommand(LoginCmd())
 	cmd.AddCommand(TokenExchangeCmd())
 	cmd.AddCommand(VerifyTokenCmd())
 

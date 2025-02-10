@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api/token.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api/exchangetoken.go
 package api
 
 import (
@@ -10,9 +10,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/logger"
+	common_oauth_config "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
+	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauth"
+	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
-	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/oauth"
-	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/oauth"
 )
 
 func TokenExchangeCmd() *cobra.Command {
@@ -35,7 +36,19 @@ func TokenExchangeCmd() *cobra.Command {
 func doRunTokenExchange(authCode string) {
 	// Setup basic dependencies
 	logger := logger.NewProvider()
-	cfg := config.NewProviderUsingEnvironmentVariables()
+	originalCfg := config.NewProviderUsingEnvironmentVariables()
+	cfg := &common_oauth_config.Configuration{
+		OAuth: common_oauth_config.OAuthConfig{
+			ServerURL:    originalCfg.OAuth.ServerURL,
+			ClientID:     originalCfg.OAuth.ClientID,
+			ClientSecret: originalCfg.OAuth.ClientSecret,
+			RedirectURI:  originalCfg.OAuth.RedirectURI,
+		},
+		DB: common_oauth_config.DBConfig{
+			URI:  originalCfg.DB.URI,
+			Name: originalCfg.DB.Name,
+		},
+	}
 	logger.Debug("configuration ready")
 
 	// Initialize repositories and use cases
