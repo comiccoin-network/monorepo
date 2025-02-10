@@ -18,7 +18,7 @@ func (impl tokenStorerImpl) FindByTokenID(ctx context.Context, tokenID string) (
 	err := impl.Collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, nil
+			return nil, dom_token.ErrTokenNotFound
 		}
 		impl.Logger.Error("failed to find token",
 			slog.String("token_id", tokenID),

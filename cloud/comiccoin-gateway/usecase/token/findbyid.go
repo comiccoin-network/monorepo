@@ -3,6 +3,7 @@ package token
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -40,6 +41,12 @@ func (uc *tokenFindByIDUseCaseImpl) Execute(ctx context.Context, tokenID string)
 	// STEP 2: Retrieve from database
 	token, err := uc.repo.FindByTokenID(ctx, tokenID)
 	if err != nil {
+		// Check for specific errors
+		if errors.Is(err, dom_token.ErrTokenNotFound) {
+			uc.logger.Warn("token not found",
+				slog.String("token_id", tokenID))
+			return nil, err // Pass through the domain error
+		}
 		return nil, err
 	}
 
@@ -48,16 +55,12 @@ func (uc *tokenFindByIDUseCaseImpl) Execute(ctx context.Context, tokenID string)
 		if token.IsRevoked {
 			uc.logger.Warn("attempt to use revoked token",
 				slog.String("token_id", tokenID))
-			return nil, httperror.NewForBadRequest(&map[string]string{
-				"token": "revoked",
-			})
+			return nil, dom_token.ErrTokenRevoked
 		}
 		if token.ExpiresAt.Before(time.Now()) {
 			uc.logger.Warn("attempt to use expired token",
 				slog.String("token_id", tokenID))
-			return nil, httperror.NewForBadRequest(&map[string]string{
-				"token": "expired",
-			})
+			return nil, dom_token.ErrTokenExpired
 		}
 	}
 

@@ -3,9 +3,11 @@ package oauth
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/token"
 	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
 )
 
@@ -61,7 +63,12 @@ func (h *RefreshTokenHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("refresh token failed",
 			"error", err,
 			"client_id", req.ClientID)
-		h.sendError(w, "invalid_grant", "Failed to refresh token")
+		switch {
+		case errors.Is(err, token.ErrTokenNotFound):
+			h.sendError(w, "invalid_grant", "Your session has expired. Please log in again to continue.")
+		default:
+			h.sendError(w, "invalid_grant", "Failed to refresh token")
+		}
 		return
 	}
 

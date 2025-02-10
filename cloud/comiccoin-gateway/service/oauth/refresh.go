@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -99,10 +100,25 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 	// Get the existing refresh token with detailed error handling
 	existingToken, err := s.tokenFindByIDUseCase.Execute(ctx, req.RefreshToken)
 	if err != nil {
-		s.logger.Error("failed to find refresh token",
-			slog.String("refresh_token", req.RefreshToken[:5]+"..."),
-			slog.Any("error", err))
-		return nil, fmt.Errorf("invalid refresh token: %w", err)
+		switch {
+		case errors.Is(err, dom_token.ErrTokenNotFound):
+			s.logger.Warn("refresh token not found",
+				slog.String("refresh_token", req.RefreshToken[:5]+"..."))
+			return nil, fmt.Errorf("refresh token not found")
+		case errors.Is(err, dom_token.ErrTokenExpired):
+			s.logger.Warn("refresh token expired",
+				slog.String("refresh_token", req.RefreshToken[:5]+"..."))
+			return nil, fmt.Errorf("refresh token expired")
+		case errors.Is(err, dom_token.ErrTokenRevoked):
+			s.logger.Warn("refresh token revoked",
+				slog.String("refresh_token", req.RefreshToken[:5]+"..."))
+			return nil, fmt.Errorf("refresh token revoked")
+		default:
+			s.logger.Error("failed to find refresh token",
+				slog.String("refresh_token", req.RefreshToken[:5]+"..."),
+				slog.Any("error", err))
+			return nil, fmt.Errorf("invalid refresh token: %w", err)
+		}
 	}
 
 	if existingToken == nil {

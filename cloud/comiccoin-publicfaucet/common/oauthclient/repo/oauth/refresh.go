@@ -77,12 +77,13 @@ func (impl *oauthClientImpl) RefreshToken(ctx context.Context, refreshToken stri
 				slog.String("error", oauthError.Error),
 				slog.String("description", oauthError.ErrorDescription))
 
-			// Handle specific error cases
+			// Here's where we add the case statement
 			switch oauthError.Error {
 			case "invalid_grant":
-				return nil, fmt.Errorf("refresh token is invalid or expired - please log in again")
-			case "invalid_client":
-				return nil, fmt.Errorf("client authentication failed")
+				if strings.Contains(oauthError.ErrorDescription, "session has expired") {
+					return nil, fmt.Errorf("your session has expired - please log in again to continue")
+				}
+				return nil, fmt.Errorf("refresh token is no longer valid - please log in again")
 			default:
 				return nil, fmt.Errorf("OAuth error: %s - %s", oauthError.Error, oauthError.ErrorDescription)
 			}
