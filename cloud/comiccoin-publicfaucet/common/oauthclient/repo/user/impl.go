@@ -21,7 +21,7 @@ type userStorerImpl struct {
 
 func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *mongo.Client) dom_user.Repository {
 	// ctx := context.Background()
-	uc := client.Database(appCfg.DB.Name).Collection("users")
+	uc := client.Database(appCfg.DB.Name).Collection("oauth_users")
 
 	// // For debugging purposes only or if you are going to recreate new indexes.
 	// if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {

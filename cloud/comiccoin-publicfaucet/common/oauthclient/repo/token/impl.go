@@ -21,7 +21,7 @@ type tokenStorerImpl struct {
 
 func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *mongo.Client) dom_token.Repository {
 	// Initialize the tokens collection
-	tc := client.Database(appCfg.DB.Name).Collection("tokens")
+	tc := client.Database(appCfg.DB.Name).Collection("oauth_tokens")
 
 	// Create indexes for optimizing queries and enforcing constraints
 	_, err := tc.Indexes().CreateMany(context.TODO(), []mongo.IndexModel{
