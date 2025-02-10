@@ -4,141 +4,127 @@ package introspection
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
+	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/token"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
 )
 
+// Custom error types for better error handling
+type TokenExpiredError struct {
+	Message string
+	Cause   error
+}
+
+func (e *TokenExpiredError) Error() string {
+	if e.Cause != nil {
+		return fmt.Sprintf("%s: %v", e.Message, e.Cause)
+	}
+	return e.Message
+}
+
+// Request/Response types
 type IntrospectionRequest struct {
-	AccessToken string `json:"access_token"`
-	UserID      string `json:"user_id"`
+	Token  string
+	UserID string // Optional - if provided, we verify token ownership
 }
 
 type IntrospectionResponse struct {
-	Active      bool           `json:"active"`
-	Scope       string         `json:"scope"`
-	ClientID    string         `json:"client_id"`
-	ExpiresAt   time.Time      `json:"expires_at"` // Keep as time.Time for service layer
-	IssuedAt    time.Time      `json:"issued_at"`  // Keep as time.Time for service layer
-	User        *dom_user.User `json:"user"`
-	RequiresOTP bool           `json:"requires_otp"`
+	Active    bool               `json:"active"`
+	UserID    primitive.ObjectID `json:"user_id,omitempty"`
+	Email     string             `json:"email,omitempty"`
+	FirstName string             `json:"first_name,omitempty"`
+	LastName  string             `json:"last_name,omitempty"`
 }
 
+// Service interface
 type IntrospectionService interface {
 	IntrospectToken(ctx context.Context, req *IntrospectionRequest) (*IntrospectionResponse, error)
 }
 
+// Service implementation
 type introspectionServiceImpl struct {
 	config                 *config.Configuration
 	logger                 *slog.Logger
 	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase
 	tokenGetUseCase        uc_token.TokenGetByUserIDUseCase
+	tokenUpsertUseCase     uc_token.TokenUpsertByUserIDUseCase
+	refreshTokenUseCase    uc_oauth.RefreshTokenUseCase
 	userGetByIDUseCase     uc_user.UserGetByIDUseCase
 }
 
+// Constructor
 func NewIntrospectionService(
-	config *config.Configuration,
+	cfg *config.Configuration,
 	logger *slog.Logger,
 	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase,
 	tokenGetUseCase uc_token.TokenGetByUserIDUseCase,
+	tokenUpsertUseCase uc_token.TokenUpsertByUserIDUseCase,
+	refreshTokenUseCase uc_oauth.RefreshTokenUseCase,
 	userGetByIDUseCase uc_user.UserGetByIDUseCase,
 ) IntrospectionService {
 	return &introspectionServiceImpl{
-		config:                 config,
+		config:                 cfg,
 		logger:                 logger,
 		introspectTokenUseCase: introspectTokenUseCase,
 		tokenGetUseCase:        tokenGetUseCase,
+		tokenUpsertUseCase:     tokenUpsertUseCase,
+		refreshTokenUseCase:    refreshTokenUseCase,
 		userGetByIDUseCase:     userGetByIDUseCase,
 	}
 }
 
+// Main service method
 func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *IntrospectionRequest) (*IntrospectionResponse, error) {
-	// Input validation
-	if req.AccessToken == "" {
-		return nil, errors.New("access_token is required")
+	// If user ID is provided, verify token ownership first
+	if req.UserID != "" {
+		userID, err := primitive.ObjectIDFromHex(req.UserID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid user ID format: %w", err)
+		}
+
+		storedToken, err := s.tokenGetUseCase.Execute(ctx, userID)
+		if err != nil {
+			return nil, fmt.Errorf("getting stored token: %w", err)
+		}
+		if storedToken == nil {
+			s.logger.Error("no stored token found", slog.String("user_id", req.UserID))
+			return &IntrospectionResponse{Active: false}, nil
+		}
+
+		// If token is expired, try to refresh it
+		if time.Now().After(storedToken.ExpiresAt) {
+			refreshedToken, err := s.refreshToken(ctx, storedToken)
+			if err != nil {
+				s.logger.Error("token refresh failed",
+					slog.String("user_id", req.UserID),
+					slog.Any("error", err))
+				return &IntrospectionResponse{Active: false}, nil
+			}
+			// Use the refreshed token for introspection
+			req.Token = refreshedToken.AccessToken
+		} else {
+			// Use the stored token
+			req.Token = storedToken.AccessToken
+		}
 	}
 
-	// Introspect token with OAuth server
-	introspectResp, err := s.introspectTokenUseCase.Execute(ctx, req.AccessToken)
+	// Now proceed with introspection
+	introspectResp, err := s.introspectTokenUseCase.Execute(ctx, req.Token)
 	if err != nil {
-		s.logger.Error("failed to introspect token with OAuth server",
-			slog.Any("error", err))
-		return nil, err
-	}
-
-	// Response validation
-	if introspectResp.UserID == "" {
-		s.logger.Warn("introspection response did not include `user_id` field",
-			slog.String("user_id", introspectResp.UserID))
-		return nil, errors.New("user_is is required")
-	}
-
-	// Convert Unix timestamps to time.Time
-	expiresAt := time.Unix(introspectResp.ExpiresAt, 0)
-	issuedAt := time.Unix(introspectResp.IssuedAt, 0)
-
-	// Create user from introspection response
-	var user *dom_user.User
-	userID, err := primitive.ObjectIDFromHex(introspectResp.UserID)
-	if err != nil {
-		s.logger.Error("failed to parse user ID from introspection response",
-			slog.String("user_id", introspectResp.UserID),
-			slog.Any("error", err))
-		return nil, err
-	}
-
-	// Build base response
-	response := &IntrospectionResponse{
-		Active:    introspectResp.Active,
-		Scope:     introspectResp.Scope,
-		ClientID:  introspectResp.ClientID,
-		ExpiresAt: expiresAt,
-		IssuedAt:  issuedAt,
-		User:      user,
-	}
-
-	// If user ID is not provided in request, return basic response
-	if introspectResp.UserID == "" {
-		s.logger.Warn("`user_id` is not provided in request",
-			slog.String("user_id", introspectResp.UserID))
-		return response, nil
-	}
-
-	// Get stored token to verify ownership
-	storedToken, err := s.tokenGetUseCase.Execute(ctx, userID)
-	if err != nil {
-		s.logger.Error("failed to get stored token",
-			slog.Any("user_id", userID),
-			slog.Any("error", err))
-		return response, nil
-	}
-
-	if storedToken == nil {
-		s.logger.Error("no stored token found",
-			slog.Any("user_id", userID))
-		return response, nil
-	}
-
-	// Verify token ownership
-	if storedToken.AccessToken != req.AccessToken {
-		s.logger.Warn("access token mismatch",
-			slog.Any("user_id", userID))
-		return &IntrospectionResponse{
-			Active: false,
-		}, nil
+		return nil, fmt.Errorf("introspecting token: %w", err)
 	}
 
 	// Check if client ID matches our OAuth client ID
 	if introspectResp.ClientID != s.config.OAuth.ClientID {
 		s.logger.Warn("client ID mismatch",
-			slog.Any("user_id", userID),
 			slog.String("expected", s.config.OAuth.ClientID),
 			slog.String("received", introspectResp.ClientID))
 		return &IntrospectionResponse{
@@ -146,25 +132,61 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		}, nil
 	}
 
-	// Optionally get additional user details from database
-	dbUser, err := s.userGetByIDUseCase.Execute(ctx, userID)
+	if !introspectResp.Active {
+		return &IntrospectionResponse{Active: false}, nil
+	}
+
+	// For active tokens, fetch additional user information
+	if introspectResp.UserID != "" {
+		userID, err := primitive.ObjectIDFromHex(introspectResp.UserID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid user ID from introspection: %w", err)
+		}
+
+		user, err := s.userGetByIDUseCase.Execute(ctx, userID)
+		if err != nil {
+			return nil, fmt.Errorf("getting user info: %w", err)
+		}
+
+		return &IntrospectionResponse{
+			Active:    true,
+			UserID:    user.ID,
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+		}, nil
+	}
+
+	// Return basic response if no user info
+	return &IntrospectionResponse{Active: true}, nil
+}
+
+// Helper method to refresh tokens
+func (s *introspectionServiceImpl) refreshToken(ctx context.Context, oldToken *dom_token.Token) (*dom_token.Token, error) {
+	// Only attempt refresh if we have a refresh token
+	if oldToken.RefreshToken == "" {
+		return nil, errors.New("no refresh token available")
+	}
+
+	// Try to get a new token using the refresh token
+	tokenResp, err := s.refreshTokenUseCase.Execute(ctx, oldToken.RefreshToken)
 	if err != nil {
-		s.logger.Error("failed to get user from database",
-			slog.Any("user_id", userID),
-			slog.Any("error", err))
-		return response, nil
+		return nil, fmt.Errorf("refreshing token: %w", err)
 	}
 
-	// Update OTP status if we have database user info
-	if dbUser != nil {
-		response.RequiresOTP = dbUser.OTPEnabled && !dbUser.OTPValidated
-		// Update user with any additional fields from database if needed
-		response.User = dbUser
+	// Create new token record
+	newToken := &dom_token.Token{
+		ID:           primitive.NewObjectID(),
+		UserID:       oldToken.UserID,
+		AccessToken:  tokenResp.AccessToken,
+		RefreshToken: tokenResp.RefreshToken,
+		ExpiresAt:    tokenResp.ExpiresAt,
 	}
 
-	s.logger.Debug("introspection finished",
-		slog.Any("user_id", userID),
-		slog.Any("response.User", response.User))
+	// Store the new token
+	if err := s.tokenUpsertUseCase.Execute(ctx, newToken); err != nil {
+		return nil, fmt.Errorf("storing refreshed token: %w", err)
+	}
 
-	return response, nil
+	return newToken, nil
 }

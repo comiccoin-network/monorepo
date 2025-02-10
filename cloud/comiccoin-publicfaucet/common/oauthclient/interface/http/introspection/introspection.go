@@ -10,6 +10,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	service_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/introspection"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type PostTokenIntrospectionHTTPHandler struct {
@@ -36,16 +37,11 @@ type tokenIntrospectionRequestIDO struct {
 }
 
 type tokenIntrospectionResponseIDO struct {
-	Active      bool   `json:"active"`
-	Scope       string `json:"scope,omitempty"`
-	ClientID    string `json:"client_id,omitempty"`
-	ExpiresAt   int64  `json:"expires_at,omitempty"`
-	IssuedAt    int64  `json:"issued_at,omitempty"`
-	UserID      string `json:"user_id,omitempty"`
-	Email       string `json:"email,omitempty"`
-	FirstName   string `json:"first_name,omitempty"`
-	LastName    string `json:"last_name,omitempty"`
-	RequiresOTP bool   `json:"requires_otp"`
+	Active    bool               `json:"active"`
+	UserID    primitive.ObjectID `json:"user_id,omitempty"`
+	Email     string             `json:"email,omitempty"`
+	FirstName string             `json:"first_name,omitempty"`
+	LastName  string             `json:"last_name,omitempty"`
 }
 
 func (h *PostTokenIntrospectionHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
@@ -73,8 +69,8 @@ func (h *PostTokenIntrospectionHTTPHandler) Execute(w http.ResponseWriter, r *ht
 
 	// Convert IDO to service request
 	request := &service_introspection.IntrospectionRequest{
-		AccessToken: requestIDO.AccessToken,
-		UserID:      requestIDO.UserID,
+		Token:  requestIDO.AccessToken,
+		UserID: requestIDO.UserID,
 	}
 
 	// Call service
@@ -89,22 +85,11 @@ func (h *PostTokenIntrospectionHTTPHandler) Execute(w http.ResponseWriter, r *ht
 
 	// Convert service response to IDO
 	responseIDO := tokenIntrospectionResponseIDO{
-		Active:      response.Active,
-		RequiresOTP: response.RequiresOTP,
-	}
-
-	// Only include additional fields if token is active
-	if response.Active {
-		responseIDO.Scope = response.Scope
-		responseIDO.ClientID = response.ClientID
-		responseIDO.ExpiresAt = response.ExpiresAt.Unix()
-		responseIDO.IssuedAt = response.IssuedAt.Unix()
-		if response.User != nil {
-			responseIDO.UserID = response.User.ID.Hex()
-			responseIDO.Email = response.User.Email
-			responseIDO.FirstName = response.User.FirstName
-			responseIDO.LastName = response.User.LastName
-		}
+		Active:    response.Active,
+		UserID:    response.UserID,
+		Email:     response.Email,
+		FirstName: response.FirstName,
+		LastName:  response.LastName,
 	}
 
 	// Encode response

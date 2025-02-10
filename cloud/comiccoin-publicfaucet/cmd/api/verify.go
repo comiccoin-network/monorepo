@@ -78,6 +78,21 @@ func doRunVerifyToken(accessToken, userID string) {
 	introspectTokenUseCase := uc_oauth.NewIntrospectTokenUseCase(cfg, logger, oauthRepo)
 	tokenGetUseCase := uc_token.NewTokenGetByUserIDUseCase(cfg, logger, tokenRepo)
 	userGetByIDUseCase := uc_user.NewUserGetByIDUseCase(cfg, logger, userRepo)
+	tokenGetByUserIDUseCase := uc_token.NewTokenGetByUserIDUseCase(
+		cfg,
+		logger,
+		tokenRepo,
+	)
+	tokenUpsertByUserIDUseCase := uc_token.NewTokenUpsertByUserIDUseCase(
+		cfg,
+		logger,
+		tokenRepo,
+	)
+	refreshTokenUseCase := uc_oauth.NewRefreshTokenUseCase(
+		cfg,
+		logger,
+		oauthRepo,
+	)
 
 	// Add debug token lookup
 	if userID != "" {
@@ -121,14 +136,16 @@ func doRunVerifyToken(accessToken, userID string) {
 		cfg,
 		logger,
 		introspectTokenUseCase,
-		tokenGetUseCase,
+		tokenGetByUserIDUseCase,
+		tokenUpsertByUserIDUseCase,
+		refreshTokenUseCase,
 		userGetByIDUseCase,
 	)
 
 	// Create request
 	req := &introspection.IntrospectionRequest{
-		AccessToken: accessToken,
-		UserID:      userID,
+		Token:  accessToken,
+		UserID: userID,
 	}
 	// Verify token
 	resp, err := introspectionService.IntrospectToken(context.Background(), req)
@@ -142,36 +159,13 @@ func doRunVerifyToken(accessToken, userID string) {
 
 	// Print Results
 	fmt.Printf("\nToken Verification Results\n")
-	fmt.Printf("Active: %v\n", resp.Active)
+	fmt.Printf("User ID: %s\n", resp.UserID)
+	fmt.Printf("Email: %v\n", resp.Email)
+	fmt.Printf("FirstName At: %v\n", resp.FirstName)
+	fmt.Printf("LastName: %v\n", resp.LastName)
 	if !resp.Active {
 		fmt.Printf("\nWarning: Token is not active!\n")
 		return
-	}
-
-	fmt.Printf("Scope: %s\n", resp.Scope)
-	fmt.Printf("Client ID: %s\n", resp.ClientID)
-	fmt.Printf("Expires At: %v\n", resp.ExpiresAt)
-	fmt.Printf("Issued At: %v\n", resp.IssuedAt)
-
-	// Use the nested User object instead of flat fields
-	if resp.User != nil {
-		fmt.Printf("\nUser Information:\n")
-		fmt.Printf("User ID: %s\n", resp.User.ID.Hex())
-		fmt.Printf("Email: %s\n", resp.User.Email)
-		fmt.Printf("Name: %s %s\n", resp.User.FirstName, resp.User.LastName)
-
-		if resp.RequiresOTP {
-			fmt.Printf("2FA Status: Requires verification\n")
-		}
-	}
-
-	fmt.Printf("\nToken is valid and active\n")
-
-	// Add debug logging to show why we might not have user info
-	if resp.User == nil {
-		logger.Warn("no user information in response",
-			slog.String("access_token", accessToken),
-			slog.String("provided_user_id", userID))
 	}
 
 	fmt.Printf("\nToken is valid and active\n")
