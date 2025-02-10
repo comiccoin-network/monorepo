@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/main.go
 package main
 
 import (
