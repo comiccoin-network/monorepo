@@ -7,11 +7,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api"
+	// "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/daemon"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/initialize"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/user"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/version"
+	// "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/initialize"
+	// "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/user"
 )
 
 // Initialize function will be called when every command gets called.
@@ -30,10 +30,10 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	// Attach sub-commands to our main root.
-	rootCmd.AddCommand(api.APICmd())
+	// rootCmd.AddCommand(api.APICmd())
 	rootCmd.AddCommand(daemon.DaemonCmd())
-	rootCmd.AddCommand(version.VersionCmd())
-	rootCmd.AddCommand(initialize.InitCmd())
+	// rootCmd.AddCommand(version.VersionCmd())
+	// rootCmd.AddCommand(initialize.InitCmd())
 	rootCmd.AddCommand(user.UserCmd())
 
 	if err := rootCmd.Execute(); err != nil {

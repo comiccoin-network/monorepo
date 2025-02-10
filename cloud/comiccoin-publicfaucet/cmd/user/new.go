@@ -8,18 +8,19 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/logger"
+	common_oauth_config "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
+	repo_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/user"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
 	passwordp "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/password"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain/user"
-	repo_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -87,9 +88,22 @@ func doRunCreateUser() {
 	// Initialize the password provider for secure password handling
 	passp := passwordp.NewProvider()
 
+	oauthClientConfig := &common_oauth_config.Configuration{
+		OAuth: common_oauth_config.OAuthConfig{
+			ServerURL:    cfg.OAuth.ServerURL,
+			ClientID:     cfg.OAuth.ClientID,
+			ClientSecret: cfg.OAuth.ClientSecret,
+			RedirectURI:  cfg.OAuth.RedirectURI,
+		},
+		DB: common_oauth_config.DBConfig{
+			URI:  cfg.DB.URI,
+			Name: cfg.DB.Name,
+		},
+	}
+
 	// Initialize repository and use case
-	userRepo := repo_user.NewRepository(cfg, logger, dbClient)
-	userCreateUseCase := uc_user.NewUserCreateUseCase(cfg, logger, userRepo)
+	userRepo := repo_user.NewRepository(oauthClientConfig, logger, dbClient)
+	userCreateUseCase := uc_user.NewUserCreateUseCase(oauthClientConfig, logger, userRepo)
 
 	// Create a secure string from the password input
 	// This ensures the password is handled securely in memory

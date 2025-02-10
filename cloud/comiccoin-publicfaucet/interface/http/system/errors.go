@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/system/error.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauth/interface/http/system/error.go
 package system
 
 import "errors"

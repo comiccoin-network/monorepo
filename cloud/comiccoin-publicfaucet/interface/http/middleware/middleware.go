@@ -5,11 +5,11 @@ import (
 	"log/slog"
 	"net/http"
 
+	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/blacklist"
 	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/jwt"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/bannedipaddress"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
 )
 
 type Middleware interface {
@@ -21,10 +21,9 @@ type middleware struct {
 	logger                              *slog.Logger
 	blacklist                           blacklist.Provider
 	jwt                                 jwt.Provider
-	userGetBySessionIDUseCase           uc_user.UserGetBySessionIDUseCase
 	bannedIPAddressListAllValuesUseCase uc_bannedipaddress.BannedIPAddressListAllValuesUseCase
 	IPCountryBlocker                    ipcb.Provider
-	authMiddleware                      *AuthMiddleware
+	oauthClientManager                  common_oauth.Manager
 }
 
 func NewMiddleware(
@@ -32,18 +31,16 @@ func NewMiddleware(
 	blp blacklist.Provider,
 	ipcountryblocker ipcb.Provider,
 	jwtp jwt.Provider,
-	uc1 uc_user.UserGetBySessionIDUseCase,
 	uc2 uc_bannedipaddress.BannedIPAddressListAllValuesUseCase,
-	uc3 *AuthMiddleware,
+	manager common_oauth.Manager,
 ) Middleware {
 	return &middleware{
 		logger:                              loggerp,
 		blacklist:                           blp,
 		IPCountryBlocker:                    ipcountryblocker,
 		jwt:                                 jwtp,
-		userGetBySessionIDUseCase:           uc1,
 		bannedIPAddressListAllValuesUseCase: uc2,
-		authMiddleware:                      uc3,
+		oauthClientManager:                  manager,
 	}
 }
 
@@ -70,7 +67,7 @@ func (mid *middleware) Attach(fn http.HandlerFunc) http.HandlerFunc {
 		// Check if the path requires authentication
 		if isProtectedPath(r.URL.Path) {
 			// Apply auth middleware for protected paths
-			handler = mid.authMiddleware.Authenticate(handler)
+			handler = mid.oauthClientManager.AuthMiddleware().Authenticate(handler)
 		}
 
 		handler(w, r)

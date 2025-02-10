@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain/user"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 )
 
 type HelloResponse struct {
@@ -23,20 +24,20 @@ type HelloService interface {
 }
 
 type helloServiceImpl struct {
-	config             *config.Configuration
-	logger             *slog.Logger
-	getUserByIDUseCase uc_user.UserGetByIDUseCase
+	config       *config.Configuration
+	logger       *slog.Logger
+	oauthManager common_oauth.Manager
 }
 
 func NewHelloService(
 	config *config.Configuration,
 	logger *slog.Logger,
-	getUserByIDUseCase uc_user.UserGetByIDUseCase,
+	oauth common_oauth.Manager,
 ) HelloService {
 	return &helloServiceImpl{
-		config:             config,
-		logger:             logger,
-		getUserByIDUseCase: getUserByIDUseCase,
+		config:       config,
+		logger:       logger,
+		oauthManager: oauth,
 	}
 }
 
@@ -54,7 +55,7 @@ func (s *helloServiceImpl) SayHello(ctx context.Context) (*HelloResponse, error)
 	}
 
 	// Get user details
-	user, err := s.getUserByIDUseCase.Execute(ctx, userObjID)
+	user, err := s.oauthManager.GetLocalUserByID(ctx, userObjID)
 	if err != nil {
 		return nil, err
 	}

@@ -8,15 +8,18 @@ import (
 
 	"github.com/rs/cors"
 
+	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
-	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/hello"
-	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/introspection"
-	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
+
+	// http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/introspection"
+	// http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/login"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
-	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/oauth"
-	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
 	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/system"
-	http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/token"
+
+	// http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/oauth"
+	// http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
+	// http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/token"
+	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/hello"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -36,6 +39,9 @@ type httpServerImpl struct {
 	// logger is the logger for the HTTP server.
 	logger *slog.Logger
 
+	// Remote oAuth 2.0 connection handler.
+	oauthClientManager common_oauth.Manager
+
 	middleware mid.Middleware
 
 	// server is the underlying HTTP server.
@@ -45,18 +51,6 @@ type httpServerImpl struct {
 	getVersionHTTPHandler     *http_system.GetVersionHTTPHandler
 	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler
 
-	// Auth handlers
-	postRegistrationHTTPHandler       *http_registration.PostRegistrationHTTPHandler
-	postLoginHTTPHandler              *http_login.PostLoginHTTPHandler
-	postTokenRefreshHTTPHandler       *http_token.PostTokenRefreshHTTPHandler
-	postTokenIntrospectionHTTPHandler *http_introspection.PostTokenIntrospectionHTTPHandler
-
-	// OAuth handlers
-	getAuthURLHandler      *http_oauth.GetAuthURLHTTPHandler
-	oauthCallbackHandler   *http_oauth.CallbackHTTPHandler
-	stateManagementHandler *http_oauth.StateManagementHTTPHandler
-	sessionInfoHandler     *http_oauth.OAuthSessionInfoHTTPHandler
-
 	// Resources
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler
 }
@@ -65,17 +59,10 @@ type httpServerImpl struct {
 func NewHTTPServer(
 	cfg *config.Configuration,
 	logger *slog.Logger,
+	manager common_oauth.Manager,
 	mid mid.Middleware,
 	getVersionHTTPHandler *http_system.GetVersionHTTPHandler,
 	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler,
-	postRegistrationHTTPHandler *http_registration.PostRegistrationHTTPHandler,
-	postLoginHTTPHandler *http_login.PostLoginHTTPHandler,
-	postTokenRefreshHTTPHandler *http_token.PostTokenRefreshHTTPHandler,
-	postTokenIntrospectionHTTPHandler *http_introspection.PostTokenIntrospectionHTTPHandler,
-	getAuthURLHandler *http_oauth.GetAuthURLHTTPHandler,
-	oauthCallbackHandler *http_oauth.CallbackHTTPHandler,
-	stateManagementHandler *http_oauth.StateManagementHTTPHandler,
-	sessionInfoHandler *http_oauth.OAuthSessionInfoHTTPHandler,
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
@@ -97,21 +84,14 @@ func NewHTTPServer(
 
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
-		cfg:                               cfg,
-		logger:                            logger,
-		middleware:                        mid,
-		server:                            srv,
-		getVersionHTTPHandler:             getVersionHTTPHandler,
-		getHealthCheckHTTPHandler:         getHealthCheckHTTPHandler,
-		postRegistrationHTTPHandler:       postRegistrationHTTPHandler,
-		postLoginHTTPHandler:              postLoginHTTPHandler,
-		postTokenRefreshHTTPHandler:       postTokenRefreshHTTPHandler,
-		postTokenIntrospectionHTTPHandler: postTokenIntrospectionHTTPHandler,
-		getAuthURLHandler:                 getAuthURLHandler,
-		oauthCallbackHandler:              oauthCallbackHandler,
-		stateManagementHandler:            stateManagementHandler,
-		sessionInfoHandler:                sessionInfoHandler,
-		getHelloHTTPHandler:               getHelloHTTPHandler,
+		cfg:                       cfg,
+		logger:                    logger,
+		oauthClientManager:        manager,
+		middleware:                mid,
+		server:                    srv,
+		getVersionHTTPHandler:     getVersionHTTPHandler,
+		getHealthCheckHTTPHandler: getHealthCheckHTTPHandler,
+		getHelloHTTPHandler:       getHelloHTTPHandler,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -169,27 +149,27 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	// Auth endpoints
 	case n == 2 && p[0] == "api" && p[1] == "register":
-		port.postRegistrationHTTPHandler.Execute(w, r)
+		port.oauthClientManager.PostRegistrationHTTPHandler().Execute(w, r)
 	case n == 2 && p[0] == "api" && p[1] == "login" && r.Method == http.MethodPost:
-		port.postLoginHTTPHandler.Execute(w, r)
+		port.oauthClientManager.PostLoginHTTPHandler().Execute(w, r)
 
 	// Token endpoints
 	case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "refresh" && r.Method == http.MethodPost:
-		port.postTokenRefreshHTTPHandler.Execute(w, r)
+		port.oauthClientManager.PostTokenRefreshHTTPHandler().Execute(w, r)
 	case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "introspect" && r.Method == http.MethodPost:
-		port.postTokenIntrospectionHTTPHandler.Execute(w, r)
+		port.oauthClientManager.PostTokenIntrospectionHTTPHandler().Execute(w, r)
 
 	// OAuth endpoints
 	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "authorize" && r.Method == http.MethodGet:
-		port.getAuthURLHandler.Execute(w, r)
+		port.oauthClientManager.GetAuthURLHTTPHandler().Execute(w, r)
 	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "callback" && r.Method == http.MethodGet:
-		port.oauthCallbackHandler.Execute(w, r)
+		port.oauthClientManager.CallbackHTTPHandler().Execute(w, r)
 	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "state" && r.Method == http.MethodGet:
-		port.stateManagementHandler.VerifyState(w, r)
+		port.oauthClientManager.StateManagementHTTPHandler().VerifyState(w, r)
 	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "state" && r.Method == http.MethodDelete:
-		port.stateManagementHandler.CleanupExpiredStates(w, r)
+		port.oauthClientManager.StateManagementHTTPHandler().CleanupExpiredStates(w, r)
 	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "session" && r.Method == http.MethodGet:
-		port.sessionInfoHandler.Execute(w, r)
+		port.oauthClientManager.OAuthSessionInfoHTTPHandler().Execute(w, r)
 
 	// Resources
 	case n == 2 && p[0] == "api" && p[1] == "say-hello" && r.Method == http.MethodPost:

@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/system/version.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauth/interface/http/system/version.go
 package system
 
 import (
