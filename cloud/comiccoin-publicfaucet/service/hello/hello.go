@@ -57,6 +57,12 @@ func (s *helloServiceImpl) SayHello(ctx context.Context) (*HelloResponse, error)
 	// Get user details
 	user, err := s.oauthManager.GetLocalUserByID(ctx, userObjID)
 	if err != nil {
+		s.logger.Debug("Failed getting local user id", slog.Any("error", err))
+		return nil, err
+	}
+	if user == nil {
+		err := fmt.Errorf("User does not exist for id: %v", userID)
+		s.logger.Debug("Failed getting local user id", slog.Any("error", err))
 		return nil, err
 	}
 

@@ -4,17 +4,16 @@ package introspection
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 )
 
 type IntrospectionRequest struct {
@@ -74,29 +73,25 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		return nil, err
 	}
 
+	// Response validation
+	if introspectResp.UserID == "" {
+		s.logger.Warn("introspection response did not include `user_id` field",
+			slog.String("user_id", introspectResp.UserID))
+		return nil, errors.New("user_is is required")
+	}
+
 	// Convert Unix timestamps to time.Time
 	expiresAt := time.Unix(introspectResp.ExpiresAt, 0)
 	issuedAt := time.Unix(introspectResp.IssuedAt, 0)
 
 	// Create user from introspection response
 	var user *dom_user.User
-	if introspectResp.UserID != "" {
-		userID, err := primitive.ObjectIDFromHex(introspectResp.UserID)
-		if err == nil {
-			user = &dom_user.User{
-				ID:        userID,
-				Email:     introspectResp.Email,
-				FirstName: introspectResp.FirstName,
-				LastName:  introspectResp.LastName,
-			}
-			s.logger.Debug("created user from introspection response",
-				slog.String("user_id", introspectResp.UserID),
-				slog.String("email", introspectResp.Email))
-		} else {
-			s.logger.Error("failed to parse user ID from introspection response",
-				slog.String("user_id", introspectResp.UserID),
-				slog.Any("error", err))
-		}
+	userID, err := primitive.ObjectIDFromHex(introspectResp.UserID)
+	if err != nil {
+		s.logger.Error("failed to parse user ID from introspection response",
+			slog.String("user_id", introspectResp.UserID),
+			slog.Any("error", err))
+		return nil, err
 	}
 
 	// Build base response
@@ -110,17 +105,10 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 	}
 
 	// If user ID is not provided in request, return basic response
-	if req.UserID == "" {
+	if introspectResp.UserID == "" {
+		s.logger.Warn("`user_id` is not provided in request",
+			slog.String("user_id", introspectResp.UserID))
 		return response, nil
-	}
-
-	// If user ID is provided, continue with full validation
-	userID, err := primitive.ObjectIDFromHex(req.UserID)
-	if err != nil {
-		s.logger.Error("invalid user_id format in request",
-			slog.String("user_id", req.UserID),
-			slog.Any("error", err))
-		return nil, fmt.Errorf("invalid user ID format: %v", err)
 	}
 
 	// Get stored token to verify ownership
@@ -173,6 +161,10 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		// Update user with any additional fields from database if needed
 		response.User = dbUser
 	}
+
+	s.logger.Debug("introspection finished",
+		slog.Any("user_id", userID),
+		slog.Any("response.User", response.User))
 
 	return response, nil
 }

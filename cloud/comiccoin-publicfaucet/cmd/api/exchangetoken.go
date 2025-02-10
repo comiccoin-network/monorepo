@@ -12,7 +12,13 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/logger"
 	common_oauth_config "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauth"
+	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/token"
+	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/user"
+	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/oauth"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 )
 
@@ -51,12 +57,41 @@ func doRunTokenExchange(authCode string) {
 	}
 	logger.Debug("configuration ready")
 
-	// Initialize repositories and use cases
-	oauthRepo := r_oauth.NewRepository(cfg, logger)
-	exchangeCodeUseCase := uc_oauth.NewExchangeCodeUseCase(cfg, logger, oauthRepo)
+	// Initialize MongoDB client
+	mongoClient := mongodb.NewProvider(originalCfg, logger)
+	defer func() {
+		if err := mongoClient.Disconnect(context.Background()); err != nil {
+			logger.Error("failed to disconnect from MongoDB", slog.Any("error", err))
+		}
+	}()
 
-	// Exchange code for token
-	tokenResp, err := exchangeCodeUseCase.Execute(context.Background(), authCode)
+	// Initialize repositories
+	oauthRepo := r_oauth.NewRepository(cfg, logger)
+	userRepo := r_user.NewRepository(cfg, logger, mongoClient)
+	tokenRepo := r_token.NewRepository(cfg, logger, mongoClient)
+
+	// Initialize use cases
+	exchangeCodeUseCase := uc_oauth.NewExchangeCodeUseCase(cfg, logger, oauthRepo)
+	introspectTokenUseCase := uc_oauth.NewIntrospectTokenUseCase(cfg, logger, oauthRepo)
+	userCreateUseCase := uc_user.NewUserCreateUseCase(cfg, logger, userRepo)
+	userGetByEmailUseCase := uc_user.NewUserGetByEmailUseCase(cfg, logger, userRepo)
+	tokenUpsertUseCase := uc_token.NewTokenUpsertByUserIDUseCase(cfg, logger, tokenRepo)
+
+	// Initialize service
+	exchangeService := svc_oauth.NewExchangeService(
+		cfg,
+		logger,
+		exchangeCodeUseCase,
+		introspectTokenUseCase,
+		userCreateUseCase,
+		userGetByEmailUseCase,
+		tokenUpsertUseCase,
+	)
+
+	// Execute token exchange through the service
+	resp, err := exchangeService.ExchangeToken(context.Background(), &svc_oauth.ExchangeTokenRequest{
+		Code: authCode,
+	})
 	if err != nil {
 		logger.Error("failed to exchange authorization code",
 			slog.Any("error", err))
@@ -65,8 +100,10 @@ func doRunTokenExchange(authCode string) {
 
 	// Print the token information
 	fmt.Printf("\nToken Exchange Successful\n")
-	fmt.Printf("Access Token: %s\n", tokenResp.AccessToken)
-	fmt.Printf("Refresh Token: %s\n", tokenResp.RefreshToken)
-	fmt.Printf("Token Type: %s\n", tokenResp.TokenType)
-	fmt.Printf("Expires In: %d seconds\n", tokenResp.ExpiresIn)
+	fmt.Printf("Access Token: %s\n", resp.AccessToken)
+	fmt.Printf("Refresh Token: %s\n", resp.RefreshToken)
+	fmt.Printf("Token Type: %s\n", resp.TokenType)
+	fmt.Printf("Expires In: %d seconds\n", resp.ExpiresIn)
+	fmt.Printf("User Email: %s\n", resp.UserEmail) // Now we can show user info
+	fmt.Printf("User Name: %s %s\n", resp.FirstName, resp.LastName)
 }

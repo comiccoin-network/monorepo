@@ -312,9 +312,12 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		cfg,
 		logger,
 		exchangeCodeUseCase,
+		introspectTokenUseCase,
 		getOAuthStateUseCase,
 		deleteOAuthStateUseCase,
 		createOAuthSessionUseCase,
+		userCreateUseCase,
+		userGetByEmailUseCase,
 	)
 
 	oauthStateManagementService := svc_oauth.NewStateManagementService(
