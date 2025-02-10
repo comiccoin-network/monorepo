@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -102,9 +103,9 @@ func (s *registerServiceImpl) Register(ctx context.Context, req *RegisterRequest
 		}
 	}
 
-	// Create user as before...
+	userID := primitive.NewObjectID()
 	user := &dom_user.User{
-		ID:                  primitive.NewObjectID(),
+		ID:                  userID,
 		Email:               req.Email,
 		FirstName:           req.FirstName,
 		LastName:            req.LastName,
@@ -114,6 +115,12 @@ func (s *registerServiceImpl) Register(ctx context.Context, req *RegisterRequest
 		Country:             req.Country,
 		Timezone:            req.Timezone,
 		AgreeTermsOfService: req.AgreeToS,
+		CreatedByUserID:     userID,
+		CreatedByName:       fmt.Sprintf("%v %v", req.FirstName, req.LastName),
+		CreatedAt:           time.Now(),
+		ModifiedByUserID:    userID,
+		ModifiedByName:      fmt.Sprintf("%v %v", req.FirstName, req.LastName),
+		ModifiedAt:          time.Now(),
 	}
 
 	if err := s.userCreateUseCase.Execute(ctx, user); err != nil {
