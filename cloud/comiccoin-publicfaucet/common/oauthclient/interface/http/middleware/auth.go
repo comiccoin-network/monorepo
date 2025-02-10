@@ -50,6 +50,8 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 
 		token := parts[1]
 
+		m.logger.Debug("submitting into inspeciton...", slog.Any("token_id", token))
+
 		// First, introspect token with OAuth server to get basic info
 		introspectResp, err := m.introspectionService.IntrospectToken(r.Context(), &introspection.IntrospectionRequest{
 			Token: token,
@@ -71,6 +73,9 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		// Add user ID to context
 		if !introspectResp.UserID.IsZero() {
 			ctx := context.WithValue(r.Context(), "user_id", introspectResp.UserID)
+			m.logger.Debug("attached authenticated user to the context",
+				slog.Any("user_id", introspectResp.UserID),
+				slog.Any("token_id", token))
 			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
 			m.logger.Warn("no user associated with token")

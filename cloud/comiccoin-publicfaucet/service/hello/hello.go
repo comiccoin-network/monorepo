@@ -43,25 +43,21 @@ func NewHelloService(
 
 func (s *helloServiceImpl) SayHello(ctx context.Context) (*HelloResponse, error) {
 	// Get authenticated user ID from context
-	userID, ok := ctx.Value("user_id").(string)
+	userID, ok := ctx.Value("user_id").(primitive.ObjectID)
 	if !ok {
+		s.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
 		return nil, errors.New("user not found in context")
 	}
 
-	// Convert string to ObjectID
-	userObjID, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return nil, err
-	}
-
 	// Get user details
-	user, err := s.oauthManager.GetLocalUserByID(ctx, userObjID)
+	user, err := s.oauthManager.GetLocalUserByID(ctx, userID)
 	if err != nil {
 		s.logger.Debug("Failed getting local user id", slog.Any("error", err))
 		return nil, err
 	}
 	if user == nil {
-		err := fmt.Errorf("User does not exist for id: %v", userID)
+		err := fmt.Errorf("User does not exist for id: %v", userID.Hex())
 		s.logger.Debug("Failed getting local user id", slog.Any("error", err))
 		return nil, err
 	}

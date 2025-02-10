@@ -8,13 +8,13 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	dom_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/registration"
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/token"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/register"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
 )
 
@@ -116,6 +116,11 @@ func (s *registrationServiceImpl) ProcessRegistration(ctx context.Context, req *
 			ExpiresAt:    tokenResp.ExpiresAt,
 		}
 
+		s.logger.Info("storing new access and refresh token",
+			slog.String("token_id", token.ID.Hex()[:5]+"..."),
+			slog.String("user_id", token.UserID.Hex()),
+			slog.Time("expires_at", token.ExpiresAt))
+
 		err = s.tokenUpsertUseCase.Execute(ctx, token)
 		if err != nil {
 			s.logger.Error("failed to store tokens",
@@ -123,6 +128,10 @@ func (s *registrationServiceImpl) ProcessRegistration(ctx context.Context, req *
 				slog.Any("error", err))
 			return nil, err
 		}
+
+		s.logger.Info("successfully stored access and refresh token",
+			slog.String("token_id", token.ID.Hex()[:5]+"..."))
+
 	}
 
 	s.logger.Info("user registration completed successfully",

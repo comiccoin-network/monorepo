@@ -88,11 +88,13 @@ func doRunVerifyToken(accessToken, userID string) {
 		logger,
 		tokenRepo,
 	)
+	_ = tokenUpsertByUserIDUseCase
 	refreshTokenUseCase := uc_oauth.NewRefreshTokenUseCase(
 		cfg,
 		logger,
 		oauthRepo,
 	)
+	_ = refreshTokenUseCase
 
 	// Add debug token lookup
 	if userID != "" {
@@ -137,8 +139,6 @@ func doRunVerifyToken(accessToken, userID string) {
 		logger,
 		introspectTokenUseCase,
 		tokenGetByUserIDUseCase,
-		tokenUpsertByUserIDUseCase,
-		refreshTokenUseCase,
 		userGetByIDUseCase,
 	)
 

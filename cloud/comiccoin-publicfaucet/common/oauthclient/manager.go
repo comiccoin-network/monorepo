@@ -296,8 +296,6 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		logger,
 		introspectTokenUseCase,
 		tokenGetByUserIDUseCase,
-		tokenUpsertByUserIDUseCase,
-		refreshTokenUseCase,
 		userGetByIDUseCase,
 	)
 	_ = introspectionService

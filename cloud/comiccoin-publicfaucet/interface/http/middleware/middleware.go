@@ -66,6 +66,8 @@ func (mid *middleware) Attach(fn http.HandlerFunc) http.HandlerFunc {
 
 		// Check if the path requires authentication
 		if isProtectedPath(r.URL.Path) {
+			mid.logger.Debug("applying auth_middleware...")
+
 			// Apply auth middleware for protected paths
 			handler = mid.oauthClientManager.AuthMiddleware().Authenticate(handler)
 		}

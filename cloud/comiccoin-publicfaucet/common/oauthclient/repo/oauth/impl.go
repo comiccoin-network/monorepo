@@ -4,6 +4,7 @@ package oauth
 import (
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	dom_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/oauth"
@@ -23,8 +24,10 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger) dom_oauth
 		panic("logger is required")
 	}
 	return &oauthClientImpl{
-		Logger:     loggerp,
-		Config:     appCfg,
-		HttpClient: &http.Client{},
+		Logger: loggerp,
+		Config: appCfg,
+		HttpClient: &http.Client{
+			Timeout: 10 * time.Second,
+		},
 	}
 }

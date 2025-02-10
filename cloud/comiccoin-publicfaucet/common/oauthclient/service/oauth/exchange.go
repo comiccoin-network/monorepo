@@ -122,10 +122,18 @@ func (s *exchangeServiceImpl) ExchangeToken(ctx context.Context, req *ExchangeTo
 		ExpiresAt:    tokenResp.ExpiresAt,
 	}
 
+	s.logger.Info("storing new access and refresh token",
+		slog.String("token_id", token.ID.Hex()[:5]+"..."),
+		slog.String("user_id", token.UserID.Hex()),
+		slog.Time("expires_at", token.ExpiresAt))
+
 	// Store token using token upsert use case
 	if err := s.tokenUpsertUseCase.Execute(ctx, token); err != nil {
 		return nil, fmt.Errorf("storing token: %w", err)
 	}
+
+	s.logger.Info("successfully stored access and refresh token",
+		slog.String("token_id", token.ID.Hex()[:5]+"..."))
 
 	return &ExchangeTokenResponse{
 		AccessToken:  tokenResp.AccessToken,

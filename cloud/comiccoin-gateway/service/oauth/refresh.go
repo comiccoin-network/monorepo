@@ -73,21 +73,50 @@ func generateToken() (string, error) {
 }
 
 func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *RefreshTokenRequestDTO) (*RefreshTokenResponseDTO, error) {
+	// Add debug logging
+	s.logger.Debug("processing refresh token request",
+		slog.String("client_id", req.ClientID),
+		slog.String("grant_type", req.GrantType),
+		slog.String("refresh_token", req.RefreshToken[:5]+"...")) // Log only part of the token for security
+
 	// Validate grant type
 	if req.GrantType != "refresh_token" {
+		s.logger.Warn("invalid grant type",
+			slog.String("received_grant_type", req.GrantType))
 		return nil, fmt.Errorf("invalid grant type")
 	}
 
-	// Validate client credentials
+	// Validate client credentials with detailed logging
 	valid, err := s.appValidateCredentialsUseCase.Execute(ctx, req.ClientID, req.ClientSecret)
 	if err != nil || !valid {
+		s.logger.Warn("invalid client credentials",
+			slog.String("client_id", req.ClientID),
+			slog.Bool("valid", valid),
+			slog.Any("error", err))
 		return nil, fmt.Errorf("invalid client credentials")
 	}
 
-	// Get the existing refresh token
+	// Get the existing refresh token with detailed error handling
 	existingToken, err := s.tokenFindByIDUseCase.Execute(ctx, req.RefreshToken)
 	if err != nil {
+		s.logger.Error("failed to find refresh token",
+			slog.String("refresh_token", req.RefreshToken[:5]+"..."),
+			slog.Any("error", err))
 		return nil, fmt.Errorf("invalid refresh token: %w", err)
+	}
+
+	if existingToken == nil {
+		s.logger.Warn("refresh token not found",
+			slog.String("refresh_token", req.RefreshToken[:5]+"..."))
+		return nil, fmt.Errorf("refresh token not found")
+	}
+
+	// Verify token belongs to this client
+	if existingToken.AppID != req.ClientID {
+		s.logger.Warn("refresh token belongs to different client",
+			slog.String("token_client", existingToken.AppID),
+			slog.String("request_client", req.ClientID))
+		return nil, fmt.Errorf("invalid refresh token")
 	}
 
 	// Generate new tokens
