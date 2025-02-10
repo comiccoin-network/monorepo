@@ -14,6 +14,7 @@ import (
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
 	uc_app "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/application"
+	uc_auth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/authorization"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
 )
 
@@ -42,12 +43,13 @@ type RegisterService interface {
 }
 
 type registerServiceImpl struct {
-	cfg                *config.Configuration
-	logger             *slog.Logger
-	passwordProvider   password.Provider
-	userCreateUseCase  uc_user.UserCreateUseCase
-	appFindByIDUseCase uc_app.ApplicationFindByAppIDUseCase
-	authorizeService   svc_oauth.AuthorizeService
+	cfg                   *config.Configuration
+	logger                *slog.Logger
+	passwordProvider      password.Provider
+	userCreateUseCase     uc_user.UserCreateUseCase
+	appFindByIDUseCase    uc_app.ApplicationFindByAppIDUseCase
+	authFindByCodeUseCase uc_auth.AuthorizationFindByCodeUseCase
+	authorizeService      svc_oauth.AuthorizeService
 }
 
 func NewRegisterService(
@@ -102,8 +104,16 @@ func (s *registerServiceImpl) Register(ctx context.Context, req *RegisterRequest
 
 	// Create user as before...
 	user := &dom_user.User{
-		ID: primitive.NewObjectID(),
-		// ... other fields ...
+		ID:                  primitive.NewObjectID(),
+		Email:               req.Email,
+		FirstName:           req.FirstName,
+		LastName:            req.LastName,
+		Name:                fmt.Sprintf("%v %v", req.FirstName, req.LastName),
+		LexicalName:         fmt.Sprintf("%v, %v", req.LastName, req.FirstName),
+		Phone:               req.Phone,
+		Country:             req.Country,
+		Timezone:            req.Timezone,
+		AgreeTermsOfService: req.AgreeToS,
 	}
 
 	if err := s.userCreateUseCase.Execute(ctx, user); err != nil {
@@ -116,16 +126,30 @@ func (s *registerServiceImpl) Register(ctx context.Context, req *RegisterRequest
 
 	// Handle OAuth flow if requested
 	if req.AuthFlow != "none" {
+		// First validate we have scopes available
+		if len(app.Scopes) == 0 {
+			s.logger.Error("application has no scopes defined",
+				slog.String("app_id", req.AppID))
+			return nil, fmt.Errorf("application has no scopes defined")
+		}
+
 		// Create authorization code
 		authCode, err := s.authorizeService.CreatePendingAuthorization(
 			ctx,
 			req.AppID,
 			req.RedirectURI,
 			"",            // state
-			app.Scopes[0], // use first available scope
+			app.Scopes[0], // Now this is safe because we checked len(app.Scopes)
 		)
 		if err != nil {
 			s.logger.Error("failed to create authorization",
+				slog.Any("error", err))
+			return response, nil
+		}
+
+		// Update the authorization code with the user ID using the service method
+		if err := s.authorizeService.UpdatePendingAuthorization(ctx, authCode, user.ID.Hex()); err != nil {
+			s.logger.Error("failed to update authorization",
 				slog.Any("error", err))
 			return response, nil
 		}

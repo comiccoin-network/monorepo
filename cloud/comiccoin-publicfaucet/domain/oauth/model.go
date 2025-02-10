@@ -21,6 +21,11 @@ type IntrospectionResponse struct {
 	Active    bool   `json:"active"`
 	Scope     string `json:"scope"`
 	ClientID  string `json:"client_id"`
-	ExpiresAt int64  `json:"exp"` // Change to int64 for Unix timestamp
-	IssuedAt  int64  `json:"iat"` // Change to int64 for Unix timestamp
+	Username  string `json:"username"`
+	ExpiresAt int64  `json:"exp"`
+	IssuedAt  int64  `json:"iat"`
+	UserID    string `json:"user_id"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 }

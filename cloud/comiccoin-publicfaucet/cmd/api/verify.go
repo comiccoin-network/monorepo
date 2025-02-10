@@ -8,6 +8,7 @@ import (
 	"log/slog"
 
 	"github.com/spf13/cobra"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodb"
@@ -62,27 +63,47 @@ func doRunVerifyToken(accessToken, userID string) {
 
 	// Initialize all use cases with debug logging
 	introspectTokenUseCase := uc_oauth.NewIntrospectTokenUseCase(cfg, logger, oauthRepo)
-	if introspectTokenUseCase == nil {
-		logger.Error("failed to initialize introspect token use case")
-		log.Fatal("introspect token use case is nil")
-	}
-	logger.Debug("introspect token use case initialized")
-
 	tokenGetUseCase := uc_token.NewTokenGetByUserIDUseCase(cfg, logger, tokenRepo)
-	if tokenGetUseCase == nil {
-		logger.Error("failed to initialize token get use case")
-		log.Fatal("token get use case is nil")
-	}
-	logger.Debug("token get use case initialized")
-
 	userGetByIDUseCase := uc_user.NewUserGetByIDUseCase(cfg, logger, userRepo)
-	if userGetByIDUseCase == nil {
-		logger.Error("failed to initialize user get use case")
-		log.Fatal("user get use case is nil")
-	}
-	logger.Debug("user get use case initialized")
 
-	// Initialize introspection service with null checks
+	// Add debug token lookup
+	if userID != "" {
+		userObjectID, err := primitive.ObjectIDFromHex(userID)
+		if err != nil {
+			logger.Error("invalid user ID format",
+				slog.String("user_id", userID),
+				slog.Any("error", err))
+		} else {
+			token, err := tokenGetUseCase.Execute(context.Background(), userObjectID)
+			if err != nil {
+				logger.Error("failed to get token",
+					slog.String("user_id", userID),
+					slog.Any("error", err))
+			} else if token != nil {
+				logger.Info("found stored token",
+					slog.String("user_id", userID),
+					slog.String("access_token", token.AccessToken),
+					slog.Time("expires_at", token.ExpiresAt))
+			} else {
+				logger.Warn("no token found for user",
+					slog.String("user_id", userID))
+			}
+		}
+	}
+
+	// Get OAuth token info directly
+	introspectResp, err := introspectTokenUseCase.Execute(context.Background(), accessToken)
+	if err != nil {
+		logger.Error("failed to introspect token directly",
+			slog.String("access_token", accessToken),
+			slog.Any("error", err))
+	} else {
+		logger.Info("oauth introspection response",
+			slog.Bool("active", introspectResp.Active),
+			slog.String("client_id", introspectResp.ClientID))
+	}
+
+	// Initialize introspection service
 	introspectionService := svc_introspection.NewIntrospectionService(
 		cfg,
 		logger,
@@ -90,22 +111,13 @@ func doRunVerifyToken(accessToken, userID string) {
 		tokenGetUseCase,
 		userGetByIDUseCase,
 	)
-	if introspectionService == nil {
-		logger.Error("failed to initialize introspection service")
-		log.Fatal("introspection service is nil")
-	}
-	logger.Debug("introspection service initialized")
 
-	// Create request with logging
+	// Create request
 	req := &introspection.IntrospectionRequest{
 		AccessToken: accessToken,
 		UserID:      userID,
 	}
-	logger.Debug("created introspection request",
-		slog.String("access_token", accessToken),
-		slog.String("user_id", userID))
-
-	// Verify token with more context in logs
+	// Verify token
 	resp, err := introspectionService.IntrospectToken(context.Background(), req)
 	if err != nil {
 		logger.Error("failed to verify token",
@@ -115,28 +127,39 @@ func doRunVerifyToken(accessToken, userID string) {
 		log.Fatal(err)
 	}
 
-	// Print verification results
+	// Print Results
 	fmt.Printf("\nToken Verification Results\n")
 	fmt.Printf("Active: %v\n", resp.Active)
+	if !resp.Active {
+		fmt.Printf("\nWarning: Token is not active!\n")
+		return
+	}
+
 	fmt.Printf("Scope: %s\n", resp.Scope)
 	fmt.Printf("Client ID: %s\n", resp.ClientID)
 	fmt.Printf("Expires At: %v\n", resp.ExpiresAt)
 	fmt.Printf("Issued At: %v\n", resp.IssuedAt)
 
+	// Use the nested User object instead of flat fields
 	if resp.User != nil {
 		fmt.Printf("\nUser Information:\n")
 		fmt.Printf("User ID: %s\n", resp.User.ID.Hex())
 		fmt.Printf("Email: %s\n", resp.User.Email)
 		fmt.Printf("Name: %s %s\n", resp.User.FirstName, resp.User.LastName)
+
 		if resp.RequiresOTP {
 			fmt.Printf("2FA Status: Requires verification\n")
 		}
 	}
 
-	// Print token status
-	if !resp.Active {
-		fmt.Printf("\nWarning: Token is not active!\n")
-	} else {
-		fmt.Printf("\nToken is valid and active\n")
+	fmt.Printf("\nToken is valid and active\n")
+
+	// Add debug logging to show why we might not have user info
+	if resp.User == nil {
+		logger.Warn("no user information in response",
+			slog.String("access_token", accessToken),
+			slog.String("provided_user_id", userID))
 	}
+
+	fmt.Printf("\nToken is valid and active\n")
 }

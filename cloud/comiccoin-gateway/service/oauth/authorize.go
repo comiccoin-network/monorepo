@@ -18,6 +18,7 @@ import (
 type AuthorizeService interface {
 	ValidateAuthorizationRequest(ctx context.Context, clientID, redirectURI, responseType, state, scope string) error
 	CreatePendingAuthorization(ctx context.Context, clientID, redirectURI, state, scope string) (string, error)
+	UpdatePendingAuthorization(ctx context.Context, code string, userID string) error
 }
 
 type authorizeServiceImpl struct {
@@ -28,6 +29,7 @@ type authorizeServiceImpl struct {
 	appFindByAppIDUseCase         uc_app.ApplicationFindByAppIDUseCase
 	authFindByCodeUseCase         uc_auth.AuthorizationFindByCodeUseCase
 	authStoreCodeUseCase          uc_auth.AuthorizationStoreCodeUseCase
+	authUpdateCodeUseCase         uc_auth.AuthorizationUpdateCodeUseCase
 }
 
 func NewAuthorizeService(
@@ -37,6 +39,7 @@ func NewAuthorizeService(
 	appFindByAppIDUseCase uc_app.ApplicationFindByAppIDUseCase,
 	authFindByCodeUseCase uc_auth.AuthorizationFindByCodeUseCase,
 	authStoreCodeUseCase uc_auth.AuthorizationStoreCodeUseCase,
+	authUpdateCodeUseCase uc_auth.AuthorizationUpdateCodeUseCase,
 ) AuthorizeService {
 	return &authorizeServiceImpl{
 		cfg:                           cfg,
@@ -45,6 +48,7 @@ func NewAuthorizeService(
 		appFindByAppIDUseCase:         appFindByAppIDUseCase,
 		authFindByCodeUseCase:         authFindByCodeUseCase,
 		authStoreCodeUseCase:          authStoreCodeUseCase,
+		authUpdateCodeUseCase:         authUpdateCodeUseCase,
 	}
 }
 
@@ -131,4 +135,24 @@ func (s *authorizeServiceImpl) CreatePendingAuthorization(ctx context.Context, c
 	}
 
 	return code, nil
+}
+
+func (s *authorizeServiceImpl) UpdatePendingAuthorization(ctx context.Context, code string, userID string) error {
+	// First find the existing authorization code
+	authCode, err := s.authFindByCodeUseCase.Execute(ctx, code)
+	if err != nil {
+		s.logger.Error("failed to find authorization code",
+			slog.String("code", code),
+			slog.Any("error", err))
+		return fmt.Errorf("failed to find authorization code: %w", err)
+	}
+	if authCode == nil {
+		return fmt.Errorf("authorization code not found")
+	}
+
+	// Update the user ID
+	authCode.UserID = userID
+
+	// Store the updated authorization code using UpdateCode, not StoreCode
+	return s.authUpdateCodeUseCase.Execute(ctx, authCode) // You'll need to add this use case
 }

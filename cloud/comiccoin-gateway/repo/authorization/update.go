@@ -3,6 +3,7 @@ package authorization
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -37,10 +38,54 @@ func (impl authorizationStorerImpl) MarkCodeAsUsed(ctx context.Context, code str
 }
 
 func (r *authorizationStorerImpl) UpdateCode(ctx context.Context, code *dom_auth.AuthorizationCode) error {
+	// First find the existing authorization code to get its _id
+	existingCode, err := r.FindByCode(ctx, code.Code)
+	if err != nil {
+		r.Logger.Error("failed to find existing authorization code",
+			slog.String("code", code.Code),
+			slog.Any("error", err))
+		return err
+	}
+	if existingCode == nil {
+		r.Logger.Warn("no authorization code found",
+			slog.String("code", code.Code))
+		return fmt.Errorf("authorization code not found")
+	}
 
-	filter := bson.M{"_id": code.ID}
-	update := bson.M{"$set": code}
+	// Use the existing _id in the filter
+	filter := bson.M{
+		"_id":  existingCode.ID,
+		"code": code.Code,
+	}
 
-	_, err := r.Collection.UpdateOne(ctx, filter, update)
-	return err
+	// Only update specific fields, not the entire document
+	update := bson.M{
+		"$set": bson.M{
+			"user_id":    code.UserID,
+			"updated_at": time.Now(),
+			// Add any other fields that need updating, but NOT _id
+		},
+	}
+
+	result, err := r.Collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		r.Logger.Error("failed to update authorization code",
+			slog.String("code", code.Code),
+			slog.String("user_id", code.UserID),
+			slog.Any("error", err))
+		return err
+	}
+
+	if result.ModifiedCount == 0 {
+		r.Logger.Warn("no authorization code found to update",
+			slog.String("code", code.Code))
+		return fmt.Errorf("authorization code not found")
+	}
+
+	r.Logger.Info("successfully updated authorization code",
+		slog.String("code", code.Code),
+		slog.String("user_id", code.UserID),
+		slog.Any("_id", existingCode.ID))
+
+	return nil
 }

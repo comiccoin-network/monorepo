@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"time"
 
@@ -79,40 +78,49 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 	expiresAt := time.Unix(introspectResp.ExpiresAt, 0)
 	issuedAt := time.Unix(introspectResp.IssuedAt, 0)
 
-	// If user ID is not provided, return basic introspection response
+	// Create user from introspection response
+	var user *dom_user.User
+	if introspectResp.UserID != "" {
+		userID, err := primitive.ObjectIDFromHex(introspectResp.UserID)
+		if err == nil {
+			user = &dom_user.User{
+				ID:        userID,
+				Email:     introspectResp.Email,
+				FirstName: introspectResp.FirstName,
+				LastName:  introspectResp.LastName,
+			}
+			s.logger.Debug("created user from introspection response",
+				slog.String("user_id", introspectResp.UserID),
+				slog.String("email", introspectResp.Email))
+		} else {
+			s.logger.Error("failed to parse user ID from introspection response",
+				slog.String("user_id", introspectResp.UserID),
+				slog.Any("error", err))
+		}
+	}
+
+	// Build base response
+	response := &IntrospectionResponse{
+		Active:    introspectResp.Active,
+		Scope:     introspectResp.Scope,
+		ClientID:  introspectResp.ClientID,
+		ExpiresAt: expiresAt,
+		IssuedAt:  issuedAt,
+		User:      user,
+	}
+
+	// If user ID is not provided in request, return basic response
 	if req.UserID == "" {
-		return &IntrospectionResponse{
-			Active:    introspectResp.Active,
-			Scope:     introspectResp.Scope,
-			ClientID:  introspectResp.ClientID,
-			ExpiresAt: expiresAt,
-			IssuedAt:  issuedAt,
-		}, nil
+		return response, nil
 	}
 
 	// If user ID is provided, continue with full validation
 	userID, err := primitive.ObjectIDFromHex(req.UserID)
 	if err != nil {
-		s.logger.Error("invalid user_id format",
+		s.logger.Error("invalid user_id format in request",
 			slog.String("user_id", req.UserID),
 			slog.Any("error", err))
 		return nil, fmt.Errorf("invalid user ID format: %v", err)
-	}
-
-	// Get user details
-	user, err := s.userGetByIDUseCase.Execute(ctx, userID)
-	if err != nil {
-		s.logger.Error("failed to get user",
-			slog.Any("user_id", userID),
-			slog.Any("error", err))
-		// Return base response instead of failing
-		return &IntrospectionResponse{
-			Active:    introspectResp.Active,
-			Scope:     introspectResp.Scope,
-			ClientID:  introspectResp.ClientID,
-			ExpiresAt: expiresAt,
-			IssuedAt:  issuedAt,
-		}, nil
 	}
 
 	// Get stored token to verify ownership
@@ -121,19 +129,13 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		s.logger.Error("failed to get stored token",
 			slog.Any("user_id", userID),
 			slog.Any("error", err))
-		// Return base response instead of failing
-		return &IntrospectionResponse{
-			Active:    introspectResp.Active,
-			Scope:     introspectResp.Scope,
-			ClientID:  introspectResp.ClientID,
-			ExpiresAt: expiresAt,
-			IssuedAt:  issuedAt,
-		}, nil
+		return response, nil
 	}
 
 	if storedToken == nil {
-		s.logger.Error("No stored token failure", slog.Any("userID", userID))
-		log.Fatalf("No stored token for userID: %v", userID)
+		s.logger.Error("no stored token found",
+			slog.Any("user_id", userID))
+		return response, nil
 	}
 
 	// Verify token ownership
@@ -156,19 +158,21 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		}, nil
 	}
 
-	// Build full response with user details
-	requiresOTP := false
-	if user != nil {
-		requiresOTP = user.OTPEnabled && !user.OTPValidated
+	// Optionally get additional user details from database
+	dbUser, err := s.userGetByIDUseCase.Execute(ctx, userID)
+	if err != nil {
+		s.logger.Error("failed to get user from database",
+			slog.Any("user_id", userID),
+			slog.Any("error", err))
+		return response, nil
 	}
 
-	return &IntrospectionResponse{
-		Active:      introspectResp.Active,
-		Scope:       introspectResp.Scope,
-		ClientID:    introspectResp.ClientID,
-		ExpiresAt:   expiresAt,
-		IssuedAt:    issuedAt,
-		User:        user,
-		RequiresOTP: requiresOTP,
-	}, nil
+	// Update OTP status if we have database user info
+	if dbUser != nil {
+		response.RequiresOTP = dbUser.OTPEnabled && !dbUser.OTPValidated
+		// Update user with any additional fields from database if needed
+		response.User = dbUser
+	}
+
+	return response, nil
 }

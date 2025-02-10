@@ -95,6 +95,11 @@ func doRunDaemon() {
 		logger,
 		userRepo,
 	)
+	userGetByIDUseCase := uc_user.NewUserGetByIDUseCase(
+		cfg,
+		logger,
+		userRepo,
+	)
 	userCreateUseCase := uc_user.NewUserCreateUseCase(
 		cfg,
 		logger,
@@ -184,6 +189,7 @@ func doRunDaemon() {
 		appFindByAppIDUseCase,
 		authFindByCodeUseCase,
 		authStoreCodeUseCase,
+		authUpdateCodeUseCase,
 	)
 
 	loginService := oauth.NewLoginService(
@@ -220,6 +226,7 @@ func doRunDaemon() {
 		logger,
 		appValidateCredentialsUseCase,
 		tokenFindByIDUseCase,
+		userGetByIDUseCase,
 	)
 
 	// User

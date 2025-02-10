@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -14,6 +15,10 @@ import (
 )
 
 func (impl *oauthClientImpl) IntrospectToken(ctx context.Context, token string) (*dom_oauth.IntrospectionResponse, error) {
+	impl.Logger.Debug("starting token introspection",
+		slog.String("token", token),
+		slog.String("server_url", impl.Config.OAuth.ServerURL))
+
 	introspectURL := fmt.Sprintf("%s/oauth/introspect", impl.Config.OAuth.ServerURL)
 
 	data := url.Values{}
@@ -29,6 +34,11 @@ func (impl *oauthClientImpl) IntrospectToken(ctx context.Context, token string) 
 	req.SetBasicAuth(impl.Config.OAuth.ClientID, impl.Config.OAuth.ClientSecret)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
+	// Log request details
+	impl.Logger.Debug("sending introspection request",
+		slog.String("url", introspectURL),
+		slog.String("client_id", impl.Config.OAuth.ClientID))
+
 	resp, err := impl.HttpClient.Do(req)
 	if err != nil {
 		impl.Logger.Error("failed to introspect token",
@@ -37,12 +47,37 @@ func (impl *oauthClientImpl) IntrospectToken(ctx context.Context, token string) 
 	}
 	defer resp.Body.Close()
 
-	var introspectResp dom_oauth.IntrospectionResponse
-	if err := json.NewDecoder(resp.Body).Decode(&introspectResp); err != nil {
-		impl.Logger.Error("failed to decode introspection response",
+	// Log response status
+	impl.Logger.Debug("received introspection response",
+		slog.Int("status_code", resp.StatusCode))
+
+	// Read the raw response body first
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		impl.Logger.Error("failed to read response body",
 			slog.Any("error", err))
 		return nil, err
 	}
+
+	// Log raw response
+	impl.Logger.Debug("raw introspection response",
+		slog.String("body", string(body)))
+
+	var introspectResp dom_oauth.IntrospectionResponse
+	if err := json.Unmarshal(body, &introspectResp); err != nil {
+		impl.Logger.Error("failed to decode introspection response",
+			slog.Any("error", err),
+			slog.String("body", string(body)))
+		return nil, err
+	}
+
+	// Log decoded response
+	impl.Logger.Info("decoded introspection response",
+		slog.Bool("active", introspectResp.Active),
+		slog.String("client_id", introspectResp.ClientID),
+		slog.String("scope", introspectResp.Scope),
+		slog.Int64("expires_at", introspectResp.ExpiresAt),
+		slog.Int64("issued_at", introspectResp.IssuedAt))
 
 	return &introspectResp, nil
 }
