@@ -48,6 +48,7 @@ func NewMiddleware(
 var protectedPaths = map[string]bool{
 	"/api/say-hello":        true,
 	"/api/token/introspect": true,
+	"/api/profile":          true,
 	// Add other protected paths here
 }
 

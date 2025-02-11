@@ -18,6 +18,7 @@ func APICmd() *cobra.Command {
 	cmd.AddCommand(TokenExchangeCmd())
 	cmd.AddCommand(VerifyTokenCmd())
 	cmd.AddCommand(RefreshTokenCmd())
+	cmd.AddCommand(FetchProfileCmd())
 
 	return cmd
 }

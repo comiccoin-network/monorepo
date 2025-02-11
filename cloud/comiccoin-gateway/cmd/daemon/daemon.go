@@ -18,19 +18,23 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http"
 	httphandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler"
+	http_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/identity"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
 	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth"
 	http_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/user"
 	r_application "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/application"
 	r_authorization "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/authorization"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/bannedipaddress"
+	r_ratelimit "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/ratelimiter"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/token"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/user"
+	svc_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/identity"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/user"
 	uc_app "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/application"
 	uc_auth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/authorization"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/bannedipaddress"
+	uc_ratelimit "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/ratelimiter"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/token"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
 )
@@ -72,6 +76,7 @@ func doRunDaemon() {
 	applicationRepo := r_application.NewRepository(cfg, logger, dbClient)
 	authorizationRepo := r_authorization.NewRepository(cfg, logger, dbClient)
 	tokenRepo := r_token.NewRepository(cfg, logger, dbClient)
+	rateLimiterRepo := r_ratelimit.NewRateLimiter(cfg, logger, cache)
 
 	//
 	// Use-case
@@ -177,6 +182,26 @@ func doRunDaemon() {
 	)
 	_ = tokenRevokeAllUserTokensUseCase //TODO: Utilize
 
+	// --- Rate Limiter --- //
+
+	rateLimiterIsAllowedUseCase := uc_ratelimit.NewIsAllowedUseCase(
+		cfg,
+		logger,
+		rateLimiterRepo,
+	)
+
+	rateLimiterRecordFailureUseCase := uc_ratelimit.NewRecordFailureUseCase(
+		cfg,
+		logger,
+		rateLimiterRepo,
+	)
+
+	rateLimiterResetFailuresUseCase := uc_ratelimit.NewResetFailuresUseCase(
+		cfg,
+		logger,
+		rateLimiterRepo,
+	)
+
 	//
 	// Service
 	//
@@ -239,6 +264,18 @@ func doRunDaemon() {
 		authorizeService,
 	)
 
+	// Identity
+	getIdentityService := svc_identity.NewGetIdentityService(
+		cfg,
+		logger,
+		cache,
+		tokenFindByIDUseCase,
+		userGetByIDUseCase,
+		rateLimiterIsAllowedUseCase,
+		rateLimiterRecordFailureUseCase,
+		rateLimiterResetFailuresUseCase,
+	)
+
 	//
 	// Interface
 	//
@@ -256,6 +293,7 @@ func doRunDaemon() {
 	refreshTokenHttpHandler := http_oauth.NewRefreshTokenHandler(logger, refreshTokenService)
 	introspectionHttpHandler := http_oauth.NewIntrospectionHandler(logger, introspectionService)
 	registerHandler := http_user.NewRegisterHandler(logger, registerService)
+	getIdentityHandler := http_identity.NewGetIdentityHandler(logger, getIdentityService)
 
 	// HTTP Middleware
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -280,6 +318,7 @@ func doRunDaemon() {
 		introspectionHttpHandler,
 		refreshTokenHttpHandler,
 		registerHandler,
+		getIdentityHandler,
 	)
 
 	//

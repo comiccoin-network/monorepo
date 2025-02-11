@@ -14,23 +14,27 @@ import (
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/login"
 	http_mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/middleware"
 	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/oauth"
+	http_profile "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/profile"
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/registration"
 	http_tok "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/token"
 	http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/token"
 	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauth"
 	r_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauthsession"
 	r_oauthstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauthstate"
+	r_profile "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/profile"
 	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/registration"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/token"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/user"
 	svc_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/introspection"
 	svc_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/login"
 	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/oauth"
+	svc_profile "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/profile"
 	svc_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/registration"
 	svc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/token"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthsession"
 	uc_oauthstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthstate"
+	uc_profile "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/profile"
 	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/register"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
@@ -55,6 +59,7 @@ type Manager interface {
 	CallbackHTTPHandler() *http_oauth.CallbackHTTPHandler
 	StateManagementHTTPHandler() *http_oauth.StateManagementHTTPHandler
 	OAuthSessionInfoHTTPHandler() *http_oauth.OAuthSessionInfoHTTPHandler
+	FetchProfileFromComicCoinGatewayHandler() *http_profile.FetchProfileFromComicCoinGatewayHandler
 }
 
 // Manager provides a high-level interface for OAuth operations while orchestrating
@@ -78,15 +83,16 @@ type managerImpl struct {
 	exchangeService             svc_oauth.ExchangeService
 
 	// HTTP Interface
-	authMiddleware                    *http_mid.AuthMiddleware
-	postRegistrationHTTPHandler       *http_registration.PostRegistrationHTTPHandler
-	postLoginHTTPHandler              *http_login.PostLoginHTTPHandler
-	postTokenRefreshHTTPHandler       *http_tok.PostTokenRefreshHTTPHandler
-	postTokenIntrospectionHTTPHandler *http_introspection.PostTokenIntrospectionHTTPHandler
-	getAuthURLHTTPHandler             *http_oauth.GetAuthURLHTTPHandler
-	callbackHTTPHandler               *http_oauth.CallbackHTTPHandler
-	stateManagementHTTPHandler        *http_oauth.StateManagementHTTPHandler
-	oAuthSessionInfoHTTPHandler       *http_oauth.OAuthSessionInfoHTTPHandler
+	authMiddleware                          *http_mid.AuthMiddleware
+	postRegistrationHTTPHandler             *http_registration.PostRegistrationHTTPHandler
+	postLoginHTTPHandler                    *http_login.PostLoginHTTPHandler
+	postTokenRefreshHTTPHandler             *http_tok.PostTokenRefreshHTTPHandler
+	postTokenIntrospectionHTTPHandler       *http_introspection.PostTokenIntrospectionHTTPHandler
+	getAuthURLHTTPHandler                   *http_oauth.GetAuthURLHTTPHandler
+	callbackHTTPHandler                     *http_oauth.CallbackHTTPHandler
+	stateManagementHTTPHandler              *http_oauth.StateManagementHTTPHandler
+	oAuthSessionInfoHTTPHandler             *http_oauth.OAuthSessionInfoHTTPHandler
+	fetchProfileFromComicCoinGatewayHandler *http_profile.FetchProfileFromComicCoinGatewayHandler
 }
 
 // NewManager creates a new OAuth manager that orchestrates all OAuth operations
@@ -98,6 +104,7 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 	registrationRepo := r_registration.NewRepository(cfg, logger)
 	oauthsessionRepo := r_oauthsession.NewRepository(cfg, logger, mongoClient)
 	oauthstateRepo := r_oauthstate.NewRepository(cfg, logger, mongoClient)
+	profileRepo := r_profile.NewRepository(cfg, logger)
 
 	// --- User ---
 	userGetBySessionIDUseCase := uc_user.NewUserGetBySessionIDUseCase(
@@ -258,6 +265,14 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 	_ = deleteOAuthStateUseCase         //TODO: Utilize
 	_ = deleteExpiredOAuthStatesUseCase //TODO: Utilize
 
+	// --- Profile ---
+
+	fetchProfileFromComicCoinGatewayUseCase := uc_profile.NewFetchProfileFromComicCoinGatewayUseCase(
+		cfg,
+		logger,
+		profileRepo,
+	)
+
 	//
 	// Service
 	//
@@ -348,6 +363,13 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		tokenUpsertByUserIDUseCase,
 	)
 
+	// Profile
+	fetchProfileFromComicCoinGatewayService := svc_profile.NewFetchProfileFromComicCoinGatewayService(
+		cfg,
+		logger,
+		fetchProfileFromComicCoinGatewayUseCase,
+	)
+
 	//
 	// HTTP INTERFACE
 	//
@@ -402,29 +424,35 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		logger,
 		oauthSessionInfoService,
 	)
+	fetchProfileFromComicCoinGatewayHandler := http_profile.NewFetchProfileFromComicCoinGatewayHandler(
+		cfg,
+		logger,
+		fetchProfileFromComicCoinGatewayService,
+	)
 
 	return &managerImpl{
-		config:                            cfg,
-		logger:                            logger,
-		userGetByIDUseCase:                userGetByIDUseCase,
-		registration:                      registration,
-		loginService:                      loginService,
-		refreshTokenService:               refreshTokenService,
-		introspectionService:              introspectionService,
-		oauthAuthURLService:               oauthAuthURLService,
-		oauthCallbackService:              oauthCallbackService,
-		oauthStateManagementService:       oauthStateManagementService,
-		oauthSessionInfoService:           oauthSessionInfoService,
-		exchangeService:                   exchangeService,
-		authMiddleware:                    authMiddleware,
-		postRegistrationHTTPHandler:       postRegistrationHTTPHandler,
-		postLoginHTTPHandler:              postLoginHTTPHandler,
-		postTokenRefreshHTTPHandler:       postTokenRefreshHTTPHandler,
-		postTokenIntrospectionHTTPHandler: postTokenIntrospectionHTTPHandler,
-		getAuthURLHTTPHandler:             getAuthURLHTTPHandler,
-		callbackHTTPHandler:               callbackHTTPHandler,
-		stateManagementHTTPHandler:        stateManagementHTTPHandler,
-		oAuthSessionInfoHTTPHandler:       oAuthSessionInfoHTTPHandler,
+		config:                                  cfg,
+		logger:                                  logger,
+		userGetByIDUseCase:                      userGetByIDUseCase,
+		registration:                            registration,
+		loginService:                            loginService,
+		refreshTokenService:                     refreshTokenService,
+		introspectionService:                    introspectionService,
+		oauthAuthURLService:                     oauthAuthURLService,
+		oauthCallbackService:                    oauthCallbackService,
+		oauthStateManagementService:             oauthStateManagementService,
+		oauthSessionInfoService:                 oauthSessionInfoService,
+		exchangeService:                         exchangeService,
+		authMiddleware:                          authMiddleware,
+		postRegistrationHTTPHandler:             postRegistrationHTTPHandler,
+		postLoginHTTPHandler:                    postLoginHTTPHandler,
+		postTokenRefreshHTTPHandler:             postTokenRefreshHTTPHandler,
+		postTokenIntrospectionHTTPHandler:       postTokenIntrospectionHTTPHandler,
+		getAuthURLHTTPHandler:                   getAuthURLHTTPHandler,
+		callbackHTTPHandler:                     callbackHTTPHandler,
+		stateManagementHTTPHandler:              stateManagementHTTPHandler,
+		oAuthSessionInfoHTTPHandler:             oAuthSessionInfoHTTPHandler,
+		fetchProfileFromComicCoinGatewayHandler: fetchProfileFromComicCoinGatewayHandler,
 	}, nil
 }
 
@@ -474,4 +502,8 @@ func (m *managerImpl) StateManagementHTTPHandler() *http_oauth.StateManagementHT
 
 func (m *managerImpl) OAuthSessionInfoHTTPHandler() *http_oauth.OAuthSessionInfoHTTPHandler {
 	return m.oAuthSessionInfoHTTPHandler
+}
+
+func (m *managerImpl) FetchProfileFromComicCoinGatewayHandler() *http_profile.FetchProfileFromComicCoinGatewayHandler {
+	return m.fetchProfileFromComicCoinGatewayHandler
 }

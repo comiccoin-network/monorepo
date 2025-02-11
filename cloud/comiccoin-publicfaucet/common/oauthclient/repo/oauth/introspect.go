@@ -16,7 +16,6 @@ import (
 
 func (impl *oauthClientImpl) IntrospectToken(ctx context.Context, token string) (*dom_oauth.IntrospectionResponse, error) {
 	impl.Logger.Debug("starting token introspection",
-		slog.String("token", token),
 		slog.String("server_url", impl.Config.OAuth.ServerURL))
 
 	introspectURL := fmt.Sprintf("%s/oauth/introspect", impl.Config.OAuth.ServerURL)
