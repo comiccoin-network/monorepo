@@ -1,0 +1,7 @@
+version: "3"
+
+tasks:
+  desc: "start the project (for web-development only)"
+  start:
+    cmds:
+      - npm run dev
