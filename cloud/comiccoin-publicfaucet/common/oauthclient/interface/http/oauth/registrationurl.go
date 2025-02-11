@@ -29,15 +29,8 @@ func NewGetRegistrationURLHTTPHandler(
 	}
 }
 
-type registrationUrlRequestIDO struct {
-	RedirectURI string `json:"redirect_uri"`
-	Scope       string `json:"scope"`
-}
-
 type registrationUrlResponseIDO struct {
 	RegistrationURL string `json:"registration_url"`
-	State           string `json:"state"`
-	ExpiresAt       int64  `json:"expires_at"`
 }
 
 func (h *GetRegistrationURLHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
@@ -56,8 +49,6 @@ func (h *GetRegistrationURLHTTPHandler) Execute(w http.ResponseWriter, r *http.R
 	// Convert service response to IDO
 	responseIDO := registrationUrlResponseIDO{
 		RegistrationURL: response.RegistrationURL,
-		State:           response.State,
-		ExpiresAt:       response.ExpiresAt.Unix(),
 	}
 
 	// Encode response
@@ -69,5 +60,5 @@ func (h *GetRegistrationURLHTTPHandler) Execute(w http.ResponseWriter, r *http.R
 	}
 
 	h.logger.Info("registrationorization URL generated successfully",
-		slog.String("state", response.State))
+		slog.String("registration_url", response.RegistrationURL))
 }

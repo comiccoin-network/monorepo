@@ -12,25 +12,63 @@ import {
   Github,
   ArrowRight,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import Footer from "@/components/Footer";
+import { useRegistrationUrl } from "@/hooks/useRegistrationUrl";
 
 const IndexPage = () => {
   const router = useRouter();
+  const { registrationUrl, isLoading, error, refetch } = useRegistrationUrl();
 
   // Navigation handler
   const handleNavigation = (path: string) => {
-    router.push(path);
+    if (path === "/register") {
+      // If we have a registration URL, use it
+      if (registrationUrl) {
+        window.location.href = registrationUrl;
+      }
+      // If there's an error, try refetching
+      else if (error) {
+        refetch();
+      }
+      // If still loading, do nothing (button will be disabled)
+    } else {
+      // For other paths, use normal navigation
+      router.push(path);
+    }
   };
+
+  // Helper function to render the register button with appropriate state
+  const RegisterButton = ({
+    className = "",
+    children,
+  }: {
+    className?: string;
+    children?: React.ReactNode;
+  }) => (
+    <button
+      onClick={() => handleNavigation("/register")}
+      disabled={isLoading}
+      className={`${className} relative ${isLoading ? "opacity-70 cursor-wait" : ""}`}
+    >
+      {isLoading ? (
+        <span className="flex items-center gap-2">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          Loading...
+        </span>
+      ) : error ? (
+        "Try Again"
+      ) : (
+        children
+      )}
+    </button>
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation Bar */}
-      <nav
-        className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white p-4"
-        role="navigation"
-        aria-label="Main navigation"
-      >
+      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <Coins className="h-8 w-8" />
@@ -42,12 +80,9 @@ const IndexPage = () => {
             </span>
           </div>
           <div className="flex space-x-4">
-            <button
-              onClick={() => handleNavigation("/register")}
-              className="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-bold border-2 border-white transition-colors"
-            >
+            <RegisterButton className="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-bold border-2 border-white transition-colors">
               Register
-            </button>
+            </RegisterButton>
             <button
               onClick={() => handleNavigation("/login")}
               className="px-4 py-2 rounded-lg bg-white hover:bg-purple-50 text-purple-700 font-bold transition-colors"
@@ -152,13 +187,12 @@ const IndexPage = () => {
               of the fastest-growing comic collector community!
             </p>
             <div className="flex justify-center gap-4">
-              <button
-                onClick={() => handleNavigation("/register")}
-                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
-              >
-                Register Now
-                <ArrowRight className="w-5 h-5" />
-              </button>
+              <RegisterButton className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2">
+                <>
+                  Register Now
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              </RegisterButton>
               <a
                 href="https://comiccoinnetwork.com"
                 className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2"

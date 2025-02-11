@@ -11,7 +11,8 @@ import (
 // This provides a type-safe way to inject dynamic values into our HTML template.
 type RegisterTemplateData struct {
 	RedirectURI string // The URI where the user will be redirected after registration
-	AppID       string // The OAuth client application ID
+	ClientID    string // The OAuth client application ID
+	State       string // The OAuth state
 	CancelURI   string // The URL to redirect to if user cancels registration
 	ErrorMsg    string // Optional error message to display
 }
@@ -32,10 +33,11 @@ func (h *UIRegisterHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	// Get and validate redirect_uri from URL query parameters
 	cancelURI := r.URL.Query().Get("cancel_url")
 	redirectURI := r.URL.Query().Get("redirect_uri")
-	appID := r.URL.Query().Get("app_id")
+	appID := r.URL.Query().Get("client_id")
+	state := r.URL.Query().Get("state")
 
 	if appID == "" {
-		h.handleError(w, "Missing app_id parameter", http.StatusBadRequest)
+		h.handleError(w, "Missing client_id parameter", http.StatusBadRequest)
 		return
 	}
 	if redirectURI == "" {
@@ -46,17 +48,23 @@ func (h *UIRegisterHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		h.handleError(w, "Missing `cancel_url` parameter", http.StatusBadRequest)
 		return
 	}
+	if state == "" {
+		h.handleError(w, "Missing state parameter", http.StatusBadRequest)
+		return
+	}
 
 	// Create template data with our values
 	data := RegisterTemplateData{
-		AppID:       appID,
+		ClientID:    appID,
+		State:       state,
 		RedirectURI: redirectURI,
 		CancelURI:   cancelURI,
 	}
 
 	h.logger.Info("handling register UI request",
 		slog.String("redirect_uri", redirectURI),
-		slog.String("app_id", appID),
+		slog.String("client_id", appID),
+		slog.String("state", state),
 		slog.String("cancel_url", cancelURI),
 	)
 
@@ -132,7 +140,7 @@ const registrationPage = `
            </div>
            <div class="form-group">
                <label>
-                   <input type="checkbox" name="agree_tos" required>
+                   <input type="checkbox" name="agree_tos" checked required>
                    I agree to the Terms of Service
                </label>
            </div>
@@ -145,9 +153,10 @@ const registrationPage = `
 
    <script>
    // Get the values from the template data
-   const redirectUri = {{.RedirectURI | printf "%q"}};
-   const appId = {{.AppID | printf "%q"}};
-   const cancelUrl = {{.CancelURL | printf "%q"}}; // Add cancel URL
+   const redirectUri = {{.RedirectURI}};
+   const clientId = {{.ClientID}};
+   const stateVal = {{.State}};
+   const cancelUrl = {{.CancelURI}};
 
    async function handleCancel() {
        // If cancel URL is provided, redirect to it
@@ -171,9 +180,10 @@ const registrationPage = `
            country: form.country.value,
            timezone: form.timezone.value,
            agree_tos: form.agree_tos.checked,
-           app_id: appId,
+           app_id: clientId,
            redirect_uri: redirectUri,
-           auth_flow: "auto"
+           auth_flow: "auto",
+		   state: stateVal
        };
 
        try {
@@ -189,7 +199,7 @@ const registrationPage = `
 
            const result = await response.json();
            if (result.auth_code) {
-               window.location.href = redirectUri + "?code=" + result.auth_code;
+               window.location.href = redirectUri + "?code=" + result.auth_code + "&state=" + stateVal;
            } else {
                throw new Error('No authorization code received');
            }

@@ -14,9 +14,7 @@ import (
 )
 
 type GetRegistrationURLResponse struct {
-	RegistrationURL string    `json:"registration_url"`
-	State           string    `json:"state"`
-	ExpiresAt       time.Time `json:"expires_at"`
+	RegistrationURL string `json:"registration_url"`
 }
 
 type GetRegistrationURLService interface {
@@ -71,7 +69,5 @@ func (s *getRegistrationURLServiceImpl) Execute(ctx context.Context) (*GetRegist
 
 	return &GetRegistrationURLResponse{
 		RegistrationURL: aURL,
-		State:           state.State,
-		ExpiresAt:       expiresAt,
 	}, nil
 }

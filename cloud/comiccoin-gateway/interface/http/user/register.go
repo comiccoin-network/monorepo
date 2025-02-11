@@ -22,7 +22,7 @@ func NewRegisterHandler(logger *slog.Logger, registerService svc_user.RegisterSe
 }
 
 func (h *RegisterHandler) Execute(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info("handling registration request",
+	h.logger.Debug("handling registration request",
 		"method", r.Method,
 		"path", r.URL.Path)
 
@@ -39,6 +39,9 @@ func (h *RegisterHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	h.logger.Debug("registrated successfully",
+		"resp", resp)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)

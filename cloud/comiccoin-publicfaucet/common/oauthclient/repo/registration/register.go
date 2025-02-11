@@ -54,6 +54,7 @@ func (impl *registrationClientImpl) Register(ctx context.Context, req *dom_regis
 	resp, err := impl.HttpClient.Do(httpReq)
 	if err != nil {
 		impl.Logger.Error("failed to execute registration request",
+			slog.Any("registrationURL", registrationURL),
 			slog.Any("error", err),
 			slog.String("email", req.Email))
 		return nil, err

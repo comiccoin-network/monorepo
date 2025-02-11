@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+  gateway:
+    desc: Start the backend in developer mode
+    cmds:
+      - go work use ./cloud/comiccoin-gateway
+      - cd ./cloud/comiccoin-gateway
+      - docker-compose -p comiccoin_gateway -f ./cloud/comiccoin-gateway/dev.docker-compose.yml up
+
+  faucet:
+    desc: Start the backend in developer mode
+    cmds:
+      - go work use ./cloud/comiccoin-publicfaucet
+      - cd ./cloud/comiccoin-publicfaucet
+      - docker-compose -p comiccoin_publicfaucet -f ./cloud/comiccoin-publicfaucet/dev.docker-compose.yml up

@@ -145,7 +145,7 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	// Log a message to indicate that a request has been received.
 	// But only do this if client is attempting to access our API endpoints.
-	if n > 2 {
+	if n > 1 {
 		port.logger.Debug("",
 			slog.Any("method", r.Method),
 			slog.Any("url_tokens", p),

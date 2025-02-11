@@ -123,7 +123,7 @@ func doRunLoginCmd(email, firstName, lastName, phone, country, timezone, passwor
 
 	// Replace internal Docker hostname with localhost
 	authURL := strings.Replace(loginResponse.AuthCode,
-		"http://comiccoin_gateway:8080",
+		"http://comiccoin_network:8080",
 		"http://localhost:8080", 1)
 
 	fmt.Printf("\nAuthentication Required\n")

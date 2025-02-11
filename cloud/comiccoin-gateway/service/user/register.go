@@ -33,6 +33,7 @@ type RegisterRequest struct {
 	AppID       string `json:"app_id"`       // Required for OAuth flow
 	RedirectURI string `json:"redirect_uri"` // Required for OAuth flow
 	AuthFlow    string `json:"auth_flow"`    // none, auto, manual
+	State       string `json:"state"`
 }
 
 type RegisterResponse struct {
@@ -182,7 +183,7 @@ func (s *registerServiceImpl) Register(ctx context.Context, req *RegisterRequest
 			ctx,
 			req.AppID,
 			req.RedirectURI,
-			"",            // state
+			req.State,
 			app.Scopes[0], // Now this is safe because we checked len(app.Scopes)
 		)
 		if err != nil {

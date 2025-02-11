@@ -118,9 +118,6 @@ services:
   # The main application.
   app:
     container_name: comiccoin_publicfaucet
-    networks:
-      - mongodb_network
-      - comiccoin_network
     stdin_open: true
     environment:
       COMICCOIN_PUBLICFAUCET_APP_DATA_DIRECTORY: ${COMICCOIN_PUBLICFAUCET_APP_DATA_DIRECTORY}
@@ -180,6 +177,9 @@ services:
       - NET_ADMIN
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - mongodb_network
+      - comiccoin_network
 
 networks:
   mongodb_network:
