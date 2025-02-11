@@ -56,10 +56,15 @@ tasks:
     cmds:
       - go get -u ./...
 
-  undelast:
+  unduelast:
     desc: Undue last commit which was not pushed. Special thanks to https://www.nobledesktop.com/learn/git/undo-changes.
     cmds:
       - git reset --soft HEAD~
+
+  unduetheundue:
+    desc: If you ran `unduelast` and you decided you want to keep what was already commited
+    cmds:
+      - git reset 'HEAD@{1}'
 
   genkey:
     desc: Generate a unique key.
