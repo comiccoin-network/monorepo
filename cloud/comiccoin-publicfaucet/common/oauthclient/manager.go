@@ -43,6 +43,7 @@ type Manager interface {
 
 	// Service
 	Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error)
+	ExchangeToken(ctx context.Context, req *svc_oauth.ExchangeTokenRequest) (*svc_oauth.ExchangeTokenResponse, error)
 
 	// HTTP
 	AuthMiddleware() *http_mid.AuthMiddleware
@@ -74,6 +75,7 @@ type managerImpl struct {
 	oauthCallbackService        svc_oauth.CallbackService
 	oauthStateManagementService svc_oauth.StateManagementService
 	oauthSessionInfoService     svc_oauth.OAuthSessionInfoService
+	exchangeService             svc_oauth.ExchangeService
 
 	// HTTP Interface
 	authMiddleware                    *http_mid.AuthMiddleware
@@ -336,6 +338,16 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		introspectTokenUseCase,
 	)
 
+	exchangeService := svc_oauth.NewExchangeService(
+		cfg,
+		logger,
+		exchangeCodeUseCase,
+		introspectTokenUseCase,
+		userCreateUseCase,
+		userGetByEmailUseCase,
+		tokenUpsertByUserIDUseCase,
+	)
+
 	//
 	// HTTP INTERFACE
 	//
@@ -403,6 +415,7 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		oauthCallbackService:              oauthCallbackService,
 		oauthStateManagementService:       oauthStateManagementService,
 		oauthSessionInfoService:           oauthSessionInfoService,
+		exchangeService:                   exchangeService,
 		authMiddleware:                    authMiddleware,
 		postRegistrationHTTPHandler:       postRegistrationHTTPHandler,
 		postLoginHTTPHandler:              postLoginHTTPHandler,
@@ -421,6 +434,10 @@ func (m *managerImpl) GetLocalUserByID(ctx context.Context, id primitive.ObjectI
 
 func (m *managerImpl) Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error) {
 	return m.loginService.ProcessLogin(ctx, loginReq)
+}
+
+func (m *managerImpl) ExchangeToken(ctx context.Context, req *svc_oauth.ExchangeTokenRequest) (*svc_oauth.ExchangeTokenResponse, error) {
+	return m.exchangeService.ExchangeToken(ctx, req)
 }
 
 func (m *managerImpl) AuthMiddleware() *http_mid.AuthMiddleware {

@@ -70,3 +70,8 @@ tasks:
     desc: "See what apps apps are running and listing to what ports. Aftwords use for example: kill -9 4097"
     cmds:
       - sudo lsof -nPi -sTCP:LISTEN
+
+  crev:
+    desc: "Bundle your codebase into a single file"
+    cmds:
+      - crev bundle

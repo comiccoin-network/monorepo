@@ -89,12 +89,13 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, username, password,
 		return nil, httperror.NewForBadRequestWithSingleField("password", "Invalid password")
 	}
 
-	// Verify email was validated
-	if !user.WasEmailVerified {
-		s.logger.Warn("unverified email attempt",
-			slog.String("email", username))
-		return nil, httperror.NewForBadRequestWithSingleField("email", "Email address not verified")
-	}
+	// DEVELOPERS NOTE: Turn this feature off for now.
+	// // Verify email was validated
+	// if !user.WasEmailVerified {
+	// 	s.logger.Warn("unverified email attempt",
+	// 		slog.String("email", username))
+	// 	return nil, httperror.NewForBadRequestWithSingleField("email", "Email address not verified")
+	// }
 
 	// Update the authorization with the verified user ID
 	authCode.UserID = user.ID.Hex()

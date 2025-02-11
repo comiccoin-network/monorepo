@@ -24,5 +24,8 @@ private.md
 private_*.md
 todo.txt
 
+# Do not share the source code in a file which was created by `crev`.
+crev-project.txt
+
 # Do not store the keystore
 static/keystore

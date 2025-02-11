@@ -10,9 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/password"
+	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	dom_app "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/application"
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
+	domain "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
 	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
 	uc_app "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/application"
 	uc_auth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/authorization"
@@ -103,25 +105,59 @@ func (s *registerServiceImpl) Register(ctx context.Context, req *RegisterRequest
 		}
 	}
 
+	password, err := sstring.NewSecureString(req.Password)
+	if err != nil {
+		s.logger.Error("password securing error", slog.Any("err", err))
+		return nil, err
+	}
+
+	passwordHash, err := s.passwordProvider.GenerateHashFromPassword(password)
+	if err != nil {
+		s.logger.Error("hashing error", slog.Any("error", err))
+		return nil, err
+	}
+
 	userID := primitive.NewObjectID()
 	user := &dom_user.User{
-		ID:                  userID,
-		Email:               req.Email,
-		FirstName:           req.FirstName,
-		LastName:            req.LastName,
-		Name:                fmt.Sprintf("%v %v", req.FirstName, req.LastName),
-		LexicalName:         fmt.Sprintf("%v, %v", req.LastName, req.FirstName),
-		Phone:               req.Phone,
-		Country:             req.Country,
-		Timezone:            req.Timezone,
-		AgreeTermsOfService: req.AgreeToS,
-		CreatedByUserID:     userID,
-		CreatedByName:       fmt.Sprintf("%v %v", req.FirstName, req.LastName),
-		CreatedAt:           time.Now(),
-		ModifiedByUserID:    userID,
-		ModifiedByName:      fmt.Sprintf("%v %v", req.FirstName, req.LastName),
-		ModifiedAt:          time.Now(),
-		Role:                dom_user.UserRoleCustomer,
+		ID:                         userID,
+		Email:                      req.Email,
+		FirstName:                  req.FirstName,
+		LastName:                   req.LastName,
+		Name:                       fmt.Sprintf("%v %v", req.FirstName, req.LastName),
+		LexicalName:                fmt.Sprintf("%v, %v", req.LastName, req.FirstName),
+		Phone:                      req.Phone,
+		Country:                    req.Country,
+		Region:                     "",
+		City:                       "",
+		PostalCode:                 "",
+		AddressLine1:               "",
+		AddressLine2:               "",
+		Timezone:                   req.Timezone,
+		AgreeTermsOfService:        req.AgreeToS,
+		CreatedByUserID:            userID,
+		CreatedByName:              fmt.Sprintf("%v %v", req.FirstName, req.LastName),
+		CreatedAt:                  time.Now(),
+		ModifiedByUserID:           userID,
+		ModifiedByName:             fmt.Sprintf("%v %v", req.FirstName, req.LastName),
+		ModifiedAt:                 time.Now(),
+		Role:                       dom_user.UserRoleCustomer,
+		PasswordHash:               passwordHash,
+		PasswordHashAlgorithm:      s.passwordProvider.AlgorithmName(),
+		WasEmailVerified:           false,
+		EmailVerificationCode:      primitive.NewObjectID().Hex(),
+		EmailVerificationExpiry:    time.Now().Add(72 * time.Hour),
+		Status:                     domain.UserStatusActive,
+		HasShippingAddress:         false,
+		ShippingName:               "",
+		ShippingPhone:              "",
+		ShippingCountry:            "",
+		ShippingRegion:             "",
+		ShippingCity:               "",
+		ShippingPostalCode:         "",
+		ShippingAddressLine1:       "",
+		ShippingAddressLine2:       "",
+		PaymentProcessorName:       "",
+		PaymentProcessorCustomerID: "",
 	}
 
 	if err := s.userCreateUseCase.Execute(ctx, user); err != nil {
