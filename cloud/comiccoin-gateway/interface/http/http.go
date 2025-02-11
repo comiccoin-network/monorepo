@@ -9,10 +9,10 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler"
 	http_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/identity"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
 	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth"
+	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/system"
 	http_usr "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/user"
 )
 
@@ -38,9 +38,9 @@ type httpServerImpl struct {
 	// server is the underlying HTTP server.
 	server *http.Server
 
-	getVersionHTTPHandler *handler.GetVersionHTTPHandler
+	getVersionHTTPHandler *http_system.GetVersionHTTPHandler
 
-	getHealthCheckHTTPHandler *handler.GetHealthCheckHTTPHandler
+	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler
 
 	authorizeHandler     *http_oauth.AuthorizeHandler
 	loginHandler         *http_oauth.LoginHandler
@@ -57,8 +57,8 @@ func NewHTTPServer(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	mid mid.Middleware,
-	h1 *handler.GetVersionHTTPHandler,
-	h2 *handler.GetHealthCheckHTTPHandler,
+	h1 *http_system.GetVersionHTTPHandler,
+	h2 *http_system.GetHealthCheckHTTPHandler,
 
 	authorizeHandler *http_oauth.AuthorizeHandler,
 	loginHandler *http_oauth.LoginHandler,

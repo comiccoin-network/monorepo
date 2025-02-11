@@ -17,10 +17,10 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http"
-	httphandler "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler"
 	http_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/identity"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
 	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth"
+	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/system"
 	http_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/user"
 	r_application "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/application"
 	r_authorization "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/authorization"
@@ -281,10 +281,10 @@ func doRunDaemon() {
 	//
 
 	// HTTP Handlers
-	getVersionHTTPHandler := httphandler.NewGetVersionHTTPHandler(
+	getVersionHTTPHandler := http_system.NewGetVersionHTTPHandler(
 		logger,
 	)
-	getHealthCheckHTTPHandler := httphandler.NewGetHealthCheckHTTPHandler(
+	getHealthCheckHTTPHandler := http_system.NewGetHealthCheckHTTPHandler(
 		logger,
 	)
 	authorizeHttpHandler := http_oauth.NewAuthorizeHandler(logger, authorizeService)

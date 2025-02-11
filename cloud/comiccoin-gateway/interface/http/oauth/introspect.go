@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/handler/oauth_introspect.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth/introspect.go
 package oauth
 
 import (

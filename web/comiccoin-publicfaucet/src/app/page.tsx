@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { CONFIG } from "@/config/env";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import { useRouter } from "next/navigation";
 import {
   Coins,
