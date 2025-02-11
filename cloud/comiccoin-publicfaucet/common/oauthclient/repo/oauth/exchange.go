@@ -33,7 +33,7 @@ func (impl *oauthClientImpl) ExchangeCode(ctx context.Context, code string) (*do
 	data.Set("code", code)
 	data.Set("client_id", impl.Config.OAuth.ClientID)
 	data.Set("client_secret", impl.Config.OAuth.ClientSecret)
-	data.Set("redirect_uri", impl.Config.OAuth.RedirectURI)
+	data.Set("redirect_uri", impl.Config.OAuth.ClientRedirectURI)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", tokenURL, strings.NewReader(data.Encode()))
 	if err != nil {

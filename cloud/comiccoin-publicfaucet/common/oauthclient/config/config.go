@@ -6,10 +6,11 @@ type DBConfig struct {
 }
 
 type OAuthConfig struct {
-	ServerURL    string
-	ClientID     string
-	ClientSecret string
-	RedirectURI  string
+	ServerURL         string
+	ClientID          string
+	ClientSecret      string
+	ClientRedirectURI string
+	ClientCancelURI   string
 }
 
 // Configuration provides all the environment variables to access our remote

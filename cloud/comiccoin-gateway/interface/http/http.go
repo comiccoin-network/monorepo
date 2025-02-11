@@ -47,6 +47,7 @@ type httpServerImpl struct {
 	tokenHandler         *http_oauth.TokenHandler
 	introspectionHandler *http_oauth.IntrospectionHandler
 	refreshTokenHandler  *http_oauth.RefreshTokenHandler
+	uiRegisterHandler    *http_oauth.UIRegisterHandler
 
 	registerHandler    *http_usr.RegisterHandler
 	getIdentityHandler *http_identity.GetIdentityHandler
@@ -86,6 +87,8 @@ func NewHTTPServer(
 		Handler: corsHandler,
 	}
 
+	uiregister := http_oauth.NewUIRegisterHandler(logger)
+
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
 		cfg:                       cfg,
@@ -99,6 +102,7 @@ func NewHTTPServer(
 		tokenHandler:              tokenHandler,
 		introspectionHandler:      introspectionHandler,
 		refreshTokenHandler:       refreshTokenHandler,
+		uiRegisterHandler:         uiregister,
 		registerHandler:           registerHandler,
 		getIdentityHandler:        getIdentityHandler,
 	}
@@ -154,6 +158,8 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.getVersionHTTPHandler.Execute(w, r)
 	case n == 1 && p[0] == "health-check" && r.Method == http.MethodGet:
 		port.getHealthCheckHTTPHandler.Execute(w, r)
+	case n == 1 && p[0] == "register" && r.Method == http.MethodGet:
+		port.uiRegisterHandler.Execute(w, r)
 	case n == 2 && p[0] == "oauth" && p[1] == "authorize" && r.Method == http.MethodGet:
 		port.authorizeHandler.Execute(w, r)
 	case n == 2 && p[0] == "oauth" && p[1] == "login" && r.Method == http.MethodPost:

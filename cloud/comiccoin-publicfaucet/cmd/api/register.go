@@ -59,10 +59,11 @@ func doRunRegisterCmd(email, firstName, lastName, phone, country, timezone, pass
 	originalCfg := config.NewProviderUsingEnvironmentVariables()
 	cfg := &common_oauth_config.Configuration{
 		OAuth: common_oauth_config.OAuthConfig{
-			ServerURL:    originalCfg.OAuth.ServerURL,
-			ClientID:     originalCfg.OAuth.ClientID,
-			ClientSecret: originalCfg.OAuth.ClientSecret,
-			RedirectURI:  originalCfg.OAuth.RedirectURI,
+			ServerURL:         originalCfg.OAuth.ServerURL,
+			ClientID:          originalCfg.OAuth.ClientID,
+			ClientSecret:      originalCfg.OAuth.ClientSecret,
+			ClientRedirectURI: originalCfg.OAuth.ClientRedirectURI,
+			ClientCancelURI:   originalCfg.OAuth.ClientCancelURI,
 		},
 		DB: common_oauth_config.DBConfig{
 			URI:  originalCfg.DB.URI,

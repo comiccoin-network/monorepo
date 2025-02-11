@@ -59,6 +59,7 @@ type Manager interface {
 	CallbackHTTPHandler() *http_oauth.CallbackHTTPHandler
 	StateManagementHTTPHandler() *http_oauth.StateManagementHTTPHandler
 	OAuthSessionInfoHTTPHandler() *http_oauth.OAuthSessionInfoHTTPHandler
+	GetRegistrationURLHTTPHandler() *http_oauth.GetRegistrationURLHTTPHandler
 	FetchProfileFromComicCoinGatewayHandler() *http_profile.FetchProfileFromComicCoinGatewayHandler
 }
 
@@ -92,6 +93,7 @@ type managerImpl struct {
 	callbackHTTPHandler                     *http_oauth.CallbackHTTPHandler
 	stateManagementHTTPHandler              *http_oauth.StateManagementHTTPHandler
 	oAuthSessionInfoHTTPHandler             *http_oauth.OAuthSessionInfoHTTPHandler
+	getRegistrationURLHTTPHandler           *http_oauth.GetRegistrationURLHTTPHandler
 	fetchProfileFromComicCoinGatewayHandler *http_profile.FetchProfileFromComicCoinGatewayHandler
 }
 
@@ -178,11 +180,17 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		logger,
 		oauthRepo,
 	)
+	getRegistrationURLUseCase := uc_oauth.NewGetRegistrationURLUseCase(
+		cfg,
+		logger,
+		oauthRepo,
+	)
 
 	_ = getAuthorizationURLUseCase //TODO: Utilize
 	_ = exchangeCodeUseCase        //TODO: Utilize
 	_ = refreshTokenUseCase        //TODO: Utilize
 	_ = introspectTokenUseCase     //TODO: Utilize
+	_ = getRegistrationURLUseCase
 
 	// --- Registration ---
 
@@ -363,6 +371,13 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		tokenUpsertByUserIDUseCase,
 	)
 
+	getRegistrationURLService := svc_oauth.NewGetRegistrationURLService(
+		cfg,
+		logger,
+		getRegistrationURLUseCase,
+		createOAuthStateUseCase,
+	)
+
 	// Profile
 	fetchProfileFromComicCoinGatewayService := svc_profile.NewFetchProfileFromComicCoinGatewayService(
 		cfg,
@@ -430,6 +445,12 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		fetchProfileFromComicCoinGatewayService,
 	)
 
+	getRegistrationURLHTTPHandler := http_oauth.NewGetRegistrationURLHTTPHandler(
+		cfg,
+		logger,
+		getRegistrationURLService,
+	)
+
 	return &managerImpl{
 		config:                                  cfg,
 		logger:                                  logger,
@@ -453,6 +474,7 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		stateManagementHTTPHandler:              stateManagementHTTPHandler,
 		oAuthSessionInfoHTTPHandler:             oAuthSessionInfoHTTPHandler,
 		fetchProfileFromComicCoinGatewayHandler: fetchProfileFromComicCoinGatewayHandler,
+		getRegistrationURLHTTPHandler:           getRegistrationURLHTTPHandler,
 	}, nil
 }
 
@@ -506,4 +528,8 @@ func (m *managerImpl) OAuthSessionInfoHTTPHandler() *http_oauth.OAuthSessionInfo
 
 func (m *managerImpl) FetchProfileFromComicCoinGatewayHandler() *http_profile.FetchProfileFromComicCoinGatewayHandler {
 	return m.fetchProfileFromComicCoinGatewayHandler
+}
+
+func (m *managerImpl) GetRegistrationURLHTTPHandler() *http_oauth.GetRegistrationURLHTTPHandler {
+	return m.getRegistrationURLHTTPHandler
 }

@@ -15,4 +15,6 @@ type Client interface {
 
 	// Refreshes access token using refresh token
 	RefreshToken(ctx context.Context, refreshToken string) (*TokenResponse, error)
+
+	GetRegistrationURL(state string) string
 }

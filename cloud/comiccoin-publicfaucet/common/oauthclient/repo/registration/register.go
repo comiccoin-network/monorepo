@@ -18,7 +18,7 @@ func (impl *registrationClientImpl) Register(ctx context.Context, req *dom_regis
 
 	// Set the redirect URI from config if not already set
 	if req.RedirectURI == "" {
-		req.RedirectURI = impl.Config.OAuth.RedirectURI
+		req.RedirectURI = impl.Config.OAuth.ClientRedirectURI
 	}
 
 	impl.Logger.Debug("sending registration request",

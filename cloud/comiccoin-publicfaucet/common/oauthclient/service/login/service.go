@@ -140,7 +140,7 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, req *LoginRequest) 
 	// For manual flow, return the auth URL for the frontend to handle
 	return &LoginResponse{
 		AuthCode:      authURL,
-		RedirectURI:   s.config.OAuth.RedirectURI,
+		RedirectURI:   s.config.OAuth.ClientRedirectURI,
 		HasOTPEnabled: user.OTPEnabled,
 		OTPValidated:  user.OTPValidated,
 	}, nil

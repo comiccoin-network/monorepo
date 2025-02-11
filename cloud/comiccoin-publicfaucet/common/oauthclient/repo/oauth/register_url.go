@@ -6,13 +6,13 @@ import (
 	"net/url"
 )
 
-func (impl *oauthClientImpl) GetAuthorizationURL(state string) string {
-	authURL := fmt.Sprintf("%s/oauth/authorize", impl.Config.OAuth.ServerURL)
+func (impl *oauthClientImpl) GetRegistrationURL(state string) string {
+	authURL := fmt.Sprintf("%s/register", impl.Config.OAuth.ServerURL)
 
 	params := url.Values{}
-	params.Add("response_type", "code")
-	params.Add("client_id", impl.Config.OAuth.ClientID)
 	params.Add("redirect_uri", impl.Config.OAuth.ClientRedirectURI)
+	params.Add("cancel_url", impl.Config.OAuth.ClientCancelURI)
+	params.Add("client_id", impl.Config.OAuth.ClientID)
 	params.Add("state", state)
 
 	return authURL + "?" + params.Encode()

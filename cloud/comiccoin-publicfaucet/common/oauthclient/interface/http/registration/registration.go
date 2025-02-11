@@ -84,7 +84,7 @@ func (h *PostRegistrationHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		AgreeTOS:    requestIDO.AgreeTOS,
 		AppID:       h.config.OAuth.ClientID,
 		AuthFlow:    requestIDO.AuthFlow,
-		RedirectURI: h.config.OAuth.RedirectURI,
+		RedirectURI: h.config.OAuth.ClientRedirectURI,
 	}
 
 	// Call service
