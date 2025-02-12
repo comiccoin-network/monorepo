@@ -67,8 +67,8 @@ const loginFormTemplate = `
                 <label>Scope: {{.Scope}}</label>
             </div>
             <div class="form-group">
-                <label for="federatedidentityname">FederatedIdentityname:</label>
-                <input type="text" id="federatedidentityname" name="federatedidentityname" value="test@test.com" required>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" value="test@test.com" required>
             </div>
             <div class="form-group">
                 <label for="password">Password:</label>

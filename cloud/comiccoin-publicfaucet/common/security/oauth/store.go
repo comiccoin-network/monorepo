@@ -29,6 +29,6 @@ type ClientService interface {
 
 // FederatedIdentityService handles federatedidentity authentication during the OAuth flow
 type FederatedIdentityService interface {
-	// ValidateCredentials checks if the provided federatedidentityname and password are valid
-	ValidateCredentials(federatedidentityname, password string) (bool, error)
+	// ValidateCredentials checks if the provided username and password are valid
+	ValidateCredentials(username, password string) (bool, error)
 }

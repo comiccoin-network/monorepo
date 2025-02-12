@@ -23,7 +23,7 @@ type LoginResultDTO struct {
 
 // LoginService defines the interface for handling OAuth login operations
 type LoginService interface {
-	ProcessLogin(ctx context.Context, federatedidentityname, password, authID string) (*LoginResultDTO, error)
+	ProcessLogin(ctx context.Context, username, password, authID string) (*LoginResultDTO, error)
 }
 
 type loginServiceImpl struct {
@@ -37,7 +37,7 @@ type loginServiceImpl struct {
 	authDeleteExpiredCodesUseCase      uc_auth.AuthorizationDeleteExpiredCodesUseCase
 }
 
-func (s *loginServiceImpl) ProcessLogin(ctx context.Context, federatedidentityname, password, authID string) (*LoginResultDTO, error) {
+func (s *loginServiceImpl) ProcessLogin(ctx context.Context, username, password, authID string) (*LoginResultDTO, error) {
 	// Input sanitization code remains the same...
 
 	// Look up the pending authorization first, since we need its information
@@ -50,8 +50,8 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, federatedidentityna
 
 	// Validate inputs
 	e := make(map[string]string)
-	if federatedidentityname == "" {
-		e["federatedidentityname"] = "Email address is required"
+	if username == "" {
+		e["username"] = "Email address is required"
 	}
 	if password == "" {
 		e["password"] = "Password is required"
@@ -63,7 +63,7 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, federatedidentityna
 	}
 
 	// Look up the federatedidentity
-	federatedidentity, err := s.federatedidentityGetByEmailUseCase.Execute(ctx, federatedidentityname)
+	federatedidentity, err := s.federatedidentityGetByEmailUseCase.Execute(ctx, username)
 	if err != nil {
 		s.logger.Error("database error during login",
 			slog.Any("error", err))
@@ -71,7 +71,7 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, federatedidentityna
 	}
 	if federatedidentity == nil {
 		s.logger.Warn("federatedidentity does not exist")
-		return nil, httperror.NewForBadRequestWithSingleField("federatedidentityname", "Email address does not exist")
+		return nil, httperror.NewForBadRequestWithSingleField("username", "Email address does not exist")
 	}
 
 	// Create secure string for password comparison
@@ -93,7 +93,7 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, federatedidentityna
 	// // Verify email was validated
 	// if !federatedidentity.WasEmailVerified {
 	// 	s.logger.Warn("unverified email attempt",
-	// 		slog.String("email", federatedidentityname))
+	// 		slog.String("email", username))
 	// 	return nil, httperror.NewForBadRequestWithSingleField("email", "Email address not verified")
 	// }
 

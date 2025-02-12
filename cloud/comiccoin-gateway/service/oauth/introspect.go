@@ -24,12 +24,12 @@ type IntrospectionRequestDTO struct {
 
 // IntrospectionResponseDTO represents the OAuth 2.0 token introspection response
 type IntrospectionResponseDTO struct {
-	Active                bool   `json:"active"`                          // Indicates if the token is valid and active
-	Scope                 string `json:"scope,omitempty"`                 // The scope associated with the token
-	ClientID              string `json:"client_id,omitempty"`             // Client ID the token was issued to
-	FederatedIdentityname string `json:"federatedidentityname,omitempty"` // FederatedIdentityname of the resource owner
-	ExpiresAt             int64  `json:"exp,omitempty"`                   // Token expiration timestamp
-	IssuedAt              int64  `json:"iat,omitempty"`                   // When the token was issued
+	Active                bool   `json:"active"`              // Indicates if the token is valid and active
+	Scope                 string `json:"scope,omitempty"`     // The scope associated with the token
+	ClientID              string `json:"client_id,omitempty"` // Client ID the token was issued to
+	Username string `json:"username,omitempty"`  // Username of the resource owner
+	ExpiresAt             int64  `json:"exp,omitempty"`       // Token expiration timestamp
+	IssuedAt              int64  `json:"iat,omitempty"`       // When the token was issued
 	FederatedIdentityID   string `json:"federatedidentity_id,omitempty"`
 	Email                 string `json:"email,omitempty"`
 	FirstName             string `json:"first_name,omitempty"`
@@ -151,7 +151,7 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 			response.Email = federatedidentity.Email
 			response.FirstName = federatedidentity.FirstName
 			response.LastName = federatedidentity.LastName
-			response.FederatedIdentityname = federatedidentity.Email // Using email as federatedidentityname
+			response.Username = federatedidentity.Email // Using email as username
 		} else {
 			s.logger.Warn("federatedidentity not found",
 				slog.String("federatedidentity_id", tokenInfo.FederatedIdentityID))

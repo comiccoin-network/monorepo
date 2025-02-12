@@ -58,16 +58,16 @@ func (h *LoginHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Extract required fields from the form
-	federatedidentityname := r.FormValue("federatedidentityname")
+	username := r.FormValue("username")
 	password := r.FormValue("password")
 	authID := r.FormValue("auth_id")
 	state := r.FormValue("state")
 	successURI := r.FormValue("success_uri")
 
 	// Validate that all required fields are present
-	if federatedidentityname == "" {
-		h.logger.Error("missing required `federatedidentityname` value")
-		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("federatedidentityname", "required value"))
+	if username == "" {
+		h.logger.Error("missing required `username` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("username", "required value"))
 		return
 	}
 	if password == "" {
@@ -92,12 +92,12 @@ func (h *LoginHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	// - FederatedIdentity authentication
 	// - Authorization code generation
 	// - State management
-	result, err := h.loginService.ProcessLogin(r.Context(), federatedidentityname, password, authID)
+	result, err := h.loginService.ProcessLogin(r.Context(), username, password, authID)
 	if err != nil {
 		// Log the error but don't expose internal details to the client
 		h.logger.Error("login processing failed",
 			"error", err,
-			"federatedidentityname", federatedidentityname)
+			"username", username)
 
 		// Return a generic error to the client
 		http.Error(w, "Authentication failed", http.StatusUnauthorized)

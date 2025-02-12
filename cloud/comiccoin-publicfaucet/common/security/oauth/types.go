@@ -82,7 +82,7 @@ type IntrospectionResponse struct {
 	Active    bool   `json:"active"`              // Is the token active?
 	Scope     string `json:"scope,omitempty"`     // The token's scope
 	ClientID  string `json:"client_id,omitempty"` // Client ID the token was issued to
-	FederatedIdentityname  string `json:"federatedidentityname,omitempty"`  // FederatedIdentityname of the resource owner
+	Username  string `json:"username,omitempty"`  // Username of the resource owner
 	ExpiresAt int64  `json:"exp,omitempty"`       // Token expiration timestamp
 	IssuedAt  int64  `json:"iat,omitempty"`       // When the token was issued
 }
