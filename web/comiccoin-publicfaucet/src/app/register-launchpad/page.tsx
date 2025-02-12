@@ -32,7 +32,7 @@ export default function RegisterLaunchpadPage() {
           setShowManualButton(true);
         }, 1000);
       } catch (e) {
-        console.error("Redirect failed:", e);
+        console.log("Redirect failed:", e);
         setShowManualButton(true);
       }
     }

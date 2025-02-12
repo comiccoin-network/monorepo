@@ -1,57 +1,66 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/contexts/AuthContext.tsx
 "use client";
 
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Define what our tokens look like
 interface Tokens {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
 }
 
-// Define what functionality our auth context will provide
 interface AuthContextType {
   tokens: Tokens | null;
   isAuthenticated: boolean;
-  login: (tokens: Tokens) => void;
+  login: (tokens: Tokens) => Promise<void>; // Changed to async
   logout: () => void;
   refreshTokens: () => Promise<boolean>;
 }
 
-// Create the context
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// The provider component that wraps our app
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [tokens, setTokens] = useState<Tokens | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
-  const loginPerformed = useRef(false);
 
   useEffect(() => {
-    if (!loginPerformed.current) {
-      const storedTokens = localStorage.getItem("auth_tokens");
-      if (storedTokens) {
-        try {
-          setTokens(JSON.parse(storedTokens));
-        } catch (error) {
-          localStorage.removeItem("auth_tokens");
-        }
+    const storedTokens = localStorage.getItem("auth_tokens");
+    if (storedTokens) {
+      try {
+        const parsedTokens = JSON.parse(storedTokens);
+        setTokens(parsedTokens);
+      } catch (error) {
+        localStorage.removeItem("auth_tokens");
       }
-      loginPerformed.current = true;
     }
+    setIsInitialized(true);
   }, []);
+
+  const login = async (newTokens: Tokens) => {
+    setTokens(newTokens);
+    localStorage.setItem("auth_tokens", JSON.stringify(newTokens));
+    // Add a small delay before navigation to ensure state is updated
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  };
+
+  const logout = () => {
+    setTokens(null);
+    localStorage.removeItem("auth_tokens");
+    try {
+      router.push("/");
+    } catch (error) {
+      window.location.href = "/";
+    }
+  };
 
   const refreshTokens = async (): Promise<boolean> => {
     if (!tokens?.refreshToken) return false;
 
     try {
-      const apiProtocol = process.env.NEXT_PUBLIC_API_PROTOCOL || "http";
-      const apiDomain = process.env.NEXT_PUBLIC_API_DOMAIN || "localhost";
-
       const response = await fetch(
-        `${apiProtocol}://${apiDomain}/api/oauth/refresh`,
+        `${process.env.NEXT_PUBLIC_API_PROTOCOL}://${process.env.NEXT_PUBLIC_API_DOMAIN}/api/oauth/refresh`,
         {
           method: "POST",
           headers: {
@@ -82,20 +91,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = (newTokens: Tokens) => {
-    if (!loginPerformed.current) {
-      setTokens(newTokens);
-      localStorage.setItem("auth_tokens", JSON.stringify(newTokens));
-      loginPerformed.current = true;
-    }
-  };
-
-  const logout = () => {
-    setTokens(null);
-    localStorage.removeItem("auth_tokens");
-    loginPerformed.current = false;
-    router.push("/");
-  };
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <AuthContext.Provider
@@ -112,7 +110,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Export the hook for using auth context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

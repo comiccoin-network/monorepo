@@ -68,11 +68,11 @@ const loginFormTemplate = `
             </div>
             <div class="form-group">
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" value="test@test.com" required>
             </div>
             <div class="form-group">
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" value="123password" required>
             </div>
             <button type="submit">Authorize</button>
         </form>

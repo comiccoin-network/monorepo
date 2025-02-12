@@ -84,7 +84,7 @@ export function useAuthorizationUrl(
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error("❌ Response Error:", {
+          console.log("❌ Response Error:", {
             status: response.status,
             text: errorText,
           });
@@ -104,7 +104,7 @@ export function useAuthorizationUrl(
         setState(data.state);
         setExpiresAt(data.expires_at);
       } catch (err) {
-        console.error("💥 Error Details:", {
+        console.log("💥 Error Details:", {
           error: err,
           message: err instanceof Error ? err.message : "Unknown error",
           stack: err instanceof Error ? err.stack : undefined,

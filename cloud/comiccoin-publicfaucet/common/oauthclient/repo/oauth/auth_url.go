@@ -13,6 +13,8 @@ func (impl *oauthClientImpl) GetAuthorizationURL(state string) string {
 	params.Add("response_type", "code")
 	params.Add("client_id", impl.Config.OAuth.ClientID)
 	params.Add("redirect_uri", impl.Config.OAuth.ClientRedirectURI)
+	params.Add("cancel_url", impl.Config.OAuth.ClientAuthorizeOrLoginCancelURI)
+	params.Add("success_uri", impl.Config.OAuth.ClientAuthorizeOrLoginSuccessURI)
 	params.Add("state", state)
 
 	return authURL + "?" + params.Encode()

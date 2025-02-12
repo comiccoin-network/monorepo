@@ -102,7 +102,7 @@ func (s *authorizeServiceImpl) ValidateAuthorizationRequest(ctx context.Context,
 	// Validate requested scopes against allowed scopes
 	// Note: This is a simplified scope validation. You might want to make it more sophisticated.
 	if scope != "" {
-		scope = strings.Replace(scope, " ", "", -1)
+		scope = strings.Replace(scope, " ", "", -1) // Defensive code
 		splitScopes := strings.Split(scope, ",")
 		for _, actualScope := range splitScopes {
 			validScope := false

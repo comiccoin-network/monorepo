@@ -46,12 +46,14 @@ func doRunTokenRefresh(userID, refreshToken string) {
 	originalCfg := config.NewProviderUsingEnvironmentVariables()
 	cfg := &common_oauth_config.Configuration{
 		OAuth: common_oauth_config.OAuthConfig{
-			ServerURL:         originalCfg.OAuth.ServerURL,
-			ClientID:          originalCfg.OAuth.ClientID,
-			ClientSecret:      originalCfg.OAuth.ClientSecret,
-			ClientRedirectURI: originalCfg.OAuth.ClientRedirectURI,
-			ClientSuccessURI:  originalCfg.OAuth.ClientSuccessURI,
-			ClientCancelURI:   originalCfg.OAuth.ClientCancelURI,
+			ServerURL:                originalCfg.OAuth.ServerURL,
+			ClientID:                 originalCfg.OAuth.ClientID,
+			ClientSecret:             originalCfg.OAuth.ClientSecret,
+			ClientRedirectURI:        originalCfg.OAuth.ClientRedirectURI,
+			ClientRegisterSuccessURI: originalCfg.OAuth.ClientRegisterSuccessURI,
+			ClientRegisterCancelURI:  originalCfg.OAuth.ClientRegisterCancelURI,
+			ClientAuthorizeOrLoginSuccessURI:    originalCfg.OAuth.ClientAuthorizeOrLoginSuccessURI,
+			ClientAuthorizeOrLoginCancelURI:     originalCfg.OAuth.ClientAuthorizeOrLoginCancelURI,
 		},
 		DB: common_oauth_config.DBConfig{
 			URI:  originalCfg.DB.URI,

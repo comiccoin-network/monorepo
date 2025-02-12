@@ -1,20 +1,20 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/dashboard/page.tsx
 "use client";
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { withAuth } from "@/components/hoc/withAuth";
 
-export default function ProtectedPage() {
-  const { isAuthenticated } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      console.log("ProtectedPage: NOT AUTHENTICATED");
-      router.push("/");
-    }
-  }, [isAuthenticated, router]);
-
-  return <div>Protected Content</div>;
+function DashboardPage() {
+  return (
+    <div className="min-h-screen p-8">
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+      <div className="bg-white rounded-lg shadow p-6">
+        <p>Welcome to your dashboard!</p>
+      </div>
+    </div>
+  );
 }
+
+// Export the protected version of the dashboard
+export default withAuth(DashboardPage, {
+  componentName: "Dashboard",
+});

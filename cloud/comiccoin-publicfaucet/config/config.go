@@ -72,12 +72,14 @@ type DBConfig struct {
 }
 
 type OAuthConfig struct {
-	ServerURL         string
-	ClientID          string
-	ClientSecret      string
-	ClientRedirectURI string
-	ClientSuccessURI  string
-	ClientCancelURI   string
+	ServerURL                string
+	ClientID                 string
+	ClientSecret             string
+	ClientRedirectURI        string
+	ClientRegisterSuccessURI string
+	ClientRegisterCancelURI  string
+	ClientAuthorizeOrLoginSuccessURI    string
+	ClientAuthorizeOrLoginCancelURI     string
 }
 
 type MailgunConfig struct {
@@ -118,8 +120,10 @@ func NewProviderUsingEnvironmentVariables() *Configuration {
 	c.OAuth.ClientID = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_ID", true)
 	c.OAuth.ClientSecret = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_SECRET", true)
 	c.OAuth.ClientRedirectURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REDIRECT_URI", true)
-	c.OAuth.ClientSuccessURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_SUCCESS_URI", true)
-	c.OAuth.ClientCancelURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_CANCEL_URI", true)
+	c.OAuth.ClientRegisterSuccessURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REGISTER_SUCCESS_URI", true)
+	c.OAuth.ClientRegisterCancelURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REGISTER_CANCEL_URI", true)
+	c.OAuth.ClientAuthorizeOrLoginSuccessURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_LOGIN_SUCCESS_URI", true)
+	c.OAuth.ClientAuthorizeOrLoginCancelURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_LOGIN_CANCEL_URI", true)
 
 	// Amazon Web-Services Technology
 	c.AWS.AccessKey = getEnv("COMICCOIN_PUBLICFAUCET_AWS_ACCESS_KEY", true)

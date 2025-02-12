@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
@@ -49,6 +50,7 @@ func (h *GetAuthURLHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) 
 	// First try to get parameters from query string
 	redirectURI := r.URL.Query().Get("redirect_uri")
 	scope := r.URL.Query().Get("scope")
+	scope = strings.Replace(scope, " ", "", -1) // Defensive code - remove whitespaces
 
 	if redirectURI != "" {
 		// If parameters are in query string, use them

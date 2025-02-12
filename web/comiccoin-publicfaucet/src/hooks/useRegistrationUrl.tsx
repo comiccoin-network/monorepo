@@ -43,13 +43,11 @@ export function useRegistrationUrl(): UseRegistrationUrlReturn {
     const finalUrl = `${apiUrl}?success_uri=${encodeURIComponent(successUri)}`;
 
     console.log("Attempting to fetch registration URL:", {
-      finalUrl,
       apiUrl,
-      successUri,
     });
 
     try {
-      const response = await fetch(finalUrl, {
+      const response = await fetch(apiUrl, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -71,7 +69,7 @@ export function useRegistrationUrl(): UseRegistrationUrlReturn {
       console.log("Data received:", data);
       setRegistrationUrl(data.registration_url);
     } catch (err) {
-      console.error("Detailed error information:", {
+      console.log("Detailed error information:", {
         error: err,
         message: err.message,
         stack: err.stack,

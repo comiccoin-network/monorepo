@@ -25,9 +25,7 @@ export default function LoginLaunchpadPage() {
 
   useEffect(() => {
     if (authUrl) {
-      const updatedUrl =
-        authUrl.replace("comiccoin_gateway", "127.0.0.1") +
-        "&success_uri=http://127.0.0.1:3000/login-success";
+      const updatedUrl = authUrl.replace("comiccoin_gateway", "127.0.0.1");
       setProcessedUrl(updatedUrl);
       console.log("Attempting redirect to:", updatedUrl);
 

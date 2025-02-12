@@ -68,7 +68,7 @@ const YourComponent = () => {
       console.log('File uploaded successfully:', file.name);
     },
     onError: (error) => {
-      console.error('Upload failed:', error);
+      console.log('Upload failed:', error);
     }
   });
 

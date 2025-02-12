@@ -60,12 +60,14 @@ func doRunDaemon() {
 
 	oauthClientConfig := &common_oauth_config.Configuration{
 		OAuth: common_oauth_config.OAuthConfig{
-			ServerURL:         cfg.OAuth.ServerURL,
-			ClientID:          cfg.OAuth.ClientID,
-			ClientSecret:      cfg.OAuth.ClientSecret,
-			ClientRedirectURI: cfg.OAuth.ClientRedirectURI,
-			ClientSuccessURI:  cfg.OAuth.ClientSuccessURI,
-			ClientCancelURI:   cfg.OAuth.ClientCancelURI,
+			ServerURL:                cfg.OAuth.ServerURL,
+			ClientID:                 cfg.OAuth.ClientID,
+			ClientSecret:             cfg.OAuth.ClientSecret,
+			ClientRedirectURI:        cfg.OAuth.ClientRedirectURI,
+			ClientRegisterSuccessURI: cfg.OAuth.ClientRegisterSuccessURI,
+			ClientRegisterCancelURI:  cfg.OAuth.ClientRegisterCancelURI,
+			ClientAuthorizeOrLoginSuccessURI:    cfg.OAuth.ClientAuthorizeOrLoginSuccessURI,
+			ClientAuthorizeOrLoginCancelURI:     cfg.OAuth.ClientAuthorizeOrLoginCancelURI,
 		},
 		DB: common_oauth_config.DBConfig{
 			URI:  cfg.DB.URI,

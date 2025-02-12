@@ -170,7 +170,7 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.oauthClientManager.StateManagementHTTPHandler().CleanupExpiredStates(w, r)
 	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "session" && r.Method == http.MethodGet:
 		port.oauthClientManager.OAuthSessionInfoHTTPHandler().Execute(w, r)
-	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "registration" && r.Method == http.MethodGet:
+	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "registration" && r.Method == http.MethodGet: // Used by frontend
 		port.oauthClientManager.GetRegistrationURLHTTPHandler().Execute(w, r)
 
 	// Resources
