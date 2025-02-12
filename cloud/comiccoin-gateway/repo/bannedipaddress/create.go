@@ -18,7 +18,7 @@ func (impl bannedIPAddressImpl) Create(ctx context.Context, u *dom_banip.BannedI
 
 	if u.ID == primitive.NilObjectID {
 		u.ID = primitive.NewObjectID()
-		impl.Logger.Warn("database insert user transaction not included id value, created id now.", slog.Any("id", u.ID))
+		impl.Logger.Warn("database insert federatedidentity transaction not included id value, created id now.", slog.Any("id", u.ID))
 	}
 
 	_, err := impl.Collection.InsertOne(ctx, u)

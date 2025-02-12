@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	config "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/federatedidentity"
 	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/introspection"
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/login"
 	http_mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/middleware"
@@ -18,32 +18,32 @@ import (
 	http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/registration"
 	http_tok "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/token"
 	http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/token"
+	r_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/federatedidentity"
 	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauth"
 	r_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauthsession"
 	r_oauthstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauthstate"
 	r_profile "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/profile"
 	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/registration"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/token"
-	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/user"
 	svc_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/introspection"
 	svc_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/login"
 	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/oauth"
 	svc_profile "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/profile"
 	svc_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/registration"
 	svc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/token"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthsession"
 	uc_oauthstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthstate"
 	uc_profile "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/profile"
 	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/register"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodbcache"
 )
 
 type Manager interface {
 	// Database
-	GetLocalUserByID(ctx context.Context, id primitive.ObjectID) (*dom_user.User, error)
+	GetLocalFederatedIdentityByID(ctx context.Context, id primitive.ObjectID) (*dom_federatedidentity.FederatedIdentity, error)
 
 	// Service
 	Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error)
@@ -70,7 +70,7 @@ type managerImpl struct {
 	logger *slog.Logger
 
 	// Use-Case
-	userGetByIDUseCase uc_user.UserGetByIDUseCase
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase
 
 	// Service
 	registration                svc_registration.RegistrationService
@@ -100,7 +100,7 @@ type managerImpl struct {
 // NewManager creates a new OAuth manager that orchestrates all OAuth operations
 func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Logger, mongoCache mongodbcache.Cacher, mongoClient *mongo.Client) (Manager, error) {
 	// Initialize repositories
-	userRepo := r_user.NewRepository(cfg, logger, mongoClient)
+	federatedidentityRepo := r_federatedidentity.NewRepository(cfg, logger, mongoClient)
 	tokenRepo := r_token.NewRepository(cfg, logger, mongoClient)
 	oauthRepo := r_oauth.NewRepository(cfg, logger)
 	registrationRepo := r_registration.NewRepository(cfg, logger)
@@ -108,44 +108,44 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 	oauthstateRepo := r_oauthstate.NewRepository(cfg, logger, mongoClient)
 	profileRepo := r_profile.NewRepository(cfg, logger)
 
-	// --- User ---
-	userGetBySessionIDUseCase := uc_user.NewUserGetBySessionIDUseCase(
+	// --- FederatedIdentity ---
+	federatedidentityGetBySessionIDUseCase := uc_federatedidentity.NewFederatedIdentityGetBySessionIDUseCase(
 		cfg,
 		logger,
 		mongoCache,
 	)
-	_ = userGetBySessionIDUseCase
-	userGetByEmailUseCase := uc_user.NewUserGetByEmailUseCase(
+	_ = federatedidentityGetBySessionIDUseCase
+	federatedidentityGetByEmailUseCase := uc_federatedidentity.NewFederatedIdentityGetByEmailUseCase(
 		cfg,
 		logger,
-		userRepo,
+		federatedidentityRepo,
 	)
-	userGetByIDUseCase := uc_user.NewUserGetByIDUseCase(
+	federatedidentityGetByIDUseCase := uc_federatedidentity.NewFederatedIdentityGetByIDUseCase(
 		cfg,
 		logger,
-		userRepo,
+		federatedidentityRepo,
 	)
-	userCreateUseCase := uc_user.NewUserCreateUseCase(
+	federatedidentityCreateUseCase := uc_federatedidentity.NewFederatedIdentityCreateUseCase(
 		cfg,
 		logger,
-		userRepo,
+		federatedidentityRepo,
 	)
-	userUpdateUseCase := uc_user.NewUserUpdateUseCase(
+	federatedidentityUpdateUseCase := uc_federatedidentity.NewFederatedIdentityUpdateUseCase(
 		cfg,
 		logger,
-		userRepo,
+		federatedidentityRepo,
 	)
-	_ = userUpdateUseCase     //TODO: Utilize
-	_ = userCreateUseCase     //TODO: Utilize
-	_ = userGetByEmailUseCase //TODO: Utilize
+	_ = federatedidentityUpdateUseCase     //TODO: Utilize
+	_ = federatedidentityCreateUseCase     //TODO: Utilize
+	_ = federatedidentityGetByEmailUseCase //TODO: Utilize
 
 	// --- Token ---
-	tokenUpsertByUserIDUseCase := uc_token.NewTokenUpsertByUserIDUseCase(
+	tokenUpsertByFederatedIdentityIDUseCase := uc_token.NewTokenUpsertByFederatedIdentityIDUseCase(
 		cfg,
 		logger,
 		tokenRepo,
 	)
-	tokenGetByUserIDUseCase := uc_token.NewTokenGetByUserIDUseCase(
+	tokenGetByFederatedIdentityIDUseCase := uc_token.NewTokenGetByFederatedIdentityIDUseCase(
 		cfg,
 		logger,
 		tokenRepo,
@@ -155,9 +155,9 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		logger,
 		tokenRepo,
 	)
-	_ = tokenDeleteExpiredUseCase  //TODO: Utilize
-	_ = tokenUpsertByUserIDUseCase //TODO: Utilize
-	_ = tokenGetByUserIDUseCase    //TODO: Utilize
+	_ = tokenDeleteExpiredUseCase               //TODO: Utilize
+	_ = tokenUpsertByFederatedIdentityIDUseCase //TODO: Utilize
+	_ = tokenGetByFederatedIdentityIDUseCase    //TODO: Utilize
 
 	// --- oAuth 2.0 ---
 	getAuthorizationURLUseCase := uc_oauth.NewGetAuthorizationURLUseCase(
@@ -218,7 +218,7 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		logger,
 		oauthsessionRepo,
 	)
-	getOAuthSessionByUserIDUseCase := uc_oauthsession.NewGetOAuthSessionByUserIDUseCase(
+	getOAuthSessionByFederatedIdentityIDUseCase := uc_oauthsession.NewGetOAuthSessionByFederatedIdentityIDUseCase(
 		cfg,
 		logger,
 		oauthsessionRepo,
@@ -234,11 +234,11 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		oauthsessionRepo,
 	)
 
-	_ = createOAuthSessionUseCase         //TODO: Utilize
-	_ = deleteExpiredOAuthSessionsUseCase //TODO: Utilize
-	_ = deleteOAuthSessionUseCase         //TODO: Utilize
-	_ = getOAuthSessionByUserIDUseCase    //TODO: Utilize
-	_ = updateOAuthSessionUseCase         //TODO: Utilize
+	_ = createOAuthSessionUseCase                   //TODO: Utilize
+	_ = deleteExpiredOAuthSessionsUseCase           //TODO: Utilize
+	_ = deleteOAuthSessionUseCase                   //TODO: Utilize
+	_ = getOAuthSessionByFederatedIdentityIDUseCase //TODO: Utilize
+	_ = updateOAuthSessionUseCase                   //TODO: Utilize
 
 	// --- oAuth state ---
 
@@ -292,9 +292,9 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		logger,
 		registerUseCase,
 		exchangeCodeUseCase,
-		userCreateUseCase,
-		userGetByEmailUseCase,
-		tokenUpsertByUserIDUseCase,
+		federatedidentityCreateUseCase,
+		federatedidentityGetByEmailUseCase,
+		tokenUpsertByFederatedIdentityIDUseCase,
 	)
 	_ = registration
 
@@ -303,8 +303,8 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		logger,
 		getAuthorizationURLUseCase,
 		exchangeCodeUseCase,
-		userGetByEmailUseCase,
-		tokenUpsertByUserIDUseCase,
+		federatedidentityGetByEmailUseCase,
+		tokenUpsertByFederatedIdentityIDUseCase,
 	)
 	_ = loginService
 
@@ -312,16 +312,16 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		cfg,
 		logger,
 		refreshTokenUseCase,
-		tokenGetByUserIDUseCase,
-		tokenUpsertByUserIDUseCase,
+		tokenGetByFederatedIdentityIDUseCase,
+		tokenUpsertByFederatedIdentityIDUseCase,
 	)
 	_ = refreshTokenService
 	introspectionService := svc_introspection.NewIntrospectionService(
 		cfg,
 		logger,
 		introspectTokenUseCase,
-		tokenGetByUserIDUseCase,
-		userGetByIDUseCase,
+		tokenGetByFederatedIdentityIDUseCase,
+		federatedidentityGetByIDUseCase,
 	)
 	_ = introspectionService
 
@@ -341,8 +341,8 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		getOAuthStateUseCase,
 		deleteOAuthStateUseCase,
 		createOAuthSessionUseCase,
-		userCreateUseCase,
-		userGetByEmailUseCase,
+		federatedidentityCreateUseCase,
+		federatedidentityGetByEmailUseCase,
 	)
 
 	oauthStateManagementService := svc_oauth.NewStateManagementService(
@@ -357,7 +357,7 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		cfg,
 		logger,
 		getOAuthSessionUseCase,
-		userGetByIDUseCase,
+		federatedidentityGetByIDUseCase,
 		introspectTokenUseCase,
 	)
 
@@ -366,9 +366,9 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		logger,
 		exchangeCodeUseCase,
 		introspectTokenUseCase,
-		userCreateUseCase,
-		userGetByEmailUseCase,
-		tokenUpsertByUserIDUseCase,
+		federatedidentityCreateUseCase,
+		federatedidentityGetByEmailUseCase,
+		tokenUpsertByFederatedIdentityIDUseCase,
 	)
 
 	getRegistrationURLService := svc_oauth.NewGetRegistrationURLService(
@@ -454,7 +454,7 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 	return &managerImpl{
 		config:                                  cfg,
 		logger:                                  logger,
-		userGetByIDUseCase:                      userGetByIDUseCase,
+		federatedidentityGetByIDUseCase:         federatedidentityGetByIDUseCase,
 		registration:                            registration,
 		loginService:                            loginService,
 		refreshTokenService:                     refreshTokenService,
@@ -478,8 +478,8 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 	}, nil
 }
 
-func (m *managerImpl) GetLocalUserByID(ctx context.Context, id primitive.ObjectID) (*dom_user.User, error) {
-	return m.userGetByIDUseCase.Execute(ctx, id)
+func (m *managerImpl) GetLocalFederatedIdentityByID(ctx context.Context, id primitive.ObjectID) (*dom_federatedidentity.FederatedIdentity, error) {
+	return m.federatedidentityGetByIDUseCase.Execute(ctx, id)
 }
 
 func (m *managerImpl) Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error) {

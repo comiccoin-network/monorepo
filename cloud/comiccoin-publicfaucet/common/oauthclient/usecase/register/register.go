@@ -117,12 +117,12 @@ func (uc *registerUseCaseImpl) Execute(ctx context.Context, req *dom_registratio
 	}
 
 	//
-	// STEP 2: Register user.
+	// STEP 2: Register federatedidentity.
 	//
 
 	response, err := uc.client.Register(ctx, req)
 	if err != nil {
-		uc.logger.Error("failed to register user",
+		uc.logger.Error("failed to register federatedidentity",
 			slog.String("email", req.Email),
 			slog.Any("error", err))
 		return nil, err
@@ -130,15 +130,15 @@ func (uc *registerUseCaseImpl) Execute(ctx context.Context, req *dom_registratio
 
 	if response == nil {
 		err := errors.New("empty response from gateway")
-		uc.logger.Error("failed to register user",
+		uc.logger.Error("failed to register federatedidentity",
 			slog.String("email", req.Email),
 			slog.Any("error", err))
 		return nil, err
 	}
 
-	uc.logger.Info("user registered successfully",
+	uc.logger.Info("federatedidentity registered successfully",
 		slog.String("email", req.Email),
-		slog.Any("user_id", response.UserID))
+		slog.Any("federatedidentity_id", response.FederatedIdentityID))
 
 	return response, nil
 }

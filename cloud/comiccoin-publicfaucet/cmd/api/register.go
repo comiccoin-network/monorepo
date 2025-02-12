@@ -23,21 +23,21 @@ func RegisterCmd() *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "register",
-		Short: "Register a new user",
-		Long:  `Register a new user in the system with OAuth 2.0 client registration`,
+		Short: "Register a new federatedidentity",
+		Long:  `Register a new federatedidentity in the system with OAuth 2.0 client registration`,
 		Run: func(cmd *cobra.Command, args []string) {
 			doRunRegisterCmd(email, firstName, lastName, phone, country, timezone, password, agreeTOS)
 		},
 	}
 
 	// Required flags
-	cmd.Flags().StringVarP(&email, "email", "e", "", "User's email address")
-	cmd.Flags().StringVarP(&firstName, "first-name", "f", "", "User's first name")
-	cmd.Flags().StringVarP(&lastName, "last-name", "l", "", "User's last name")
-	cmd.Flags().StringVarP(&phone, "phone", "p", "", "User's phone number")
-	cmd.Flags().StringVarP(&country, "country", "c", "", "User's country (2-letter code)")
-	cmd.Flags().StringVarP(&timezone, "timezone", "t", "", "User's timezone")
-	cmd.Flags().StringVarP(&password, "password", "w", "", "User's password (min 8 characters)")
+	cmd.Flags().StringVarP(&email, "email", "e", "", "FederatedIdentity's email address")
+	cmd.Flags().StringVarP(&firstName, "first-name", "f", "", "FederatedIdentity's first name")
+	cmd.Flags().StringVarP(&lastName, "last-name", "l", "", "FederatedIdentity's last name")
+	cmd.Flags().StringVarP(&phone, "phone", "p", "", "FederatedIdentity's phone number")
+	cmd.Flags().StringVarP(&country, "country", "c", "", "FederatedIdentity's country (2-letter code)")
+	cmd.Flags().StringVarP(&timezone, "timezone", "t", "", "FederatedIdentity's timezone")
+	cmd.Flags().StringVarP(&password, "password", "w", "", "FederatedIdentity's password (min 8 characters)")
 	cmd.Flags().BoolVarP(&agreeTOS, "agree-tos", "a", false, "Agree to Terms of Service")
 
 	// Mark required flags
@@ -99,19 +99,19 @@ func doRunRegisterCmd(email, firstName, lastName, phone, country, timezone, pass
 	// Process registration
 	resp, err := registerUseCase.Execute(ctx, req)
 	if err != nil {
-		logger.Error("failed to register user",
+		logger.Error("failed to register federatedidentity",
 			slog.String("email", email),
 			slog.Any("error", err))
 		log.Fatal(err)
 	}
 
-	logger.Info("user registered successfully",
+	logger.Info("federatedidentity registered successfully",
 		slog.String("email", email),
 		slog.String("auth_code", resp.AuthCode),
 		slog.String("redirect_uri", resp.RedirectURI))
 
 	// Print success message with registration details
-	fmt.Printf("\nUser Registration Successful\n")
+	fmt.Printf("\nFederatedIdentity Registration Successful\n")
 	fmt.Printf("Email: %s\n", email)
 	fmt.Printf("Name: %s %s\n", firstName, lastName)
 	fmt.Printf("Auth Code: %s\n", resp.AuthCode)

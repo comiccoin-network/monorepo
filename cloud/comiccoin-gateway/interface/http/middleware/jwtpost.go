@@ -12,7 +12,7 @@ func (mid *middleware) PostJWTProcessorMiddleware(fn http.HandlerFunc) http.Hand
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		// Skip this middleware if user is on a whitelisted URL path.
+		// Skip this middleware if federatedidentity is on a whitelisted URL path.
 		skipAuthorization, ok := ctx.Value(constants.SessionSkipAuthorization).(bool)
 		if ok && skipAuthorization {
 			// mid.logger.Warn("Skipping authorization")
@@ -25,54 +25,54 @@ func (mid *middleware) PostJWTProcessorMiddleware(fn http.HandlerFunc) http.Hand
 		if ok && isAuthorized {
 			sessionID := ctx.Value(constants.SessionID).(string)
 
-			// Lookup our user profile in the session or return 500 error.
-			user, err := mid.userGetBySessionIDUseCase.Execute(ctx, sessionID)
+			// Lookup our federatedidentity profile in the session or return 500 error.
+			federatedidentity, err := mid.federatedidentityGetBySessionIDUseCase.Execute(ctx, sessionID)
 			if err != nil {
-				mid.logger.Warn("GetUserBySessionID error", slog.Any("err", err), slog.Any("middleware", "PostJWTProcessorMiddleware"))
+				mid.logger.Warn("GetFederatedIdentityBySessionID error", slog.Any("err", err), slog.Any("middleware", "PostJWTProcessorMiddleware"))
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			// If no user was found then that means our session expired and the
-			// user needs to login or use the refresh token.
-			if user == nil {
+			// If no federatedidentity was found then that means our session expired and the
+			// federatedidentity needs to login or use the refresh token.
+			if federatedidentity == nil {
 				mid.logger.Warn("Session expired - please log in again", slog.Any("middleware", "PostJWTProcessorMiddleware"))
 				http.Error(w, "attempting to access a protected endpoint", http.StatusUnauthorized)
 				return
 			}
 
-			// // If system administrator disabled the user account then we need
-			// // to generate a 403 error letting the user know their account has
+			// // If system administrator disabled the federatedidentity account then we need
+			// // to generate a 403 error letting the federatedidentity know their account has
 			// // been disabled and you cannot access the protected API endpoint.
-			// if user.State == 0 {
+			// if federatedidentity.State == 0 {
 			// 	http.Error(w, "Account disabled - please contact admin", http.StatusForbidden)
 			// 	return
 			// }
 
-			// Save our user information to the context.
-			// Save our user.
-			ctx = context.WithValue(ctx, constants.SessionUser, user)
+			// Save our federatedidentity information to the context.
+			// Save our federatedidentity.
+			ctx = context.WithValue(ctx, constants.SessionFederatedIdentity, federatedidentity)
 
 			// // For debugging purposes only.
 			// mid.logger.Debug("Fetched session record",
-			// 	slog.Any("ID", user.ID),
+			// 	slog.Any("ID", federatedidentity.ID),
 			// 	slog.String("SessionID", sessionID),
-			// 	slog.String("Name", user.Name),
-			// 	slog.String("FirstName", user.FirstName),
-			// 	slog.String("Email", user.Email))
+			// 	slog.String("Name", federatedidentity.Name),
+			// 	slog.String("FirstName", federatedidentity.FirstName),
+			// 	slog.String("Email", federatedidentity.Email))
 
-			// Save individual pieces of the user profile.
+			// Save individual pieces of the federatedidentity profile.
 			ctx = context.WithValue(ctx, constants.SessionID, sessionID)
-			ctx = context.WithValue(ctx, constants.SessionUserID, user.ID)
-			ctx = context.WithValue(ctx, constants.SessionUserRole, user.Role)
-			ctx = context.WithValue(ctx, constants.SessionUserName, user.Name)
-			ctx = context.WithValue(ctx, constants.SessionUserFirstName, user.FirstName)
-			ctx = context.WithValue(ctx, constants.SessionUserLastName, user.LastName)
-			ctx = context.WithValue(ctx, constants.SessionUserTimezone, user.Timezone)
-			// ctx = context.WithValue(ctx, constants.SessionUserStoreID, user.StoreID)
-			// ctx = context.WithValue(ctx, constants.SessionUserStoreName, user.StoreName)
-			// ctx = context.WithValue(ctx, constants.SessionUserStoreLevel, user.StoreLevel)
-			// ctx = context.WithValue(ctx, constants.SessionUserStoreTimezone, user.StoreTimezone)
+			ctx = context.WithValue(ctx, constants.SessionFederatedIdentityID, federatedidentity.ID)
+			ctx = context.WithValue(ctx, constants.SessionFederatedIdentityRole, federatedidentity.Role)
+			ctx = context.WithValue(ctx, constants.SessionFederatedIdentityName, federatedidentity.Name)
+			ctx = context.WithValue(ctx, constants.SessionFederatedIdentityFirstName, federatedidentity.FirstName)
+			ctx = context.WithValue(ctx, constants.SessionFederatedIdentityLastName, federatedidentity.LastName)
+			ctx = context.WithValue(ctx, constants.SessionFederatedIdentityTimezone, federatedidentity.Timezone)
+			// ctx = context.WithValue(ctx, constants.SessionFederatedIdentityStoreID, federatedidentity.StoreID)
+			// ctx = context.WithValue(ctx, constants.SessionFederatedIdentityStoreName, federatedidentity.StoreName)
+			// ctx = context.WithValue(ctx, constants.SessionFederatedIdentityStoreLevel, federatedidentity.StoreLevel)
+			// ctx = context.WithValue(ctx, constants.SessionFederatedIdentityStoreTimezone, federatedidentity.StoreTimezone)
 		}
 
 		fn(w, r.WithContext(ctx))

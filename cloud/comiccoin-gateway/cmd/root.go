@@ -11,7 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/clientdemo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/daemon"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/initialize"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/user"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/federatedidentity"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/version"
 )
 
@@ -36,7 +36,7 @@ func Execute() {
 	rootCmd.AddCommand(initialize.InitCmd())
 	rootCmd.AddCommand(clientdemo.ClientDemoCmd())
 	rootCmd.AddCommand(application.ApplicationCmd())
-	rootCmd.AddCommand(user.UserCmd())
+	rootCmd.AddCommand(federatedidentity.FederatedIdentityCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

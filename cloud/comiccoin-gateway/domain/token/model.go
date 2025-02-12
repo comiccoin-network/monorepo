@@ -12,7 +12,7 @@ type Token struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty"`
 	TokenID    string             `bson:"token_id"`     // The hashed token value
 	TokenType  string             `bson:"token_type"`   // "access" or "refresh"
-	UserID     string             `bson:"user_id"`      // Associated user
+	FederatedIdentityID     string             `bson:"federatedidentity_id"`      // Associated federatedidentity
 	AppID      string             `bson:"app_id"`       // Associated application
 	Scope      string             `bson:"scope"`        // Granted permissions
 	ExpiresAt  time.Time          `bson:"expires_at"`   // When token expires

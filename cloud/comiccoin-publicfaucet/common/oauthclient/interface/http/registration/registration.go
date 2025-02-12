@@ -46,7 +46,7 @@ type registrationRequestIDO struct {
 }
 
 type registrationResponseIDO struct {
-	UserID      primitive.ObjectID `json:"user_id,omitempty"` // Important: We want the same ID distributed across all our web-services!
+	FederatedIdentityID      primitive.ObjectID `json:"federatedidentity_id,omitempty"` // Important: We want the same ID distributed across all our web-services!
 	AuthCode    string             `json:"auth_code,omitempty"`
 	RedirectURI string             `json:"redirect_uri,omitempty"`
 }
@@ -101,7 +101,7 @@ func (h *PostRegistrationHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 
 	// Convert domain model to IDO
 	responseIDO := registrationResponseIDO{
-		UserID:      response.UserID,
+		FederatedIdentityID:      response.FederatedIdentityID,
 		AuthCode:    response.AuthCode,
 		RedirectURI: response.RedirectURI,
 	}
@@ -116,5 +116,5 @@ func (h *PostRegistrationHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 
 	h.logger.Info("registration request processed successfully",
 		slog.String("email", request.Email),
-		slog.Any("user_id", response.UserID))
+		slog.Any("federatedidentity_id", response.FederatedIdentityID))
 }

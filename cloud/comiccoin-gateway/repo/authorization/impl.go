@@ -39,7 +39,7 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 		{
 			Keys: bson.D{
 				{Key: "app_id", Value: 1},
-				{Key: "user_id", Value: 1},
+				{Key: "federatedidentity_id", Value: 1},
 			},
 		},
 		// TTL index to automatically remove expired codes

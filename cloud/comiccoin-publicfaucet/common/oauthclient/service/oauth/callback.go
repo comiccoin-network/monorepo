@@ -12,11 +12,11 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	dom_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/oauthsession"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/federatedidentity"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthsession"
 	uc_oauthstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthstate"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 )
 
 type CallbackRequest struct {
@@ -44,8 +44,8 @@ type callbackServiceImpl struct {
 	getStateUseCase        uc_oauthstate.GetOAuthStateUseCase
 	deleteStateUseCase     uc_oauthstate.DeleteOAuthStateUseCase
 	createSessionUseCase   uc_oauthsession.CreateOAuthSessionUseCase
-	userCreateUseCase      uc_user.UserCreateUseCase
-	userGetByEmailUseCase  uc_user.UserGetByEmailUseCase
+	federatedidentityCreateUseCase      uc_federatedidentity.FederatedIdentityCreateUseCase
+	federatedidentityGetByEmailUseCase  uc_federatedidentity.FederatedIdentityGetByEmailUseCase
 }
 
 func NewCallbackService(
@@ -56,8 +56,8 @@ func NewCallbackService(
 	getStateUseCase uc_oauthstate.GetOAuthStateUseCase,
 	deleteStateUseCase uc_oauthstate.DeleteOAuthStateUseCase,
 	createSessionUseCase uc_oauthsession.CreateOAuthSessionUseCase,
-	userCreateUseCase uc_user.UserCreateUseCase,
-	userGetByEmailUseCase uc_user.UserGetByEmailUseCase,
+	federatedidentityCreateUseCase uc_federatedidentity.FederatedIdentityCreateUseCase,
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase,
 ) CallbackService {
 	return &callbackServiceImpl{
 		config:                 config,
@@ -67,8 +67,8 @@ func NewCallbackService(
 		getStateUseCase:        getStateUseCase,
 		deleteStateUseCase:     deleteStateUseCase,
 		createSessionUseCase:   createSessionUseCase,
-		userCreateUseCase:      userCreateUseCase,
-		userGetByEmailUseCase:  userGetByEmailUseCase,
+		federatedidentityCreateUseCase:      federatedidentityCreateUseCase,
+		federatedidentityGetByEmailUseCase:  federatedidentityGetByEmailUseCase,
 	}
 }
 
@@ -103,67 +103,67 @@ func (s *callbackServiceImpl) Execute(ctx context.Context, req *CallbackRequest)
 		return nil, fmt.Errorf("exchanging code: %w", err)
 	}
 
-	// Get user info from token introspection
-	userInfo, err := s.introspectTokenUseCase.Execute(ctx, tokenResp.AccessToken)
+	// Get federatedidentity info from token introspection
+	federatedidentityInfo, err := s.introspectTokenUseCase.Execute(ctx, tokenResp.AccessToken)
 	if err != nil {
 		s.logger.Error("failed introspect token",
 			slog.Any("error", err))
 		return nil, fmt.Errorf("inspecting token error: %w", err)
 	}
-	if userInfo == nil {
+	if federatedidentityInfo == nil {
 		s.logger.Error("failed introspect token: returned nothing")
 		return nil, errors.New("failed introspect token: returned nothing")
 	}
 
-	// Check if user exists in our system
-	existingUser, err := s.userGetByEmailUseCase.Execute(ctx, userInfo.Email)
+	// Check if federatedidentity exists in our system
+	existingFederatedIdentity, err := s.federatedidentityGetByEmailUseCase.Execute(ctx, federatedidentityInfo.Email)
 	if err != nil {
-		s.logger.Error("failed getting user by email",
+		s.logger.Error("failed getting federatedidentity by email",
 			slog.Any("error", err))
-		return nil, fmt.Errorf("checking user: %w", err)
+		return nil, fmt.Errorf("checking federatedidentity: %w", err)
 	}
 
-	var userID primitive.ObjectID
-	if existingUser == nil {
-		userID, err = primitive.ObjectIDFromHex(userInfo.UserID)
+	var federatedidentityID primitive.ObjectID
+	if existingFederatedIdentity == nil {
+		federatedidentityID, err = primitive.ObjectIDFromHex(federatedidentityInfo.FederatedIdentityID)
 		if err != nil {
 			s.logger.Error("failed converting to primitive object ID",
-				slog.Any("userInfo.UserID", userInfo.UserID),
+				slog.Any("federatedidentityInfo.FederatedIdentityID", federatedidentityInfo.FederatedIdentityID),
 				slog.Any("error", err))
-			return nil, fmt.Errorf("converting user ID: %w", err)
+			return nil, fmt.Errorf("converting federatedidentity ID: %w", err)
 		}
 
-		s.logger.Debug("received new user id from gateway",
-			slog.Any("userID", userID))
+		s.logger.Debug("received new federatedidentity id from gateway",
+			slog.Any("federatedidentityID", federatedidentityID))
 
-		// Create new user if they don't exist
-		user := &dom_user.User{
-			ID:          userID,
-			Email:       userInfo.Email,
-			FirstName:   userInfo.FirstName,
-			LastName:    userInfo.LastName,
-			Name:        fmt.Sprintf("%s %s", userInfo.FirstName, userInfo.LastName),
-			LexicalName: fmt.Sprintf("%s, %s", userInfo.LastName, userInfo.FirstName),
-			Status:      dom_user.UserStatusActive,
+		// Create new federatedidentity if they don't exist
+		federatedidentity := &dom_federatedidentity.FederatedIdentity{
+			ID:          federatedidentityID,
+			Email:       federatedidentityInfo.Email,
+			FirstName:   federatedidentityInfo.FirstName,
+			LastName:    federatedidentityInfo.LastName,
+			Name:        fmt.Sprintf("%s %s", federatedidentityInfo.FirstName, federatedidentityInfo.LastName),
+			LexicalName: fmt.Sprintf("%s, %s", federatedidentityInfo.LastName, federatedidentityInfo.FirstName),
+			Status:      dom_federatedidentity.FederatedIdentityStatusActive,
 			CreatedAt:   time.Now(),
 			ModifiedAt:  time.Now(),
 		}
 
-		if err := s.userCreateUseCase.Execute(ctx, user); err != nil {
-			s.logger.Error("failed created user",
+		if err := s.federatedidentityCreateUseCase.Execute(ctx, federatedidentity); err != nil {
+			s.logger.Error("failed created federatedidentity",
 				slog.Any("error", err))
-			return nil, fmt.Errorf("creating user: %w", err)
+			return nil, fmt.Errorf("creating federatedidentity: %w", err)
 		}
-		s.logger.Debug("successfully stored new user")
+		s.logger.Debug("successfully stored new federatedidentity")
 	} else {
-		userID = existingUser.ID
+		federatedidentityID = existingFederatedIdentity.ID
 	}
 
-	// Create session with the correct user ID
+	// Create session with the correct federatedidentity ID
 	session := &dom_oauthsession.OAuthSession{
 		ID:          primitive.NewObjectID(),
 		SessionID:   primitive.NewObjectID().Hex(),
-		UserID:      userID,
+		FederatedIdentityID:      federatedidentityID,
 		AccessToken: tokenResp.AccessToken,
 		CreatedAt:   time.Now(),
 		ExpiresAt:   tokenResp.ExpiresAt,

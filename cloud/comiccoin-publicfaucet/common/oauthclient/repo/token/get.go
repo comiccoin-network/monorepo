@@ -12,8 +12,8 @@ import (
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/token"
 )
 
-func (impl tokenStorerImpl) GetByUserID(ctx context.Context, userID primitive.ObjectID) (*dom_token.Token, error) {
-	filter := bson.M{"user_id": userID}
+func (impl tokenStorerImpl) GetByFederatedIdentityID(ctx context.Context, federatedidentityID primitive.ObjectID) (*dom_token.Token, error) {
+	filter := bson.M{"federatedidentity_id": federatedidentityID}
 
 	var result dom_token.Token
 	err := impl.Collection.FindOne(ctx, filter).Decode(&result)
@@ -22,7 +22,7 @@ func (impl tokenStorerImpl) GetByUserID(ctx context.Context, userID primitive.Ob
 			return nil, nil
 		}
 		impl.Logger.Error("failed to find token",
-			slog.Any("user_id", userID),
+			slog.Any("federatedidentity_id", federatedidentityID),
 			slog.Any("error", err))
 		return nil, err
 	}

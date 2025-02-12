@@ -55,7 +55,7 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		// First, introspect token with OAuth server to get basic info
 		introspectResp, err := m.introspectionService.IntrospectToken(r.Context(), &introspection.IntrospectionRequest{
 			Token: token,
-			// Don't require UserID for initial introspection
+			// Don't require FederatedIdentityID for initial introspection
 		})
 		if err != nil {
 			m.logger.Error("failed to introspect token",
@@ -70,16 +70,16 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// Add user ID to context
-		if !introspectResp.UserID.IsZero() {
-			ctx := context.WithValue(r.Context(), "user_id", introspectResp.UserID)
-			m.logger.Debug("attached authenticated user to the context",
-				slog.Any("user_id", introspectResp.UserID),
+		// Add federatedidentity ID to context
+		if !introspectResp.FederatedIdentityID.IsZero() {
+			ctx := context.WithValue(r.Context(), "federatedidentity_id", introspectResp.FederatedIdentityID)
+			m.logger.Debug("attached authenticated federatedidentity to the context",
+				slog.Any("federatedidentity_id", introspectResp.FederatedIdentityID),
 				slog.Any("token_id", token))
 			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
-			m.logger.Warn("no user associated with token")
-			httperror.ResponseError(w, httperror.NewForUnauthorizedWithSingleField("message", "no user associated with token"))
+			m.logger.Warn("no federatedidentity associated with token")
+			httperror.ResponseError(w, httperror.NewForUnauthorizedWithSingleField("message", "no federatedidentity associated with token"))
 		}
 	}
 }

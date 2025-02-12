@@ -1,4 +1,4 @@
-// Special thanks: https://raw.githubusercontent.com/ardanlabs/blockchain/refs/heads/main/foundation/blockchain/signature/signature.go
+// Special thanks: https://raw.githubfederatedidentitycontent.com/ardanlabs/blockchain/refs/heads/main/foundation/blockchain/signature/signature.go
 package signature
 
 import (

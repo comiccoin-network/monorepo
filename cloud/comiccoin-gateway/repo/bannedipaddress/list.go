@@ -14,7 +14,7 @@ import (
 
 // hasActiveFilters checks if any filters besides tenant_id are active
 func (impl bannedIPAddressImpl) hasActiveFilters(filter *dom_banip.BannedIPAddressFilter) bool {
-	return !filter.UserID.IsZero() ||
+	return !filter.FederatedIdentityID.IsZero() ||
 		filter.CreatedAtStart != nil ||
 		filter.CreatedAtEnd != nil
 }
@@ -23,8 +23,8 @@ func (impl bannedIPAddressImpl) hasActiveFilters(filter *dom_banip.BannedIPAddre
 func (impl bannedIPAddressImpl) buildCountMatchStage(filter *dom_banip.BannedIPAddressFilter) bson.M {
 	match := bson.M{}
 
-	if !filter.UserID.IsZero() {
-		match["user_id"] = filter.UserID
+	if !filter.FederatedIdentityID.IsZero() {
+		match["federatedidentity_id"] = filter.FederatedIdentityID
 	}
 
 	// Date range filtering
@@ -107,8 +107,8 @@ func (impl bannedIPAddressImpl) buildMatchStage(filter *dom_banip.BannedIPAddres
 
 	// Add other filters
 
-	if !filter.UserID.IsZero() {
-		match["user_id"] = filter.UserID
+	if !filter.FederatedIdentityID.IsZero() {
+		match["federatedidentity_id"] = filter.FederatedIdentityID
 	}
 
 	if filter.CreatedAtStart != nil || filter.CreatedAtEnd != nil {

@@ -24,7 +24,7 @@ func (impl tokenStorerImpl) StoreToken(ctx context.Context, token *dom_token.Tok
 	if err != nil {
 		impl.Logger.Error("failed to store token",
 			slog.String("token_type", token.TokenType),
-			slog.String("user_id", token.UserID),
+			slog.String("federatedidentity_id", token.FederatedIdentityID),
 			slog.String("app_id", token.AppID),
 			slog.Any("error", err))
 		return err
@@ -33,7 +33,7 @@ func (impl tokenStorerImpl) StoreToken(ctx context.Context, token *dom_token.Tok
 	impl.Logger.Info("stored new token",
 		slog.Any("_id", result.InsertedID),
 		slog.String("token_type", token.TokenType),
-		slog.String("user_id", token.UserID),
+		slog.String("federatedidentity_id", token.FederatedIdentityID),
 		slog.String("app_id", token.AppID))
 	return nil
 }

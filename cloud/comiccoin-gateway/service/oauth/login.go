@@ -11,7 +11,7 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	uc_auth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/authorization"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 )
 
 // LoginResultDTO represents the response after successful login
@@ -23,7 +23,7 @@ type LoginResultDTO struct {
 
 // LoginService defines the interface for handling OAuth login operations
 type LoginService interface {
-	ProcessLogin(ctx context.Context, username, password, authID string) (*LoginResultDTO, error)
+	ProcessLogin(ctx context.Context, federatedidentityname, password, authID string) (*LoginResultDTO, error)
 }
 
 type loginServiceImpl struct {
@@ -31,13 +31,13 @@ type loginServiceImpl struct {
 	logger           *slog.Logger
 	passwordProvider password.Provider
 
-	userGetByEmailUseCase         uc_user.UserGetByEmailUseCase
+	federatedidentityGetByEmailUseCase         uc_federatedidentity.FederatedIdentityGetByEmailUseCase
 	authFindByCodeUseCase         uc_auth.AuthorizationFindByCodeUseCase
 	authStoreCodeUseCase          uc_auth.AuthorizationStoreCodeUseCase
 	authDeleteExpiredCodesUseCase uc_auth.AuthorizationDeleteExpiredCodesUseCase
 }
 
-func (s *loginServiceImpl) ProcessLogin(ctx context.Context, username, password, authID string) (*LoginResultDTO, error) {
+func (s *loginServiceImpl) ProcessLogin(ctx context.Context, federatedidentityname, password, authID string) (*LoginResultDTO, error) {
 	// Input sanitization code remains the same...
 
 	// Look up the pending authorization first, since we need its information
@@ -50,8 +50,8 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, username, password,
 
 	// Validate inputs
 	e := make(map[string]string)
-	if username == "" {
-		e["username"] = "Email address is required"
+	if federatedidentityname == "" {
+		e["federatedidentityname"] = "Email address is required"
 	}
 	if password == "" {
 		e["password"] = "Password is required"
@@ -62,16 +62,16 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, username, password,
 		return nil, httperror.NewForBadRequest(&e)
 	}
 
-	// Look up the user
-	user, err := s.userGetByEmailUseCase.Execute(ctx, username)
+	// Look up the federatedidentity
+	federatedidentity, err := s.federatedidentityGetByEmailUseCase.Execute(ctx, federatedidentityname)
 	if err != nil {
 		s.logger.Error("database error during login",
 			slog.Any("error", err))
 		return nil, err
 	}
-	if user == nil {
-		s.logger.Warn("user does not exist")
-		return nil, httperror.NewForBadRequestWithSingleField("username", "Email address does not exist")
+	if federatedidentity == nil {
+		s.logger.Warn("federatedidentity does not exist")
+		return nil, httperror.NewForBadRequestWithSingleField("federatedidentityname", "Email address does not exist")
 	}
 
 	// Create secure string for password comparison
@@ -83,7 +83,7 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, username, password,
 	}
 
 	// Verify password using the password provider
-	passwordMatch, _ := s.passwordProvider.ComparePasswordAndHash(securePassword, user.PasswordHash)
+	passwordMatch, _ := s.passwordProvider.ComparePasswordAndHash(securePassword, federatedidentity.PasswordHash)
 	if !passwordMatch {
 		s.logger.Warn("password verification failed")
 		return nil, httperror.NewForBadRequestWithSingleField("password", "Invalid password")
@@ -91,14 +91,14 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, username, password,
 
 	// DEVELOPERS NOTE: Turn this feature off for now.
 	// // Verify email was validated
-	// if !user.WasEmailVerified {
+	// if !federatedidentity.WasEmailVerified {
 	// 	s.logger.Warn("unverified email attempt",
-	// 		slog.String("email", username))
+	// 		slog.String("email", federatedidentityname))
 	// 	return nil, httperror.NewForBadRequestWithSingleField("email", "Email address not verified")
 	// }
 
-	// Update the authorization with the verified user ID
-	authCode.UserID = user.ID.Hex()
+	// Update the authorization with the verified federatedidentity ID
+	authCode.FederatedIdentityID = federatedidentity.ID.Hex()
 
 	// Store the updated authorization
 	if err := s.authStoreCodeUseCase.Execute(ctx, authCode); err != nil {
@@ -127,7 +127,7 @@ func NewLoginService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	pp password.Provider,
-	userGetByEmailUseCase uc_user.UserGetByEmailUseCase,
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase,
 	authFindByCodeUseCase uc_auth.AuthorizationFindByCodeUseCase,
 	authStoreCodeUseCase uc_auth.AuthorizationStoreCodeUseCase,
 	authDeleteExpiredCodesUseCase uc_auth.AuthorizationDeleteExpiredCodesUseCase,
@@ -136,7 +136,7 @@ func NewLoginService(
 		cfg:                           cfg,
 		logger:                        logger,
 		passwordProvider:              pp,
-		userGetByEmailUseCase:         userGetByEmailUseCase,
+		federatedidentityGetByEmailUseCase:         federatedidentityGetByEmailUseCase,
 		authFindByCodeUseCase:         authFindByCodeUseCase,
 		authStoreCodeUseCase:          authStoreCodeUseCase,
 		authDeleteExpiredCodesUseCase: authDeleteExpiredCodesUseCase,

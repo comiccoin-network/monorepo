@@ -9,37 +9,37 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/federatedidentity"
 )
 
 type PublicFaucetProfileGetService interface {
-	Execute(sessCtx mongo.SessionContext) (*domain.User, error)
+	Execute(sessCtx mongo.SessionContext) (*domain.FederatedIdentity, error)
 }
 
 type publicfaucetProfileGetServiceImpl struct {
 	logger             *slog.Logger
-	userGetByIDUseCase uc_user.UserGetByIDUseCase
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase
 }
 
 func NewPublicFaucetProfileGetService(
 	logger *slog.Logger,
-	uc1 uc_user.UserGetByIDUseCase,
+	uc1 uc_federatedidentity.FederatedIdentityGetByIDUseCase,
 ) PublicFaucetProfileGetService {
 	return &publicfaucetProfileGetServiceImpl{logger, uc1}
 }
 
-func (s *publicfaucetProfileGetServiceImpl) Execute(sessCtx mongo.SessionContext) (*domain.User, error) {
+func (s *publicfaucetProfileGetServiceImpl) Execute(sessCtx mongo.SessionContext) (*domain.FederatedIdentity, error) {
 	// Extract from our session the following data.
-	userID := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	federatedidentityID := sessCtx.Value(constants.SessionFederatedIdentityID).(primitive.ObjectID)
 
-	// Lookup the user in our database, else return a `400 Bad Request` error.
-	u, err := s.userGetByIDUseCase.Execute(sessCtx, userID)
+	// Lookup the federatedidentity in our database, else return a `400 Bad Request` error.
+	u, err := s.federatedidentityGetByIDUseCase.Execute(sessCtx, federatedidentityID)
 	if err != nil {
 		s.logger.Error("database error", slog.Any("err", err))
 		return nil, err
 	}
 	if u == nil {
-		s.logger.Warn("user does not exist validation error")
+		s.logger.Warn("federatedidentity does not exist validation error")
 		return nil, httperror.NewForBadRequestWithSingleField("id", "does not exist")
 	}
 	return u, nil

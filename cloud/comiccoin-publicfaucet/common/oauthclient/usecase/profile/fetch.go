@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/profile/fetch.go
-package user
+package federatedidentity
 
 import (
 	"context"

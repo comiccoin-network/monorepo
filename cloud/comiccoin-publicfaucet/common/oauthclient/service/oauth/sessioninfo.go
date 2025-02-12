@@ -10,8 +10,8 @@ import (
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthsession"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/federatedidentity"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 )
 
 type OAuthSessionInfoRequest struct {
@@ -20,7 +20,7 @@ type OAuthSessionInfoRequest struct {
 
 type OAuthSessionInfoResponse struct {
 	Valid       bool           `json:"valid"`
-	User        *dom_user.User `json:"user,omitempty"`
+	FederatedIdentity        *dom_federatedidentity.FederatedIdentity `json:"federatedidentity,omitempty"`
 	ExpiresAt   time.Time      `json:"expires_at,omitempty"`
 	LastUsedAt  time.Time      `json:"last_used_at,omitempty"`
 	RequiresOTP bool           `json:"requires_otp"`
@@ -34,7 +34,7 @@ type sessionInfoServiceImpl struct {
 	config                 *config.Configuration
 	logger                 *slog.Logger
 	getOAuthSessionUseCase uc_oauthsession.GetOAuthSessionUseCase
-	getUserByIDUseCase     uc_user.UserGetByIDUseCase
+	getFederatedIdentityByIDUseCase     uc_federatedidentity.FederatedIdentityGetByIDUseCase
 	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase
 }
 
@@ -42,14 +42,14 @@ func NewOAuthSessionInfoService(
 	config *config.Configuration,
 	logger *slog.Logger,
 	getOAuthSessionUseCase uc_oauthsession.GetOAuthSessionUseCase,
-	getUserByIDUseCase uc_user.UserGetByIDUseCase,
+	getFederatedIdentityByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase,
 	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase,
 ) OAuthSessionInfoService {
 	return &sessionInfoServiceImpl{
 		config:                 config,
 		logger:                 logger,
 		getOAuthSessionUseCase: getOAuthSessionUseCase,
-		getUserByIDUseCase:     getUserByIDUseCase,
+		getFederatedIdentityByIDUseCase:     getFederatedIdentityByIDUseCase,
 		introspectTokenUseCase: introspectTokenUseCase,
 	}
 }
@@ -96,20 +96,20 @@ func (s *sessionInfoServiceImpl) GetSessionInfo(ctx context.Context, req *OAuthS
 		}, nil
 	}
 
-	// Get user details
-	user, err := s.getUserByIDUseCase.Execute(ctx, session.UserID)
+	// Get federatedidentity details
+	federatedidentity, err := s.getFederatedIdentityByIDUseCase.Execute(ctx, session.FederatedIdentityID)
 	if err != nil {
-		s.logger.Error("failed to get user",
-			slog.Any("user_id", session.UserID),
+		s.logger.Error("failed to get federatedidentity",
+			slog.Any("federatedidentity_id", session.FederatedIdentityID),
 			slog.Any("error", err))
 		return nil, err
 	}
 
 	return &OAuthSessionInfoResponse{
 		Valid:       true,
-		User:        user,
+		FederatedIdentity:        federatedidentity,
 		ExpiresAt:   session.ExpiresAt,
 		LastUsedAt:  session.LastUsedAt,
-		RequiresOTP: user.OTPEnabled && !user.OTPValidated,
+		RequiresOTP: federatedidentity.OTPEnabled && !federatedidentity.OTPValidated,
 	}, nil
 }

@@ -159,7 +159,7 @@ func (s *tokenServiceImpl) ExchangeToken(ctx context.Context, req *TokenRequestD
 	accessToken := &dom_token.Token{
 		TokenID:    accessTokenID,
 		TokenType:  "access",
-		UserID:     authCode.UserID,
+		FederatedIdentityID:     authCode.FederatedIdentityID,
 		AppID:      authCode.AppID,
 		Scope:      authCode.Scope,
 		ExpiresAt:  time.Now().Add(time.Hour),
@@ -171,7 +171,7 @@ func (s *tokenServiceImpl) ExchangeToken(ctx context.Context, req *TokenRequestD
 	refreshToken := &dom_token.Token{
 		TokenID:    refreshTokenID,
 		TokenType:  "refresh",
-		UserID:     authCode.UserID,
+		FederatedIdentityID:     authCode.FederatedIdentityID,
 		AppID:      authCode.AppID,
 		Scope:      authCode.Scope,
 		ExpiresAt:  time.Now().Add(30 * 24 * time.Hour), // 30 days

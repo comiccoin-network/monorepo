@@ -12,8 +12,8 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/password"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain/user"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain/federatedidentity"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/federatedidentity"
 )
 
 type PublicFaucetInitService interface {
@@ -24,16 +24,16 @@ type publicfaucetInitServiceImpl struct {
 	config           *config.Configuration
 	logger           *slog.Logger
 	passwordProvider password.Provider
-	userGet          uc_user.UserGetByEmailUseCase
-	userCreate       uc_user.UserCreateUseCase
+	federatedidentityGet          uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	federatedidentityCreate       uc_federatedidentity.FederatedIdentityCreateUseCase
 }
 
 func NewPublicFaucetInitService(
 	config *config.Configuration,
 	logger *slog.Logger,
 	pp password.Provider,
-	uc1 uc_user.UserGetByEmailUseCase,
-	uc2 uc_user.UserCreateUseCase,
+	uc1 uc_federatedidentity.FederatedIdentityGetByEmailUseCase,
+	uc2 uc_federatedidentity.FederatedIdentityCreateUseCase,
 ) PublicFaucetInitService {
 	return &publicfaucetInitServiceImpl{config, logger, pp, uc1, uc2}
 }
@@ -68,10 +68,10 @@ func (s *publicfaucetInitServiceImpl) Execute(
 	// STEP 2: Setup our unique identifiers
 	//
 
-	userID := primitive.NewObjectID()
+	federatedidentityID := primitive.NewObjectID()
 
 	//
-	// STEP 3: Create our administrator user account.
+	// STEP 3: Create our administrator federatedidentity account.
 	//
 
 	passwordHash, err := s.passwordProvider.GenerateHashFromPassword(password)
@@ -81,35 +81,35 @@ func (s *publicfaucetInitServiceImpl) Execute(
 		return err
 	}
 
-	user := &dom_user.User{
-		ID:                        userID,
+	federatedidentity := &dom_federatedidentity.FederatedIdentity{
+		ID:                        federatedidentityID,
 		FirstName:                 "System",
 		LastName:                  "Administrator",
 		Name:                      "System Administrator",
 		LexicalName:               "Administrator, System",
 		Email:                     email,
-		Status:                    dom_user.UserStatusActive,
+		Status:                    dom_federatedidentity.FederatedIdentityStatusActive,
 		PasswordHash:              passwordHash,
 		PasswordHashAlgorithm:     s.passwordProvider.AlgorithmName(),
-		Role:                      dom_user.UserRoleRoot,
+		Role:                      dom_federatedidentity.FederatedIdentityRoleRoot,
 		WasEmailVerified:          true,
-		CreatedByUserID:           userID,
+		CreatedByFederatedIdentityID:           federatedidentityID,
 		CreatedByName:             "System Administrator",
 		CreatedAt:                 time.Now(),
-		ModifiedByUserID:          userID,
+		ModifiedByFederatedIdentityID:          federatedidentityID,
 		ModifiedByName:            "System Administrator",
 		ModifiedAt:                time.Now(),
-		ProfileVerificationStatus: dom_user.UserProfileVerificationStatusApproved,
+		ProfileVerificationStatus: dom_federatedidentity.FederatedIdentityProfileVerificationStatusApproved,
 		Country:                   "Canada",
 		Timezone:                  "America/Toronto",
 		AgreeTermsOfService:       true,
 		AgreePromotions:           true,
 	}
 
-	if createUserErr := s.userCreate.Execute(sessCtx, user); err != nil {
-		s.logger.Error("Failed creating user",
-			slog.Any("error", createUserErr))
-		return createUserErr
+	if createFederatedIdentityErr := s.federatedidentityCreate.Execute(sessCtx, federatedidentity); err != nil {
+		s.logger.Error("Failed creating federatedidentity",
+			slog.Any("error", createFederatedIdentityErr))
+		return createFederatedIdentityErr
 	}
 
 	//
@@ -118,7 +118,7 @@ func (s *publicfaucetInitServiceImpl) Execute(
 	// Step 4: For debugging purposes only.
 	//
 	s.logger.Info("PublicFaucet initialized",
-		slog.Any("user_id", userID.Hex()))
+		slog.Any("federatedidentity_id", federatedidentityID.Hex()))
 
 	return nil
 }

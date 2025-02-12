@@ -35,7 +35,7 @@ func (impl authorizationStorerImpl) FindByCode(ctx context.Context, code string)
 	impl.Logger.Info("found authorization code",
 		slog.String("code", code),
 		slog.String("app_id", result.AppID),
-		slog.String("user_id", result.UserID),
+		slog.String("federatedidentity_id", result.FederatedIdentityID),
 		slog.Bool("is_used", result.IsUsed),
 		slog.Time("expires_at", result.ExpiresAt))
 

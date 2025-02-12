@@ -27,8 +27,8 @@ type ClientService interface {
 	GetClient(clientID string) (*Client, error)
 }
 
-// UserService handles user authentication during the OAuth flow
-type UserService interface {
-	// ValidateCredentials checks if the provided username and password are valid
-	ValidateCredentials(username, password string) (bool, error)
+// FederatedIdentityService handles federatedidentity authentication during the OAuth flow
+type FederatedIdentityService interface {
+	// ValidateCredentials checks if the provided federatedidentityname and password are valid
+	ValidateCredentials(federatedidentityname, password string) (bool, error)
 }

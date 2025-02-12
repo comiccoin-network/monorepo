@@ -9,7 +9,7 @@ import (
 
 // Application represents a registered application that can request access through OAuth 2.0.
 // This could be a mobile app, web application, or any other type of application that needs
-// to access protected resources on behalf of users.
+// to access protected resources on behalf of federatedidentitys.
 type Application struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty"`
 	AppID        string             `bson:"app_id"`        // Public identifier for the application

@@ -17,7 +17,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
 	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/tenant"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 )
 
 type GatewayLoginService interface {
@@ -30,8 +30,8 @@ type gatewayLoginServiceImpl struct {
 	cache                 mongodbcache.Cacher
 	jwtProvider           jwt.Provider
 	tenantGetByIDUseCase  uc_tenant.TenantGetByIDUseCase
-	userGetByEmailUseCase uc_user.UserGetByEmailUseCase
-	userUpdateUseCase     uc_user.UserUpdateUseCase
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	federatedidentityUpdateUseCase     uc_federatedidentity.FederatedIdentityUpdateUseCase
 }
 
 func NewGatewayLoginService(
@@ -40,8 +40,8 @@ func NewGatewayLoginService(
 	cach mongodbcache.Cacher,
 	jwtp jwt.Provider,
 	uc1 uc_tenant.TenantGetByIDUseCase,
-	uc2 uc_user.UserGetByEmailUseCase,
-	uc3 uc_user.UserUpdateUseCase,
+	uc2 uc_federatedidentity.FederatedIdentityGetByEmailUseCase,
+	uc3 uc_federatedidentity.FederatedIdentityUpdateUseCase,
 ) GatewayLoginService {
 	return &gatewayLoginServiceImpl{logger, pp, cach, jwtp, uc1, uc2, uc3}
 }
@@ -52,7 +52,7 @@ type GatewayLoginRequestIDO struct {
 }
 
 type GatewayLoginResponseIDO struct {
-	User                   *domain.User `json:"user"`
+	FederatedIdentity                   *domain.FederatedIdentity `json:"federatedidentity"`
 	AccessToken            string       `json:"access_token"`
 	AccessTokenExpiryTime  time.Time    `json:"access_token_expiry_time"`
 	RefreshToken           string       `json:"refresh_token"`
@@ -95,14 +95,14 @@ func (s *gatewayLoginServiceImpl) Execute(sessCtx mongo.SessionContext, req *Gat
 	// STEP 3:
 	//
 
-	// Lookup the user in our database, else return a `400 Bad Request` error.
-	u, err := s.userGetByEmailUseCase.Execute(sessCtx, req.Email)
+	// Lookup the federatedidentity in our database, else return a `400 Bad Request` error.
+	u, err := s.federatedidentityGetByEmailUseCase.Execute(sessCtx, req.Email)
 	if err != nil {
 		s.logger.Error("database error", slog.Any("err", err))
 		return nil, err
 	}
 	if u == nil {
-		s.logger.Warn("user does not exist validation error")
+		s.logger.Warn("federatedidentity does not exist validation error")
 		return nil, httperror.NewForBadRequestWithSingleField("email", "Email address does not exist")
 	}
 
@@ -140,20 +140,20 @@ func (s *gatewayLoginServiceImpl) Execute(sessCtx mongo.SessionContext, req *Gat
 	// // Enforce 2FA if enabled.
 	if u.OTPEnabled {
 		// We need to reset the `otp_validated` status to be false to force
-		// the user to use their `totp authenticator` application.
+		// the federatedidentity to use their `totp authenticator` application.
 		u.OTPValidated = false
 		u.ModifiedAt = time.Now()
-		if err := s.userUpdateUseCase.Execute(sessCtx, u); err != nil {
-			s.logger.Error("failed updating user during login",
+		if err := s.federatedidentityUpdateUseCase.Execute(sessCtx, u); err != nil {
+			s.logger.Error("failed updating federatedidentity during login",
 				slog.Any("err", err))
 			return nil, err
 		}
 	}
 
-	return s.loginWithUser(sessCtx, u)
+	return s.loginWithFederatedIdentity(sessCtx, u)
 }
 
-func (s *gatewayLoginServiceImpl) loginWithUser(sessCtx mongo.SessionContext, u *domain.User) (*GatewayLoginResponseIDO, error) {
+func (s *gatewayLoginServiceImpl) loginWithFederatedIdentity(sessCtx mongo.SessionContext, u *domain.FederatedIdentity) (*GatewayLoginResponseIDO, error) {
 	uBin, err := json.Marshal(u)
 	if err != nil {
 		s.logger.Error("marshalling error", slog.Any("err", err))
@@ -182,7 +182,7 @@ func (s *gatewayLoginServiceImpl) loginWithUser(sessCtx mongo.SessionContext, u 
 
 	// Return our auth keys.
 	return &GatewayLoginResponseIDO{
-		User:                   u,
+		FederatedIdentity:                   u,
 		AccessToken:            accessToken,
 		AccessTokenExpiryTime:  accessTokenExpiry,
 		RefreshToken:           refreshToken,

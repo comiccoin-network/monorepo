@@ -19,7 +19,7 @@ func (impl bannedIPAddressImpl) UpdateByID(ctx context.Context, m *dom_banip.Ban
 	// execute the UpdateOne() function to update the first matching document
 	_, err := impl.Collection.UpdateOne(ctx, filter, update)
 	if err != nil {
-		impl.Logger.Error("database update user transaction by id error", slog.Any("error", err))
+		impl.Logger.Error("database update federatedidentity transaction by id error", slog.Any("error", err))
 		return err
 	}
 

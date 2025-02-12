@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token/getbyuserid.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token/getbyfederatedidentityid.go
 package token
 
 import (
@@ -12,28 +12,28 @@ import (
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/token"
 )
 
-type TokenGetByUserIDUseCase interface {
-	Execute(ctx context.Context, userID primitive.ObjectID) (*dom_token.Token, error)
+type TokenGetByFederatedIdentityIDUseCase interface {
+	Execute(ctx context.Context, federatedidentityID primitive.ObjectID) (*dom_token.Token, error)
 }
 
-type tokenGetByUserIDUseCaseImpl struct {
+type tokenGetByFederatedIdentityIDUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   dom_token.Repository
 }
 
-func NewTokenGetByUserIDUseCase(config *config.Configuration, logger *slog.Logger, repo dom_token.Repository) TokenGetByUserIDUseCase {
-	return &tokenGetByUserIDUseCaseImpl{config, logger, repo}
+func NewTokenGetByFederatedIdentityIDUseCase(config *config.Configuration, logger *slog.Logger, repo dom_token.Repository) TokenGetByFederatedIdentityIDUseCase {
+	return &tokenGetByFederatedIdentityIDUseCaseImpl{config, logger, repo}
 }
 
-func (uc *tokenGetByUserIDUseCaseImpl) Execute(ctx context.Context, userID primitive.ObjectID) (*dom_token.Token, error) {
+func (uc *tokenGetByFederatedIdentityIDUseCaseImpl) Execute(ctx context.Context, federatedidentityID primitive.ObjectID) (*dom_token.Token, error) {
 	//
 	// STEP 1: Validation.
 	//
 
 	e := make(map[string]string)
-	if userID.IsZero() {
-		e["user_id"] = "missing value"
+	if federatedidentityID.IsZero() {
+		e["federatedidentity_id"] = "missing value"
 	}
 	if len(e) != 0 {
 		uc.logger.Warn("validation failed for get token",
@@ -45,5 +45,5 @@ func (uc *tokenGetByUserIDUseCaseImpl) Execute(ctx context.Context, userID primi
 	// STEP 2: Get from database.
 	//
 
-	return uc.repo.GetByUserID(ctx, userID)
+	return uc.repo.GetByFederatedIdentityID(ctx, federatedidentityID)
 }

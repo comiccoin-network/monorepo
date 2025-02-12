@@ -8,19 +8,19 @@ const (
 	SessionID
 	SessionIPAddress
 	SessionProxies
-	SessionUser
-	SessionUserCompanyName
-	SessionUserRole
-	SessionUserID
-	SessionUserUUID
-	SessionUserTimezone
-	SessionUserName
-	SessionUserFirstName
-	SessionUserLastName
-	SessionUserStoreID
-	SessionUserStoreName
-	SessionUserStoreLevel
-	SessionUserStoreTimezone
+	SessionFederatedIdentity
+	SessionFederatedIdentityCompanyName
+	SessionFederatedIdentityRole
+	SessionFederatedIdentityID
+	SessionFederatedIdentityUUID
+	SessionFederatedIdentityTimezone
+	SessionFederatedIdentityName
+	SessionFederatedIdentityFirstName
+	SessionFederatedIdentityLastName
+	SessionFederatedIdentityStoreID
+	SessionFederatedIdentityStoreName
+	SessionFederatedIdentityStoreLevel
+	SessionFederatedIdentityStoreTimezone
 )
 
 const (

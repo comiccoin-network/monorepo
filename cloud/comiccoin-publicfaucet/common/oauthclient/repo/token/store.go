@@ -12,12 +12,12 @@ import (
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/token"
 )
 
-func (impl tokenStorerImpl) UpsertByUserID(ctx context.Context, token *dom_token.Token) error {
+func (impl tokenStorerImpl) UpsertByFederatedIdentityID(ctx context.Context, token *dom_token.Token) error {
 	// First, try to find existing token to preserve its ID
-	existingToken, err := impl.GetByUserID(ctx, token.UserID)
+	existingToken, err := impl.GetByFederatedIdentityID(ctx, token.FederatedIdentityID)
 	if err != nil {
 		impl.Logger.Error("failed to check for existing token",
-			slog.Any("user_id", token.UserID),
+			slog.Any("federatedidentity_id", token.FederatedIdentityID),
 			slog.Any("error", err))
 		return err
 	}
@@ -30,13 +30,13 @@ func (impl tokenStorerImpl) UpsertByUserID(ctx context.Context, token *dom_token
 		token.ID = primitive.NewObjectID()
 	}
 
-	// Create filter for upsert - we match on user_id
-	filter := bson.M{"user_id": token.UserID}
+	// Create filter for upsert - we match on federatedidentity_id
+	filter := bson.M{"federatedidentity_id": token.FederatedIdentityID}
 
 	// Create update document WITHOUT including _id in the $set
 	update := bson.M{
 		"$set": bson.M{
-			"user_id":       token.UserID,
+			"federatedidentity_id":       token.FederatedIdentityID,
 			"access_token":  token.AccessToken,
 			"refresh_token": token.RefreshToken,
 			"expires_at":    token.ExpiresAt,
@@ -51,7 +51,7 @@ func (impl tokenStorerImpl) UpsertByUserID(ctx context.Context, token *dom_token
 	if err != nil {
 		impl.Logger.Error("failed to upsert token",
 			slog.String("token_id", token.ID.Hex()),
-			slog.Any("user_id", token.UserID),
+			slog.Any("federatedidentity_id", token.FederatedIdentityID),
 			slog.Any("error", err))
 		return err
 	}
@@ -60,11 +60,11 @@ func (impl tokenStorerImpl) UpsertByUserID(ctx context.Context, token *dom_token
 	if result.UpsertedCount > 0 {
 		impl.Logger.Info("inserted new token",
 			slog.String("token_id", token.ID.Hex()),
-			slog.Any("user_id", token.UserID))
+			slog.Any("federatedidentity_id", token.FederatedIdentityID))
 	} else if result.ModifiedCount > 0 {
 		impl.Logger.Info("updated existing token",
 			slog.String("token_id", token.ID.Hex()),
-			slog.Any("user_id", token.UserID))
+			slog.Any("federatedidentity_id", token.FederatedIdentityID))
 	}
 
 	return nil

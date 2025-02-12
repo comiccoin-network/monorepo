@@ -39,8 +39,8 @@ func (uc *tokenStoreUseCaseImpl) Execute(ctx context.Context, token *dom_token.T
 		} else if token.TokenType != "access" && token.TokenType != "refresh" {
 			e["token_type"] = "must be either 'access' or 'refresh'"
 		}
-		if token.UserID == "" {
-			e["user_id"] = "missing value"
+		if token.FederatedIdentityID == "" {
+			e["federatedidentity_id"] = "missing value"
 		}
 		if token.AppID == "" {
 			e["app_id"] = "missing value"
@@ -74,7 +74,7 @@ func (uc *tokenStoreUseCaseImpl) Execute(ctx context.Context, token *dom_token.T
 		uc.logger.Error("failed to store token",
 			slog.String("token_type", token.TokenType),
 			slog.String("app_id", token.AppID),
-			slog.String("user_id", token.UserID),
+			slog.String("federatedidentity_id", token.FederatedIdentityID),
 			slog.Any("error", err))
 		return err
 	}

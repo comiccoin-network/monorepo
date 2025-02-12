@@ -9,7 +9,7 @@ import (
 
 // Repository defines the interface for token persistence operations
 type Repository interface {
-	UpsertByUserID(ctx context.Context, token *Token) error
-	GetByUserID(ctx context.Context, userID primitive.ObjectID) (*Token, error)
+	UpsertByFederatedIdentityID(ctx context.Context, token *Token) error
+	GetByFederatedIdentityID(ctx context.Context, federatedidentityID primitive.ObjectID) (*Token, error)
 	DeleteExpiredTokens(ctx context.Context) error
 }

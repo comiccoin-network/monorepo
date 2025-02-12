@@ -11,13 +11,13 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/logger"
 	common_oauth_config "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
+	r_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/federatedidentity"
 	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauth"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/token"
-	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/user"
 	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/oauth"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 )
@@ -45,14 +45,14 @@ func doRunTokenExchange(authCode string) {
 	originalCfg := config.NewProviderUsingEnvironmentVariables()
 	cfg := &common_oauth_config.Configuration{
 		OAuth: common_oauth_config.OAuthConfig{
-			ServerURL:                originalCfg.OAuth.ServerURL,
-			ClientID:                 originalCfg.OAuth.ClientID,
-			ClientSecret:             originalCfg.OAuth.ClientSecret,
-			ClientRedirectURI:        originalCfg.OAuth.ClientRedirectURI,
-			ClientRegisterSuccessURI: originalCfg.OAuth.ClientRegisterSuccessURI,
-			ClientRegisterCancelURI:  originalCfg.OAuth.ClientRegisterCancelURI,
-			ClientAuthorizeOrLoginSuccessURI:    originalCfg.OAuth.ClientAuthorizeOrLoginSuccessURI,
-			ClientAuthorizeOrLoginCancelURI:     originalCfg.OAuth.ClientAuthorizeOrLoginCancelURI,
+			ServerURL:                        originalCfg.OAuth.ServerURL,
+			ClientID:                         originalCfg.OAuth.ClientID,
+			ClientSecret:                     originalCfg.OAuth.ClientSecret,
+			ClientRedirectURI:                originalCfg.OAuth.ClientRedirectURI,
+			ClientRegisterSuccessURI:         originalCfg.OAuth.ClientRegisterSuccessURI,
+			ClientRegisterCancelURI:          originalCfg.OAuth.ClientRegisterCancelURI,
+			ClientAuthorizeOrLoginSuccessURI: originalCfg.OAuth.ClientAuthorizeOrLoginSuccessURI,
+			ClientAuthorizeOrLoginCancelURI:  originalCfg.OAuth.ClientAuthorizeOrLoginCancelURI,
 		},
 		DB: common_oauth_config.DBConfig{
 			URI:  originalCfg.DB.URI,
@@ -71,15 +71,15 @@ func doRunTokenExchange(authCode string) {
 
 	// Initialize repositories
 	oauthRepo := r_oauth.NewRepository(cfg, logger)
-	userRepo := r_user.NewRepository(cfg, logger, mongoClient)
+	federatedidentityRepo := r_federatedidentity.NewRepository(cfg, logger, mongoClient)
 	tokenRepo := r_token.NewRepository(cfg, logger, mongoClient)
 
 	// Initialize use cases
 	exchangeCodeUseCase := uc_oauth.NewExchangeCodeUseCase(cfg, logger, oauthRepo)
 	introspectTokenUseCase := uc_oauth.NewIntrospectTokenUseCase(cfg, logger, oauthRepo)
-	userCreateUseCase := uc_user.NewUserCreateUseCase(cfg, logger, userRepo)
-	userGetByEmailUseCase := uc_user.NewUserGetByEmailUseCase(cfg, logger, userRepo)
-	tokenUpsertUseCase := uc_token.NewTokenUpsertByUserIDUseCase(cfg, logger, tokenRepo)
+	federatedidentityCreateUseCase := uc_federatedidentity.NewFederatedIdentityCreateUseCase(cfg, logger, federatedidentityRepo)
+	federatedidentityGetByEmailUseCase := uc_federatedidentity.NewFederatedIdentityGetByEmailUseCase(cfg, logger, federatedidentityRepo)
+	tokenUpsertUseCase := uc_token.NewTokenUpsertByFederatedIdentityIDUseCase(cfg, logger, tokenRepo)
 
 	// Initialize service
 	exchangeService := svc_oauth.NewExchangeService(
@@ -87,8 +87,8 @@ func doRunTokenExchange(authCode string) {
 		logger,
 		exchangeCodeUseCase,
 		introspectTokenUseCase,
-		userCreateUseCase,
-		userGetByEmailUseCase,
+		federatedidentityCreateUseCase,
+		federatedidentityGetByEmailUseCase,
 		tokenUpsertUseCase,
 	)
 
@@ -108,6 +108,6 @@ func doRunTokenExchange(authCode string) {
 	fmt.Printf("Refresh Token: %s\n", resp.RefreshToken)
 	fmt.Printf("Token Type: %s\n", resp.TokenType)
 	fmt.Printf("Expires In: %d seconds\n", resp.ExpiresIn)
-	fmt.Printf("User Email: %s\n", resp.UserEmail) // Now we can show user info
-	fmt.Printf("User Name: %s %s\n", resp.FirstName, resp.LastName)
+	fmt.Printf("FederatedIdentity Email: %s\n", resp.FederatedIdentityEmail) // Now we can show federatedidentity info
+	fmt.Printf("FederatedIdentity Name: %s %s\n", resp.FirstName, resp.LastName)
 }

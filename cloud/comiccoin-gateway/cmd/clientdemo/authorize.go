@@ -243,7 +243,7 @@ func handleStartAuth(w http.ResponseWriter, r *http.Request) {
 
 	// Store the state in a session or cookie (simplified for demo)
 
-	// Redirect the user to the authorization server
+	// Redirect the federatedidentity to the authorization server
 	http.Redirect(w, r, authURL, http.StatusFound)
 }
 

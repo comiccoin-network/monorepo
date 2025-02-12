@@ -10,7 +10,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/kmutexutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 )
 
 type GatewayVerifyEmailService interface {
@@ -20,15 +20,15 @@ type GatewayVerifyEmailService interface {
 type gatewayVerifyEmailServiceImpl struct {
 	logger                           *slog.Logger
 	kmutex                           kmutexutil.KMutexProvider
-	userGetByVerificationCodeUseCase uc_user.UserGetByVerificationCodeUseCase
-	userUpdateUseCase                uc_user.UserUpdateUseCase
+	federatedidentityGetByVerificationCodeUseCase uc_federatedidentity.FederatedIdentityGetByVerificationCodeUseCase
+	federatedidentityUpdateUseCase                uc_federatedidentity.FederatedIdentityUpdateUseCase
 }
 
 func NewGatewayVerifyEmailService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
-	uc1 uc_user.UserGetByVerificationCodeUseCase,
-	uc2 uc_user.UserUpdateUseCase,
+	uc1 uc_federatedidentity.FederatedIdentityGetByVerificationCodeUseCase,
+	uc2 uc_federatedidentity.FederatedIdentityUpdateUseCase,
 ) GatewayVerifyEmailService {
 	return &gatewayVerifyEmailServiceImpl{logger, kmutex, uc1, uc2}
 }
@@ -39,7 +39,7 @@ type GatewayVerifyRequestIDO struct {
 
 type GatwayVerifyResponseIDO struct {
 	Message  string `json:"message"`
-	UserRole int8   `bson:"user_role" json:"user_role"`
+	FederatedIdentityRole int8   `bson:"federatedidentity_role" json:"federatedidentity_role"`
 }
 
 func (s *gatewayVerifyEmailServiceImpl) Execute(sessCtx mongo.SessionContext, req *GatewayVerifyRequestIDO) (*GatwayVerifyResponseIDO, error) {
@@ -53,53 +53,53 @@ func (s *gatewayVerifyEmailServiceImpl) Execute(sessCtx mongo.SessionContext, re
 
 	res := &GatwayVerifyResponseIDO{}
 
-	// Lookup the user in our database, else return a `400 Bad Request` error.
-	u, err := s.userGetByVerificationCodeUseCase.Execute(sessCtx, req.Code)
+	// Lookup the federatedidentity in our database, else return a `400 Bad Request` error.
+	u, err := s.federatedidentityGetByVerificationCodeUseCase.Execute(sessCtx, req.Code)
 	if err != nil {
 		s.logger.Error("database error", slog.Any("err", err))
 		return nil, err
 	}
 	if u == nil {
-		s.logger.Warn("user does not exist validation error")
+		s.logger.Warn("federatedidentity does not exist validation error")
 		return nil, httperror.NewForBadRequestWithSingleField("code", "does not exist")
 	}
 
 	//TODO: Handle expiry dates.
 
 	// Extract from our session the following data.
-	// userID := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	// federatedidentityID := sessCtx.Value(constants.SessionFederatedIdentityID).(primitive.ObjectID)
 	ipAddress, _ := sessCtx.Value(constants.SessionIPAddress).(string)
 
-	// Verify the user.
+	// Verify the federatedidentity.
 	u.WasEmailVerified = true
-	// ou.ModifiedByUserID = userID
+	// ou.ModifiedByFederatedIdentityID = federatedidentityID
 	u.ModifiedAt = time.Now()
 	// ou.ModifiedByName = fmt.Sprintf("%s %s", ou.FirstName, ou.LastName)
 	u.ModifiedFromIPAddress = ipAddress
-	if err := s.userUpdateUseCase.Execute(sessCtx, u); err != nil {
+	if err := s.federatedidentityUpdateUseCase.Execute(sessCtx, u); err != nil {
 		s.logger.Error("update error", slog.Any("err", err))
 		return nil, err
 	}
 
 	//
-	// Send notification based on user role
+	// Send notification based on federatedidentity role
 	//
 
 	switch u.Role {
-	case domain.UserRoleCustomer:
+	case domain.FederatedIdentityRoleCustomer:
 		{
 			res.Message = "Thank you for verifying. You may log in now to get started!"
-			s.logger.Debug("customer user verified")
+			s.logger.Debug("customer federatedidentity verified")
 			break
 		}
 	default:
 		{
 			res.Message = "Thank you for verifying. You may log in now to get started!"
-			s.logger.Debug("unknown user verified")
+			s.logger.Debug("unknown federatedidentity verified")
 			break
 		}
 	}
-	res.UserRole = u.Role
+	res.FederatedIdentityRole = u.Role
 
 	return res, nil
 }

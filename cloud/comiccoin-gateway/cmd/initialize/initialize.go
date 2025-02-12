@@ -16,9 +16,9 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	repo_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/user"
+	repo_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/federatedidentity"
 	sv_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/gateway"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 )
 
 var (
@@ -73,23 +73,23 @@ func doRunGatewayInit() {
 	// Repository
 	//
 
-	userRepo := repo_user.NewRepository(cfg, logger, dbClient)
+	federatedidentityRepo := repo_federatedidentity.NewRepository(cfg, logger, dbClient)
 
 	// //
 	// // Use-case
 	// //
 	//
 	//
-	// User
-	userGetByEmailUseCase := uc_user.NewUserGetByEmailUseCase(
+	// FederatedIdentity
+	federatedidentityGetByEmailUseCase := uc_federatedidentity.NewFederatedIdentityGetByEmailUseCase(
 		cfg,
 		logger,
-		userRepo,
+		federatedidentityRepo,
 	)
-	userCreateUseCase := uc_user.NewUserCreateUseCase(
+	federatedidentityCreateUseCase := uc_federatedidentity.NewFederatedIdentityCreateUseCase(
 		cfg,
 		logger,
-		userRepo,
+		federatedidentityRepo,
 	)
 
 	//
@@ -100,8 +100,8 @@ func doRunGatewayInit() {
 		cfg,
 		logger,
 		passp,
-		userGetByEmailUseCase,
-		userCreateUseCase,
+		federatedidentityGetByEmailUseCase,
+		federatedidentityCreateUseCase,
 	)
 
 	// //

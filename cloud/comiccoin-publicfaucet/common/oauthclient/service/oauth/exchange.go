@@ -11,10 +11,10 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/token"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/federatedidentity"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 )
 
 type ExchangeTokenRequest struct {
@@ -26,7 +26,7 @@ type ExchangeTokenResponse struct {
 	RefreshToken string
 	TokenType    string
 	ExpiresIn    int
-	UserEmail    string
+	FederatedIdentityEmail    string
 	FirstName    string
 	LastName     string
 }
@@ -40,9 +40,9 @@ type exchangeServiceImpl struct {
 	logger                 *slog.Logger
 	exchangeCodeUseCase    uc_oauth.ExchangeCodeUseCase
 	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase
-	userCreateUseCase      uc_user.UserCreateUseCase
-	userGetByEmailUseCase  uc_user.UserGetByEmailUseCase
-	tokenUpsertUseCase     uc_token.TokenUpsertByUserIDUseCase
+	federatedidentityCreateUseCase      uc_federatedidentity.FederatedIdentityCreateUseCase
+	federatedidentityGetByEmailUseCase  uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	tokenUpsertUseCase     uc_token.TokenUpsertByFederatedIdentityIDUseCase
 }
 
 func NewExchangeService(
@@ -50,17 +50,17 @@ func NewExchangeService(
 	logger *slog.Logger,
 	exchangeCodeUseCase uc_oauth.ExchangeCodeUseCase,
 	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase,
-	userCreateUseCase uc_user.UserCreateUseCase,
-	userGetByEmailUseCase uc_user.UserGetByEmailUseCase,
-	tokenUpsertUseCase uc_token.TokenUpsertByUserIDUseCase,
+	federatedidentityCreateUseCase uc_federatedidentity.FederatedIdentityCreateUseCase,
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase,
+	tokenUpsertUseCase uc_token.TokenUpsertByFederatedIdentityIDUseCase,
 ) ExchangeService {
 	return &exchangeServiceImpl{
 		config:                 config,
 		logger:                 logger,
 		exchangeCodeUseCase:    exchangeCodeUseCase,
 		introspectTokenUseCase: introspectTokenUseCase,
-		userCreateUseCase:      userCreateUseCase,
-		userGetByEmailUseCase:  userGetByEmailUseCase,
+		federatedidentityCreateUseCase:      federatedidentityCreateUseCase,
+		federatedidentityGetByEmailUseCase:  federatedidentityGetByEmailUseCase,
 		tokenUpsertUseCase:     tokenUpsertUseCase,
 	}
 }
@@ -72,51 +72,51 @@ func (s *exchangeServiceImpl) ExchangeToken(ctx context.Context, req *ExchangeTo
 		return nil, fmt.Errorf("exchanging code: %w", err)
 	}
 
-	// Get user info through introspection
-	userInfo, err := s.introspectTokenUseCase.Execute(ctx, tokenResp.AccessToken)
+	// Get federatedidentity info through introspection
+	federatedidentityInfo, err := s.introspectTokenUseCase.Execute(ctx, tokenResp.AccessToken)
 	if err != nil {
-		return nil, fmt.Errorf("getting user info: %w", err)
+		return nil, fmt.Errorf("getting federatedidentity info: %w", err)
 	}
 
-	// Convert user ID from introspection response
-	userID, err := primitive.ObjectIDFromHex(userInfo.UserID)
+	// Convert federatedidentity ID from introspection response
+	federatedidentityID, err := primitive.ObjectIDFromHex(federatedidentityInfo.FederatedIdentityID)
 	if err != nil {
-		return nil, fmt.Errorf("invalid user ID format: %w", err)
+		return nil, fmt.Errorf("invalid federatedidentity ID format: %w", err)
 	}
 
-	// Check if user exists in our system
-	existingUser, err := s.userGetByEmailUseCase.Execute(ctx, userInfo.Email)
+	// Check if federatedidentity exists in our system
+	existingFederatedIdentity, err := s.federatedidentityGetByEmailUseCase.Execute(ctx, federatedidentityInfo.Email)
 	if err != nil {
-		return nil, fmt.Errorf("checking user: %w", err)
+		return nil, fmt.Errorf("checking federatedidentity: %w", err)
 	}
 
-	var finalUserID primitive.ObjectID
-	if existingUser == nil {
-		// Create new user if they don't exist
-		newUser := &dom_user.User{
-			ID:          userID, // Use the ID from introspection
-			Email:       userInfo.Email,
-			FirstName:   userInfo.FirstName,
-			LastName:    userInfo.LastName,
-			Name:        fmt.Sprintf("%s %s", userInfo.FirstName, userInfo.LastName),
-			LexicalName: fmt.Sprintf("%s, %s", userInfo.LastName, userInfo.FirstName),
-			Status:      dom_user.UserStatusActive,
+	var finalFederatedIdentityID primitive.ObjectID
+	if existingFederatedIdentity == nil {
+		// Create new federatedidentity if they don't exist
+		newFederatedIdentity := &dom_federatedidentity.FederatedIdentity{
+			ID:          federatedidentityID, // Use the ID from introspection
+			Email:       federatedidentityInfo.Email,
+			FirstName:   federatedidentityInfo.FirstName,
+			LastName:    federatedidentityInfo.LastName,
+			Name:        fmt.Sprintf("%s %s", federatedidentityInfo.FirstName, federatedidentityInfo.LastName),
+			LexicalName: fmt.Sprintf("%s, %s", federatedidentityInfo.LastName, federatedidentityInfo.FirstName),
+			Status:      dom_federatedidentity.FederatedIdentityStatusActive,
 			CreatedAt:   time.Now(),
 			ModifiedAt:  time.Now(),
 		}
 
-		if err := s.userCreateUseCase.Execute(ctx, newUser); err != nil {
-			return nil, fmt.Errorf("creating user: %w", err)
+		if err := s.federatedidentityCreateUseCase.Execute(ctx, newFederatedIdentity); err != nil {
+			return nil, fmt.Errorf("creating federatedidentity: %w", err)
 		}
-		finalUserID = newUser.ID
+		finalFederatedIdentityID = newFederatedIdentity.ID
 	} else {
-		finalUserID = existingUser.ID
+		finalFederatedIdentityID = existingFederatedIdentity.ID
 	}
 
 	// Create and store token
 	token := &dom_token.Token{
 		ID:           primitive.NewObjectID(),
-		UserID:       finalUserID,
+		FederatedIdentityID:       finalFederatedIdentityID,
 		AccessToken:  tokenResp.AccessToken,
 		RefreshToken: tokenResp.RefreshToken,
 		ExpiresAt:    tokenResp.ExpiresAt,
@@ -124,7 +124,7 @@ func (s *exchangeServiceImpl) ExchangeToken(ctx context.Context, req *ExchangeTo
 
 	s.logger.Info("storing new access and refresh token",
 		slog.String("token_id", token.ID.Hex()[:5]+"..."),
-		slog.String("user_id", token.UserID.Hex()),
+		slog.String("federatedidentity_id", token.FederatedIdentityID.Hex()),
 		slog.Time("expires_at", token.ExpiresAt))
 
 	// Store token using token upsert use case
@@ -140,8 +140,8 @@ func (s *exchangeServiceImpl) ExchangeToken(ctx context.Context, req *ExchangeTo
 		RefreshToken: tokenResp.RefreshToken,
 		TokenType:    tokenResp.TokenType,
 		ExpiresIn:    tokenResp.ExpiresIn,
-		UserEmail:    userInfo.Email,
-		FirstName:    userInfo.FirstName,
-		LastName:     userInfo.LastName,
+		FederatedIdentityEmail:    federatedidentityInfo.Email,
+		FirstName:    federatedidentityInfo.FirstName,
+		LastName:     federatedidentityInfo.LastName,
 	}, nil
 }

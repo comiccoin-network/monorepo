@@ -12,7 +12,7 @@ type AuthorizationCode struct {
 	ID            primitive.ObjectID `bson:"_id,omitempty"`
 	Code          string             `bson:"code"`           // Hashed authorization code
 	AppID         string             `bson:"app_id"`         // Associated application
-	UserID        string             `bson:"user_id"`        // Associated user
+	FederatedIdentityID        string             `bson:"federatedidentity_id"`        // Associated federatedidentity
 	RedirectURI   string             `bson:"redirect_uri"`   // Callback URL
 	Scope         string             `bson:"scope"`          // Requested permissions
 	CodeChallenge string             `bson:"code_challenge"` // PKCE support

@@ -8,12 +8,12 @@ import (
 )
 
 // ProtectedURLsMiddleware The purpose of this middleware is to return a `401 unauthorized` error if
-// the user is not authorized when visiting a protected URL.
+// the federatedidentity is not authorized when visiting a protected URL.
 func (mid *middleware) ProtectedURLsMiddleware(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		// Skip this middleware if user is on a whitelisted URL path.
+		// Skip this middleware if federatedidentity is on a whitelisted URL path.
 		skipAuthorization, ok := ctx.Value(constants.SessionSkipAuthorization).(bool)
 		if ok && skipAuthorization {
 			// mid.Logger.Warn("Skipping authorization")

@@ -31,7 +31,7 @@ func NewOAuthSessionInfoHTTPHandler(
 
 type sessionInfoResponseIDO struct {
 	Valid       bool   `json:"valid"`
-	UserID      string `json:"user_id,omitempty"`
+	FederatedIdentityID      string `json:"federatedidentity_id,omitempty"`
 	Email       string `json:"email,omitempty"`
 	FirstName   string `json:"first_name,omitempty"`
 	LastName    string `json:"last_name,omitempty"`
@@ -81,11 +81,11 @@ func (h *OAuthSessionInfoHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 	}
 
 	// Only include additional information if session is valid
-	if response.Valid && response.User != nil {
-		responseIDO.UserID = response.User.ID.Hex()
-		responseIDO.Email = response.User.Email
-		responseIDO.FirstName = response.User.FirstName
-		responseIDO.LastName = response.User.LastName
+	if response.Valid && response.FederatedIdentity != nil {
+		responseIDO.FederatedIdentityID = response.FederatedIdentity.ID.Hex()
+		responseIDO.Email = response.FederatedIdentity.Email
+		responseIDO.FirstName = response.FederatedIdentity.FirstName
+		responseIDO.LastName = response.FederatedIdentity.LastName
 		responseIDO.ExpiresAt = response.ExpiresAt.Unix()
 		responseIDO.LastUsedAt = response.LastUsedAt.Unix()
 	}

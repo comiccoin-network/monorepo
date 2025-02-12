@@ -10,9 +10,9 @@ import (
 // RegisterTemplateData defines the structure for data passed to our registration template.
 // This provides a type-safe way to inject dynamic values into our HTML template.
 type RegisterTemplateData struct {
-	RedirectURI string // The URI where the user will be redirected after registration
-	SuccessURI  string // The URL to redirect to if user successfully registers
-	CancelURI   string // The URL to redirect to if user cancels registration
+	RedirectURI string // The URI where the federatedidentity will be redirected after registration
+	SuccessURI  string // The URL to redirect to if federatedidentity successfully registers
+	CancelURI   string // The URL to redirect to if federatedidentity cancels registration
 	ClientID    string // The OAuth client application ID
 	State       string // The OAuth state
 	ErrorMsg    string // Optional error message to display
@@ -98,7 +98,7 @@ const registrationPage = `
 <!DOCTYPE html>
 <html>
 <head>
-   <title>User Registration</title>
+   <title>FederatedIdentity Registration</title>
    <style>
        body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; }
        .container { border: 1px solid #ddd; padding: 20px; border-radius: 5px; }
@@ -112,7 +112,7 @@ const registrationPage = `
 </head>
 <body>
    <div class="container">
-       <h1>Register New User</h1>
+       <h1>Register New FederatedIdentity</h1>
        {{if .ErrorMsg}}
        <div class="error">{{.ErrorMsg}}</div>
        {{end}}

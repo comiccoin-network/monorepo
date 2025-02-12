@@ -10,9 +10,9 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/daemon"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/initialize"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/user"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/federatedidentity"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/version"
-	// "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/user"
+	// "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/federatedidentity"
 )
 
 // Initialize function will be called when every command gets called.
@@ -35,7 +35,7 @@ func Execute() {
 	rootCmd.AddCommand(daemon.DaemonCmd())
 	rootCmd.AddCommand(version.VersionCmd())
 	rootCmd.AddCommand(initialize.InitCmd())
-	rootCmd.AddCommand(user.UserCmd())
+	rootCmd.AddCommand(federatedidentity.FederatedIdentityCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

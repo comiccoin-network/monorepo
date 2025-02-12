@@ -12,23 +12,23 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 )
 
 type GatewayApplyProfileForVerificationService interface {
-	Execute(sessCtx mongo.SessionContext, req *GatewayApplyProfileForVerificationRequestIDO) (*domain.User, error)
+	Execute(sessCtx mongo.SessionContext, req *GatewayApplyProfileForVerificationRequestIDO) (*domain.FederatedIdentity, error)
 }
 
 type gatewayApplyProfileForVerificationServiceImpl struct {
 	logger             *slog.Logger
-	userGetByIDUseCase uc_user.UserGetByIDUseCase
-	userUpdateUseCase  uc_user.UserUpdateUseCase
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase
+	federatedidentityUpdateUseCase  uc_federatedidentity.FederatedIdentityUpdateUseCase
 }
 
 func NewGatewayApplyProfileForVerificationService(
 	logger *slog.Logger,
-	uc1 uc_user.UserGetByIDUseCase,
-	uc2 uc_user.UserUpdateUseCase,
+	uc1 uc_federatedidentity.FederatedIdentityGetByIDUseCase,
+	uc2 uc_federatedidentity.FederatedIdentityUpdateUseCase,
 ) GatewayApplyProfileForVerificationService {
 	return &gatewayApplyProfileForVerificationServiceImpl{logger, uc1, uc2}
 }
@@ -61,7 +61,7 @@ type GatewayApplyProfileForVerificationRequestIDO struct {
 	HasRegularlyAttendedComicConsOrCollectibleShows int8   `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
 }
 
-func (s *gatewayApplyProfileForVerificationServiceImpl) Execute(sessCtx mongo.SessionContext, req *GatewayApplyProfileForVerificationRequestIDO) (*domain.User, error) {
+func (s *gatewayApplyProfileForVerificationServiceImpl) Execute(sessCtx mongo.SessionContext, req *GatewayApplyProfileForVerificationRequestIDO) (*domain.FederatedIdentity, error) {
 	//
 	// STEP 1: Validation
 	//
@@ -151,31 +151,31 @@ func (s *gatewayApplyProfileForVerificationServiceImpl) Execute(sessCtx mongo.Se
 	}
 
 	// Extract from our session the following data.
-	userID := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	federatedidentityID := sessCtx.Value(constants.SessionFederatedIdentityID).(primitive.ObjectID)
 	ipAddress, _ := sessCtx.Value(constants.SessionIPAddress).(string)
 
-	// Lookup the user in our database, else return a `400 Bad Request` error.
-	ou, err := s.userGetByIDUseCase.Execute(sessCtx, userID)
+	// Lookup the federatedidentity in our database, else return a `400 Bad Request` error.
+	ou, err := s.federatedidentityGetByIDUseCase.Execute(sessCtx, federatedidentityID)
 	if err != nil {
 		s.logger.Error("database error", slog.Any("err", err))
 		return nil, err
 	}
 	if ou == nil {
-		s.logger.Warn("user does not exist validation error")
+		s.logger.Warn("federatedidentity does not exist validation error")
 		return nil, httperror.NewForBadRequestWithSingleField("id", "does not exist")
 	}
 
 	// Verify profile status.
-	if ou.ProfileVerificationStatus == domain.UserProfileVerificationStatusApproved || ou.ProfileVerificationStatus == domain.UserProfileVerificationStatusRejected {
+	if ou.ProfileVerificationStatus == domain.FederatedIdentityProfileVerificationStatusApproved || ou.ProfileVerificationStatus == domain.FederatedIdentityProfileVerificationStatusRejected {
 		s.logger.Warn("Profile verification status already set",
-			slog.Any("user_id", userID),
+			slog.Any("federatedidentity_id", federatedidentityID),
 			slog.Any("profile_verification_status", ou.ProfileVerificationStatus),
 		)
 		return nil, httperror.NewForBadRequestWithSingleField("message", "You cannot apply again for verification")
 	}
 
-	ou.ProfileVerificationStatus = domain.UserProfileVerificationStatusSubmittedForReview
-	ou.ModifiedByUserID = userID
+	ou.ProfileVerificationStatus = domain.FederatedIdentityProfileVerificationStatusSubmittedForReview
+	ou.ModifiedByFederatedIdentityID = federatedidentityID
 	ou.ModifiedAt = time.Now()
 	ou.ModifiedByName = fmt.Sprintf("%s %s", ou.FirstName, ou.LastName)
 	ou.ModifiedFromIPAddress = ipAddress
@@ -205,8 +205,8 @@ func (s *gatewayApplyProfileForVerificationServiceImpl) Execute(sessCtx mongo.Se
 	ou.HasPreviouslyPurchasedFromFacebookMarketplace = req.HasPreviouslyPurchasedFromFacebookMarketplace
 	ou.HasRegularlyAttendedComicConsOrCollectibleShows = req.HasRegularlyAttendedComicConsOrCollectibleShows
 
-	if err := s.userUpdateUseCase.Execute(sessCtx, ou); err != nil {
-		s.logger.Error("user update by id error", slog.Any("error", err))
+	if err := s.federatedidentityUpdateUseCase.Execute(sessCtx, ou); err != nil {
+		s.logger.Error("federatedidentity update by id error", slog.Any("error", err))
 		return nil, err
 	}
 

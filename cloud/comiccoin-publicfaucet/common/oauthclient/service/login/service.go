@@ -10,7 +10,7 @@ import (
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/token"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 )
 
 type LoginRequest struct {
@@ -40,8 +40,8 @@ type loginServiceImpl struct {
 	logger                *slog.Logger
 	getAuthURLUseCase     uc_oauth.GetAuthorizationURLUseCase
 	exchangeCodeUseCase   uc_oauth.ExchangeCodeUseCase
-	userGetByEmailUseCase uc_user.UserGetByEmailUseCase
-	tokenUpsertUseCase    uc_token.TokenUpsertByUserIDUseCase
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	tokenUpsertUseCase    uc_token.TokenUpsertByFederatedIdentityIDUseCase
 }
 
 func NewLoginService(
@@ -49,32 +49,32 @@ func NewLoginService(
 	logger *slog.Logger,
 	getAuthURLUseCase uc_oauth.GetAuthorizationURLUseCase,
 	exchangeCodeUseCase uc_oauth.ExchangeCodeUseCase,
-	userGetByEmailUseCase uc_user.UserGetByEmailUseCase,
-	tokenUpsertUseCase uc_token.TokenUpsertByUserIDUseCase,
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase,
+	tokenUpsertUseCase uc_token.TokenUpsertByFederatedIdentityIDUseCase,
 ) LoginService {
 	return &loginServiceImpl{
 		config:                config,
 		logger:                logger,
 		getAuthURLUseCase:     getAuthURLUseCase,
 		exchangeCodeUseCase:   exchangeCodeUseCase,
-		userGetByEmailUseCase: userGetByEmailUseCase,
+		federatedidentityGetByEmailUseCase: federatedidentityGetByEmailUseCase,
 		tokenUpsertUseCase:    tokenUpsertUseCase,
 	}
 }
 
 func (s *loginServiceImpl) ProcessLogin(ctx context.Context, req *LoginRequest) (*LoginResponse, error) {
-	// First, check if user exists in our database
-	user, err := s.userGetByEmailUseCase.Execute(ctx, req.Email)
+	// First, check if federatedidentity exists in our database
+	federatedidentity, err := s.federatedidentityGetByEmailUseCase.Execute(ctx, req.Email)
 	if err != nil {
-		s.logger.Error("failed to get user",
+		s.logger.Error("failed to get federatedidentity",
 			slog.String("email", req.Email),
 			slog.Any("error", err))
 		return nil, err
 	}
 
-	if user == nil {
-		err := errors.New("User account does not exist, please register this account")
-		s.logger.Error("User does not exist for email",
+	if federatedidentity == nil {
+		err := errors.New("FederatedIdentity account does not exist, please register this account")
+		s.logger.Error("FederatedIdentity does not exist for email",
 			slog.String("email", req.Email),
 			slog.Any("error", err))
 		return nil, err
@@ -83,7 +83,7 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, req *LoginRequest) 
 	// For automatic auth flow
 	if req.AuthFlow == "auto" {
 		// Get authorization URL with state parameter
-		authState := "login:" + user.ID.Hex() // Simple state format, could be more complex
+		authState := "login:" + federatedidentity.ID.Hex() // Simple state format, could be more complex
 		authURL, err := s.getAuthURLUseCase.Execute(ctx, authState)
 		if err != nil {
 			s.logger.Error("failed to get authorization URL",
@@ -103,7 +103,7 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, req *LoginRequest) 
 
 		// Store the tokens
 		token := &dom_token.Token{
-			UserID:       user.ID,
+			FederatedIdentityID:       federatedidentity.ID,
 			AccessToken:  tokenResp.AccessToken,
 			RefreshToken: tokenResp.RefreshToken,
 			ExpiresAt:    tokenResp.ExpiresAt,
@@ -122,13 +122,13 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, req *LoginRequest) 
 			RefreshToken:  tokenResp.RefreshToken,
 			TokenType:     tokenResp.TokenType,
 			ExpiresIn:     tokenResp.ExpiresIn,
-			HasOTPEnabled: user.OTPEnabled,
-			OTPValidated:  user.OTPValidated,
+			HasOTPEnabled: federatedidentity.OTPEnabled,
+			OTPValidated:  federatedidentity.OTPValidated,
 		}, nil
 	}
 
 	// For manual auth flow
-	authState := "login:" + user.ID.Hex()
+	authState := "login:" + federatedidentity.ID.Hex()
 	authURL, err := s.getAuthURLUseCase.Execute(ctx, authState)
 	if err != nil {
 		s.logger.Error("failed to get authorization URL",
@@ -141,7 +141,7 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, req *LoginRequest) 
 	return &LoginResponse{
 		AuthCode:      authURL,
 		RedirectURI:   s.config.OAuth.ClientRedirectURI,
-		HasOTPEnabled: user.OTPEnabled,
-		OTPValidated:  user.OTPValidated,
+		HasOTPEnabled: federatedidentity.OTPEnabled,
+		OTPValidated:  federatedidentity.OTPValidated,
 	}, nil
 }

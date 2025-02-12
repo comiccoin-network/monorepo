@@ -9,14 +9,14 @@ import (
 	"log/slog"
 )
 
-func (impl *templatedEmailer) SendUserVerificationEmail(ctx context.Context, email, verificationCode, firstName string) error {
+func (impl *templatedEmailer) SendFederatedIdentityVerificationEmail(ctx context.Context, email, verificationCode, firstName string) error {
 	impl.Logger.Debug("sending email verification email...")
 
 	// FOR TESTING PURPOSES ONLY.
-	fp := path.Join("templates", "user_verification_email.html")
+	fp := path.Join("templates", "federatedidentity_verification_email.html")
 	tmpl, err := template.ParseFiles(fp)
 	if err != nil {
-		impl.Logger.Error("user verification parsing error", slog.Any("error", err))
+		impl.Logger.Error("federatedidentity verification parsing error", slog.Any("error", err))
 		return err
 	}
 
@@ -33,15 +33,15 @@ func (impl *templatedEmailer) SendUserVerificationEmail(ctx context.Context, ema
 		FirstName:        firstName,
 	}
 	if err := tmpl.Execute(&processed, data); err != nil {
-		impl.Logger.Error("user verification template execution error", slog.Any("error", err))
+		impl.Logger.Error("federatedidentity verification template execution error", slog.Any("error", err))
 		return err
 	}
 	body := processed.String() // DEVELOPERS NOTE: Convert our long sequence of data into a string.
 
 	if err := impl.Emailer.Send(ctx, impl.Emailer.GetSenderEmail(), "Activate your ComicCoin PublicFaucet Account", email, body); err != nil {
-		impl.Logger.Error("sending user verification error", slog.Any("error", err))
+		impl.Logger.Error("sending federatedidentity verification error", slog.Any("error", err))
 		return err
 	}
-	impl.Logger.Debug("user verification email sent")
+	impl.Logger.Debug("federatedidentity verification email sent")
 	return nil
 }

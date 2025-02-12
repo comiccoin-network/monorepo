@@ -8,7 +8,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/templatedemailer"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/federatedidentity"
 )
 
 type PublicFaucetForgotPasswordService interface {
@@ -18,15 +18,15 @@ type PublicFaucetForgotPasswordService interface {
 type publicfaucetForgotPasswordServiceImpl struct {
 	logger                *slog.Logger
 	templatedEmailer      templatedemailer.TemplatedEmailer
-	userGetByEmailUseCase uc_user.UserGetByEmailUseCase
-	userUpdateUseCase     uc_user.UserUpdateUseCase
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	federatedidentityUpdateUseCase     uc_federatedidentity.FederatedIdentityUpdateUseCase
 }
 
 func NewPublicFaucetForgotPasswordService(
 	logger *slog.Logger,
 	templatedEmailer templatedemailer.TemplatedEmailer,
-	uc1 uc_user.UserGetByEmailUseCase,
-	uc2 uc_user.UserUpdateUseCase,
+	uc1 uc_federatedidentity.FederatedIdentityGetByEmailUseCase,
+	uc2 uc_federatedidentity.FederatedIdentityUpdateUseCase,
 ) PublicFaucetForgotPasswordService {
 	return &publicfaucetForgotPasswordServiceImpl{logger, templatedEmailer, uc1, uc2}
 }
@@ -37,7 +37,7 @@ type PublicFaucetForgotPasswordRequestIDO struct {
 
 func (s *publicfaucetForgotPasswordServiceImpl) Execute(sessCtx mongo.SessionContext, req *PublicFaucetForgotPasswordRequestIDO) error {
 	// // Extract from our session the following data.
-	// userID := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	// federatedidentityID := sessCtx.Value(constants.SessionFederatedIdentityID).(primitive.ObjectID)
 
 	e := make(map[string]string)
 	if req.Email == "" {
@@ -47,21 +47,21 @@ func (s *publicfaucetForgotPasswordServiceImpl) Execute(sessCtx mongo.SessionCon
 		return httperror.NewForBadRequest(&e)
 	}
 
-	// Lookup the user in our database, else return a `400 Bad Request` error.
-	u, err := s.userGetByEmailUseCase.Execute(sessCtx, req.Email)
+	// Lookup the federatedidentity in our database, else return a `400 Bad Request` error.
+	u, err := s.federatedidentityGetByEmailUseCase.Execute(sessCtx, req.Email)
 	if err != nil {
 		s.logger.Error("database error", slog.Any("err", err))
 		return err
 	}
 	if u == nil {
-		s.logger.Warn("user does not exist validation error")
+		s.logger.Warn("federatedidentity does not exist validation error")
 		return httperror.NewForBadRequestWithSingleField("id", "does not exist")
 	}
 
-	// Generate unique token and save it to the user record.
+	// Generate unique token and save it to the federatedidentity record.
 	u.EmailVerificationCode = primitive.NewObjectID().Hex()
-	if err := s.userUpdateUseCase.Execute(sessCtx, u); err != nil {
-		s.logger.Warn("user update by id failed", slog.Any("error", err))
+	if err := s.federatedidentityUpdateUseCase.Execute(sessCtx, u); err != nil {
+		s.logger.Warn("federatedidentity update by id failed", slog.Any("error", err))
 		return err
 	}
 

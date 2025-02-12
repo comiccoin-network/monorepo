@@ -12,14 +12,14 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config/constants"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/user"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/federatedidentity"
 	uc_ratelimit "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/ratelimiter"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/token"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 )
 
 type GetIdentityService interface {
-	Execute(ctx context.Context, accessToken string) (*dom_user.User, error)
+	Execute(ctx context.Context, accessToken string) (*dom_federatedidentity.FederatedIdentity, error)
 }
 
 type getIdentityServiceImpl struct {
@@ -27,7 +27,7 @@ type getIdentityServiceImpl struct {
 	logger               *slog.Logger
 	cache                mongodbcache.Cacher
 	tokenFindByIDUseCase uc_token.TokenFindByIDUseCase
-	userGetByIDUseCase   uc_user.UserGetByIDUseCase
+	federatedidentityGetByIDUseCase   uc_federatedidentity.FederatedIdentityGetByIDUseCase
 	isAllowedUseCase     uc_ratelimit.IsAllowedUseCase
 	recordFailureUseCase uc_ratelimit.RecordFailureUseCase
 	resetFailuresUseCase uc_ratelimit.ResetFailuresUseCase
@@ -38,7 +38,7 @@ func NewGetIdentityService(
 	logger *slog.Logger,
 	cache mongodbcache.Cacher,
 	tokenFindByIDUseCase uc_token.TokenFindByIDUseCase,
-	userGetByIDUseCase uc_user.UserGetByIDUseCase,
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase,
 	isAllowedUseCase uc_ratelimit.IsAllowedUseCase,
 	recordFailureUseCase uc_ratelimit.RecordFailureUseCase,
 	resetFailuresUseCase uc_ratelimit.ResetFailuresUseCase,
@@ -48,14 +48,14 @@ func NewGetIdentityService(
 		logger:               logger,
 		cache:                cache,
 		tokenFindByIDUseCase: tokenFindByIDUseCase,
-		userGetByIDUseCase:   userGetByIDUseCase,
+		federatedidentityGetByIDUseCase:   federatedidentityGetByIDUseCase,
 		isAllowedUseCase:     isAllowedUseCase,
 		recordFailureUseCase: recordFailureUseCase,
 		resetFailuresUseCase: resetFailuresUseCase,
 	}
 }
 
-func (s *getIdentityServiceImpl) Execute(ctx context.Context, accessToken string) (*dom_user.User, error) {
+func (s *getIdentityServiceImpl) Execute(ctx context.Context, accessToken string) (*dom_federatedidentity.FederatedIdentity, error) {
 	// Extract IP address from context
 	ipAddress, _ := ctx.Value(constants.SessionIPAddress).(string)
 
@@ -113,30 +113,30 @@ func (s *getIdentityServiceImpl) Execute(ctx context.Context, accessToken string
 		return nil, nil
 	}
 
-	// Only try to fetch user info if we have a user ID
-	if tokenInfo.UserID != "" && tokenInfo.UserID != "pending" {
-		// Convert the user ID string to ObjectID
-		userID, err := primitive.ObjectIDFromHex(tokenInfo.UserID)
+	// Only try to fetch federatedidentity info if we have a federatedidentity ID
+	if tokenInfo.FederatedIdentityID != "" && tokenInfo.FederatedIdentityID != "pending" {
+		// Convert the federatedidentity ID string to ObjectID
+		federatedidentityID, err := primitive.ObjectIDFromHex(tokenInfo.FederatedIdentityID)
 		if err != nil {
-			s.logger.Error("failed to parse user ID",
-				slog.String("user_id", tokenInfo.UserID),
+			s.logger.Error("failed to parse federatedidentity ID",
+				slog.String("federatedidentity_id", tokenInfo.FederatedIdentityID),
 				slog.Any("error", err))
 			return nil, nil
 		}
 
-		// Fetch user information
-		user, err := s.userGetByIDUseCase.Execute(ctx, userID)
+		// Fetch federatedidentity information
+		federatedidentity, err := s.federatedidentityGetByIDUseCase.Execute(ctx, federatedidentityID)
 		if err != nil {
-			s.logger.Error("failed to fetch user",
-				slog.String("user_id", tokenInfo.UserID),
+			s.logger.Error("failed to fetch federatedidentity",
+				slog.String("federatedidentity_id", tokenInfo.FederatedIdentityID),
 				slog.Any("error", err))
 			return nil, nil
 		}
 
-		if user != nil {
-			s.logger.Debug("found user",
-				slog.String("user_id", user.ID.Hex()),
-				slog.String("email", user.Email))
+		if federatedidentity != nil {
+			s.logger.Debug("found federatedidentity",
+				slog.String("federatedidentity_id", federatedidentity.ID.Hex()),
+				slog.String("email", federatedidentity.Email))
 
 			// Reset failures on successful authentication
 			if err := s.resetFailuresUseCase.Execute(ctx, ipAddress); err != nil {
@@ -146,12 +146,12 @@ func (s *getIdentityServiceImpl) Execute(ctx context.Context, accessToken string
 				// Continue despite error resetting failures
 			}
 
-			return user, nil
+			return federatedidentity, nil
 		} else {
-			s.logger.Warn("user not found",
-				slog.String("user_id", tokenInfo.UserID))
+			s.logger.Warn("federatedidentity not found",
+				slog.String("federatedidentity_id", tokenInfo.FederatedIdentityID))
 
-			// Record failure for non-existent user
+			// Record failure for non-existent federatedidentity
 			if err := s.recordFailureUseCase.Execute(ctx, ipAddress); err != nil {
 				s.logger.Error("failed to record authentication failure",
 					slog.String("ip_address", ipAddress),
@@ -159,8 +159,8 @@ func (s *getIdentityServiceImpl) Execute(ctx context.Context, accessToken string
 			}
 		}
 	} else {
-		s.logger.Info("token has no associated user ID or is pending",
-			slog.String("user_id", tokenInfo.UserID))
+		s.logger.Info("token has no associated federatedidentity ID or is pending",
+			slog.String("federatedidentity_id", tokenInfo.FederatedIdentityID))
 	}
 
 	return nil, nil

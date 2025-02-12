@@ -26,7 +26,7 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 	// Create indexes for optimizing queries and enforcing constraints
 	_, err := tc.Indexes().CreateMany(context.TODO(), []mongo.IndexModel{
 		{
-			Keys:    bson.D{{Key: "user_id", Value: 1}},
+			Keys:    bson.D{{Key: "federatedidentity_id", Value: 1}},
 			Options: options.Index().SetUnique(true),
 		},
 		{

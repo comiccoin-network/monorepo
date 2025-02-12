@@ -11,7 +11,7 @@ import (
 type Repository interface {
 	Create(ctx context.Context, session *OAuthSession) error
 	GetBySessionID(ctx context.Context, sessionID string) (*OAuthSession, error)
-	GetByUserID(ctx context.Context, userID primitive.ObjectID) (*OAuthSession, error)
+	GetByFederatedIdentityID(ctx context.Context, federatedidentityID primitive.ObjectID) (*OAuthSession, error)
 	Update(ctx context.Context, session *OAuthSession) error
 	Delete(ctx context.Context, sessionID string) error
 	DeleteExpired(ctx context.Context) error

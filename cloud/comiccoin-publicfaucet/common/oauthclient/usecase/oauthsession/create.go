@@ -41,8 +41,8 @@ func (uc *createOAuthSessionUseCaseImpl) Execute(ctx context.Context, session *d
 		if session.SessionID == "" {
 			e["session_id"] = "missing value"
 		}
-		if session.UserID.IsZero() {
-			e["user_id"] = "missing value"
+		if session.FederatedIdentityID.IsZero() {
+			e["federatedidentity_id"] = "missing value"
 		}
 		if session.AccessToken == "" {
 			e["access_token"] = "missing value"

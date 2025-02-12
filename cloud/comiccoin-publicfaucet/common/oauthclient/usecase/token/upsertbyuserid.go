@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token/upsertbyuserid.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token/upsertbyfederatedidentityid.go
 package token
 
 import (
@@ -11,21 +11,21 @@ import (
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/token"
 )
 
-type TokenUpsertByUserIDUseCase interface {
+type TokenUpsertByFederatedIdentityIDUseCase interface {
 	Execute(ctx context.Context, token *dom_token.Token) error
 }
 
-type tokenUpsertByUserIDUseCaseImpl struct {
+type tokenUpsertByFederatedIdentityIDUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   dom_token.Repository
 }
 
-func NewTokenUpsertByUserIDUseCase(config *config.Configuration, logger *slog.Logger, repo dom_token.Repository) TokenUpsertByUserIDUseCase {
-	return &tokenUpsertByUserIDUseCaseImpl{config, logger, repo}
+func NewTokenUpsertByFederatedIdentityIDUseCase(config *config.Configuration, logger *slog.Logger, repo dom_token.Repository) TokenUpsertByFederatedIdentityIDUseCase {
+	return &tokenUpsertByFederatedIdentityIDUseCaseImpl{config, logger, repo}
 }
 
-func (uc *tokenUpsertByUserIDUseCaseImpl) Execute(ctx context.Context, token *dom_token.Token) error {
+func (uc *tokenUpsertByFederatedIdentityIDUseCaseImpl) Execute(ctx context.Context, token *dom_token.Token) error {
 	//
 	// STEP 1: Validation.
 	//
@@ -34,8 +34,8 @@ func (uc *tokenUpsertByUserIDUseCaseImpl) Execute(ctx context.Context, token *do
 	if token == nil {
 		e["token"] = "missing value"
 	} else {
-		if token.UserID.IsZero() {
-			e["user_id"] = "missing value"
+		if token.FederatedIdentityID.IsZero() {
+			e["federatedidentity_id"] = "missing value"
 		}
 		if token.AccessToken == "" {
 			e["access_token"] = "missing value"
@@ -60,5 +60,5 @@ func (uc *tokenUpsertByUserIDUseCaseImpl) Execute(ctx context.Context, token *do
 	// STEP 2: Upsert into database.
 	//
 
-	return uc.repo.UpsertByUserID(ctx, token)
+	return uc.repo.UpsertByFederatedIdentityID(ctx, token)
 }

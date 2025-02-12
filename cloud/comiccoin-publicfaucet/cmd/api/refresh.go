@@ -22,25 +22,25 @@ import (
 )
 
 func RefreshTokenCmd() *cobra.Command {
-	var userID, refreshToken string
+	var federatedidentityID, refreshToken string
 
 	var cmd = &cobra.Command{
 		Use:   "refresh-token",
 		Short: "Refresh an expired access token using a refresh token",
 		Run: func(cmd *cobra.Command, args []string) {
-			doRunTokenRefresh(userID, refreshToken)
+			doRunTokenRefresh(federatedidentityID, refreshToken)
 		},
 	}
 
-	cmd.Flags().StringVarP(&userID, "user-id", "u", "", "User ID (required)")
+	cmd.Flags().StringVarP(&federatedidentityID, "federatedidentity-id", "u", "", "FederatedIdentity ID (required)")
 	cmd.Flags().StringVarP(&refreshToken, "refresh-token", "r", "", "Refresh token (required)")
-	cmd.MarkFlagRequired("user-id")
+	cmd.MarkFlagRequired("federatedidentity-id")
 	cmd.MarkFlagRequired("refresh-token")
 
 	return cmd
 }
 
-func doRunTokenRefresh(userID, refreshToken string) {
+func doRunTokenRefresh(federatedidentityID, refreshToken string) {
 	// Initialize logger and configuration
 	logger := logger.NewProvider()
 	originalCfg := config.NewProviderUsingEnvironmentVariables()
@@ -97,13 +97,13 @@ func doRunTokenRefresh(userID, refreshToken string) {
 		log.Fatal("Refresh token use case initialization failed")
 	}
 
-	tokenGetUseCase := uc_token.NewTokenGetByUserIDUseCase(cfg, logger, tokenRepo)
+	tokenGetUseCase := uc_token.NewTokenGetByFederatedIdentityIDUseCase(cfg, logger, tokenRepo)
 	if tokenGetUseCase == nil {
 		logger.Error("failed to initialize token get use case")
 		log.Fatal("Token get use case initialization failed")
 	}
 
-	tokenUpsertUseCase := uc_token.NewTokenUpsertByUserIDUseCase(cfg, logger, tokenRepo)
+	tokenUpsertUseCase := uc_token.NewTokenUpsertByFederatedIdentityIDUseCase(cfg, logger, tokenRepo)
 	if tokenUpsertUseCase == nil {
 		logger.Error("failed to initialize token upsert use case")
 		log.Fatal("Token upsert use case initialization failed")
@@ -124,30 +124,30 @@ func doRunTokenRefresh(userID, refreshToken string) {
 	}
 	logger.Debug("refresh service initialized")
 
-	// Parse user ID with error checking
-	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	// Parse federatedidentity ID with error checking
+	federatedidentityObjectID, err := primitive.ObjectIDFromHex(federatedidentityID)
 	if err != nil {
-		logger.Error("invalid user ID format",
-			slog.String("user_id", userID),
+		logger.Error("invalid federatedidentity ID format",
+			slog.String("federatedidentity_id", federatedidentityID),
 			slog.Any("error", err))
 		log.Fatal(err)
 	}
 
 	// Create and execute refresh request
 	request := &svc_token.RefreshRequest{
-		UserID:       userObjectID,
+		FederatedIdentityID:       federatedidentityObjectID,
 		RefreshToken: refreshToken,
 	}
 
 	// Add debug logging before the refresh call
 	logger.Debug("attempting token refresh",
-		slog.String("user_id", userID),
+		slog.String("federatedidentity_id", federatedidentityID),
 		slog.String("refresh_token_length", fmt.Sprintf("%d", len(refreshToken))))
 
 	response, err := refreshService.RefreshToken(context.Background(), request)
 	if err != nil {
 		logger.Error("token refresh failed",
-			slog.String("user_id", userID),
+			slog.String("federatedidentity_id", federatedidentityID),
 			slog.Any("error", err))
 		log.Fatal(err)
 	}

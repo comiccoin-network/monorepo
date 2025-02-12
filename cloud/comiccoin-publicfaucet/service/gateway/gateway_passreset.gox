@@ -11,7 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/password"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config/constants"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/federatedidentity"
 )
 
 type PublicFaucetResetPasswordService interface {
@@ -22,16 +22,16 @@ type publicfaucetResetPasswordServiceImpl struct {
 	logger                           *slog.Logger
 	kmutex                           kmutexutil.KMutexProvider
 	passwordProvider                 password.Provider
-	userGetByVerificationCodeUseCase uc_user.UserGetByVerificationCodeUseCase
-	userUpdateUseCase                uc_user.UserUpdateUseCase
+	federatedidentityGetByVerificationCodeUseCase uc_federatedidentity.FederatedIdentityGetByVerificationCodeUseCase
+	federatedidentityUpdateUseCase                uc_federatedidentity.FederatedIdentityUpdateUseCase
 }
 
 func NewPublicFaucetResetPasswordService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
 	pp password.Provider,
-	uc1 uc_user.UserGetByVerificationCodeUseCase,
-	uc2 uc_user.UserUpdateUseCase,
+	uc1 uc_federatedidentity.FederatedIdentityGetByVerificationCodeUseCase,
+	uc2 uc_federatedidentity.FederatedIdentityUpdateUseCase,
 ) PublicFaucetResetPasswordService {
 	return &publicfaucetResetPasswordServiceImpl{logger, kmutex, pp, uc1, uc2}
 }
@@ -50,14 +50,14 @@ func (s *publicfaucetResetPasswordServiceImpl) Execute(sessCtx mongo.SessionCont
 	// // Extract from our session the following data.
 	// sessionID := sessCtx.Value(constants.SessionID).(string)
 
-	// Lookup the user in our database, else return a `400 Bad Request` error.
-	u, err := s.userGetByVerificationCodeUseCase.Execute(sessCtx, req.Code)
+	// Lookup the federatedidentity in our database, else return a `400 Bad Request` error.
+	u, err := s.federatedidentityGetByVerificationCodeUseCase.Execute(sessCtx, req.Code)
 	if err != nil {
 		s.logger.Error("database error", slog.Any("err", err))
 		return err
 	}
 	if u == nil {
-		s.logger.Warn("user does not exist validation error")
+		s.logger.Warn("federatedidentity does not exist validation error")
 		return httperror.NewForBadRequestWithSingleField("code", "does not exist")
 	}
 
@@ -78,16 +78,16 @@ func (s *publicfaucetResetPasswordServiceImpl) Execute(sessCtx mongo.SessionCont
 	// Extract from our session the following data.
 	ipAddress, _ := sessCtx.Value(constants.SessionIPAddress).(string)
 
-	// Verify the user.
+	// Verify the federatedidentity.
 	u.PasswordHash = passwordHash
 	u.PasswordHashAlgorithm = s.passwordProvider.AlgorithmName()
 	u.EmailVerificationCode = "" // Remove email active code so it cannot be used agian.
 	u.EmailVerificationExpiry = time.Now()
 	u.ModifiedAt = time.Now()
-	// u.ModifiedByUserID = userID
+	// u.ModifiedByFederatedIdentityID = federatedidentityID
 	// u.ModifiedByName = fmt.Sprintf("%s %s", u.FirstName, u.LastName)
 	u.ModifiedFromIPAddress = ipAddress
-	if err := s.userUpdateUseCase.Execute(sessCtx, u); err != nil {
+	if err := s.federatedidentityUpdateUseCase.Execute(sessCtx, u); err != nil {
 		s.logger.Error("update error", slog.Any("err", err))
 		return err
 	}

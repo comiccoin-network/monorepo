@@ -12,8 +12,8 @@ type TemplatedEmailer interface {
 	GetBackendDomainName() string
 	GetFrontendDomainName() string
 	// SendBusinessVerificationEmail(email, verificationCode, firstName string) error
-	SendUserVerificationEmail(ctx context.Context, email, verificationCode, firstName string) error
-	// SendNewUserTemporaryPasswordEmail(email, firstName, temporaryPassword string) error
+	SendFederatedIdentityVerificationEmail(ctx context.Context, email, verificationCode, firstName string) error
+	// SendNewFederatedIdentityTemporaryPasswordEmail(email, firstName, temporaryPassword string) error
 	SendForgotPasswordEmail(email, verificationCode, firstName string) error
 	// SendNewComicSubmissionEmailToStaff(staffEmails []string, submissionID string, storeName string, item string, cpsrn string, serviceTypeName string) error
 	// SendNewComicSubmissionEmailToRetailers(retailerEmails []string, submissionID string, storeName string, item string, cpsrn string, serviceTypeName string) error

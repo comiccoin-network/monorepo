@@ -14,35 +14,35 @@ import (
 	common_oauth_config "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	r_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauth"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/token"
-	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/user"
+	r_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/federatedidentity"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/introspection"
 	svc_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/introspection"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 )
 
 func VerifyTokenCmd() *cobra.Command {
-	var accessToken, userID string
+	var accessToken, federatedidentityID string
 
 	var cmd = &cobra.Command{
 		Use:   "verify-token",
 		Short: "Verify an access token's validity",
 		Run: func(cmd *cobra.Command, args []string) {
-			doRunVerifyToken(accessToken, userID)
+			doRunVerifyToken(accessToken, federatedidentityID)
 		},
 	}
 
 	cmd.Flags().StringVarP(&accessToken, "access-token", "t", "", "Access token to verify")
-	cmd.Flags().StringVarP(&userID, "user-id", "u", "", "User ID (optional)")
+	cmd.Flags().StringVarP(&federatedidentityID, "federatedidentity-id", "u", "", "FederatedIdentity ID (optional)")
 	cmd.MarkFlagRequired("access-token")
 
 	return cmd
 }
 
-func doRunVerifyToken(accessToken, userID string) {
+func doRunVerifyToken(accessToken, federatedidentityID string) {
 	// Setup dependencies
 	logger := logger.NewProvider()
 	originalCfg := config.NewProviderUsingEnvironmentVariables()
@@ -75,24 +75,24 @@ func doRunVerifyToken(accessToken, userID string) {
 	tokenRepo := r_token.NewRepository(cfg, logger, dbClient)
 	logger.Debug("token repository initialized")
 
-	userRepo := r_user.NewRepository(cfg, logger, dbClient)
-	logger.Debug("user repository initialized")
+	federatedidentityRepo := r_federatedidentity.NewRepository(cfg, logger, dbClient)
+	logger.Debug("federatedidentity repository initialized")
 
 	// Initialize all use cases with debug logging
 	introspectTokenUseCase := uc_oauth.NewIntrospectTokenUseCase(cfg, logger, oauthRepo)
-	tokenGetUseCase := uc_token.NewTokenGetByUserIDUseCase(cfg, logger, tokenRepo)
-	userGetByIDUseCase := uc_user.NewUserGetByIDUseCase(cfg, logger, userRepo)
-	tokenGetByUserIDUseCase := uc_token.NewTokenGetByUserIDUseCase(
+	tokenGetUseCase := uc_token.NewTokenGetByFederatedIdentityIDUseCase(cfg, logger, tokenRepo)
+	federatedidentityGetByIDUseCase := uc_federatedidentity.NewFederatedIdentityGetByIDUseCase(cfg, logger, federatedidentityRepo)
+	tokenGetByFederatedIdentityIDUseCase := uc_token.NewTokenGetByFederatedIdentityIDUseCase(
 		cfg,
 		logger,
 		tokenRepo,
 	)
-	tokenUpsertByUserIDUseCase := uc_token.NewTokenUpsertByUserIDUseCase(
+	tokenUpsertByFederatedIdentityIDUseCase := uc_token.NewTokenUpsertByFederatedIdentityIDUseCase(
 		cfg,
 		logger,
 		tokenRepo,
 	)
-	_ = tokenUpsertByUserIDUseCase
+	_ = tokenUpsertByFederatedIdentityIDUseCase
 	refreshTokenUseCase := uc_oauth.NewRefreshTokenUseCase(
 		cfg,
 		logger,
@@ -101,26 +101,26 @@ func doRunVerifyToken(accessToken, userID string) {
 	_ = refreshTokenUseCase
 
 	// Add debug token lookup
-	if userID != "" {
-		userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if federatedidentityID != "" {
+		federatedidentityObjectID, err := primitive.ObjectIDFromHex(federatedidentityID)
 		if err != nil {
-			logger.Error("invalid user ID format",
-				slog.String("user_id", userID),
+			logger.Error("invalid federatedidentity ID format",
+				slog.String("federatedidentity_id", federatedidentityID),
 				slog.Any("error", err))
 		} else {
-			token, err := tokenGetUseCase.Execute(context.Background(), userObjectID)
+			token, err := tokenGetUseCase.Execute(context.Background(), federatedidentityObjectID)
 			if err != nil {
 				logger.Error("failed to get token",
-					slog.String("user_id", userID),
+					slog.String("federatedidentity_id", federatedidentityID),
 					slog.Any("error", err))
 			} else if token != nil {
 				logger.Info("found stored token",
-					slog.String("user_id", userID),
+					slog.String("federatedidentity_id", federatedidentityID),
 					slog.String("access_token", token.AccessToken),
 					slog.Time("expires_at", token.ExpiresAt))
 			} else {
-				logger.Warn("no token found for user",
-					slog.String("user_id", userID))
+				logger.Warn("no token found for federatedidentity",
+					slog.String("federatedidentity_id", federatedidentityID))
 			}
 		}
 	}
@@ -142,28 +142,28 @@ func doRunVerifyToken(accessToken, userID string) {
 		cfg,
 		logger,
 		introspectTokenUseCase,
-		tokenGetByUserIDUseCase,
-		userGetByIDUseCase,
+		tokenGetByFederatedIdentityIDUseCase,
+		federatedidentityGetByIDUseCase,
 	)
 
 	// Create request
 	req := &introspection.IntrospectionRequest{
 		Token:  accessToken,
-		UserID: userID,
+		FederatedIdentityID: federatedidentityID,
 	}
 	// Verify token
 	resp, err := introspectionService.IntrospectToken(context.Background(), req)
 	if err != nil {
 		logger.Error("failed to verify token",
 			slog.String("access_token", accessToken),
-			slog.String("user_id", userID),
+			slog.String("federatedidentity_id", federatedidentityID),
 			slog.Any("error", err))
 		log.Fatal(err)
 	}
 
 	// Print Results
 	fmt.Printf("\nToken Verification Results\n")
-	fmt.Printf("User ID: %s\n", resp.UserID)
+	fmt.Printf("FederatedIdentity ID: %s\n", resp.FederatedIdentityID)
 	fmt.Printf("Email: %v\n", resp.Email)
 	fmt.Printf("FirstName At: %v\n", resp.FirstName)
 	fmt.Printf("LastName: %v\n", resp.LastName)

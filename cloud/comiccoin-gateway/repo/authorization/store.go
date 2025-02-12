@@ -24,7 +24,7 @@ func (impl authorizationStorerImpl) StoreCode(ctx context.Context, code *dom_aut
 	if err != nil {
 		impl.Logger.Error("failed to store authorization code",
 			slog.String("app_id", code.AppID),
-			slog.String("user_id", code.UserID),
+			slog.String("federatedidentity_id", code.FederatedIdentityID),
 			slog.Any("error", err))
 		return err
 	}
@@ -32,6 +32,6 @@ func (impl authorizationStorerImpl) StoreCode(ctx context.Context, code *dom_aut
 	impl.Logger.Info("stored new authorization code",
 		slog.Any("_id", result.InsertedID),
 		slog.String("app_id", code.AppID),
-		slog.String("user_id", code.UserID))
+		slog.String("federatedidentity_id", code.FederatedIdentityID))
 	return nil
 }

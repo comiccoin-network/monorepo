@@ -37,8 +37,8 @@ func (uc *authorizationStoreCodeUseCaseImpl) Execute(ctx context.Context, code *
 		if code.AppID == "" {
 			e["app_id"] = "missing value"
 		}
-		if code.UserID == "" {
-			e["user_id"] = "missing value"
+		if code.FederatedIdentityID == "" {
+			e["federatedidentity_id"] = "missing value"
 		}
 		if code.RedirectURI == "" {
 			e["redirect_uri"] = "missing value"
@@ -63,7 +63,7 @@ func (uc *authorizationStoreCodeUseCaseImpl) Execute(ctx context.Context, code *
 	if err := uc.repo.StoreCode(ctx, code); err != nil {
 		uc.logger.Error("failed to store authorization code",
 			slog.String("app_id", code.AppID),
-			slog.String("user_id", code.UserID),
+			slog.String("federatedidentity_id", code.FederatedIdentityID),
 			slog.Any("error", err))
 		return err
 	}

@@ -61,7 +61,7 @@ func (r *authorizationStorerImpl) UpdateCode(ctx context.Context, code *dom_auth
 	// Only update specific fields, not the entire document
 	update := bson.M{
 		"$set": bson.M{
-			"user_id":    code.UserID,
+			"federatedidentity_id":    code.FederatedIdentityID,
 			"updated_at": time.Now(),
 			// Add any other fields that need updating, but NOT _id
 		},
@@ -71,7 +71,7 @@ func (r *authorizationStorerImpl) UpdateCode(ctx context.Context, code *dom_auth
 	if err != nil {
 		r.Logger.Error("failed to update authorization code",
 			slog.String("code", code.Code),
-			slog.String("user_id", code.UserID),
+			slog.String("federatedidentity_id", code.FederatedIdentityID),
 			slog.Any("error", err))
 		return err
 	}
@@ -84,7 +84,7 @@ func (r *authorizationStorerImpl) UpdateCode(ctx context.Context, code *dom_auth
 
 	r.Logger.Info("successfully updated authorization code",
 		slog.String("code", code.Code),
-		slog.String("user_id", code.UserID),
+		slog.String("federatedidentity_id", code.FederatedIdentityID),
 		slog.Any("_id", existingCode.ID))
 
 	return nil

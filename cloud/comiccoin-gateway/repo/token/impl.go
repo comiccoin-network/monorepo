@@ -31,10 +31,10 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 			Keys:    bson.D{{Key: "token_id", Value: 1}},
 			Options: options.Index().SetUnique(true),
 		},
-		// Compound index for user tokens with type
+		// Compound index for federatedidentity tokens with type
 		{
 			Keys: bson.D{
-				{Key: "user_id", Value: 1},
+				{Key: "federatedidentity_id", Value: 1},
 				{Key: "token_type", Value: 1},
 				{Key: "is_revoked", Value: 1},
 			},

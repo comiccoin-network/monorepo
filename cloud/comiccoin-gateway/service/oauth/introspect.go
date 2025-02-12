@@ -12,7 +12,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	uc_app "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/application"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/token"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 )
 
 // IntrospectionRequestDTO represents the input for token introspection
@@ -27,10 +27,10 @@ type IntrospectionResponseDTO struct {
 	Active    bool   `json:"active"`              // Indicates if the token is valid and active
 	Scope     string `json:"scope,omitempty"`     // The scope associated with the token
 	ClientID  string `json:"client_id,omitempty"` // Client ID the token was issued to
-	Username  string `json:"username,omitempty"`  // Username of the resource owner
+	FederatedIdentityname  string `json:"federatedidentityname,omitempty"`  // FederatedIdentityname of the resource owner
 	ExpiresAt int64  `json:"exp,omitempty"`       // Token expiration timestamp
 	IssuedAt  int64  `json:"iat,omitempty"`       // When the token was issued
-	UserID    string `json:"user_id,omitempty"`
+	FederatedIdentityID    string `json:"federatedidentity_id,omitempty"`
 	Email     string `json:"email,omitempty"`
 	FirstName string `json:"first_name,omitempty"`
 	LastName  string `json:"last_name,omitempty"`
@@ -46,7 +46,7 @@ type introspectionServiceImpl struct {
 
 	appValidateCredentialsUseCase uc_app.ApplicationValidateCredentialsUseCase
 	tokenFindByIDUseCase          uc_token.TokenFindByIDUseCase
-	userGetByIDUseCase            uc_user.UserGetByIDUseCase
+	federatedidentityGetByIDUseCase            uc_federatedidentity.FederatedIdentityGetByIDUseCase
 }
 
 func NewIntrospectionService(
@@ -54,14 +54,14 @@ func NewIntrospectionService(
 	logger *slog.Logger,
 	appValidateCredentialsUseCase uc_app.ApplicationValidateCredentialsUseCase,
 	tokenFindByIDUseCase uc_token.TokenFindByIDUseCase,
-	userGetByIDUseCase uc_user.UserGetByIDUseCase,
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase,
 ) IntrospectionService {
 	return &introspectionServiceImpl{
 		cfg:                           cfg,
 		logger:                        logger,
 		appValidateCredentialsUseCase: appValidateCredentialsUseCase,
 		tokenFindByIDUseCase:          tokenFindByIDUseCase,
-		userGetByIDUseCase:            userGetByIDUseCase,
+		federatedidentityGetByIDUseCase:            federatedidentityGetByIDUseCase,
 	}
 }
 
@@ -100,7 +100,7 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 
 	s.logger.Debug("found token",
 		slog.String("token", req.Token),
-		slog.String("user_id", tokenInfo.UserID),
+		slog.String("federatedidentity_id", tokenInfo.FederatedIdentityID),
 		slog.String("app_id", tokenInfo.AppID),
 		slog.Time("expires_at", tokenInfo.ExpiresAt))
 
@@ -123,42 +123,42 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		IssuedAt:  tokenInfo.IssuedAt.Unix(),
 	}
 
-	// Only try to fetch user info if we have a user ID
-	if tokenInfo.UserID != "" && tokenInfo.UserID != "pending" {
-		// Convert the user ID string to ObjectID
-		userID, err := primitive.ObjectIDFromHex(tokenInfo.UserID)
+	// Only try to fetch federatedidentity info if we have a federatedidentity ID
+	if tokenInfo.FederatedIdentityID != "" && tokenInfo.FederatedIdentityID != "pending" {
+		// Convert the federatedidentity ID string to ObjectID
+		federatedidentityID, err := primitive.ObjectIDFromHex(tokenInfo.FederatedIdentityID)
 		if err != nil {
-			s.logger.Error("failed to parse user ID",
-				slog.String("user_id", tokenInfo.UserID),
+			s.logger.Error("failed to parse federatedidentity ID",
+				slog.String("federatedidentity_id", tokenInfo.FederatedIdentityID),
 				slog.Any("error", err))
-			return response, nil // Still return token info even if user lookup fails
+			return response, nil // Still return token info even if federatedidentity lookup fails
 		}
 
-		// Fetch user information
-		user, err := s.userGetByIDUseCase.Execute(ctx, userID)
+		// Fetch federatedidentity information
+		federatedidentity, err := s.federatedidentityGetByIDUseCase.Execute(ctx, federatedidentityID)
 		if err != nil {
-			s.logger.Error("failed to fetch user",
-				slog.String("user_id", tokenInfo.UserID),
+			s.logger.Error("failed to fetch federatedidentity",
+				slog.String("federatedidentity_id", tokenInfo.FederatedIdentityID),
 				slog.Any("error", err))
-			return response, nil // Still return token info even if user lookup fails
+			return response, nil // Still return token info even if federatedidentity lookup fails
 		}
 
-		if user != nil {
-			s.logger.Debug("found user",
-				slog.String("user_id", user.ID.Hex()),
-				slog.String("email", user.Email))
-			response.UserID = user.ID.Hex()
-			response.Email = user.Email
-			response.FirstName = user.FirstName
-			response.LastName = user.LastName
-			response.Username = user.Email // Using email as username
+		if federatedidentity != nil {
+			s.logger.Debug("found federatedidentity",
+				slog.String("federatedidentity_id", federatedidentity.ID.Hex()),
+				slog.String("email", federatedidentity.Email))
+			response.FederatedIdentityID = federatedidentity.ID.Hex()
+			response.Email = federatedidentity.Email
+			response.FirstName = federatedidentity.FirstName
+			response.LastName = federatedidentity.LastName
+			response.FederatedIdentityname = federatedidentity.Email // Using email as federatedidentityname
 		} else {
-			s.logger.Warn("user not found",
-				slog.String("user_id", tokenInfo.UserID))
+			s.logger.Warn("federatedidentity not found",
+				slog.String("federatedidentity_id", tokenInfo.FederatedIdentityID))
 		}
 	} else {
-		s.logger.Info("token has no associated user ID or is pending",
-			slog.String("user_id", tokenInfo.UserID))
+		s.logger.Info("token has no associated federatedidentity ID or is pending",
+			slog.String("federatedidentity_id", tokenInfo.FederatedIdentityID))
 	}
 
 	return response, nil

@@ -14,8 +14,8 @@ type Repository interface {
 	// RevokeToken marks a token as revoked
 	RevokeToken(ctx context.Context, tokenID string) error
 
-	// RevokeAllUserTokens revokes all tokens for a user
-	RevokeAllUserTokens(ctx context.Context, userID string) error
+	// RevokeAllFederatedIdentityTokens revokes all tokens for a federatedidentity
+	RevokeAllFederatedIdentityTokens(ctx context.Context, federatedidentityID string) error
 
 	// DeleteExpiredTokens removes expired tokens
 	DeleteExpiredTokens(ctx context.Context) error

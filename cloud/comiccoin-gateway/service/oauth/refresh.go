@@ -150,7 +150,7 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 	accessToken := &dom_token.Token{
 		TokenID:    newAccessToken,
 		TokenType:  "access",
-		UserID:     existingToken.UserID,
+		FederatedIdentityID:     existingToken.FederatedIdentityID,
 		AppID:      req.ClientID,
 		Scope:      existingToken.Scope,
 		ExpiresAt:  time.Now().Add(1 * time.Hour),
@@ -166,7 +166,7 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 	refreshToken := &dom_token.Token{
 		TokenID:    newRefreshToken,
 		TokenType:  "refresh",
-		UserID:     existingToken.UserID,
+		FederatedIdentityID:     existingToken.FederatedIdentityID,
 		AppID:      req.ClientID,
 		Scope:      existingToken.Scope,
 		ExpiresAt:  time.Now().Add(30 * 24 * time.Hour),

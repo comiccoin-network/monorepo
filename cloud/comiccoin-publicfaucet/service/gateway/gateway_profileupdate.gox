@@ -11,23 +11,23 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/federatedidentity"
 )
 
 type PublicFaucetProfileUpdateService interface {
-	Execute(sessCtx mongo.SessionContext, nu *PublicFaucetProfileUpdateRequestIDO) (*domain.User, error)
+	Execute(sessCtx mongo.SessionContext, nu *PublicFaucetProfileUpdateRequestIDO) (*domain.FederatedIdentity, error)
 }
 
 type publicfaucetProfileUpdateServiceImpl struct {
 	logger             *slog.Logger
-	userGetByIDUseCase uc_user.UserGetByIDUseCase
-	userUpdateUseCase  uc_user.UserUpdateUseCase
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase
+	federatedidentityUpdateUseCase  uc_federatedidentity.FederatedIdentityUpdateUseCase
 }
 
 func NewPublicFaucetProfileUpdateService(
 	logger *slog.Logger,
-	uc1 uc_user.UserGetByIDUseCase,
-	uc2 uc_user.UserUpdateUseCase,
+	uc1 uc_federatedidentity.FederatedIdentityGetByIDUseCase,
+	uc2 uc_federatedidentity.FederatedIdentityUpdateUseCase,
 ) PublicFaucetProfileUpdateService {
 	return &publicfaucetProfileUpdateServiceImpl{logger, uc1, uc2}
 }
@@ -59,19 +59,19 @@ type PublicFaucetProfileUpdateRequestIDO struct {
 	AgreeTermsOfService       bool   `bson:"agree_terms_of_service" json:"agree_terms_of_service,omitempty"`
 }
 
-func (s *publicfaucetProfileUpdateServiceImpl) Execute(sessCtx mongo.SessionContext, nu *PublicFaucetProfileUpdateRequestIDO) (*domain.User, error) {
+func (s *publicfaucetProfileUpdateServiceImpl) Execute(sessCtx mongo.SessionContext, nu *PublicFaucetProfileUpdateRequestIDO) (*domain.FederatedIdentity, error) {
 	// Extract from our session the following data.
-	userID := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	federatedidentityID := sessCtx.Value(constants.SessionFederatedIdentityID).(primitive.ObjectID)
 	ipAddress, _ := sessCtx.Value(constants.SessionIPAddress).(string)
 
-	// Lookup the user in our database, else return a `400 Bad Request` error.
-	ou, err := s.userGetByIDUseCase.Execute(sessCtx, userID)
+	// Lookup the federatedidentity in our database, else return a `400 Bad Request` error.
+	ou, err := s.federatedidentityGetByIDUseCase.Execute(sessCtx, federatedidentityID)
 	if err != nil {
 		s.logger.Error("database error", slog.Any("err", err))
 		return nil, err
 	}
 	if ou == nil {
-		s.logger.Warn("user does not exist validation error")
+		s.logger.Warn("federatedidentity does not exist validation error")
 		return nil, httperror.NewForBadRequestWithSingleField("id", "does not exist")
 	}
 
@@ -101,13 +101,13 @@ func (s *publicfaucetProfileUpdateServiceImpl) Execute(sessCtx mongo.SessionCont
 	ou.ShippingPostalCode = nu.ShippingPostalCode
 	ou.ShippingAddressLine1 = nu.ShippingAddressLine1
 	ou.ShippingAddressLine2 = nu.ShippingAddressLine2
-	ou.ModifiedByUserID = userID
+	ou.ModifiedByFederatedIdentityID = federatedidentityID
 	ou.ModifiedAt = time.Now()
 	ou.ModifiedByName = fmt.Sprintf("%s %s", ou.FirstName, ou.LastName)
 	ou.ModifiedFromIPAddress = ipAddress
 
-	if err := s.userUpdateUseCase.Execute(sessCtx, ou); err != nil {
-		s.logger.Error("user update by id error", slog.Any("error", err))
+	if err := s.federatedidentityUpdateUseCase.Execute(sessCtx, ou); err != nil {
+		s.logger.Error("federatedidentity update by id error", slog.Any("error", err))
 		return nil, err
 	}
 

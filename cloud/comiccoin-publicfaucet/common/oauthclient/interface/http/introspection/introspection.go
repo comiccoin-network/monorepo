@@ -33,12 +33,12 @@ func NewPostTokenIntrospectionHTTPHandler(
 
 type tokenIntrospectionRequestIDO struct {
 	AccessToken string `json:"access_token"`
-	UserID      string `json:"user_id"`
+	FederatedIdentityID      string `json:"federatedidentity_id"`
 }
 
 type tokenIntrospectionResponseIDO struct {
 	Active    bool               `json:"active"`
-	UserID    primitive.ObjectID `json:"user_id,omitempty"`
+	FederatedIdentityID    primitive.ObjectID `json:"federatedidentity_id,omitempty"`
 	Email     string             `json:"email,omitempty"`
 	FirstName string             `json:"first_name,omitempty"`
 	LastName  string             `json:"last_name,omitempty"`
@@ -70,14 +70,14 @@ func (h *PostTokenIntrospectionHTTPHandler) Execute(w http.ResponseWriter, r *ht
 	// Convert IDO to service request
 	request := &service_introspection.IntrospectionRequest{
 		Token:  requestIDO.AccessToken,
-		UserID: requestIDO.UserID,
+		FederatedIdentityID: requestIDO.FederatedIdentityID,
 	}
 
 	// Call service
 	response, err := h.service.IntrospectToken(r.Context(), request)
 	if err != nil {
 		h.logger.Error("token introspection failed",
-			slog.String("user_id", request.UserID),
+			slog.String("federatedidentity_id", request.FederatedIdentityID),
 			slog.Any("error", err))
 		httperror.ResponseError(w, err)
 		return
@@ -86,7 +86,7 @@ func (h *PostTokenIntrospectionHTTPHandler) Execute(w http.ResponseWriter, r *ht
 	// Convert service response to IDO
 	responseIDO := tokenIntrospectionResponseIDO{
 		Active:    response.Active,
-		UserID:    response.UserID,
+		FederatedIdentityID:    response.FederatedIdentityID,
 		Email:     response.Email,
 		FirstName: response.FirstName,
 		LastName:  response.LastName,
@@ -101,6 +101,6 @@ func (h *PostTokenIntrospectionHTTPHandler) Execute(w http.ResponseWriter, r *ht
 	}
 
 	h.logger.Info("token introspection processed successfully",
-		slog.String("user_id", request.UserID),
+		slog.String("federatedidentity_id", request.FederatedIdentityID),
 		slog.Bool("active", response.Active))
 }

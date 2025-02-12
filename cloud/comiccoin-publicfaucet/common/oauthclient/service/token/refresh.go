@@ -17,7 +17,7 @@ import (
 )
 
 type RefreshRequest struct {
-	UserID       primitive.ObjectID `json:"user_id"`
+	FederatedIdentityID       primitive.ObjectID `json:"federatedidentity_id"`
 	RefreshToken string             `json:"refresh_token"`
 }
 
@@ -36,16 +36,16 @@ type refreshTokenServiceImpl struct {
 	config              *config.Configuration
 	logger              *slog.Logger
 	refreshTokenUseCase uc_oauth.RefreshTokenUseCase
-	tokenGetUseCase     uc_token.TokenGetByUserIDUseCase
-	tokenUpsertUseCase  uc_token.TokenUpsertByUserIDUseCase
+	tokenGetUseCase     uc_token.TokenGetByFederatedIdentityIDUseCase
+	tokenUpsertUseCase  uc_token.TokenUpsertByFederatedIdentityIDUseCase
 }
 
 func NewRefreshTokenService(
 	config *config.Configuration,
 	logger *slog.Logger,
 	refreshTokenUseCase uc_oauth.RefreshTokenUseCase,
-	tokenGetUseCase uc_token.TokenGetByUserIDUseCase,
-	tokenUpsertUseCase uc_token.TokenUpsertByUserIDUseCase,
+	tokenGetUseCase uc_token.TokenGetByFederatedIdentityIDUseCase,
+	tokenUpsertUseCase uc_token.TokenUpsertByFederatedIdentityIDUseCase,
 ) RefreshTokenService {
 	return &refreshTokenServiceImpl{
 		config:              config,
@@ -58,8 +58,8 @@ func NewRefreshTokenService(
 
 func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *RefreshRequest) (*RefreshResponse, error) {
 	// Validation checks remain the same
-	if req.UserID.IsZero() {
-		return nil, errors.New("user_id is required")
+	if req.FederatedIdentityID.IsZero() {
+		return nil, errors.New("federatedidentity_id is required")
 	}
 	if req.RefreshToken == "" {
 		return nil, errors.New("refresh_token is required")
@@ -69,7 +69,7 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 	tokenResp, err := s.refreshTokenUseCase.Execute(ctx, req.RefreshToken)
 	if err != nil {
 		s.logger.Error("failed to refresh token with OAuth server",
-			slog.Any("user_id", req.UserID),
+			slog.Any("federatedidentity_id", req.FederatedIdentityID),
 			slog.Any("error", err))
 		return nil, fmt.Errorf("refreshing token with OAuth server: %w", err)
 	}
@@ -90,14 +90,14 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 	// Create our domain token with the refreshed values
 	token := &dom_token.Token{
 		ID:           primitive.NewObjectID(),
-		UserID:       req.UserID,
+		FederatedIdentityID:       req.FederatedIdentityID,
 		AccessToken:  tokenResp.AccessToken,
 		RefreshToken: tokenResp.RefreshToken,
 		ExpiresAt:    time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second), // Calculate expiry from ExpiresIn
 	}
 
 	// Get existing token to preserve ID if it exists
-	existingToken, err := s.tokenGetUseCase.Execute(ctx, req.UserID)
+	existingToken, err := s.tokenGetUseCase.Execute(ctx, req.FederatedIdentityID)
 	if err == nil && existingToken != nil {
 		token.ID = existingToken.ID
 	}
@@ -117,13 +117,13 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 	err = s.tokenUpsertUseCase.Execute(ctx, token)
 	if err != nil {
 		s.logger.Error("failed to update token in storage",
-			slog.Any("user_id", req.UserID),
+			slog.Any("federatedidentity_id", req.FederatedIdentityID),
 			slog.Any("error", err))
 		return nil, fmt.Errorf("storing refreshed token: %w", err)
 	}
 
 	s.logger.Info("token refreshed successfully",
-		slog.Any("user_id", req.UserID))
+		slog.Any("federatedidentity_id", req.FederatedIdentityID))
 
 	return &RefreshResponse{
 		AccessToken:  token.AccessToken,

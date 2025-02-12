@@ -10,13 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient"
-	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/user"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/federatedidentity"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 )
 
 type HelloResponse struct {
-	Message string         `json:"message"`
-	User    *dom_user.User `json:"user"`
+	Message           string                                   `json:"message"`
+	FederatedIdentity *dom_federatedidentity.FederatedIdentity `json:"federatedidentity"`
 }
 
 type HelloService interface {
@@ -42,28 +42,28 @@ func NewHelloService(
 }
 
 func (s *helloServiceImpl) SayHello(ctx context.Context) (*HelloResponse, error) {
-	// Get authenticated user ID from context
-	userID, ok := ctx.Value("user_id").(primitive.ObjectID)
+	// Get authenticated federatedidentity ID from context
+	federatedidentityID, ok := ctx.Value("federatedidentity_id").(primitive.ObjectID)
 	if !ok {
-		s.logger.Error("Failed getting local user id",
-			slog.Any("error", "Not found in context: user_id"))
-		return nil, errors.New("user not found in context")
+		s.logger.Error("Failed getting local federatedidentity id",
+			slog.Any("error", "Not found in context: federatedidentity_id"))
+		return nil, errors.New("federatedidentity not found in context")
 	}
 
-	// Get user details
-	user, err := s.oauthManager.GetLocalUserByID(ctx, userID)
+	// Get federatedidentity details
+	federatedidentity, err := s.oauthManager.GetLocalFederatedIdentityByID(ctx, federatedidentityID)
 	if err != nil {
-		s.logger.Debug("Failed getting local user id", slog.Any("error", err))
+		s.logger.Debug("Failed getting local federatedidentity id", slog.Any("error", err))
 		return nil, err
 	}
-	if user == nil {
-		err := fmt.Errorf("User does not exist for id: %v", userID.Hex())
-		s.logger.Debug("Failed getting local user id", slog.Any("error", err))
+	if federatedidentity == nil {
+		err := fmt.Errorf("FederatedIdentity does not exist for id: %v", federatedidentityID.Hex())
+		s.logger.Debug("Failed getting local federatedidentity id", slog.Any("error", err))
 		return nil, err
 	}
 
 	return &HelloResponse{
-		Message: fmt.Sprintf("Hello, %s!", user.FirstName),
-		User:    user,
+		Message:           fmt.Sprintf("Hello, %s!", federatedidentity.FirstName),
+		FederatedIdentity: federatedidentity,
 	}, nil
 }

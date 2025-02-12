@@ -51,5 +51,5 @@ func (h *GetHelloHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.logger.Info("hello request processed successfully",
-		slog.String("user", response.User.Email))
+		slog.String("federatedidentity", response.FederatedIdentity.Email))
 }

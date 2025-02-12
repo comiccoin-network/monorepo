@@ -37,9 +37,9 @@ func (impl tokenStorerImpl) RevokeToken(ctx context.Context, tokenID string) err
 	return nil
 }
 
-func (impl tokenStorerImpl) RevokeAllUserTokens(ctx context.Context, userID string) error {
+func (impl tokenStorerImpl) RevokeAllFederatedIdentityTokens(ctx context.Context, federatedidentityID string) error {
 	filter := bson.M{
-		"user_id":    userID,
+		"federatedidentity_id":    federatedidentityID,
 		"is_revoked": false,
 	}
 	update := bson.M{
@@ -51,15 +51,15 @@ func (impl tokenStorerImpl) RevokeAllUserTokens(ctx context.Context, userID stri
 
 	result, err := impl.Collection.UpdateMany(ctx, filter, update)
 	if err != nil {
-		impl.Logger.Error("failed to revoke all user tokens",
-			slog.String("user_id", userID),
+		impl.Logger.Error("failed to revoke all federatedidentity tokens",
+			slog.String("federatedidentity_id", federatedidentityID),
 			slog.Any("error", err))
 		return err
 	}
 
 	if result.ModifiedCount > 0 {
-		impl.Logger.Info("revoked all user tokens",
-			slog.String("user_id", userID),
+		impl.Logger.Info("revoked all federatedidentity tokens",
+			slog.String("federatedidentity_id", federatedidentityID),
 			slog.Int64("revoked_count", result.ModifiedCount))
 	}
 

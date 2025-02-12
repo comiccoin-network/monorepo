@@ -24,7 +24,7 @@ const registrationPage = `
 <!DOCTYPE html>
 <html>
 <head>
-   <title>User Registration</title>
+   <title>FederatedIdentity Registration</title>
    <style>
        body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; }
        .container { border: 1px solid #ddd; padding: 20px; border-radius: 5px; }
@@ -36,7 +36,7 @@ const registrationPage = `
 </head>
 <body>
    <div class="container">
-       <h1>Register New User</h1>
+       <h1>Register New FederatedIdentity</h1>
        <form id="registerForm" onsubmit="handleSubmit(event)">
            <div class="form-group">
                <label>Email:</label>

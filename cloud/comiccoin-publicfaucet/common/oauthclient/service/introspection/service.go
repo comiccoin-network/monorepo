@@ -13,7 +13,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 )
 
 // We define custom error types to differentiate between expiration scenarios
@@ -36,12 +36,12 @@ func (e *SessionExpiredError) Error() string {
 // Request/Response types remain the same
 type IntrospectionRequest struct {
 	Token  string
-	UserID string // Optional - if provided, we verify token ownership
+	FederatedIdentityID string // Optional - if provided, we verify token ownership
 }
 
 type IntrospectionResponse struct {
 	Active    bool               `json:"active"`
-	UserID    primitive.ObjectID `json:"user_id,omitempty"`
+	FederatedIdentityID    primitive.ObjectID `json:"federatedidentity_id,omitempty"`
 	Email     string             `json:"email,omitempty"`
 	FirstName string             `json:"first_name,omitempty"`
 	LastName  string             `json:"last_name,omitempty"`
@@ -57,43 +57,43 @@ type introspectionServiceImpl struct {
 	config                 *config.Configuration
 	logger                 *slog.Logger
 	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase
-	tokenGetUseCase        uc_token.TokenGetByUserIDUseCase
-	userGetByIDUseCase     uc_user.UserGetByIDUseCase
+	tokenGetUseCase        uc_token.TokenGetByFederatedIdentityIDUseCase
+	federatedidentityGetByIDUseCase     uc_federatedidentity.FederatedIdentityGetByIDUseCase
 }
 
 func NewIntrospectionService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase,
-	tokenGetUseCase uc_token.TokenGetByUserIDUseCase,
-	userGetByIDUseCase uc_user.UserGetByIDUseCase,
+	tokenGetUseCase uc_token.TokenGetByFederatedIdentityIDUseCase,
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase,
 ) IntrospectionService {
 	return &introspectionServiceImpl{
 		config:                 cfg,
 		logger:                 logger,
 		introspectTokenUseCase: introspectTokenUseCase,
 		tokenGetUseCase:        tokenGetUseCase,
-		userGetByIDUseCase:     userGetByIDUseCase,
+		federatedidentityGetByIDUseCase:     federatedidentityGetByIDUseCase,
 	}
 }
 
 func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *IntrospectionRequest) (*IntrospectionResponse, error) {
-	// If user ID is provided, verify token ownership and check expiration
-	if req.UserID != "" {
-		userID, err := primitive.ObjectIDFromHex(req.UserID)
+	// If federatedidentity ID is provided, verify token ownership and check expiration
+	if req.FederatedIdentityID != "" {
+		federatedidentityID, err := primitive.ObjectIDFromHex(req.FederatedIdentityID)
 		if err != nil {
 			return nil, httperror.NewForBadRequest(&map[string]string{
-				"user_id": "invalid format",
+				"federatedidentity_id": "invalid format",
 			})
 		}
 
 		// Get stored token to check expiration
-		storedToken, err := s.tokenGetUseCase.Execute(ctx, userID)
+		storedToken, err := s.tokenGetUseCase.Execute(ctx, federatedidentityID)
 		if err != nil {
 			return nil, fmt.Errorf("getting stored token: %w", err)
 		}
 		if storedToken == nil {
-			s.logger.Error("no stored token found", slog.String("user_id", req.UserID))
+			s.logger.Error("no stored token found", slog.String("federatedidentity_id", req.FederatedIdentityID))
 			return nil, &SessionExpiredError{Message: "No active session found. Please log in again."}
 		}
 
@@ -103,7 +103,7 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		// Both access token and refresh token are expired (session expired)
 		if now.After(storedToken.ExpiresAt) && now.After(storedToken.ExpiresAt.Add(30*24*time.Hour)) {
 			s.logger.Info("session expired, requires new login",
-				slog.String("user_id", req.UserID))
+				slog.String("federatedidentity_id", req.FederatedIdentityID))
 			return nil, &SessionExpiredError{
 				Message: "Your session has expired. Please log in again to continue.",
 			}
@@ -112,7 +112,7 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		// Only access token is expired (needs refresh)
 		if now.After(storedToken.ExpiresAt) {
 			s.logger.Info("access token expired, requires refresh",
-				slog.String("user_id", req.UserID))
+				slog.String("federatedidentity_id", req.FederatedIdentityID))
 			return nil, &TokenExpiredError{
 				Message: "Access token has expired. Please refresh your token to continue.",
 			}
@@ -140,29 +140,29 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		return &IntrospectionResponse{Active: false}, nil
 	}
 
-	// Fetch user information for active tokens
-	if introspectResp.UserID != "" {
-		userID, err := primitive.ObjectIDFromHex(introspectResp.UserID)
+	// Fetch federatedidentity information for active tokens
+	if introspectResp.FederatedIdentityID != "" {
+		federatedidentityID, err := primitive.ObjectIDFromHex(introspectResp.FederatedIdentityID)
 		if err != nil {
 			return nil, httperror.NewForBadRequest(&map[string]string{
-				"user_id": "invalid format from introspection",
+				"federatedidentity_id": "invalid format from introspection",
 			})
 		}
 
-		user, err := s.userGetByIDUseCase.Execute(ctx, userID)
+		federatedidentity, err := s.federatedidentityGetByIDUseCase.Execute(ctx, federatedidentityID)
 		if err != nil {
-			return nil, fmt.Errorf("getting user info: %w", err)
+			return nil, fmt.Errorf("getting federatedidentity info: %w", err)
 		}
-		if user == nil {
-			return nil, fmt.Errorf("user d.n.e. for: %v", introspectResp.UserID)
+		if federatedidentity == nil {
+			return nil, fmt.Errorf("federatedidentity d.n.e. for: %v", introspectResp.FederatedIdentityID)
 		}
 
 		return &IntrospectionResponse{
 			Active:    true,
-			UserID:    user.ID,
-			Email:     user.Email,
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
+			FederatedIdentityID:    federatedidentity.ID,
+			Email:     federatedidentity.Email,
+			FirstName: federatedidentity.FirstName,
+			LastName:  federatedidentity.LastName,
 		}, nil
 	}
 

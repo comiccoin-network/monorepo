@@ -38,7 +38,7 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 			Options: options.Index().SetUnique(true),
 		},
 		{
-			Keys: bson.D{{Key: "user_id", Value: 1}},
+			Keys: bson.D{{Key: "federatedidentity_id", Value: 1}},
 		},
 		{
 			Keys:    bson.D{{Key: "expires_at", Value: 1}},

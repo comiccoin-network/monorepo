@@ -9,16 +9,16 @@ import (
 )
 
 const (
-	UserStatusActive                                = 1
-	UserStatusLocked                                = 50
-	UserStatusArchived                              = 100
-	UserRoleRoot                                    = 1
-	UserRoleRetailer                                = 2
-	UserRoleCustomer                                = 3
-	UserProfileVerificationStatusUnverified         = 1
-	UserProfileVerificationStatusSubmittedForReview = 2
-	UserProfileVerificationStatusApproved           = 3
-	UserProfileVerificationStatusRejected           = 4
+	FederatedIdentityStatusActive                                = 1
+	FederatedIdentityStatusLocked                                = 50
+	FederatedIdentityStatusArchived                              = 100
+	FederatedIdentityRoleRoot                                    = 1
+	FederatedIdentityRoleRetailer                                = 2
+	FederatedIdentityRoleCustomer                                = 3
+	FederatedIdentityProfileVerificationStatusUnverified         = 1
+	FederatedIdentityProfileVerificationStatusSubmittedForReview = 2
+	FederatedIdentityProfileVerificationStatusApproved           = 3
+	FederatedIdentityProfileVerificationStatusRejected           = 4
 )
 
 type ComicCoinProfile struct {
@@ -56,11 +56,11 @@ type ComicCoinProfile struct {
 	AgreeTermsOfService       bool               `bson:"agree_terms_of_service" json:"agree_terms_of_service,omitempty"`
 	AgreePromotions           bool               `bson:"agree_promotions" json:"agree_promotions,omitempty"`
 	CreatedFromIPAddress      string             `bson:"created_from_ip_address" json:"created_from_ip_address"`
-	CreatedByUserID           primitive.ObjectID `bson:"created_by_user_id" json:"created_by_user_id"`
+	CreatedByFederatedIdentityID           primitive.ObjectID `bson:"created_by_federatedidentity_id" json:"created_by_federatedidentity_id"`
 	CreatedAt                 time.Time          `bson:"created_at" json:"created_at,omitempty"`
 	CreatedByName             string             `bson:"created_by_name" json:"created_by_name"`
 	ModifiedFromIPAddress     string             `bson:"modified_from_ip_address" json:"modified_from_ip_address"`
-	ModifiedByUserID          primitive.ObjectID `bson:"modified_by_user_id" json:"modified_by_user_id"`
+	ModifiedByFederatedIdentityID          primitive.ObjectID `bson:"modified_by_federatedidentity_id" json:"modified_by_federatedidentity_id"`
 	ModifiedAt                time.Time          `bson:"modified_at" json:"modified_at,omitempty"`
 	ModifiedByName            string             `bson:"modified_by_name" json:"modified_by_name"`
 	Status                    int8               `bson:"status" json:"status"`
@@ -76,7 +76,7 @@ type ComicCoinProfile struct {
 	// OTPEnabled controls whether we force 2FA or not during login.
 	OTPEnabled bool `bson:"otp_enabled" json:"otp_enabled"`
 
-	// OTPVerified indicates user has successfully validated their opt token afer enabling 2FA thus turning it on.
+	// OTPVerified indicates federatedidentity has successfully validated their opt token afer enabling 2FA thus turning it on.
 	OTPVerified bool `bson:"otp_verified" json:"otp_verified"`
 
 	// OTPValidated automatically gets set as `false` on successful login and then sets `true` once successfully validated by 2FA.
@@ -89,7 +89,7 @@ type ComicCoinProfile struct {
 	// OTPAuthURL is the URL used to share.
 	OTPAuthURL string `bson:"otp_auth_url" json:"-"`
 
-	// OTPBackupCodeHash is the one-time use backup code which resets the 2FA settings and allow the user to setup 2FA from scratch for the user.
+	// OTPBackupCodeHash is the one-time use backup code which resets the 2FA settings and allow the federatedidentity to setup 2FA from scratch for the federatedidentity.
 	OTPBackupCodeHash string `bson:"otp_backup_code_hash" json:"-"`
 
 	// OTPBackupCodeHashAlgorithm tracks the hashing algorithm used.
@@ -103,14 +103,14 @@ type ComicCoinProfile struct {
 	HasPreviouslyPurchasedFromFacebookMarketplace   int8 `bson:"has_previously_purchased_from_facebook_marketplace" json:"has_previously_purchased_from_facebook_marketplace"`
 	HasRegularlyAttendedComicConsOrCollectibleShows int8 `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
 
-	// WalletAddress variable holds the address of the user's wallet
+	// WalletAddress variable holds the address of the federatedidentity's wallet
 	// which is used by this publicfaucet application to send.
 	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`
 
 	// LastCoinsDepositAt variable keeps track of when this publicfaucet sent coins
-	// to this user's account.
+	// to this federatedidentity's account.
 	LastCoinsDepositAt time.Time `bson:"last_coins_deposit_at" json:"last_coins_deposit_at"`
 
-	// ProfileVerificationStatus indicates the profile verification status of this user account.
+	// ProfileVerificationStatus indicates the profile verification status of this federatedidentity account.
 	ProfileVerificationStatus int8 `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
 }

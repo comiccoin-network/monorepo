@@ -33,7 +33,7 @@ func NewPostTokenRefreshHTTPHandler(
 }
 
 type tokenRefreshRequestIDO struct {
-	UserID       string `json:"user_id"`
+	FederatedIdentityID       string `json:"federatedidentity_id"`
 	RefreshToken string `json:"refresh_token"`
 }
 
@@ -67,11 +67,11 @@ func (h *PostTokenRefreshHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Convert user_id string to ObjectID
-	userID, err := primitive.ObjectIDFromHex(requestIDO.UserID)
+	// Convert federatedidentity_id string to ObjectID
+	federatedidentityID, err := primitive.ObjectIDFromHex(requestIDO.FederatedIdentityID)
 	if err != nil {
-		h.logger.Error("invalid user_id format",
-			slog.String("user_id", requestIDO.UserID),
+		h.logger.Error("invalid federatedidentity_id format",
+			slog.String("federatedidentity_id", requestIDO.FederatedIdentityID),
 			slog.Any("error", err))
 		httperror.ResponseError(w, httperror.NewForBadRequest(nil))
 		return
@@ -79,7 +79,7 @@ func (h *PostTokenRefreshHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 
 	// Convert IDO to service request
 	request := &service_token.RefreshRequest{
-		UserID:       userID,
+		FederatedIdentityID:       federatedidentityID,
 		RefreshToken: requestIDO.RefreshToken,
 	}
 
@@ -87,7 +87,7 @@ func (h *PostTokenRefreshHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 	response, err := h.service.RefreshToken(r.Context(), request)
 	if err != nil {
 		h.logger.Error("token refresh failed",
-			slog.Any("user_id", request.UserID),
+			slog.Any("federatedidentity_id", request.FederatedIdentityID),
 			slog.Any("error", err))
 		httperror.ResponseError(w, err)
 		return
@@ -110,5 +110,5 @@ func (h *PostTokenRefreshHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 	}
 
 	h.logger.Info("token refresh processed successfully",
-		slog.Any("user_id", request.UserID))
+		slog.Any("federatedidentity_id", request.FederatedIdentityID))
 }

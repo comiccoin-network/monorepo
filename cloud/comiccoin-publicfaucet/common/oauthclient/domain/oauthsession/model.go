@@ -10,7 +10,7 @@ import (
 type OAuthSession struct {
 	ID          primitive.ObjectID `bson:"_id" json:"id"`
 	SessionID   string             `bson:"session_id" json:"session_id"`
-	UserID      primitive.ObjectID `bson:"user_id" json:"user_id"`
+	FederatedIdentityID      primitive.ObjectID `bson:"federatedidentity_id" json:"federatedidentity_id"`
 	AccessToken string             `bson:"access_token" json:"access_token"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
 	ExpiresAt   time.Time          `bson:"expires_at" json:"expires_at"`

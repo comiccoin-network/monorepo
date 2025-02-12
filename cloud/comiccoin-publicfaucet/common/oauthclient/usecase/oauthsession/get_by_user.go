@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthsession/get_by_user.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthsession/get_by_federatedidentity.go
 package oauthsession
 
 import (
@@ -12,39 +12,39 @@ import (
 	dom_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/oauthsession"
 )
 
-type GetOAuthSessionByUserIDUseCase interface {
-	Execute(ctx context.Context, userID primitive.ObjectID) (*dom_oauthsession.OAuthSession, error)
+type GetOAuthSessionByFederatedIdentityIDUseCase interface {
+	Execute(ctx context.Context, federatedidentityID primitive.ObjectID) (*dom_oauthsession.OAuthSession, error)
 }
 
-type getOAuthSessionByUserIDUseCaseImpl struct {
+type getOAuthSessionByFederatedIdentityIDUseCaseImpl struct {
 	config *config.Configuration
 	logger *slog.Logger
 	repo   dom_oauthsession.Repository
 }
 
-func NewGetOAuthSessionByUserIDUseCase(
+func NewGetOAuthSessionByFederatedIdentityIDUseCase(
 	config *config.Configuration,
 	logger *slog.Logger,
 	repo dom_oauthsession.Repository,
-) GetOAuthSessionByUserIDUseCase {
-	return &getOAuthSessionByUserIDUseCaseImpl{
+) GetOAuthSessionByFederatedIdentityIDUseCase {
+	return &getOAuthSessionByFederatedIdentityIDUseCaseImpl{
 		config: config,
 		logger: logger,
 		repo:   repo,
 	}
 }
 
-func (uc *getOAuthSessionByUserIDUseCaseImpl) Execute(ctx context.Context, userID primitive.ObjectID) (*dom_oauthsession.OAuthSession, error) {
+func (uc *getOAuthSessionByFederatedIdentityIDUseCaseImpl) Execute(ctx context.Context, federatedidentityID primitive.ObjectID) (*dom_oauthsession.OAuthSession, error) {
 	// Validation
 	e := make(map[string]string)
-	if userID.IsZero() {
-		e["user_id"] = "missing value"
+	if federatedidentityID.IsZero() {
+		e["federatedidentity_id"] = "missing value"
 	}
 	if len(e) != 0 {
-		uc.logger.Warn("validation failed for session retrieval by user ID",
+		uc.logger.Warn("validation failed for session retrieval by federatedidentity ID",
 			slog.Any("errors", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
 
-	return uc.repo.GetByUserID(ctx, userID)
+	return uc.repo.GetByFederatedIdentityID(ctx, federatedidentityID)
 }

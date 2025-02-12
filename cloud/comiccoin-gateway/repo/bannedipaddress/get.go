@@ -21,7 +21,7 @@ func (impl bannedIPAddressImpl) GetByID(ctx context.Context, id primitive.Object
 			// This error means your query did not match any documents.
 			return nil, nil
 		}
-		impl.Logger.Error("database get by user transaction id error", slog.Any("error", err))
+		impl.Logger.Error("database get by federatedidentity transaction id error", slog.Any("error", err))
 		return nil, err
 	}
 	return &result, nil
@@ -37,7 +37,7 @@ func (impl bannedIPAddressImpl) GetByNonce(ctx context.Context, nonce *big.Int) 
 			// This error means your query did not match any documents.
 			return nil, nil
 		}
-		impl.Logger.Error("database get by user transaction nonce error", slog.Any("error", err))
+		impl.Logger.Error("database get by federatedidentity transaction nonce error", slog.Any("error", err))
 		return nil, err
 	}
 	return &result, nil

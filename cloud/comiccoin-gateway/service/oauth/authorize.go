@@ -19,7 +19,7 @@ import (
 type AuthorizeService interface {
 	ValidateAuthorizationRequest(ctx context.Context, clientID, redirectURI, responseType, state, scope string) error
 	CreatePendingAuthorization(ctx context.Context, clientID, redirectURI, state, scope string) (string, error)
-	UpdatePendingAuthorization(ctx context.Context, code string, userID string) error
+	UpdatePendingAuthorization(ctx context.Context, code string, federatedidentityID string) error
 }
 
 type authorizeServiceImpl struct {
@@ -140,7 +140,7 @@ func (s *authorizeServiceImpl) CreatePendingAuthorization(ctx context.Context, c
 		AppID:       clientID,
 		RedirectURI: redirectURI,
 		Scope:       "read",    // Set a default scope - adjust based on your needs
-		UserID:      "pending", // We'll update this after user login
+		FederatedIdentityID:      "pending", // We'll update this after federatedidentity login
 		ExpiresAt:   time.Now().Add(10 * time.Minute),
 		IsUsed:      false,
 		CreatedAt:   time.Now(),
@@ -154,7 +154,7 @@ func (s *authorizeServiceImpl) CreatePendingAuthorization(ctx context.Context, c
 	return code, nil
 }
 
-func (s *authorizeServiceImpl) UpdatePendingAuthorization(ctx context.Context, code string, userID string) error {
+func (s *authorizeServiceImpl) UpdatePendingAuthorization(ctx context.Context, code string, federatedidentityID string) error {
 	// First find the existing authorization code
 	authCode, err := s.authFindByCodeUseCase.Execute(ctx, code)
 	if err != nil {
@@ -167,8 +167,8 @@ func (s *authorizeServiceImpl) UpdatePendingAuthorization(ctx context.Context, c
 		return fmt.Errorf("authorization code not found")
 	}
 
-	// Update the user ID
-	authCode.UserID = userID
+	// Update the federatedidentity ID
+	authCode.FederatedIdentityID = federatedidentityID
 
 	// Store the updated authorization code using UpdateCode, not StoreCode
 	return s.authUpdateCodeUseCase.Execute(ctx, authCode) // You'll need to add this use case

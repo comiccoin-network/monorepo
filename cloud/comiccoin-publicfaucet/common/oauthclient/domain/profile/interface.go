@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-// Repository Interface for user.
+// Repository Interface for federatedidentity.
 type Repository interface {
 	FetchProfileFromComicCoinGateway(ctx context.Context, accessToken string) (*ComicCoinProfile, error)
 }

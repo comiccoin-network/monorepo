@@ -25,16 +25,16 @@ func LoginCmd() *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "login",
-		Short: "Log in user",
-		Long:  `Logs user in the system with OAuth 2.0 client account`,
+		Short: "Log in federatedidentity",
+		Long:  `Logs federatedidentity in the system with OAuth 2.0 client account`,
 		Run: func(cmd *cobra.Command, args []string) {
 			doRunLoginCmd(email, firstName, lastName, phone, country, timezone, password, agreeTOS)
 		},
 	}
 
 	// Required flags
-	cmd.Flags().StringVarP(&email, "email", "e", "", "User's email address")
-	cmd.Flags().StringVarP(&firstName, "password", "p", "", "User's password")
+	cmd.Flags().StringVarP(&email, "email", "e", "", "FederatedIdentity's email address")
+	cmd.Flags().StringVarP(&firstName, "password", "p", "", "FederatedIdentity's password")
 
 	// Mark required flags
 	cmd.MarkFlagRequired("email")
@@ -178,10 +178,10 @@ func doRunLoginCmd(email, firstName, lastName, phone, country, timezone, passwor
 	fmt.Printf("- Refresh Token: %s\n", exchangeResponse.RefreshToken)
 	fmt.Printf("- Token Type: %s\n", exchangeResponse.TokenType)
 	fmt.Printf("- Expires In: %d seconds\n", exchangeResponse.ExpiresIn)
-	fmt.Printf("- User: %s %s (%s)\n",
+	fmt.Printf("- FederatedIdentity: %s %s (%s)\n",
 		exchangeResponse.FirstName,
 		exchangeResponse.LastName,
-		exchangeResponse.UserEmail)
+		exchangeResponse.FederatedIdentityEmail)
 
 	if loginResponse.HasOTPEnabled {
 		fmt.Printf("\nTwo-Factor Authentication Status\n")

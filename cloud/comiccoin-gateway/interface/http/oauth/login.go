@@ -58,16 +58,16 @@ func (h *LoginHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Extract required fields from the form
-	username := r.FormValue("username")
+	federatedidentityname := r.FormValue("federatedidentityname")
 	password := r.FormValue("password")
 	authID := r.FormValue("auth_id")
 	state := r.FormValue("state")
 	successURI := r.FormValue("success_uri")
 
 	// Validate that all required fields are present
-	if username == "" {
-		h.logger.Error("missing required `username` value")
-		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("username", "required value"))
+	if federatedidentityname == "" {
+		h.logger.Error("missing required `federatedidentityname` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("federatedidentityname", "required value"))
 		return
 	}
 	if password == "" {
@@ -89,15 +89,15 @@ func (h *LoginHandler) Execute(w http.ResponseWriter, r *http.Request) {
 
 	// Process the login through the service layer
 	// The service layer handles all business logic, including:
-	// - User authentication
+	// - FederatedIdentity authentication
 	// - Authorization code generation
 	// - State management
-	result, err := h.loginService.ProcessLogin(r.Context(), username, password, authID)
+	result, err := h.loginService.ProcessLogin(r.Context(), federatedidentityname, password, authID)
 	if err != nil {
 		// Log the error but don't expose internal details to the client
 		h.logger.Error("login processing failed",
 			"error", err,
-			"username", username)
+			"federatedidentityname", federatedidentityname)
 
 		// Return a generic error to the client
 		http.Error(w, "Authentication failed", http.StatusUnauthorized)
@@ -114,9 +114,9 @@ func (h *LoginHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	// Include the success_uri parameter so we can redirect to success.
 	redirectURL += "&success_uri=" + successURI
 
-	// Redirect the user back to the client application
+	// Redirect the federatedidentity back to the client application
 	// This completes the login phase of the OAuth flow
-	h.logger.Info("redirecting user after successful login",
+	h.logger.Info("redirecting federatedidentity after successful login",
 		"redirect_uri", redirectURL)
 	http.Redirect(w, r, redirectURL, http.StatusFound)
 }

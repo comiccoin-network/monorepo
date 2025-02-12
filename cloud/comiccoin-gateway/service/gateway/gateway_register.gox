@@ -21,42 +21,42 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase"
 	uc_tenant "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/tenant"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 )
 
-type GatewayUserRegisterService interface {
+type GatewayFederatedIdentityRegisterService interface {
 	Execute(
 		sessCtx mongo.SessionContext,
 		req *RegisterCustomerRequestIDO,
 	) (*RegisterCustomerResponseIDO, error)
 }
 
-type gatewayUserRegisterServiceImpl struct {
+type gatewayFederatedIdentityRegisterServiceImpl struct {
 	config                           *config.Configuration
 	logger                           *slog.Logger
 	passwordProvider                 password.Provider
 	cache                            mongodbcache.Cacher
 	jwtProvider                      jwt.Provider
 	tenantGetByIDUseCase             uc_tenant.TenantGetByIDUseCase
-	userGetByEmailUseCase            uc_user.UserGetByEmailUseCase
-	userCreateUseCase                uc_user.UserCreateUseCase
-	userUpdateUseCase                uc_user.UserUpdateUseCase
-	sendUserVerificationEmailUseCase *usecase.SendUserVerificationEmailUseCase
+	federatedidentityGetByEmailUseCase            uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	federatedidentityCreateUseCase                uc_federatedidentity.FederatedIdentityCreateUseCase
+	federatedidentityUpdateUseCase                uc_federatedidentity.FederatedIdentityUpdateUseCase
+	sendFederatedIdentityVerificationEmailUseCase *usecase.SendFederatedIdentityVerificationEmailUseCase
 }
 
-func NewGatewayUserRegisterService(
+func NewGatewayFederatedIdentityRegisterService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	pp password.Provider,
 	cach mongodbcache.Cacher,
 	jwtp jwt.Provider,
 	uc1 uc_tenant.TenantGetByIDUseCase,
-	uc2 uc_user.UserGetByEmailUseCase,
-	uc3 uc_user.UserCreateUseCase,
-	uc4 uc_user.UserUpdateUseCase,
-	uc5 *usecase.SendUserVerificationEmailUseCase,
-) GatewayUserRegisterService {
-	return &gatewayUserRegisterServiceImpl{cfg, logger, pp, cach, jwtp, uc1, uc2, uc3, uc4, uc5}
+	uc2 uc_federatedidentity.FederatedIdentityGetByEmailUseCase,
+	uc3 uc_federatedidentity.FederatedIdentityCreateUseCase,
+	uc4 uc_federatedidentity.FederatedIdentityUpdateUseCase,
+	uc5 *usecase.SendFederatedIdentityVerificationEmailUseCase,
+) GatewayFederatedIdentityRegisterService {
+	return &gatewayFederatedIdentityRegisterServiceImpl{cfg, logger, pp, cach, jwtp, uc1, uc2, uc3, uc4, uc5}
 }
 
 type RegisterCustomerRequestIDO struct {
@@ -74,14 +74,14 @@ type RegisterCustomerRequestIDO struct {
 }
 
 type RegisterCustomerResponseIDO struct {
-	User                   *domain.User `json:"user"`
+	FederatedIdentity                   *domain.FederatedIdentity `json:"federatedidentity"`
 	AccessToken            string       `json:"access_token"`
 	AccessTokenExpiryTime  time.Time    `json:"access_token_expiry_time"`
 	RefreshToken           string       `json:"refresh_token"`
 	RefreshTokenExpiryTime time.Time    `json:"refresh_token_expiry_time"`
 }
 
-func (s *gatewayUserRegisterServiceImpl) Execute(
+func (s *gatewayFederatedIdentityRegisterServiceImpl) Execute(
 	sessCtx mongo.SessionContext,
 	req *RegisterCustomerRequestIDO,
 ) (*RegisterCustomerResponseIDO, error) {
@@ -153,36 +153,36 @@ func (s *gatewayUserRegisterServiceImpl) Execute(
 	// STEP 3:
 	//
 
-	// Lookup the user in our database, else return a `400 Bad Request` error.
-	u, err := s.userGetByEmailUseCase.Execute(sessCtx, req.Email)
+	// Lookup the federatedidentity in our database, else return a `400 Bad Request` error.
+	u, err := s.federatedidentityGetByEmailUseCase.Execute(sessCtx, req.Email)
 	if err != nil {
 		s.logger.Error("database error", slog.Any("err", err))
 		return nil, err
 	}
 	if u != nil {
-		s.logger.Warn("user already exist validation error")
+		s.logger.Warn("federatedidentity already exist validation error")
 		return nil, httperror.NewForBadRequestWithSingleField("email", "Email address already exists")
 	}
 
-	// Create our user.
-	u, err = s.createCustomerUserForRequest(sessCtx, req)
+	// Create our federatedidentity.
+	u, err = s.createCustomerFederatedIdentityForRequest(sessCtx, req)
 	if err != nil {
-		s.logger.Error("failed creating customer user error", slog.Any("err", err))
+		s.logger.Error("failed creating customer federatedidentity error", slog.Any("err", err))
 		return nil, err
 	}
 
 	// Send our verification email.
-	if err := s.sendUserVerificationEmailUseCase.Execute(context.Background(), u); err != nil {
+	if err := s.sendFederatedIdentityVerificationEmailUseCase.Execute(context.Background(), u); err != nil {
 		// s.logger.Error("failed sending verification email with error", slog.Any("err", err))
 		// return nil, err
 
 		// Skip any error handling...
 	}
 
-	return s.registerWithUser(sessCtx, u)
+	return s.registerWithFederatedIdentity(sessCtx, u)
 }
 
-func (s *gatewayUserRegisterServiceImpl) registerWithUser(sessCtx mongo.SessionContext, u *domain.User) (*RegisterCustomerResponseIDO, error) {
+func (s *gatewayFederatedIdentityRegisterServiceImpl) registerWithFederatedIdentity(sessCtx mongo.SessionContext, u *domain.FederatedIdentity) (*RegisterCustomerResponseIDO, error) {
 	uBin, err := json.Marshal(u)
 	if err != nil {
 		s.logger.Error("marshalling error", slog.Any("err", err))
@@ -211,7 +211,7 @@ func (s *gatewayUserRegisterServiceImpl) registerWithUser(sessCtx mongo.SessionC
 
 	// Return our auth keys.
 	return &RegisterCustomerResponseIDO{
-		User:                   u,
+		FederatedIdentity:                   u,
 		AccessToken:            accessToken,
 		AccessTokenExpiryTime:  accessTokenExpiry,
 		RefreshToken:           refreshToken,
@@ -219,7 +219,7 @@ func (s *gatewayUserRegisterServiceImpl) registerWithUser(sessCtx mongo.SessionC
 	}, nil
 }
 
-func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mongo.SessionContext, req *RegisterCustomerRequestIDO) (*domain.User, error) {
+func (s *gatewayFederatedIdentityRegisterServiceImpl) createCustomerFederatedIdentityForRequest(sessCtx mongo.SessionContext, req *RegisterCustomerRequestIDO) (*domain.FederatedIdentity, error) {
 	// Lookup the store and check to see if it's active or not, if not active then return the specific requests.
 	t, err := s.tenantGetByIDUseCase.Execute(sessCtx, s.config.App.TenantID)
 	if err != nil {
@@ -246,11 +246,11 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 
 	ipAddress, _ := sessCtx.Value(constants.SessionIPAddress).(string)
 
-	userID := primitive.NewObjectID()
-	u := &domain.User{
+	federatedidentityID := primitive.NewObjectID()
+	u := &domain.FederatedIdentity{
 		TenantID:                   t.ID,
 		TenantName:                 t.Name,
-		ID:                         userID,
+		ID:                         federatedidentityID,
 		FirstName:                  req.FirstName,
 		LastName:                   req.LastName,
 		Name:                       fmt.Sprintf("%s %s", req.FirstName, req.LastName),
@@ -258,7 +258,7 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 		Email:                      req.Email,
 		PasswordHash:               passwordHash,
 		PasswordHashAlgorithm:      s.passwordProvider.AlgorithmName(),
-		Role:                       domain.UserRoleCustomer,
+		Role:                       domain.FederatedIdentityRoleCustomer,
 		Phone:                      "",
 		Country:                    req.Country,
 		Timezone:                   req.Timezone,
@@ -269,18 +269,18 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 		AddressLine2:               "",
 		AgreeTermsOfService:        req.AgreeTermsOfService,
 		AgreePromotions:            req.AgreePromotions,
-		CreatedByUserID:            userID,
+		CreatedByFederatedIdentityID:            federatedidentityID,
 		CreatedAt:                  time.Now(),
 		CreatedByName:              fmt.Sprintf("%s %s", req.FirstName, req.LastName),
 		CreatedFromIPAddress:       ipAddress,
-		ModifiedByUserID:           userID,
+		ModifiedByFederatedIdentityID:           federatedidentityID,
 		ModifiedAt:                 time.Now(),
 		ModifiedByName:             fmt.Sprintf("%s %s", req.FirstName, req.LastName),
 		ModifiedFromIPAddress:      ipAddress,
 		WasEmailVerified:           false,
 		EmailVerificationCode:      primitive.NewObjectID().Hex(),
 		EmailVerificationExpiry:    time.Now().Add(72 * time.Hour),
-		Status:                     domain.UserStatusActive,
+		Status:                     domain.FederatedIdentityStatusActive,
 		HasShippingAddress:         false,
 		ShippingName:               "",
 		ShippingPhone:              "",
@@ -305,12 +305,12 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 	if req.CountryOther != "" {
 		u.Country = req.CountryOther
 	}
-	err = s.userCreateUseCase.Execute(sessCtx, u)
+	err = s.federatedidentityCreateUseCase.Execute(sessCtx, u)
 	if err != nil {
 		s.logger.Error("database create error", slog.Any("error", err))
 		return nil, err
 	}
-	s.logger.Info("Customer user created.",
+	s.logger.Info("Customer federatedidentity created.",
 		slog.Any("_id", u.ID),
 		slog.String("full_name", u.Name),
 		slog.String("email", u.Email),

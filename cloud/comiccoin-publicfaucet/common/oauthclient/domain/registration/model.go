@@ -17,9 +17,9 @@ type RegistrationRequest struct {
 	RedirectURI string `json:"redirect_uri" validate:"required"`
 }
 
-// Matches `github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/user/register`
+// Matches `github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/federatedidentity/register`
 type RegistrationResponse struct {
-	UserID      primitive.ObjectID `json:"user_id"`
+	FederatedIdentityID      primitive.ObjectID `json:"federatedidentity_id"`
 	AuthCode    string             `json:"auth_code"`
 	RedirectURI string             `json:"redirect_uri"`
 }

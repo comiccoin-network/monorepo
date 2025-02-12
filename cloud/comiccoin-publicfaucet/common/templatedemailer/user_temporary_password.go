@@ -9,11 +9,11 @@ import (
 	"log/slog"
 )
 
-func (impl *templatedEmailer) SendNewUserTemporaryPasswordEmail(email, firstName, temporaryPassword string) error {
-	impl.Logger.Debug("sending new user temporary password email...")
+func (impl *templatedEmailer) SendNewFederatedIdentityTemporaryPasswordEmail(email, firstName, temporaryPassword string) error {
+	impl.Logger.Debug("sending new federatedidentity temporary password email...")
 
 	// FOR TESTING PURPOSES ONLY.
-	fp := path.Join("templates", "user_temporary_password.html")
+	fp := path.Join("templates", "federatedidentity_temporary_password.html")
 	tmpl, err := template.ParseFiles(fp)
 	if err != nil {
 		impl.Logger.Error("parsing error", slog.Any("error", err))
@@ -44,6 +44,6 @@ func (impl *templatedEmailer) SendNewUserTemporaryPasswordEmail(email, firstName
 		impl.Logger.Error("sending error", slog.Any("error", err))
 		return err
 	}
-	impl.Logger.Debug("new user temporary password email sent")
+	impl.Logger.Debug("new federatedidentity temporary password email sent")
 	return nil
 }

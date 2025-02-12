@@ -10,7 +10,7 @@ import (
 	svc_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/identity"
 )
 
-// GetIdentityHandler handles requests for fetching user profiles.
+// GetIdentityHandler handles requests for fetching federatedidentity profiles.
 type GetIdentityHandler struct {
 	logger  *slog.Logger
 	service svc_identity.GetIdentityService
@@ -21,9 +21,9 @@ func NewGetIdentityHandler(logger *slog.Logger, service svc_identity.GetIdentity
 	return &GetIdentityHandler{logger: logger, service: service}
 }
 
-// Execute handles the HTTP request to fetch the user profile.
+// Execute handles the HTTP request to fetch the federatedidentity profile.
 func (h *GetIdentityHandler) Execute(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info("handling user profile request",
+	h.logger.Info("handling federatedidentity profile request",
 		slog.String("method", r.Method),
 		slog.String("path", r.URL.Path))
 
@@ -35,21 +35,21 @@ func (h *GetIdentityHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	}
 	accessToken := strings.Replace(auth, "Bearer ", "", -1)
 
-	// Extract the user ID from the request context (previously set by middleware)
+	// Extract the federatedidentity ID from the request context (previously set by middleware)
 	ctx := r.Context()
 
-	// Fetch the user profile using the use case
+	// Fetch the federatedidentity profile using the use case
 	identity, err := h.service.Execute(ctx, accessToken)
 	if err != nil {
-		h.logger.Error("failed to fetch user profile", slog.Any("error", err))
+		h.logger.Error("failed to fetch federatedidentity profile", slog.Any("error", err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	// If user is not found, send a 404
+	// If federatedidentity is not found, send a 404
 	if identity == nil {
-		h.logger.Warn("user not found")
-		http.Error(w, "User not found", http.StatusNotFound)
+		h.logger.Warn("federatedidentity not found")
+		http.Error(w, "FederatedIdentity not found", http.StatusNotFound)
 		return
 	}
 
@@ -57,7 +57,7 @@ func (h *GetIdentityHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	// Marshal and write the user profile to the response
+	// Marshal and write the federatedidentity profile to the response
 	if err := json.NewEncoder(w).Encode(identity); err != nil {
 		h.logger.Error("failed to encode identity", slog.Any("error", err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

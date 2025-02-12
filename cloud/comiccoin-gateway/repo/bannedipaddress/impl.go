@@ -38,7 +38,7 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 	// The following few lines of code will create the index for our app for this
 	// colleciton.
 	_, err := uc.Indexes().CreateMany(context.TODO(), []mongo.IndexModel{
-		{Keys: bson.D{{Key: "user_id", Value: 1}}},
+		{Keys: bson.D{{Key: "federatedidentity_id", Value: 1}}},
 		{Keys: bson.D{
 			{Key: "value", Value: "text"},
 		}},

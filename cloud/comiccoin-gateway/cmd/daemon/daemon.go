@@ -17,26 +17,26 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http"
+	http_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/federatedidentity"
 	http_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/identity"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
 	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth"
 	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/system"
-	http_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/user"
 	r_application "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/application"
 	r_authorization "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/authorization"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/bannedipaddress"
+	r_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/federatedidentity"
 	r_ratelimit "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/ratelimiter"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/token"
-	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/user"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/federatedidentity"
 	svc_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/identity"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/user"
 	uc_app "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/application"
 	uc_auth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/authorization"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/bannedipaddress"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 	uc_ratelimit "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/ratelimiter"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/token"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/user"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -72,7 +72,7 @@ func doRunDaemon() {
 	//
 
 	banIPAddrRepo := r_banip.NewRepository(cfg, logger, dbClient)
-	userRepo := r_user.NewRepository(cfg, logger, dbClient)
+	federatedidentityRepo := r_federatedidentity.NewRepository(cfg, logger, dbClient)
 	applicationRepo := r_application.NewRepository(cfg, logger, dbClient)
 	authorizationRepo := r_authorization.NewRepository(cfg, logger, dbClient)
 	tokenRepo := r_token.NewRepository(cfg, logger, dbClient)
@@ -89,34 +89,34 @@ func doRunDaemon() {
 		banIPAddrRepo,
 	)
 
-	// User Use Cases
-	userGetBySessionIDUseCase := uc_user.NewUserGetBySessionIDUseCase(
+	// FederatedIdentity Use Cases
+	federatedidentityGetBySessionIDUseCase := uc_federatedidentity.NewFederatedIdentityGetBySessionIDUseCase(
 		cfg,
 		logger,
 		cache,
 	)
-	userGetByEmailUseCase := uc_user.NewUserGetByEmailUseCase(
+	federatedidentityGetByEmailUseCase := uc_federatedidentity.NewFederatedIdentityGetByEmailUseCase(
 		cfg,
 		logger,
-		userRepo,
+		federatedidentityRepo,
 	)
-	userGetByIDUseCase := uc_user.NewUserGetByIDUseCase(
+	federatedidentityGetByIDUseCase := uc_federatedidentity.NewFederatedIdentityGetByIDUseCase(
 		cfg,
 		logger,
-		userRepo,
+		federatedidentityRepo,
 	)
-	userCreateUseCase := uc_user.NewUserCreateUseCase(
+	federatedidentityCreateUseCase := uc_federatedidentity.NewFederatedIdentityCreateUseCase(
 		cfg,
 		logger,
-		userRepo,
+		federatedidentityRepo,
 	)
-	_ = userCreateUseCase //TODO: Utilize
-	userUpdateUseCase := uc_user.NewUserUpdateUseCase(
+	_ = federatedidentityCreateUseCase //TODO: Utilize
+	federatedidentityUpdateUseCase := uc_federatedidentity.NewFederatedIdentityUpdateUseCase(
 		cfg,
 		logger,
-		userRepo,
+		federatedidentityRepo,
 	)
-	_ = userUpdateUseCase //TODO: Utilize
+	_ = federatedidentityUpdateUseCase //TODO: Utilize
 
 	// Application Use Cases
 	appValidateCredentialsUseCase := uc_app.NewApplicationValidateCredentialsUseCase(
@@ -175,12 +175,12 @@ func doRunDaemon() {
 		tokenRepo,
 	)
 	_ = tokenRevokeUseCase //TODO: Utilize
-	tokenRevokeAllUserTokensUseCase := uc_token.NewTokenRevokeAllUserTokensUseCase(
+	tokenRevokeAllFederatedIdentityTokensUseCase := uc_token.NewTokenRevokeAllFederatedIdentityTokensUseCase(
 		cfg,
 		logger,
 		tokenRepo,
 	)
-	_ = tokenRevokeAllUserTokensUseCase //TODO: Utilize
+	_ = tokenRevokeAllFederatedIdentityTokensUseCase //TODO: Utilize
 
 	// --- Rate Limiter --- //
 
@@ -221,7 +221,7 @@ func doRunDaemon() {
 		cfg,
 		logger,
 		passp,
-		userGetByEmailUseCase,
+		federatedidentityGetByEmailUseCase,
 		authFindByCodeUseCase,
 		authUpdateCodeUseCase,
 		authDeleteExpiredCodesUseCase,
@@ -251,15 +251,15 @@ func doRunDaemon() {
 		logger,
 		appValidateCredentialsUseCase,
 		tokenFindByIDUseCase,
-		userGetByIDUseCase,
+		federatedidentityGetByIDUseCase,
 	)
 
-	// User
-	registerService := user.NewRegisterService(
+	// FederatedIdentity
+	registerService := federatedidentity.NewRegisterService(
 		cfg,
 		logger,
 		passp,
-		userCreateUseCase,
+		federatedidentityCreateUseCase,
 		appFindByAppIDUseCase,
 		authorizeService,
 	)
@@ -270,7 +270,7 @@ func doRunDaemon() {
 		logger,
 		cache,
 		tokenFindByIDUseCase,
-		userGetByIDUseCase,
+		federatedidentityGetByIDUseCase,
 		rateLimiterIsAllowedUseCase,
 		rateLimiterRecordFailureUseCase,
 		rateLimiterResetFailuresUseCase,
@@ -292,7 +292,7 @@ func doRunDaemon() {
 	tokenHttpHandler := http_oauth.NewTokenHandler(logger, tokenService)
 	refreshTokenHttpHandler := http_oauth.NewRefreshTokenHandler(logger, refreshTokenService)
 	introspectionHttpHandler := http_oauth.NewIntrospectionHandler(logger, introspectionService)
-	registerHandler := http_user.NewRegisterHandler(logger, registerService)
+	registerHandler := http_federatedidentity.NewRegisterHandler(logger, registerService)
 	getIdentityHandler := http_identity.NewGetIdentityHandler(logger, getIdentityService)
 
 	// HTTP Middleware
@@ -301,7 +301,7 @@ func doRunDaemon() {
 		blackp,
 		ipcbp,
 		jwtp,
-		userGetBySessionIDUseCase,
+		federatedidentityGetBySessionIDUseCase,
 		bannedIPAddressListAllValuesUseCase,
 	)
 

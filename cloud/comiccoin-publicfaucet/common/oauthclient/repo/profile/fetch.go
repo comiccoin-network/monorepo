@@ -15,7 +15,7 @@ import (
 
 // ProfileResponse represents the structure of the response from the /api/profile endpoint.  Adjust as needed.
 type ProfileResponse struct {
-	UserID    string `json:"user_id"`
+	FederatedIdentityID    string `json:"federatedidentity_id"`
 	Email     string `json:"email"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`

@@ -17,23 +17,23 @@ import (
 )
 
 func FetchProfileCmd() *cobra.Command {
-	var accessToken, userID string
+	var accessToken, federatedidentityID string
 
 	var cmd = &cobra.Command{
 		Use:   "fetch-profile",
-		Short: "Fetch profile of user",
+		Short: "Fetch profile of federatedidentity",
 		Run: func(cmd *cobra.Command, args []string) {
-			doRunFetchProfile(accessToken, userID)
+			doRunFetchProfile(accessToken, federatedidentityID)
 		},
 	}
 
-	cmd.Flags().StringVarP(&accessToken, "access-token", "a", "", "Access token of the user profile")
+	cmd.Flags().StringVarP(&accessToken, "access-token", "a", "", "Access token of the federatedidentity profile")
 	cmd.MarkFlagRequired("access-token")
 
 	return cmd
 }
 
-func doRunFetchProfile(accessToken, userID string) {
+func doRunFetchProfile(accessToken, federatedidentityID string) {
 	// Setup dependencies
 	logger := logger.NewProvider()
 	originalCfg := config.NewProviderUsingEnvironmentVariables()
@@ -68,7 +68,7 @@ func doRunFetchProfile(accessToken, userID string) {
 		log.Fatalf("Does not exist for err: %v", err)
 	}
 	if profile != nil {
-		fmt.Printf("user_id: %v\n", profile.ID)
+		fmt.Printf("federatedidentity_id: %v\n", profile.ID)
 		fmt.Printf("email: %v\n", profile.Email)
 		fmt.Printf("first_name: %v\n", profile.FirstName)
 		fmt.Printf("last_name: %v\n", profile.LastName)
@@ -102,11 +102,11 @@ func doRunFetchProfile(accessToken, userID string) {
 		fmt.Printf("agree_terms_of_service: %v\n", profile.AgreeTermsOfService)
 		fmt.Printf("agree_promotions: %v\n", profile.AgreePromotions)
 		fmt.Printf("created_from_ip_address: %v\n", profile.CreatedFromIPAddress)
-		fmt.Printf("created_by_user_id: %v\n", profile.CreatedByUserID)
+		fmt.Printf("created_by_federatedidentity_id: %v\n", profile.CreatedByFederatedIdentityID)
 		fmt.Printf("created_at: %v\n", profile.CreatedAt)
 		fmt.Printf("created_by_name: %v\n", profile.CreatedByName)
 		fmt.Printf("modified_from_ip_address: %v\n", profile.ModifiedFromIPAddress)
-		fmt.Printf("modified_by_user_id: %v\n", profile.ModifiedByUserID)
+		fmt.Printf("modified_by_federatedidentity_id: %v\n", profile.ModifiedByFederatedIdentityID)
 		fmt.Printf("modified_at: %v\n", profile.ModifiedAt)
 		fmt.Printf("modified_by_name: %v\n", profile.ModifiedByName)
 		fmt.Printf("status: %v\n", profile.Status)

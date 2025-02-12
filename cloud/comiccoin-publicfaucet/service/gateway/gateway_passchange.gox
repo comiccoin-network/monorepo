@@ -13,7 +13,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/password"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config/constants"
-	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/federatedidentity"
 )
 
 type PublicFaucetChangePasswordService interface {
@@ -24,16 +24,16 @@ type publicfaucetChangePasswordServiceImpl struct {
 	logger             *slog.Logger
 	kmutex             kmutexutil.KMutexProvider
 	passwordProvider   password.Provider
-	userGetByIDUseCase uc_user.UserGetByIDUseCase
-	userUpdateUseCase  uc_user.UserUpdateUseCase
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase
+	federatedidentityUpdateUseCase  uc_federatedidentity.FederatedIdentityUpdateUseCase
 }
 
 func NewPublicFaucetChangePasswordService(
 	logger *slog.Logger,
 	kmutex kmutexutil.KMutexProvider,
 	passwordProvider password.Provider,
-	uc1 uc_user.UserGetByIDUseCase,
-	uc2 uc_user.UserUpdateUseCase,
+	uc1 uc_federatedidentity.FederatedIdentityGetByIDUseCase,
+	uc2 uc_federatedidentity.FederatedIdentityUpdateUseCase,
 ) PublicFaucetChangePasswordService {
 	return &publicfaucetChangePasswordServiceImpl{logger, kmutex, passwordProvider, uc1, uc2}
 }
@@ -46,21 +46,21 @@ type PublicFaucetChangePasswordRequestIDO struct {
 
 func (s *publicfaucetChangePasswordServiceImpl) Execute(sessCtx mongo.SessionContext, req *PublicFaucetChangePasswordRequestIDO) error {
 	// Extract from our session the following data.
-	userID := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	federatedidentityID := sessCtx.Value(constants.SessionFederatedIdentityID).(primitive.ObjectID)
 	ipAddress, _ := sessCtx.Value(constants.SessionIPAddress).(string)
 
-	// Lookup the user in our database, else return a `400 Bad Request` error.
-	u, err := s.userGetByIDUseCase.Execute(sessCtx, userID)
+	// Lookup the federatedidentity in our database, else return a `400 Bad Request` error.
+	u, err := s.federatedidentityGetByIDUseCase.Execute(sessCtx, federatedidentityID)
 	if err != nil {
 		s.logger.Error("database error", slog.Any("err", err))
 		return err
 	}
 	if u == nil {
-		s.logger.Warn("user does not exist validation error")
+		s.logger.Warn("federatedidentity does not exist validation error")
 		return httperror.NewForBadRequestWithSingleField("id", "does not exist")
 	}
 	if err := ValidateProfileChangePassworRequest(req); err != nil {
-		s.logger.Warn("user validation failed", slog.Any("err", err))
+		s.logger.Warn("federatedidentity validation failed", slog.Any("err", err))
 		return err
 	}
 
@@ -90,12 +90,12 @@ func (s *publicfaucetChangePasswordServiceImpl) Execute(sessCtx mongo.SessionCon
 	}
 	u.PasswordHash = passwordHash
 	u.PasswordHashAlgorithm = s.passwordProvider.AlgorithmName()
-	u.ModifiedByUserID = userID
+	u.ModifiedByFederatedIdentityID = federatedidentityID
 	u.ModifiedAt = time.Now()
 	u.ModifiedByName = fmt.Sprintf("%s %s", u.FirstName, u.LastName)
 	u.ModifiedFromIPAddress = ipAddress
-	if err := s.userUpdateUseCase.Execute(sessCtx, u); err != nil {
-		s.logger.Error("user update by id error", slog.Any("error", err))
+	if err := s.federatedidentityUpdateUseCase.Execute(sessCtx, u); err != nil {
+		s.logger.Error("federatedidentity update by id error", slog.Any("error", err))
 		return err
 	}
 

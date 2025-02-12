@@ -14,22 +14,22 @@ var (
 )
 
 // PendingAuthorization represents a pending OAuth authorization request
-// that is waiting for user authentication.
+// that is waiting for federatedidentity authentication.
 type PendingAuthorization struct {
 	ClientID    string    // The ID of the client application requesting authorization
-	RedirectURI string    // Where to send the user after authorization
+	RedirectURI string    // Where to send the federatedidentity after authorization
 	State       string    // CSRF protection token
 	Scope       string    // Requested permissions
 	ExpiresAt   time.Time // When this authorization request expires
 }
 
-// AuthorizationCode represents a code issued after successful user authentication
+// AuthorizationCode represents a code issued after successful federatedidentity authentication
 // that can be exchanged for an access token.
 type AuthorizationCode struct {
 	Code        string    // The authorization code itself
 	ClientID    string    // The client this code was issued to
 	RedirectURI string    // The redirect URI used in the initial request
-	UserID      string    // The ID of the user who authorized the request
+	FederatedIdentityID      string    // The ID of the federatedidentity who authorized the request
 	Scope       string    // The authorized scope
 	ExpiresAt   time.Time // When this code expires
 }
@@ -55,7 +55,7 @@ type TokenResponse struct {
 type Token struct {
 	TokenID   string    // The token itself
 	TokenType string    // "access" or "refresh"
-	UserID    string    // The user this token belongs to
+	FederatedIdentityID    string    // The federatedidentity this token belongs to
 	ClientID  string    // The client this token was issued to
 	Scope     string    // The token's authorized scope
 	ExpiresAt time.Time // When this token expires
@@ -73,8 +73,8 @@ type TokenStore interface {
 	// RevokeToken marks a token as revoked
 	RevokeToken(tokenID string) error
 
-	// RevokeAllUserTokens revokes all tokens for a user
-	RevokeAllUserTokens(userID string) error
+	// RevokeAllFederatedIdentityTokens revokes all tokens for a federatedidentity
+	RevokeAllFederatedIdentityTokens(federatedidentityID string) error
 }
 
 // IntrospectionResponse represents the OAuth 2.0 token introspection response
@@ -82,7 +82,7 @@ type IntrospectionResponse struct {
 	Active    bool   `json:"active"`              // Is the token active?
 	Scope     string `json:"scope,omitempty"`     // The token's scope
 	ClientID  string `json:"client_id,omitempty"` // Client ID the token was issued to
-	Username  string `json:"username,omitempty"`  // Username of the resource owner
+	FederatedIdentityname  string `json:"federatedidentityname,omitempty"`  // FederatedIdentityname of the resource owner
 	ExpiresAt int64  `json:"exp,omitempty"`       // Token expiration timestamp
 	IssuedAt  int64  `json:"iat,omitempty"`       // When the token was issued
 }

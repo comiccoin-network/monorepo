@@ -1,0 +1,50 @@
+package federatedidentity
+
+import (
+	"context"
+	"log/slog"
+
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/federatedidentity"
+)
+
+type FederatedIdentityCountByFilterUseCase interface {
+	Execute(ctx context.Context, filter *dom_federatedidentity.FederatedIdentityFilter) (uint64, error)
+}
+
+type federatedidentityCountByFilterUseCaseImpl struct {
+	config *config.Configuration
+	logger *slog.Logger
+	repo   dom_federatedidentity.Repository
+}
+
+func NewFederatedIdentityCountByFilterUseCase(
+	config *config.Configuration,
+	logger *slog.Logger,
+	repo dom_federatedidentity.Repository,
+) FederatedIdentityCountByFilterUseCase {
+	return &federatedidentityCountByFilterUseCaseImpl{config, logger, repo}
+}
+
+func (uc *federatedidentityCountByFilterUseCaseImpl) Execute(ctx context.Context, filter *dom_federatedidentity.FederatedIdentityFilter) (uint64, error) {
+	//
+	// STEP 1: Validation.
+	//
+
+	e := make(map[string]string)
+	if filter == nil {
+		e["filter"] = "Comic submission is required"
+	}
+	if len(e) != 0 {
+		uc.logger.Warn("Failed validating",
+			slog.Any("error", e))
+		return 0, httperror.NewForBadRequest(&e)
+	}
+
+	//
+	// STEP 2: Count in database.
+	//
+
+	return uc.repo.CountByFilter(ctx, filter)
+}
