@@ -1,109 +1,121 @@
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/contexts/AuthContext.tsx
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import type { User, AuthState } from "@/types";
 
-interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
-  register: (
-    email: string,
-    password: string,
-    username: string,
-  ) => Promise<void>;
-  logout: () => Promise<void>;
+// Define what our tokens look like
+interface Tokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Define what functionality our auth context will provide
+interface AuthContextType {
+  tokens: Tokens | null;
+  isAuthenticated: boolean;
+  login: (tokens: Tokens) => void;
+  logout: () => void;
+  refreshTokens: () => Promise<boolean>;
+}
 
+// Create the context
+const AuthContext = createContext<AuthContextType | null>(null);
+
+// The provider component that wraps our app
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    isAuthenticated: false,
-    user: null,
-    loading: true,
-  });
-
+  const [tokens, setTokens] = useState<Tokens | null>(null);
   const router = useRouter();
+  const loginPerformed = useRef(false);
 
   useEffect(() => {
-    // Check for existing session
-    checkAuth();
+    if (!loginPerformed.current) {
+      const storedTokens = localStorage.getItem("auth_tokens");
+      if (storedTokens) {
+        try {
+          setTokens(JSON.parse(storedTokens));
+        } catch (error) {
+          localStorage.removeItem("auth_tokens");
+        }
+      }
+      loginPerformed.current = true;
+    }
   }, []);
 
-  const checkAuth = async () => {
-    try {
-      // Here you would typically make an API call to verify the session
-      const session = localStorage.getItem("session");
-      if (session) {
-        const user = JSON.parse(session);
-        setState({ isAuthenticated: true, user, loading: false });
-      } else {
-        setState({ isAuthenticated: false, user: null, loading: false });
-      }
-    } catch (error) {
-      setState({ isAuthenticated: false, user: null, loading: false });
-    }
-  };
+  const refreshTokens = async (): Promise<boolean> => {
+    if (!tokens?.refreshToken) return false;
 
-  const login = async (email: string, password: string) => {
     try {
-      // Here you would typically make an API call to your backend
-      // For now, we'll simulate a successful login
-      const user: User = {
-        id: "1",
-        email,
-        username: email.split("@")[0],
-        isVerified: false,
-        createdAt: new Date(),
+      const apiProtocol = process.env.NEXT_PUBLIC_API_PROTOCOL || "http";
+      const apiDomain = process.env.NEXT_PUBLIC_API_DOMAIN || "localhost";
+
+      const response = await fetch(
+        `${apiProtocol}://${apiDomain}/api/oauth/refresh`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            refresh_token: tokens.refreshToken,
+          }),
+        },
+      );
+
+      if (!response.ok) throw new Error("Refresh failed");
+
+      const data = await response.json();
+      const newTokens: Tokens = {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresAt: data.expires_at,
       };
 
-      localStorage.setItem("session", JSON.stringify(user));
-      setState({ isAuthenticated: true, user, loading: false });
-      router.push("/dashboard");
+      setTokens(newTokens);
+      localStorage.setItem("auth_tokens", JSON.stringify(newTokens));
+      return true;
     } catch (error) {
-      throw new Error("Login failed");
+      console.error("Failed to refresh tokens:", error);
+      logout();
+      return false;
     }
   };
 
-  const register = async (
-    email: string,
-    password: string,
-    username: string,
-  ) => {
-    try {
-      // Here you would typically make an API call to your backend
-      const user: User = {
-        id: "1",
-        email,
-        username,
-        isVerified: false,
-        createdAt: new Date(),
-      };
-
-      localStorage.setItem("session", JSON.stringify(user));
-      setState({ isAuthenticated: true, user, loading: false });
-      router.push("/dashboard");
-    } catch (error) {
-      throw new Error("Registration failed");
+  const login = (newTokens: Tokens) => {
+    if (!loginPerformed.current) {
+      setTokens(newTokens);
+      localStorage.setItem("auth_tokens", JSON.stringify(newTokens));
+      loginPerformed.current = true;
     }
   };
 
-  const logout = async () => {
-    localStorage.removeItem("session");
-    setState({ isAuthenticated: false, user: null, loading: false });
+  const logout = () => {
+    setTokens(null);
+    localStorage.removeItem("auth_tokens");
+    loginPerformed.current = false;
     router.push("/");
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        tokens,
+        isAuthenticated: !!tokens,
+        login,
+        logout,
+        refreshTokens,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
+// Export the hook for using auth context
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;

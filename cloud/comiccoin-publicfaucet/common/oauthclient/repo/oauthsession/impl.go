@@ -23,6 +23,14 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 	// Initialize the oauth_sessions collection
 	sc := client.Database(appCfg.DB.Name).Collection("oauth_sessions")
 
+	// For debugging purposes only or if you are going to recreate new indexes.
+	if _, err := sc.Indexes().DropAll(context.TODO()); err != nil {
+		loggerp.Warn("failed deleting all indexes",
+			slog.Any("err", err))
+
+		// Do not crash app, just continue.
+	}
+
 	// Create indexes for optimizing queries and enforcing constraints
 	_, err := sc.Indexes().CreateMany(context.TODO(), []mongo.IndexModel{
 		{
@@ -30,8 +38,7 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 			Options: options.Index().SetUnique(true),
 		},
 		{
-			Keys:    bson.D{{Key: "user_id", Value: 1}},
-			Options: options.Index().SetUnique(true),
+			Keys: bson.D{{Key: "user_id", Value: 1}},
 		},
 		{
 			Keys:    bson.D{{Key: "expires_at", Value: 1}},

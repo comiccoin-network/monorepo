@@ -1,8 +1,6 @@
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/app.tsx
 "use client";
 
-import { useState } from "react";
-import { CONFIG } from "@/config/env";
-import { useFileUpload } from "@/hooks/useFileUpload";
 import { useRouter } from "next/navigation";
 import {
   Coins,
@@ -15,28 +13,13 @@ import {
   Loader2,
 } from "lucide-react";
 import Footer from "@/components/Footer";
-import { useRegistrationUrl } from "@/hooks/useRegistrationUrl";
 
 const IndexPage = () => {
   const router = useRouter();
-  const { registrationUrl, isLoading, error, refetch } = useRegistrationUrl();
 
   // Navigation handler
   const handleNavigation = (path: string) => {
-    if (path === "/register") {
-      // If we have a registration URL, use it
-      if (registrationUrl) {
-        window.location.href = registrationUrl;
-      }
-      // If there's an error, try refetching
-      else if (error) {
-        refetch();
-      }
-      // If still loading, do nothing (button will be disabled)
-    } else {
-      // For other paths, use normal navigation
-      router.push(path);
-    }
+    router.push(path);
   };
 
   return (

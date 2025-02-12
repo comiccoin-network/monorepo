@@ -1,42 +1,54 @@
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/config/env.ts
 // This file provides type-safe access to environment variables
 // and ensures they are properly validated at runtime
 
-// Helper function to get environment variables with validation
-const getEnvVar = (key: string): string => {
+// Helper function with better error handling and default values
+const getEnvVar = (key: string, defaultValue?: string): string => {
   const value = process.env[`NEXT_PUBLIC_${key}`];
-  if (!value) {
-    throw new Error(
-      `Missing required environment variable: NEXT_PUBLIC_${key}`,
-    );
+
+  // If we have a value, return it
+  if (value) {
+    return value;
   }
-  return value;
+
+  // If we have a default value, use it
+  if (defaultValue !== undefined) {
+    return defaultValue;
+  }
+
+  // Only throw if we have no value and no default
+  console.warn(`Environment variable NEXT_PUBLIC_${key} is not set`);
+  return "";
 };
 
-// API Configuration
+// API Configuration with development defaults
 export const API_CONFIG = {
-  domain: getEnvVar("API_DOMAIN"),
-  protocol: getEnvVar("API_PROTOCOL"),
+  domain: getEnvVar("API_DOMAIN", "127.0.0.1:9090"),
+  protocol: getEnvVar("API_PROTOCOL", "http"),
   get baseUrl() {
     return `${this.protocol}://${this.domain}`;
   },
 } as const;
 
-// Frontend Configuration
+// Frontend Configuration with development defaults
 export const FRONTEND_CONFIG = {
-  domain: getEnvVar("WWW_DOMAIN"),
-  protocol: getEnvVar("WWW_PROTOCOL"),
+  domain: getEnvVar("WWW_DOMAIN", "localhost:3000"),
+  protocol: getEnvVar("WWW_PROTOCOL", "http"),
   get baseUrl() {
     return `${this.protocol}://${this.domain}`;
   },
 } as const;
 
-// Upload Configuration
+// Upload Configuration with development defaults
 export const UPLOAD_CONFIG = {
   maxFileSizeBytes: parseInt(
-    getEnvVar("IMAGE_UPLOAD_MAX_FILESIZE_IN_BYTES"),
+    getEnvVar("IMAGE_UPLOAD_MAX_FILESIZE_IN_BYTES", "5242880"),
     10,
   ),
-  maxFileSizeErrorMessage: getEnvVar("IMAGE_UPLOAD_MAX_FILESIZE_ERROR_MESSAGE"),
+  maxFileSizeErrorMessage: getEnvVar(
+    "IMAGE_UPLOAD_MAX_FILESIZE_ERROR_MESSAGE",
+    "File size must be less than 5MB",
+  ),
   get maxFileSizeMB() {
     return this.maxFileSizeBytes / (1024 * 1024);
   },

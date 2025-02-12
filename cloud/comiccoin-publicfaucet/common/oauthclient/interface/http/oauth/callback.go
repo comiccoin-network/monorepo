@@ -93,7 +93,7 @@ func (h *CallbackHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if successURI != "" {
-		successURI += fmt.Sprintf("?access_token=%v&refresh_token=&%v&expires_at=%v", response.AccessToken, response.RefreshToken, response.ExpiresAt.Unix())
+		successURI += fmt.Sprintf("?access_token=%v&refresh_token=%v&expires_at=%v", response.AccessToken, response.RefreshToken, response.ExpiresAt.Unix())
 		h.logger.Info("Redirecting now...",
 			slog.String("successURI", successURI))
 		http.Redirect(w, r, successURI, http.StatusFound)

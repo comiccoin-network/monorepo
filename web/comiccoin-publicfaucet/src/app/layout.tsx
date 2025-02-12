@@ -1,5 +1,6 @@
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/layout.tsx
 import type { Metadata } from "next";
-import { AuthProvider } from "@/contexts/AuthContext"; // This will now correctly resolve
+import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
