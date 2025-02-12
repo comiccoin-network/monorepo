@@ -72,6 +72,7 @@ func (impl *oauthClientImpl) IntrospectToken(ctx context.Context, token string) 
 
 	// Log decoded response
 	impl.Logger.Info("decoded introspection response",
+		slog.Any("user_id", introspectResp.UserID),
 		slog.Bool("active", introspectResp.Active),
 		slog.String("client_id", introspectResp.ClientID),
 		slog.String("scope", introspectResp.Scope),

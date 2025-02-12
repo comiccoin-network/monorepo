@@ -153,6 +153,9 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		if err != nil {
 			return nil, fmt.Errorf("getting user info: %w", err)
 		}
+		if user == nil {
+			return nil, fmt.Errorf("user d.n.e. for: %v", introspectResp.UserID)
+		}
 
 		return &IntrospectionResponse{
 			Active:    true,

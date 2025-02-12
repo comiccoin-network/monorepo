@@ -1,8 +1,6 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/dashboard/page.tsx
 "use client";
 
-import { withAuth } from "@/components/hoc/withAuth";
-
 function DashboardPage() {
   return (
     <div className="min-h-screen p-8">
@@ -15,6 +13,4 @@ function DashboardPage() {
 }
 
 // Export the protected version of the dashboard
-export default withAuth(DashboardPage, {
-  componentName: "Dashboard",
-});
+export default DashboardPage;

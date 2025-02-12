@@ -76,10 +76,13 @@ func (s *callbackServiceImpl) Execute(ctx context.Context, req *CallbackRequest)
 	// First verify and delete state as before
 	state, err := s.getStateUseCase.Execute(ctx, req.State)
 	if err != nil {
+		s.logger.Error("failed to get state",
+			slog.Any("error", err))
 		return nil, fmt.Errorf("verifying state: %w", err)
 	}
 
 	if state == nil {
+		s.logger.Warn("failed to get state: d.n.e")
 		return nil, errors.New("invalid state")
 	}
 
@@ -95,26 +98,47 @@ func (s *callbackServiceImpl) Execute(ctx context.Context, req *CallbackRequest)
 	// Exchange code for token
 	tokenResp, err := s.exchangeCodeUseCase.Execute(ctx, req.Code)
 	if err != nil {
+		s.logger.Error("failed exchanging code",
+			slog.Any("error", err))
 		return nil, fmt.Errorf("exchanging code: %w", err)
 	}
 
 	// Get user info from token introspection
 	userInfo, err := s.introspectTokenUseCase.Execute(ctx, tokenResp.AccessToken)
 	if err != nil {
-		return nil, fmt.Errorf("getting user info: %w", err)
+		s.logger.Error("failed introspect token",
+			slog.Any("error", err))
+		return nil, fmt.Errorf("inspecting token error: %w", err)
+	}
+	if userInfo == nil {
+		s.logger.Error("failed introspect token: returned nothing")
+		return nil, errors.New("failed introspect token: returned nothing")
 	}
 
 	// Check if user exists in our system
 	existingUser, err := s.userGetByEmailUseCase.Execute(ctx, userInfo.Email)
 	if err != nil {
+		s.logger.Error("failed getting user by email",
+			slog.Any("error", err))
 		return nil, fmt.Errorf("checking user: %w", err)
 	}
 
 	var userID primitive.ObjectID
 	if existingUser == nil {
+		userID, err = primitive.ObjectIDFromHex(userInfo.UserID)
+		if err != nil {
+			s.logger.Error("failed converting to primitive object ID",
+				slog.Any("userInfo.UserID", userInfo.UserID),
+				slog.Any("error", err))
+			return nil, fmt.Errorf("converting user ID: %w", err)
+		}
+
+		s.logger.Debug("received new user id from gateway",
+			slog.Any("userID", userID))
+
 		// Create new user if they don't exist
 		user := &dom_user.User{
-			ID:          primitive.NewObjectID(),
+			ID:          userID,
 			Email:       userInfo.Email,
 			FirstName:   userInfo.FirstName,
 			LastName:    userInfo.LastName,
@@ -126,9 +150,11 @@ func (s *callbackServiceImpl) Execute(ctx context.Context, req *CallbackRequest)
 		}
 
 		if err := s.userCreateUseCase.Execute(ctx, user); err != nil {
+			s.logger.Error("failed created user",
+				slog.Any("error", err))
 			return nil, fmt.Errorf("creating user: %w", err)
 		}
-		userID = user.ID
+		s.logger.Debug("successfully stored new user")
 	} else {
 		userID = existingUser.ID
 	}
@@ -137,7 +163,7 @@ func (s *callbackServiceImpl) Execute(ctx context.Context, req *CallbackRequest)
 	session := &dom_oauthsession.OAuthSession{
 		ID:          primitive.NewObjectID(),
 		SessionID:   primitive.NewObjectID().Hex(),
-		UserID:      userID, // Now we have the correct user ID
+		UserID:      userID,
 		AccessToken: tokenResp.AccessToken,
 		CreatedAt:   time.Now(),
 		ExpiresAt:   tokenResp.ExpiresAt,
@@ -145,6 +171,8 @@ func (s *callbackServiceImpl) Execute(ctx context.Context, req *CallbackRequest)
 	}
 
 	if err := s.createSessionUseCase.Execute(ctx, session); err != nil {
+		s.logger.Error("failed created session",
+			slog.Any("error", err))
 		return nil, fmt.Errorf("creating session: %w", err)
 	}
 

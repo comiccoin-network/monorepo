@@ -3,6 +3,7 @@ package registration
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -70,6 +71,26 @@ func (s *registrationServiceImpl) ProcessRegistration(ctx context.Context, req *
 		return nil, err
 	}
 
+	if registrationResp == nil {
+		err := errors.New("nil registration response returned from OAuth server")
+		s.logger.Error("failed to register user with OAuth server",
+			slog.String("email", req.Email),
+			slog.Any("error", err))
+		return nil, err
+	}
+
+	// Important: We want the same ID distributed across all our web-services
+	// so must enforce getting non-zero values need to be thrown out.
+	if registrationResp.UserID.IsZero() {
+		err := errors.New("registration response returned `user_id` with zero value")
+		s.logger.Error("failed to register user with OAuth server",
+			slog.String("email", req.Email),
+			slog.Any("error", err))
+		return nil, err
+	}
+	s.logger.Debug("received new user_id from OAuth server",
+		slog.Any("user_id", registrationResp.UserID))
+
 	// If auth flow is automatic, exchange the code for tokens
 	if req.AuthFlow == "auto" {
 		// Exchange the authorization code for tokens
@@ -83,7 +104,7 @@ func (s *registrationServiceImpl) ProcessRegistration(ctx context.Context, req *
 
 		// Create the user in our database
 		user := &dom_user.User{
-			ID:                  primitive.NewObjectID(),
+			ID:                  registrationResp.UserID, // Important: We want the same ID distributed across all our web-services!
 			Email:               req.Email,
 			FirstName:           req.FirstName,
 			LastName:            req.LastName,
@@ -106,6 +127,9 @@ func (s *registrationServiceImpl) ProcessRegistration(ctx context.Context, req *
 				slog.Any("error", err))
 			return nil, err
 		}
+
+		s.logger.Debug("successfully stored new user",
+			slog.Any("user_id", user.ID))
 
 		// Store the tokens
 		token := &dom_token.Token{

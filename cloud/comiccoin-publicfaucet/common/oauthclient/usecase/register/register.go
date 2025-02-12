@@ -3,6 +3,7 @@ package registration
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"regexp"
 	"strings"
@@ -127,8 +128,17 @@ func (uc *registerUseCaseImpl) Execute(ctx context.Context, req *dom_registratio
 		return nil, err
 	}
 
+	if response == nil {
+		err := errors.New("empty response from gateway")
+		uc.logger.Error("failed to register user",
+			slog.String("email", req.Email),
+			slog.Any("error", err))
+		return nil, err
+	}
+
 	uc.logger.Info("user registered successfully",
-		slog.String("email", req.Email))
+		slog.String("email", req.Email),
+		slog.Any("user_id", response.UserID))
 
 	return response, nil
 }

@@ -1,6 +1,8 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/registration/model.go
 package registration
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type RegistrationRequest struct {
 	Email       string `json:"email"`
 	Password    string `json:"password"`
@@ -15,7 +17,9 @@ type RegistrationRequest struct {
 	RedirectURI string `json:"redirect_uri" validate:"required"`
 }
 
+// Matches `github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/user/register`
 type RegistrationResponse struct {
-	AuthCode    string `json:"auth_code"`
-	RedirectURI string `json:"redirect_uri"`
+	UserID      primitive.ObjectID `json:"user_id"`
+	AuthCode    string             `json:"auth_code"`
+	RedirectURI string             `json:"redirect_uri"`
 }

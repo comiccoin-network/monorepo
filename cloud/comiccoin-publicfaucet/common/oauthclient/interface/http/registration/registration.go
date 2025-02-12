@@ -11,6 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	dom_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/registration"
 	service_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/registration"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type PostRegistrationHTTPHandler struct {
@@ -45,8 +46,9 @@ type registrationRequestIDO struct {
 }
 
 type registrationResponseIDO struct {
-	AuthCode    string `json:"auth_code,omitempty"`
-	RedirectURI string `json:"redirect_uri,omitempty"`
+	UserID      primitive.ObjectID `json:"user_id,omitempty"` // Important: We want the same ID distributed across all our web-services!
+	AuthCode    string             `json:"auth_code,omitempty"`
+	RedirectURI string             `json:"redirect_uri,omitempty"`
 }
 
 func (h *PostRegistrationHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
@@ -99,6 +101,7 @@ func (h *PostRegistrationHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 
 	// Convert domain model to IDO
 	responseIDO := registrationResponseIDO{
+		UserID:      response.UserID,
 		AuthCode:    response.AuthCode,
 		RedirectURI: response.RedirectURI,
 	}
@@ -112,5 +115,6 @@ func (h *PostRegistrationHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 	}
 
 	h.logger.Info("registration request processed successfully",
-		slog.String("email", request.Email))
+		slog.String("email", request.Email),
+		slog.Any("user_id", response.UserID))
 }
