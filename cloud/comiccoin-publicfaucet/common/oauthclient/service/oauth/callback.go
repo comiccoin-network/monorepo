@@ -25,10 +25,11 @@ type CallbackRequest struct {
 }
 
 type CallbackResponse struct {
-	SessionID   string    `json:"session_id"`
-	AccessToken string    `json:"access_token"`
-	ExpiresAt   time.Time `json:"expires_at"`
-	TokenType   string    `json:"token_type"`
+	SessionID    string    `json:"session_id"`
+	AccessToken  string    `json:"access_token"`
+	RefreshToken string    `json:"refresh_token"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	TokenType    string    `json:"token_type"`
 }
 
 type CallbackService interface {
@@ -148,9 +149,10 @@ func (s *callbackServiceImpl) Execute(ctx context.Context, req *CallbackRequest)
 	}
 
 	return &CallbackResponse{
-		SessionID:   session.SessionID,
-		AccessToken: tokenResp.AccessToken,
-		ExpiresAt:   tokenResp.ExpiresAt,
-		TokenType:   tokenResp.TokenType,
+		SessionID:    session.SessionID,
+		AccessToken:  tokenResp.AccessToken,
+		RefreshToken: tokenResp.RefreshToken,
+		ExpiresAt:    tokenResp.ExpiresAt,
+		TokenType:    tokenResp.TokenType,
 	}, nil
 }

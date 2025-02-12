@@ -53,6 +53,7 @@ func doRunLoginCmd(email, firstName, lastName, phone, country, timezone, passwor
 			ClientID:          originalCfg.OAuth.ClientID,
 			ClientSecret:      originalCfg.OAuth.ClientSecret,
 			ClientRedirectURI: originalCfg.OAuth.ClientRedirectURI,
+			ClientSuccessURI:  originalCfg.OAuth.ClientSuccessURI,
 			ClientCancelURI:   originalCfg.OAuth.ClientCancelURI,
 		},
 		DB: common_oauth_config.DBConfig{
@@ -76,6 +77,7 @@ func doRunLoginCmd(email, firstName, lastName, phone, country, timezone, passwor
 			ClientID:          cfg.OAuth.ClientID,
 			ClientSecret:      cfg.OAuth.ClientSecret,
 			ClientRedirectURI: cfg.OAuth.ClientRedirectURI,
+			ClientSuccessURI:  cfg.OAuth.ClientSuccessURI,
 			ClientCancelURI:   cfg.OAuth.ClientCancelURI,
 		},
 		DB: common_oauth_config.DBConfig{

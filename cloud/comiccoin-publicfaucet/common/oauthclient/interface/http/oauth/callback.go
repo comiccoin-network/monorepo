@@ -3,6 +3,7 @@ package oauth
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -43,10 +44,16 @@ func (h *CallbackHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	// Get code and state from query parameters
 	code := r.URL.Query().Get("code")
 	state := r.URL.Query().Get("state")
+	successURI := r.URL.Query().Get("success_uri")
 
 	if code == "" || state == "" {
 		h.logger.Error("missing required query parameters")
 		httperror.ResponseError(w, httperror.NewForBadRequest(nil))
+		return
+	}
+	if successURI == "" {
+		h.logger.Error("missing success_uri parameter")
+		http.Error(w, "missing success_uri parameter", http.StatusBadRequest)
 		return
 	}
 
@@ -84,6 +91,14 @@ func (h *CallbackHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteStrictMode,
 		Expires:  response.ExpiresAt,
 	})
+
+	if successURI != "" {
+		successURI += fmt.Sprintf("?access_token=%v&refresh_token=&%v&expires_at=%v", response.AccessToken, response.RefreshToken, response.ExpiresAt.Unix())
+		h.logger.Info("Redirecting now...",
+			slog.String("successURI", successURI))
+		http.Redirect(w, r, successURI, http.StatusFound)
+		return
+	}
 
 	// Encode response
 	if err := json.NewEncoder(w).Encode(responseIDO); err != nil {

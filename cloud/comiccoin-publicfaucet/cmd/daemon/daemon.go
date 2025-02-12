@@ -64,6 +64,7 @@ func doRunDaemon() {
 			ClientID:          cfg.OAuth.ClientID,
 			ClientSecret:      cfg.OAuth.ClientSecret,
 			ClientRedirectURI: cfg.OAuth.ClientRedirectURI,
+			ClientSuccessURI:  cfg.OAuth.ClientSuccessURI,
 			ClientCancelURI:   cfg.OAuth.ClientCancelURI,
 		},
 		DB: common_oauth_config.DBConfig{

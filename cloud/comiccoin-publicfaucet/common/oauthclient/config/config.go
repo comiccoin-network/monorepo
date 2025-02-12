@@ -10,6 +10,7 @@ type OAuthConfig struct {
 	ClientID          string
 	ClientSecret      string
 	ClientRedirectURI string
+	ClientSuccessURI  string
 	ClientCancelURI   string
 }
 

@@ -14,3 +14,10 @@ tasks:
       - go work use ./cloud/comiccoin-publicfaucet
       - cd ./cloud/comiccoin-publicfaucet
       - docker-compose -p comiccoin_publicfaucet -f ./cloud/comiccoin-publicfaucet/dev.docker-compose.yml up
+
+  authority:
+    desc: Start the backend in developer mode
+    cmds:
+      - go work use ./cloud/comiccoin-authority
+      - cd ./cloud/comiccoin-authority
+      - docker-compose -p comiccoin_authority -f ./cloud/comiccoin-authority/dev.docker-compose.yml up

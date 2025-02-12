@@ -11,9 +11,10 @@ import (
 // This provides a type-safe way to inject dynamic values into our HTML template.
 type RegisterTemplateData struct {
 	RedirectURI string // The URI where the user will be redirected after registration
+	SuccessURI  string // The URL to redirect to if user successfully registers
+	CancelURI   string // The URL to redirect to if user cancels registration
 	ClientID    string // The OAuth client application ID
 	State       string // The OAuth state
-	CancelURI   string // The URL to redirect to if user cancels registration
 	ErrorMsg    string // Optional error message to display
 }
 
@@ -33,6 +34,7 @@ func (h *UIRegisterHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	// Get and validate redirect_uri from URL query parameters
 	cancelURI := r.URL.Query().Get("cancel_url")
 	redirectURI := r.URL.Query().Get("redirect_uri")
+	successURI := r.URL.Query().Get("success_uri")
 	appID := r.URL.Query().Get("client_id")
 	state := r.URL.Query().Get("state")
 
@@ -42,6 +44,10 @@ func (h *UIRegisterHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	}
 	if redirectURI == "" {
 		h.handleError(w, "Missing redirect_uri parameter", http.StatusBadRequest)
+		return
+	}
+	if successURI == "" {
+		h.handleError(w, "Missing success_uri parameter", http.StatusBadRequest)
 		return
 	}
 	if cancelURI == "" {
@@ -58,6 +64,7 @@ func (h *UIRegisterHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		ClientID:    appID,
 		State:       state,
 		RedirectURI: redirectURI,
+		SuccessURI:  successURI,
 		CancelURI:   cancelURI,
 	}
 
@@ -157,6 +164,7 @@ const registrationPage = `
    const clientId = {{.ClientID}};
    const stateVal = {{.State}};
    const cancelUrl = {{.CancelURI}};
+   const successUri = {{.SuccessURI}};
 
    async function handleCancel() {
        // If cancel URL is provided, redirect to it
@@ -183,7 +191,8 @@ const registrationPage = `
            app_id: clientId,
            redirect_uri: redirectUri,
            auth_flow: "auto",
-		   state: stateVal
+		   state: stateVal,
+		   successUri: successUri,
        };
 
        try {
@@ -199,7 +208,7 @@ const registrationPage = `
 
            const result = await response.json();
            if (result.auth_code) {
-               window.location.href = redirectUri + "?code=" + result.auth_code + "&state=" + stateVal;
+               window.location.href = redirectUri + "?code=" + result.auth_code + "&state=" + stateVal + "&success_uri=" + successUri;
            } else {
                throw new Error('No authorization code received');
            }

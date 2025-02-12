@@ -63,6 +63,7 @@ func doRunRegisterCmd(email, firstName, lastName, phone, country, timezone, pass
 			ClientID:          originalCfg.OAuth.ClientID,
 			ClientSecret:      originalCfg.OAuth.ClientSecret,
 			ClientRedirectURI: originalCfg.OAuth.ClientRedirectURI,
+			ClientSuccessURI:  originalCfg.OAuth.ClientSuccessURI,
 			ClientCancelURI:   originalCfg.OAuth.ClientCancelURI,
 		},
 		DB: common_oauth_config.DBConfig{

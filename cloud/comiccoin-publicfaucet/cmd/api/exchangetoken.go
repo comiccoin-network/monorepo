@@ -49,6 +49,7 @@ func doRunTokenExchange(authCode string) {
 			ClientID:          originalCfg.OAuth.ClientID,
 			ClientSecret:      originalCfg.OAuth.ClientSecret,
 			ClientRedirectURI: originalCfg.OAuth.ClientRedirectURI,
+			ClientSuccessURI:  originalCfg.OAuth.ClientSuccessURI,
 			ClientCancelURI:   originalCfg.OAuth.ClientCancelURI,
 		},
 		DB: common_oauth_config.DBConfig{

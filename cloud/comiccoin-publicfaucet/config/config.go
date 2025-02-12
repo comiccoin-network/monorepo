@@ -76,6 +76,7 @@ type OAuthConfig struct {
 	ClientID          string
 	ClientSecret      string
 	ClientRedirectURI string
+	ClientSuccessURI  string
 	ClientCancelURI   string
 }
 
@@ -117,6 +118,7 @@ func NewProviderUsingEnvironmentVariables() *Configuration {
 	c.OAuth.ClientID = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_ID", true)
 	c.OAuth.ClientSecret = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_SECRET", true)
 	c.OAuth.ClientRedirectURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REDIRECT_URI", true)
+	c.OAuth.ClientSuccessURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_SUCCESS_URI", true)
 	c.OAuth.ClientCancelURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_CANCEL_URI", true)
 
 	// Amazon Web-Services Technology
