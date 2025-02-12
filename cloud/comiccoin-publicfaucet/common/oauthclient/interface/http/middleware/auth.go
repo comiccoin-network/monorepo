@@ -73,6 +73,7 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		// Add federatedidentity ID to context
 		if !introspectResp.FederatedIdentityID.IsZero() {
 			ctx := context.WithValue(r.Context(), "federatedidentity_id", introspectResp.FederatedIdentityID)
+			ctx = context.WithValue(ctx, "access_token", token)
 			m.logger.Debug("attached authenticated federatedidentity to the context",
 				slog.Any("federatedidentity_id", introspectResp.FederatedIdentityID),
 				slog.Any("token_id", token))

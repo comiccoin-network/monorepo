@@ -22,11 +22,15 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http"
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/hello"
+	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/me"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/system"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/bannedipaddress"
+	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
 	svc_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/hello"
+	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/me"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/bannedipaddress"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -84,19 +88,72 @@ func doRunDaemon() {
 	//
 
 	banIPAddrRepo := r_banip.NewRepository(cfg, logger, dbClient)
+	userRepo := r_user.NewRepository(cfg, logger, dbClient)
 
 	//
 	// Use-case
 	//
 
 	// --- Banned IP Addresses ---
+
 	bannedIPAddressListAllValuesUseCase := uc_bannedipaddress.NewBannedIPAddressListAllValuesUseCase(
 		cfg,
 		logger,
 		banIPAddrRepo,
 	)
 
-	// --- Resources ---
+	// --- Users ---
+
+	userGetBySessionIDUseCase := uc_user.NewUserGetBySessionIDUseCase(
+		cfg,
+		logger,
+		cache,
+	)
+	userGetByEmailUseCase := uc_user.NewUserGetByEmailUseCase(
+		cfg,
+		logger,
+		userRepo,
+	)
+	userGetByIDUseCase := uc_user.NewUserGetByIDUseCase(
+		cfg,
+		logger,
+		userRepo,
+	)
+	userGetByFederatedIdentityIDUseCase := uc_user.NewUserGetByFederatedIdentityIDUseCase(
+		cfg,
+		logger,
+		userRepo,
+	)
+	userCreateUseCase := uc_user.NewUserCreateUseCase(
+		cfg,
+		logger,
+		userRepo,
+	)
+	userUpdateUseCase := uc_user.NewUserUpdateUseCase(
+		cfg,
+		logger,
+		userRepo,
+	)
+	_ = userGetBySessionIDUseCase
+	_ = userGetByEmailUseCase
+	_ = userGetByEmailUseCase
+	_ = userGetByIDUseCase
+	_ = userGetByFederatedIdentityIDUseCase
+	_ = userCreateUseCase
+	_ = userUpdateUseCase
+
+	//
+	// Service
+	//
+
+	getMeAfterRemoteSyncServiceImpl := svc_me.NewGetMeAfterRemoteSyncService(
+		cfg,
+		logger,
+		oauthClientManager,
+		userGetByFederatedIdentityIDUseCase,
+		userCreateUseCase,
+		userUpdateUseCase,
+	)
 
 	getHelloService := svc_hello.NewHelloService(
 		cfg,
@@ -109,6 +166,7 @@ func doRunDaemon() {
 	//
 
 	// --- System ---
+
 	getVersionHTTPHandler := http_system.NewGetVersionHTTPHandler(
 		logger,
 	)
@@ -116,11 +174,20 @@ func doRunDaemon() {
 		logger,
 	)
 
-	//
+	// --- Hello ---
+
 	getHelloHTTPHandler := http_hello.NewGetHelloHTTPHandler(
 		cfg,
 		logger,
 		getHelloService,
+	)
+
+	// --- Me ---
+
+	getMeHTTPHandler := http_me.NewGetMeHTTPHandler(
+		cfg,
+		logger,
+		getMeAfterRemoteSyncServiceImpl,
 	)
 
 	// --- HTTP Middleware ---
@@ -143,6 +210,7 @@ func doRunDaemon() {
 		getVersionHTTPHandler,
 		getHealthCheckHTTPHandler,
 		getHelloHTTPHandler,
+		getMeHTTPHandler,
 	)
 
 	//

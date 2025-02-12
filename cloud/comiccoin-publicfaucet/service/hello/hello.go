@@ -42,7 +42,9 @@ func NewHelloService(
 }
 
 func (s *helloServiceImpl) SayHello(ctx context.Context) (*HelloResponse, error) {
-	// Get authenticated federatedidentity ID from context
+	// Get authenticated federatedidentity ID from context. This is loaded in
+	// by the `AuthMiddleware` found via:
+	// - github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware/auth.go
 	federatedidentityID, ok := ctx.Value("federatedidentity_id").(primitive.ObjectID)
 	if !ok {
 		s.logger.Error("Failed getting local federatedidentity id",
@@ -51,7 +53,7 @@ func (s *helloServiceImpl) SayHello(ctx context.Context) (*HelloResponse, error)
 	}
 
 	// Get federatedidentity details
-	federatedidentity, err := s.oauthManager.GetLocalFederatedIdentityByID(ctx, federatedidentityID)
+	federatedidentity, err := s.oauthManager.GetLocalFederatedIdentityByFederatedIdentityID(ctx, federatedidentityID)
 	if err != nil {
 		s.logger.Debug("Failed getting local federatedidentity id", slog.Any("error", err))
 		return nil, err

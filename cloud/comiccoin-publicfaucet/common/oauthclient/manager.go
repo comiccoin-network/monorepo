@@ -10,6 +10,7 @@ import (
 
 	config "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
 	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/federatedidentity"
+	dom_remotefederatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/remotefederatedidentity"
 	http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/introspection"
 	http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/login"
 	http_mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/interface/http/middleware"
@@ -24,6 +25,7 @@ import (
 	r_oauthstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/oauthstate"
 	r_profile "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/profile"
 	r_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/registration"
+	r_remotefederatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/remotefederatedidentity"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/repo/token"
 	svc_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/introspection"
 	svc_login "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/login"
@@ -37,17 +39,19 @@ import (
 	uc_oauthstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthstate"
 	uc_profile "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/profile"
 	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/register"
+	uc_remotefederatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/remotefederatedidentity"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodbcache"
 )
 
 type Manager interface {
 	// Database
-	GetLocalFederatedIdentityByID(ctx context.Context, id primitive.ObjectID) (*dom_federatedidentity.FederatedIdentity, error)
+	GetLocalFederatedIdentityByFederatedIdentityID(ctx context.Context, federatedIdentityID primitive.ObjectID) (*dom_federatedidentity.FederatedIdentity, error)
 
-	// Service
+	// Use-case / Service
 	Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error)
 	ExchangeToken(ctx context.Context, req *svc_oauth.ExchangeTokenRequest) (*svc_oauth.ExchangeTokenResponse, error)
+	FetchFederatedIdentityFromRemoteByAccessToken(ctx context.Context, accessToken string) (*dom_remotefederatedidentity.RemoteFederatedIdentityDTO, error)
 
 	// HTTP
 	AuthMiddleware() *http_mid.AuthMiddleware
@@ -70,7 +74,8 @@ type managerImpl struct {
 	logger *slog.Logger
 
 	// Use-Case
-	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase
+	federatedidentityGetByIDUseCase      uc_federatedidentity.FederatedIdentityGetByIDUseCase
+	fetchRemoteFederdatedIdentityUseCase uc_remotefederatedidentity.FetchRemoteFederdatedIdentityUseCase
 
 	// Service
 	registration                svc_registration.RegistrationService
@@ -107,6 +112,7 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 	oauthsessionRepo := r_oauthsession.NewRepository(cfg, logger, mongoClient)
 	oauthstateRepo := r_oauthstate.NewRepository(cfg, logger, mongoClient)
 	profileRepo := r_profile.NewRepository(cfg, logger)
+	remotefederatedidentityRepo := r_remotefederatedidentity.NewRepository(cfg, logger)
 
 	// --- FederatedIdentity ---
 	federatedidentityGetBySessionIDUseCase := uc_federatedidentity.NewFederatedIdentityGetBySessionIDUseCase(
@@ -279,6 +285,14 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		cfg,
 		logger,
 		profileRepo,
+	)
+
+	// --- Remote Federated Identity  ---
+
+	fetchRemoteFederdatedIdentityUseCase := uc_remotefederatedidentity.NewFetchRemoteFederdatedIdentityUseCase(
+		cfg,
+		logger,
+		remotefederatedidentityRepo,
 	)
 
 	//
@@ -455,6 +469,7 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		config:                                  cfg,
 		logger:                                  logger,
 		federatedidentityGetByIDUseCase:         federatedidentityGetByIDUseCase,
+		fetchRemoteFederdatedIdentityUseCase:    fetchRemoteFederdatedIdentityUseCase,
 		registration:                            registration,
 		loginService:                            loginService,
 		refreshTokenService:                     refreshTokenService,
@@ -478,8 +493,8 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 	}, nil
 }
 
-func (m *managerImpl) GetLocalFederatedIdentityByID(ctx context.Context, id primitive.ObjectID) (*dom_federatedidentity.FederatedIdentity, error) {
-	return m.federatedidentityGetByIDUseCase.Execute(ctx, id)
+func (m *managerImpl) GetLocalFederatedIdentityByFederatedIdentityID(ctx context.Context, federatedIdentityID primitive.ObjectID) (*dom_federatedidentity.FederatedIdentity, error) {
+	return m.federatedidentityGetByIDUseCase.Execute(ctx, federatedIdentityID)
 }
 
 func (m *managerImpl) Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error) {
@@ -488,6 +503,10 @@ func (m *managerImpl) Login(ctx context.Context, loginReq *svc_login.LoginReques
 
 func (m *managerImpl) ExchangeToken(ctx context.Context, req *svc_oauth.ExchangeTokenRequest) (*svc_oauth.ExchangeTokenResponse, error) {
 	return m.exchangeService.ExchangeToken(ctx, req)
+}
+
+func (m *managerImpl) FetchFederatedIdentityFromRemoteByAccessToken(ctx context.Context, accessToken string) (*dom_remotefederatedidentity.RemoteFederatedIdentityDTO, error) {
+	return m.fetchRemoteFederdatedIdentityUseCase.Execute(ctx, accessToken)
 }
 
 func (m *managerImpl) AuthMiddleware() *http_mid.AuthMiddleware {

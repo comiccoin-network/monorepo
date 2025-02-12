@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { createAuthenticatedFetch } from "@/utils/api";
 import { API_CONFIG } from "@/config/env";
 
-interface User {
+interface FederatedIdentity {
   id: string;
   email: string;
   firstName: string;
@@ -13,7 +13,7 @@ interface User {
 
 interface HelloResponse {
   message: string;
-  user: User;
+  federatedidentity: FederatedIdentity;
 }
 
 interface UseSayHelloReturn {
