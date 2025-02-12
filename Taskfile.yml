@@ -8,6 +8,11 @@ tasks:
       - cd ./cloud/comiccoin-gateway
       - docker-compose -p comiccoin_gateway -f ./cloud/comiccoin-gateway/dev.docker-compose.yml up
 
+  gatewayconsole:
+    desc: Open console in (developer mode) running backend
+    cmds:
+      - docker exec -it comiccoin_gateway bash
+
   faucet:
     desc: Start the backend in developer mode
     cmds:
@@ -15,9 +20,19 @@ tasks:
       - cd ./cloud/comiccoin-publicfaucet
       - docker-compose -p comiccoin_publicfaucet -f ./cloud/comiccoin-publicfaucet/dev.docker-compose.yml up
 
+  faucetconsole:
+    desc: Open console in (developer mode) running backend
+    cmds:
+      - docker exec -it comiccoin_publicfaucet bash
+
   authority:
     desc: Start the backend in developer mode
     cmds:
       - go work use ./cloud/comiccoin-authority
       - cd ./cloud/comiccoin-authority
       - docker-compose -p comiccoin_authority -f ./cloud/comiccoin-authority/dev.docker-compose.yml up
+
+  authorityconsole:
+    desc: Open console in (developer mode) running backend
+    cmds:
+      - docker exec -it comiccoin_authority bash
