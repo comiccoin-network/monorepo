@@ -39,32 +39,6 @@ const IndexPage = () => {
     }
   };
 
-  // Helper function to render the register button with appropriate state
-  const RegisterButton = ({
-    className = "",
-    children,
-  }: {
-    className?: string;
-    children?: React.ReactNode;
-  }) => (
-    <button
-      onClick={() => handleNavigation("/register")}
-      disabled={isLoading}
-      className={`${className} relative ${isLoading ? "opacity-70 cursor-wait" : ""}`}
-    >
-      {isLoading ? (
-        <span className="flex items-center gap-2">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          Loading...
-        </span>
-      ) : error ? (
-        "Try Again"
-      ) : (
-        children
-      )}
-    </button>
-  );
-
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation Bar */}
@@ -80,9 +54,12 @@ const IndexPage = () => {
             </span>
           </div>
           <div className="flex space-x-4">
-            <RegisterButton className="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-bold border-2 border-white transition-colors">
+            <button
+              onClick={() => handleNavigation("/register-launchpad")}
+              className="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-bold border-2 border-white transition-colors"
+            >
               Register
-            </RegisterButton>
+            </button>
             <button
               onClick={() => handleNavigation("/login")}
               className="px-4 py-2 rounded-lg bg-white hover:bg-purple-50 text-purple-700 font-bold transition-colors"
@@ -187,12 +164,15 @@ const IndexPage = () => {
               of the fastest-growing comic collector community!
             </p>
             <div className="flex justify-center gap-4">
-              <RegisterButton className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2">
+              <button
+                onClick={() => handleNavigation("/register-launchpad")}
+                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
+              >
                 <>
                   Register Now
                   <ArrowRight className="w-5 h-5" />
                 </>
-              </RegisterButton>
+              </button>
               <a
                 href="https://comiccoinnetwork.com"
                 className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
