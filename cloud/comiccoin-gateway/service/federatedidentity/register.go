@@ -37,9 +37,9 @@ type RegisterRequest struct {
 }
 
 type RegisterResponse struct {
-	FederatedIdentityID      string `json:"federatedidentity_id"`
-	AuthCode    string `json:"auth_code,omitempty"`
-	RedirectURI string `json:"redirect_uri,omitempty"`
+	FederatedIdentityID string `json:"federatedidentity_id"`
+	AuthCode            string `json:"auth_code,omitempty"`
+	RedirectURI         string `json:"redirect_uri,omitempty"`
 }
 
 type RegisterService interface {
@@ -47,13 +47,13 @@ type RegisterService interface {
 }
 
 type registerServiceImpl struct {
-	cfg                   *config.Configuration
-	logger                *slog.Logger
-	passwordProvider      password.Provider
-	federatedidentityCreateUseCase     uc_federatedidentity.FederatedIdentityCreateUseCase
-	appFindByIDUseCase    uc_app.ApplicationFindByAppIDUseCase
-	authFindByCodeUseCase uc_auth.AuthorizationFindByCodeUseCase
-	authorizeService      svc_oauth.AuthorizeService
+	cfg                            *config.Configuration
+	logger                         *slog.Logger
+	passwordProvider               password.Provider
+	federatedidentityCreateUseCase uc_federatedidentity.FederatedIdentityCreateUseCase
+	appFindByIDUseCase             uc_app.ApplicationFindByAppIDUseCase
+	authFindByCodeUseCase          uc_auth.AuthorizationFindByCodeUseCase
+	authorizeService               svc_oauth.AuthorizeService
 }
 
 func NewRegisterService(
@@ -65,12 +65,12 @@ func NewRegisterService(
 	authorizeService svc_oauth.AuthorizeService,
 ) RegisterService {
 	return &registerServiceImpl{
-		cfg:                cfg,
-		logger:             logger,
-		passwordProvider:   pp,
-		federatedidentityCreateUseCase:  federatedidentityCreateUseCase,
-		appFindByIDUseCase: appFindByIDUseCase,
-		authorizeService:   authorizeService,
+		cfg:                            cfg,
+		logger:                         logger,
+		passwordProvider:               pp,
+		federatedidentityCreateUseCase: federatedidentityCreateUseCase,
+		appFindByIDUseCase:             appFindByIDUseCase,
+		authorizeService:               authorizeService,
 	}
 }
 
@@ -120,45 +120,45 @@ func (s *registerServiceImpl) Register(ctx context.Context, req *RegisterRequest
 
 	federatedidentityID := primitive.NewObjectID()
 	federatedidentity := &dom_federatedidentity.FederatedIdentity{
-		ID:                         federatedidentityID,
-		Email:                      req.Email,
-		FirstName:                  req.FirstName,
-		LastName:                   req.LastName,
-		Name:                       fmt.Sprintf("%v %v", req.FirstName, req.LastName),
-		LexicalName:                fmt.Sprintf("%v, %v", req.LastName, req.FirstName),
-		Phone:                      req.Phone,
-		Country:                    req.Country,
-		Region:                     "",
-		City:                       "",
-		PostalCode:                 "",
-		AddressLine1:               "",
-		AddressLine2:               "",
-		Timezone:                   req.Timezone,
-		AgreeTermsOfService:        req.AgreeToS,
-		CreatedByFederatedIdentityID:            federatedidentityID,
-		CreatedByName:              fmt.Sprintf("%v %v", req.FirstName, req.LastName),
-		CreatedAt:                  time.Now(),
-		ModifiedByFederatedIdentityID:           federatedidentityID,
-		ModifiedByName:             fmt.Sprintf("%v %v", req.FirstName, req.LastName),
-		ModifiedAt:                 time.Now(),
-		Role:                       dom_federatedidentity.FederatedIdentityRoleCustomer,
-		PasswordHash:               passwordHash,
-		PasswordHashAlgorithm:      s.passwordProvider.AlgorithmName(),
-		WasEmailVerified:           false,
-		EmailVerificationCode:      primitive.NewObjectID().Hex(),
-		EmailVerificationExpiry:    time.Now().Add(72 * time.Hour),
-		Status:                     domain.FederatedIdentityStatusActive,
-		HasShippingAddress:         false,
-		ShippingName:               "",
-		ShippingPhone:              "",
-		ShippingCountry:            "",
-		ShippingRegion:             "",
-		ShippingCity:               "",
-		ShippingPostalCode:         "",
-		ShippingAddressLine1:       "",
-		ShippingAddressLine2:       "",
-		PaymentProcessorName:       "",
-		PaymentProcessorCustomerID: "",
+		ID:                            federatedidentityID,
+		Email:                         req.Email,
+		FirstName:                     req.FirstName,
+		LastName:                      req.LastName,
+		Name:                          fmt.Sprintf("%v %v", req.FirstName, req.LastName),
+		LexicalName:                   fmt.Sprintf("%v, %v", req.LastName, req.FirstName),
+		Phone:                         req.Phone,
+		Country:                       req.Country,
+		Region:                        "",
+		City:                          "",
+		PostalCode:                    "",
+		AddressLine1:                  "",
+		AddressLine2:                  "",
+		Timezone:                      req.Timezone,
+		AgreeTermsOfService:           req.AgreeToS,
+		CreatedByFederatedIdentityID:  federatedidentityID,
+		CreatedByName:                 fmt.Sprintf("%v %v", req.FirstName, req.LastName),
+		CreatedAt:                     time.Now(),
+		ModifiedByFederatedIdentityID: federatedidentityID,
+		ModifiedByName:                fmt.Sprintf("%v %v", req.FirstName, req.LastName),
+		ModifiedAt:                    time.Now(),
+		Role:                          dom_federatedidentity.FederatedIdentityRoleCustomer,
+		PasswordHash:                  passwordHash,
+		PasswordHashAlgorithm:         s.passwordProvider.AlgorithmName(),
+		WasEmailVerified:              false,
+		EmailVerificationCode:         primitive.NewObjectID().Hex(),
+		EmailVerificationExpiry:       time.Now().Add(72 * time.Hour),
+		Status:                        domain.FederatedIdentityStatusActive,
+		HasShippingAddress:            false,
+		ShippingName:                  "",
+		ShippingPhone:                 "",
+		ShippingCountry:               "",
+		ShippingRegion:                "",
+		ShippingCity:                  "",
+		ShippingPostalCode:            "",
+		ShippingAddressLine1:          "",
+		ShippingAddressLine2:          "",
+		PaymentProcessorName:          "",
+		PaymentProcessorCustomerID:    "",
 	}
 
 	if err := s.federatedidentityCreateUseCase.Execute(ctx, federatedidentity); err != nil {

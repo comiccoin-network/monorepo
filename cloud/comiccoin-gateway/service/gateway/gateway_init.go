@@ -21,11 +21,11 @@ type GatewayInitService interface {
 }
 
 type gatewayInitServiceImpl struct {
-	config           *config.Configuration
-	logger           *slog.Logger
-	passwordProvider password.Provider
-	federatedidentityGet          uc_federatedidentity.FederatedIdentityGetByEmailUseCase
-	federatedidentityCreate       uc_federatedidentity.FederatedIdentityCreateUseCase
+	config                  *config.Configuration
+	logger                  *slog.Logger
+	passwordProvider        password.Provider
+	federatedidentityGet    uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	federatedidentityCreate uc_federatedidentity.FederatedIdentityCreateUseCase
 }
 
 func NewGatewayInitService(
@@ -82,28 +82,28 @@ func (s *gatewayInitServiceImpl) Execute(
 	}
 
 	federatedidentity := &dom_federatedidentity.FederatedIdentity{
-		ID:                        federatedidentityID,
-		FirstName:                 "System",
-		LastName:                  "Administrator",
-		Name:                      "System Administrator",
-		LexicalName:               "Administrator, System",
-		Email:                     email,
-		Status:                    dom_federatedidentity.FederatedIdentityStatusActive,
-		PasswordHash:              passwordHash,
-		PasswordHashAlgorithm:     s.passwordProvider.AlgorithmName(),
-		Role:                      dom_federatedidentity.FederatedIdentityRoleRoot,
-		WasEmailVerified:          true,
-		CreatedByFederatedIdentityID:           federatedidentityID,
-		CreatedByName:             "System Administrator",
-		CreatedAt:                 time.Now(),
-		ModifiedByFederatedIdentityID:          federatedidentityID,
-		ModifiedByName:            "System Administrator",
-		ModifiedAt:                time.Now(),
-		ProfileVerificationStatus: dom_federatedidentity.FederatedIdentityProfileVerificationStatusApproved,
-		Country:                   "Canada",
-		Timezone:                  "America/Toronto",
-		AgreeTermsOfService:       true,
-		AgreePromotions:           true,
+		ID:                            federatedidentityID,
+		FirstName:                     "System",
+		LastName:                      "Administrator",
+		Name:                          "System Administrator",
+		LexicalName:                   "Administrator, System",
+		Email:                         email,
+		Status:                        dom_federatedidentity.FederatedIdentityStatusActive,
+		PasswordHash:                  passwordHash,
+		PasswordHashAlgorithm:         s.passwordProvider.AlgorithmName(),
+		Role:                          dom_federatedidentity.FederatedIdentityRoleRoot,
+		WasEmailVerified:              true,
+		CreatedByFederatedIdentityID:  federatedidentityID,
+		CreatedByName:                 "System Administrator",
+		CreatedAt:                     time.Now(),
+		ModifiedByFederatedIdentityID: federatedidentityID,
+		ModifiedByName:                "System Administrator",
+		ModifiedAt:                    time.Now(),
+		ProfileVerificationStatus:     dom_federatedidentity.FederatedIdentityProfileVerificationStatusApproved,
+		Country:                       "Canada",
+		Timezone:                      "America/Toronto",
+		AgreeTermsOfService:           true,
+		AgreePromotions:               true,
 	}
 
 	if createFederatedIdentityErr := s.federatedidentityCreate.Execute(sessCtx, federatedidentity); err != nil {

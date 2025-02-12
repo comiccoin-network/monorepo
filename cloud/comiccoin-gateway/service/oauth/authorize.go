@@ -136,14 +136,14 @@ func (s *authorizeServiceImpl) CreatePendingAuthorization(ctx context.Context, c
 	// Create an authorization code record
 	// Note: We're adding default values for required fields
 	authCode := &authorization.AuthorizationCode{
-		Code:        code,
-		AppID:       clientID,
-		RedirectURI: redirectURI,
-		Scope:       "read",    // Set a default scope - adjust based on your needs
-		FederatedIdentityID:      "pending", // We'll update this after federatedidentity login
-		ExpiresAt:   time.Now().Add(10 * time.Minute),
-		IsUsed:      false,
-		CreatedAt:   time.Now(),
+		Code:                code,
+		AppID:               clientID,
+		RedirectURI:         redirectURI,
+		Scope:               "read",    // Set a default scope - adjust based on your needs
+		FederatedIdentityID: "pending", // We'll update this after federatedidentity login
+		ExpiresAt:           time.Now().Add(10 * time.Minute),
+		IsUsed:              false,
+		CreatedAt:           time.Now(),
 	}
 
 	// Store the authorization code using the use case

@@ -10,8 +10,8 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/application"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/clientdemo"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/daemon"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/initialize"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/federatedidentity"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/initialize"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/cmd/version"
 )
 

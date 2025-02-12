@@ -157,26 +157,26 @@ func (s *tokenServiceImpl) ExchangeToken(ctx context.Context, req *TokenRequestD
 
 	// Store access token
 	accessToken := &dom_token.Token{
-		TokenID:    accessTokenID,
-		TokenType:  "access",
-		FederatedIdentityID:     authCode.FederatedIdentityID,
-		AppID:      authCode.AppID,
-		Scope:      authCode.Scope,
-		ExpiresAt:  time.Now().Add(time.Hour),
-		IssuedAt:   time.Now(),
-		LastUsedAt: time.Now(),
+		TokenID:             accessTokenID,
+		TokenType:           "access",
+		FederatedIdentityID: authCode.FederatedIdentityID,
+		AppID:               authCode.AppID,
+		Scope:               authCode.Scope,
+		ExpiresAt:           time.Now().Add(time.Hour),
+		IssuedAt:            time.Now(),
+		LastUsedAt:          time.Now(),
 	}
 
 	// Store refresh token
 	refreshToken := &dom_token.Token{
-		TokenID:    refreshTokenID,
-		TokenType:  "refresh",
-		FederatedIdentityID:     authCode.FederatedIdentityID,
-		AppID:      authCode.AppID,
-		Scope:      authCode.Scope,
-		ExpiresAt:  time.Now().Add(30 * 24 * time.Hour), // 30 days
-		IssuedAt:   time.Now(),
-		LastUsedAt: time.Now(),
+		TokenID:             refreshTokenID,
+		TokenType:           "refresh",
+		FederatedIdentityID: authCode.FederatedIdentityID,
+		AppID:               authCode.AppID,
+		Scope:               authCode.Scope,
+		ExpiresAt:           time.Now().Add(30 * 24 * time.Hour), // 30 days
+		IssuedAt:            time.Now(),
+		LastUsedAt:          time.Now(),
 	}
 
 	if err := s.tokenStoreUseCase.Execute(ctx, accessToken); err != nil {

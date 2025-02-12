@@ -9,11 +9,11 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
+	http_usr "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/federatedidentity"
 	http_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/identity"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
 	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth"
 	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/system"
-	http_usr "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/federatedidentity"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.

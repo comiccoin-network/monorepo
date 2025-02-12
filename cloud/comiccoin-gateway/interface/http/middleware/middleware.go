@@ -17,12 +17,12 @@ type Middleware interface {
 }
 
 type middleware struct {
-	logger                              *slog.Logger
-	blacklist                           blacklist.Provider
-	jwt                                 jwt.Provider
-	federatedidentityGetBySessionIDUseCase           uc_federatedidentity.FederatedIdentityGetBySessionIDUseCase
-	bannedIPAddressListAllValuesUseCase uc_bannedipaddress.BannedIPAddressListAllValuesUseCase
-	IPCountryBlocker                    ipcb.Provider
+	logger                                 *slog.Logger
+	blacklist                              blacklist.Provider
+	jwt                                    jwt.Provider
+	federatedidentityGetBySessionIDUseCase uc_federatedidentity.FederatedIdentityGetBySessionIDUseCase
+	bannedIPAddressListAllValuesUseCase    uc_bannedipaddress.BannedIPAddressListAllValuesUseCase
+	IPCountryBlocker                       ipcb.Provider
 }
 
 func NewMiddleware(
@@ -34,12 +34,12 @@ func NewMiddleware(
 	uc2 uc_bannedipaddress.BannedIPAddressListAllValuesUseCase,
 ) Middleware {
 	return &middleware{
-		logger:                              loggerp,
-		blacklist:                           blp,
-		IPCountryBlocker:                    ipcountryblocker,
-		jwt:                                 jwtp,
-		federatedidentityGetBySessionIDUseCase:           uc1,
-		bannedIPAddressListAllValuesUseCase: uc2,
+		logger:                                 loggerp,
+		blacklist:                              blp,
+		IPCountryBlocker:                       ipcountryblocker,
+		jwt:                                    jwtp,
+		federatedidentityGetBySessionIDUseCase: uc1,
+		bannedIPAddressListAllValuesUseCase:    uc2,
 	}
 }
 

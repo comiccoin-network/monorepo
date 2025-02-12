@@ -23,20 +23,20 @@ import (
 )
 
 var (
-	flagEmail               string
-	flagFirstName           string
-	flagLastName            string
-	flagPassword            string
-	flagPhone               string
-	flagCountry             string
-	flagTimezone            string
-	flagRole                int8
-	flagStatus              int8
-	flagAgreeTermsOfService bool
-	flagAgreePromotions     bool
-	flagIPAddress           string
-	flagCreatedByFederatedIdentityID     string
-	flagCreatedByName       string
+	flagEmail                        string
+	flagFirstName                    string
+	flagLastName                     string
+	flagPassword                     string
+	flagPhone                        string
+	flagCountry                      string
+	flagTimezone                     string
+	flagRole                         int8
+	flagStatus                       int8
+	flagAgreeTermsOfService          bool
+	flagAgreePromotions              bool
+	flagIPAddress                    string
+	flagCreatedByFederatedIdentityID string
+	flagCreatedByName                string
 )
 
 func NewCreateFederatedIdentityCmd() *cobra.Command {
@@ -132,30 +132,30 @@ func doRunCreateFederatedIdentity() {
 
 		// Create federatedidentity object
 		federatedidentity := &dom_federatedidentity.FederatedIdentity{
-			ID:                    primitive.NewObjectID(),
-			Email:                 flagEmail,
-			WasEmailVerified:      true,
-			FirstName:             flagFirstName,
-			LastName:              flagLastName,
-			Name:                  fmt.Sprintf("%s %s", flagFirstName, flagLastName),
-			LexicalName:           fmt.Sprintf("%s, %s", flagLastName, flagFirstName),
-			PasswordHash:          passHash,              // Store the secure password hash
-			PasswordHashAlgorithm: passp.AlgorithmName(), // Store the algorithm name for future reference
-			Role:                  flagRole,
-			Phone:                 flagPhone,
-			Country:               flagCountry,
-			Timezone:              flagTimezone,
-			Status:                flagStatus,
-			AgreeTermsOfService:   flagAgreeTermsOfService,
-			AgreePromotions:       flagAgreePromotions,
-			CreatedFromIPAddress:  flagIPAddress,
-			CreatedByFederatedIdentityID:       createdByFederatedIdentityID,
-			CreatedByName:         flagCreatedByName,
-			CreatedAt:             time.Now(),
-			ModifiedFromIPAddress: flagIPAddress,
-			ModifiedByFederatedIdentityID:      createdByFederatedIdentityID,
-			ModifiedByName:        flagCreatedByName,
-			ModifiedAt:            time.Now(),
+			ID:                            primitive.NewObjectID(),
+			Email:                         flagEmail,
+			WasEmailVerified:              true,
+			FirstName:                     flagFirstName,
+			LastName:                      flagLastName,
+			Name:                          fmt.Sprintf("%s %s", flagFirstName, flagLastName),
+			LexicalName:                   fmt.Sprintf("%s, %s", flagLastName, flagFirstName),
+			PasswordHash:                  passHash,              // Store the secure password hash
+			PasswordHashAlgorithm:         passp.AlgorithmName(), // Store the algorithm name for future reference
+			Role:                          flagRole,
+			Phone:                         flagPhone,
+			Country:                       flagCountry,
+			Timezone:                      flagTimezone,
+			Status:                        flagStatus,
+			AgreeTermsOfService:           flagAgreeTermsOfService,
+			AgreePromotions:               flagAgreePromotions,
+			CreatedFromIPAddress:          flagIPAddress,
+			CreatedByFederatedIdentityID:  createdByFederatedIdentityID,
+			CreatedByName:                 flagCreatedByName,
+			CreatedAt:                     time.Now(),
+			ModifiedFromIPAddress:         flagIPAddress,
+			ModifiedByFederatedIdentityID: createdByFederatedIdentityID,
+			ModifiedByName:                flagCreatedByName,
+			ModifiedAt:                    time.Now(),
 		}
 
 		// Execute federatedidentity creation through the use case

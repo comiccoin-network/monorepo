@@ -61,8 +61,8 @@ func (r *authorizationStorerImpl) UpdateCode(ctx context.Context, code *dom_auth
 	// Only update specific fields, not the entire document
 	update := bson.M{
 		"$set": bson.M{
-			"federatedidentity_id":    code.FederatedIdentityID,
-			"updated_at": time.Now(),
+			"federatedidentity_id": code.FederatedIdentityID,
+			"updated_at":           time.Now(),
 			// Add any other fields that need updating, but NOT _id
 		},
 	}

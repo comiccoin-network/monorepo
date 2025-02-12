@@ -13,9 +13,9 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config/constants"
 	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/domain/federatedidentity"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 	uc_ratelimit "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/ratelimiter"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/token"
-	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
 )
 
 type GetIdentityService interface {
@@ -23,14 +23,14 @@ type GetIdentityService interface {
 }
 
 type getIdentityServiceImpl struct {
-	cfg                  *config.Configuration
-	logger               *slog.Logger
-	cache                mongodbcache.Cacher
-	tokenFindByIDUseCase uc_token.TokenFindByIDUseCase
-	federatedidentityGetByIDUseCase   uc_federatedidentity.FederatedIdentityGetByIDUseCase
-	isAllowedUseCase     uc_ratelimit.IsAllowedUseCase
-	recordFailureUseCase uc_ratelimit.RecordFailureUseCase
-	resetFailuresUseCase uc_ratelimit.ResetFailuresUseCase
+	cfg                             *config.Configuration
+	logger                          *slog.Logger
+	cache                           mongodbcache.Cacher
+	tokenFindByIDUseCase            uc_token.TokenFindByIDUseCase
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase
+	isAllowedUseCase                uc_ratelimit.IsAllowedUseCase
+	recordFailureUseCase            uc_ratelimit.RecordFailureUseCase
+	resetFailuresUseCase            uc_ratelimit.ResetFailuresUseCase
 }
 
 func NewGetIdentityService(
@@ -44,14 +44,14 @@ func NewGetIdentityService(
 	resetFailuresUseCase uc_ratelimit.ResetFailuresUseCase,
 ) GetIdentityService {
 	return &getIdentityServiceImpl{
-		cfg:                  cfg,
-		logger:               logger,
-		cache:                cache,
-		tokenFindByIDUseCase: tokenFindByIDUseCase,
-		federatedidentityGetByIDUseCase:   federatedidentityGetByIDUseCase,
-		isAllowedUseCase:     isAllowedUseCase,
-		recordFailureUseCase: recordFailureUseCase,
-		resetFailuresUseCase: resetFailuresUseCase,
+		cfg:                             cfg,
+		logger:                          logger,
+		cache:                           cache,
+		tokenFindByIDUseCase:            tokenFindByIDUseCase,
+		federatedidentityGetByIDUseCase: federatedidentityGetByIDUseCase,
+		isAllowedUseCase:                isAllowedUseCase,
+		recordFailureUseCase:            recordFailureUseCase,
+		resetFailuresUseCase:            resetFailuresUseCase,
 	}
 }
 

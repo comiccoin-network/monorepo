@@ -9,7 +9,6 @@ import (
 	"log/slog"
 )
 
-
 func (impl *templatedEmailer) SendForgotPasswordEmail(email, verificationCode, firstName string) error {
 	// FOR TESTING PURPOSES ONLY.
 	fp := path.Join("templates", "forgot_password.html")

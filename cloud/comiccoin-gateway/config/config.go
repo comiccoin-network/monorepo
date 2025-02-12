@@ -7,18 +7,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/common"
-
 	sbytes "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/securebytes"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/securestring"
 )
 
 type Configuration struct {
-	App        AppConfig
-	AWS        AWSConfig
-	Blockchain BlockchainConfig
-	DB         DBConfig
-	Emailer    MailgunConfig
+	App     AppConfig
+	AWS     AWSConfig
+	DB      DBConfig
+	Emailer MailgunConfig
 }
 
 type AppConfig struct {
@@ -28,9 +25,6 @@ type AppConfig struct {
 	Port                       string
 	IP                         string
 	HTTPAddress                string
-	WalletAddress              *common.Address
-	WalletMnemonic             *sstring.SecureString
-	WalletPath                 string
 	AuthorityHTTPAddress       string
 	NFTStorageHTTPAddress      string
 	HMACSecret                 *sbytes.SecureBytes
@@ -46,22 +40,6 @@ type AWSConfig struct {
 	Endpoint   string
 	Region     string
 	BucketName string
-}
-
-// BlockchainConfig represents the configuration for the blockchain.
-// It contains settings for the chain ID, transactions per block, difficulty, mining reward, gas price, and units of gas.
-type BlockchainConfig struct {
-	// ChainID is the unique ID for this blockchain instance.
-	ChainID uint16 `json:"chain_id"`
-
-	// TransPerBlock is the maximum number of transactions that can be included in a block.
-	TransPerBlock uint16 `json:"trans_per_block"`
-
-	// Difficulty represents how difficult it should be to solve the work problem.
-	Difficulty uint16 `json:"difficulty"`
-
-	// ComicCoin: Fee that must be paid for every transaction. This value is provided by the authority.
-	TransactionFee uint64 `bson:"transaction_fee" json:"transaction_fee"`
 }
 
 type DBConfig struct {
@@ -87,15 +65,6 @@ func NewProviderUsingEnvironmentVariables() *Configuration {
 	c.App.Port = getEnv("COMICCOIN_GATEWAY_PORT", true)
 	c.App.IP = getEnv("COMICCOIN_GATEWAY_IP", false)
 	c.App.HTTPAddress = fmt.Sprintf("%v:%v", c.App.IP, c.App.Port)
-	c.App.RegistrationCoinsReward = getUint64Env("COMICCOIN_GATEWAY_APP_REGISTRATION_COINS_REWARD", true)
-	c.App.ComicSubmissionCoinsReward = getUint64Env("COMICCOIN_GATEWAY_APP_COMIC_SUBMISSION_COINS_REWARD", true)
-	walletAddress := getEnv("COMICCOIN_GATEWAY_WALLET_ADDRESS", false)
-	if walletAddress != "" {
-		address := common.HexToAddress(walletAddress)
-		c.App.WalletAddress = &address
-	}
-	c.App.WalletMnemonic = getSecureStringEnv("COMICCOIN_GATEWAY_WALLET_MNEMONIC", false)
-	c.App.WalletPath = getEnv("COMICCOIN_GATEWAY_WALLET_PATH", true)
 	c.App.AuthorityHTTPAddress = getEnv("COMICCOIN_GATEWAY_AUTHORITY_HTTP_ADDRESS", true)
 	c.App.NFTStorageHTTPAddress = getEnv("COMICCOIN_GATEWAY_NFTSTORAGE_HTTP_ADDRESS", true)
 	c.App.HMACSecret = getSecureBytesEnv("COMICCOIN_GATEWAY_HMAC_SECRET", true)
@@ -108,15 +77,6 @@ func NewProviderUsingEnvironmentVariables() *Configuration {
 	c.AWS.Endpoint = getEnv("COMICCOIN_GATEWAY_AWS_ENDPOINT", true)
 	c.AWS.Region = getEnv("COMICCOIN_GATEWAY_AWS_REGION", true)
 	c.AWS.BucketName = getEnv("COMICCOIN_GATEWAY_AWS_BUCKET_NAME", true)
-
-	// Blockchain section.
-	chainID, _ := strconv.ParseUint(getEnv("COMICCOIN_GATEWAY_BLOCKCHAIN_CHAIN_ID", true), 10, 16)
-	c.Blockchain.ChainID = uint16(chainID)
-	transPerBlock, _ := strconv.ParseUint(getEnv("COMICCOIN_GATEWAY_BLOCKCHAIN_TRANS_PER_BLOCK", true), 10, 16)
-	c.Blockchain.TransPerBlock = uint16(transPerBlock)
-	difficulty, _ := strconv.ParseUint(getEnv("COMICCOIN_GATEWAY_BLOCKCHAIN_DIFFICULTY", true), 10, 16)
-	c.Blockchain.Difficulty = uint16(difficulty)
-	c.Blockchain.TransactionFee, _ = strconv.ParseUint(getEnv("COMICCOIN_GATEWAY_BLOCKCHAIN_TRANSACTION_FEE", false), 10, 64)
 
 	// Database section.
 	c.DB.URI = getEnv("COMICCOIN_GATEWAY_DB_URI", true)

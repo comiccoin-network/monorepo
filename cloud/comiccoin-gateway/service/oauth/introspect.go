@@ -11,8 +11,8 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
 	uc_app "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/application"
-	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/token"
 	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/federatedidentity"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/token"
 )
 
 // IntrospectionRequestDTO represents the input for token introspection
@@ -24,16 +24,16 @@ type IntrospectionRequestDTO struct {
 
 // IntrospectionResponseDTO represents the OAuth 2.0 token introspection response
 type IntrospectionResponseDTO struct {
-	Active    bool   `json:"active"`              // Indicates if the token is valid and active
-	Scope     string `json:"scope,omitempty"`     // The scope associated with the token
-	ClientID  string `json:"client_id,omitempty"` // Client ID the token was issued to
-	FederatedIdentityname  string `json:"federatedidentityname,omitempty"`  // FederatedIdentityname of the resource owner
-	ExpiresAt int64  `json:"exp,omitempty"`       // Token expiration timestamp
-	IssuedAt  int64  `json:"iat,omitempty"`       // When the token was issued
-	FederatedIdentityID    string `json:"federatedidentity_id,omitempty"`
-	Email     string `json:"email,omitempty"`
-	FirstName string `json:"first_name,omitempty"`
-	LastName  string `json:"last_name,omitempty"`
+	Active                bool   `json:"active"`                          // Indicates if the token is valid and active
+	Scope                 string `json:"scope,omitempty"`                 // The scope associated with the token
+	ClientID              string `json:"client_id,omitempty"`             // Client ID the token was issued to
+	FederatedIdentityname string `json:"federatedidentityname,omitempty"` // FederatedIdentityname of the resource owner
+	ExpiresAt             int64  `json:"exp,omitempty"`                   // Token expiration timestamp
+	IssuedAt              int64  `json:"iat,omitempty"`                   // When the token was issued
+	FederatedIdentityID   string `json:"federatedidentity_id,omitempty"`
+	Email                 string `json:"email,omitempty"`
+	FirstName             string `json:"first_name,omitempty"`
+	LastName              string `json:"last_name,omitempty"`
 }
 
 type IntrospectionService interface {
@@ -44,9 +44,9 @@ type introspectionServiceImpl struct {
 	cfg    *config.Configuration
 	logger *slog.Logger
 
-	appValidateCredentialsUseCase uc_app.ApplicationValidateCredentialsUseCase
-	tokenFindByIDUseCase          uc_token.TokenFindByIDUseCase
-	federatedidentityGetByIDUseCase            uc_federatedidentity.FederatedIdentityGetByIDUseCase
+	appValidateCredentialsUseCase   uc_app.ApplicationValidateCredentialsUseCase
+	tokenFindByIDUseCase            uc_token.TokenFindByIDUseCase
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase
 }
 
 func NewIntrospectionService(
@@ -57,11 +57,11 @@ func NewIntrospectionService(
 	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase,
 ) IntrospectionService {
 	return &introspectionServiceImpl{
-		cfg:                           cfg,
-		logger:                        logger,
-		appValidateCredentialsUseCase: appValidateCredentialsUseCase,
-		tokenFindByIDUseCase:          tokenFindByIDUseCase,
-		federatedidentityGetByIDUseCase:            federatedidentityGetByIDUseCase,
+		cfg:                             cfg,
+		logger:                          logger,
+		appValidateCredentialsUseCase:   appValidateCredentialsUseCase,
+		tokenFindByIDUseCase:            tokenFindByIDUseCase,
+		federatedidentityGetByIDUseCase: federatedidentityGetByIDUseCase,
 	}
 }
 

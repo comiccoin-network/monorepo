@@ -39,8 +39,8 @@ func (impl tokenStorerImpl) RevokeToken(ctx context.Context, tokenID string) err
 
 func (impl tokenStorerImpl) RevokeAllFederatedIdentityTokens(ctx context.Context, federatedidentityID string) error {
 	filter := bson.M{
-		"federatedidentity_id":    federatedidentityID,
-		"is_revoked": false,
+		"federatedidentity_id": federatedidentityID,
+		"is_revoked":           false,
 	}
 	update := bson.M{
 		"$set": bson.M{

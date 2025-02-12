@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"text/template"
@@ -44,8 +43,6 @@ func doRunAuthorize() {
 	logger := logger.NewProvider()
 	_ = logger
 	cfg := config.NewProviderUsingEnvironmentVariables()
-	logger.Debug("gateway configuration ready", // For debugging purposes only.
-		slog.Any("wallet_address", cfg.App.WalletAddress))
 	// kmutex := kmutexutil.NewKMutexProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
 	// keystore := hdkeystore.NewAdapter()

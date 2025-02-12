@@ -31,10 +31,10 @@ type loginServiceImpl struct {
 	logger           *slog.Logger
 	passwordProvider password.Provider
 
-	federatedidentityGetByEmailUseCase         uc_federatedidentity.FederatedIdentityGetByEmailUseCase
-	authFindByCodeUseCase         uc_auth.AuthorizationFindByCodeUseCase
-	authStoreCodeUseCase          uc_auth.AuthorizationStoreCodeUseCase
-	authDeleteExpiredCodesUseCase uc_auth.AuthorizationDeleteExpiredCodesUseCase
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	authFindByCodeUseCase              uc_auth.AuthorizationFindByCodeUseCase
+	authStoreCodeUseCase               uc_auth.AuthorizationStoreCodeUseCase
+	authDeleteExpiredCodesUseCase      uc_auth.AuthorizationDeleteExpiredCodesUseCase
 }
 
 func (s *loginServiceImpl) ProcessLogin(ctx context.Context, federatedidentityname, password, authID string) (*LoginResultDTO, error) {
@@ -133,12 +133,12 @@ func NewLoginService(
 	authDeleteExpiredCodesUseCase uc_auth.AuthorizationDeleteExpiredCodesUseCase,
 ) LoginService {
 	return &loginServiceImpl{
-		cfg:                           cfg,
-		logger:                        logger,
-		passwordProvider:              pp,
-		federatedidentityGetByEmailUseCase:         federatedidentityGetByEmailUseCase,
-		authFindByCodeUseCase:         authFindByCodeUseCase,
-		authStoreCodeUseCase:          authStoreCodeUseCase,
-		authDeleteExpiredCodesUseCase: authDeleteExpiredCodesUseCase,
+		cfg:                                cfg,
+		logger:                             logger,
+		passwordProvider:                   pp,
+		federatedidentityGetByEmailUseCase: federatedidentityGetByEmailUseCase,
+		authFindByCodeUseCase:              authFindByCodeUseCase,
+		authStoreCodeUseCase:               authStoreCodeUseCase,
+		authDeleteExpiredCodesUseCase:      authDeleteExpiredCodesUseCase,
 	}
 }

@@ -148,14 +148,14 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 
 	// Create and store new access token
 	accessToken := &dom_token.Token{
-		TokenID:    newAccessToken,
-		TokenType:  "access",
-		FederatedIdentityID:     existingToken.FederatedIdentityID,
-		AppID:      req.ClientID,
-		Scope:      existingToken.Scope,
-		ExpiresAt:  time.Now().Add(1 * time.Hour),
-		IssuedAt:   time.Now(),
-		LastUsedAt: time.Now(),
+		TokenID:             newAccessToken,
+		TokenType:           "access",
+		FederatedIdentityID: existingToken.FederatedIdentityID,
+		AppID:               req.ClientID,
+		Scope:               existingToken.Scope,
+		ExpiresAt:           time.Now().Add(1 * time.Hour),
+		IssuedAt:            time.Now(),
+		LastUsedAt:          time.Now(),
 	}
 
 	if err := s.tokenStoreUseCase.Execute(ctx, accessToken); err != nil {
@@ -164,14 +164,14 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 
 	// Create and store new refresh token
 	refreshToken := &dom_token.Token{
-		TokenID:    newRefreshToken,
-		TokenType:  "refresh",
-		FederatedIdentityID:     existingToken.FederatedIdentityID,
-		AppID:      req.ClientID,
-		Scope:      existingToken.Scope,
-		ExpiresAt:  time.Now().Add(30 * 24 * time.Hour),
-		IssuedAt:   time.Now(),
-		LastUsedAt: time.Now(),
+		TokenID:             newRefreshToken,
+		TokenType:           "refresh",
+		FederatedIdentityID: existingToken.FederatedIdentityID,
+		AppID:               req.ClientID,
+		Scope:               existingToken.Scope,
+		ExpiresAt:           time.Now().Add(30 * 24 * time.Hour),
+		IssuedAt:            time.Now(),
+		LastUsedAt:          time.Now(),
 	}
 
 	if err := s.tokenStoreUseCase.Execute(ctx, refreshToken); err != nil {
