@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient"
@@ -74,7 +75,7 @@ type MeResponseDTO struct {
 	// HasPreviouslyPurchasedFromAuctionSite           int8               `bson:"has_previously_purchased_from_auction_site" json:"has_previously_purchased_from_auction_site"`
 	// HasPreviouslyPurchasedFromFacebookMarketplace   int8               `bson:"has_previously_purchased_from_facebook_marketplace" json:"has_previously_purchased_from_facebook_marketplace"`
 	// HasRegularlyAttendedComicConsOrCollectibleShows int8               `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
-	// WalletAddress                                   *common.Address    `bson:"wallet_address" json:"wallet_address"`
+	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`
 	// LastCoinsDepositAt                              time.Time          `bson:"last_coins_deposit_at" json:"last_coins_deposit_at"`
 	// ProfileVerificationStatus                       int8               `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
 }
@@ -327,5 +328,6 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 		Phone:              user.Phone,
 		Country:            user.Country,
 		Timezone:           user.Timezone,
+		WalletAddress:      user.WalletAddress,
 	}, nil
 }
