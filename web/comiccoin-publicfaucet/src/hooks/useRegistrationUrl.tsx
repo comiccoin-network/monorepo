@@ -54,7 +54,7 @@ export function useRegistrationUrl(): UseRegistrationUrlReturn {
         headers: {
           "Content-Type": "application/json",
         },
-        // credentials: "include",
+        // credentials: "include", // DO NOT USE THIS HERE! KEEP THIS COMMENT TO REMIND YOU!
       });
 
       console.log("Response received:", {

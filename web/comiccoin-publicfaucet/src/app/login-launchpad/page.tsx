@@ -1,23 +1,33 @@
-// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/register-launchpad/page.tsx
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/login-launchpad/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useRegistrationUrl } from "@/hooks/useRegistrationUrl";
+import { useAuthorizationUrl } from "@/hooks/useAuthorizationUrl";
 import { Loader2, ArrowRight, ExternalLink } from "lucide-react";
 
-export default function RegisterLaunchpadPage() {
+export default function LoginLaunchpadPage() {
   const router = useRouter();
-  const { registrationUrl, isLoading, error, refetch } = useRegistrationUrl();
   const [showManualButton, setShowManualButton] = useState(false);
   const [processedUrl, setProcessedUrl] = useState("");
+  const [redirectUri, setRedirectUri] = useState<string>("");
+
+  // Set up redirect URI once we're on the client side
+  useEffect(() => {
+    setRedirectUri(`${window.location.origin}/auth-callback`);
+  }, []);
+
+  // Initialize the authorization hook with the callback URL
+  const { authUrl, state, expiresAt, isLoading, error } = useAuthorizationUrl({
+    redirectUri: `${window.location.origin}/auth-callback`,
+    scope: "read, write",
+  });
 
   useEffect(() => {
-    if (registrationUrl) {
-      const updatedUrl = registrationUrl.replace(
-        "comiccoin_gateway",
-        "127.0.0.1",
-      );
+    if (authUrl) {
+      const updatedUrl =
+        authUrl.replace("comiccoin_gateway", "127.0.0.1") +
+        "&success_uri=http://127.0.0.1:3000/login-success";
       setProcessedUrl(updatedUrl);
       console.log("Attempting redirect to:", updatedUrl);
 
@@ -32,17 +42,18 @@ export default function RegisterLaunchpadPage() {
           setShowManualButton(true);
         }, 1000);
       } catch (e) {
-        console.error("Redirect failed:", e);
+        console.log("Redirect failed:", e);
         setShowManualButton(true);
       }
     }
-  }, [registrationUrl]);
+  }, [authUrl]);
 
   const handleManualRedirect = () => {
     if (processedUrl) {
-      // Open new tab
+      if (state) {
+        localStorage.setItem("auth_state", state);
+      }
       window.open(processedUrl, "_blank");
-      // Close current tab
       window.close();
     }
   };
@@ -52,7 +63,6 @@ export default function RegisterLaunchpadPage() {
       <main className="flex-1 flex items-center justify-center">
         <div className="text-center px-4 max-w-md mx-auto">
           <div className="flex flex-col items-center gap-6">
-            {/* Only show loader when loading and not showing manual button */}
             {isLoading && !showManualButton && (
               <Loader2 className="h-12 w-12 animate-spin text-purple-600" />
             )}
@@ -61,46 +71,44 @@ export default function RegisterLaunchpadPage() {
               {showManualButton ? (
                 <>
                   <h1 className="text-2xl font-semibold text-gray-900">
-                    Ready to Complete Registration
+                    Ready to Sign In
                   </h1>
                   <p className="text-gray-600">
                     For security reasons, we need you to click the button below
-                    to continue with your registration. A new tab will open, and
-                    this window will close automatically.
+                    to continue with your login. A new tab will open, and this
+                    window will close automatically.
                   </p>
                 </>
               ) : (
                 <>
                   <h1 className="text-2xl font-semibold text-gray-900">
                     {isLoading
-                      ? "Preparing Your Registration..."
+                      ? "Preparing Your Login..."
                       : error
                         ? "Oops! Something Went Wrong"
-                        : "Redirecting to Registration..."}
+                        : "Redirecting to Login..."}
                   </h1>
                   <p className="text-gray-600">
                     {isLoading
-                      ? "We're setting up your secure registration process. This will just take a moment."
+                      ? "We're setting up your secure login process. This will just take a moment."
                       : error
-                        ? "We encountered an error while setting up your registration."
-                        : "You'll be redirected to our registration page in a moment."}
+                        ? "We encountered an error while setting up your login."
+                        : "You'll be redirected to our login page in a moment."}
                   </p>
                 </>
               )}
             </div>
 
-            {/* Manual redirect button with improved styling */}
             {showManualButton && processedUrl && (
               <button
                 onClick={handleManualRedirect}
                 className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2 transition-colors shadow-sm hover:shadow-md"
               >
-                Continue Registration
+                Continue to Login
                 <ExternalLink className="h-5 w-5" />
               </button>
             )}
 
-            {/* Error state buttons */}
             {error && (
               <div className="flex gap-4 mt-2">
                 <button

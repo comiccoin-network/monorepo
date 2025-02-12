@@ -42,25 +42,47 @@ type authUrlResponseIDO struct {
 }
 
 func (h *GetAuthURLHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
-	// Set response content type
 	w.Header().Set("Content-Type", "application/json")
 
-	// Read request body
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		h.logger.Error("failed to read request body",
-			slog.Any("error", err))
-		httperror.ResponseError(w, httperror.NewForBadRequest(nil))
+	var requestIDO authUrlRequestIDO
+
+	// First try to get parameters from query string
+	redirectURI := r.URL.Query().Get("redirect_uri")
+	scope := r.URL.Query().Get("scope")
+
+	if redirectURI != "" {
+		// If parameters are in query string, use them
+		requestIDO = authUrlRequestIDO{
+			RedirectURI: redirectURI,
+			Scope:       scope,
+		}
+	} else {
+		// Fall back to reading from body
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			h.logger.Error("failed to read request body",
+				slog.Any("error", err))
+			httperror.ResponseError(w, httperror.NewForBadRequest(nil))
+			return
+		}
+		defer r.Body.Close()
+
+		if err := json.Unmarshal(body, &requestIDO); err != nil {
+			h.logger.Error("failed to unmarshal request body",
+				slog.Any("error", err))
+			httperror.ResponseError(w, httperror.NewForBadRequest(nil))
+			return
+		}
+	}
+
+	if redirectURI == "" {
+		h.logger.Error("missing required `redirect_uri` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("redirect_uri", "required value"))
 		return
 	}
-	defer r.Body.Close()
-
-	// Parse request body
-	var requestIDO authUrlRequestIDO
-	if err := json.Unmarshal(body, &requestIDO); err != nil {
-		h.logger.Error("failed to unmarshal request body",
-			slog.Any("error", err))
-		httperror.ResponseError(w, httperror.NewForBadRequest(nil))
+	if scope == "" {
+		h.logger.Error("missing required `scope` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("scope", "required value"))
 		return
 	}
 
@@ -95,5 +117,7 @@ func (h *GetAuthURLHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) 
 	}
 
 	h.logger.Info("authorization URL generated successfully",
-		slog.String("state", response.State))
+		slog.String("auth_url", response.AuthURL),
+		slog.String("state", response.State),
+		slog.Any("expires_at", response.ExpiresAt))
 }

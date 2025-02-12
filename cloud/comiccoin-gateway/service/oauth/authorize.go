@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
@@ -67,14 +68,19 @@ func (s *authorizeServiceImpl) ValidateAuthorizationRequest(ctx context.Context,
 	// First check if the application exists
 	app, err := s.appFindByAppIDUseCase.Execute(ctx, clientID)
 	if err != nil {
+		s.logger.Error("failed to find application", slog.Any("error", err))
 		return fmt.Errorf("failed to find application: %w", err)
 	}
 	if app == nil {
+		s.logger.Warn("application not found")
 		return fmt.Errorf("application not found")
 	}
 
 	// Validate response type
 	if responseType != "code" {
+		s.logger.Warn("unsupported response type",
+			slog.Any("invalid_response_type", responseType),
+			slog.Any("allowed_response_types", "[code]"))
 		return fmt.Errorf("unsupported response type: %s", responseType)
 	}
 
@@ -87,22 +93,33 @@ func (s *authorizeServiceImpl) ValidateAuthorizationRequest(ctx context.Context,
 		}
 	}
 	if !validRedirectURI {
+		s.logger.Warn("invalid redirect uri",
+			slog.Any("invalid_uri", redirectURI),
+			slog.Any("allowed_uris", app.RedirectURIs))
 		return fmt.Errorf("invalid redirect URI")
 	}
 
 	// Validate requested scopes against allowed scopes
 	// Note: This is a simplified scope validation. You might want to make it more sophisticated.
 	if scope != "" {
-		validScope := false
-		for _, allowedScope := range app.Scopes {
-			if scope == allowedScope {
-				validScope = true
-				break
+		scope = strings.Replace(scope, " ", "", -1)
+		splitScopes := strings.Split(scope, ",")
+		for _, actualScope := range splitScopes {
+			validScope := false
+			for _, allowedScope := range app.Scopes {
+				if actualScope == allowedScope {
+					validScope = true
+					break
+				}
+			}
+			if !validScope {
+				s.logger.Warn("invalid scope requested",
+					slog.Any("invalid_scope", actualScope),
+					slog.Any("allowed_scope", app.Scopes))
+				return fmt.Errorf("invalid scope requested")
 			}
 		}
-		if !validScope {
-			return fmt.Errorf("invalid scope requested")
-		}
+
 	}
 
 	return nil

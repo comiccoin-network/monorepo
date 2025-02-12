@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/register-success/page.tsx
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/login-success/page.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { CheckCircle, ArrowRight } from "lucide-react";
 
-export default function RegisterSuccessPage() {
+export default function LoginSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -47,7 +47,7 @@ export default function RegisterSuccessPage() {
                 Welcome to ComicCoin! 🎉
               </h1>
               <p className="text-gray-600 text-lg">
-                Your registration was successful! You're now ready to start your
+                Your login was successful! You're now ready to resume your
                 journey in the comic-collecting community.
               </p>
             </div>

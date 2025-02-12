@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/httperror"
 	base_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/security/oauth"
 	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
 )
@@ -56,7 +57,9 @@ const loginFormTemplate = `
 <body>
     <div class="container">
         <form method="POST" action="/oauth/login">
+            <input type="hidden" name="success_uri" value="{{.SuccessURI}}">
             <input type="hidden" name="auth_id" value="{{.AuthID}}">
+	        <input type="hidden" name="state" value="{{.State}}">
             <div class="form-group">
                 <label>Client: {{.ClientID}}</label>
             </div>
@@ -104,9 +107,42 @@ func (h *AuthorizeHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	// Extract query parameters
 	clientID := r.URL.Query().Get("client_id")
 	redirectURI := r.URL.Query().Get("redirect_uri")
+	successURI := r.URL.Query().Get("success_uri")
 	responseType := r.URL.Query().Get("response_type")
 	state := r.URL.Query().Get("state")
 	scope := r.URL.Query().Get("scope")
+
+	// Validation
+	if clientID == "" {
+		h.logger.Error("missing required `client_id` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("client_id", "required value"))
+		return
+	}
+	if redirectURI == "" {
+		h.logger.Error("missing required `redirect_uri` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("redirect_uri", "required value"))
+		return
+	}
+	if successURI == "" {
+		h.logger.Error("missing required `success_uri` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("success_uri", "required value"))
+		return
+	}
+	if responseType == "" {
+		h.logger.Error("missing required `response_type` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("response_type", "required value"))
+		return
+	}
+	if state == "" {
+		h.logger.Error("missing required `state` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("state", "required value"))
+		return
+	}
+	if scope == "" {
+		h.logger.Error("missing required `scope` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("scope", "required value"))
+		return
+	}
 
 	// Validate the request parameters using our service - note we pass individual parameters now
 	if err := h.authorizeService.ValidateAuthorizationRequest(
@@ -145,16 +181,27 @@ func (h *AuthorizeHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+	if authID == "" {
+		h.logger.Error("internal server error - failed to generate `auth_id` ",
+			"error", err,
+			"client_id", clientID)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 
 	// Prepare the data for the login template
 	data := struct {
-		ClientID string
-		AuthID   string
-		Scope    string
+		SuccessURI string
+		ClientID   string
+		AuthID     string
+		Scope      string
+		State      string
 	}{
-		ClientID: clientID,
-		AuthID:   authID,
-		Scope:    scope,
+		SuccessURI: successURI,
+		ClientID:   clientID,
+		AuthID:     authID,
+		Scope:      scope,
+		State:      state,
 	}
 
 	// Render the login form

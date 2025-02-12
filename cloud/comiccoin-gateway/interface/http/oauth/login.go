@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
 )
 
@@ -60,14 +61,29 @@ func (h *LoginHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 	authID := r.FormValue("auth_id")
+	state := r.FormValue("state")
+	successURI := r.FormValue("success_uri")
 
 	// Validate that all required fields are present
-	if username == "" || password == "" || authID == "" {
-		h.logger.Warn("missing required form fields",
-			"has_username", username != "",
-			"has_password", password != "",
-			"has_auth_id", authID != "")
-		http.Error(w, "Missing required fields", http.StatusBadRequest)
+	if username == "" {
+		h.logger.Error("missing required `username` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("username", "required value"))
+		return
+	}
+	if password == "" {
+		h.logger.Error("missing required `password` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("password", "required value"))
+		return
+	}
+
+	if authID == "" {
+		h.logger.Error("missing required `auth_id` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("auth_id", "required value"))
+		return
+	}
+	if successURI == "" {
+		h.logger.Error("missing required `success_uri` value")
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("success_uri", "required value"))
 		return
 	}
 
@@ -92,15 +108,15 @@ func (h *LoginHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	// This follows the OAuth 2.0 specification for the authorization code flow
 	redirectURL := result.RedirectURI + "?code=" + result.Code
 
-	// Include the state parameter if it was provided
-	// The state parameter helps prevent CSRF attacks
-	if result.State != "" {
-		redirectURL += "&state=" + result.State
-	}
+	// Include the state parameter as the state parameter helps prevent CSRF attacks
+	redirectURL += "&state=" + state
+
+	// Include the success_uri parameter so we can redirect to success.
+	redirectURL += "&success_uri=" + successURI
 
 	// Redirect the user back to the client application
 	// This completes the login phase of the OAuth flow
 	h.logger.Info("redirecting user after successful login",
-		"redirect_uri", result.RedirectURI)
+		"redirect_uri", redirectURL)
 	http.Redirect(w, r, redirectURL, http.StatusFound)
 }

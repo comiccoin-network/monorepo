@@ -73,6 +73,7 @@ func (s *getAuthURLServiceImpl) Execute(ctx context.Context, req *GetAuthURLRequ
 			slog.Any("error", err))
 		return nil, err
 	}
+	authURL += "&scope=" + req.Scope
 
 	return &GetAuthURLResponse{
 		AuthURL:   authURL,

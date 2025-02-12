@@ -46,14 +46,19 @@ func (h *CallbackHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	state := r.URL.Query().Get("state")
 	successURI := r.URL.Query().Get("success_uri")
 
-	if code == "" || state == "" {
-		h.logger.Error("missing required query parameters")
-		httperror.ResponseError(w, httperror.NewForBadRequest(nil))
+	if code == "" {
+		h.logger.Error("missing required `code` parameters", slog.Any("parameters", r.URL.Query()))
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("code", "required parameter"))
+		return
+	}
+	if state == "" {
+		h.logger.Error("missing required `state` parameters", slog.Any("parameters", r.URL.Query()))
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("state", "required parameter"))
 		return
 	}
 	if successURI == "" {
-		h.logger.Error("missing success_uri parameter")
-		http.Error(w, "missing success_uri parameter", http.StatusBadRequest)
+		h.logger.Error("missing `success_uri` parameter", slog.Any("parameters", r.URL.Query()))
+		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("success_uri", "required parameter"))
 		return
 	}
 

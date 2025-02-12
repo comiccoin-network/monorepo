@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/register-canceled/page.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
