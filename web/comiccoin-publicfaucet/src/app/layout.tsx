@@ -1,7 +1,5 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/layout.tsx
 import type { Metadata } from "next";
-
-import { AuthProvider } from "@/components/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,9 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <AuthProvider>
-        <body>{children}</body>
-      </AuthProvider>
+      <body>{children}</body>
     </html>
   );
 }

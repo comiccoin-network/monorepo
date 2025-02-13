@@ -1,69 +1,80 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/auth-callback/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/hooks/useAuth";
+import { useMe } from "@/hooks/useMe";
+import { API_CONFIG } from "@/config/env";
+
+// Simple fetch function that doesn't rely on hooks
+const fetchUserProfile = async (accessToken: string) => {
+  const response = await fetch(`${API_CONFIG.baseUrl}/api/me`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch profile");
+  }
+
+  return response.json();
+};
 
 export default function AuthCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setTokens } = useAuthStore();
-  const [error, setError] = useState<string | null>(null);
+  const { updateUser } = useMe();
+
+  // Use a ref to track if we've already processed this authentication
+  const hasProcessedAuth = useRef(false);
 
   useEffect(() => {
-    const handleAuthentication = async () => {
-      try {
-        console.log("🔐 Processing authentication callback");
+    // If we've already processed this auth request, don't do it again
+    if (hasProcessedAuth.current) {
+      return;
+    }
 
+    async function handleAuth() {
+      try {
+        // Mark that we're processing auth
+        hasProcessedAuth.current = true;
+
+        // Get tokens from URL
         const accessToken = searchParams.get("access_token");
         const refreshToken = searchParams.get("refresh_token");
         const expiresAt = searchParams.get("expires_at");
 
         if (!accessToken || !refreshToken || !expiresAt) {
-          throw new Error("Missing authentication tokens");
+          throw new Error("Missing tokens");
         }
 
+        // Save tokens first
         const tokens = {
           accessToken,
           refreshToken,
           expiresAt: parseInt(expiresAt, 10),
         };
-
-        // Set tokens in Zustand store (which persists to localStorage)
-        console.log("✅ Setting authentication tokens");
         setTokens(tokens);
 
-        // Small delay to ensure state is persisted
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Get user profile using the access token
+        const userData = await fetchUserProfile(accessToken);
+        updateUser(userData);
 
-        // Verify persistence
-        const storedAuth = localStorage.getItem("auth-storage");
-        if (!storedAuth) {
-          throw new Error("Failed to persist authentication state");
-        }
-
-        console.log("🚀 Redirecting to dashboard");
-        router.push("/user/dashboard");
+        // Use replace instead of push to avoid adding to history
+        router.replace("/user/dashboard");
       } catch (error) {
-        console.error("❌ Authentication error:", error);
-        setError(
-          error instanceof Error ? error.message : "Authentication failed",
-        );
-        router.push("/login");
+        console.log("Auth error:", error);
+        // Use replace here as well
+        router.replace("/?message=failed_loading");
       }
-    };
+    }
 
-    handleAuthentication();
-  }, [searchParams, setTokens, router]);
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-red-500">Authentication Error: {error}</div>
-      </div>
-    );
-  }
+    handleAuth();
+  }, [searchParams, setTokens, updateUser, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

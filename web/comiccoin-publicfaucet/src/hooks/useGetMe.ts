@@ -86,7 +86,7 @@ export function useGetMe({
       setUser(userData);
       setError(null);
     } catch (err) {
-      console.error("❌ Error fetching user data:", err);
+      console.log("❌ Error fetching user data:", err);
       setError(
         err instanceof Error ? err : new Error("Failed to fetch user data"),
       );

@@ -11,9 +11,9 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/token"
-	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 )
 
 // We define custom error types to differentiate between expiration scenarios
@@ -35,16 +35,16 @@ func (e *SessionExpiredError) Error() string {
 
 // Request/Response types remain the same
 type IntrospectionRequest struct {
-	Token  string
+	Token               string
 	FederatedIdentityID string // Optional - if provided, we verify token ownership
 }
 
 type IntrospectionResponse struct {
-	Active    bool               `json:"active"`
-	FederatedIdentityID    primitive.ObjectID `json:"federatedidentity_id,omitempty"`
-	Email     string             `json:"email,omitempty"`
-	FirstName string             `json:"first_name,omitempty"`
-	LastName  string             `json:"last_name,omitempty"`
+	Active              bool               `json:"active"`
+	FederatedIdentityID primitive.ObjectID `json:"federatedidentity_id,omitempty"`
+	Email               string             `json:"email,omitempty"`
+	FirstName           string             `json:"first_name,omitempty"`
+	LastName            string             `json:"last_name,omitempty"`
 }
 
 // Service interface remains the same
@@ -54,11 +54,11 @@ type IntrospectionService interface {
 
 // Service implementation with simplified dependencies
 type introspectionServiceImpl struct {
-	config                 *config.Configuration
-	logger                 *slog.Logger
-	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase
-	tokenGetUseCase        uc_token.TokenGetByFederatedIdentityIDUseCase
-	federatedidentityGetByIDUseCase     uc_federatedidentity.FederatedIdentityGetByIDUseCase
+	config                          *config.Configuration
+	logger                          *slog.Logger
+	introspectTokenUseCase          uc_oauth.IntrospectTokenUseCase
+	tokenGetUseCase                 uc_token.TokenGetByFederatedIdentityIDUseCase
+	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase
 }
 
 func NewIntrospectionService(
@@ -69,11 +69,11 @@ func NewIntrospectionService(
 	federatedidentityGetByIDUseCase uc_federatedidentity.FederatedIdentityGetByIDUseCase,
 ) IntrospectionService {
 	return &introspectionServiceImpl{
-		config:                 cfg,
-		logger:                 logger,
-		introspectTokenUseCase: introspectTokenUseCase,
-		tokenGetUseCase:        tokenGetUseCase,
-		federatedidentityGetByIDUseCase:     federatedidentityGetByIDUseCase,
+		config:                          cfg,
+		logger:                          logger,
+		introspectTokenUseCase:          introspectTokenUseCase,
+		tokenGetUseCase:                 tokenGetUseCase,
+		federatedidentityGetByIDUseCase: federatedidentityGetByIDUseCase,
 	}
 }
 
@@ -158,11 +158,11 @@ func (s *introspectionServiceImpl) IntrospectToken(ctx context.Context, req *Int
 		}
 
 		return &IntrospectionResponse{
-			Active:    true,
-			FederatedIdentityID:    federatedidentity.ID,
-			Email:     federatedidentity.Email,
-			FirstName: federatedidentity.FirstName,
-			LastName:  federatedidentity.LastName,
+			Active:              true,
+			FederatedIdentityID: federatedidentity.ID,
+			Email:               federatedidentity.Email,
+			FirstName:           federatedidentity.FirstName,
+			LastName:            federatedidentity.LastName,
 		}, nil
 	}
 

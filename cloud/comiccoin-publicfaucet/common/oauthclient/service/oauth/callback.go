@@ -11,12 +11,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/config"
-	dom_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/oauthsession"
 	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/federatedidentity"
+	dom_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/domain/oauthsession"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
 	uc_oauthsession "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthsession"
 	uc_oauthstate "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauthstate"
-	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 )
 
 type CallbackRequest struct {
@@ -37,15 +37,15 @@ type CallbackService interface {
 }
 
 type callbackServiceImpl struct {
-	config                 *config.Configuration
-	logger                 *slog.Logger
-	exchangeCodeUseCase    uc_oauth.ExchangeCodeUseCase
-	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase
-	getStateUseCase        uc_oauthstate.GetOAuthStateUseCase
-	deleteStateUseCase     uc_oauthstate.DeleteOAuthStateUseCase
-	createSessionUseCase   uc_oauthsession.CreateOAuthSessionUseCase
-	federatedidentityCreateUseCase      uc_federatedidentity.FederatedIdentityCreateUseCase
-	federatedidentityGetByEmailUseCase  uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	config                             *config.Configuration
+	logger                             *slog.Logger
+	exchangeCodeUseCase                uc_oauth.ExchangeCodeUseCase
+	introspectTokenUseCase             uc_oauth.IntrospectTokenUseCase
+	getStateUseCase                    uc_oauthstate.GetOAuthStateUseCase
+	deleteStateUseCase                 uc_oauthstate.DeleteOAuthStateUseCase
+	createSessionUseCase               uc_oauthsession.CreateOAuthSessionUseCase
+	federatedidentityCreateUseCase     uc_federatedidentity.FederatedIdentityCreateUseCase
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase
 }
 
 func NewCallbackService(
@@ -60,15 +60,15 @@ func NewCallbackService(
 	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase,
 ) CallbackService {
 	return &callbackServiceImpl{
-		config:                 config,
-		logger:                 logger,
-		exchangeCodeUseCase:    exchangeCodeUseCase,
-		introspectTokenUseCase: introspectTokenUseCase,
-		getStateUseCase:        getStateUseCase,
-		deleteStateUseCase:     deleteStateUseCase,
-		createSessionUseCase:   createSessionUseCase,
-		federatedidentityCreateUseCase:      federatedidentityCreateUseCase,
-		federatedidentityGetByEmailUseCase:  federatedidentityGetByEmailUseCase,
+		config:                             config,
+		logger:                             logger,
+		exchangeCodeUseCase:                exchangeCodeUseCase,
+		introspectTokenUseCase:             introspectTokenUseCase,
+		getStateUseCase:                    getStateUseCase,
+		deleteStateUseCase:                 deleteStateUseCase,
+		createSessionUseCase:               createSessionUseCase,
+		federatedidentityCreateUseCase:     federatedidentityCreateUseCase,
+		federatedidentityGetByEmailUseCase: federatedidentityGetByEmailUseCase,
 	}
 }
 
@@ -103,6 +103,8 @@ func (s *callbackServiceImpl) Execute(ctx context.Context, req *CallbackRequest)
 		return nil, fmt.Errorf("exchanging code: %w", err)
 	}
 
+	s.logger.Debug("successfully finished exchanging code")
+
 	// Get federatedidentity info from token introspection
 	federatedidentityInfo, err := s.introspectTokenUseCase.Execute(ctx, tokenResp.AccessToken)
 	if err != nil {
@@ -114,6 +116,10 @@ func (s *callbackServiceImpl) Execute(ctx context.Context, req *CallbackRequest)
 		s.logger.Error("failed introspect token: returned nothing")
 		return nil, errors.New("failed introspect token: returned nothing")
 	}
+
+	s.logger.Debug("successfully finished running introspection",
+		slog.Any("federatedIdentityInfo", federatedidentityInfo),
+	)
 
 	// Check if federatedidentity exists in our system
 	existingFederatedIdentity, err := s.federatedidentityGetByEmailUseCase.Execute(ctx, federatedidentityInfo.Email)
@@ -161,13 +167,13 @@ func (s *callbackServiceImpl) Execute(ctx context.Context, req *CallbackRequest)
 
 	// Create session with the correct federatedidentity ID
 	session := &dom_oauthsession.OAuthSession{
-		ID:          primitive.NewObjectID(),
-		SessionID:   primitive.NewObjectID().Hex(),
-		FederatedIdentityID:      federatedidentityID,
-		AccessToken: tokenResp.AccessToken,
-		CreatedAt:   time.Now(),
-		ExpiresAt:   tokenResp.ExpiresAt,
-		LastUsedAt:  time.Now(),
+		ID:                  primitive.NewObjectID(),
+		SessionID:           primitive.NewObjectID().Hex(),
+		FederatedIdentityID: federatedidentityID,
+		AccessToken:         tokenResp.AccessToken,
+		CreatedAt:           time.Now(),
+		ExpiresAt:           tokenResp.ExpiresAt,
+		LastUsedAt:          time.Now(),
 	}
 
 	if err := s.createSessionUseCase.Execute(ctx, session); err != nil {

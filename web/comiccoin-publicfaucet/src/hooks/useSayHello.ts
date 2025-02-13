@@ -58,7 +58,7 @@ export function useSayHello(): UseSayHelloReturn {
         setData(responseData);
         setError(null);
       } catch (err) {
-        console.error("❌ Error sending greeting:", err);
+        console.log("❌ Error sending greeting:", err);
         setError(
           err instanceof Error ? err : new Error("Failed to send greeting"),
         );

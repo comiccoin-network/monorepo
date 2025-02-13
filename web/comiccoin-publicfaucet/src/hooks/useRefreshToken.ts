@@ -1,5 +1,6 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useRefreshToken.ts
 import { useAuthStore } from "./useAuth";
+import { API_CONFIG } from "@/config/env";
 
 export const useRefreshToken = () => {
   const { tokens, setTokens } = useAuthStore();
@@ -13,7 +14,12 @@ export const useRefreshToken = () => {
         return false;
       }
 
-      const response = await fetch("/api/auth/refresh", {
+      // Get API configuration from environment variables
+      const apiProtocol = process.env.NEXT_PUBLIC_API_PROTOCOL || "http";
+      const apiDomain = process.env.NEXT_PUBLIC_API_DOMAIN;
+      const apiUrl = `${API_CONFIG.baseUrl}/api/token/refresh`;
+
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,7 +46,7 @@ export const useRefreshToken = () => {
       setTokens(newTokens);
       return true;
     } catch (error) {
-      console.error("❌ Error refreshing tokens:", error);
+      console.log("❌ Error refreshing tokens:", error);
       setTokens(null);
       return false;
     }

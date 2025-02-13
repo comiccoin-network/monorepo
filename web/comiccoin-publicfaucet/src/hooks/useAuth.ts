@@ -8,35 +8,78 @@ interface Tokens {
   expiresAt: number;
 }
 
-interface AuthState {
-  tokens: Tokens | null;
-  isAuthenticated: boolean;
-  setTokens: (tokens: Tokens | null) => void;
-  logout: () => void;
+interface User {
+  federatedidentity_id: string;
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  name: string;
+  lexical_name: string;
+  phone?: string;
+  country?: string;
+  timezone: string;
+  wallet_address?: { address: string } | null;
 }
 
-// Creating a persistent store with Zustand
+interface AuthState {
+  tokens: Tokens | null;
+  user: User | null;
+  isAuthenticated: boolean;
+
+  // Actions
+  setTokens: (tokens: Tokens | null) => void;
+  setUser: (user: User | null) => void;
+  logout: () => void;
+
+  // Selectors
+  getAccessToken: () => string | null;
+  isTokenExpired: () => boolean;
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       tokens: null,
+      user: null,
       isAuthenticated: false,
+
       setTokens: (tokens) => {
         console.log("🔑 Setting new tokens");
         set({ tokens, isAuthenticated: !!tokens });
       },
+
+      setUser: (user) => {
+        console.log("👤 Updating user data");
+        set({ user });
+      },
+
       logout: () => {
         console.log("🚪 Logging out user");
-        set({ tokens: null, isAuthenticated: false });
+        set({ tokens: null, user: null, isAuthenticated: false });
+      },
+
+      // Selector to get the current access token
+      getAccessToken: () => get().tokens?.accessToken || null,
+
+      // Selector to check if the current token is expired
+      isTokenExpired: () => {
+        const tokens = get().tokens;
+        if (!tokens) return true;
+
+        // Add a 5-minute buffer to handle clock skew
+        const bufferTime = 5 * 60 * 1000;
+        return Date.now() + bufferTime >= tokens.expiresAt;
       },
     }),
     {
-      name: "auth-storage", // Name for the storage key
-      storage: createJSONStorage(() => localStorage), // Use localStorage
+      name: "auth-storage",
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         tokens: state.tokens,
+        user: state.user,
         isAuthenticated: state.isAuthenticated,
-      }), // Only persist these fields
+      }),
     },
   ),
 );

@@ -44,7 +44,7 @@ export const createAuthenticatedFetch = () => {
 
       return response;
     } catch (error) {
-      console.error("❌ Request failed:", error);
+      console.log("❌ Request failed:", error);
       throw error;
     }
   };

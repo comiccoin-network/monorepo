@@ -126,7 +126,7 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 	// after the successful oAuth 2.0.
 	federatedidentity, err := s.oauthManager.GetLocalFederatedIdentityByFederatedIdentityID(ctx, federatedidentityID)
 	if err != nil {
-		s.logger.Debug("Failed getting local federatedidentity id", slog.Any("error", err))
+		s.logger.Error("Failed getting local federatedidentity id", slog.Any("error", err))
 		return nil, err
 	}
 	if federatedidentity == nil {
@@ -139,12 +139,12 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 	// create it immediately here and now.
 	user, err := s.userGetByFederatedIdentityIDUseCase.Execute(ctx, federatedidentityID)
 	if err != nil {
-		s.logger.Debug("Failed getting me", slog.Any("error", err))
+		s.logger.Error("Failed getting me", slog.Any("error", err))
 		return nil, err
 	}
 	if user == nil {
 		userID := primitive.NewObjectID() // Note: We keep IDs and federated identity IDs different.
-		user := &dom_user.User{
+		user = &dom_user.User{
 			FederateIdentityID:                    federatedidentityID, // Important to keep consistency across the distributed network.
 			ID:                                    userID,
 			Email:                                 federatedidentity.Email,
@@ -207,9 +207,12 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 			ProfileVerificationStatus: federatedidentity.ProfileVerificationStatus,
 		}
 		if err := s.userCreateUseCase.Execute(ctx, user); err != nil {
-			s.logger.Debug("Failed creating me", slog.Any("error", err))
+			s.logger.Error("Failed creating me", slog.Any("error", err))
 			return nil, err
 		}
+
+		s.logger.Debug("Initial user created locally from federated identity",
+			slog.Any("user_id", userID))
 	}
 
 	// DEVELOPERS NOTE:
@@ -218,6 +221,8 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 
 	if user.ModifiedAt.Add(12 * time.Hour).Before(time.Now()) {
 		shouldSyncNow = true
+		s.logger.Debug("Forcing refresh of user with remote gateway to maintain close data integrity",
+			slog.Any("user_id", user.ID))
 	}
 
 	// DEVELOPERS NOTE:
@@ -238,6 +243,9 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 			return nil, errors.New("access_token not found in context")
 		}
 
+		s.logger.Debug("Beginning to fetch from remote gateway...",
+			slog.Any("user_id", user.ID))
+
 		remotefi, err := s.oauthManager.FetchFederatedIdentityFromRemoteByAccessToken(ctx, accessToken)
 		if err != nil {
 			s.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
@@ -248,6 +256,9 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 			s.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
 			return nil, err
 		}
+
+		s.logger.Debug("Successfully fetched from remote gateway",
+			slog.Any("user_id", user.ID))
 
 		//
 		// STEP 2
@@ -315,6 +326,8 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 			return nil, err
 		}
 
+		s.logger.Debug("User updated from latest federated identity from the remote gateway",
+			slog.Any("user_id", user.ID))
 	}
 
 	return &MeResponseDTO{

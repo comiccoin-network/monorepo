@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           useAuthStore.getState().setTokens(state.tokens);
         }
       } catch (error) {
-        console.error("❌ Error restoring auth state:", error);
+        console.log("❌ Error restoring auth state:", error);
       }
     }
     setIsHydrated(true);

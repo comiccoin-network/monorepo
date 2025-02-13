@@ -181,7 +181,7 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 	// Resources
 	case n == 2 && p[0] == "api" && p[1] == "say-hello" && r.Method == http.MethodPost:
 		port.getHelloHTTPHandler.Execute(w, r)
-	case n == 2 && p[0] == "api" && p[1] == "me" && r.Method == http.MethodPost:
+	case n == 2 && p[0] == "api" && p[1] == "me" && r.Method == http.MethodGet:
 		port.getMeHTTPHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
