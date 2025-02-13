@@ -4,46 +4,88 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/hooks/useAuth";
+import { API_CONFIG } from "@/config/env";
 
-export default function AuthRequired({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { isAuthenticated } = useAuthStore();
+export default function AuthRequired({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
+  const { isAuthenticated, tokens, setTokens } = useAuthStore();
 
   useEffect(() => {
-    // Check authentication after hydration
-    const checkAuth = async () => {
-      console.log("🔍 Checking authentication status");
+    // Add an initial delay to ensure Zustand has rehydrated
+    const initialDelay = new Promise(resolve => setTimeout(resolve, 100));
 
-      // Small delay to ensure hydration is complete
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    async function checkAuth() {
+      console.log("🔄 Starting auth check");
+      console.log("📊 Current state:", { isAuthenticated, hasTokens: !!tokens });
 
-      if (!isAuthenticated) {
-        console.log("🔒 User not authenticated, redirecting");
-        router.push("/login");
-      } else {
-        console.log("✅ User is authenticated");
+      // Wait for initial delay
+      await initialDelay;
+
+      console.log("🔄 State after delay:", { isAuthenticated, hasTokens: !!tokens });
+
+      // Basic auth check
+      if (!isAuthenticated || !tokens) {
+        console.log("❌ No authentication found, redirecting");
+        router.replace("/");
+        return;
       }
-      setIsChecking(false);
-    };
+
+      // Check token expiration
+      const currentTime = Date.now();
+      const isExpired = currentTime > tokens.expiresAt;
+
+      console.log("⏰ Token status:", {
+        currentTime: new Date(currentTime).toISOString(),
+        expiryTime: new Date(tokens.expiresAt).toISOString(),
+        timeUntilExpiry: Math.floor((tokens.expiresAt - currentTime) / 1000),
+        isExpired
+      });
+
+      if (isExpired) {
+        console.log("🔄 Token expired, attempting refresh");
+        try {
+          const response = await fetch(`${API_CONFIG.baseUrl}/api/token/refresh`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refresh_token: tokens.refreshToken }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Refresh failed: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log("✅ Token refresh successful");
+
+          setTokens({
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token,
+            expiresAt: data.expires_at,
+          });
+        } catch (error) {
+          console.error("❌ Token refresh failed:", error);
+          router.replace("/");
+          return;
+        }
+      }
+
+      console.log("✅ Auth check complete - verified");
+      setIsVerified(true);
+    }
 
     checkAuth();
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, tokens, setTokens, router]);
 
-  // Show nothing while checking auth status
-  if (isChecking) {
-    return null;
+  if (!isVerified) {
+    console.log("⏳ Showing loading state");
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500" />
+      </div>
+    );
   }
 
-  // If not authenticated, render nothing (redirect will happen)
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  // If authenticated, render children
+  console.log("✅ Rendering protected content");
   return <>{children}</>;
 }

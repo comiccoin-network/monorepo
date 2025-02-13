@@ -26,60 +26,103 @@ interface AuthState {
   tokens: Tokens | null;
   user: User | null;
   isAuthenticated: boolean;
-
-  // Actions
   setTokens: (tokens: Tokens | null) => void;
   setUser: (user: User | null) => void;
   logout: () => void;
-
-  // Selectors
-  getAccessToken: () => string | null;
-  isTokenExpired: () => boolean;
 }
 
+// Custom storage with enhanced logging and error handling
+const createCustomStorage = () => {
+  const storage = createJSONStorage(() => ({
+    getItem: (name: string) => {
+      try {
+        const value = localStorage.getItem(name);
+        console.log("📦 Getting from storage:", name, value ? "Found" : "Not found");
+        if (value) {
+          // Validate JSON structure
+          const parsed = JSON.parse(value);
+          if (!parsed.state) {
+            console.warn("⚠️ Invalid storage structure");
+            return null;
+          }
+        }
+        return value;
+      } catch (error) {
+        console.error("❌ Error reading from storage:", error);
+        return null;
+      }
+    },
+    setItem: (name: string, value: string) => {
+      try {
+        console.log("💾 Saving to storage:", name);
+        localStorage.setItem(name, value);
+      } catch (error) {
+        console.error("❌ Error writing to storage:", error);
+      }
+    },
+    removeItem: (name: string) => {
+      try {
+        console.log("🗑️ Removing from storage:", name);
+        localStorage.removeItem(name);
+      } catch (error) {
+        console.error("❌ Error removing from storage:", error);
+      }
+    },
+  }));
+  return storage;
+};
+
+// Create our store with persistence
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       tokens: null,
       user: null,
       isAuthenticated: false,
 
       setTokens: (tokens) => {
-        console.log("🔑 Setting new tokens");
+        console.log("🔑 Setting tokens:", tokens ? "Present" : "Clearing");
+        if (tokens) {
+          // Ensure expiresAt is in milliseconds
+          if (tokens.expiresAt < 1000000000000) {
+            console.log("⏰ Converting expiresAt to milliseconds");
+            tokens.expiresAt *= 1000;
+          }
+          console.log("⏰ Token expiry:", new Date(tokens.expiresAt).toISOString());
+        }
         set({ tokens, isAuthenticated: !!tokens });
       },
 
       setUser: (user) => {
-        console.log("👤 Updating user data");
+        console.log("👤 Setting user:", user ? user.email : "Clearing");
         set({ user });
       },
 
       logout: () => {
-        console.log("🚪 Logging out user");
+        console.log("🚪 Logging out and clearing state");
         set({ tokens: null, user: null, isAuthenticated: false });
-      },
-
-      // Selector to get the current access token
-      getAccessToken: () => get().tokens?.accessToken || null,
-
-      // Selector to check if the current token is expired
-      isTokenExpired: () => {
-        const tokens = get().tokens;
-        if (!tokens) return true;
-
-        // Add a 5-minute buffer to handle clock skew
-        const bufferTime = 5 * 60 * 1000;
-        return Date.now() + bufferTime >= tokens.expiresAt;
+        // Also clear any legacy storage
+        localStorage.removeItem("auth_tokens");
+        localStorage.removeItem("user");
       },
     }),
     {
-      name: "auth-storage",
-      storage: createJSONStorage(() => localStorage),
+      name: "auth", // Storage key
+      storage: createCustomStorage(),
       partialize: (state) => ({
         tokens: state.tokens,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-    },
-  ),
+      onRehydrateStorage: () => {
+        console.log("🔄 Starting storage rehydration");
+        return (state) => {
+          console.log("✅ Storage rehydration complete", {
+            hasState: !!state,
+            isAuthenticated: state?.isAuthenticated,
+          });
+        };
+      },
+    }
+  )
 );
