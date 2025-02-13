@@ -1,130 +1,187 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/page.tsx
 "use client";
 
-import { useRouter } from "next/navigation";
+import React from "react";
 import {
-  Coins,
-  BookOpen,
-  Camera,
-  Gift,
-  Github,
+  Wallet,
   ArrowRight,
+  Shield,
+  Key,
+  RefreshCw,
+  Github,
+  Globe,
+  Coins,
+  UserPlus,
+  Download,
+  Sparkles,
   ExternalLink,
-  Loader2,
+  Code,
+  FileText,
+  BookOpen,
 } from "lucide-react";
-import Footer from "@/components/Footer";
+import Link from "next/link";
 
-const IndexPage = () => {
-  const router = useRouter();
-
-  // Navigation handler
-  const handleNavigation = (path: string) => {
-    router.push(path);
-  };
+const FaucetPage = () => {
+  const currentYear = new Date().getFullYear();
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Navigation Bar */}
-      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Coins className="h-8 w-8" />
-            <span
-              className="text-2xl font-bold"
-              style={{ fontFamily: "Comic Sans MS" }}
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+      {/* Previous skip link and navigation remain the same */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
+      >
+        Skip to main content
+      </a>
+
+      <nav className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              <Coins className="h-6 w-6 sm:h-8 sm:w-8" />
+              <span className="text-xl sm:text-2xl font-bold">
+                ComicCoin Faucet
+              </span>
+            </div>
+            <Link
+              href="/get-started"
+              className="bg-white text-purple-700 px-6 py-2 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2"
             >
-              ComicCoin Faucet
-            </span>
-          </div>
-          <div className="flex space-x-4">
-            <button
-              onClick={() => handleNavigation("/register-launchpad")}
-              className="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-bold border-2 border-white transition-colors"
-            >
-              Register
-            </button>
-            <button
-              onClick={() => handleNavigation("/login-launchpad")}
-              className="px-4 py-2 rounded-lg bg-white hover:bg-purple-50 text-purple-700 font-bold transition-colors"
-            >
-              Login
-            </button>
+              <Coins className="w-5 h-5" />
+              Claim Coins
+            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Main Content Wrapper */}
-      <div className="flex-grow bg-gradient-to-b from-purple-100 to-white">
-        <main className="max-w-7xl mx-auto px-4 py-12">
-          {/* Hero Section */}
-          <div className="text-center mb-16">
-            <h1
-              className="text-6xl font-bold mb-6 text-purple-800"
-              style={{ fontFamily: "Comic Sans MS" }}
-            >
-              Turn Your Comic Books Into Digital Gold!
-            </h1>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-              Welcome to the ComicCoin Faucet - where your passion for comics
-              meets blockchain technology!
-            </p>
-          </div>
-
-          {/* Jumbo Registration Box */}
-          <div className="mb-16 bg-gradient-to-r from-purple-700 to-indigo-800 rounded-xl p-1">
-            <div className="bg-white rounded-lg p-8 text-center">
-              <h2
-                className="text-3xl font-bold text-purple-800 mb-4"
-                style={{ fontFamily: "Comic Sans MS" }}
-              >
-                Get Your Free ComicCoins Now! 🎉
-              </h2>
-              <p className="text-xl text-gray-700 mb-6">
-                Join thousands of comic collectors who've already claimed their
-                free ComicCoins. Register today and get instant rewards!
-              </p>
-              <div className="flex justify-center gap-8 mb-6">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-purple-600">1000+</p>
-                  <p className="text-gray-600">Active Users</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-purple-600">50K+</p>
-                  <p className="text-gray-600">Comics Registered</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-purple-600">100K+</p>
-                  <p className="text-gray-600">Coins Distributed</p>
+      <main id="main-content" className="flex-grow">
+        {/* Hero Section with updated color contrast */}
+        <div className="bg-gradient-to-b from-indigo-600 to-indigo-500 text-white py-12 sm:py-16 md:py-20 mb-6 sm:mb-8 md:mb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
+                ComicCoin Faucet Balance
+              </h1>
+              <div className="relative inline-block">
+                <div className="absolute inset-0 bg-white opacity-20 blur transform scale-110 rounded-full"></div>
+                <div className="relative">
+                  <p className="text-5xl sm:text-6xl md:text-7xl font-bold mb-2 flex items-center justify-center gap-4 text-white">
+                    <Sparkles
+                      className="h-12 w-12 text-amber-300"
+                      aria-hidden="true"
+                    />
+                    <span className="bg-gradient-to-r from-amber-300 to-yellow-500 text-transparent bg-clip-text">
+                      1,000,000 CC
+                    </span>
+                    <Sparkles
+                      className="h-12 w-12 text-amber-300"
+                      aria-hidden="true"
+                    />
+                  </p>
                 </div>
               </div>
-              <button
-                onClick={() => handleNavigation("/register")}
-                className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white text-xl font-bold rounded-lg transition-colors"
+              <p className="text-lg sm:text-xl text-indigo-100 max-w-2xl mx-auto mt-8 mb-8 sm:mb-10">
+                Get started with free ComicCoins instantly! Follow the steps
+                below to claim your coins.
+              </p>
+              <Link
+                href="/get-started"
+                className="inline-flex items-center gap-2 bg-white text-indigo-600 px-8 py-4 rounded-xl font-bold hover:bg-indigo-50 transition-colors text-lg shadow-lg hover:shadow-xl"
               >
-                Start Collecting Now
-              </button>
+                Start Claiming Now
+                <ArrowRight className="w-6 h-6" />
+              </Link>
             </div>
           </div>
+        </div>
 
-          {/* Feature Cards Section */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {/* Feature cards components would go here */}
-            {featureCards.map((card, index) => (
-              <FeatureCard key={index} {...card} />
-            ))}
+        {/* Steps Section with updated text and icons */}
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h2 className="text-3xl font-bold text-purple-800 text-center mb-12">
+            How to Collect Your ComicCoins
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Step 1 - Updated text and icon */}
+            <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-purple-100 hover:border-purple-300">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-4 bg-purple-50 rounded-xl mb-6 transform transition-transform duration-300 hover:scale-110">
+                  <Wallet className="h-10 w-10 text-purple-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-purple-800 mb-4">
+                  Step 1: Get Wallet
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Download and install the ComicCoin Wallet to store your coins
+                  securely
+                </p>
+                <Link
+                  href="https://comiccoinwallet.com"
+                  className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-purple-700 transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Get Wallet
+                  <ExternalLink className="w-5 h-5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Step 2 remains largely the same */}
+            <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-purple-100 hover:border-purple-300">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-4 bg-purple-50 rounded-xl mb-6 transform transition-transform duration-300 hover:scale-110">
+                  <UserPlus className="h-10 w-10 text-purple-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-purple-800 mb-4">
+                  Step 2: Register & Sign In
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Create your account and sign in to your new ComicCoin Wallet
+                </p>
+                <Link
+                  href="https://comiccoinwallet.com/register"
+                  className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-purple-700 transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Create Account
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Step 3 - Updated description */}
+            <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-purple-100 hover:border-purple-300">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-4 bg-purple-50 rounded-xl mb-6 transform transition-transform duration-300 hover:scale-110">
+                  <Coins className="h-10 w-10 text-purple-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-purple-800 mb-4">
+                  Step 3: Collect Coins
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Once signed in, you can claim coins every 24 hours. Enter your
+                  wallet address, claim your coins, and come back tomorrow for
+                  more!
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Sign in to your wallet to start claiming. Each wallet can
+                  claim once every 24 hours.
+                </p>
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* About Section */}
-          <section className="bg-white rounded-xl p-8 shadow-lg mb-16 border-2 border-purple-200">
-            <h2
-              className="text-3xl font-bold mb-6 text-purple-800"
-              style={{ fontFamily: "Comic Sans MS" }}
-            >
+        {/* About and Community sections remain the same */}
+        <section className="max-w-6xl mx-auto px-4 mb-12">
+          <div className="bg-white rounded-xl p-8 shadow-lg">
+            <h2 className="text-3xl font-bold mb-6 text-purple-800">
               About ComicCoin
             </h2>
             <div className="flex items-start space-x-4">
-              <Github className="h-6 w-6 mt-1 flex-shrink-0 text-purple-600" />
-              <p className="text-gray-700">
+              <Github className="h-8 w-8 mt-1 flex-shrink-0 text-purple-600" />
+              <p className="text-gray-700 text-lg leading-relaxed">
                 ComicCoin is an open-source blockchain project utilizing a Proof
                 of Authority consensus mechanism. This ensures fast, efficient,
                 and environmentally friendly transactions while maintaining
@@ -132,90 +189,150 @@ const IndexPage = () => {
                 community-driven.
               </p>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Bottom CTA */}
-          <div className="bg-white rounded-xl p-8 shadow-lg mb-16 border-2 border-purple-200 text-center">
-            <h2
-              className="text-3xl font-bold mb-4 text-purple-800"
-              style={{ fontFamily: "Comic Sans MS" }}
-            >
-              Ready to Join the ComicCoin Community?
-            </h2>
-            <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
-              Don't miss out on your free ComicCoins. Join now and become part
-              of the fastest-growing comic collector community!
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => handleNavigation("/register-launchpad")}
-                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
+        <section className="bg-gradient-to-b from-purple-900 to-indigo-900 py-16">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="text-center text-white">
+              <h2 className="text-4xl font-bold mb-6">
+                Ready to Join the ComicCoin Community?
+              </h2>
+              <p className="text-xl mb-8 text-purple-100">
+                Join our growing community of creators, collectors, and
+                enthusiasts. Get started with your free ComicCoins today!
+              </p>
+              <Link
+                href="https://comiccoinwallet.com"
+                className="inline-flex items-center gap-2 bg-white text-purple-700 px-8 py-4 rounded-xl font-bold hover:bg-purple-50 transition-colors text-lg shadow-lg hover:shadow-xl"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <>
-                  Register Now
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              </button>
-              <a
-                href="https://comiccoinnetwork.com"
-                className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
-              >
-                Learn More
-                <ExternalLink className="w-5 h-5" />
-              </a>
+                Join the Community
+                <ArrowRight className="w-6 h-6" />
+              </Link>
             </div>
           </div>
-        </main>
-      </div>
+        </section>
 
-      <Footer />
+        {/* Stats Section - Updated metrics */}
+        <section className="bg-white py-16">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <p className="text-4xl font-bold text-purple-600 mb-2">
+                  10,000+
+                </p>
+                <p className="text-gray-600">Active Users</p>
+              </div>
+              <div className="text-center">
+                <p className="text-4xl font-bold text-purple-600 mb-2">1M+</p>
+                <p className="text-gray-600">Coins Distributed</p>
+              </div>
+              <div className="text-center">
+                <p className="text-4xl font-bold text-purple-600 mb-2">
+                  500/day
+                </p>
+                <p className="text-gray-600">Distribution Rate</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Updated Footer with additional links */}
+        <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-12">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+              {/* Project Links */}
+              <div className="text-center md:text-left">
+                <h3 className="font-bold mb-6 text-lg flex items-center justify-center md:justify-start gap-2">
+                  <Code className="h-5 w-5 text-purple-300" />
+                  <span>Resources</span>
+                </h3>
+                <ul className="space-y-4">
+                  <li>
+                    <Link
+                      href="https://github.com/comiccoin-network/monorepo"
+                      className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Github className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                      <span>GitHub Repository</span>
+                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="https://comiccoinnetwork.com"
+                      className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Globe className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                      <span>Project Website</span>
+                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="https://comiccoinwallet.com"
+                      className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Wallet className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                      <span>Official Wallet</span>
+                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Legal Links */}
+              <div className="text-center md:text-left">
+                <h3 className="font-bold mb-6 text-lg flex items-center justify-center md:justify-start gap-2">
+                  <Shield className="h-5 w-5 text-purple-300" />
+                  <span>Legal</span>
+                </h3>
+                <ul className="space-y-4">
+                  <li>
+                    <Link
+                      href="/terms"
+                      className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
+                    >
+                      <FileText className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                      <span>Terms of Service</span>
+                      <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/privacy"
+                      className="hover:text-purple-200 flex items-center justify-center md:justify-start gap-3 group transition-colors duration-200"
+                    >
+                      <BookOpen className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                      <span>Privacy Policy</span>
+                      <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Copyright Section */}
+            <div className="text-center pt-6 border-t border-purple-500/30">
+              <p className="flex items-center justify-center gap-2 text-purple-200">
+                <span>
+                  © {currentYear} ComicCoin Network. All rights reserved.
+                </span>
+              </p>
+            </div>
+          </div>
+        </footer>
+      </main>
     </div>
   );
 };
 
-// Feature card type definition
-interface FeatureCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
-
-// Feature card component
-const FeatureCard = ({ icon, title, description }: FeatureCardProps) => (
-  <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border-2 border-purple-200 overflow-hidden p-6">
-    <div className="flex items-center gap-3 mb-4">
-      <div className="p-2 bg-purple-100 rounded-lg">{icon}</div>
-      <h2
-        className="text-xl font-bold text-purple-800"
-        style={{ fontFamily: "Comic Sans MS" }}
-      >
-        {title}
-      </h2>
-    </div>
-    <p className="text-gray-700">{description}</p>
-  </div>
-);
-
-// Feature cards data
-const featureCards = [
-  {
-    icon: <Gift className="h-6 w-6 text-purple-600" />,
-    title: "Free Starting Coins",
-    description:
-      "Register now and receive a one-time bonus of ComicCoins directly to your wallet! Perfect for newcomers to start their journey in the comic-collecting community.",
-  },
-  {
-    icon: <Camera className="h-6 w-6 text-purple-600" />,
-    title: "Submit & Earn",
-    description:
-      "Submit photos of your comic book collection and earn ComicCoins! Each verified submission adds more coins to your wallet, rewarding you for contributing to our community.",
-  },
-  {
-    icon: <BookOpen className="h-6 w-6 text-purple-600" />,
-    title: "More Ways to Earn",
-    description:
-      "Participate in community events, write reviews, validate submissions, and engage in various activities to earn additional ComicCoins. The more you contribute, the more you earn!",
-  },
-];
-
-export default IndexPage;
+export default FaucetPage;
