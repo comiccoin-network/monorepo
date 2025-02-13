@@ -133,18 +133,18 @@ const FaucetPage = () => {
                   <UserPlus className="h-10 w-10 text-purple-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-purple-800 mb-4">
-                  Step 2: Register & Sign In
+                  Step 2: Register
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Create your account and sign in to your new ComicCoin Wallet
+                  Create a ComicCoin Network account to access all network
+                  services with a single sign-on, including the wallet and
+                  faucet
                 </p>
                 <Link
-                  href="/register-call"
+                  href="/get-started"
                   className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-purple-700 transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
                 >
-                  Create Account
+                  Join Network
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </div>
