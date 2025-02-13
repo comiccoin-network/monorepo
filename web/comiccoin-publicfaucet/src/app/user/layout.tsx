@@ -1,8 +1,6 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/user/layout.tsx
 "use client";
 
-// app/user/layout.tsx
-import "../globals.css";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -10,7 +8,6 @@ import AuthRequired from "@/components/AuthRequired";
 import {
   Coins,
   Home,
-  Upload,
   History,
   Settings,
   HelpCircle,
@@ -19,6 +16,7 @@ import {
   X,
   Bell,
   User,
+  Wallet,
 } from "lucide-react";
 import { useMe } from "@/hooks/useMe";
 import { useAuthStore } from "@/hooks/useAuth";
@@ -32,16 +30,16 @@ const navigationItems = [
     description: "View your overview and recent activity",
   },
   {
-    name: "Submit Comic",
-    href: "/user/submit",
-    icon: Upload,
-    description: "Submit comic covers to earn coins",
+    name: "Claim History",
+    href: "/user/transactions",
+    icon: History,
+    description: "View your claim history",
   },
   {
-    name: "My Submissions",
-    href: "/user/submissions",
-    icon: History,
-    description: "View your submission history",
+    name: "My Wallet",
+    href: "/user/wallet",
+    icon: Wallet,
+    description: "Manage your wallet settings",
   },
   {
     name: "Settings",
@@ -128,10 +126,7 @@ function UserLayout({ children }: { children: React.ReactNode }) {
               </button>
               <div className="flex items-center ml-4 lg:ml-0">
                 <Coins className="h-8 w-8 text-purple-600" />
-                <span
-                  className="ml-2 text-xl font-bold text-purple-800"
-                  style={{ fontFamily: "Comic Sans MS" }}
-                >
+                <span className="ml-2 text-xl font-bold text-purple-800">
                   ComicCoin Faucet
                 </span>
               </div>
@@ -139,24 +134,24 @@ function UserLayout({ children }: { children: React.ReactNode }) {
 
             {/* Right side */}
             <div className="flex items-center gap-4">
-              {/* TODO: ADD THIS BACK LATER
               <button className="p-1 text-gray-500 hover:text-gray-600">
                 <Bell className="h-6 w-6" />
               </button>
               <div className="flex items-center">
                 <div className="hidden lg:flex lg:flex-col lg:items-end mr-4">
                   <span className="text-sm font-medium text-gray-900">
-                    {user?.name || "Comic Enthusiast"}
+                    {user?.name || "User"}
                   </span>
                   <span className="text-xs text-gray-500">
-                    {user?.email || ""}
+                    {user?.walletAddress
+                      ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`
+                      : ""}
                   </span>
                 </div>
                 <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
                   <User className="h-5 w-5 text-purple-600" />
                 </div>
               </div>
-              */}
             </div>
           </div>
         </header>
