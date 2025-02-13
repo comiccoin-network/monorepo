@@ -68,10 +68,7 @@ const GetStartedPage = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Register Option */}
-              <Link
-                href="https://auth.comiccoinnetwork.com/register"
-                className="group"
-              >
+              <Link href="/register-call" className="group">
                 <div className="bg-gradient-to-br from-purple-50 to-white p-8 rounded-xl border-2 border-purple-200 hover:border-purple-400 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col items-center text-center h-full">
                   <div className="p-4 bg-purple-100 rounded-full mb-4 group-hover:scale-110 transition-transform">
                     <UserPlus className="h-10 w-10 text-purple-600" />
@@ -89,10 +86,7 @@ const GetStartedPage = () => {
               </Link>
 
               {/* Login Option */}
-              <Link
-                href="https://auth.comiccoinnetwork.com/login"
-                className="group"
-              >
+              <Link href="/login-call" className="group">
                 <div className="bg-gradient-to-br from-purple-50 to-white p-8 rounded-xl border-2 border-purple-200 hover:border-purple-400 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col items-center text-center h-full">
                   <div className="p-4 bg-purple-100 rounded-full mb-4 group-hover:scale-110 transition-transform">
                     <LogIn className="h-10 w-10 text-purple-600" />

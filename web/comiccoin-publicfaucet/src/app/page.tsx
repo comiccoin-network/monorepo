@@ -139,7 +139,7 @@ const FaucetPage = () => {
                   Create your account and sign in to your new ComicCoin Wallet
                 </p>
                 <Link
-                  href="https://comiccoinwallet.com/register"
+                  href="/register-call"
                   className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-purple-700 transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"

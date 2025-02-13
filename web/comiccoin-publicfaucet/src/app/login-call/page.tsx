@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuthorizationUrl } from "@/hooks/useAuthorizationUrl";
 import { Loader2, ArrowRight, ExternalLink } from "lucide-react";
 
-export default function LoginLaunchpadPage() {
+export default function LoginCallPage() {
   const router = useRouter();
   const [showManualButton, setShowManualButton] = useState(false);
   const [processedUrl, setProcessedUrl] = useState("");

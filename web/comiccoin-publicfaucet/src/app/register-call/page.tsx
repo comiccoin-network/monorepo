@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useRegistrationUrl } from "@/hooks/useRegistrationUrl";
 import { Loader2, ArrowRight, ExternalLink } from "lucide-react";
 
-export default function RegisterLaunchpadPage() {
+export default function RegisterCallPage() {
   const router = useRouter();
   const { registrationUrl, isLoading, error, refetch } = useRegistrationUrl();
   const [showManualButton, setShowManualButton] = useState(false);
