@@ -1,0 +1,133 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/me/service.go
+package me
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
+	"strings"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/httperror"
+	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
+	"github.com/ethereum/go-ethereum/common"
+)
+
+type MeConnectWalletRequestDTO struct {
+	WalletAddress string `bson:"wallet_address" json:"wallet_address"`
+}
+
+type MeConnectWalletService interface {
+	Execute(ctx context.Context, req *MeConnectWalletRequestDTO) error
+}
+
+type meConnectWalletServiceImpl struct {
+	config                              *config.Configuration
+	logger                              *slog.Logger
+	oauthManager                        common_oauth.Manager
+	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase
+	userUpdateUseCase                   uc_user.UserUpdateUseCase
+}
+
+func NewMeConnectWalletService(
+	config *config.Configuration,
+	logger *slog.Logger,
+	oauth common_oauth.Manager,
+	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase,
+	userUpdateUseCase uc_user.UserUpdateUseCase,
+) MeConnectWalletService {
+	return &meConnectWalletServiceImpl{
+		config:                              config,
+		logger:                              logger,
+		oauthManager:                        oauth,
+		userGetByFederatedIdentityIDUseCase: userGetByFederatedIdentityIDUseCase,
+		userUpdateUseCase:                   userUpdateUseCase,
+	}
+}
+
+func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnectWalletRequestDTO) error {
+	//
+	// STEP 1: Get required from context.
+	//
+
+	// Get authenticated federatedidentity ID from context. This is loaded in
+	// by the `AuthMiddleware` found via:
+	// - github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware/auth.go
+	federatedidentityID, ok := ctx.Value("federatedidentity_id").(primitive.ObjectID)
+	if !ok {
+		s.logger.Error("Failed getting local federatedidentity id",
+			slog.Any("error", "Not found in context: federatedidentity_id"))
+		return errors.New("federatedidentity not found in context")
+	}
+
+	//
+	// STEP 2: Validation
+	//
+
+	if req == nil {
+		s.logger.Warn("Failed validation with nothing received")
+		return httperror.NewForBadRequestWithSingleField("non_field_error", "Wallet address is required in submission")
+	}
+
+	// San
+	req.WalletAddress = strings.TrimSpace(req.WalletAddress)
+
+	e := make(map[string]string)
+	if req.WalletAddress == "" {
+		e["wallet_address"] = "Wallet address is required"
+	} else {
+		walletAddress := common.HexToAddress(strings.ToLower(req.WalletAddress))
+		if walletAddress.Hex() != "0x0000000000000000000000000000000000000000" {
+			e["wallet_address"] = "Wallet address cannot be burn address"
+		}
+	}
+
+	if len(e) != 0 {
+		s.logger.Warn("Failed validation",
+			slog.Any("error", e))
+		return httperror.NewForBadRequest(&e)
+	}
+
+	//
+	// STEP 3: Get related.
+	//
+
+	// Get the user account (aka "Me") and if it doesn't exist then we will
+	// create it immediately here and now.
+	user, err := s.userGetByFederatedIdentityIDUseCase.Execute(ctx, federatedidentityID)
+	if err != nil {
+		s.logger.Error("Failed getting me", slog.Any("error", err))
+		return err
+	}
+	if user == nil {
+		err := fmt.Errorf("FederatedIdentity does not exist for id: %v", federatedidentityID.Hex())
+		s.logger.Error("Failed getting local federatedidentity id", slog.Any("error", err))
+		return err
+	}
+
+	//
+	// STEP 4: Update database.
+	//
+
+	walletAddress := common.HexToAddress(strings.ToLower(req.WalletAddress))
+	user.WalletAddress = &walletAddress
+	if err := s.userUpdateUseCase.Execute(ctx, user); err != nil {
+		s.logger.Debug("Failed updating user", slog.Any("error", err))
+		return err
+	}
+
+	s.logger.Debug("Updated wallet address for user",
+		slog.Any("federatedidentity_id", federatedidentityID.Hex()))
+
+	//
+	// STEP 5: Update ComicCoin Network.
+	//
+
+	//TODO: IMPL. Synch with gateway.
+
+	return errors.New("TODO: Please implement")
+}

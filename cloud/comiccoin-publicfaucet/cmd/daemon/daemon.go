@@ -146,6 +146,16 @@ func doRunDaemon() {
 	// Service
 	//
 
+	// --- Hello ---
+
+	getHelloService := svc_hello.NewHelloService(
+		cfg,
+		logger,
+		oauthClientManager,
+	)
+
+	// --- Me ---
+
 	getMeAfterRemoteSyncServiceImpl := svc_me.NewGetMeAfterRemoteSyncService(
 		cfg,
 		logger,
@@ -155,10 +165,12 @@ func doRunDaemon() {
 		userUpdateUseCase,
 	)
 
-	getHelloService := svc_hello.NewHelloService(
+	meConnectWalletService := svc_me.NewMeConnectWalletService(
 		cfg,
 		logger,
 		oauthClientManager,
+		userGetByFederatedIdentityIDUseCase,
+		userUpdateUseCase,
 	)
 
 	//
@@ -187,7 +199,15 @@ func doRunDaemon() {
 	getMeHTTPHandler := http_me.NewGetMeHTTPHandler(
 		cfg,
 		logger,
+		dbClient,
 		getMeAfterRemoteSyncServiceImpl,
+	)
+
+	postMeConnectWalletHTTPHandler := http_me.NewPostMeConnectWalletHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		meConnectWalletService,
 	)
 
 	// --- HTTP Middleware ---
@@ -211,6 +231,7 @@ func doRunDaemon() {
 		getHealthCheckHTTPHandler,
 		getHelloHTTPHandler,
 		getMeHTTPHandler,
+		postMeConnectWalletHTTPHandler,
 	)
 
 	//

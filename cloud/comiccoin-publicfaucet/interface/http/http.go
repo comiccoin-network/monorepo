@@ -55,7 +55,8 @@ type httpServerImpl struct {
 	// Resources
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler
 
-	getMeHTTPHandler *http_me.GetMeHTTPHandler
+	getMeHTTPHandler               *http_me.GetMeHTTPHandler
+	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -68,6 +69,7 @@ func NewHTTPServer(
 	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler,
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
+	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -88,15 +90,16 @@ func NewHTTPServer(
 
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
-		cfg:                       cfg,
-		logger:                    logger,
-		oauthClientManager:        manager,
-		middleware:                mid,
-		server:                    srv,
-		getVersionHTTPHandler:     getVersionHTTPHandler,
-		getHealthCheckHTTPHandler: getHealthCheckHTTPHandler,
-		getHelloHTTPHandler:       getHelloHTTPHandler,
-		getMeHTTPHandler:          getMeHTTPHandler,
+		cfg:                            cfg,
+		logger:                         logger,
+		oauthClientManager:             manager,
+		middleware:                     mid,
+		server:                         srv,
+		getVersionHTTPHandler:          getVersionHTTPHandler,
+		getHealthCheckHTTPHandler:      getHealthCheckHTTPHandler,
+		getHelloHTTPHandler:            getHelloHTTPHandler,
+		getMeHTTPHandler:               getMeHTTPHandler,
+		postMeConnectWalletHTTPHandler: postMeConnectWalletHTTPHandler,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -183,6 +186,8 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.getHelloHTTPHandler.Execute(w, r)
 	case n == 2 && p[0] == "api" && p[1] == "me" && r.Method == http.MethodGet:
 		port.getMeHTTPHandler.Execute(w, r)
+	case n == 3 && p[0] == "api" && p[1] == "me" && p[2] == "connect-wallet" && r.Method == http.MethodPost:
+		port.postMeConnectWalletHTTPHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:

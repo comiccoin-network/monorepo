@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/user/service.go
-package user
+package me
 
 import (
 	"context"
