@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("📊 Current store state:", {
           hasTokens: !!currentState.tokens,
           hasUser: !!currentState.user,
-          isAuthenticated: currentState.isAuthenticated
+          isAuthenticated: currentState.isAuthenticated,
         });
 
         // Check localStorage directly
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log("⏰ Token expiry status:", {
               currentTime: new Date().toISOString(),
               expiryTime: new Date(state.tokens.expiresAt).toISOString(),
-              isExpired
+              isExpired,
             });
 
             if (!isExpired) {
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log("ℹ️ No auth storage found");
         }
       } catch (error) {
-        console.error("❌ Error during hydration:", error);
+        console.log("❌ Error during hydration:", error);
         // Clear potentially corrupted storage
         localStorage.removeItem("auth");
       } finally {

@@ -37,7 +37,11 @@ const createCustomStorage = () => {
     getItem: (name: string) => {
       try {
         const value = localStorage.getItem(name);
-        console.log("📦 Getting from storage:", name, value ? "Found" : "Not found");
+        console.log(
+          "📦 Getting from storage:",
+          name,
+          value ? "Found" : "Not found",
+        );
         if (value) {
           // Validate JSON structure
           const parsed = JSON.parse(value);
@@ -48,7 +52,7 @@ const createCustomStorage = () => {
         }
         return value;
       } catch (error) {
-        console.error("❌ Error reading from storage:", error);
+        console.log("❌ Error reading from storage:", error);
         return null;
       }
     },
@@ -57,7 +61,7 @@ const createCustomStorage = () => {
         console.log("💾 Saving to storage:", name);
         localStorage.setItem(name, value);
       } catch (error) {
-        console.error("❌ Error writing to storage:", error);
+        console.log("❌ Error writing to storage:", error);
       }
     },
     removeItem: (name: string) => {
@@ -65,7 +69,7 @@ const createCustomStorage = () => {
         console.log("🗑️ Removing from storage:", name);
         localStorage.removeItem(name);
       } catch (error) {
-        console.error("❌ Error removing from storage:", error);
+        console.log("❌ Error removing from storage:", error);
       }
     },
   }));
@@ -88,7 +92,10 @@ export const useAuthStore = create<AuthState>()(
             console.log("⏰ Converting expiresAt to milliseconds");
             tokens.expiresAt *= 1000;
           }
-          console.log("⏰ Token expiry:", new Date(tokens.expiresAt).toISOString());
+          console.log(
+            "⏰ Token expiry:",
+            new Date(tokens.expiresAt).toISOString(),
+          );
         }
         set({ tokens, isAuthenticated: !!tokens });
       },
@@ -123,6 +130,6 @@ export const useAuthStore = create<AuthState>()(
           });
         };
       },
-    }
-  )
+    },
+  ),
 );
