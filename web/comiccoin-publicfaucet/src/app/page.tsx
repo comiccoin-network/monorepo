@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/app.tsx
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/page.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
