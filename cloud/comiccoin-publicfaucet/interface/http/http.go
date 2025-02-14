@@ -19,6 +19,7 @@ import (
 	// http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/oauth"
 	// http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/registration"
 	// http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/token"
+	http_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/faucet"
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/me"
 )
@@ -57,6 +58,8 @@ type httpServerImpl struct {
 
 	getMeHTTPHandler               *http_me.GetMeHTTPHandler
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler
+
+	getFaucetByChainID *http_faucet.GetFaucetByChainIDHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -70,6 +73,7 @@ func NewHTTPServer(
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
+	getFaucetByChainID *http_faucet.GetFaucetByChainIDHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -100,6 +104,7 @@ func NewHTTPServer(
 		getHelloHTTPHandler:            getHelloHTTPHandler,
 		getMeHTTPHandler:               getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler: postMeConnectWalletHTTPHandler,
+		getFaucetByChainID:             getFaucetByChainID,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -149,25 +154,25 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 
 	// Handle the request based on the URL path tokens.
 	switch {
-	// System endpoints
+	// --- System endpoints ---
 	case n == 1 && p[0] == "version" && r.Method == http.MethodGet:
 		port.getVersionHTTPHandler.Execute(w, r)
 	case n == 1 && p[0] == "health-check" && r.Method == http.MethodGet:
 		port.getHealthCheckHTTPHandler.Execute(w, r)
 
-	// Auth endpoints
+	// --- Auth endpoints ---
 	case n == 2 && p[0] == "api" && p[1] == "register":
 		port.oauthClientManager.PostRegistrationHTTPHandler().Execute(w, r)
 	case n == 2 && p[0] == "api" && p[1] == "login" && r.Method == http.MethodPost:
 		port.oauthClientManager.PostLoginHTTPHandler().Execute(w, r)
 
-	// Token endpoints
+	// --- Token endpoints ---
 	case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "refresh" && r.Method == http.MethodPost:
 		port.oauthClientManager.PostTokenRefreshHTTPHandler().Execute(w, r)
 	case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "introspect" && r.Method == http.MethodPost:
 		port.oauthClientManager.PostTokenIntrospectionHTTPHandler().Execute(w, r)
 
-	// OAuth endpoints
+	// --- oAuth endpoints ---
 	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "authorize" && r.Method == http.MethodGet:
 		port.oauthClientManager.GetAuthURLHTTPHandler().Execute(w, r)
 	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "callback" && r.Method == http.MethodGet:
@@ -181,13 +186,20 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 	case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "registration" && r.Method == http.MethodGet: // Used by frontend
 		port.oauthClientManager.GetRegistrationURLHTTPHandler().Execute(w, r)
 
-	// Resources
+	// --- Resource endpoints ---
+	// Hello
 	case n == 2 && p[0] == "api" && p[1] == "say-hello" && r.Method == http.MethodPost:
 		port.getHelloHTTPHandler.Execute(w, r)
 	case n == 2 && p[0] == "api" && p[1] == "me" && r.Method == http.MethodGet:
 		port.getMeHTTPHandler.Execute(w, r)
+
+	// Me
 	case n == 3 && p[0] == "api" && p[1] == "me" && p[2] == "connect-wallet" && r.Method == http.MethodPost:
 		port.postMeConnectWalletHTTPHandler.Execute(w, r)
+
+	// Faucet
+	case n == 3 && p[0] == "api" && p[1] == "faucet" && r.Method == http.MethodGet:
+		port.getFaucetByChainID.Execute(w, r, p[2])
 
 	// --- CATCH ALL: D.N.E. ---
 	default:

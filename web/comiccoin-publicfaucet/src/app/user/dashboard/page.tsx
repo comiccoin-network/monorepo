@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/hooks/useAuth";
 import { useMe } from "@/hooks/useMe";
+import { useGetFaucet } from "@/hooks/useGetFaucet";
 import {
   Coins,
   Clock,
@@ -56,6 +57,14 @@ const DashboardPage = () => {
   // Display limits for claims
   const YOUR_CLAIMS_LIMIT = 5;
   const NETWORK_CLAIMS_LIMIT = 8;
+
+  const { faucet, isLoading, error, refetch } = useGetFaucet(1, {
+    refreshInterval: 30000, // Refresh every 30 seconds
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!faucet) return <div>No data available</div>;
 
   return (
     <div className="py-8">

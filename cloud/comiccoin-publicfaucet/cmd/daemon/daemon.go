@@ -21,15 +21,19 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/storage/database/mongodbcache"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http"
+	http_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/faucet"
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/me"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware"
 	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/system"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/bannedipaddress"
+	r_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/faucet"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/repo/user"
+	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/faucet"
 	svc_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/hello"
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/service/me"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/bannedipaddress"
+	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/faucet"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/usecase/user"
 )
 
@@ -50,7 +54,10 @@ func doRunDaemon() {
 	// Load up our dependencies and configuration
 	//
 
-	// Common
+	////
+	//// Common
+	///
+
 	logger := logger.NewProvider()
 	cfg := config.NewProviderUsingEnvironmentVariables()
 	logger.Debug("publicfaucet configuration ready")
@@ -83,16 +90,17 @@ func doRunDaemon() {
 		log.Fatalf("Failed to load up our oAuth 2.0 Client manager")
 	}
 
-	//
-	// Repository
-	//
+	////
+	//// Repository
+	////
 
 	banIPAddrRepo := r_banip.NewRepository(cfg, logger, dbClient)
 	userRepo := r_user.NewRepository(cfg, logger, dbClient)
+	faucetRepo := r_faucet.NewRepository(cfg, logger, dbClient)
 
-	//
-	// Use-case
-	//
+	////
+	//// Use-case
+	////
 
 	// --- Banned IP Addresses ---
 
@@ -142,9 +150,42 @@ func doRunDaemon() {
 	_ = userCreateUseCase
 	_ = userUpdateUseCase
 
-	//
-	// Service
-	//
+	// --- Faucet ---
+
+	createFaucetUseCase := uc_faucet.NewCreateFaucetUseCase(
+		cfg,
+		logger,
+		faucetRepo,
+	)
+	getFaucetByChainIDUseCase := uc_faucet.NewGetFaucetByChainIDUseCase(
+		cfg,
+		logger,
+		faucetRepo,
+	)
+	faucetUpdateByChainIDUseCase := uc_faucet.NewFaucetUpdateByChainIDUseCase(
+		cfg,
+		logger,
+		faucetRepo,
+	)
+	checkIfFaucetExistsByChainIDUseCase := uc_faucet.NewCheckIfFaucetExistsByChainIDUseCase(
+		cfg,
+		logger,
+		faucetRepo,
+	)
+	createIfFaucetDNEForMainNetBlockchainUseCase := uc_faucet.NewCreateIfFaucetDNEForMainNetBlockchainUseCase(
+		cfg,
+		logger,
+		faucetRepo,
+	)
+
+	_ = createFaucetUseCase
+	_ = getFaucetByChainIDUseCase
+	_ = faucetUpdateByChainIDUseCase
+	_ = checkIfFaucetExistsByChainIDUseCase
+
+	////
+	//// Service
+	////
 
 	// --- Hello ---
 
@@ -173,9 +214,17 @@ func doRunDaemon() {
 		userUpdateUseCase,
 	)
 
-	//
-	// Interface
-	//
+	// --- Faucet ---
+
+	getFaucetService := svc_faucet.NewGetFaucetService(
+		cfg,
+		logger,
+		getFaucetByChainIDUseCase,
+	)
+
+	////
+	//// Interface
+	////
 
 	// --- System ---
 
@@ -210,6 +259,15 @@ func doRunDaemon() {
 		meConnectWalletService,
 	)
 
+	// --- Faucet ---
+
+	getFaucetByChainIDHTTPHandler := http_faucet.NewGetFaucetByChainIDHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		getFaucetService,
+	)
+
 	// --- HTTP Middleware ---
 
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -222,6 +280,7 @@ func doRunDaemon() {
 	)
 
 	// --- HTTP Server ---
+
 	httpServ := http.NewHTTPServer(
 		cfg,
 		logger,
@@ -232,17 +291,30 @@ func doRunDaemon() {
 		getHelloHTTPHandler,
 		getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler,
+		getFaucetByChainIDHTTPHandler,
 	)
 
-	//
-	// Execute
-	//
+	////
+	//// Execute
+	////
 
+	// Integrate with the OS so we can receive signals.
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGUSR1)
 
+	// Create our faucet for mainnet blockchain if it doesn't exist.
+	if err := createIfFaucetDNEForMainNetBlockchainUseCase.Execute(context.Background()); err != nil {
+		log.Fatalf("Failed to check if MainNet faucet doesn't exist: %v", err)
+	}
+
+	// --- Pre-Execution ---
+
+	// --- Execute Background ---
+
 	go httpServ.Run()
 	defer httpServ.Shutdown()
+
+	// --- Execute Foreground ---
 
 	logger.Info("ComicCoin PublicFaucet is running.")
 

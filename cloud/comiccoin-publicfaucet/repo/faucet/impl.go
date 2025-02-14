@@ -1,4 +1,4 @@
-package bannedipaddress
+package faucet
 
 import (
 	"context"
@@ -10,18 +10,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/config"
-	dom_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain/bannedipaddress"
+	dom "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/domain/faucet"
 )
 
-type bannedIPAddressImpl struct {
+type faucetImpl struct {
 	Logger     *slog.Logger
 	DbClient   *mongo.Client
 	Collection *mongo.Collection
 }
 
-func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *mongo.Client) dom_banip.Repository {
+func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *mongo.Client) dom.Repository {
 	// ctx := context.Background()
-	uc := client.Database(appCfg.DB.Name).Collection("banned_ip_addresses")
+	uc := client.Database(appCfg.DB.Name).Collection("faucets")
 
 	// // For debugging purposes only or if you are going to recreate new indexes.
 	// if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
@@ -39,14 +39,10 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 	// The following few lines of code will create the index for our app for this
 	// colleciton.
 	_, err := uc.Indexes().CreateMany(context.TODO(), []mongo.IndexModel{
-		{Keys: bson.D{{Key: "user_id", Value: 1}}},
 		{
-			Keys:    bson.D{{Key: "value", Value: -1}},
+			Keys:    bson.D{{Key: "chain_id", Value: -1}},
 			Options: options.Index().SetUnique(true),
 		},
-		{Keys: bson.D{
-			{Key: "value", Value: "text"},
-		}},
 	})
 	if err != nil {
 		// It is important that we crash the app on startup to meet the
@@ -54,7 +50,7 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 		log.Fatal(err)
 	}
 
-	s := &bannedIPAddressImpl{
+	s := &faucetImpl{
 		Logger:     loggerp,
 		DbClient:   client,
 		Collection: uc,
