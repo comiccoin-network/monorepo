@@ -24,7 +24,6 @@ import (
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/me"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware"
-	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/system"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/task"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/bannedipaddress"
 	r_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/faucet"
@@ -233,15 +232,6 @@ func NewServer(
 		logger,
 	)
 
-	// --- System ---
-
-	getVersionHTTPHandler := http_system.NewGetVersionHTTPHandler(
-		logger,
-	)
-	getHealthCheckHTTPHandler := http_system.NewGetHealthCheckHTTPHandler(
-		logger,
-	)
-
 	// --- Hello ---
 
 	getHelloHTTPHandler := http_hello.NewGetHelloHTTPHandler(
@@ -298,8 +288,6 @@ func NewServer(
 		logger,
 		oauthClientManager,
 		httpMiddleware,
-		getVersionHTTPHandler,
-		getHealthCheckHTTPHandler,
 		getHelloHTTPHandler,
 		getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler,

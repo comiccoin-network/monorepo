@@ -64,8 +64,6 @@ func NewHTTPServer(
 	logger *slog.Logger,
 	manager common_oauth.Manager,
 	mid mid.Middleware,
-	getVersionHTTPHandler *http_system.GetVersionHTTPHandler,
-	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler,
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
@@ -80,10 +78,6 @@ func NewHTTPServer(
 		oauthClientManager: manager,
 		middleware:         mid,
 
-		getVersionHTTPHandler:             getVersionHTTPHandler,
-		getHealthCheckHTTPHandler:         getHealthCheckHTTPHandler,
-		getHelloHTTPHandler:               getHelloHTTPHandler,
-		getMeHTTPHandler:                  getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler:    postMeConnectWalletHTTPHandler,
 		getFaucetByChainID:                getFaucetByChainID,
 		faucetServerSentEventsHTTPHandler: faucetServerSentEventsHTTPHandler,
@@ -120,12 +114,6 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 
 		// Handle the request based on the URL path tokens.
 		switch {
-		// --- System endpoints ---
-		case n == 1 && p[0] == "version" && r.Method == http.MethodGet:
-			port.getVersionHTTPHandler.Execute(w, r)
-		case n == 1 && p[0] == "health-check" && r.Method == http.MethodGet:
-			port.getHealthCheckHTTPHandler.Execute(w, r)
-
 		// --- Auth endpoints ---
 		case n == 2 && p[0] == "api" && p[1] == "register":
 			port.oauthClientManager.PostRegistrationHTTPHandler().Execute(w, r)

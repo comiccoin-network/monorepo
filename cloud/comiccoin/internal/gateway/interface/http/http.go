@@ -11,7 +11,6 @@ import (
 	http_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http/identity"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http/middleware"
 	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http/oauth"
-	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http/system"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -33,10 +32,6 @@ type httpServerImpl struct {
 
 	middleware mid.Middleware
 
-	getVersionHTTPHandler *http_system.GetVersionHTTPHandler
-
-	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler
-
 	authorizeHandler     *http_oauth.AuthorizeHandler
 	loginHandler         *http_oauth.LoginHandler
 	tokenHandler         *http_oauth.TokenHandler
@@ -54,8 +49,6 @@ func NewHTTPServer(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	mid mid.Middleware,
-	h1 *http_system.GetVersionHTTPHandler,
-	h2 *http_system.GetHealthCheckHTTPHandler,
 
 	authorizeHandler *http_oauth.AuthorizeHandler,
 	loginHandler *http_oauth.LoginHandler,
@@ -75,8 +68,6 @@ func NewHTTPServer(
 		cfg:                            cfg,
 		logger:                         logger,
 		middleware:                     mid,
-		getVersionHTTPHandler:          h1,
-		getHealthCheckHTTPHandler:      h2,
 		authorizeHandler:               authorizeHandler,
 		loginHandler:                   loginHandler,
 		tokenHandler:                   tokenHandler,

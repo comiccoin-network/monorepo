@@ -20,7 +20,6 @@ import (
 	http_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http/identity"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http/middleware"
 	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http/oauth"
-	http_system "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http/system"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/task"
 	r_application "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/repo/application"
 	r_authorization "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/repo/authorization"
@@ -304,12 +303,6 @@ func NewServer(
 
 	// --- HTTP Handlers ---
 
-	getVersionHTTPHandler := http_system.NewGetVersionHTTPHandler(
-		logger,
-	)
-	getHealthCheckHTTPHandler := http_system.NewGetHealthCheckHTTPHandler(
-		logger,
-	)
 	authorizeHttpHandler := http_oauth.NewAuthorizeHandler(logger, authorizeService)
 	loginHttpHandler := http_oauth.NewLoginHandler(logger, loginService)
 	tokenHttpHandler := http_oauth.NewTokenHandler(logger, tokenService)
@@ -336,8 +329,6 @@ func NewServer(
 		cfg,
 		logger,
 		httpMiddleware,
-		getVersionHTTPHandler,
-		getHealthCheckHTTPHandler,
 		authorizeHttpHandler,
 		loginHttpHandler,
 		tokenHttpHandler,
