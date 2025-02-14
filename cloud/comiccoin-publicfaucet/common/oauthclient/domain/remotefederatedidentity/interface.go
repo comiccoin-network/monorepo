@@ -8,4 +8,5 @@ import (
 // Repository Interface for remotefederatedidentity.
 type Repository interface {
 	FetchFromRemoteByAccessToken(ctx context.Context, accessToken string) (*RemoteFederatedIdentityDTO, error)
+	PostUpdateToRemote(ctx context.Context, req *RemoteFederatedIdentityDTO, accessToken string) error
 }

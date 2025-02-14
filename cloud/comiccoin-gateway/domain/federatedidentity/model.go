@@ -28,12 +28,12 @@ type FederatedIdentity struct {
 	LastName                      string                      `bson:"last_name" json:"last_name"`
 	Name                          string                      `bson:"name" json:"name"`
 	LexicalName                   string                      `bson:"lexical_name" json:"lexical_name"`
-	PasswordHashAlgorithm         string                      `bson:"password_hash_algorithm" json:"password_hash_algorithm,omitempty"`
-	PasswordHash                  string                      `bson:"password_hash" json:"password_hash,omitempty"`
+	PasswordHashAlgorithm         string                      `bson:"password_hash_algorithm" json:"-"`
+	PasswordHash                  string                      `bson:"password_hash" json:"-"`
 	Role                          int8                        `bson:"role" json:"role"`
-	WasEmailVerified              bool                        `bson:"was_email_verified" json:"was_email_verified,omitempty"`
-	EmailVerificationCode         string                      `bson:"email_verification_code,omitempty" json:"email_verification_code,omitempty"`
-	EmailVerificationExpiry       time.Time                   `bson:"email_verification_expiry,omitempty" json:"email_verification_expiry,omitempty"`
+	WasEmailVerified              bool                        `bson:"was_email_verified" json:"-"`
+	EmailVerificationCode         string                      `bson:"email_verification_code,omitempty" json:"-"`
+	EmailVerificationExpiry       time.Time                   `bson:"email_verification_expiry,omitempty" json:"-"`
 	Phone                         string                      `bson:"phone" json:"phone,omitempty"`
 	Country                       string                      `bson:"country" json:"country,omitempty"`
 	Timezone                      string                      `bson:"timezone" json:"timezone"`
@@ -55,8 +55,8 @@ type FederatedIdentity struct {
 	HowDidYouHearAboutUsOther     string                      `bson:"how_did_you_hear_about_us_other" json:"how_did_you_hear_about_us_other,omitempty"`
 	AgreeTermsOfService           bool                        `bson:"agree_terms_of_service" json:"agree_terms_of_service,omitempty"`
 	AgreePromotions               bool                        `bson:"agree_promotions" json:"agree_promotions,omitempty"`
-	CreatedFromIPAddress          string                      `bson:"created_from_ip_address" json:"created_from_ip_address"`
-	CreatedByFederatedIdentityID  primitive.ObjectID          `bson:"created_by_federatedidentity_id" json:"created_by_federatedidentity_id"`
+	CreatedFromIPAddress          string                      `bson:"created_from_ip_address" json:"-"`
+	CreatedByFederatedIdentityID  primitive.ObjectID          `bson:"created_by_federatedidentity_id" json:"-"`
 	CreatedAt                     time.Time                   `bson:"created_at" json:"created_at,omitempty"`
 	CreatedByName                 string                      `bson:"created_by_name" json:"created_by_name"`
 	ModifiedFromIPAddress         string                      `bson:"modified_from_ip_address" json:"modified_from_ip_address"`
@@ -64,15 +64,15 @@ type FederatedIdentity struct {
 	ModifiedAt                    time.Time                   `bson:"modified_at" json:"modified_at,omitempty"`
 	ModifiedByName                string                      `bson:"modified_by_name" json:"modified_by_name"`
 	Status                        int8                        `bson:"status" json:"status"`
-	Comments                      []*FederatedIdentityComment `bson:"comments" json:"comments"`
+	Comments                      []*FederatedIdentityComment `bson:"comments" json:"-"`
 	IsStarred                     bool                        `bson:"is_starred" json:"is_starred,omitempty"`
 	// The name of the payment processor we are using to handle payments with
 	// this particular member.
-	PaymentProcessorName string `bson:"payment_processor_name" json:"payment_processor_name"`
+	PaymentProcessorName string `bson:"payment_processor_name" json:"-"`
 	// The unique identifier used by the payment processor which has a somesort of
 	// copy of this member's details saved and we can reference that customer on
 	// the payment processor using this `customer_id`.
-	PaymentProcessorCustomerID string `bson:"payment_processor_customer_id" json:"payment_processor_customer_id"`
+	PaymentProcessorCustomerID string `bson:"payment_processor_customer_id" json:"-"`
 
 	// OTPEnabled controls whether we force 2FA or not during login.
 	OTPEnabled bool `bson:"otp_enabled" json:"otp_enabled"`

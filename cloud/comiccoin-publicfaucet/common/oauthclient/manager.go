@@ -32,6 +32,7 @@ import (
 	svc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/oauth"
 	svc_profile "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/profile"
 	svc_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/registration"
+	svc_remotefederatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/remotefederatedidentity"
 	svc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/service/token"
 	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/federatedidentity"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/oauthclient/usecase/oauth"
@@ -52,6 +53,7 @@ type Manager interface {
 	Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error)
 	ExchangeToken(ctx context.Context, req *svc_oauth.ExchangeTokenRequest) (*svc_oauth.ExchangeTokenResponse, error)
 	FetchFederatedIdentityFromRemoteByAccessToken(ctx context.Context, accessToken string) (*dom_remotefederatedidentity.RemoteFederatedIdentityDTO, error)
+	UpdateFederatedIdentityInRemoteWithAccessToken(ctx context.Context, req *dom_remotefederatedidentity.RemoteFederatedIdentityDTO, accessToken string) error
 
 	// HTTP
 	AuthMiddleware() *http_mid.AuthMiddleware
@@ -74,19 +76,22 @@ type managerImpl struct {
 	logger *slog.Logger
 
 	// Use-Case
-	federatedidentityGetByIDUseCase      uc_federatedidentity.FederatedIdentityGetByIDUseCase
-	fetchRemoteFederdatedIdentityUseCase uc_remotefederatedidentity.FetchRemoteFederdatedIdentityUseCase
+	federatedidentityGetByIDUseCase       uc_federatedidentity.FederatedIdentityGetByIDUseCase
+	fetchRemoteFederdatedIdentityUseCase  uc_remotefederatedidentity.FetchRemoteFederdatedIdentityUseCase
+	updateRemoteFederdatedIdentityUseCase uc_remotefederatedidentity.UpdateRemoteFederdatedIdentityUseCase
 
 	// Service
-	registration                svc_registration.RegistrationService
-	loginService                svc_login.LoginService
-	refreshTokenService         svc_token.RefreshTokenService
-	introspectionService        svc_introspection.IntrospectionService
-	oauthAuthURLService         svc_oauth.GetAuthURLService
-	oauthCallbackService        svc_oauth.CallbackService
-	oauthStateManagementService svc_oauth.StateManagementService
-	oauthSessionInfoService     svc_oauth.OAuthSessionInfoService
-	exchangeService             svc_oauth.ExchangeService
+	registration                          svc_registration.RegistrationService
+	loginService                          svc_login.LoginService
+	refreshTokenService                   svc_token.RefreshTokenService
+	introspectionService                  svc_introspection.IntrospectionService
+	oauthAuthURLService                   svc_oauth.GetAuthURLService
+	oauthCallbackService                  svc_oauth.CallbackService
+	oauthStateManagementService           svc_oauth.StateManagementService
+	oauthSessionInfoService               svc_oauth.OAuthSessionInfoService
+	exchangeService                       svc_oauth.ExchangeService
+	fetchRemoteFederdatedIdentityService  svc_remotefederatedidentity.FetchRemoteFederdatedIdentityService
+	updateRemoteFederdatedIdentityService svc_remotefederatedidentity.UpdateRemoteFederdatedIdentityService
 
 	// HTTP Interface
 	authMiddleware                          *http_mid.AuthMiddleware
@@ -115,6 +120,7 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 	remotefederatedidentityRepo := r_remotefederatedidentity.NewRepository(cfg, logger)
 
 	// --- FederatedIdentity ---
+
 	federatedidentityGetBySessionIDUseCase := uc_federatedidentity.NewFederatedIdentityGetBySessionIDUseCase(
 		cfg,
 		logger,
@@ -294,6 +300,11 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		logger,
 		remotefederatedidentityRepo,
 	)
+	updateRemoteFederdatedIdentityUseCase := uc_remotefederatedidentity.NewUpdateRemoteFederdatedIdentityUseCase(
+		cfg,
+		logger,
+		remotefederatedidentityRepo,
+	)
 
 	//
 	// Service
@@ -339,7 +350,8 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 	)
 	_ = introspectionService
 
-	// OAuth services
+	// --- OAuth services ---
+
 	oauthAuthURLService := svc_oauth.NewGetAuthURLService(
 		cfg,
 		logger,
@@ -392,11 +404,31 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		createOAuthStateUseCase,
 	)
 
-	// Profile
+	// --- Profile ---
+
 	fetchProfileFromComicCoinGatewayService := svc_profile.NewFetchProfileFromComicCoinGatewayService(
 		cfg,
 		logger,
 		fetchProfileFromComicCoinGatewayUseCase,
+	)
+
+	// --- Remote FI ---
+
+	fetchRemoteFederdatedIdentityService := svc_remotefederatedidentity.NewFetchRemoteFederdatedIdentityService(
+		cfg,
+		logger,
+		fetchRemoteFederdatedIdentityUseCase,
+		federatedidentityGetByIDUseCase,
+		federatedidentityCreateUseCase,
+		federatedidentityUpdateUseCase,
+	)
+	updateRemoteFederdatedIdentityService := svc_remotefederatedidentity.NewUpdateRemoteFederdatedIdentityService(
+		cfg,
+		logger,
+		updateRemoteFederdatedIdentityUseCase,
+		federatedidentityGetByIDUseCase,
+		federatedidentityCreateUseCase,
+		federatedidentityUpdateUseCase,
 	)
 
 	//
@@ -470,6 +502,8 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		logger:                                  logger,
 		federatedidentityGetByIDUseCase:         federatedidentityGetByIDUseCase,
 		fetchRemoteFederdatedIdentityUseCase:    fetchRemoteFederdatedIdentityUseCase,
+		fetchRemoteFederdatedIdentityService:    fetchRemoteFederdatedIdentityService,
+		updateRemoteFederdatedIdentityService:   updateRemoteFederdatedIdentityService,
 		registration:                            registration,
 		loginService:                            loginService,
 		refreshTokenService:                     refreshTokenService,
@@ -507,6 +541,10 @@ func (m *managerImpl) ExchangeToken(ctx context.Context, req *svc_oauth.Exchange
 
 func (m *managerImpl) FetchFederatedIdentityFromRemoteByAccessToken(ctx context.Context, accessToken string) (*dom_remotefederatedidentity.RemoteFederatedIdentityDTO, error) {
 	return m.fetchRemoteFederdatedIdentityUseCase.Execute(ctx, accessToken)
+}
+
+func (m *managerImpl) UpdateFederatedIdentityInRemoteWithAccessToken(ctx context.Context, req *dom_remotefederatedidentity.RemoteFederatedIdentityDTO, accessToken string) error {
+	return m.updateRemoteFederdatedIdentityUseCase.Execute(ctx, req, accessToken)
 }
 
 func (m *managerImpl) AuthMiddleware() *http_mid.AuthMiddleware {

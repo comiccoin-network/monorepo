@@ -15,10 +15,10 @@ import (
 
 // ProfileResponse represents the structure of the response from the /api/profile endpoint.  Adjust as needed.
 type ProfileResponse struct {
-	FederatedIdentityID    string `json:"federatedidentity_id"`
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+	FederatedIdentityID string `json:"federatedidentity_id"`
+	Email               string `json:"email"`
+	FirstName           string `json:"first_name"`
+	LastName            string `json:"last_name"`
 	// Add other fields as needed based on the actual /api/profile response
 }
 
@@ -27,7 +27,7 @@ func (impl *comicCoinProfileImpl) FetchProfileFromComicCoinGateway(ctx context.C
 		slog.String("server_url", impl.Config.OAuth.ServerURL))
 
 	// Create registration endpoint URL
-	profileURL := fmt.Sprintf("%s/api/identity", impl.Config.OAuth.ServerURL)
+	profileURL := fmt.Sprintf("%s/api/federated-identity", impl.Config.OAuth.ServerURL)
 
 	// Create a new HTTP request with the access token in the Authorization header
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, profileURL, nil)

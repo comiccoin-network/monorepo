@@ -120,14 +120,50 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 		return err
 	}
 
-	s.logger.Debug("Updated wallet address for user",
+	s.logger.Debug("Updated wallet address in database for user",
 		slog.Any("federatedidentity_id", federatedidentityID.Hex()))
 
 	//
 	// STEP 5: Update ComicCoin Network.
 	//
 
-	//TODO: IMPL. Synch with gateway.
+	// Get access token from context. This is loaded in
+	// by the `AuthMiddleware` found via:
+	// - github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/middleware/auth.go
+	accessToken, ok := ctx.Value("access_token").(string)
+	if !ok {
+		s.logger.Error("Failed getting access_token from local context",
+			slog.Any("error", "Not found in context: federatedidentity_id"))
+		return errors.New("access_token not found in context")
+	}
 
-	return errors.New("TODO: Please implement")
+	// Get the local saved federated identity details that were saved
+	// after the successful oAuth 2.0.
+	remotefi, err := s.oauthManager.FetchFederatedIdentityFromRemoteByAccessToken(ctx, accessToken)
+	if err != nil {
+		s.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
+		return err
+	}
+	if remotefi == nil {
+		err := errors.New("nil returned for federated identity for the provided access token")
+		s.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
+		return err
+	}
+
+	s.logger.Debug("Successfully fetched from remote gateway",
+		slog.Any("user_id", user.ID))
+
+	// Update the wallet address of the record.
+	remotefi.WalletAddress = &walletAddress
+
+	// Submit to our remote gateway
+	if err := s.oauthManager.UpdateFederatedIdentityInRemoteWithAccessToken(ctx, remotefi, accessToken); err != nil {
+		s.logger.Debug("Failed updating remote gateway", slog.Any("error", err))
+		return err
+	}
+
+	s.logger.Debug("Successfully updated remote gateway",
+		slog.Any("user_id", user.ID))
+
+	return nil
 }

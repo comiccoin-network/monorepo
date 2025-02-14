@@ -9,7 +9,7 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/config"
-	http_usr "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/federatedidentity"
+	http_fi "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/federatedidentity"
 	http_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/identity"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/middleware"
 	http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/interface/http/oauth"
@@ -49,8 +49,9 @@ type httpServerImpl struct {
 	refreshTokenHandler  *http_oauth.RefreshTokenHandler
 	uiRegisterHandler    *http_oauth.UIRegisterHandler
 
-	registerHandler    *http_usr.RegisterHandler
-	getIdentityHandler *http_identity.GetIdentityHandler
+	registerHandler                *http_fi.RegisterHandler
+	getIdentityHandler             *http_identity.GetIdentityHandler
+	updateFederatedIdentityHandler *http_fi.UpdateFederatedIdentityHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -67,8 +68,9 @@ func NewHTTPServer(
 	introspectionHandler *http_oauth.IntrospectionHandler,
 	refreshTokenHandler *http_oauth.RefreshTokenHandler,
 
-	registerHandler *http_usr.RegisterHandler,
+	registerHandler *http_fi.RegisterHandler,
 	getIdentityHandler *http_identity.GetIdentityHandler,
+	updateFederatedIdentityHandler *http_fi.UpdateFederatedIdentityHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -91,20 +93,21 @@ func NewHTTPServer(
 
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
-		cfg:                       cfg,
-		logger:                    logger,
-		middleware:                mid,
-		server:                    srv,
-		getVersionHTTPHandler:     h1,
-		getHealthCheckHTTPHandler: h2,
-		authorizeHandler:          authorizeHandler,
-		loginHandler:              loginHandler,
-		tokenHandler:              tokenHandler,
-		introspectionHandler:      introspectionHandler,
-		refreshTokenHandler:       refreshTokenHandler,
-		uiRegisterHandler:         uiregister,
-		registerHandler:           registerHandler,
-		getIdentityHandler:        getIdentityHandler,
+		cfg:                            cfg,
+		logger:                         logger,
+		middleware:                     mid,
+		server:                         srv,
+		getVersionHTTPHandler:          h1,
+		getHealthCheckHTTPHandler:      h2,
+		authorizeHandler:               authorizeHandler,
+		loginHandler:                   loginHandler,
+		tokenHandler:                   tokenHandler,
+		introspectionHandler:           introspectionHandler,
+		refreshTokenHandler:            refreshTokenHandler,
+		uiRegisterHandler:              uiregister,
+		registerHandler:                registerHandler,
+		getIdentityHandler:             getIdentityHandler,
+		updateFederatedIdentityHandler: updateFederatedIdentityHandler,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -172,8 +175,12 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 		port.introspectionHandler.Execute(w, r)
 	case n == 2 && p[0] == "api" && p[1] == "register":
 		port.registerHandler.Execute(w, r)
-	case n == 2 && p[0] == "api" && p[1] == "identity" && r.Method == http.MethodGet:
+	case n == 2 && p[0] == "api" && p[1] == "identity" && r.Method == http.MethodGet: // DEPRECATED URL
 		port.getIdentityHandler.Execute(w, r)
+	case n == 2 && p[0] == "api" && p[1] == "federated-identity" && r.Method == http.MethodGet:
+		port.getIdentityHandler.Execute(w, r)
+	case n == 2 && p[0] == "api" && p[1] == "federated-identity" && r.Method == http.MethodPost:
+		port.updateFederatedIdentityHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:

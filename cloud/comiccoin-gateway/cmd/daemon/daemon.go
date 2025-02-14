@@ -28,7 +28,7 @@ import (
 	r_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/federatedidentity"
 	r_ratelimit "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/ratelimiter"
 	r_token "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/repo/token"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/federatedidentity"
+	svc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/federatedidentity"
 	svc_identity "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/identity"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/service/oauth"
 	uc_app "github.com/comiccoin-network/monorepo/cloud/comiccoin-gateway/usecase/application"
@@ -254,14 +254,26 @@ func doRunDaemon() {
 		federatedidentityGetByIDUseCase,
 	)
 
-	// FederatedIdentity
-	registerService := federatedidentity.NewRegisterService(
+	// --- FederatedIdentity ---
+
+	registerService := svc_federatedidentity.NewRegisterService(
 		cfg,
 		logger,
 		passp,
 		federatedidentityCreateUseCase,
 		appFindByAppIDUseCase,
 		authorizeService,
+	)
+
+	updateFederatedIdentityService := svc_federatedidentity.NewUpdateFederatedIdentityService(
+		cfg,
+		logger,
+		passp,
+		federatedidentityGetByIDUseCase,
+		federatedidentityUpdateUseCase,
+		rateLimiterIsAllowedUseCase,
+		rateLimiterRecordFailureUseCase,
+		rateLimiterResetFailuresUseCase,
 	)
 
 	// Identity
@@ -294,6 +306,7 @@ func doRunDaemon() {
 	introspectionHttpHandler := http_oauth.NewIntrospectionHandler(logger, introspectionService)
 	registerHandler := http_federatedidentity.NewRegisterHandler(logger, registerService)
 	getIdentityHandler := http_identity.NewGetIdentityHandler(logger, getIdentityService)
+	updateFederatedIdentityHandler := http_federatedidentity.NewUpdateFederatedIdentityHandler(logger, updateFederatedIdentityService)
 
 	// HTTP Middleware
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -319,6 +332,7 @@ func doRunDaemon() {
 		refreshTokenHttpHandler,
 		registerHandler,
 		getIdentityHandler,
+		updateFederatedIdentityHandler,
 	)
 
 	//
