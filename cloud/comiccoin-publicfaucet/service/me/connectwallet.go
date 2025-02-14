@@ -81,11 +81,10 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 		e["wallet_address"] = "Wallet address is required"
 	} else {
 		walletAddress := common.HexToAddress(strings.ToLower(req.WalletAddress))
-		if walletAddress.Hex() != "0x0000000000000000000000000000000000000000" {
+		if walletAddress.Hex() == "0x0000000000000000000000000000000000000000" {
 			e["wallet_address"] = "Wallet address cannot be burn address"
 		}
 	}
-
 	if len(e) != 0 {
 		s.logger.Warn("Failed validation",
 			slog.Any("error", e))
@@ -158,7 +157,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 
 	// Submit to our remote gateway
 	if err := s.oauthManager.UpdateFederatedIdentityInRemoteWithAccessToken(ctx, remotefi, accessToken); err != nil {
-		s.logger.Debug("Failed updating remote gateway", slog.Any("error", err))
+		s.logger.Error("Failed updating remote gateway", slog.Any("error", err))
 		return err
 	}
 

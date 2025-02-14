@@ -99,7 +99,7 @@ func (h *PostMeConnectWalletHTTPHandler) Execute(w http.ResponseWriter, r *http.
 		// Call service
 		err := h.service.Execute(sessCtx, req)
 		if err != nil {
-			h.logger.Error("failed to say hello",
+			h.logger.Error("failed to execute connect wallet",
 				slog.Any("error", err))
 
 			return nil, err

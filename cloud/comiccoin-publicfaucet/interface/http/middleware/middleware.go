@@ -44,20 +44,6 @@ func NewMiddleware(
 	}
 }
 
-// Define protected routes
-var protectedPaths = map[string]bool{
-	"/api/say-hello":        true,
-	"/api/token/introspect": true,
-	"/api/profile":          true, // Deprecated
-	"/api/me":               true,
-	// Add other protected paths here
-}
-
-// Helper function to check if a path requires authentication
-func isProtectedPath(path string) bool {
-	return protectedPaths[path]
-}
-
 // Attach function attaches to HTTP router to apply for every API call.
 func (mid *middleware) Attach(fn http.HandlerFunc) http.HandlerFunc {
 	mid.logger.Debug("middleware executed")

@@ -540,11 +540,11 @@ func (m *managerImpl) ExchangeToken(ctx context.Context, req *svc_oauth.Exchange
 }
 
 func (m *managerImpl) FetchFederatedIdentityFromRemoteByAccessToken(ctx context.Context, accessToken string) (*dom_remotefederatedidentity.RemoteFederatedIdentityDTO, error) {
-	return m.fetchRemoteFederdatedIdentityUseCase.Execute(ctx, accessToken)
+	return m.fetchRemoteFederdatedIdentityService.Execute(ctx, accessToken)
 }
 
 func (m *managerImpl) UpdateFederatedIdentityInRemoteWithAccessToken(ctx context.Context, req *dom_remotefederatedidentity.RemoteFederatedIdentityDTO, accessToken string) error {
-	return m.updateRemoteFederdatedIdentityUseCase.Execute(ctx, req, accessToken)
+	return m.updateRemoteFederdatedIdentityService.Execute(ctx, req, accessToken)
 }
 
 func (m *managerImpl) AuthMiddleware() *http_mid.AuthMiddleware {
