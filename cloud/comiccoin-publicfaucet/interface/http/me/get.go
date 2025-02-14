@@ -82,7 +82,7 @@ func (h *GetMeHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Encode response
-	resp := result.(svc_me.MeResponseDTO)
+	resp := result.(*svc_me.MeResponseDTO)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.logger.Error("failed to encode response",
 			slog.Any("error", err))
