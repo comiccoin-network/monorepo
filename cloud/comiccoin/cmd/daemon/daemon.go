@@ -24,6 +24,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -72,6 +73,8 @@ func doRunDaemon() {
 	// Load up our modules.
 	//
 
+	// --- Authority ---
+
 	authorityServer := authority.NewServer(
 		cfg,
 		logger,
@@ -88,6 +91,8 @@ func doRunDaemon() {
 	authorityHTTPServer := authorityServer.GetHTTPServerInstance()
 	authorityTaskManager := authorityServer.GetTaskManagerInstance()
 
+	// --- Gateway ---
+
 	gatewayServer := gateway.NewServer(
 		cfg,
 		logger,
@@ -103,6 +108,23 @@ func doRunDaemon() {
 
 	gatewayHTTPServer := gatewayServer.GetHTTPServerInstance()
 
+	// --- Public Faucet ---
+
+	publicfaucetServer := publicfaucet.NewServer(
+		cfg,
+		logger,
+		dbClient,
+		keystore,
+		passp,
+		jwtp,
+		blackp,
+		redisCacheProvider,
+		dmutex,
+		ipcbp,
+	)
+
+	publicfaucetHTTPServer := publicfaucetServer.GetHTTPServerInstance()
+
 	//
 	// STEP 4:
 	// Initialize our unified http server and task manager
@@ -114,7 +136,14 @@ func doRunDaemon() {
 		ipcbp,
 	)
 
-	httpServ := unifiedhttp.NewUnifiedHTTPServer(cfg, logger, httpMiddleware, authorityHTTPServer, gatewayHTTPServer)
+	httpServ := unifiedhttp.NewUnifiedHTTPServer(
+		cfg,
+		logger,
+		httpMiddleware,
+		authorityHTTPServer,
+		gatewayHTTPServer,
+		publicfaucetHTTPServer,
+	)
 
 	//
 	// STEP 5:

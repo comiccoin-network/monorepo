@@ -11,6 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	authority_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/http"
 	gateway_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http"
+	publicfaucet_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin/unifiedhttp/middleware"
 )
 
@@ -32,8 +33,9 @@ type unifiedHTTPServerImpl struct {
 	getHealthCheckHTTPHandler *GetHealthCheckHTTPHandler
 
 	// Modules
-	authorityHTTPServer authority_http.HTTPServer
-	gatewayHTTPServer   gateway_http.HTTPServer
+	authorityHTTPServer    authority_http.HTTPServer
+	gatewayHTTPServer      gateway_http.HTTPServer
+	publicfaucetHTTPServer publicfaucet_http.HTTPServer
 }
 
 func NewUnifiedHTTPServer(
@@ -42,6 +44,7 @@ func NewUnifiedHTTPServer(
 	mid mid.Middleware,
 	authorityHTTPServer authority_http.HTTPServer,
 	gatewayHTTPServer gateway_http.HTTPServer,
+	publicfaucetHTTPServer publicfaucet_http.HTTPServer,
 ) UnifiedHTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.IP == "" {
@@ -72,6 +75,7 @@ func NewUnifiedHTTPServer(
 		getHealthCheckHTTPHandler: NewGetHealthCheckHTTPHandler(logger),
 		authorityHTTPServer:       authorityHTTPServer,
 		gatewayHTTPServer:         gatewayHTTPServer,
+		publicfaucetHTTPServer:    publicfaucetHTTPServer,
 	}
 
 	// Attach the unified request handler

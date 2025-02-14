@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/oauth/types.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/oauth/types.go
 package oauth
 
 import (

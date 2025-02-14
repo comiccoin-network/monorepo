@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/oauth/store.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/oauth/store.go
 package oauth
 
 // AuthorizationStore defines the complete interface for managing OAuth authorizations,

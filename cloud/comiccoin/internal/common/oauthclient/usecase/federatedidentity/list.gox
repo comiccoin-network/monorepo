@@ -1,0 +1,50 @@
+package federatedidentity
+
+import (
+	"context"
+	"log/slog"
+
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/federatedidentity"
+)
+
+type FederatedIdentityListByFilterUseCase interface {
+	Execute(ctx context.Context, filter *dom_federatedidentity.FederatedIdentityFilter) (*dom_federatedidentity.FederatedIdentityFilterResult, error)
+}
+
+type federatedidentityListByFilterUseCaseImpl struct {
+	config *config.Configuration
+	logger *slog.Logger
+	repo   dom_federatedidentity.Repository
+}
+
+func NewFederatedIdentityListByFilterUseCase(
+	config *config.Configuration,
+	logger *slog.Logger,
+	repo dom_federatedidentity.Repository,
+) FederatedIdentityListByFilterUseCase {
+	return &federatedidentityListByFilterUseCaseImpl{config, logger, repo}
+}
+
+func (uc *federatedidentityListByFilterUseCaseImpl) Execute(ctx context.Context, filter *dom_federatedidentity.FederatedIdentityFilter) (*dom_federatedidentity.FederatedIdentityFilterResult, error) {
+	//
+	// STEP 1: Validation.
+	//
+
+	e := make(map[string]string)
+	if filter == nil {
+		e["filter"] = "FederatedIdentity is required"
+	}
+	if len(e) != 0 {
+		uc.logger.Warn("Failed validating",
+			slog.Any("error", e))
+		return nil, httperror.NewForBadRequest(&e)
+	}
+
+	//
+	// STEP 2: Insert into database.
+	//
+
+	return uc.repo.ListByFilter(ctx, filter)
+}

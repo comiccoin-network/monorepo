@@ -1,11 +1,11 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/oauth/memory/store.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/oauth/memory/store.go
 package memory
 
 import (
 	"sync"
 	"time"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/oauth"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/oauth"
 )
 
 // MemoryStore implements AuthorizationStore using in-memory storage

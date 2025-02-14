@@ -1,0 +1,36 @@
+package publicfaucet
+
+import (
+	"context"
+	"log/slog"
+
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodbcache"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
+)
+
+type PublicFaucetLogoutService interface {
+	Execute(ctx context.Context) error
+}
+
+type publicfaucetLogoutServiceImpl struct {
+	logger *slog.Logger
+	cache  mongodbcache.Cacher
+}
+
+func NewPublicFaucetLogoutService(
+	logger *slog.Logger,
+	cach mongodbcache.Cacher,
+) PublicFaucetLogoutService {
+	return &publicfaucetLogoutServiceImpl{logger, cach}
+}
+
+func (s *publicfaucetLogoutServiceImpl) Execute(ctx context.Context) error {
+	// Extract from our session the following data.
+	sessionID := ctx.Value(constants.SessionID).(string)
+
+	if err := s.cache.Delete(ctx, sessionID); err != nil {
+		s.logger.Error("cache delete error", slog.Any("err", err))
+		return err
+	}
+	return nil
+}

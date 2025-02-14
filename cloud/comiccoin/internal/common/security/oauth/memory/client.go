@@ -1,10 +1,10 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/oauth/memory/client.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/oauth/memory/client.go
 package memory
 
 import (
 	"sync"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/common/security/oauth"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/oauth"
 )
 
 // MemoryClientService implements ClientService using in-memory storage

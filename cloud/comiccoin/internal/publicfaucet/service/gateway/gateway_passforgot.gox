@@ -1,0 +1,70 @@
+package publicfaucet
+
+import (
+	"log/slog"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/templatedemailer"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/federatedidentity"
+)
+
+type PublicFaucetForgotPasswordService interface {
+	Execute(sessCtx mongo.SessionContext, req *PublicFaucetForgotPasswordRequestIDO) error
+}
+
+type publicfaucetForgotPasswordServiceImpl struct {
+	logger                *slog.Logger
+	templatedEmailer      templatedemailer.TemplatedEmailer
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	federatedidentityUpdateUseCase     uc_federatedidentity.FederatedIdentityUpdateUseCase
+}
+
+func NewPublicFaucetForgotPasswordService(
+	logger *slog.Logger,
+	templatedEmailer templatedemailer.TemplatedEmailer,
+	uc1 uc_federatedidentity.FederatedIdentityGetByEmailUseCase,
+	uc2 uc_federatedidentity.FederatedIdentityUpdateUseCase,
+) PublicFaucetForgotPasswordService {
+	return &publicfaucetForgotPasswordServiceImpl{logger, templatedEmailer, uc1, uc2}
+}
+
+type PublicFaucetForgotPasswordRequestIDO struct {
+	Email string `json:"email"`
+}
+
+func (s *publicfaucetForgotPasswordServiceImpl) Execute(sessCtx mongo.SessionContext, req *PublicFaucetForgotPasswordRequestIDO) error {
+	// // Extract from our session the following data.
+	// federatedidentityID := sessCtx.Value(constants.SessionFederatedIdentityID).(primitive.ObjectID)
+
+	e := make(map[string]string)
+	if req.Email == "" {
+		e["email"] = "missing value"
+	}
+	if len(e) != 0 {
+		return httperror.NewForBadRequest(&e)
+	}
+
+	// Lookup the federatedidentity in our database, else return a `400 Bad Request` error.
+	u, err := s.federatedidentityGetByEmailUseCase.Execute(sessCtx, req.Email)
+	if err != nil {
+		s.logger.Error("database error", slog.Any("err", err))
+		return err
+	}
+	if u == nil {
+		s.logger.Warn("federatedidentity does not exist validation error")
+		return httperror.NewForBadRequestWithSingleField("id", "does not exist")
+	}
+
+	// Generate unique token and save it to the federatedidentity record.
+	u.EmailVerificationCode = primitive.NewObjectID().Hex()
+	if err := s.federatedidentityUpdateUseCase.Execute(sessCtx, u); err != nil {
+		s.logger.Warn("federatedidentity update by id failed", slog.Any("error", err))
+		return err
+	}
+
+	// Send password reset email.
+	return s.templatedEmailer.SendForgotPasswordEmail(req.Email, u.EmailVerificationCode, u.FirstName)
+}

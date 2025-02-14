@@ -13,11 +13,12 @@ import (
 )
 
 type Configuration struct {
-	App        AppConfig
-	Blockchain BlockchainConfig
-	Cache      CacheConf
-	DB         DBConfig
-	NFTStore   NFTStorageConfig
+	App               AppConfig
+	Blockchain        BlockchainConfig
+	Cache             CacheConf
+	DB                DBConfig
+	NFTStore          NFTStorageConfig
+	PublicFaucetOAuth PublicFaucetOAuthConfig
 }
 
 type CacheConf struct {
@@ -53,22 +54,39 @@ type BlockchainConfig struct {
 	ProofOfAuthorityAccountAddress *common.Address
 	ProofOfAuthorityWalletMnemonic *sstring.SecureString
 	ProofOfAuthorityWalletPath     string
+
+	// (Only set by Public Faucet node)
+	PublicFaucetAccountAddress *common.Address
+	PublicFaucetWalletMnemonic *sstring.SecureString
+	PublicFaucetWalletPath     string
 }
 
 type DBConfig struct {
-	URI           string
-	AuthorityName string
-	GatewayName   string
+	URI              string
+	AuthorityName    string
+	GatewayName      string
+	PublicFaucetName string
 }
 
 type NFTStorageConfig struct {
 	URI string
 }
 
+type PublicFaucetOAuthConfig struct {
+	ServerURL                        string
+	ClientID                         string
+	ClientSecret                     string
+	ClientRedirectURI                string
+	ClientRegisterSuccessURI         string
+	ClientRegisterCancelURI          string
+	ClientAuthorizeOrLoginSuccessURI string
+	ClientAuthorizeOrLoginCancelURI  string
+}
+
 func NewProvider() *Configuration {
 	var c Configuration
 
-	// Application section.
+	// --- Application section ---
 	c.App.DataDirectory = getEnv("COMICCOIN_APP_DATA_DIRECTORY", true)
 	c.App.Port = getEnv("COMICCOIN_PORT", true)
 	c.App.IP = getEnv("COMICCOIN_IP", false)
@@ -77,7 +95,8 @@ func NewProvider() *Configuration {
 	c.App.GeoLiteDBPath = getEnv("COMICCOIN_APP_GEOLITE_DB_PATH", false)
 	c.App.BannedCountries = getStringsArrEnv("COMICCOIN_APP_BANNED_COUNTRIES", false)
 
-	// Blockchain section.
+	// --- Blockchain section ---
+	// Authority only.
 	chainID, _ := strconv.ParseUint(getEnv("COMICCOIN_BLOCKCHAIN_CHAIN_ID", true), 10, 16)
 	c.Blockchain.ChainID = uint16(chainID)
 	transPerBlock, _ := strconv.ParseUint(getEnv("COMICCOIN_BLOCKCHAIN_TRANS_PER_BLOCK", true), 10, 16)
@@ -92,16 +111,38 @@ func NewProvider() *Configuration {
 	}
 	c.Blockchain.ProofOfAuthorityWalletMnemonic = getSecureStringEnv("COMICCOIN_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC", false)
 	c.Blockchain.ProofOfAuthorityWalletPath = getEnv("COMICCOIN_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PATH", false)
-	// Database section.
+
+	// Public Faucet only.
+	publicFaucetAccountAddress := getEnv("COMICCOIN_BLOCKCHAIN_PUBLICFAUCET_ACCOUNT_ADDRESS", false)
+	if publicFaucetAccountAddress != "" {
+		address := common.HexToAddress(publicFaucetAccountAddress)
+		c.Blockchain.ProofOfAuthorityAccountAddress = &address
+	}
+	c.Blockchain.ProofOfAuthorityWalletMnemonic = getSecureStringEnv("COMICCOIN_BLOCKCHAIN_PUBLICFAUCET_WALLET_MNEMONIC", false)
+	c.Blockchain.ProofOfAuthorityWalletPath = getEnv("COMICCOIN_BLOCKCHAIN_PUBLICFAUCET_WALLET_PATH", false)
+
+	// --- Database section ---
 	c.DB.URI = getEnv("COMICCOIN_DB_URI", true)
 	c.DB.AuthorityName = getEnv("COMICCOIN_DB_AUTHORITY_NAME", true)
 	c.DB.GatewayName = getEnv("COMICCOIN_DB_GATEWAY_NAME", true)
+	c.DB.PublicFaucetName = getEnv("COMICCOIN_DB_PUBLICFAUCET_NAME", true)
 
-	// Cache
+	// --- Cache ---
 	c.Cache.URI = getEnv("COMICCOIN_CACHE_URI", true)
 
-	// NFT Storage
+	// --- NFT Storage ---
 	c.NFTStore.URI = getEnv("COMICCOIN_NFT_STORAGE_URI", true)
+
+	// --- Public Faucet ---
+	// OAuth 2.0
+	c.PublicFaucetOAuth.ServerURL = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_SERVER_URL", true)
+	c.PublicFaucetOAuth.ClientID = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_ID", true)
+	c.PublicFaucetOAuth.ClientSecret = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_SECRET", true)
+	c.PublicFaucetOAuth.ClientRedirectURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REDIRECT_URI", true)
+	c.PublicFaucetOAuth.ClientRegisterSuccessURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REGISTER_SUCCESS_URI", true)
+	c.PublicFaucetOAuth.ClientRegisterCancelURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REGISTER_CANCEL_URI", true)
+	c.PublicFaucetOAuth.ClientAuthorizeOrLoginSuccessURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_LOGIN_SUCCESS_URI", true)
+	c.PublicFaucetOAuth.ClientAuthorizeOrLoginCancelURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_LOGIN_CANCEL_URI", true)
 
 	return &c
 }

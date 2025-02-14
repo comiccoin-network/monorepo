@@ -72,14 +72,14 @@ type DBConfig struct {
 }
 
 type OAuthConfig struct {
-	ServerURL                string
-	ClientID                 string
-	ClientSecret             string
-	ClientRedirectURI        string
-	ClientRegisterSuccessURI string
-	ClientRegisterCancelURI  string
-	ClientAuthorizeOrLoginSuccessURI    string
-	ClientAuthorizeOrLoginCancelURI     string
+	ServerURL                        string
+	ClientID                         string
+	ClientSecret                     string
+	ClientRedirectURI                string
+	ClientRegisterSuccessURI         string
+	ClientRegisterCancelURI          string
+	ClientAuthorizeOrLoginSuccessURI string
+	ClientAuthorizeOrLoginCancelURI  string
 }
 
 type MailgunConfig struct {
