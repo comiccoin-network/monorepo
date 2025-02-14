@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/common/storage/database/mongodbcache
 package mongodbcache
 
 import (
@@ -8,52 +9,56 @@ import (
 	"github.com/faabiosr/cachego"
 	"github.com/faabiosr/cachego/mongo"
 	mongo_client "go.mongodb.org/mongo-driver/mongo"
-
-	c "github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 )
 
 type Cacher interface {
-	Shutdown()
-	Get(ctx context.Context, key string) (string, error)
-	Set(ctx context.Context, key string, val string) error
-	SetWithExpiry(ctx context.Context, key string, val string, expiry time.Duration) error
+	Shutdown(context.Context)
+	Get(ctx context.Context, key string) ([]byte, error)
+	Set(ctx context.Context, key string, val []byte) error
+	SetWithExpiry(ctx context.Context, key string, val []byte, expiry time.Duration) error
 	Delete(ctx context.Context, key string) error
 }
 
 type cacheImpl struct {
+	config CacheConfigurationProvider
 	Client cachego.Cache
 	Logger *slog.Logger
 }
 
-func NewCache(cfg *c.Configuration, logger *slog.Logger, dbClient *mongo_client.Client) Cacher {
+func NewCache(
+	config CacheConfigurationProvider,
+	logger *slog.Logger,
+	dbClient *mongo_client.Client,
+) Cacher {
 	logger.Debug("cache initializing...")
 
-	cc := dbClient.Database(cfg.DB.Name).Collection("caches")
+	cc := dbClient.Database(config.GetDatabaseName()).Collection("caches")
 
 	c := mongo.New(cc)
 
 	logger.Debug("cache initialized with mongodb as backend")
 	return &cacheImpl{
+		config: config,
 		Client: c,
 		Logger: logger,
 	}
 }
 
-func (s *cacheImpl) Shutdown() {
+func (s *cacheImpl) Shutdown(context.Context) {
 	// Do nothing...
 }
 
-func (s *cacheImpl) Get(ctx context.Context, key string) (string, error) {
+func (s *cacheImpl) Get(ctx context.Context, key string) ([]byte, error) {
 	val, err := s.Client.Fetch(key)
 	if err != nil {
 		s.Logger.Error("cache get failed", slog.Any("error", err))
-		return "", err
+		return nil, err
 	}
-	return string(val), nil
+	return []byte(val), nil
 }
 
-func (s *cacheImpl) Set(ctx context.Context, key string, val string) error {
-	err := s.Client.Save(key, val, 0)
+func (s *cacheImpl) Set(ctx context.Context, key string, val []byte) error {
+	err := s.Client.Save(key, string(val), 0)
 	if err != nil {
 		s.Logger.Error("cache set failed", slog.Any("error", err))
 		return err
@@ -61,8 +66,8 @@ func (s *cacheImpl) Set(ctx context.Context, key string, val string) error {
 	return nil
 }
 
-func (s *cacheImpl) SetWithExpiry(ctx context.Context, key string, val string, expiry time.Duration) error {
-	err := s.Client.Save(key, val, expiry)
+func (s *cacheImpl) SetWithExpiry(ctx context.Context, key string, val []byte, expiry time.Duration) error {
+	err := s.Client.Save(key, string(val), expiry)
 	if err != nil {
 		s.Logger.Error("cache set with expiry failed", slog.Any("error", err))
 		return err

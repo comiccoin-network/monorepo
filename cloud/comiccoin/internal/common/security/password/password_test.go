@@ -6,17 +6,20 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/securestring"
 )
 
-func TestNewProviderV2(t *testing.T) {
+func TestNewProvider(t *testing.T) {
 	provider := NewProvider()
 	assert.NotNil(t, provider)
 	assert.Equal(t, "argon2id", provider.AlgorithmName())
 }
 
-func TestPasswordHashingV2(t *testing.T) {
+func TestPasswordHashing(t *testing.T) {
 	provider := NewProvider()
-	password := "test-password"
+	password, err := sstring.NewSecureString("test-password")
+	require.NoError(t, err)
 
 	hash, err := provider.GenerateHashFromPassword(password)
 	assert.NoError(t, err)
@@ -26,42 +29,42 @@ func TestPasswordHashingV2(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, match)
 
-	match, err = provider.ComparePasswordAndHash("wrong-password", hash)
+	// Test wrong password
+	wrongPassword, _ := sstring.NewSecureString("wrong-password")
+	match, err = provider.ComparePasswordAndHash(wrongPassword, hash)
 	assert.NoError(t, err)
 	assert.False(t, match)
 }
 
-func TestComparePasswordAndHashInvalidV2(t *testing.T) {
+func TestComparePasswordAndHash_InvalidHash(t *testing.T) {
 	provider := NewProvider()
+	password, _ := sstring.NewSecureString("test-password")
+
 	tests := []struct {
-		name     string
-		password string
-		hash     string
-		wantErr  bool
+		name    string
+		hash    string
+		wantErr bool
 	}{
 		{
-			name:     "invalid format",
-			password: "test",
-			hash:     "invalid-hash",
-			wantErr:  true,
+			name:    "invalid format",
+			hash:    "invalid-hash",
+			wantErr: true,
 		},
 		{
-			name:     "invalid version",
-			password: "test",
-			hash:     "$argon2id$v=999$m=65536,t=3,p=2$c29tZXNhbHQ$aGFzaA",
-			wantErr:  true,
+			name:    "invalid version",
+			hash:    "$argon2id$v=999$m=65536,t=3,p=2$c29tZXNhbHQ$aGFzaA",
+			wantErr: true,
 		},
 		{
-			name:     "wrong segments count",
-			password: "test",
-			hash:     "$argon2id$v=19$m=65536,t=3,p=2$salt",
-			wantErr:  true,
+			name:    "wrong number of segments",
+			hash:    "$argon2id$v=19$m=65536,t=3,p=2$salt",
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			match, err := provider.ComparePasswordAndHash(tt.password, tt.hash)
+			match, err := provider.ComparePasswordAndHash(password, tt.hash)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -72,71 +75,45 @@ func TestComparePasswordAndHashInvalidV2(t *testing.T) {
 	}
 }
 
-func TestGenerateSecureRandomBytesV2(t *testing.T) {
+func TestGenerateSecureRandomBytes(t *testing.T) {
 	provider := NewProvider()
 
 	bytes1, err := provider.GenerateSecureRandomBytes(32)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	assert.Len(t, bytes1, 32)
 
 	bytes2, err := provider.GenerateSecureRandomBytes(32)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	assert.Len(t, bytes2, 32)
 
+	// Verify randomness
 	assert.NotEqual(t, bytes1, bytes2)
 }
 
-func TestGenerateSecureRandomStringV2(t *testing.T) {
+func TestGenerateSecureRandomString(t *testing.T) {
 	provider := NewProvider()
 
 	str1, err := provider.GenerateSecureRandomString(16)
-	require.NoError(t, err)
-	assert.Len(t, str1, 32)
+	assert.NoError(t, err)
+	assert.Len(t, str1, 32) // hex encoding doubles length
 
 	str2, err := provider.GenerateSecureRandomString(16)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	assert.Len(t, str2, 32)
 
+	// Verify randomness
 	assert.NotEqual(t, str1, str2)
 }
 
-func TestDecodeHashV2(t *testing.T) {
-	tests := []struct {
-		name    string
-		hash    string
-		wantErr bool
-	}{
-		{
-			name:    "valid hash",
-			hash:    "$argon2id$v=19$m=65536,t=3,p=2$c29tZXNhbHQ$RfZ4I7Yq0iL95j81mPxzQl2R7D/lIPKFfY2/H0XXJBI",
-			wantErr: false,
-		},
-		{
-			name:    "incorrect segments",
-			hash:    "$argon2id$v=19$m=65536,t=3,p=2$salt",
-			wantErr: true,
-		},
-		{
-			name:    "wrong format",
-			hash:    "not-a-hash",
-			wantErr: true,
-		},
-	}
+func TestDecodeHash(t *testing.T) {
+	validHash := "$argon2id$v=19$m=65536,t=3,p=2$c29tZXNhbHQ$RfZ4I7Yq0iL95j81mPxzQl2R7D/lIPKFfY2/H0XXJBI"
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p, salt, hash, err := decodeHash(tt.hash)
-			if tt.wantErr {
-				assert.Error(t, err)
-				assert.Nil(t, p)
-				assert.Nil(t, salt)
-				assert.Nil(t, hash)
-			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, p)
-				assert.NotNil(t, salt)
-				assert.NotNil(t, hash)
-			}
-		})
-	}
+	p, salt, hash, err := decodeHash(validHash)
+	assert.NoError(t, err)
+	assert.NotNil(t, p)
+	assert.NotNil(t, salt)
+	assert.NotNil(t, hash)
+	assert.Equal(t, uint32(65536), p.memory)
+	assert.Equal(t, uint32(3), p.iterations)
+	assert.Equal(t, uint8(2), p.parallelism)
 }

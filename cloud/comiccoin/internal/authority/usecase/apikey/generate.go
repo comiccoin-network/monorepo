@@ -7,6 +7,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/password"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/securestring"
 )
 
 type GenerateAPIKeyUseCase interface {
@@ -37,7 +38,15 @@ func (uc *generateAPIKeyUseCaseImpl) Execute(chainID uint16) (*NFTStoreAppCreden
 			slog.Any("error", err))
 		return nil, err
 	}
-	randomSecretHash, err := uc.password.GenerateHashFromPassword(randomSecretStr)
+	randomSecretSecure, err := securestring.NewSecureString(randomSecretStr)
+	if err != nil {
+		uc.logger.Error("failed to secure random secret string",
+			slog.Any("randomSecretStr", randomSecretStr),
+		)
+		return nil, err
+	}
+
+	randomSecretHash, err := uc.password.GenerateHashFromPassword(randomSecretSecure)
 	if err != nil {
 		uc.logger.Error("Failed hashing error",
 			slog.Any("error", err))

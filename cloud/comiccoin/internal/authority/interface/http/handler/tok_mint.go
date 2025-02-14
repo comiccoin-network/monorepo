@@ -10,12 +10,13 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/jwt"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/password"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	sv_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/token"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/jwt"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/password"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/securestring"
 )
 
 type TokenMintServiceHTTPHandler struct {
@@ -94,8 +95,18 @@ func (h *TokenMintServiceHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		httperror.ResponseError(w, err)
 		return
 	}
+
+	apiKeyPayloadSecure, err := securestring.NewSecureString(apiKeyPayload[1])
+	if err != nil {
+		h.logger.Error("failed to secure api key payload",
+			slog.Any("apiKeyPayload[1]", apiKeyPayload[1]),
+		)
+		httperror.ResponseError(w, err)
+		return
+	}
+
 	// Verify the api key secret and project hashed secret match.
-	passwordMatch, _ := h.passwordProvider.ComparePasswordAndHash(apiKeyPayload[1], h.config.App.AdministrationSecretKey.String())
+	passwordMatch, _ := h.passwordProvider.ComparePasswordAndHash(apiKeyPayloadSecure, h.config.App.AdministrationSecretKey.String())
 	if passwordMatch == false {
 		err := httperror.NewForUnauthorizedWithSingleField("api_key", "unauthorized")
 		h.logger.Error("password - does not match")

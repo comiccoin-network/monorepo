@@ -490,3 +490,7 @@ func NewServer(
 func (s *AuthorityServer) GetHTTPServerInstance() httpserver.HTTPServer {
 	return s.httpServer
 }
+
+func (s *AuthorityServer) GetTaskManagerInstance() task.TaskManager {
+	return s.taskManager
+}

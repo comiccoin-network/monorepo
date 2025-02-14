@@ -10,6 +10,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	authority_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/http"
+	gateway_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin/unifiedhttp/middleware"
 )
 
@@ -30,8 +31,9 @@ type unifiedHTTPServerImpl struct {
 	getVersionHTTPHandler     *GetVersionHTTPHandler
 	getHealthCheckHTTPHandler *GetHealthCheckHTTPHandler
 
-	// Authority
+	// Modules
 	authorityHTTPServer authority_http.HTTPServer
+	gatewayHTTPServer   gateway_http.HTTPServer
 }
 
 func NewUnifiedHTTPServer(
@@ -39,6 +41,7 @@ func NewUnifiedHTTPServer(
 	logger *slog.Logger,
 	mid mid.Middleware,
 	authorityHTTPServer authority_http.HTTPServer,
+	gatewayHTTPServer gateway_http.HTTPServer,
 	// port string,
 	// // Authority dependencies
 	// authMiddleware authority_mid.Middleware,
@@ -75,6 +78,7 @@ func NewUnifiedHTTPServer(
 		getVersionHTTPHandler:     NewGetVersionHTTPHandler(logger),
 		getHealthCheckHTTPHandler: NewGetHealthCheckHTTPHandler(logger),
 		authorityHTTPServer:       authorityHTTPServer,
+		gatewayHTTPServer:         gatewayHTTPServer,
 	}
 
 	// Attach the unified request handler
@@ -133,6 +137,10 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 	if n > 3 {
 		if p[2] == "authority" {
 			port.authorityHTTPServer.HandleIncomingHTTPRequest(w, r)
+			return
+		}
+		if p[2] == "gateway" {
+			port.gatewayHTTPServer.HandleIncomingHTTPRequest(w, r)
 			return
 		}
 	}

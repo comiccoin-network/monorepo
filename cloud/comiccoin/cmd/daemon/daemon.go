@@ -18,11 +18,12 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/password"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodb"
-	cache "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/memory/redis"
+	redis_cache "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/memory/redis"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/unifiedhttp"
 	unifiedmiddleware "github.com/comiccoin-network/monorepo/cloud/comiccoin/unifiedhttp/middleware"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway"
 )
 
 func DaemonCmd() *cobra.Command {
@@ -62,8 +63,8 @@ func doRunDaemon() {
 	passp := password.NewProvider()
 	jwtp := jwt.NewProvider(cfg)
 	blackp := blacklist.NewProvider()
-	cachep := cache.NewCache(cfg, logger)
-	dmutex := distributedmutex.NewAdapter(logger, cachep.GetRedisClient())
+	redisCacheProvider := redis_cache.NewCache(cfg, logger)
+	dmutex := distributedmutex.NewAdapter(logger, redisCacheProvider.GetRedisClient())
 	ipcbp := ipcb.NewProvider(cfg, logger)
 
 	//
@@ -79,12 +80,28 @@ func doRunDaemon() {
 		passp,
 		jwtp,
 		blackp,
-		cachep,
+		redisCacheProvider,
 		dmutex,
 		ipcbp,
 	)
 
 	authorityHTTPServer := authorityServer.GetHTTPServerInstance()
+	authorityTaskManager := authorityServer.GetTaskManagerInstance()
+
+	gatewayServer := gateway.NewServer(
+		cfg,
+		logger,
+		dbClient,
+		keystore,
+		passp,
+		jwtp,
+		blackp,
+		redisCacheProvider,
+		dmutex,
+		ipcbp,
+	)
+
+	gatewayHTTPServer := gatewayServer.GetHTTPServerInstance()
 
 	//
 	// STEP 4:
@@ -97,7 +114,7 @@ func doRunDaemon() {
 		ipcbp,
 	)
 
-	httpServ := unifiedhttp.NewUnifiedHTTPServer(cfg, logger, httpMiddleware, authorityHTTPServer)
+	httpServ := unifiedhttp.NewUnifiedHTTPServer(cfg, logger, httpMiddleware, authorityHTTPServer, gatewayHTTPServer)
 
 	//
 	// STEP 5:
@@ -107,8 +124,8 @@ func doRunDaemon() {
 	// Run in background
 	go httpServ.Run()
 	defer httpServ.Shutdown()
-	// go taskManager.Run()
-	// defer taskManager.Shutdown()
+	go authorityTaskManager.Run()
+	defer authorityTaskManager.Shutdown()
 
 	logger.Info("ComicCoin Authority is running.")
 

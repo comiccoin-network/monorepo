@@ -1,0 +1,17 @@
+package constants
+
+const (
+	SessionFederatedIdentity key = iota
+	SessionFederatedIdentityCompanyName
+	SessionFederatedIdentityRole
+	SessionFederatedIdentityID
+	SessionFederatedIdentityUUID
+	SessionFederatedIdentityTimezone
+	SessionFederatedIdentityName
+	SessionFederatedIdentityFirstName
+	SessionFederatedIdentityLastName
+	SessionFederatedIdentityStoreID
+	SessionFederatedIdentityStoreName
+	SessionFederatedIdentityStoreLevel
+	SessionFederatedIdentityStoreTimezone
+)
