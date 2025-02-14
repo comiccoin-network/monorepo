@@ -3,10 +3,8 @@ package task
 import (
 	"context"
 	"log/slog"
-	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
-	taskhandler "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/task/handler"
 )
 
 type TaskManager interface {
@@ -15,27 +13,18 @@ type TaskManager interface {
 }
 
 type taskManagerImpl struct {
-	cfg                                                                 *config.Configuration
-	logger                                                              *slog.Logger
-	attachmentGarbageCollectorTaskHandler                               *taskhandler.AttachmentGarbageCollectorTaskHandler
-	blockchainSyncWithBlockchainAuthorityTaskHandler                    *taskhandler.BlockchainSyncWithBlockchainAuthorityTaskHandler
-	blockchainSyncWithBlockchainAuthorityViaServerSentEventsTaskHandler *taskhandler.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsTaskHandler
+	cfg    *config.Configuration
+	logger *slog.Logger
 }
 
 func NewTaskManager(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	t1 *taskhandler.AttachmentGarbageCollectorTaskHandler,
-	t2 *taskhandler.BlockchainSyncWithBlockchainAuthorityTaskHandler,
-	t3 *taskhandler.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsTaskHandler,
 
 ) TaskManager {
 	port := &taskManagerImpl{
-		cfg:                                   cfg,
-		logger:                                logger,
-		attachmentGarbageCollectorTaskHandler: t1,
-		blockchainSyncWithBlockchainAuthorityTaskHandler:                    t2,
-		blockchainSyncWithBlockchainAuthorityViaServerSentEventsTaskHandler: t3,
+		cfg:    cfg,
+		logger: logger,
 	}
 	return port
 }
@@ -50,30 +39,30 @@ func (port *taskManagerImpl) Run() {
 	// the Task Manager will load up another task to continously run in the
 	// background and sync with the Global Blockchain Network.
 
-	for {
-		port.logger.Info("Running one-time blockchain sync")
-		if err := port.blockchainSyncWithBlockchainAuthorityTaskHandler.Execute(context.Background()); err != nil {
-			port.logger.Error("Failed running one-time blockchain sync - Trying again in 10 seconds...",
-				slog.Any("error", err))
-			time.Sleep(10 * time.Second)
-			continue
-		}
-		port.logger.Info("Finished running one-time blockchain sync ")
-		break
-	}
-
-	go func(task *taskhandler.AttachmentGarbageCollectorTaskHandler, loggerp *slog.Logger) {
-		loggerp.Info("Starting attachment garbage collector...")
-
-		for {
-			if err := task.Execute(context.Background()); err != nil {
-				loggerp.Error("Failed executing attachment garbage collector",
-					slog.Any("error", err))
-			}
-			// port.logger.Debug("Attachment garbage collector will run again in 15 seconds...")
-			time.Sleep(15 * time.Second)
-		}
-	}(port.attachmentGarbageCollectorTaskHandler, port.logger)
+	// for {
+	// 	port.logger.Info("Running one-time blockchain sync")
+	// 	if err := port.blockchainSyncWithBlockchainAuthorityTaskHandler.Execute(context.Background()); err != nil {
+	// 		port.logger.Error("Failed running one-time blockchain sync - Trying again in 10 seconds...",
+	// 			slog.Any("error", err))
+	// 		time.Sleep(10 * time.Second)
+	// 		continue
+	// 	}
+	// 	port.logger.Info("Finished running one-time blockchain sync ")
+	// 	break
+	// }
+	//
+	// go func(task *taskhandler.AttachmentGarbageCollectorTaskHandler, loggerp *slog.Logger) {
+	// 	loggerp.Info("Starting attachment garbage collector...")
+	//
+	// 	for {
+	// 		if err := task.Execute(context.Background()); err != nil {
+	// 			loggerp.Error("Failed executing attachment garbage collector",
+	// 				slog.Any("error", err))
+	// 		}
+	// 		// port.logger.Debug("Attachment garbage collector will run again in 15 seconds...")
+	// 		time.Sleep(15 * time.Second)
+	// 	}
+	// }(port.attachmentGarbageCollectorTaskHandler, port.logger)
 
 	//------------------
 	// DEPRECATED CODE:
@@ -91,18 +80,18 @@ func (port *taskManagerImpl) Run() {
 	// 	}
 	// }(port.blockchainSyncWithBlockchainAuthorityTaskHandler, port.logger)
 
-	go func(task *taskhandler.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsTaskHandler, loggerp *slog.Logger) {
-		loggerp.Info("Starting blockchain sync with the Authority...")
-
-		for {
-			if err := task.Execute(context.Background()); err != nil {
-				loggerp.Error("Failed executing blockchain sync with the Authority via SSE.",
-					slog.Any("error", err))
-			}
-			port.logger.Debug("Blockchain sync with the Authority will rerun again in 10 seconds...")
-			time.Sleep(10 * time.Second)
-		}
-	}(port.blockchainSyncWithBlockchainAuthorityViaServerSentEventsTaskHandler, port.logger)
+	// go func(task *taskhandler.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsTaskHandler, loggerp *slog.Logger) {
+	// 	loggerp.Info("Starting blockchain sync with the Authority...")
+	//
+	// 	for {
+	// 		if err := task.Execute(context.Background()); err != nil {
+	// 			loggerp.Error("Failed executing blockchain sync with the Authority via SSE.",
+	// 				slog.Any("error", err))
+	// 		}
+	// 		port.logger.Debug("Blockchain sync with the Authority will rerun again in 10 seconds...")
+	// 		time.Sleep(10 * time.Second)
+	// 	}
+	// }(port.blockchainSyncWithBlockchainAuthorityViaServerSentEventsTaskHandler, port.logger)
 }
 
 func (port *taskManagerImpl) Shutdown(ctx context.Context) {

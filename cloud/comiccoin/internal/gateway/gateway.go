@@ -1,7 +1,6 @@
 package gateway
 
 import (
-	"log"
 	"log/slog"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -52,6 +51,7 @@ type GatewayServer struct {
 	dmutex               distributedmutex.Adapter
 	ipcbp                ipcb.Provider
 	httpServer           httpserver.HTTPServer
+	taskManager          task.TaskManager
 }
 
 func NewServer(
@@ -295,7 +295,15 @@ func NewServer(
 	// Interface
 	//
 
-	// HTTP Handlers
+	// --- Tasks ---
+
+	taskManager := task.NewTaskManager(
+		cfg,
+		logger,
+	)
+
+	// --- HTTP Handlers ---
+
 	getVersionHTTPHandler := http_system.NewGetVersionHTTPHandler(
 		logger,
 	)
@@ -311,7 +319,8 @@ func NewServer(
 	getIdentityHandler := http_identity.NewGetIdentityHandler(logger, getIdentityService)
 	updateFederatedIdentityHandler := http_federatedidentity.NewUpdateFederatedIdentityHandler(logger, updateFederatedIdentityService)
 
-	// HTTP Middleware
+	// --- HTTP Middleware ---
+
 	httpMiddleware := httpmiddle.NewMiddleware(
 		logger,
 		blackp,
@@ -321,7 +330,8 @@ func NewServer(
 		bannedIPAddressListAllValuesUseCase,
 	)
 
-	// HTTP Server
+	// --- HTTP Server ---
+
 	httpServ := http.NewHTTPServer(
 		cfg,
 		logger,
@@ -350,6 +360,7 @@ func NewServer(
 		dmutex:               dmutex,
 		ipcbp:                ipcbp,
 		httpServer:           httpServ,
+		taskManager:          taskManager,
 	}
 
 }
@@ -359,6 +370,5 @@ func (s *GatewayServer) GetHTTPServerInstance() httpserver.HTTPServer {
 }
 
 func (s *GatewayServer) GetTaskManagerInstance() task.TaskManager {
-	log.Fatal("Task manager is currently not supported")
-	return nil
+	return s.taskManager
 }

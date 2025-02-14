@@ -42,13 +42,6 @@ func NewUnifiedHTTPServer(
 	mid mid.Middleware,
 	authorityHTTPServer authority_http.HTTPServer,
 	gatewayHTTPServer gateway_http.HTTPServer,
-	// port string,
-	// // Authority dependencies
-	// authMiddleware authority_mid.Middleware,
-	// authHandlers *AuthorityHandlers,
-	// // Gateway dependencies
-	// gwMiddleware gateway_mid.Middleware,
-	// gwHandlers *GatewayHandlers,
 ) UnifiedHTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.IP == "" {
