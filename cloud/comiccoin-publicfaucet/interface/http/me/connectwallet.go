@@ -97,18 +97,18 @@ func (h *PostMeConnectWalletHTTPHandler) Execute(w http.ResponseWriter, r *http.
 	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
 
 		// Call service
-		err := h.service.Execute(sessCtx, req)
+		me, err := h.service.Execute(sessCtx, req)
 		if err != nil {
 			h.logger.Error("failed to execute connect wallet",
 				slog.Any("error", err))
 
 			return nil, err
 		}
-		return nil, nil
+		return me, nil
 	}
 
 	// Start a transaction
-	_, txErr := session.WithTransaction(ctx, transactionFunc)
+	result, txErr := session.WithTransaction(ctx, transactionFunc)
 	if txErr != nil {
 		h.logger.Error("session failed error",
 			slog.Any("error", txErr))
@@ -116,7 +116,12 @@ func (h *PostMeConnectWalletHTTPHandler) Execute(w http.ResponseWriter, r *http.
 		return
 	}
 
-	// Since we updated the user's account, just return a success status
-	// with no content returned.
-	w.WriteHeader(http.StatusNoContent)
+	// Encode response
+	resp := result.(*svc_me.MeResponseDTO)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.logger.Error("failed to encode response",
+			slog.Any("error", err))
+		httperror.ResponseError(w, err)
+		return
+	}
 }

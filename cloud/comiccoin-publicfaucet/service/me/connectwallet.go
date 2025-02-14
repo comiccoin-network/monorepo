@@ -22,7 +22,7 @@ type MeConnectWalletRequestDTO struct {
 }
 
 type MeConnectWalletService interface {
-	Execute(ctx context.Context, req *MeConnectWalletRequestDTO) error
+	Execute(ctx context.Context, req *MeConnectWalletRequestDTO) (*MeResponseDTO, error)
 }
 
 type meConnectWalletServiceImpl struct {
@@ -49,7 +49,7 @@ func NewMeConnectWalletService(
 	}
 }
 
-func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnectWalletRequestDTO) error {
+func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnectWalletRequestDTO) (*MeResponseDTO, error) {
 	//
 	// STEP 1: Get required from context.
 	//
@@ -61,7 +61,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 	if !ok {
 		s.logger.Error("Failed getting local federatedidentity id",
 			slog.Any("error", "Not found in context: federatedidentity_id"))
-		return errors.New("federatedidentity not found in context")
+		return nil, errors.New("federatedidentity not found in context")
 	}
 
 	//
@@ -70,7 +70,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 
 	if req == nil {
 		s.logger.Warn("Failed validation with nothing received")
-		return httperror.NewForBadRequestWithSingleField("non_field_error", "Wallet address is required in submission")
+		return nil, httperror.NewForBadRequestWithSingleField("non_field_error", "Wallet address is required in submission")
 	}
 
 	// San
@@ -88,7 +88,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 	if len(e) != 0 {
 		s.logger.Warn("Failed validation",
 			slog.Any("error", e))
-		return httperror.NewForBadRequest(&e)
+		return nil, httperror.NewForBadRequest(&e)
 	}
 
 	//
@@ -100,12 +100,12 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 	user, err := s.userGetByFederatedIdentityIDUseCase.Execute(ctx, federatedidentityID)
 	if err != nil {
 		s.logger.Error("Failed getting me", slog.Any("error", err))
-		return err
+		return nil, err
 	}
 	if user == nil {
 		err := fmt.Errorf("FederatedIdentity does not exist for id: %v", federatedidentityID.Hex())
 		s.logger.Error("Failed getting local federatedidentity id", slog.Any("error", err))
-		return err
+		return nil, err
 	}
 
 	//
@@ -116,7 +116,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 	user.WalletAddress = &walletAddress
 	if err := s.userUpdateUseCase.Execute(ctx, user); err != nil {
 		s.logger.Debug("Failed updating user", slog.Any("error", err))
-		return err
+		return nil, err
 	}
 
 	s.logger.Debug("Updated wallet address in database for user",
@@ -133,7 +133,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 	if !ok {
 		s.logger.Error("Failed getting access_token from local context",
 			slog.Any("error", "Not found in context: federatedidentity_id"))
-		return errors.New("access_token not found in context")
+		return nil, errors.New("access_token not found in context")
 	}
 
 	// Get the local saved federated identity details that were saved
@@ -141,12 +141,12 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 	remotefi, err := s.oauthManager.FetchFederatedIdentityFromRemoteByAccessToken(ctx, accessToken)
 	if err != nil {
 		s.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
-		return err
+		return nil, err
 	}
 	if remotefi == nil {
 		err := errors.New("nil returned for federated identity for the provided access token")
 		s.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
-		return err
+		return nil, err
 	}
 
 	s.logger.Debug("Successfully fetched from remote gateway",
@@ -158,11 +158,23 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 	// Submit to our remote gateway
 	if err := s.oauthManager.UpdateFederatedIdentityInRemoteWithAccessToken(ctx, remotefi, accessToken); err != nil {
 		s.logger.Error("Failed updating remote gateway", slog.Any("error", err))
-		return err
+		return nil, err
 	}
 
 	s.logger.Debug("Successfully updated remote gateway",
 		slog.Any("user_id", user.ID))
 
-	return nil
+	return &MeResponseDTO{
+		FederateIdentityID: user.FederateIdentityID,
+		ID:                 user.ID,
+		Email:              user.Email,
+		FirstName:          user.FirstName,
+		LastName:           user.LastName,
+		Name:               user.Name,
+		LexicalName:        user.LexicalName,
+		Phone:              user.Phone,
+		Country:            user.Country,
+		Timezone:           user.Timezone,
+		WalletAddress:      user.WalletAddress,
+	}, nil
 }
