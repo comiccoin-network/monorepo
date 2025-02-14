@@ -16,6 +16,7 @@ export function RequireWallet({ children }: RequireWalletProps) {
   useEffect(() => {
     // If we have user data but no wallet address, redirect
     if (user && !user.walletAddress) {
+      console.log("⚠️ No wallet set, redirecting...");
       router.push("/user-initialization/add-my-wallet-address");
     }
   }, [user, router]);

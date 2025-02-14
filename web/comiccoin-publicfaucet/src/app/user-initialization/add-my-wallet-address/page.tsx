@@ -82,7 +82,11 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, walletAddress }) => {
 export default function AddMyWalletAddressPage() {
   const router = useRouter();
   const { updateWallet } = useMe();
-  const { postMeConnectWallet, isPosting, error: postError } = usePostMeConnectWallet();
+  const {
+    postMeConnectWallet,
+    isPosting,
+    error: postError,
+  } = usePostMeConnectWallet();
   const [walletAddress, setWalletAddress] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -92,13 +96,33 @@ export default function AddMyWalletAddressPage() {
   };
 
   const handleConfirm = async () => {
-    const success = await postMeConnectWallet(walletAddress);
+    console.log("🔄 Starting wallet confirmation process");
 
-    if (success) {
-      // Update local state
-      updateWallet(walletAddress);
-      // Redirect to dashboard
-      router.push("/user/dashboard");
+    try {
+      const success = await postMeConnectWallet(walletAddress);
+
+      if (success) {
+        console.log("✅ Wallet connected successfully");
+
+        // Update local state
+        updateWallet(walletAddress);
+
+        // Use replace instead of push to prevent back navigation
+        console.log("🔄 Redirecting to dashboard");
+        router.replace("/user/dashboard");
+
+        // Force a page reload after a short delay to ensure all states are updated
+        setTimeout(() => {
+          console.log("🔄 Forcing page reload to refresh states");
+          window.location.href = "/user/dashboard";
+        }, 100);
+      } else {
+        console.log("❌ Wallet connection failed");
+        setShowConfirmation(false);
+      }
+    } catch (error) {
+      console.error("❌ Error during wallet confirmation:", error);
+      setShowConfirmation(false);
     }
   };
 
@@ -219,18 +243,16 @@ export default function AddMyWalletAddressPage() {
             </div>
 
             {/* Show API error if it exists */}
-           {postError && (
-             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-               <div className="flex gap-2">
-                 <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                 <div>
-                   <p className="text-sm text-red-800">
-                     {postError.message}
-                   </p>
-                 </div>
-               </div>
-             </div>
-           )}
+            {postError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div className="flex gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-red-800">{postError.message}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Enter Wallet Address */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
@@ -251,7 +273,10 @@ export default function AddMyWalletAddressPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="wallet" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="wallet"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Your Wallet Address
                 </label>
                 <input
@@ -267,13 +292,16 @@ export default function AddMyWalletAddressPage() {
                   disabled={isPosting}
                 />
                 <p className="mt-2 text-sm text-gray-500">
-                  Your wallet address should start with "0x" followed by 40 characters
+                  Your wallet address should start with "0x" followed by 40
+                  characters
                 </p>
               </div>
 
               <button
                 type="submit"
-                disabled={isPosting || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)}
+                disabled={
+                  isPosting || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)
+                }
                 className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPosting ? "Connecting..." : "Connect Wallet"}
