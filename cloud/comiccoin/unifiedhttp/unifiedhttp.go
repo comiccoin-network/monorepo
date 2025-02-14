@@ -140,6 +140,10 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 			port.gatewayHTTPServer.HandleIncomingHTTPRequest(w, r)
 			return
 		}
+		if p[2] == "publicfaucet" {
+			port.publicfaucetHTTPServer.HandleIncomingHTTPRequest(w, r)
+			return
+		}
 	}
 
 	// Handle the request based on the URL path tokens.
