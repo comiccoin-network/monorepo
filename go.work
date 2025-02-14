@@ -1,6 +1,7 @@
 go 1.23.0
 
 use (
+	./cloud/comiccoin
 	./cloud/comiccoin-authority
 	./cloud/comiccoin-faucet
 	./cloud/comiccoin-gateway

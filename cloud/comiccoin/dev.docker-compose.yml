@@ -1,0 +1,165 @@
+#############
+# HOW TO USE:
+#############
+# The purpose of this docker-compose is to setup our application which is
+# dependent on the `MongoDB` database cluster running concurrently with this
+# server for developer purposes. This configuration has hot-reloading activated.
+# This is docker-compose is used for developers only.
+#
+# ------------------------------------------------------------------------------
+# $ docker-compose -p comiccoin -f dev.docker-compose.yml up   #
+# ------------------------------------------------------------------------------
+#
+
+services:
+  db1:
+    container_name: comiccoin_db1
+    image: mongo
+    command:
+      [
+        "--replSet",
+        "rs0",
+        "--bind_ip_all",
+        "--port",
+        "27017",
+        "--quiet",
+        "--logpath",
+        "/dev/null",
+      ]
+    restart: always
+    ports:
+      - 27017:27017
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017',priority:1},{_id:1,host:'host.docker.internal:27018',priority:0.5},{_id:2,host:'host.docker.internal:27019',priority:0.5}]}) }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+    volumes:
+      - "./data/db1/db:/data/db"
+      - "./data/db1/configdb:/data/configdb"
+
+  db2:
+    container_name: comiccoin_db2
+    image: mongo
+    command:
+      [
+        "--replSet",
+        "rs0",
+        "--bind_ip_all",
+        "--port",
+        "27018",
+        "--quiet",
+        "--logpath",
+        "/dev/null",
+      ]
+    restart: always
+    ports:
+      - 27018:27018
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "./data/db2/db:/data/db"
+      - "./data/db2/configdb:/data/configdb"
+
+  db3:
+    container_name: comiccoin_db3
+    image: mongo
+    command:
+      [
+        "--replSet",
+        "rs0",
+        "--bind_ip_all",
+        "--port",
+        "27019",
+        "--quiet",
+        "--logpath",
+        "/dev/null",
+      ]
+    restart: always
+    ports:
+      - 27019:27019
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "./data/db3/db:/data/db"
+      - "./data/db3/configdb:/data/configdb"
+
+  mongo-express:
+    container_name: comiccoin_db_admin
+    image: mongo-express:latest
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=db1
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_URI=mongodb://db1:27017,db2:27018,db3:27019/?replicaSet=rs0
+    ports:
+      - "8001:8081" # Adjusted to work with `react-native` developer instance simulator.
+    depends_on:
+      - db1
+      - db2
+      - db3
+    links:
+      - db1
+      - db2
+      - db3
+    restart: always
+
+  cache:
+    # https://pimylifeup.com/redis-docker/
+    container_name: comiccoin_cache
+    image: redis:alpine
+    command: "redis-server --save 60 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81 --protected-mode yes"
+    ports:
+      - 6379:6379
+    stdin_open: true
+    restart: always
+    volumes:
+      - "./data/redis:/data"
+      # attach: false # Disable console logs here.
+
+  # The main application.
+  app:
+    container_name: comiccoin
+    stdin_open: true
+    environment:
+      # Authority Module
+      COMICCOIN_APP_DATA_DIRECTORY: ${COMICCOIN_APP_DATA_DIRECTORY}
+      COMICCOIN_IP: 0.0.0.0
+      COMICCOIN_PORT: 8000
+      COMICCOIN_APP_ADMINISTRATION_HMAC_SECRET: ${COMICCOIN_APP_ADMINISTRATION_HMAC_SECRET}
+      COMICCOIN_APP_ADMINISTRATION_SECRET_KEY: ${COMICCOIN_APP_ADMINISTRATION_SECRET_KEY}
+      COMICCOIN_APP_GEOLITE_DB_PATH: ${COMICCOIN_APP_GEOLITE_DB_PATH}
+      COMICCOIN_APP_BANNED_COUNTRIES: ${COMICCOIN_APP_BANNED_COUNTRIES}
+      COMICCOIN_DB_URI: mongodb://db1:27017,db2:27018,db3:27019/?replicaSet=rs0 # This is dependent on the configuration in our docker-compose file (see above).
+      COMICCOIN_DB_AUTHORITY_NAME: ${COMICCOIN_DB_AUTHORITY_NAME}
+      COMICCOIN_DB_GATEWAY_NAME: ${COMICCOIN_DB_GATEWAY_NAME}
+      COMICCOIN_BLOCKCHAIN_CHAIN_ID: ${COMICCOIN_BLOCKCHAIN_CHAIN_ID}
+      COMICCOIN_BLOCKCHAIN_TRANS_PER_BLOCK: ${COMICCOIN_BLOCKCHAIN_TRANS_PER_BLOCK}
+      COMICCOIN_BLOCKCHAIN_DIFFICULTY: ${COMICCOIN_BLOCKCHAIN_DIFFICULTY}
+      COMICCOIN_BLOCKCHAIN_TRANSACTION_FEE: ${COMICCOIN_BLOCKCHAIN_TRANSACTION_FEE}
+      COMICCOIN_BLOCKCHAIN_PROOF_OF_AUTHORITY_ACCOUNT_ADDRESS: ${COMICCOIN_BLOCKCHAIN_PROOF_OF_AUTHORITY_ACCOUNT_ADDRESS}
+      COMICCOIN_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC: ${COMICCOIN_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC}
+      COMICCOIN_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PATH: ${COMICCOIN_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PATH}
+      COMICCOIN_CACHE_URI: ${COMICCOIN_CACHE_URI}
+      COMICCOIN_NFT_STORAGE_URI: ${COMICCOIN_NFT_STORAGE_URI}
+    build:
+      context: .
+      dockerfile: ./dev.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db1
+      - db2
+      - db3
+      - cache
+    links:
+      - db1
+      - db2
+      - db3
+      - cache
+    volumes: # Connect the local filesystem with the docker filesystem. DO NOT REMOVE.
+      - ./:/go/src/github.com/comiccoin-network/monorepo/cloud/comiccoin # IMPORTANT: Required for hotreload via `CompileDaemon`.
