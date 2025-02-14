@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/interface/http/faucet/getbychainid.go
-package me
+package faucet
 
 import (
 	"encoding/json"

@@ -59,7 +59,8 @@ type httpServerImpl struct {
 	getMeHTTPHandler               *http_me.GetMeHTTPHandler
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler
 
-	getFaucetByChainID *http_faucet.GetFaucetByChainIDHTTPHandler
+	getFaucetByChainID                *http_faucet.GetFaucetByChainIDHTTPHandler
+	faucetServerSentEventsHTTPHandler *http_faucet.FaucetServerSentEventsHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -74,6 +75,7 @@ func NewHTTPServer(
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
 	getFaucetByChainID *http_faucet.GetFaucetByChainIDHTTPHandler,
+	faucetServerSentEventsHTTPHandler *http_faucet.FaucetServerSentEventsHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.HTTPAddress == "" {
@@ -94,17 +96,18 @@ func NewHTTPServer(
 
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
-		cfg:                            cfg,
-		logger:                         logger,
-		oauthClientManager:             manager,
-		middleware:                     mid,
-		server:                         srv,
-		getVersionHTTPHandler:          getVersionHTTPHandler,
-		getHealthCheckHTTPHandler:      getHealthCheckHTTPHandler,
-		getHelloHTTPHandler:            getHelloHTTPHandler,
-		getMeHTTPHandler:               getMeHTTPHandler,
-		postMeConnectWalletHTTPHandler: postMeConnectWalletHTTPHandler,
-		getFaucetByChainID:             getFaucetByChainID,
+		cfg:                               cfg,
+		logger:                            logger,
+		oauthClientManager:                manager,
+		middleware:                        mid,
+		server:                            srv,
+		getVersionHTTPHandler:             getVersionHTTPHandler,
+		getHealthCheckHTTPHandler:         getHealthCheckHTTPHandler,
+		getHelloHTTPHandler:               getHelloHTTPHandler,
+		getMeHTTPHandler:                  getMeHTTPHandler,
+		postMeConnectWalletHTTPHandler:    postMeConnectWalletHTTPHandler,
+		getFaucetByChainID:                getFaucetByChainID,
+		faucetServerSentEventsHTTPHandler: faucetServerSentEventsHTTPHandler,
 	}
 	// Attach the HTTP server controller to the ServeMux.
 	mux.HandleFunc("/", mid.Attach(port.HandleRequests))
@@ -200,6 +203,11 @@ func (port *httpServerImpl) HandleRequests(w http.ResponseWriter, r *http.Reques
 	// Faucet
 	case n == 3 && p[0] == "api" && p[1] == "faucet" && r.Method == http.MethodGet:
 		port.getFaucetByChainID.Execute(w, r, p[2])
+
+	// DEVELOPERS NOTE: Using `POST` method to get it working on DigitalOcean App Platform, see more for details:
+	// "Does App Platform support SSE (Server-Sent Events) application?" via https://www.digitalocean.com/community/questions/does-app-platform-support-sse-server-sent-events-application
+	case n == 3 && p[0] == "api" && p[1] == "faucet" && p[2] == "sse" && r.Method == http.MethodPost:
+		port.faucetServerSentEventsHTTPHandler.Execute(w, r)
 
 	// --- CATCH ALL: D.N.E. ---
 	default:

@@ -40,7 +40,7 @@ func (h *UpdateFederatedIdentityHandler) Execute(w http.ResponseWriter, r *http.
 		return
 	}
 
-	h.logger.Debug("registrated successfully",
+	h.logger.Debug("Updated federated identity",
 		"resp", resp)
 
 	w.Header().Set("Content-Type", "application/json")

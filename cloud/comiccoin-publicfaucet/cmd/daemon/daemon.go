@@ -268,6 +268,11 @@ func doRunDaemon() {
 		getFaucetService,
 	)
 
+	faucetServerSentEventsHTTPHandler := http_faucet.NewFaucetServerSentEventsHTTPHandler(
+		logger,
+		getFaucetService,
+	)
+
 	// --- HTTP Middleware ---
 
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -292,6 +297,7 @@ func doRunDaemon() {
 		getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler,
 		getFaucetByChainIDHTTPHandler,
+		faucetServerSentEventsHTTPHandler,
 	)
 
 	////

@@ -29,7 +29,7 @@ func NewCreateIfFaucetDNEForMainNetBlockchainUseCase(
 }
 
 func (uc *createIfFaucetDNEForMainNetBlockchainUseCaseImpl) Execute(ctx context.Context) error {
-	logger.Debug("Checking if MainNet Faucet exists...")
+	uc.logger.Debug("Checking if MainNet Faucet exists...")
 	mainnetFaucetExists, err := uc.repo.CheckIfExistsByChainID(ctx, constants.ChainIDMainNet)
 	if err != nil {
 		uc.logger.Error("Failed checking if chain id exists for mainnet",
@@ -38,7 +38,7 @@ func (uc *createIfFaucetDNEForMainNetBlockchainUseCaseImpl) Execute(ctx context.
 	}
 
 	if !mainnetFaucetExists {
-		logger.Debug("MainNet Faucet D.N.E. proceeding to create...")
+		uc.logger.Debug("MainNet Faucet D.N.E. proceeding to create...")
 		return uc.repo.CreateFaucetForMainNetBlockchain(ctx)
 	}
 	return nil
