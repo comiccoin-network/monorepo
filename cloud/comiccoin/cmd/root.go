@@ -8,6 +8,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/authority"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/daemon"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/gateway"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/version"
 )
 
@@ -27,6 +28,7 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	// Attach sub-commands to our main root.
+	rootCmd.AddCommand(gateway.GatewayCmd())
 	rootCmd.AddCommand(authority.AuthorityCmd())
 	rootCmd.AddCommand(daemon.DaemonCmd())
 	rootCmd.AddCommand(version.VersionCmd())
