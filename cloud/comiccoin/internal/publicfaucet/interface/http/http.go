@@ -115,49 +115,49 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		// Handle the request based on the URL path tokens.
 		switch {
 		// --- Auth endpoints ---
-		case n == 2 && p[0] == "api" && p[1] == "register":
+		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "register":
 			port.oauthClientManager.PostRegistrationHTTPHandler().Execute(w, r)
-		case n == 2 && p[0] == "api" && p[1] == "login" && r.Method == http.MethodPost:
+		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "login" && r.Method == http.MethodPost:
 			port.oauthClientManager.PostLoginHTTPHandler().Execute(w, r)
 
-		// --- Token endpoints ---
-		case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "refresh" && r.Method == http.MethodPost:
+			// --- Token endpoints ---
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "token" && p[4] == "refresh" && r.Method == http.MethodPost:
 			port.oauthClientManager.PostTokenRefreshHTTPHandler().Execute(w, r)
-		case n == 3 && p[0] == "api" && p[1] == "token" && p[2] == "introspect" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "token" && p[4] == "introspect" && r.Method == http.MethodPost:
 			port.oauthClientManager.PostTokenIntrospectionHTTPHandler().Execute(w, r)
 
 		// --- oAuth endpoints ---
-		case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "authorize" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "oauth" && p[4] == "authorize" && r.Method == http.MethodGet:
 			port.oauthClientManager.GetAuthURLHTTPHandler().Execute(w, r)
-		case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "callback" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "oauth" && p[4] == "callback" && r.Method == http.MethodGet:
 			port.oauthClientManager.CallbackHTTPHandler().Execute(w, r)
-		case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "state" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "oauth" && p[4] == "state" && r.Method == http.MethodGet:
 			port.oauthClientManager.StateManagementHTTPHandler().VerifyState(w, r)
-		case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "state" && r.Method == http.MethodDelete:
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "oauth" && p[4] == "state" && r.Method == http.MethodDelete:
 			port.oauthClientManager.StateManagementHTTPHandler().CleanupExpiredStates(w, r)
-		case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "session" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "oauth" && p[4] == "session" && r.Method == http.MethodGet:
 			port.oauthClientManager.OAuthSessionInfoHTTPHandler().Execute(w, r)
-		case n == 3 && p[0] == "api" && p[1] == "oauth" && p[2] == "registration" && r.Method == http.MethodGet: // Used by frontend
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "oauth" && p[4] == "registration" && r.Method == http.MethodGet: // Used by frontend
 			port.oauthClientManager.GetRegistrationURLHTTPHandler().Execute(w, r)
 
 		// --- Resource endpoints ---
 		// Hello
-		case n == 2 && p[0] == "api" && p[1] == "say-hello" && r.Method == http.MethodPost:
+		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "say-hello" && r.Method == http.MethodPost:
 			port.getHelloHTTPHandler.Execute(w, r)
-		case n == 2 && p[0] == "api" && p[1] == "me" && r.Method == http.MethodGet:
-			port.getMeHTTPHandler.Execute(w, r)
 
 		// Me
-		case n == 3 && p[0] == "api" && p[1] == "me" && p[2] == "connect-wallet" && r.Method == http.MethodPost:
+		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "me" && r.Method == http.MethodGet:
+			port.getMeHTTPHandler.Execute(w, r)
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "me" && p[4] == "connect-wallet" && r.Method == http.MethodPost:
 			port.postMeConnectWalletHTTPHandler.Execute(w, r)
 
 		// Faucet
-		case n == 3 && p[0] == "api" && p[1] == "faucet" && r.Method == http.MethodGet:
-			port.getFaucetByChainID.Execute(w, r, p[2])
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "faucet" && r.Method == http.MethodGet:
+			port.getFaucetByChainID.Execute(w, r, p[4])
 
 		// DEVELOPERS NOTE: Using `POST` method to get it working on DigitalOcean App Platform, see more for details:
 		// "Does App Platform support SSE (Server-Sent Events) application?" via https://www.digitalocean.com/community/questions/does-app-platform-support-sse-server-sent-events-application
-		case n == 3 && p[0] == "api" && p[1] == "faucet" && p[2] == "sse" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "publicfaucet" && p[3] == "faucet" && p[4] == "sse" && r.Method == http.MethodPost:
 			port.faucetServerSentEventsHTTPHandler.Execute(w, r)
 
 		// --- CATCH ALL: D.N.E. ---
