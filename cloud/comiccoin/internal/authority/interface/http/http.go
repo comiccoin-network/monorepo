@@ -2,12 +2,9 @@
 package http
 
 import (
-	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
-
-	"github.com/rs/cors"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/http/handler"
@@ -33,9 +30,6 @@ type httpServerImpl struct {
 	logger *slog.Logger
 
 	middleware mid.Middleware
-
-	// server is the underlying HTTP server.
-	server *http.Server
 
 	getVersionHTTPHandler                                         *handler.GetVersionHTTPHandler
 	getHealthCheckHTTPHandler                                     *handler.GetHealthCheckHTTPHandler
@@ -85,24 +79,11 @@ func NewHTTPServer(
 		log.Fatal("http server missing port number")
 	}
 
-	// Initialize the ServeMux.
-	mux := http.NewServeMux()
-
-	// Set up CORS middleware to allow all origins.
-	handler := cors.AllowAll().Handler(mux)
-
-	// Bind the HTTP server to the assigned address and port.
-	srv := &http.Server{
-		Addr:    fmt.Sprintf("%v:%v", cfg.App.IP, cfg.App.Port),
-		Handler: handler,
-	}
-
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
 		cfg:                            cfg,
 		logger:                         logger,
 		middleware:                     mid,
-		server:                         srv,
 		getVersionHTTPHandler:          http1,
 		getHealthCheckHTTPHandler:      http2,
 		getGenesisBlockDataHTTPHandler: http3,
