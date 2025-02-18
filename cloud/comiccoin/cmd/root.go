@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/root.go
 package cmd
 
 import (
