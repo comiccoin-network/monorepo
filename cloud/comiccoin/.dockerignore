@@ -23,6 +23,8 @@ private_prod.md
 private.md
 private_*.md
 todo.txt
+private_docs
+private_docs/*
 
 # Do not save our temporary files.
 tmp
