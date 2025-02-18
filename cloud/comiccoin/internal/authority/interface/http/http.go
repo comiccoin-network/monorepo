@@ -135,56 +135,56 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 
 		// Handle the request based on the URL path tokens.
 		switch {
-		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "genesis" && r.Method == http.MethodGet:
+		case n == 4 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "genesis" && r.Method == http.MethodGet:
 			port.getGenesisBlockDataHTTPHandler.Execute(w, r)
 
-		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "blockchain-state" && r.Method == http.MethodGet:
+		case n == 4 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "blockchain-state" && r.Method == http.MethodGet:
 			port.getBlockchainStateHTTPHandler.Execute(w, r)
 
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "blockchain-state" && p[4] == "changes" && r.Method == http.MethodGet: // DEPRECATED
+		case n == 5 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "blockchain-state" && p[4] == "changes" && r.Method == http.MethodGet: // DEPRECATED
 			port.blockchainStateChangeEventDTOHTTPHandler.Execute(w, r)
 
 			// DEVELOPERS NOTE: Using `POST` method to get it working on DigitalOcean App Platform, see more for details:
 			// "Does App Platform support SSE (Server-Sent Events) application?" via https://www.digitalocean.com/community/questions/does-app-platform-support-sse-server-sent-events-application
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "blockchain-state" && p[4] == "sse" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "blockchain-state" && p[4] == "sse" && r.Method == http.MethodPost:
 			port.blockchainStateServerSentEventsHTTPHandler.Execute(w, r)
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "latest-block-transaction" && p[4] == "sse" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "latest-block-transaction" && p[4] == "sse" && r.Method == http.MethodPost:
 			port.getLatestBlockTransactionByAddressServerSentEventsHTTPHandler.Execute(w, r)
 
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "blockdata" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "blockdata" && r.Method == http.MethodGet:
 			port.getBlockDataHTTPHandler.ExecuteByHash(w, r, p[4])
 
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "blockdata-via-hash" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "blockdata-via-hash" && r.Method == http.MethodGet:
 			port.getBlockDataHTTPHandler.ExecuteByHash(w, r, p[4]) // Note: Same as above.
 
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "blockdata-via-header-number" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "blockdata-via-header-number" && r.Method == http.MethodGet:
 			port.getBlockDataHTTPHandler.ExecuteByHeaderNumber(w, r, p[4])
 
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "blockdata-via-tx-nonce" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "blockdata-via-tx-nonce" && r.Method == http.MethodGet:
 			port.getBlockDataHTTPHandler.ExecuteByTransactionNonce(w, r, p[4])
 
-		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "block-transactions" && r.Method == http.MethodGet:
+		case n == 4 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "block-transactions" && r.Method == http.MethodGet:
 			port.listBlockTransactionsByAddressHTTPHandler.Execute(w, r)
 
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "block-transaction-by-nonce" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "block-transaction-by-nonce" && r.Method == http.MethodGet:
 			port.getBlockTransactionByNonceHTTPHandler.ExecuteByNonce(w, r, p[4])
 
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "block-transactions" && p[4] == "owned-tokens" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "block-transactions" && p[4] == "owned-tokens" && r.Method == http.MethodGet:
 			port.listOwnedTokenBlockTransactionsByAddressHTTPHandler.Execute(w, r)
 
-		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "signed-transaction" && r.Method == http.MethodPost:
+		case n == 4 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "signed-transaction" && r.Method == http.MethodPost:
 			port.signedTransactionSubmissionHTTPHandler.Execute(w, r)
 
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "transaction" && p[4] == "prepare" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "transaction" && p[4] == "prepare" && r.Method == http.MethodPost:
 			port.prepareTransactionHTTPHandler.Execute(w, r)
 
-		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "mempool-transactions" && r.Method == http.MethodPost:
+		case n == 4 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "mempool-transactions" && r.Method == http.MethodPost:
 			port.mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler.Execute(w, r)
 
-		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "tokens" && r.Method == http.MethodGet:
+		case n == 4 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "tokens" && r.Method == http.MethodGet:
 			port.tokenListByOwnerHTTPHandler.Execute(w, r)
 
-		case n == 4 && p[0] == "api" && p[1] == "v1" && p[2] == "authority" && p[3] == "tokens" && r.Method == http.MethodPost:
+		case n == 4 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "tokens" && r.Method == http.MethodPost:
 			port.tokenMintServiceHTTPHandler.Execute(w, r)
 
 		// --- CATCH ALL: D.N.E. ---

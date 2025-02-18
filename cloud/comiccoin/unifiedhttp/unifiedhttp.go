@@ -131,22 +131,6 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 			slog.Int("url_token_count", n))
 	}
 
-	// Handle new API endpoints.
-	if n > 3 {
-		if p[2] == "authority" {
-			port.authorityHTTPServer.HandleIncomingHTTPRequest(w, r)
-			return
-		}
-		if p[2] == "gateway" {
-			port.gatewayHTTPServer.HandleIncomingHTTPRequest(w, r)
-			return
-		}
-		if p[2] == "publicfaucet" {
-			port.publicfaucetHTTPServer.HandleIncomingHTTPRequest(w, r)
-			return
-		}
-	}
-
 	// Handle the request based on the URL path tokens.
 	switch {
 	case n == 1 && p[0] == "version" && r.Method == http.MethodGet:
@@ -154,6 +138,21 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 
 	case n == 1 && p[0] == "health-check" && r.Method == http.MethodGet:
 		port.getHealthCheckHTTPHandler.Execute(w, r)
+
+	case p[0] == "authority":
+		// Handle new API endpoints.
+		port.authorityHTTPServer.HandleIncomingHTTPRequest(w, r)
+		return
+
+	case p[0] == "gateway":
+		// Handle new API endpoints.
+		port.authorityHTTPServer.HandleIncomingHTTPRequest(w, r)
+		return
+
+	case p[0] == "publicfaucet":
+		// Handle new API endpoints.
+		port.authorityHTTPServer.HandleIncomingHTTPRequest(w, r)
+		return
 
 	// --- CATCH ALL: D.N.E. ---
 	default:

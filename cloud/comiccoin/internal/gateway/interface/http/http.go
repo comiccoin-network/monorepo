@@ -111,28 +111,28 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 
 		// Handle the request based on the URL path tokens.
 		switch {
-		case n == 4 && p[0] == "ui" && p[1] == "v1" && p[2] == "gateway" && p[3] == "register" && r.Method == http.MethodGet:
+		case n == 4 && p[0] == "gateway" && p[1] == "ui" && p[2] == "v1" && p[3] == "register" && r.Method == http.MethodGet:
 			port.uiRegisterHandler.Execute(w, r)
-		case n == 4 && p[0] == "ui" && p[1] == "v1" && p[2] == "gateway" && p[3] == "authorize-or-login" && r.Method == http.MethodGet:
+		case n == 4 && p[0] == "gateway" && p[1] == "ui" && p[2] == "v1" && p[3] == "authorize-or-login" && r.Method == http.MethodGet:
 			port.authorizeHandler.Execute(w, r)
 
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "gateway" && p[3] == "oauth" && p[4] == "login" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "login" && r.Method == http.MethodPost:
 			port.loginHandler.Execute(w, r)
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "gateway" && p[3] == "oauth" && p[4] == "token" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "token" && r.Method == http.MethodPost:
 			port.loginHandler.Execute(w, r)
 
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "gateway" && p[3] == "oauth" && p[4] == "refresh" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "refresh" && r.Method == http.MethodPost:
 			port.refreshTokenHandler.Execute(w, r)
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "gateway" && p[3] == "oauth" && p[4] == "introspect" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "introspect" && r.Method == http.MethodPost:
 			port.introspectionHandler.Execute(w, r)
 
-		case n == 2 && p[0] == "api" && p[1] == "register": // TODO: ????
-			port.registerHandler.Execute(w, r)
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "gateway" && p[3] == "resources" && p[4] == "identity" && r.Method == http.MethodGet: // DEPRECATED URL
+		// case n == 2 && p[0] == "api" && p[1] == "register": // TODO: INVESTIGATE ????
+		// 	port.registerHandler.Execute(w, r)
+		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "resources" && p[4] == "identity" && r.Method == http.MethodGet: // DEPRECATED URL
 			port.getIdentityHandler.Execute(w, r)
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "gateway" && p[3] == "resources" && p[4] == "federated-identity" && r.Method == http.MethodGet:
+		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "resources" && p[4] == "federated-identity" && r.Method == http.MethodGet:
 			port.getIdentityHandler.Execute(w, r)
-		case n == 5 && p[0] == "api" && p[1] == "v1" && p[2] == "gateway" && p[3] == "resources" && p[4] == "federated-identity" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "resources" && p[4] == "federated-identity" && r.Method == http.MethodPost:
 			port.updateFederatedIdentityHandler.Execute(w, r)
 
 			// --- CATCH ALL: D.N.E. ---
