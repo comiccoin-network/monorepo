@@ -40,7 +40,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type AuthorityServer struct {
+type AuthorityModule struct {
 	config      *config.Configuration
 	logger      *slog.Logger
 	dbClient    *mongo.Client
@@ -55,7 +55,7 @@ type AuthorityServer struct {
 	taskManager task.TaskManager
 }
 
-func NewServer(
+func NewModule(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	dbClient *mongo.Client,
@@ -66,7 +66,7 @@ func NewServer(
 	cachep cache.Cacher,
 	dmutex distributedmutex.Adapter,
 	ipcbp ipcb.Provider,
-) *AuthorityServer {
+) *AuthorityModule {
 
 	// Repository
 	// walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
@@ -470,7 +470,7 @@ func NewServer(
 		tokenMintServiceHTTPHandler,
 	)
 
-	return &AuthorityServer{
+	return &AuthorityModule{
 		config:      cfg,
 		logger:      logger,
 		dbClient:    dbClient,
@@ -487,10 +487,10 @@ func NewServer(
 
 }
 
-func (s *AuthorityServer) GetHTTPServerInstance() httpserver.HTTPServer {
+func (s *AuthorityModule) GetHTTPServerInstance() httpserver.HTTPServer {
 	return s.httpServer
 }
 
-func (s *AuthorityServer) GetTaskManagerInstance() task.TaskManager {
+func (s *AuthorityModule) GetTaskManagerInstance() task.TaskManager {
 	return s.taskManager
 }

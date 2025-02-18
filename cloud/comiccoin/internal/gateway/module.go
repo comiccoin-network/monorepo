@@ -38,7 +38,7 @@ import (
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/usecase/token"
 )
 
-type GatewayServer struct {
+type GatewayModule struct {
 	config               *config.Configuration
 	logger               *slog.Logger
 	dbClient             *mongo.Client
@@ -53,7 +53,7 @@ type GatewayServer struct {
 	taskManager          task.TaskManager
 }
 
-func NewServer(
+func NewModule(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	dbClient *mongo.Client,
@@ -64,7 +64,7 @@ func NewServer(
 	rediscachep redis_cache.Cacher,
 	dmutex distributedmutex.Adapter,
 	ipcbp ipcb.Provider,
-) *GatewayServer {
+) *GatewayModule {
 
 	//
 	// Repository
@@ -339,7 +339,7 @@ func NewServer(
 		updateFederatedIdentityHandler,
 	)
 
-	return &GatewayServer{
+	return &GatewayModule{
 		config:               cfg,
 		logger:               logger,
 		dbClient:             dbClient,
@@ -356,10 +356,10 @@ func NewServer(
 
 }
 
-func (s *GatewayServer) GetHTTPServerInstance() httpserver.HTTPServer {
+func (s *GatewayModule) GetHTTPServerInstance() httpserver.HTTPServer {
 	return s.httpServer
 }
 
-func (s *GatewayServer) GetTaskManagerInstance() task.TaskManager {
+func (s *GatewayModule) GetTaskManagerInstance() task.TaskManager {
 	return s.taskManager
 }

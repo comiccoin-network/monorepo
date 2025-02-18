@@ -75,7 +75,7 @@ func doRunDaemon() {
 
 	// --- Authority ---
 
-	authorityServer := authority.NewServer(
+	authorityModule := authority.NewModule(
 		cfg,
 		logger,
 		dbClient,
@@ -88,12 +88,12 @@ func doRunDaemon() {
 		ipcbp,
 	)
 
-	authorityHTTPServer := authorityServer.GetHTTPServerInstance()
-	authorityTaskManager := authorityServer.GetTaskManagerInstance()
+	authorityHTTPServer := authorityModule.GetHTTPServerInstance()
+	authorityTaskManager := authorityModule.GetTaskManagerInstance()
 
 	// --- Gateway ---
 
-	gatewayServer := gateway.NewServer(
+	gatewayModule := gateway.NewModule(
 		cfg,
 		logger,
 		dbClient,
@@ -106,11 +106,11 @@ func doRunDaemon() {
 		ipcbp,
 	)
 
-	gatewayHTTPServer := gatewayServer.GetHTTPServerInstance()
+	gatewayHTTPServer := gatewayModule.GetHTTPServerInstance()
 
 	// --- Public Faucet ---
 
-	publicfaucetServer := publicfaucet.NewServer(
+	publicfaucetModule := publicfaucet.NewModule(
 		cfg,
 		logger,
 		dbClient,
@@ -123,7 +123,7 @@ func doRunDaemon() {
 		ipcbp,
 	)
 
-	publicfaucetHTTPServer := publicfaucetServer.GetHTTPServerInstance()
+	publicfaucetHTTPServer := publicfaucetModule.GetHTTPServerInstance()
 
 	//
 	// STEP 4:

@@ -36,7 +36,7 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
 )
 
-type PublicFaucetServer struct {
+type PublicFaucetModule struct {
 	config               *config.Configuration
 	logger               *slog.Logger
 	dbClient             *mongo.Client
@@ -51,7 +51,7 @@ type PublicFaucetServer struct {
 	taskManager          task.TaskManager
 }
 
-func NewServer(
+func NewModule(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	dbClient *mongo.Client,
@@ -62,7 +62,7 @@ func NewServer(
 	rediscachep redis_cache.Cacher,
 	dmutex distributedmutex.Adapter,
 	ipcbp ipcb.Provider,
-) *PublicFaucetServer {
+) *PublicFaucetModule {
 
 	mongodbCacheConfigurationProvider := mongodb_cache.NewCacheConfigurationProvider(cfg.DB.PublicFaucetName)
 	mongodbCacheProvider := mongodb_cache.NewCache(mongodbCacheConfigurationProvider, logger, dbClient)
@@ -295,7 +295,7 @@ func NewServer(
 		faucetServerSentEventsHTTPHandler,
 	)
 
-	return &PublicFaucetServer{
+	return &PublicFaucetModule{
 		config:               cfg,
 		logger:               logger,
 		dbClient:             dbClient,
@@ -312,10 +312,10 @@ func NewServer(
 
 }
 
-func (s *PublicFaucetServer) GetHTTPServerInstance() httpserver.HTTPServer {
+func (s *PublicFaucetModule) GetHTTPServerInstance() httpserver.HTTPServer {
 	return s.httpServer
 }
 
-func (s *PublicFaucetServer) GetTaskManagerInstance() task.TaskManager {
+func (s *PublicFaucetModule) GetTaskManagerInstance() task.TaskManager {
 	return s.taskManager
 }
