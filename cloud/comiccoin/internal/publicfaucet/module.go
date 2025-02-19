@@ -295,6 +295,15 @@ func NewModule(
 		faucetServerSentEventsHTTPHandler,
 	)
 
+	// --- Initialize ---
+
+	// Create our faucet for mainnet blockchain if it doesn't exist.
+	if err := createIfFaucetDNEForMainNetBlockchainUseCase.Execute(context.Background()); err != nil {
+		log.Fatalf("Failed to check if MainNet faucet doesn't exist: %v", err)
+	}
+
+	// --- Return ---
+
 	return &PublicFaucetModule{
 		config:               cfg,
 		logger:               logger,
