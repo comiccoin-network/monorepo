@@ -262,8 +262,10 @@ func NewModule(
 		cfg,
 		logger,
 		passp,
+		federatedidentityGetByEmailUseCase,
 		federatedidentityCreateUseCase,
 		appFindByAppIDUseCase,
+		authFindByCodeUseCase,
 		authorizeService,
 	)
 

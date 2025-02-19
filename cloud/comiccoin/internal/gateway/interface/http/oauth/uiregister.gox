@@ -420,88 +420,112 @@ const registrationPage = `<!DOCTYPE html>
         </form>
     </div>
 
-	<script>
-    // Initialize configuration from template values
-    const redirect_uri = {{.RedirectURI | printf "%q"}};
-    const client_id = {{.ClientID | printf "%q"}};
-    const state_val = {{.State | printf "%q"}};
-    const cancel_url = {{.CancelURI | printf "%q"}};
-    const success_uri = {{.SuccessURI | printf "%q"}};
+    <script>
+        // Initialize configuration from template values
+        const redirect_uri = {{.RedirectURI | printf "%q"}};
+        const client_id = {{.ClientID | printf "%q"}};
+        const state_val = {{.State | printf "%q"}};
+        const cancel_url = {{.CancelURI | printf "%q"}};
+        const success_uri = {{.SuccessURI | printf "%q"}};
 
-    // Parse the quoted strings to remove extra quotes
-    const parseTemplateString = (str) => JSON.parse(str);
-
-    // Add error display functionality
-    function displayErrors(errors) {
-        if (typeof errors === 'string') {
-            alert(errors);
-        } else {
-            alert(JSON.stringify(errors, null, 2));
-        }
-    }
-
-    function handleCancel() {
-        if (cancel_url) {
-            window.location.href = parseTemplateString(cancel_url);
-        } else {
-            window.history.back();
-        }
-    }
-
-    async function handleSubmit(e) {
-        e.preventDefault();
-        const form = e.target;
-        const data = {
-            email: form.email.value,
-            password: form.password.value,
-            first_name: form.first_name.value,
-            last_name: form.last_name.value,
-            phone: form.phone.value,
-            country: form.country.value,
-            timezone: form.timezone.value,
-            agree_tos: form.agree_tos.checked,
-            app_id: parseTemplateString(client_id),           // Parse the client_id to remove quotes
-            redirect_uri: parseTemplateString(redirect_uri),  // Parse the redirect_uri to remove quotes
-            auth_flow: "auto",
-            state: parseTemplateString(state_val)            // Parse the state to remove quotes
-        };
-
-        try {
-            const apiUrl = '//' + window.location.host + '/gateway/api/v1/register';
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
+        function clearErrors() {
+            document.querySelectorAll('.error-text').forEach(el => {
+                el.textContent = '';
             });
+            document.querySelectorAll('input, select').forEach(input => {
+                input.classList.remove('error');
+            });
+            document.getElementById('formError').textContent = '';
+        }
 
-            const result = await response.json();
+        function displayErrors(errors) {
+            clearErrors();
 
-            if (!response.ok) {
-                if (result.errors) {
-                    displayErrors(result.errors);
-                } else if (result.error) {
-                    displayErrors(result.error);
-                } else {
-                    displayErrors('Registration failed. Please try again.');
-                }
+            if (typeof errors === 'string') {
+                document.getElementById('formError').textContent = errors;
                 return;
             }
 
-            if (result.auth_code) {
-                const redirectUrl = parseTemplateString(redirect_uri) +
-                    "?code=" + encodeURIComponent(result.auth_code) +
-                    "&state=" + encodeURIComponent(parseTemplateString(state_val)) +
-                    "&success_uri=" + encodeURIComponent(parseTemplateString(success_uri));
-                window.location.href = redirectUrl;
-            } else {
-                displayErrors('No authorization code received');
-            }
-        } catch (err) {
-            console.error("Registration error:", err);
-            displayErrors('An unexpected error occurred. Please try again.');
+            Object.entries(errors).forEach(([field, message]) => {
+                const errorElement = document.querySelector('[data-error="' + field + '"]');
+                const inputElement = document.querySelector('[name="' + field + '"]');
+
+                if (errorElement) {
+                    errorElement.textContent = message;
+                }
+
+                if (inputElement) {
+                    inputElement.classList.add('error');
+                }
+            });
         }
-    }
-</script>
+
+        function handleCancel() {
+            if (cancel_url) {
+                window.location.href = cancel_url;
+            } else {
+                window.history.back();
+            }
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            clearErrors();
+
+            const form = e.target;
+            const data = {
+                email: form.email.value,
+                password: form.password.value,
+                first_name: form.first_name.value,
+                last_name: form.last_name.value,
+                phone: form.phone.value,
+                country: form.country.value,
+                timezone: form.timezone.value,
+                agree_tos: form.agree_tos.checked,
+                app_id: client_id,
+                redirect_uri: redirect_uri,
+                auth_flow: "auto",
+                state: state_val
+            };
+
+            try {
+                const apiUrl = '//' + window.location.host + '/gateway/api/v1/register';
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    if (result.errors) {
+                        displayErrors(result.errors);
+                    } else if (result.error) {
+                        displayErrors(result.error);
+                    } else if (typeof result === 'object' && Object.keys(result).length > 0) {
+                        displayErrors(result);
+                    } else {
+                        displayErrors('Registration failed. Please try again.');
+                    }
+                    return;
+                }
+
+                if (result.auth_code) {
+                    const redirectUrl = redirect_uri +
+                        "?code=" + encodeURIComponent(result.auth_code) +
+                        "&state=" + encodeURIComponent(state_val) +
+                        "&success_uri=" + encodeURIComponent(success_uri);
+                    window.location.href = redirectUrl;
+                } else {
+                    displayErrors('No authorization code received');
+                }
+            } catch (err) {
+                console.error("Registration error:", err);
+                displayErrors('An unexpected error occurred. Please try again.');
+            }
+        }
+    </script>
 </body>
 </html>
 `

@@ -5,7 +5,6 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/gateway/application"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/gateway/federatedidentity"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/gateway/initialize"
 )
 
 func GatewayCmd() *cobra.Command {
@@ -18,7 +17,6 @@ func GatewayCmd() *cobra.Command {
 	}
 
 	// Attach sub-commands to our main root.
-	cmd.AddCommand(initialize.InitCmd())
 	cmd.AddCommand(federatedidentity.FederatedIdentityCmd())
 	cmd.AddCommand(application.ApplicationCmd())
 

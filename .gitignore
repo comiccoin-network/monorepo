@@ -51,3 +51,10 @@ $RECYCLE.BIN/
 .directory
 .idea  # PyCharm
 */.idea/
+
+#—————————————————————————————
+# Application Specific Ignores
+#—————————————————————————————
+
+# Our former cloud-based code which is still on the developers machine.
+cloud/archive
