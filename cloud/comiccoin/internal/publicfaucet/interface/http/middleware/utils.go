@@ -1,7 +1,9 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/utils.go
 package middleware
 
-import "regexp"
+import (
+	"regexp"
+)
 
 type protectedRoute struct {
 	pattern string
@@ -16,17 +18,17 @@ var (
 func init() {
 	// Exact matches
 	exactPaths = map[string]bool{
-		"/api/say-hello":         true,
-		"/api/token/introspect":  true,
-		"/api/profile":           true,
-		"/api/me":                true,
-		"/api/me/connect-wallet": true,
+		"/publicfaucet/api/v1/say-hello":         true,
+		"/publicfaucet/api/v1/token/introspect":  true,
+		"/publicfaucet/api/v1/profile":           true,
+		"/publicfaucet/api/v1/me":                true,
+		"/publicfaucet/api/v1/me/connect-wallet": true,
 	}
 
 	// Pattern matches
 	patterns := []string{
-		"^/api/user/[0-9]+$",
-		"^/api/wallet/[0-9a-f]+$",
+		"^/publicfaucet/api/v1/user/[0-9]+$",
+		"^/publicfaucet/api/v1/wallet/[0-9a-f]+$",
 	}
 
 	// Precompile patterns
@@ -40,8 +42,11 @@ func init() {
 }
 
 func isProtectedPath(path string) bool {
+	// fmt.Println("isProtectedPath - path:", path) // For debugging purposes only.
+
 	// Check exact matches first (O(1) lookup)
 	if exactPaths[path] {
+		// fmt.Println("isProtectedPath - ✅ found") // For debugging purposes only.
 		return true
 	}
 

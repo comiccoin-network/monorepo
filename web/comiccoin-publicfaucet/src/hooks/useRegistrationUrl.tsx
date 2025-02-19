@@ -31,7 +31,8 @@ export function useRegistrationUrl(): UseRegistrationUrlReturn {
   // Get API configuration from environment variables
   const apiProtocol = process.env.NEXT_PUBLIC_API_PROTOCOL || "http";
   const apiDomain = process.env.NEXT_PUBLIC_API_DOMAIN;
-  const apiUrl = `${API_CONFIG.baseUrl}/api/oauth/registration`;
+  const apiUrl = `${API_CONFIG.baseUrl}/publicfaucet/api/v1/oauth/registration`;
+  console.log("Calling API:", apiUrl);
 
   // Define the fetch function that will get the registration URL
   const fetchRegistrationUrl = useCallback(async () => {

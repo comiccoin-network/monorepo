@@ -17,7 +17,7 @@ export const useRefreshToken = () => {
       // Get API configuration from environment variables
       const apiProtocol = process.env.NEXT_PUBLIC_API_PROTOCOL || "http";
       const apiDomain = process.env.NEXT_PUBLIC_API_DOMAIN;
-      const apiUrl = `${API_CONFIG.baseUrl}/api/token/refresh`;
+      const apiUrl = `${API_CONFIG.baseUrl}/gateway/api/v1/token/refresh`;
 
       const response = await fetch(apiUrl, {
         method: "POST",

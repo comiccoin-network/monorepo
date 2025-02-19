@@ -56,7 +56,7 @@ export function useAuthorizationUrl(
         urlParams.append("scope", scope);
 
         // Construct the full URL with parameters
-        const apiUrl = `${API_CONFIG.baseUrl}/api/oauth/authorize?${urlParams.toString()}`;
+        const apiUrl = `${API_CONFIG.baseUrl}/gateway/api/v1/oauth/authorize?${urlParams.toString()}`;
 
         console.log("📤 Sending Request", {
           url: apiUrl,

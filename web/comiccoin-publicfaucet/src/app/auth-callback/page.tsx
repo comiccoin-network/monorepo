@@ -9,7 +9,7 @@ import { API_CONFIG } from "@/config/env";
 
 // Simple fetch function that doesn't rely on hooks
 const fetchUserProfile = async (accessToken: string) => {
-  const response = await fetch(`${API_CONFIG.baseUrl}/api/me`, {
+  const response = await fetch(`${API_CONFIG.baseUrl}/publicfaucet/api/v1/me`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",

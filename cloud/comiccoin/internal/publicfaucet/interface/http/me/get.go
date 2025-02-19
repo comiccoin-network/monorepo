@@ -3,13 +3,14 @@ package me
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/me"
 )
 
@@ -63,7 +64,7 @@ func (h *GetMeHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
 
 		// Call service
-		response, err := h.service.Execute(r.Context(), shouldSyncNow)
+		response, err := h.service.Execute(sessCtx, shouldSyncNow)
 		if err != nil {
 			h.logger.Error("failed to get me",
 				slog.Any("error", err))
@@ -82,10 +83,16 @@ func (h *GetMeHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Encode response
-	resp := result.(*svc_me.MeResponseDTO)
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		h.logger.Error("failed to encode response",
-			slog.Any("error", err))
+	if result != nil {
+		resp := result.(*svc_me.MeResponseDTO)
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			h.logger.Error("failed to encode response",
+				slog.Any("error", err))
+			httperror.ResponseError(w, err)
+			return
+		}
+	} else {
+		err := errors.New("no result")
 		httperror.ResponseError(w, err)
 		return
 	}

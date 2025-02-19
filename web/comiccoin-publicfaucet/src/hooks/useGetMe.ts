@@ -64,7 +64,7 @@ export function useGetMe({
       setError(null);
 
       // Construct the URL with query parameter if needed
-      const url = new URL(`${API_CONFIG.baseUrl}/api/me`);
+      const url = new URL(`${API_CONFIG.baseUrl}/publicfaucet/api/v1/me`);
       if (should_sync_now) {
         url.searchParams.append("should_sync_now", "true");
       }

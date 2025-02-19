@@ -23,7 +23,7 @@ const getEnvVar = (key: string, defaultValue?: string): string => {
 
 // API Configuration with development defaults
 export const API_CONFIG = {
-  domain: getEnvVar("API_DOMAIN", "127.0.0.1:9090"),
+  domain: getEnvVar("API_DOMAIN", "127.0.0.1:8000"),
   protocol: getEnvVar("API_PROTOCOL", "http"),
   get baseUrl() {
     return `${this.protocol}://${this.domain}`;

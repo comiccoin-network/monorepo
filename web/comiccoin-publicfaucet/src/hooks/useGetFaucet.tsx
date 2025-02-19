@@ -60,7 +60,7 @@ export function useGetFaucet(
       setError(null);
 
       const response = await fetchWithAuth(
-        `${API_CONFIG.baseUrl}/api/faucet/${chainId}`,
+        `${API_CONFIG.baseUrl}/publicfaucet/api/v1/faucet/${chainId}`,
         {
           method: "GET",
           headers: {

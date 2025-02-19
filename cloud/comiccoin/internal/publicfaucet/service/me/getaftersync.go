@@ -11,8 +11,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient"
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
 )
@@ -112,6 +112,8 @@ func NewGetMeAfterRemoteSyncService(
 }
 
 func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyncNow bool) (*MeResponseDTO, error) {
+	s.logger.Debug("executing...")
+
 	// Get authenticated federatedidentity ID from context. This is loaded in
 	// by the `AuthMiddleware` found via:
 	// - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go

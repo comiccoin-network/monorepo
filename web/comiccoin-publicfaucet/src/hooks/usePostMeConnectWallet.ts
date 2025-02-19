@@ -34,7 +34,7 @@ export function usePostMeConnectWallet() {
       });
 
       const response = await fetchWithAuth(
-        `${API_CONFIG.baseUrl}/api/me/connect-wallet`,
+        `${API_CONFIG.baseUrl}/publicfaucet/api/v1/me/connect-wallet`,
         {
           method: "POST",
           headers: {

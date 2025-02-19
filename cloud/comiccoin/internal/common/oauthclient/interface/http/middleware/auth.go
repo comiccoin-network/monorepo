@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/service/introspection"
 )
@@ -37,14 +36,14 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			m.logger.Warn("missing authorization header")
-			httperror.ResponseError(w, httperror.NewForUnauthorizedWithSingleField("message", "missing authorization header"))
+			http.Error(w, "missing authorization header", http.StatusUnauthorized)
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			m.logger.Warn("invalid authorization header format")
-			httperror.ResponseError(w, httperror.NewForUnauthorizedWithSingleField("message", "invalid authorization header format"))
+			http.Error(w, "invalid authorization header format", http.StatusUnauthorized)
 			return
 		}
 
@@ -60,13 +59,13 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		if err != nil {
 			m.logger.Error("failed to introspect token",
 				slog.Any("error", err))
-			httperror.ResponseError(w, httperror.NewForUnauthorizedWithSingleField("message", fmt.Sprintf("failed to introspect token: %v", err)))
+			http.Error(w, fmt.Sprintf("failed to introspect token: %v", err), http.StatusUnauthorized)
 			return
 		}
 
 		if !introspectResp.Active {
 			m.logger.Warn("token is not active")
-			httperror.ResponseError(w, httperror.NewForUnauthorizedWithSingleField("message", "token is not active"))
+			http.Error(w, "token is not active", http.StatusUnauthorized)
 			return
 		}
 
@@ -80,7 +79,7 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
 			m.logger.Warn("no federatedidentity associated with token")
-			httperror.ResponseError(w, httperror.NewForUnauthorizedWithSingleField("message", "no federatedidentity associated with token"))
+			http.Error(w, "no federatedidentity associated with token", http.StatusUnauthorized)
 		}
 	}
 }

@@ -38,7 +38,7 @@ export function useSayHello(): UseSayHelloReturn {
         setError(null);
 
         const response = await fetchWithAuth(
-          `${API_CONFIG.baseUrl}/api/say-hello`,
+          `${API_CONFIG.baseUrl}/publicfaucet/api/v1/say-hello`,
           {
             method: "POST",
             headers: {

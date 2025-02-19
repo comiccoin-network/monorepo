@@ -73,11 +73,12 @@ func NewHTTPServer(
 
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
-		cfg:                cfg,
-		logger:             logger,
-		oauthClientManager: manager,
-		middleware:         mid,
-
+		cfg:                               cfg,
+		logger:                            logger,
+		oauthClientManager:                manager,
+		middleware:                        mid,
+		getHelloHTTPHandler:               getHelloHTTPHandler,
+		getMeHTTPHandler:                  getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler:    postMeConnectWalletHTTPHandler,
 		getFaucetByChainID:                getFaucetByChainID,
 		faucetServerSentEventsHTTPHandler: faucetServerSentEventsHTTPHandler,
