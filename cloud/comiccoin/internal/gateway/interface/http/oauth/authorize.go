@@ -18,63 +18,174 @@ const loginFormTemplate = `
 <html>
 <head>
     <title>OAuth 2.0 Authorization</title>
-    <style>
+	<style>
+        /* Reset and base styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Create full-height gradient background matching platform */
         body {
-            font-family: Arial, sans-serif;
-            max-width: 500px;
-            margin: 50px auto;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #6949FF 0%, #876BFF 100%);
+            min-height: 100vh;
+            margin: 0;
             padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        /* Main card container with consistent shadow and radius */
         .container {
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 5px;
+            background-color: white;
+            width: 100%;
+            max-width: 480px;
+            padding: 32px;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(26, 21, 35, 0.08);
         }
+
+        /* Typography matching platform */
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1A1523;
+            margin: 0 0 8px 0;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #6B7280;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        /* Application info section */
+        .app-info {
+            background-color: #F9FAFB;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .app-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .app-info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .app-info-label {
+            font-size: 14px;
+            color: #6B7280;
+            width: 100px;
+        }
+
+        .app-info-value {
+            font-size: 14px;
+            color: #1A1523;
+            font-weight: 500;
+        }
+
+        /* Form styling */
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
+
         label {
             display: block;
-            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
         }
-        input[type="text"],
-        input[type="password"] {
+
+        input {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            background-color: #F9FAFB;
         }
+
+        input:focus {
+            outline: none;
+            border-color: #6949FF;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 0 4px rgba(105, 73, 255, 0.1);
+        }
+
+        /* Submit button */
         button {
-            background-color: #4CAF50;
+            width: 100%;
+            background: #6949FF;
             color: white;
-            padding: 10px 15px;
+            padding: 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 15px;
             cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background: #5538E2;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <h1>Sign in to ComicCoin Network</h1>
+        <p class="subtitle">Continue to {{.ClientID}}</p>
+
+        <div class="app-info">
+            <div class="app-info-item">
+                <span class="app-info-label">Application</span>
+                <span class="app-info-value">{{.ClientID}}</span>
+            </div>
+            <div class="app-info-item">
+                <span class="app-info-label">Permissions</span>
+                <span class="app-info-value">{{.Scope}}</span>
+            </div>
+        </div>
+
         <form method="POST" action="/gateway/api/v1/oauth/login">
             <input type="hidden" name="success_uri" value="{{.SuccessURI}}">
             <input type="hidden" name="auth_id" value="{{.AuthID}}">
-	        <input type="hidden" name="state" value="{{.State}}">
+            <input type="hidden" name="state" value="{{.State}}">
+
             <div class="form-group">
-                <label>Client: {{.ClientID}}</label>
+                <label for="username">Email Address</label>
+                <input
+                    type="email"
+                    id="username"
+                    name="username"
+                    required
+                    autocomplete="email">
             </div>
+
             <div class="form-group">
-                <label>Scope: {{.Scope}}</label>
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+                    autocomplete="current-password">
             </div>
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" value="test@test.com" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" value="123password" required>
-            </div>
-            <button type="submit">Authorize</button>
+
+            <button type="submit">Sign In & Authorize</button>
         </form>
     </div>
 </body>
