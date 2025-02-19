@@ -18,7 +18,7 @@ func (impl *remoteFederatedIdentityImpl) FetchFromRemoteByAccessToken(ctx contex
 		slog.String("server_url", impl.Config.OAuth.ServerURL))
 
 	// Create registration endpoint URL
-	profileURL := fmt.Sprintf("%s/api/federated-identity", impl.Config.OAuth.ServerURL)
+	profileURL := fmt.Sprintf("%s/gateway/api/v1/resources/federated-identity", impl.Config.OAuth.ServerURL)
 
 	// Create a new HTTP request with the access token in the Authorization header
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, profileURL, nil)
@@ -42,18 +42,21 @@ func (impl *remoteFederatedIdentityImpl) FetchFromRemoteByAccessToken(ctx contex
 	// Handle non-200 status codes
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
+		impl.Logger.Error("Failed to get 200 OK status", slog.Any("status", resp.StatusCode))
 		return nil, fmt.Errorf("non-200 status code received from gateway: %d - %s", resp.StatusCode, string(bodyBytes))
 	}
 
 	// Read response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		impl.Logger.Error("Failed to read received data", slog.Any("err", err))
 		return nil, fmt.Errorf("reading response: %w", err)
 	}
 
 	// Unmarshal response to ProfileResponse
 	var profile dom.RemoteFederatedIdentityDTO
 	if err := json.Unmarshal(body, &profile); err != nil {
+		impl.Logger.Error("Failed to unmarshal", slog.Any("err", err))
 		return nil, fmt.Errorf("unmarshalling response: %w", err)
 	}
 

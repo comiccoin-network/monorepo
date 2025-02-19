@@ -27,7 +27,7 @@ func (impl *comicCoinProfileImpl) FetchProfileFromComicCoinGateway(ctx context.C
 		slog.String("server_url", impl.Config.OAuth.ServerURL))
 
 	// Create registration endpoint URL
-	profileURL := fmt.Sprintf("%s/api/federated-identity", impl.Config.OAuth.ServerURL)
+	profileURL := fmt.Sprintf("%s/gateway/api/v1/resources/federated-identity", impl.Config.OAuth.ServerURL)
 
 	// Create a new HTTP request with the access token in the Authorization header
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, profileURL, nil)

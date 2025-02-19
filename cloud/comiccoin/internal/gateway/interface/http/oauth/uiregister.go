@@ -196,13 +196,16 @@ const registrationPage = `
        };
 
        try {
-           const response = await fetch('/gateway/api/v1/register', {
-               method: 'POST',
+		   const apiUrl = '//' + window.location.host + '/gateway/api/v1/register';
+		   console.log("Beginning to fetch:", apiUrl);
+		   const response = await fetch(apiUrl, {
+			   method: 'POST',
                headers: {'Content-Type': 'application/json'},
                body: JSON.stringify(data)
            });
 
            if (!response.ok) {
+			   console.log('Registration failed: ' + response.statusText);
                throw new Error('Registration failed: ' + response.statusText);
            }
 
@@ -213,6 +216,7 @@ const registrationPage = `
                throw new Error('No authorization code received');
            }
        } catch (err) {
+		   console.log("Failed fetching error:", err);
            alert('Registration failed: ' + err.message);
        }
    }

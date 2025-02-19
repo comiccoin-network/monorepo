@@ -19,7 +19,7 @@ func (impl *remoteFederatedIdentityImpl) PostUpdateToRemote(ctx context.Context,
 		slog.String("server_url", impl.Config.OAuth.ServerURL))
 
 	// Create registration endpoint URL
-	profileURL := fmt.Sprintf("%s/api/federated-identity", impl.Config.OAuth.ServerURL)
+	profileURL := fmt.Sprintf("%s/gateway/api/v1/federated-identity", impl.Config.OAuth.ServerURL)
 
 	// Marshal the request body
 	reqBody, err := json.Marshal(req)
