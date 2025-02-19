@@ -1,4 +1,3 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/interface/http/oauth/callback.go
 package oauth
 
 import (
@@ -6,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
@@ -38,37 +38,39 @@ type callbackResponseIDO struct {
 }
 
 func (h *CallbackHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
-	// Set response content type
-	w.Header().Set("Content-Type", "application/json")
+	// Log the incoming request
+	h.logger.Info("handling OAuth callback request",
+		slog.String("method", r.Method),
+		slog.String("path", r.URL.Path),
+		slog.Any("query", r.URL.Query()))
 
-	// Get code and state from query parameters
+	// Get and validate required parameters
 	code := r.URL.Query().Get("code")
 	state := r.URL.Query().Get("state")
 	successURI := r.URL.Query().Get("success_uri")
 
 	if code == "" {
-		h.logger.Error("missing required `code` parameters", slog.Any("parameters", r.URL.Query()))
+		h.logger.Error("missing required `code` parameter")
 		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("code", "required parameter"))
 		return
 	}
 	if state == "" {
-		h.logger.Error("missing required `state` parameters", slog.Any("parameters", r.URL.Query()))
+		h.logger.Error("missing required `state` parameter")
 		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("state", "required parameter"))
 		return
 	}
 	if successURI == "" {
-		h.logger.Error("missing `success_uri` parameter", slog.Any("parameters", r.URL.Query()))
+		h.logger.Error("missing required `success_uri` parameter")
 		httperror.ResponseError(w, httperror.NewForBadRequestWithSingleField("success_uri", "required parameter"))
 		return
 	}
 
-	// Create service request
+	// Process OAuth callback through service
 	request := &service_oauth.CallbackRequest{
 		Code:  code,
 		State: state,
 	}
 
-	// Call service
 	response, err := h.service.Execute(r.Context(), request)
 	if err != nil {
 		h.logger.Error("failed to process OAuth callback",
@@ -78,7 +80,49 @@ func (h *CallbackHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Convert service response to IDO
+	// Set the session cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    response.SessionID,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode, // Use Lax mode to allow redirects
+		Expires:  response.ExpiresAt,
+	})
+
+	// Handle redirect if successURI is provided
+	if successURI != "" {
+		// Build redirect URL with query parameters
+		redirectURL := successURI
+		if !strings.Contains(successURI, "?") {
+			redirectURL += "?"
+		} else {
+			redirectURL += "&"
+		}
+
+		// Add OAuth response parameters
+		params := fmt.Sprintf("access_token=%v&refresh_token=%v&expires_at=%v&session_id=%v",
+			response.AccessToken,
+			response.RefreshToken,
+			response.ExpiresAt.Unix(),
+			response.SessionID)
+
+		redirectURL += params
+
+		h.logger.Info("redirecting to success URI",
+			slog.String("redirect_url", redirectURL))
+
+		// Perform the redirect
+		http.Redirect(w, r, redirectURL, http.StatusFound)
+		return
+	}
+
+	// If no redirect, return JSON response
+	// Set content type for JSON response
+	w.Header().Set("Content-Type", "application/json")
+
+	// Prepare JSON response
 	responseIDO := callbackResponseIDO{
 		SessionID:   response.SessionID,
 		AccessToken: response.AccessToken,
@@ -86,28 +130,9 @@ func (h *CallbackHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		TokenType:   response.TokenType,
 	}
 
-	// Set session cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_id",
-		Value:    response.SessionID,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
-		Expires:  response.ExpiresAt,
-	})
-
-	if successURI != "" {
-		successURI += fmt.Sprintf("?access_token=%v&refresh_token=%v&expires_at=%v", response.AccessToken, response.RefreshToken, response.ExpiresAt.Unix())
-		h.logger.Info("Redirecting now...",
-			slog.String("successURI", successURI))
-		http.Redirect(w, r, successURI, http.StatusFound)
-		return
-	}
-
-	// Encode response
+	// Encode and send JSON response
 	if err := json.NewEncoder(w).Encode(responseIDO); err != nil {
-		h.logger.Error("failed to encode response",
+		h.logger.Error("failed to encode JSON response",
 			slog.Any("error", err))
 		httperror.ResponseError(w, err)
 		return

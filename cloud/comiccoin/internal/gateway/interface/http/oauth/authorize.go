@@ -56,7 +56,7 @@ const loginFormTemplate = `
 </head>
 <body>
     <div class="container">
-        <form method="POST" action="/oauth/login">
+        <form method="POST" action="/gateway/api/v1/oauth/login">
             <input type="hidden" name="success_uri" value="{{.SuccessURI}}">
             <input type="hidden" name="auth_id" value="{{.AuthID}}">
 	        <input type="hidden" name="state" value="{{.State}}">
