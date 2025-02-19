@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api/exchangetoken.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/publicfaucet/api/exchangetoken.go
 package api
 
 import (

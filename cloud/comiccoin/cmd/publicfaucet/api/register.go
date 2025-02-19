@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api/register.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/publicfaucet/api/register.go
 package api
 
 import (

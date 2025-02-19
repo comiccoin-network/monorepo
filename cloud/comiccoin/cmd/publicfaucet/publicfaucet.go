@@ -1,4 +1,5 @@
-package gateway
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/publicfaucet/publicfaucet.go
+package publicfaucet
 
 import (
 	"github.com/spf13/cobra"

@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api/register.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/publicfaucet/api/register.go
 package api
 
 import (
@@ -130,8 +130,8 @@ func doRunLoginCmd(email, firstName, lastName, phone, country, timezone, passwor
 
 	// Replace internal Docker hostname with localhost
 	authURL := strings.Replace(loginResponse.AuthCode,
-		"http://comiccoin_network:8080",
-		"http://localhost:8080", 1)
+		"http://comiccoin_network:8000",
+		"http://localhost:8000", 1)
 
 	fmt.Printf("\nAuthentication Required\n")
 	fmt.Printf("----------------------\n")

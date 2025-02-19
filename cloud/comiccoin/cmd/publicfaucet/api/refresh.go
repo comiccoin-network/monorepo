@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api/refresh.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/publicfaucet/api/refresh.go
 package api
 
 import (

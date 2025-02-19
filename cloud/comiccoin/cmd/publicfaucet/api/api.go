@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api/api.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/publicfauce/api/api.go
 package api
 
 import "github.com/spf13/cobra"

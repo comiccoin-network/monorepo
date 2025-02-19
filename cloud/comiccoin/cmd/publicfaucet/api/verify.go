@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin-publicfaucet/cmd/api/verify.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/publicfaucet/api/verify.go
 package api
 
 import (

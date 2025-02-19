@@ -116,6 +116,9 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		case n == 4 && p[0] == "gateway" && p[1] == "ui" && p[2] == "v1" && p[3] == "authorize-or-login" && r.Method == http.MethodGet:
 			port.authorizeHandler.Execute(w, r)
 
+		// case n == 4 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "register":
+		// 	port.registerHandler.Execute(w, r)
+
 		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "login" && r.Method == http.MethodPost:
 			port.loginHandler.Execute(w, r)
 		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "token" && r.Method == http.MethodPost:
@@ -126,8 +129,6 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "introspect" && r.Method == http.MethodPost:
 			port.introspectionHandler.Execute(w, r)
 
-		// case n == 2 && p[0] == "api" && p[1] == "register": // TODO: INVESTIGATE ????
-		// 	port.registerHandler.Execute(w, r)
 		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "resources" && p[4] == "identity" && r.Method == http.MethodGet: // DEPRECATED URL
 			port.getIdentityHandler.Execute(w, r)
 		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "resources" && p[4] == "federated-identity" && r.Method == http.MethodGet:
