@@ -30,7 +30,7 @@ import (
 func DaemonCmd() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "daemon",
-		Short: "Run the ComicCoin Authority fullnode",
+		Short: "Run the ComicCoin full node instance",
 		Run: func(cmd *cobra.Command, args []string) {
 			log.Println("Running daemon......")
 			doRunDaemon()

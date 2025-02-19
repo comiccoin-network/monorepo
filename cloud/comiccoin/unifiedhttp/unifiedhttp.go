@@ -111,8 +111,12 @@ func (port *unifiedHTTPServerImpl) Shutdown() {
 
 // HandleRequests handles incoming HTTP requests.
 func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http.Request) {
-	// Set the content type of the response to application/json.
-	w.Header().Set("Content-Type", "application/json")
+	// DEVELOPERS NOTE:
+	// This is purposefully left here commented out to remind you that our app
+	// renders both web-forms and JSON API endpoins so we cannot blanketly
+	// use the following:
+	// // Set the content type of the response to application/json.
+	// w.Header().Set("Content-Type", "application/json")
 
 	// Get the URL path tokens from the request context.
 	ctx := r.Context()
@@ -146,12 +150,12 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 
 	case p[0] == "gateway":
 		// Handle new API endpoints.
-		port.authorityHTTPServer.HandleIncomingHTTPRequest(w, r)
+		port.gatewayHTTPServer.HandleIncomingHTTPRequest(w, r)
 		return
 
 	case p[0] == "publicfaucet":
 		// Handle new API endpoints.
-		port.authorityHTTPServer.HandleIncomingHTTPRequest(w, r)
+		port.publicfaucetHTTPServer.HandleIncomingHTTPRequest(w, r)
 		return
 
 	// --- CATCH ALL: D.N.E. ---

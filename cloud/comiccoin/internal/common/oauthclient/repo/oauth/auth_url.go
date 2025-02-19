@@ -7,7 +7,7 @@ import (
 )
 
 func (impl *oauthClientImpl) GetAuthorizationURL(state string) string {
-	authURL := fmt.Sprintf("%s/oauth/authorize", impl.Config.OAuth.ServerURL)
+	authURL := fmt.Sprintf("%s/gateway/api/v1/oauth/authorize", impl.Config.OAuth.ServerURL)
 
 	params := url.Values{}
 	params.Add("response_type", "code")

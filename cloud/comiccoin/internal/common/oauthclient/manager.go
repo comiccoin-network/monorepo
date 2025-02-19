@@ -8,7 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodbcache"
 	config "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
 	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/federatedidentity"
 	dom_remotefederatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/remotefederatedidentity"
@@ -43,6 +42,7 @@ import (
 	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/register"
 	uc_remotefederatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/remotefederatedidentity"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/token"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodbcache"
 )
 
 type Manager interface {
@@ -50,6 +50,7 @@ type Manager interface {
 	GetLocalFederatedIdentityByFederatedIdentityID(ctx context.Context, federatedIdentityID primitive.ObjectID) (*dom_federatedidentity.FederatedIdentity, error)
 
 	// Use-case / Service
+	GetRegistrationURL(ctx context.Context) (*svc_oauth.GetRegistrationURLResponse, error)
 	Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error)
 	ExchangeToken(ctx context.Context, req *svc_oauth.ExchangeTokenRequest) (*svc_oauth.ExchangeTokenResponse, error)
 	FetchFederatedIdentityFromRemoteByAccessToken(ctx context.Context, accessToken string) (*dom_remotefederatedidentity.RemoteFederatedIdentityDTO, error)
@@ -81,6 +82,7 @@ type managerImpl struct {
 	updateRemoteFederdatedIdentityUseCase uc_remotefederatedidentity.UpdateRemoteFederdatedIdentityUseCase
 
 	// Service
+	getRegistrationURLService             svc_oauth.GetRegistrationURLService
 	registration                          svc_registration.RegistrationService
 	loginService                          svc_login.LoginService
 	refreshTokenService                   svc_token.RefreshTokenService
@@ -504,6 +506,7 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 		fetchRemoteFederdatedIdentityUseCase:    fetchRemoteFederdatedIdentityUseCase,
 		fetchRemoteFederdatedIdentityService:    fetchRemoteFederdatedIdentityService,
 		updateRemoteFederdatedIdentityService:   updateRemoteFederdatedIdentityService,
+		getRegistrationURLService:               getRegistrationURLService,
 		registration:                            registration,
 		loginService:                            loginService,
 		refreshTokenService:                     refreshTokenService,
@@ -529,6 +532,10 @@ func NewManager(ctx context.Context, cfg *config.Configuration, logger *slog.Log
 
 func (m *managerImpl) GetLocalFederatedIdentityByFederatedIdentityID(ctx context.Context, federatedIdentityID primitive.ObjectID) (*dom_federatedidentity.FederatedIdentity, error) {
 	return m.federatedidentityGetByIDUseCase.Execute(ctx, federatedIdentityID)
+}
+
+func (m *managerImpl) GetRegistrationURL(ctx context.Context) (*svc_oauth.GetRegistrationURLResponse, error) {
+	return m.getRegistrationURLService.Execute(ctx)
 }
 
 func (m *managerImpl) Login(ctx context.Context, loginReq *svc_login.LoginRequest) (*svc_login.LoginResponse, error) {

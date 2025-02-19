@@ -25,7 +25,7 @@ func (impl *oauthClientImpl) ExchangeCode(ctx context.Context, code string) (*do
 	var lastErr error
 
 	// Prepare the request data outside the retry loop
-	tokenURL := fmt.Sprintf("%s/oauth/token", impl.Config.OAuth.ServerURL)
+	tokenURL := fmt.Sprintf("%s/gateway/api/v1/oauth/token", impl.Config.OAuth.ServerURL)
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")
 	data.Set("code", code)

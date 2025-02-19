@@ -7,7 +7,7 @@ import (
 )
 
 func (impl *oauthClientImpl) GetRegistrationURL(state string) string {
-	authURL := fmt.Sprintf("%s/register", impl.Config.OAuth.ServerURL)
+	authURL := fmt.Sprintf("%s/gateway/ui/v1/register", impl.Config.OAuth.ServerURL)
 
 	params := url.Values{}
 	params.Add("redirect_uri", impl.Config.OAuth.ClientRedirectURI)

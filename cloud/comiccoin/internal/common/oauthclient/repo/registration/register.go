@@ -14,7 +14,7 @@ import (
 
 func (impl *registrationClientImpl) Register(ctx context.Context, req *dom_registration.RegistrationRequest) (*dom_registration.RegistrationResponse, error) {
 	// Create registration endpoint URL
-	registrationURL := fmt.Sprintf("%s/api/register", impl.Config.OAuth.ServerURL)
+	registrationURL := fmt.Sprintf("%s/gateway/api/v1/register", impl.Config.OAuth.ServerURL)
 
 	// Set the redirect URI from config if not already set
 	if req.RedirectURI == "" {

@@ -18,7 +18,7 @@ func (impl *oauthClientImpl) IntrospectToken(ctx context.Context, token string) 
 	impl.Logger.Debug("starting token introspection",
 		slog.String("server_url", impl.Config.OAuth.ServerURL))
 
-	introspectURL := fmt.Sprintf("%s/oauth/introspect", impl.Config.OAuth.ServerURL)
+	introspectURL := fmt.Sprintf("%s/gateway/api/v1/oauth/introspect", impl.Config.OAuth.ServerURL)
 
 	data := url.Values{}
 	data.Set("token", token)

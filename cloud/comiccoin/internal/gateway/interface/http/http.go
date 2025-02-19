@@ -116,13 +116,14 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		case n == 4 && p[0] == "gateway" && p[1] == "ui" && p[2] == "v1" && p[3] == "authorize-or-login" && r.Method == http.MethodGet:
 			port.authorizeHandler.Execute(w, r)
 
-		// case n == 4 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "register":
-		// 	port.registerHandler.Execute(w, r)
+		// DEVELOPERS NOTE: This is the form submission  API endpoiunt from the ui form.
+		case n == 4 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "register":
+			port.registerHandler.Execute(w, r)
 
 		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "login" && r.Method == http.MethodPost:
 			port.loginHandler.Execute(w, r)
 		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "token" && r.Method == http.MethodPost:
-			port.loginHandler.Execute(w, r)
+			port.tokenHandler.Execute(w, r)
 
 		case n == 5 && p[0] == "gateway" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "refresh" && r.Method == http.MethodPost:
 			port.refreshTokenHandler.Execute(w, r)

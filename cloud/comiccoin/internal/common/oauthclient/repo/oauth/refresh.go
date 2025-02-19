@@ -16,7 +16,7 @@ import (
 )
 
 func (impl *oauthClientImpl) RefreshToken(ctx context.Context, refreshToken string) (*dom_oauth.TokenResponse, error) {
-	tokenURL := fmt.Sprintf("%s/oauth/refresh", impl.Config.OAuth.ServerURL) // Notice we're using /oauth/refresh now
+	tokenURL := fmt.Sprintf("%s/gateway/api/v1/oauth/refresh", impl.Config.OAuth.ServerURL) // Notice we're using /oauth/refresh now
 
 	impl.Logger.Debug("preparing token refresh request",
 		slog.String("url", tokenURL),
