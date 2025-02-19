@@ -1,3 +1,0 @@
-# ComicCoin Gateway
-
-TODO

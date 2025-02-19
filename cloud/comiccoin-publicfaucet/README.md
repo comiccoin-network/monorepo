@@ -1,3 +1,0 @@
-# ComicCoin PublicFaucet
-
-TODO
