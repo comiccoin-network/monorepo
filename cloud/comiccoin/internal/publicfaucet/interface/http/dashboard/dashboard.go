@@ -35,8 +35,6 @@ func NewDashboardHTTPHandler(
 }
 
 func (h *DashboardHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debug("starting endpoint...")
-
 	// Set response content type
 	w.Header().Set("Content-Type", "application/json")
 

@@ -60,6 +60,8 @@ func NewGetDashboardService(
 }
 
 func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*DashboardDTO, error) {
+	svc.logger.Debug("executing...")
+
 	// Get authenticated federatedidentity ID from context. This is loaded in
 	// by the `AuthMiddleware` found via:
 	// - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go
@@ -94,16 +96,22 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 
 	txs := make([]*TransactionDTO, 0)
 
-	// For example purposes, let's set some hard-coded values
+	// // For example purposes, let's set some hard-coded values
 	// now := time.Now()
 	// lastClaimTime := now.Add(-20 * time.Hour)          // Assuming user claimed 20 hours ago
 	// nextClaimTime := lastClaimTime.Add(24 * time.Hour) // Next claim is 24 hours after last claim
 	// canClaim := now.After(nextClaimTime)
-	canClaim := true
 
 	//
 	// Return the results
 	//
+
+	// Special circumstances
+	if user.LastClaimTime.IsZero() || user.NextClaimTime.IsZero() {
+		user.CanClaim = true
+	}
+
+	svc.logger.Debug("execution finished")
 
 	return &DashboardDTO{
 		ChainID:                 faucet.ChainID,
@@ -112,8 +120,11 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 		TotalCoinsClaimedByUser: big.NewInt(0),
 		Transactions:            txs,
 		LastModifiedAt:          faucet.LastModifiedAt,
-		// LastClaimTime:           lastClaimTime,
-		// NextClaimTime:           nextClaimTime,
-		CanClaim: canClaim,
+		LastClaimTime:           user.LastClaimTime,
+		NextClaimTime:           user.NextClaimTime,
+		CanClaim:                user.CanClaim,
+		// LastClaimTime: lastClaimTime,
+		// NextClaimTime: nextClaimTime,
+		// CanClaim:      canClaim,
 	}, nil
 }

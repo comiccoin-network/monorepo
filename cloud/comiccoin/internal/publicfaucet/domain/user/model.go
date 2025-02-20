@@ -112,6 +112,15 @@ type User struct {
 
 	// ProfileVerificationStatus indicates the profile verification status of this user account.
 	ProfileVerificationStatus int8 `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
+
+	// LastClaimTime indicates the last date/time they claimed ComicCoins
+	LastClaimTime time.Time `bson:"last_claim_time" json:"last_claim_time"`
+
+	// NextClaimTime indicates the next available time the user is able to claim a bunch of coins immediatly
+	NextClaimTime time.Time `bson:"next_claim_time" json:"next_claim_time"`
+
+	// CanClaim indicates whether user can claim a bunch of coins immediatly
+	CanClaim bool `bson:"can_claim" json:"can_claim"`
 }
 
 type UserComment struct {
