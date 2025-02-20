@@ -28,6 +28,7 @@ import (
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/bannedipaddress"
 	r_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/faucet"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/user"
+	sv_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/dashboard"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
 	svc_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/hello"
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/me"
@@ -221,6 +222,14 @@ func NewModule(
 		getFaucetByChainIDUseCase,
 	)
 
+	// --- Dashboard ---
+
+	getDasbhoardService := sv_dashboard.NewGetDashboardService(
+		cfg,
+		logger,
+		getFaucetByChainIDUseCase,
+	)
+
 	////
 	//// Interface
 	////
@@ -270,6 +279,15 @@ func NewModule(
 		getFaucetService,
 	)
 
+	// --- Dashboard ---
+
+	dashboardHTTPHandler := http_faucet.NewDashboardHTTPHandler(
+		config,
+		logger,
+		dbClient,
+		getDasbhoardService,
+	)
+
 	// --- HTTP Middleware ---
 
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -293,6 +311,7 @@ func NewModule(
 		postMeConnectWalletHTTPHandler,
 		getFaucetByChainIDHTTPHandler,
 		faucetServerSentEventsHTTPHandler,
+		dashboardHTTPHandler,
 	)
 
 	// --- Initialize ---

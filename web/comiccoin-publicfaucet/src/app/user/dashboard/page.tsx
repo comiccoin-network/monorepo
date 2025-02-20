@@ -217,6 +217,7 @@ const DashboardPage = () => {
           </section>
 
           {/* Network Claims Section */}
+          {/*
           <section
             className="bg-white rounded-xl p-6 shadow-sm border border-purple-100 focus-within:ring-2 focus-within:ring-purple-200 transition-shadow"
             aria-labelledby="network-claims-title"
@@ -248,6 +249,7 @@ const DashboardPage = () => {
               <ClaimsList claims={networkClaims.slice(0, 8)} />
             </div>
           </section>
+          */}
         </div>
 
         {/* Right Column - Wallet & Streak (1/3 width) */}
@@ -312,6 +314,7 @@ const DashboardPage = () => {
           </section>
 
           {/* Claim Streak */}
+          {/*
           <section
             className="bg-white rounded-xl p-6 shadow-sm border border-purple-100 focus-within:ring-2 focus-within:ring-purple-200 transition-shadow"
             aria-labelledby="streak-title"
@@ -349,6 +352,7 @@ const DashboardPage = () => {
               {10 - claimStreak} days until 1000 CC bonus!
             </p>
           </section>
+          */}
         </div>
       </div>
     </div>
