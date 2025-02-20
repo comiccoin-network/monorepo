@@ -3,9 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/hooks/useAuth";
 import { useMe } from "@/hooks/useMe";
-import { useGetFaucet } from "@/hooks/useGetFaucet";
 import {
   Coins,
   Clock,
@@ -21,6 +19,8 @@ import { WalletQRCode } from "@/components/dashboard/WalletQRCode";
 import { ClaimsList } from "@/components/dashboard/ClaimsList";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { ClaimStreak } from "@/components/dashboard/ClaimStreak";
+
+import { useGetDashboard } from "@/hooks/useGetDashboard";
 
 // Generate more mock data
 const generateMockClaims = (count, isPersonal = false) => {
@@ -41,7 +41,6 @@ const MOCK_NETWORK_CLAIMS = generateMockClaims(20);
 
 const DashboardPage = () => {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
   const { user } = useMe();
 
   const [faucetBalance, setFaucetBalance] = useState(1000000);
@@ -58,13 +57,14 @@ const DashboardPage = () => {
   const YOUR_CLAIMS_LIMIT = 5;
   const NETWORK_CLAIMS_LIMIT = 8;
 
-  const { faucet, isLoading, error, refetch } = useGetFaucet(1, {
+  const { dashboard, isLoading, error, refetch } = useGetDashboard({
+    // Assuming chain ID 1
     refreshInterval: 30000, // Refresh every 30 seconds
   });
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
-  if (!faucet) return <div>No data available</div>;
+  if (!dashboard) return <div>No data available</div>;
 
   return (
     <div className="py-8">
@@ -98,6 +98,7 @@ const DashboardPage = () => {
         role="region"
         aria-label="Account Overview"
       >
+        {/* Faucet Balance Card - Updated with dashboard data */}
         <div className="relative bg-white rounded-xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-purple-50 to-white opacity-50"></div>
           <div className="relative p-6">
@@ -109,9 +110,9 @@ const DashboardPage = () => {
             </div>
             <div
               className="text-3xl font-bold text-purple-700"
-              aria-label={`${faucetBalance.toLocaleString()} ComicCoins available for distribution`}
+              aria-label={`${dashboard.faucet_balance} ComicCoins available for distribution`}
             >
-              {faucetBalance.toLocaleString()} CC
+              {dashboard.faucet_balance} CC
             </div>
             <div className="text-sm text-gray-600">
               Available for distribution
@@ -119,7 +120,7 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Your Balance Card */}
+        {/* Your Balance Card - Updated with dashboard data */}
         <div className="relative bg-white rounded-xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-green-50 to-white opacity-50"></div>
           <div className="relative p-6">
@@ -132,22 +133,16 @@ const DashboardPage = () => {
             <div className="flex items-baseline gap-2">
               <span
                 className="text-3xl font-bold text-purple-700"
-                aria-label={`${userBalance.toLocaleString()} ComicCoins in your wallet`}
+                aria-label={`${dashboard.user_balance} ComicCoins in your wallet`}
               >
-                {userBalance.toLocaleString()} CC
-              </span>
-              <span
-                className="text-sm text-green-600 font-medium"
-                aria-label="Increased by 12 percent"
-              >
-                +12%
+                {dashboard.user_balance} CC
               </span>
             </div>
             <div className="text-sm text-gray-600">Current wallet balance</div>
           </div>
         </div>
 
-        {/* Total Claimed Card */}
+        {/* Total Claimed Card - Updated with dashboard data */}
         <div className="relative bg-white rounded-xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-50 to-white opacity-50"></div>
           <div className="relative p-6">
@@ -162,15 +157,15 @@ const DashboardPage = () => {
             </div>
             <div
               className="text-3xl font-bold text-purple-700"
-              aria-label={`${totalClaimed.toLocaleString()} ComicCoins claimed in total`}
+              aria-label={`${dashboard.total_coins_claimed} ComicCoins claimed in total`}
             >
-              {totalClaimed.toLocaleString()} CC
+              {dashboard.total_coins_claimed} CC
             </div>
             <div className="text-sm text-gray-600">Lifetime earnings</div>
           </div>
         </div>
 
-        {/* Enhanced Countdown Timer */}
+        {/* CountdownTimer component remains unchanged */}
         <div
           className="relative rounded-xl overflow-hidden transition-all duration-300"
           aria-live="polite"
@@ -195,24 +190,50 @@ const DashboardPage = () => {
               >
                 Your Claims
               </h2>
-              <Link
-                href="/user/transactions?filter=personal"
-                className="text-purple-600 hover:text-purple-700 flex items-center gap-1 text-sm group focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg px-2 py-1"
-                aria-label="View all your claims history"
-              >
-                See More
-                <ArrowRight
-                  className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                  aria-hidden="true"
-                />
-              </Link>
+              {dashboard.transactions && dashboard.transactions.length > 0 && (
+                <Link
+                  href="/user/transactions?filter=personal"
+                  className="text-purple-600 hover:text-purple-700 flex items-center gap-1 text-sm group focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg px-2 py-1"
+                  aria-label="View all your claims history"
+                >
+                  See More
+                  <ArrowRight
+                    className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                    aria-hidden="true"
+                  />
+                </Link>
+              )}
             </div>
             <div
               role="feed"
               aria-label="Your recent claims"
               className="divide-y divide-gray-100"
             >
-              <ClaimsList claims={yourClaims.slice(0, 5)} isPersonal />
+              {dashboard.transactions && dashboard.transactions.length > 0 ? (
+                // If we have transactions, display them using ClaimsList
+                <ClaimsList
+                  claims={dashboard.transactions.slice(0, 5)}
+                  isPersonal
+                />
+              ) : (
+                // Empty state with encouraging message
+                <div className="py-12 text-center">
+                  <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-purple-50">
+                    <Coins
+                      className="w-6 h-6 text-purple-600"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <h3 className="text-sm font-medium text-gray-900 mb-1">
+                    No claims yet
+                  </h3>
+                  <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                    Your transaction history will appear here after you claim
+                    your first ComicCoins. Click the "Claim Coins" button above
+                    to get started!
+                  </p>
+                </div>
+              )}
             </div>
           </section>
 
