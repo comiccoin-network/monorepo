@@ -33,8 +33,8 @@ func NewPostTokenRefreshHTTPHandler(
 }
 
 type tokenRefreshRequestIDO struct {
-	FederatedIdentityID       string `json:"federatedidentity_id"`
-	RefreshToken string `json:"refresh_token"`
+	FederatedIdentityID string `json:"federatedidentity_id"`
+	RefreshToken        string `json:"refresh_token"`
 }
 
 type tokenRefreshResponseIDO struct {
@@ -45,6 +45,8 @@ type tokenRefreshResponseIDO struct {
 }
 
 func (h *PostTokenRefreshHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debug("📌 Starting token refresh...")
+
 	// Set response content type
 	w.Header().Set("Content-Type", "application/json")
 
@@ -79,8 +81,8 @@ func (h *PostTokenRefreshHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 
 	// Convert IDO to service request
 	request := &service_token.RefreshRequest{
-		FederatedIdentityID:       federatedidentityID,
-		RefreshToken: requestIDO.RefreshToken,
+		FederatedIdentityID: federatedidentityID,
+		RefreshToken:        requestIDO.RefreshToken,
 	}
 
 	// Call service
@@ -109,6 +111,6 @@ func (h *PostTokenRefreshHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	h.logger.Info("token refresh processed successfully",
+	h.logger.Info("✅ token refresh processed successfully",
 		slog.Any("federatedidentity_id", request.FederatedIdentityID))
 }

@@ -1,52 +1,71 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/utils/api.ts
 import { useAuthStore } from "@/hooks/useAuth";
-import { useRefreshToken } from "@/hooks/useRefreshToken";
 
-export const createAuthenticatedFetch = () => {
-  const refreshTokens = useRefreshToken();
-  const { tokens } = useAuthStore();
+interface AuthenticatedFetchOptions extends RequestInit {
+  skipAuth?: boolean;
+}
 
-  return async (url: string, options: RequestInit = {}) => {
-    if (!tokens) {
-      console.log("❌ No tokens available for request");
+export const createAuthenticatedFetch = (
+  refreshTokensFn: () => Promise<boolean>,
+) => {
+  return async (url: string, options: AuthenticatedFetchOptions = {}) => {
+    const { tokens, clearTokens } = useAuthStore.getState();
+
+    if (options.skipAuth) {
+      return fetch(url, options);
+    }
+
+    if (!tokens?.accessToken) {
+      console.log("❌ No access token available");
+      clearTokens();
       throw new Error("No authentication tokens available");
     }
 
-    // Add authorization header
     const headers = {
       ...options.headers,
       Authorization: `Bearer ${tokens.accessToken}`,
     };
 
     try {
-      console.log("🚀 Making authenticated request");
       const response = await fetch(url, { ...options, headers });
 
-      // If unauthorized, try refreshing token
       if (response.status === 401) {
         console.log("🔄 Token expired, attempting refresh");
-        const refreshSuccess = await refreshTokens();
+        const refreshSuccess = await refreshTokensFn();
 
         if (!refreshSuccess) {
-          console.log("❌ Token refresh failed");
+          console.log("❌ Token refresh failed - clearing auth state");
+          clearTokens();
           throw new Error("Authentication failed");
         }
 
-        // Retry request with new token
-        console.log("🔄 Retrying request with new token");
+        // Get fresh tokens from store
+        const newTokens = useAuthStore.getState().tokens;
+
+        if (!newTokens?.accessToken) {
+          throw new Error("No access token after refresh");
+        }
+
+        // Retry with new token
         return fetch(url, {
           ...options,
           headers: {
             ...options.headers,
-            Authorization: `Bearer ${useAuthStore.getState().tokens?.accessToken}`,
+            Authorization: `Bearer ${newTokens.accessToken}`,
           },
         });
       }
 
       return response;
     } catch (error) {
-      console.log("❌ Request failed:", error);
+      console.error("❌ Request failed:", error);
       throw error;
     }
   };
+};
+
+// Example usage in a component or hook
+export const useAuthenticatedFetch = () => {
+  const refreshTokens = useRefreshToken();
+  return createAuthenticatedFetch(refreshTokens);
 };

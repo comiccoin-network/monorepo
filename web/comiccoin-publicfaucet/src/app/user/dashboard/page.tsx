@@ -82,7 +82,7 @@ const DashboardPage = () => {
           <button
             className="inline-flex items-center justify-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors gap-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
             onClick={() => {
-              /* TODO: Implement claim function */
+              router.push("/user/claim-coins");
             }}
             disabled={!dashboard.can_claim}
             aria-label="Claim your daily coins"

@@ -95,10 +95,11 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 	txs := make([]*TransactionDTO, 0)
 
 	// For example purposes, let's set some hard-coded values
-	now := time.Now()
-	lastClaimTime := now.Add(-20 * time.Hour)          // Assuming user claimed 20 hours ago
-	nextClaimTime := lastClaimTime.Add(24 * time.Hour) // Next claim is 24 hours after last claim
-	canClaim := now.After(nextClaimTime)
+	// now := time.Now()
+	// lastClaimTime := now.Add(-20 * time.Hour)          // Assuming user claimed 20 hours ago
+	// nextClaimTime := lastClaimTime.Add(24 * time.Hour) // Next claim is 24 hours after last claim
+	// canClaim := now.After(nextClaimTime)
+	canClaim := true
 
 	//
 	// Return the results
@@ -111,8 +112,8 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 		TotalCoinsClaimedByUser: big.NewInt(0),
 		Transactions:            txs,
 		LastModifiedAt:          faucet.LastModifiedAt,
-		LastClaimTime:           lastClaimTime,
-		NextClaimTime:           nextClaimTime,
-		CanClaim:                canClaim,
+		// LastClaimTime:           lastClaimTime,
+		// NextClaimTime:           nextClaimTime,
+		CanClaim: canClaim,
 	}, nil
 }
