@@ -20,6 +20,7 @@ import (
 	redis_cache "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/memory/redis"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http"
 	httpserver "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http"
+	http_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/dashboard"
 	http_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/faucet"
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/me"
@@ -228,6 +229,7 @@ func NewModule(
 		cfg,
 		logger,
 		getFaucetByChainIDUseCase,
+		userGetByFederatedIdentityIDUseCase,
 	)
 
 	////
@@ -281,8 +283,8 @@ func NewModule(
 
 	// --- Dashboard ---
 
-	dashboardHTTPHandler := http_faucet.NewDashboardHTTPHandler(
-		config,
+	dashboardHTTPHandler := http_dashboard.NewDashboardHTTPHandler(
+		cfg,
 		logger,
 		dbClient,
 		getDasbhoardService,

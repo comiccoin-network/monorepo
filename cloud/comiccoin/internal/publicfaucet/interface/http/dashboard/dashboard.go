@@ -57,7 +57,7 @@ func (h *DashboardHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
 
 		// Call service
-		response, err := h.service.ExecuteByChainID(sessCtx)
+		response, err := h.service.Execute(sessCtx)
 		if err != nil {
 			h.logger.Error("failed to get faucet by chain id",
 				slog.Any("error", err))
@@ -76,7 +76,7 @@ func (h *DashboardHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Encode response
-	resp := result.(*svc_dashboard.FaucetDTO)
+	resp := result.(*svc_dashboard.DashboardDTO)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.logger.Error("failed to encode response",
 			slog.Any("error", err))

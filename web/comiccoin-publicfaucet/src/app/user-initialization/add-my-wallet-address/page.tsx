@@ -1,7 +1,7 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/user-initialization/add-my-wallet-address.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMe } from "@/hooks/useMe";
 import { usePostMeConnectWallet } from "@/hooks/usePostMeConnectWallet";
@@ -81,7 +81,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, walletAddress }) => {
 
 export default function AddMyWalletAddressPage() {
   const router = useRouter();
-  const { updateWallet } = useMe();
+  const { user, updateWallet } = useMe();
   const {
     postMeConnectWallet,
     isPosting,
@@ -89,6 +89,45 @@ export default function AddMyWalletAddressPage() {
   } = usePostMeConnectWallet();
   const [walletAddress, setWalletAddress] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Handle initial authentication check and redirection
+  useEffect(() => {
+    const checkUserWallet = async () => {
+      try {
+        // Only redirect if user exists and already has a wallet
+        if (user && user.wallet_address) {
+          console.log("🔄 User already has a wallet, redirecting to dashboard");
+          await router.replace("/user/dashboard");
+          return;
+        }
+
+        // Log the current state for debugging
+        console.log("👤 User wallet status:", {
+          hasUser: !!user,
+          hasWallet: user?.wallet_address,
+        });
+      } catch (error) {
+        console.error("❌ Error during initialization:", error);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    checkUserWallet();
+  }, [user, router]);
+
+  // Don't render the main content while checking user status
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your account...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

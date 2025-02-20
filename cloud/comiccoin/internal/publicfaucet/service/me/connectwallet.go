@@ -8,13 +8,13 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type MeConnectWalletRequestDTO struct {

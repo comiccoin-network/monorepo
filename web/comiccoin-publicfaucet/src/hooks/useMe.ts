@@ -25,7 +25,10 @@ export function useMe() {
 
   const updateWallet = (walletAddress: string) => {
     if (user) {
-      const updatedUser = { ...user, walletAddress };
+      const updatedUser = {
+        ...user,
+        wallet_address: walletAddress, // Store as a direct string property
+      };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
     }
