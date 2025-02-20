@@ -20,6 +20,9 @@ interface DashboardDTO {
   total_coins_claimed: BigIntString;
   transactions: TransactionDTO[];
   last_modified_at?: string;
+  last_claim_time: string; // ISO timestamp
+  next_claim_time: string; // ISO timestamp
+  can_claim: boolean;
 }
 
 interface UseGetDashboardOptions {

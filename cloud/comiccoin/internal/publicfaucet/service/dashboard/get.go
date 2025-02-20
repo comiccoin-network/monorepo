@@ -28,6 +28,10 @@ type DashboardDTO struct {
 	TotalCoinsClaimedByUser *big.Int          `bson:"total_coins_claimed_by_user" json:"total_coins_claimed"`
 	Transactions            []*TransactionDTO `bson:"transactions" json:"transactions"`
 	LastModifiedAt          time.Time         `bson:"last_modified_at,omitempty" json:"last_modified_at,omitempty"`
+
+	LastClaimTime time.Time `bson:"last_claim_time" json:"last_claim_time"`
+	NextClaimTime time.Time `bson:"next_claim_time" json:"next_claim_time"`
+	CanClaim      bool      `bson:"can_claim" json:"can_claim"`
 }
 
 type GetDashboardService interface {
@@ -90,6 +94,12 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 
 	txs := make([]*TransactionDTO, 0)
 
+	// For example purposes, let's set some hard-coded values
+	now := time.Now()
+	lastClaimTime := now.Add(-20 * time.Hour)          // Assuming user claimed 20 hours ago
+	nextClaimTime := lastClaimTime.Add(24 * time.Hour) // Next claim is 24 hours after last claim
+	canClaim := now.After(nextClaimTime)
+
 	//
 	// Return the results
 	//
@@ -101,5 +111,8 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 		TotalCoinsClaimedByUser: big.NewInt(0),
 		Transactions:            txs,
 		LastModifiedAt:          faucet.LastModifiedAt,
+		LastClaimTime:           lastClaimTime,
+		NextClaimTime:           nextClaimTime,
+		CanClaim:                canClaim,
 	}, nil
 }

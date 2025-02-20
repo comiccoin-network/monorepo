@@ -1,124 +1,97 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/components/dashboard/CountdownTimer.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 
 interface CountdownTimerProps {
-  nextClaimTime: Date;
+  nextClaimTime: string; // ISO timestamp
+  canClaim: boolean;
 }
 
-export const CountdownTimer = ({ nextClaimTime }: CountdownTimerProps) => {
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-    isReady: false,
-  });
+export function CountdownTimer({
+  nextClaimTime,
+  canClaim,
+}: CountdownTimerProps) {
+  const [timeLeft, setTimeLeft] = useState<{
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
+    function calculateTimeLeft() {
       const now = new Date().getTime();
-      const difference = nextClaimTime.getTime() - now;
+      const next = new Date(nextClaimTime).getTime();
+      const difference = next - now;
 
       if (difference <= 0) {
-        return {
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-          isReady: true,
-        };
+        setTimeLeft(null);
+        return;
       }
 
-      return {
-        hours: Math.floor(difference / (1000 * 60 * 60)),
-        minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((difference % (1000 * 60)) / 1000),
-        isReady: false,
-      };
-    };
+      setTimeLeft({
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      });
+    }
 
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
+    // Initial calculation
+    calculateTimeLeft();
+
+    // Update every second
+    const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
   }, [nextClaimTime]);
 
-  const padNumber = (num: number) => num.toString().padStart(2, "0");
+  if (canClaim) {
+    return (
+      <div className="bg-green-50 p-6 rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-green-800">
+            Ready to Claim!
+          </h2>
+          <Clock className="h-6 w-6 text-green-600" />
+        </div>
+        <div className="text-green-600">
+          Your next batch of ComicCoins is ready to be claimed!
+        </div>
+      </div>
+    );
+  }
+
+  if (!timeLeft) {
+    return null;
+  }
 
   return (
-    <div
-      className={`p-6 rounded-xl transition-all duration-300 ${
-        timeLeft.isReady
-          ? "bg-gradient-to-r from-green-500 to-emerald-600 animate-pulse"
-          : "bg-gradient-to-r from-indigo-500 to-purple-600"
-      }`}
-      role="timer"
-      aria-label={timeLeft.isReady ? "Ready to claim" : "Time until next claim"}
-    >
-      <div className="flex flex-col items-center space-y-2">
-        <div className="flex items-center justify-center gap-2">
-          <Clock
-            className={`h-6 w-6 ${timeLeft.isReady ? "text-green-100" : "text-purple-100"}`}
-            aria-hidden="true"
-          />
-          <h2 className="text-lg font-semibold text-white">
-            {timeLeft.isReady ? "Ready to Claim!" : "Next Claim In"}
-          </h2>
-        </div>
-
-        {!timeLeft.isReady ? (
-          <div
-            className="grid grid-cols-3 gap-2 text-center"
-            aria-live="polite"
-          >
-            <div className="flex flex-col">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2">
-                <span
-                  className="text-2xl font-mono font-bold text-white"
-                  aria-label={`${timeLeft.hours} hours`}
-                >
-                  {padNumber(timeLeft.hours)}
-                </span>
-              </div>
-              <span className="text-xs text-purple-100 mt-1">Hours</span>
-            </div>
-            <div className="flex flex-col">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2">
-                <span
-                  className="text-2xl font-mono font-bold text-white"
-                  aria-label={`${timeLeft.minutes} minutes`}
-                >
-                  {padNumber(timeLeft.minutes)}
-                </span>
-              </div>
-              <span className="text-xs text-purple-100 mt-1">Minutes</span>
-            </div>
-            <div className="flex flex-col">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2">
-                <span
-                  className="text-2xl font-mono font-bold text-white"
-                  aria-label={`${timeLeft.seconds} seconds`}
-                >
-                  {padNumber(timeLeft.seconds)}
-                </span>
-              </div>
-              <span className="text-xs text-purple-100 mt-1">Seconds</span>
-            </div>
+    <div className="bg-white p-6 rounded-xl">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-purple-800">Next Claim In</h2>
+        <Clock className="h-6 w-6 text-purple-600" />
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-purple-700">
+            {timeLeft.hours}
           </div>
-        ) : (
-          <button
-            className="px-6 py-2 bg-white text-green-600 rounded-lg font-semibold hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-green-500"
-            onClick={() => {
-              /* TODO: Implement claim function */
-            }}
-            aria-label="Claim your coins now"
-          >
-            Claim Now
-          </button>
-        )}
+          <div className="text-sm text-gray-600">hours</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-purple-700">
+            {timeLeft.minutes}
+          </div>
+          <div className="text-sm text-gray-600">minutes</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-purple-700">
+            {timeLeft.seconds}
+          </div>
+          <div className="text-sm text-gray-600">seconds</div>
+        </div>
       </div>
     </div>
   );
-};
+}

@@ -84,10 +84,11 @@ const DashboardPage = () => {
             onClick={() => {
               /* TODO: Implement claim function */
             }}
+            disabled={!dashboard.can_claim}
             aria-label="Claim your daily coins"
           >
             <Coins className="w-5 h-5" aria-hidden="true" />
-            <span>Claim Coins</span>
+            <span>{dashboard.can_claim ? "Claim Coins" : "Wait to Claim"}</span>
           </button>
         </div>
       </header>
@@ -170,7 +171,10 @@ const DashboardPage = () => {
           className="relative rounded-xl overflow-hidden transition-all duration-300"
           aria-live="polite"
         >
-          <CountdownTimer nextClaimTime={nextClaimTime} />
+          <CountdownTimer
+            nextClaimTime={dashboard.next_claim_time}
+            canClaim={dashboard.can_claim}
+          />
         </div>
       </div>
 
