@@ -8,126 +8,194 @@ interface Tokens {
   expiresAt: number;
 }
 
-interface User {
-  federatedidentity_id: string;
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  name: string;
-  lexical_name: string;
-  phone?: string;
-  country?: string;
-  timezone: string;
-  wallet_address?: { address: string } | null;
-}
-
 interface AuthState {
   tokens: Tokens | null;
-  user: User | null;
   isAuthenticated: boolean;
   setTokens: (tokens: Tokens | null) => void;
-  setUser: (user: User | null) => void;
-  logout: () => void;
+  clearTokens: () => void;
 }
 
-// Custom storage with enhanced logging and error handling
-const createCustomStorage = () => {
-  const storage = createJSONStorage(() => ({
+const createAuthStorage = () => {
+  return createJSONStorage(() => ({
     getItem: (name: string) => {
       try {
+        console.log("🔍 AUTH CHECK: Looking for stored tokens...");
         const value = localStorage.getItem(name);
-        console.log(
-          "📦 Getting from storage:",
-          name,
-          value ? "Found" : "Not found",
-        );
-        if (value) {
-          // Validate JSON structure
-          const parsed = JSON.parse(value);
-          if (!parsed.state) {
-            console.warn("⚠️ Invalid storage structure");
-            return null;
-          }
+
+        if (!value) {
+          console.log("📭 AUTH STATE: No tokens found in storage");
+          return null;
         }
+
+        const parsed = JSON.parse(value);
+        console.log("📦 AUTH STATE: Found stored data", {
+          hasTokens: !!parsed?.state?.tokens,
+          storageKey: name,
+        });
+
+        // Validate stored data structure
+        if (!parsed?.state?.tokens) {
+          console.warn("⚠️ AUTH VALIDATION: Invalid token structure", {
+            reason: "Missing required token data",
+          });
+          return null;
+        }
+
+        // Check token expiry if present
+        if (parsed.state.tokens?.expiresAt) {
+          const now = Date.now();
+          const expiresAt = parsed.state.tokens.expiresAt;
+          const timeUntilExpiry = Math.floor((expiresAt - now) / 1000);
+
+          console.log("⏰ AUTH TOKENS: Expiry check", {
+            expiresAt: new Date(expiresAt).toISOString(),
+            timeUntilExpiry: `${timeUntilExpiry} seconds`,
+            isExpired: expiresAt < now,
+          });
+        }
+
         return value;
       } catch (error) {
-        console.log("❌ Error reading from storage:", error);
+        console.error("💥 AUTH ERROR: Failed reading from storage", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          storageKey: name,
+        });
         return null;
       }
     },
+
     setItem: (name: string, value: string) => {
       try {
-        console.log("💾 Saving to storage:", name);
+        console.log("💾 AUTH STORAGE: Saving token data", {
+          storageKey: name,
+          dataSize: value.length,
+        });
         localStorage.setItem(name, value);
+        console.log("✅ AUTH STORAGE: Successfully saved tokens");
       } catch (error) {
-        console.log("❌ Error writing to storage:", error);
+        console.error("💥 AUTH ERROR: Failed saving to storage", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          storageKey: name,
+        });
       }
     },
+
     removeItem: (name: string) => {
       try {
-        console.log("🗑️ Removing from storage:", name);
+        console.log("🗑️ AUTH CLEANUP: Removing stored tokens", {
+          storageKey: name,
+        });
         localStorage.removeItem(name);
+        console.log("✅ AUTH CLEANUP: Successfully cleared tokens");
       } catch (error) {
-        console.log("❌ Error removing from storage:", error);
+        console.error("💥 AUTH ERROR: Failed removing from storage", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          storageKey: name,
+        });
       }
     },
   }));
-  return storage;
 };
 
-// Create our store with persistence
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       tokens: null,
-      user: null,
       isAuthenticated: false,
 
       setTokens: (tokens) => {
-        console.log("🔑 Setting tokens:", tokens ? "Present" : "Clearing");
+        console.log("🎭 AUTH FLOW: Token update requested", {
+          action: tokens ? "Setting new tokens" : "Clearing tokens",
+          hasTokens: !!tokens,
+        });
+
         if (tokens) {
-          // Ensure expiresAt is in milliseconds
+          // Convert timestamp if needed
           if (tokens.expiresAt < 1000000000000) {
-            console.log("⏰ Converting expiresAt to milliseconds");
+            console.log("⚙️ AUTH TOKENS: Converting expiry to milliseconds");
             tokens.expiresAt *= 1000;
           }
-          console.log(
-            "⏰ Token expiry:",
-            new Date(tokens.expiresAt).toISOString(),
-          );
+
+          const now = Date.now();
+          const timeUntilExpiry = Math.floor((tokens.expiresAt - now) / 1000);
+
+          console.log("📊 AUTH TOKENS: New token details", {
+            accessTokenLength: tokens.accessToken.length,
+            refreshTokenPresent: !!tokens.refreshToken,
+            expiresAt: new Date(tokens.expiresAt).toISOString(),
+            timeUntilExpiry: `${timeUntilExpiry} seconds`,
+          });
+
+          if (timeUntilExpiry < 0) {
+            console.warn("⚠️ AUTH WARNING: Setting expired tokens", {
+              expiredBy: `${Math.abs(timeUntilExpiry)} seconds`,
+            });
+          }
+        } else {
+          console.log("🧹 AUTH FLOW: Clearing existing tokens");
         }
-        set({ tokens, isAuthenticated: !!tokens });
+
+        set({
+          tokens,
+          isAuthenticated: !!tokens,
+        });
+
+        console.log("✨ AUTH STATE: Update complete", {
+          isAuthenticated: !!tokens,
+        });
       },
 
-      setUser: (user) => {
-        console.log("👤 Setting user:", user ? user.email : "Clearing");
-        set({ user });
-      },
+      clearTokens: () => {
+        console.log("🚪 AUTH LOGOUT: Starting cleanup");
 
-      logout: () => {
-        console.log("🚪 Logging out and clearing state");
-        set({ tokens: null, user: null, isAuthenticated: false });
-        // Also clear any legacy storage
+        // Clear any legacy storage first
+        console.log("🧹 AUTH CLEANUP: Removing legacy data");
         localStorage.removeItem("auth_tokens");
-        localStorage.removeItem("user");
+
+        set({
+          tokens: null,
+          isAuthenticated: false,
+        });
+
+        console.log("✅ AUTH LOGOUT: Cleanup complete", {
+          remainingStorageKeys: Object.keys(localStorage).length,
+        });
       },
     }),
     {
-      name: "auth", // Storage key
-      storage: createCustomStorage(),
+      name: "auth",
+      storage: createAuthStorage(),
       partialize: (state) => ({
         tokens: state.tokens,
-        user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => {
-        console.log("🔄 Starting storage rehydration");
+        console.log("🔄 AUTH INIT: Starting state rehydration");
+
         return (state) => {
-          console.log("✅ Storage rehydration complete", {
-            hasState: !!state,
-            isAuthenticated: state?.isAuthenticated,
-          });
+          if (!state) {
+            console.log("📭 AUTH INIT: No stored state found");
+            return;
+          }
+
+          const now = Date.now();
+          const tokens = state.tokens;
+
+          if (tokens) {
+            const timeUntilExpiry = Math.floor((tokens.expiresAt - now) / 1000);
+            const isExpired = tokens.expiresAt < now;
+
+            console.log("🔐 AUTH INIT: State rehydrated", {
+              isAuthenticated: state.isAuthenticated,
+              tokenStatus: isExpired ? "expired" : "valid",
+              timeUntilExpiry: `${timeUntilExpiry} seconds`,
+              expiresAt: new Date(tokens.expiresAt).toISOString(),
+            });
+          } else {
+            console.log("🔐 AUTH INIT: State rehydrated without tokens", {
+              isAuthenticated: false,
+            });
+          }
         };
       },
     },

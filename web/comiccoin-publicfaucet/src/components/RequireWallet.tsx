@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useMe } from "@/hooks/useMe";
+import { useMe } from "@/hooks/useMe"; // Changed to useMe instead of useAuthStore
 
 interface RequireWalletProps {
   children: React.ReactNode;
@@ -12,33 +12,34 @@ interface RequireWalletProps {
 export function RequireWallet({ children }: RequireWalletProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useMe();
+  const { user } = useMe(); // Use the correct store
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Don't redirect if we're already on the wallet setup page
+    console.log("👤 User wallet status from useMe:", {
+      email: user?.email,
+      hasWallet: !!user?.wallet_address, // Changed to match useMe's structure
+      currentPath: pathname,
+      user: user,
+    });
+
     const isWalletSetupPage = pathname.includes("add-my-wallet-address");
 
-    // Redirect only if we have a user but no wallet, and we're not already on the setup page
     if (user && !user.wallet_address && !isWalletSetupPage) {
       console.log("⚠️ No wallet set, redirecting to wallet setup...");
       router.push("/user-initialization/add-my-wallet-address");
+      return;
     }
 
     setIsChecking(false);
   }, [user, router, pathname]);
 
-  // Show nothing while we're checking the state
-  if (isChecking) {
-    return null;
-  }
+  if (isChecking) return null;
 
-  // Always render children on the wallet setup page
   if (pathname.includes("add-my-wallet-address")) {
     return <>{children}</>;
   }
 
-  // On other pages, only render if we have both user and wallet
   if (user && !user.wallet_address) {
     return null;
   }

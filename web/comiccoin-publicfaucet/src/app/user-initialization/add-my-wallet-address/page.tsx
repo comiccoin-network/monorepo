@@ -81,7 +81,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, walletAddress }) => {
 
 export default function AddMyWalletAddressPage() {
   const router = useRouter();
-  const { user, updateWallet } = useMe();
+  const { user, updateUser } = useMe();
   const {
     postMeConnectWallet,
     isPosting,
@@ -91,30 +91,30 @@ export default function AddMyWalletAddressPage() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // Handle initial authentication check and redirection
+  // // Handle initial authentication check and redirection
   useEffect(() => {
-    const checkUserWallet = async () => {
-      try {
-        // Only redirect if user exists and already has a wallet
-        if (user && user.wallet_address) {
-          console.log("🔄 User already has a wallet, redirecting to dashboard");
-          await router.replace("/user/dashboard");
-          return;
-        }
+    //   const checkUserWallet = async () => {
+    //     try {
+    //       // Only redirect if user exists and already has a wallet
+    //       if (user && user.wallet_address) {
+    //         console.log("🔄 User already has a wallet, redirecting to dashboard");
+    //         await router.replace("/user/dashboard");
+    //         return;
+    //       }
 
-        // Log the current state for debugging
-        console.log("👤 User wallet status:", {
-          hasUser: !!user,
-          hasWallet: user?.wallet_address,
-        });
-      } catch (error) {
-        console.error("❌ Error during initialization:", error);
-      } finally {
-        setIsInitializing(false);
-      }
-    };
+    //       // Log the current state for debugging
+    //       console.log("👤 User wallet status:", {
+    //         hasUser: !!user,
+    //         hasWallet: user?.wallet_address,
+    //       });
+    //     } catch (error) {
+    //       console.error("❌ Error during initialization:", error);
+    //     } finally {
+    setIsInitializing(false);
+    //     }
+    //   };
 
-    checkUserWallet();
+    //   checkUserWallet();
   }, [user, router]);
 
   // Don't render the main content while checking user status
@@ -140,17 +140,20 @@ export default function AddMyWalletAddressPage() {
     try {
       const success = await postMeConnectWallet(walletAddress);
 
-      if (success) {
+      if (success && user) {
+        // Make sure we have a user
         console.log("✅ Wallet connected successfully");
 
-        // Update local state
-        updateWallet(walletAddress);
+        // Update the entire user object with the new wallet address
+        const updatedUser = {
+          ...user,
+          wallet_address: walletAddress,
+        };
+        updateUser(updatedUser);
 
-        // Use replace instead of push to prevent back navigation
         console.log("🔄 Redirecting to dashboard");
         router.replace("/user/dashboard");
 
-        // Force a page reload after a short delay to ensure all states are updated
         setTimeout(() => {
           console.log("🔄 Forcing page reload to refresh states");
           window.location.href = "/user/dashboard";

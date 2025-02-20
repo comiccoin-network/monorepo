@@ -2,10 +2,17 @@
 import { useState, useEffect } from "react";
 
 interface User {
+  federatedidentity_id: string;
   id: string;
   email: string;
+  first_name: string;
+  last_name: string;
   name: string;
-  walletAddress?: string;
+  lexical_name: string;
+  phone: string;
+  country: string;
+  timezone: string;
+  wallet_address: string | null;
 }
 
 export function useMe() {
@@ -23,21 +30,10 @@ export function useMe() {
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  const updateWallet = (walletAddress: string) => {
-    if (user) {
-      const updatedUser = {
-        ...user,
-        wallet_address: walletAddress, // Store as a direct string property
-      };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-    }
-  };
-
   const clearUser = () => {
     setUser(null);
     localStorage.removeItem("user");
   };
 
-  return { user, updateUser, updateWallet, clearUser };
+  return { user, updateUser, clearUser };
 }

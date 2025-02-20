@@ -1,34 +1,25 @@
-// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useMeConnectWallet.ts
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useMeConnectWallet.tsimport { useState } from "react";
 import { useState } from "react";
 import { createAuthenticatedFetch } from "@/utils/api";
 import { API_CONFIG } from "@/config/env";
-import { useAuthStore } from "@/hooks/useAuth";
 
+// Define the response type for the connect wallet endpoint
 interface ConnectWalletResponse {
   success: boolean;
   wallet_address: string;
-  // Add other response fields as needed
 }
 
 export function usePostMeConnectWallet() {
   const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const { tokens, setUser: setAuthUser } = useAuthStore();
-
   const fetchWithAuth = createAuthenticatedFetch();
 
-  const postMeConnectWallet = async (
-    walletAddress: string,
-  ): Promise<boolean> => {
+  const postMeConnectWallet = async (walletAddress: string): Promise<boolean> => {
     console.log("🔄 Starting wallet connection process");
     setIsPosting(true);
     setError(null);
 
     try {
-      if (!tokens) {
-        throw new Error("No authentication tokens available");
-      }
-
       console.log("📤 Sending wallet connection request:", {
         walletAddress: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
       });
@@ -54,27 +45,10 @@ export function usePostMeConnectWallet() {
       const data: ConnectWalletResponse = await response.json();
       console.log("✅ Wallet connection successful");
 
-      // Important: Update auth store with new user data including wallet
-      setAuthUser((prevUser) => {
-        if (!prevUser) return null;
-        const updatedUser = {
-          ...prevUser,
-          wallet_address: { address: walletAddress },
-        };
-        console.log("👤 Updating user data in auth store:", {
-          hasWallet: !!updatedUser.wallet_address,
-        });
-        // Ensure the user data is also persisted to localStorage
-        localStorage.setItem("auth-user", JSON.stringify(updatedUser));
-        return updatedUser;
-      });
-
       return true;
     } catch (err) {
       console.error("❌ Wallet connection error:", err);
-      setError(
-        err instanceof Error ? err : new Error("Failed to connect wallet"),
-      );
+      setError(err instanceof Error ? err : new Error("Failed to connect wallet"));
       return false;
     } finally {
       setIsPosting(false);

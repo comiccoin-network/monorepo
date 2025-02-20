@@ -15,17 +15,22 @@ import (
 )
 
 func (impl *remoteFederatedIdentityImpl) PostUpdateToRemote(ctx context.Context, req *dom.RemoteFederatedIdentityDTO, accessToken string) error {
-	impl.Logger.Debug("starting to update remote federated identity",
+	impl.Logger.Debug("📌 starting to update remote federated identity",
 		slog.String("server_url", impl.Config.OAuth.ServerURL))
 
 	// Create registration endpoint URL
-	profileURL := fmt.Sprintf("%s/gateway/api/v1/federated-identity", impl.Config.OAuth.ServerURL)
+	profileURL := fmt.Sprintf("%s/gateway/api/v1/resources/federated-identity", impl.Config.OAuth.ServerURL)
 
 	// Marshal the request body
 	reqBody, err := json.Marshal(req)
 	if err != nil {
 		return fmt.Errorf("marshalling request body: %w", err)
 	}
+
+	impl.Logger.Debug("🕐 submitting please wait...",
+		slog.Any("url", profileURL),
+		slog.Any("method", http.MethodPost),
+	)
 
 	// Create a new HTTP request with the access token in the Authorization header
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, profileURL, bytes.NewBuffer(reqBody))
@@ -59,6 +64,8 @@ func (impl *remoteFederatedIdentityImpl) PostUpdateToRemote(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("reading response body: %w", err)
 	}
+
+	impl.Logger.Debug("✅ finished posting update to remote federated identity")
 
 	return nil
 }

@@ -5,27 +5,29 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"strings"
 
+	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/password"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/password"
 	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/domain/federatedidentity"
 	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/usecase/federatedidentity"
 	uc_ratelimit "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/usecase/ratelimiter"
 )
 
 type UpdateFederatedIdentityRequest struct {
-	ID primitive.ObjectID `bson:"_id" json:"id"`
-	// Email       string `json:"email"`
-	// Password    string `json:"password"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Phone     string `json:"phone"`
-	Country   string `json:"country"`
-	Timezone  string `json:"timezone"`
+	ID            primitive.ObjectID `bson:"_id" json:"id"`
+	Email         string             `json:"email"`
+	FirstName     string             `json:"first_name"`
+	LastName      string             `json:"last_name"`
+	Phone         string             `json:"phone"`
+	Country       string             `json:"country"`
+	Timezone      string             `json:"timezone"`
+	WalletAddress string             `bson:"wallet_address" json:"wallet_address"`
 }
 
 type UpdateFederatedIdentityService interface {
@@ -66,6 +68,8 @@ func NewUpdateFederatedIdentityService(
 }
 
 func (s *updateFederatedIdentityServiceImpl) Execute(ctx context.Context, req *UpdateFederatedIdentityRequest) (*dom_federatedidentity.FederatedIdentity, error) {
+	s.logger.Debug("📌 starting to update local federated identity on gateway")
+
 	//
 	// STEP 1: Extract from context and apply banning.
 	//
@@ -121,8 +125,22 @@ func (s *updateFederatedIdentityServiceImpl) Execute(ctx context.Context, req *U
 	}
 
 	//
+	// Convert to correct format.
+	//
+
+	walletAddress := common.HexToAddress(strings.ToLower(req.WalletAddress))
+
+	//
 	// STEP 3: Update database record.
 	//
+
+	federatedidentity.Email = req.Email
+	federatedidentity.FirstName = req.FirstName
+	federatedidentity.LastName = req.LastName
+	federatedidentity.Phone = req.Phone
+	federatedidentity.Country = req.Country
+	federatedidentity.Timezone = req.Timezone
+	federatedidentity.WalletAddress = &walletAddress
 
 	if err := s.federatedIdentityUpdateUseCase.Execute(ctx, federatedidentity); err != nil {
 		s.logger.Error("failed to update federated identity",
@@ -151,5 +169,6 @@ func (s *updateFederatedIdentityServiceImpl) Execute(ctx context.Context, req *U
 		// Continue despite error resetting failures
 	}
 
+	s.logger.Debug("✅ Updated local federated identity on gateway")
 	return federatedidentity, nil
 }
