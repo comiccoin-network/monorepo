@@ -2,8 +2,10 @@
 package hello
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
+	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -11,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	dom_auth_tx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
@@ -142,6 +145,11 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 		svc.logger.Debug("Failed getting user by federatedidentity id", slog.Any("error", err))
 		return nil, err
 	}
+	privateKey, err := svc.getPublicFaucetPrivateKeyService.Execute(sessCtx)
+	if err != nil {
+		svc.logger.Debug("Failed to get private key", slog.Any("error", err))
+		return nil, err
+	}
 
 	//
 	// Validation 1: Check whether user is able to claim.
@@ -162,23 +170,74 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 	// Validation 2: Check whether our faucet has large enough balance
 	//
 
-	remoteAccountBalance, err := svc.fetchRemoteAccountBalanceFromAuthorityUseCase.Execute(sessCtx, svc.config.Blockchain.PublicFaucetAccountAddress)
+	remoteAccount, err := svc.fetchRemoteAccountBalanceFromAuthorityUseCase.Execute(sessCtx, svc.config.Blockchain.PublicFaucetAccountAddress)
 	if err != nil {
 		svc.logger.Error("failed getting balance from authority error",
 			slog.Any("address", svc.config.Blockchain.PublicFaucetAccountAddress),
 			slog.Any("err", err))
 		return nil, err
 	}
-	if remoteAccountBalance == nil {
+	if remoteAccount == nil {
 		err := fmt.Errorf("balance d.n.e. for address: %v", svc.config.Blockchain.PublicFaucetAccountAddress)
 		svc.logger.Error("failed getting balance from authority", slog.Any("err", err))
 		return nil, err
 	}
+	if remoteAccount.Balance < svc.config.Blockchain.PublicFaucetClaimCoinsReward {
+		err := errors.New("Insufficient faucet balance")
+		svc.logger.Error("Cannot claim coins", slog.Any("err", err))
+		return nil, err
+	}
 
 	//
-	// Claim process
-	// 1. Sign transaction
-	// 2. Submit to Authority
+	// Create our pending transaction and sign it with the faucet's private key.
+	//
+
+	tx := &dom_auth_tx.Transaction{
+		ChainID:    svc.config.Blockchain.ChainID,
+		NonceBytes: big.NewInt(time.Now().Unix()).Bytes(),
+		From:       svc.config.Blockchain.ProofOfAuthorityAccountAddress,
+		To:         user.WalletAddress,
+		Value:      svc.config.Blockchain.PublicFaucetClaimCoinsReward + svc.config.Blockchain.TransactionFee, // Note: The transaction fee gets reclaimed by the Authority, so it's fully recirculating when authority calls this.
+		Data:       []byte{},
+		Type:       dom_auth_tx.TransactionTypeCoin,
+	}
+
+	stx, signingErr := tx.Sign(privateKey)
+	if signingErr != nil {
+		svc.logger.Debug("Failed to sign the transaction",
+			slog.Any("error", signingErr))
+		return nil, signingErr
+	}
+
+	// Defensive Coding.
+	if err := stx.Validate(svc.config.Blockchain.ChainID, true); err != nil {
+		svc.logger.Debug("Failed to validate signature of the signed transaction",
+			slog.Any("error", signingErr))
+		return nil, signingErr
+	}
+
+	svc.logger.Debug("Transaction signed successfully",
+		slog.Any("chain_id", stx.ChainID),
+		slog.Any("nonce", stx.GetNonce()),
+		slog.Any("from", stx.From),
+		slog.Any("to", stx.To),
+		slog.Any("fee", svc.config.Blockchain.TransactionFee),
+		slog.Any("value", stx.Value),
+		slog.Any("data", stx.Data),
+		slog.Any("type", stx.Type),
+		slog.Any("token_id", stx.GetTokenID()),
+		slog.Any("token_metadata_uri", stx.TokenMetadataURI),
+		slog.Any("token_nonce", stx.GetTokenNonce()),
+		slog.Any("tx_sig_v_bytes", stx.VBytes),
+		slog.Any("tx_sig_r_bytes", stx.RBytes),
+		slog.Any("tx_sig_s_bytes", stx.SBytes),
+		slog.Any("tx_nonce", stx.GetNonce()))
+
+	//
+	// Submit the signed transaction to the Authority.
+	//
+
+	//TODO: Submit to authority.
 
 	//
 	// Update user record.
@@ -192,6 +251,7 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 		slog.Any("next_claim_time", user.NextClaimTime),
 		slog.Any("can_claim", canClaim),
 	)
+	//TODO: Save to database
 
 	//
 	// Return `Me` profile details.

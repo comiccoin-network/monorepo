@@ -59,9 +59,10 @@ type BlockchainConfig struct {
 	AuthorityServerURL string
 
 	// (Only set by Public Faucet node)
-	PublicFaucetAccountAddress *common.Address
-	PublicFaucetWalletMnemonic *sstring.SecureString
-	PublicFaucetWalletPath     string
+	PublicFaucetAccountAddress   *common.Address
+	PublicFaucetWalletMnemonic   *sstring.SecureString
+	PublicFaucetWalletPath       string
+	PublicFaucetClaimCoinsReward uint64
 }
 
 type DBConfig struct {
@@ -147,6 +148,8 @@ func NewProvider() *Configuration {
 	c.PublicFaucetOAuth.ClientRegisterCancelURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REGISTER_CANCEL_URI", true)
 	c.PublicFaucetOAuth.ClientAuthorizeOrLoginSuccessURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_LOGIN_SUCCESS_URI", true)
 	c.PublicFaucetOAuth.ClientAuthorizeOrLoginCancelURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_LOGIN_CANCEL_URI", true)
+	// Claim Coins Reward
+	c.Blockchain.PublicFaucetClaimCoinsReward = getUint64Env("COMICCOIN_PUBLICFAUCET_CLAIM_COINS_REWARD", true)
 
 	return &c
 }
@@ -212,4 +215,16 @@ func getStringsArrEnv(key string, required bool) []string {
 		log.Fatalf("Environment variable not found: %s", key)
 	}
 	return strings.Split(value, ",")
+}
+
+func getUint64Env(key string, required bool) uint64 {
+	value := os.Getenv(key)
+	if required && value == "" {
+		log.Fatalf("Environment variable not found: %s", key)
+	}
+	valueUint64, err := strconv.ParseUint(value, 10, 64)
+	if err != nil {
+		log.Fatalf("Invalid uint64 value for environment variable %s", key)
+	}
+	return valueUint64
 }
