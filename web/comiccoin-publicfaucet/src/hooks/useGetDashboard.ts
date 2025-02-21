@@ -1,3 +1,4 @@
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useGetDashboard.ts
 import { useState, useEffect } from "react";
 import { API_CONFIG } from "@/config/env";
 import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
