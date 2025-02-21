@@ -1,35 +1,35 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/user/claim-coins/page.tsx
-// app/user/claim/page.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMe } from "@/hooks/useMe";
-import { useGetDashboard } from "@/hooks/useGetDashboard";
+import useClaimCoins from "@/hooks/useClaimCoins";
 import { Coins, Gift, Clock } from "lucide-react";
 
 const ClaimCoinsPage = () => {
   const router = useRouter();
-  const { user } = useMe();
-  const { dashboard, isLoading, error, refetch } = useGetDashboard({
-    refreshInterval: 30000,
-  });
-
-  const [isClaimingCoins, setIsClaimingCoins] = useState(false);
+  const { updateUser } = useMe();
+  const { claimCoins, isLoading: isClaimingCoins } = useClaimCoins();
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (!dashboard) return <div>No data available</div>;
-
   const handleClaimCoins = async () => {
-    setIsClaimingCoins(true);
-    // TODO: Implement claim API call
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
-    setShowSuccessAnimation(true);
-    setTimeout(() => {
-      router.push("/user/dashboard");
-    }, 3000);
+    try {
+      // Step 1: Claim coins and get updated user data
+      const updatedUserData = await claimCoins();
+
+      // Step 2: Save updated user profile
+      updateUser(updatedUserData);
+
+      // Step 3: Show success animation and redirect
+      setShowSuccessAnimation(true);
+      setTimeout(() => {
+        router.push("/user/dashboard");
+      }, 3000);
+    } catch (err) {
+      console.error("Error during claim process:", err);
+      // Handle error appropriately
+    }
   };
 
   return (

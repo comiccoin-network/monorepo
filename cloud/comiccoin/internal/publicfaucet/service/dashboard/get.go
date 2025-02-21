@@ -106,8 +106,11 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 	//
 
 	// Special circumstances
+	var canClaim bool
 	if user.LastClaimTime.IsZero() || user.NextClaimTime.IsZero() {
-		user.CanClaim = true
+		canClaim = true
+	} else {
+		canClaim = time.Now().After(user.NextClaimTime)
 	}
 
 	svc.logger.Debug("execution finished")
@@ -121,7 +124,7 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 		LastModifiedAt:          faucet.LastModifiedAt,
 		LastClaimTime:           user.LastClaimTime,
 		NextClaimTime:           user.NextClaimTime,
-		CanClaim:                user.CanClaim,
+		CanClaim:                canClaim,
 		// LastClaimTime: lastClaimTime,
 		// NextClaimTime: nextClaimTime,
 		// CanClaim:      canClaim,

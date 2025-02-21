@@ -17,6 +17,7 @@ import (
 	// http_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/oauth"
 	// http_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/registration"
 	// http_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/token"
+	http_claimcoins "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/claimcoins"
 	http_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/dashboard"
 	http_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/faucet"
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/hello"
@@ -59,6 +60,8 @@ type httpServerImpl struct {
 	faucetServerSentEventsHTTPHandler *http_faucet.FaucetServerSentEventsHTTPHandler
 
 	dashboard *http_dashboard.DashboardHTTPHandler
+
+	postClaimCoins *http_claimcoins.PostClaimCoinsHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -73,6 +76,7 @@ func NewHTTPServer(
 	getFaucetByChainID *http_faucet.GetFaucetByChainIDHTTPHandler,
 	faucetServerSentEventsHTTPHandler *http_faucet.FaucetServerSentEventsHTTPHandler,
 	dashboard *http_dashboard.DashboardHTTPHandler,
+	postClaimCoins *http_claimcoins.PostClaimCoinsHTTPHandler,
 ) HTTPServer {
 
 	// Create a new HTTP server instance.
@@ -87,6 +91,7 @@ func NewHTTPServer(
 		getFaucetByChainID:                getFaucetByChainID,
 		faucetServerSentEventsHTTPHandler: faucetServerSentEventsHTTPHandler,
 		dashboard:                         dashboard,
+		postClaimCoins:                    postClaimCoins,
 	}
 
 	return port
@@ -169,6 +174,10 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		// "Does App Platform support SSE (Server-Sent Events) application?" via https://www.digitalocean.com/community/questions/does-app-platform-support-sse-server-sent-events-application
 		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "faucet" && p[4] == "sse" && r.Method == http.MethodPost:
 			port.faucetServerSentEventsHTTPHandler.Execute(w, r)
+
+			// Claim Coins
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "claim-coins" && r.Method == http.MethodPost:
+			port.postClaimCoins.Execute(w, r)
 
 		// --- CATCH ALL: D.N.E. ---
 		default:

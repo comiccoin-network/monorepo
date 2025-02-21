@@ -118,9 +118,6 @@ type User struct {
 
 	// NextClaimTime indicates the next available time the user is able to claim a bunch of coins immediatly
 	NextClaimTime time.Time `bson:"next_claim_time" json:"next_claim_time"`
-
-	// CanClaim indicates whether user can claim a bunch of coins immediatly
-	CanClaim bool `bson:"can_claim" json:"can_claim"`
 }
 
 type UserComment struct {

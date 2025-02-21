@@ -69,7 +69,7 @@ func (svc *updateFaucetBalanceByAuthorityImpl) Execute(ctx context.Context) erro
 	}
 	if remoteAccountBalance == nil {
 		err := fmt.Errorf("balance d.n.e. for address: %v", svc.config.Blockchain.PublicFaucetAccountAddress)
-		svc.logger.Error("failed getting faucet by chain id error", slog.Any("err", err))
+		svc.logger.Error("failed getting balance from authority error", slog.Any("err", err))
 		return err
 	}
 

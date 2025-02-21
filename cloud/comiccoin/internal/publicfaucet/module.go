@@ -20,6 +20,7 @@ import (
 	redis_cache "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/memory/redis"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http"
 	httpserver "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http"
+	http_claimcoins "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/claimcoins"
 	http_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/dashboard"
 	http_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/faucet"
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/hello"
@@ -31,6 +32,7 @@ import (
 	r_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/faucet"
 	r_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/remoteaccountbalance"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/user"
+	svc_claimcoins "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/claimcoins"
 	sv_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/dashboard"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
 	svc_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/hello"
@@ -248,7 +250,6 @@ func NewModule(
 		logger,
 		privateKeyFromHDWalletUseCase,
 	)
-	_ = getPublicFaucetPrivateKeyService //TODO: Utilize in coin transfer
 
 	updateFaucetBalanceByAuthorityService := svc_faucet.NewUpdateFaucetBalanceByAuthorityService(
 		cfg,
@@ -265,6 +266,18 @@ func NewModule(
 		logger,
 		getFaucetByChainIDUseCase,
 		userGetByFederatedIdentityIDUseCase,
+	)
+
+	// --- Claim Coins ---
+
+	claimCoinsService := svc_claimcoins.NewClaimCoinsService(
+		cfg,
+		logger,
+		getFaucetByChainIDUseCase,
+		fetchRemoteAccountBalanceFromAuthorityUseCase,
+		getPublicFaucetPrivateKeyService,
+		userGetByFederatedIdentityIDUseCase,
+		userUpdateUseCase,
 	)
 
 	////
@@ -318,6 +331,15 @@ func NewModule(
 		getDasbhoardService,
 	)
 
+	// --- Claim Coins ---
+
+	postClaimCoinsHTTPHandler := http_claimcoins.NewPostClaimCoinsHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		claimCoinsService,
+	)
+
 	// --- HTTP Middleware ---
 
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -342,6 +364,7 @@ func NewModule(
 		getFaucetByChainIDHTTPHandler,
 		faucetServerSentEventsHTTPHandler,
 		dashboardHTTPHandler,
+		postClaimCoinsHTTPHandler,
 	)
 
 	// --- Tasks ---

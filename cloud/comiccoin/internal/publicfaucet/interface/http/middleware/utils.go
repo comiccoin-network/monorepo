@@ -24,6 +24,7 @@ func init() {
 		"/publicfaucet/api/v1/me":                true,
 		"/publicfaucet/api/v1/me/connect-wallet": true,
 		"/publicfaucet/api/v1/dashboard":         true,
+		"/publicfaucet/api/v1/claim-coins":       true,
 	}
 
 	// Pattern matches
