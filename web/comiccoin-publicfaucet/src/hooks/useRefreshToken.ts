@@ -7,23 +7,26 @@ export function useRefreshToken() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { tokens, setTokens, clearTokens } = useAuthStore();
 
-  // This is our main refresh function that will be used by createAuthenticatedFetch
   const refreshTokens = useCallback(async (): Promise<boolean> => {
-    // Add a mutex lock to prevent multiple simultaneous refresh attempts
     if (isRefreshing) {
       console.log("🔒 Token refresh already in progress");
       return false;
     }
 
-    if (!tokens?.refreshToken) {
-      console.log("❌ No refresh token available");
+    if (!tokens?.refreshToken || !tokens?.federatedidentityId) {
+      console.log("❌ Missing required token data", {
+        hasRefreshToken: !!tokens?.refreshToken,
+        hasFederatedId: !!tokens?.federatedidentityId,
+      });
       clearTokens();
       return false;
     }
 
     try {
       setIsRefreshing(true);
-      console.log("🔄 Attempting to refresh tokens");
+      console.log("🔄 Attempting to refresh tokens", {
+        federatedId: tokens.federatedidentityId,
+      });
 
       const response = await fetch(
         `${API_CONFIG.baseUrl}/publicfaucet/api/v1/token/refresh`,
@@ -33,6 +36,7 @@ export function useRefreshToken() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            federatedidentity_id: tokens.federatedidentityId,
             refresh_token: tokens.refreshToken,
           }),
         },
@@ -44,7 +48,11 @@ export function useRefreshToken() {
 
       const data = await response.json();
 
-      if (!data.access_token || !data.refresh_token) {
+      if (
+        !data.access_token ||
+        !data.refresh_token ||
+        !data.federatedidentity_id
+      ) {
         throw new Error("Invalid token data received");
       }
 
@@ -52,6 +60,7 @@ export function useRefreshToken() {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
         expiresAt: data.expires_at,
+        federatedidentityId: data.federatedidentity_id,
       });
 
       console.log("✅ Successfully refreshed tokens");

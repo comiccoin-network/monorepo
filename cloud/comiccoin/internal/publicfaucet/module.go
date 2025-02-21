@@ -8,6 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	r_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/repo"
+	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltxdto"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/distributedmutex"
 	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient"
@@ -104,6 +106,10 @@ func NewModule(
 	userRepo := r_user.NewRepository(cfg, logger, dbClient)
 	faucetRepo := r_faucet.NewRepository(cfg, logger, dbClient)
 	remoteaccountbalance := r_remoteaccountbalance.NewRepository(cfg, logger)
+
+	// (External package)
+	mempoolTransactionDTOConfigurationProvider := r_mempooltxdto.NewMempoolTransactionDTOConfigurationProvider(cfg.Blockchain.AuthorityServerURL)
+	mempoolTxDTORepo := r_mempooltxdto.NewMempoolTransactionDTORepo(mempoolTransactionDTOConfigurationProvider, logger)
 
 	////
 	//// Use-case
@@ -206,6 +212,12 @@ func NewModule(
 		remoteaccountbalance,
 	)
 
+	// --- Mempooltx DTO (Exteranl package)---
+	submitMempoolTransactionDTOToBlockchainAuthorityUseCase := uc_mempooltxdto.NewSubmitMempoolTransactionDTOToBlockchainAuthorityUseCase(
+		logger,
+		mempoolTxDTORepo,
+	)
+
 	////
 	//// Service
 	////
@@ -276,6 +288,7 @@ func NewModule(
 		getFaucetByChainIDUseCase,
 		fetchRemoteAccountBalanceFromAuthorityUseCase,
 		getPublicFaucetPrivateKeyService,
+		submitMempoolTransactionDTOToBlockchainAuthorityUseCase, // (External package)
 		userGetByFederatedIdentityIDUseCase,
 		userUpdateUseCase,
 	)

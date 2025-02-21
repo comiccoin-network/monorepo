@@ -13,7 +13,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	dom_auth_memp "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	dom_auth_tx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
+	uc_auth_memp "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltxdto"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
@@ -91,13 +93,14 @@ type ClaimCoinsService interface {
 }
 
 type claimCoinsServiceImpl struct {
-	config                                        *config.Configuration
-	logger                                        *slog.Logger
-	getFaucetByChainIDUseCase                     uc_faucet.GetFaucetByChainIDUseCase
-	fetchRemoteAccountBalanceFromAuthorityUseCase uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase
-	getPublicFaucetPrivateKeyService              svc_faucet.GetPublicFaucetPrivateKeyService
-	userGetByFederatedIdentityIDUseCase           uc_user.UserGetByFederatedIdentityIDUseCase
-	userUpdateUseCase                             uc_user.UserUpdateUseCase
+	config                                                  *config.Configuration
+	logger                                                  *slog.Logger
+	getFaucetByChainIDUseCase                               uc_faucet.GetFaucetByChainIDUseCase
+	fetchRemoteAccountBalanceFromAuthorityUseCase           uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase
+	getPublicFaucetPrivateKeyService                        svc_faucet.GetPublicFaucetPrivateKeyService
+	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_auth_memp.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
+	userGetByFederatedIdentityIDUseCase                     uc_user.UserGetByFederatedIdentityIDUseCase
+	userUpdateUseCase                                       uc_user.UserUpdateUseCase
 }
 
 func NewClaimCoinsService(
@@ -106,6 +109,7 @@ func NewClaimCoinsService(
 	getFaucetByChainIDUseCase uc_faucet.GetFaucetByChainIDUseCase,
 	fetchRemoteAccountBalanceFromAuthorityUseCase uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase,
 	getPublicFaucetPrivateKeyService svc_faucet.GetPublicFaucetPrivateKeyService,
+	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_auth_memp.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase,
 	userUpdateUseCase uc_user.UserUpdateUseCase,
 ) ClaimCoinsService {
@@ -113,10 +117,11 @@ func NewClaimCoinsService(
 		config:                    config,
 		logger:                    logger,
 		getFaucetByChainIDUseCase: getFaucetByChainIDUseCase,
-		fetchRemoteAccountBalanceFromAuthorityUseCase: fetchRemoteAccountBalanceFromAuthorityUseCase,
-		getPublicFaucetPrivateKeyService:              getPublicFaucetPrivateKeyService,
-		userGetByFederatedIdentityIDUseCase:           userGetByFederatedIdentityIDUseCase,
-		userUpdateUseCase:                             userUpdateUseCase,
+		fetchRemoteAccountBalanceFromAuthorityUseCase:           fetchRemoteAccountBalanceFromAuthorityUseCase,
+		getPublicFaucetPrivateKeyService:                        getPublicFaucetPrivateKeyService,
+		submitMempoolTransactionDTOToBlockchainAuthorityUseCase: submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
+		userGetByFederatedIdentityIDUseCase:                     userGetByFederatedIdentityIDUseCase,
+		userUpdateUseCase:                                       userUpdateUseCase,
 	}
 }
 
@@ -237,7 +242,41 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 	// Submit the signed transaction to the Authority.
 	//
 
-	//TODO: Submit to authority.
+	//
+	// STEP 3
+	// Send our pending signed transaction to the authority's mempool to wait
+	// in a queue to be processed.
+	//
+
+	mempoolTx := &dom_auth_memp.MempoolTransaction{
+		ID:                primitive.NewObjectID(),
+		SignedTransaction: stx,
+	}
+
+	// Defensive Coding.
+	if err := mempoolTx.Validate(svc.config.Blockchain.ChainID, false); err != nil {
+		svc.logger.Debug("Failed to validate signature of mempool transaction",
+			slog.Any("error", signingErr))
+		return nil, signingErr
+	}
+
+	svc.logger.Debug("Mempool transaction ready for submission",
+		slog.Any("Transaction", stx.Transaction),
+		// slog.Any("tx_sig_v_bytes", stx.VBytes),
+		// slog.Any("tx_sig_r_bytes", stx.RBytes),
+		// slog.Any("tx_sig_s_bytes", stx.SBytes)
+	)
+
+	dto := mempoolTx.ToDTO()
+
+	if err := svc.submitMempoolTransactionDTOToBlockchainAuthorityUseCase.Execute(sessCtx, dto); err != nil {
+		svc.logger.Error("Failed to broadcast to the blockchain authority",
+			slog.Any("error", err))
+		return nil, err
+	}
+
+	svc.logger.Info("Pending signed transaction for coin transfer submitted to the blockchain authority",
+		slog.Any("tx_nonce", stx.GetNonce()))
 
 	//
 	// Update user record.
@@ -251,7 +290,6 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 		slog.Any("next_claim_time", user.NextClaimTime),
 		slog.Any("can_claim", canClaim),
 	)
-	//TODO: Save to database
 
 	//
 	// Return `Me` profile details.

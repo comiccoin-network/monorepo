@@ -7,8 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
 	service_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/service/token"
@@ -33,8 +31,7 @@ func NewPostTokenRefreshHTTPHandler(
 }
 
 type tokenRefreshRequestIDO struct {
-	FederatedIdentityID string `json:"federatedidentity_id"`
-	RefreshToken        string `json:"refresh_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type tokenRefreshResponseIDO struct {
@@ -69,27 +66,15 @@ func (h *PostTokenRefreshHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Convert federatedidentity_id string to ObjectID
-	federatedidentityID, err := primitive.ObjectIDFromHex(requestIDO.FederatedIdentityID)
-	if err != nil {
-		h.logger.Error("invalid federatedidentity_id format",
-			slog.String("federatedidentity_id", requestIDO.FederatedIdentityID),
-			slog.Any("error", err))
-		httperror.ResponseError(w, httperror.NewForBadRequest(nil))
-		return
-	}
-
 	// Convert IDO to service request
 	request := &service_token.RefreshRequest{
-		FederatedIdentityID: federatedidentityID,
-		RefreshToken:        requestIDO.RefreshToken,
+		RefreshToken: requestIDO.RefreshToken,
 	}
 
 	// Call service
 	response, err := h.service.RefreshToken(r.Context(), request)
 	if err != nil {
 		h.logger.Error("token refresh failed",
-			slog.Any("federatedidentity_id", request.FederatedIdentityID),
 			slog.Any("error", err))
 		httperror.ResponseError(w, err)
 		return
@@ -110,7 +95,4 @@ func (h *PostTokenRefreshHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		httperror.ResponseError(w, err)
 		return
 	}
-
-	h.logger.Info("✅ token refresh processed successfully",
-		slog.Any("federatedidentity_id", request.FederatedIdentityID))
 }

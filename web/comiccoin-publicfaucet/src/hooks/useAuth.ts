@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { API_CONFIG } from "@/config/env";
 
-// First, let's define our interfaces for better type safety
+// Define our types for better type safety and code clarity
 interface Tokens {
   accessToken: string;
   refreshToken: string;
@@ -19,116 +19,92 @@ interface AuthState {
   refreshTokens: () => Promise<boolean>;
 }
 
-// Here's our custom storage implementation that was missing before
-// This adds logging and better error handling around localStorage operations
+// Our custom storage implementation with robust error handling
 const createAuthStorage = () => {
   return createJSONStorage(() => ({
     getItem: (name: string) => {
       try {
-        // Try to get the item from localStorage
         const value = localStorage.getItem(name);
-
         if (!value) {
           console.log("📭 AUTH STATE: No tokens found in storage");
           return null;
         }
 
-        // Parse the stored data and verify its structure
+        // Parse and validate the stored data structure
         const parsed = JSON.parse(value);
-        const hasTokens = !!parsed?.state?.tokens;
+        const tokens = parsed?.state?.tokens;
 
-        console.log("📦 AUTH STATE: Found stored data", {
-          hasTokens,
-          storageKey: name,
-        });
-
-        // Validate the token structure
-        if (!hasTokens) {
-          console.warn("⚠️ AUTH VALIDATION: Invalid token structure", {
-            reason: "Missing required token data",
-          });
+        // Perform thorough validation of the token structure
+        if (!tokens?.accessToken || !tokens?.refreshToken) {
+          console.warn("⚠️ AUTH VALIDATION: Invalid token structure");
           return null;
         }
 
+        console.log("📦 AUTH STATE: Valid tokens found in storage");
         return value;
       } catch (error) {
-        // Handle any errors during storage operations
-        console.error("💥 AUTH ERROR: Failed reading from storage", error);
+        console.log("💥 AUTH ERROR: Storage read failed", error);
         return null;
       }
     },
-
     setItem: (name: string, value: string) => {
       try {
         localStorage.setItem(name, value);
-        console.log("✅ AUTH STORAGE: Successfully saved tokens");
+        console.log("✅ AUTH STORAGE: Tokens saved successfully");
       } catch (error) {
-        console.error("💥 AUTH ERROR: Failed saving to storage", error);
+        console.log("💥 AUTH ERROR: Storage write failed", error);
       }
     },
-
     removeItem: (name: string) => {
       try {
         localStorage.removeItem(name);
-        console.log("✅ AUTH CLEANUP: Successfully cleared tokens");
+        console.log("✅ AUTH CLEANUP: Storage cleared successfully");
       } catch (error) {
-        console.error("💥 AUTH ERROR: Failed removing from storage", error);
+        console.log("💥 AUTH ERROR: Storage cleanup failed", error);
       }
     },
   }));
 };
 
-// Now we can create our Zustand store with persistence
+// Create our Zustand store with persistence and proper token management
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      // Initial state
       tokens: null,
       isAuthenticated: false,
       isRefreshing: false,
 
-      // Actions
       setTokens: (tokens) => {
-        console.log("🎭 AUTH FLOW: Token update requested", {
-          action: tokens ? "Setting new tokens" : "Clearing tokens",
-          hasTokens: !!tokens,
-        });
-
         if (tokens) {
-          // Convert timestamp to milliseconds if needed
-          if (tokens.expiresAt < 1000000000000) {
-            tokens.expiresAt *= 1000;
-          }
+          // Ensure timestamp is in milliseconds
+          const expiresAt =
+            tokens.expiresAt < 1000000000000
+              ? tokens.expiresAt * 1000
+              : tokens.expiresAt;
 
-          const now = Date.now();
-          const timeUntilExpiry = Math.floor((tokens.expiresAt - now) / 1000);
-
-          console.log("📊 AUTH TOKENS: New token details", {
-            expiresAt: new Date(tokens.expiresAt).toISOString(),
-            timeUntilExpiry: `${timeUntilExpiry} seconds`,
+          console.log("🎭 AUTH FLOW: Setting new tokens", {
+            expiresIn: Math.floor((expiresAt - Date.now()) / 1000) + " seconds",
           });
-        }
 
-        set({
-          tokens,
-          isAuthenticated: !!tokens,
-        });
+          set({
+            tokens: { ...tokens, expiresAt },
+            isAuthenticated: true,
+          });
+        } else {
+          console.log("🎭 AUTH FLOW: Clearing tokens");
+          set({ tokens: null, isAuthenticated: false });
+        }
       },
 
       clearTokens: () => {
-        console.log("🚪 AUTH LOGOUT: Starting cleanup");
-        localStorage.removeItem("auth_tokens"); // Clear legacy storage
-        set({
-          tokens: null,
-          isAuthenticated: false,
-        });
+        console.log("🚪 AUTH LOGOUT: Cleaning up");
+        set({ tokens: null, isAuthenticated: false });
       },
 
-      // Centralized refresh token logic
       refreshTokens: async () => {
         const state = get();
 
-        // Prevent multiple simultaneous refresh attempts
+        // Prevent concurrent refresh attempts
         if (state.isRefreshing) {
           console.log("🔄 Token refresh already in progress");
           return false;
@@ -142,25 +118,37 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           set({ isRefreshing: true });
-          console.log("🔄 Attempting to refresh tokens");
+          console.log("🔄 Attempting token refresh");
 
+          // Make the refresh request with proper error handling
           const response = await fetch(
             `${API_CONFIG.baseUrl}/publicfaucet/api/v1/token/refresh`,
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+              },
               body: JSON.stringify({
                 refresh_token: state.tokens.refreshToken,
               }),
             },
           );
 
+          // Handle non-200 responses properly
           if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.log("❌ Refresh failed:", errorData);
             throw new Error(`Refresh failed: ${response.status}`);
           }
 
+          // Parse and validate the response
           const data = await response.json();
 
+          if (!data.access_token || !data.refresh_token) {
+            throw new Error("Invalid token data received");
+          }
+
+          // Update tokens in the store
           state.setTokens({
             accessToken: data.access_token,
             refreshToken: data.refresh_token,
@@ -170,7 +158,7 @@ export const useAuthStore = create<AuthState>()(
           console.log("✅ Token refresh successful");
           return true;
         } catch (error) {
-          console.error("❌ Token refresh failed:", error);
+          console.log("❌ Token refresh failed:", error);
           state.clearTokens();
           return false;
         } finally {
