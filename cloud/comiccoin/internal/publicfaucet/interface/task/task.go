@@ -3,97 +3,51 @@ package task
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+
+	tsk_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/task/faucet"
 )
 
 type TaskManager interface {
 	Run()
-	Shutdown(ctx context.Context)
+	Shutdown()
 }
 
 type taskManagerImpl struct {
-	cfg    *config.Configuration
-	logger *slog.Logger
+	cfg                                *config.Configuration
+	logger                             *slog.Logger
+	updateFaucetBalanceByAuthorityTask *tsk_faucet.UpdateFaucetBalanceByAuthorityTask
 }
 
 func NewTaskManager(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-
+	updateFaucetBalanceByAuthorityTask *tsk_faucet.UpdateFaucetBalanceByAuthorityTask,
 ) TaskManager {
 	port := &taskManagerImpl{
-		cfg:    cfg,
-		logger: logger,
+		cfg:                                cfg,
+		logger:                             logger,
+		updateFaucetBalanceByAuthorityTask: updateFaucetBalanceByAuthorityTask,
 	}
 	return port
 }
 
 func (port *taskManagerImpl) Run() {
 	port.logger.Info("Running Task Manager")
-
-	// DEVELOPERS NOTE:
-	// On startup of the Task Manager, we want to immediately sync with
-	// the Global Blockchain Network to make sure we download the latest
-	// data in case we are behind. After the successful one-time sync then
-	// the Task Manager will load up another task to continously run in the
-	// background and sync with the Global Blockchain Network.
-
-	// for {
-	// 	port.logger.Info("Running one-time blockchain sync")
-	// 	if err := port.blockchainSyncWithBlockchainAuthorityTaskHandler.Execute(context.Background()); err != nil {
-	// 		port.logger.Error("Failed running one-time blockchain sync - Trying again in 10 seconds...",
-	// 			slog.Any("error", err))
-	// 		time.Sleep(10 * time.Second)
-	// 		continue
-	// 	}
-	// 	port.logger.Info("Finished running one-time blockchain sync ")
-	// 	break
-	// }
-	//
-	// go func(task *taskhandler.AttachmentGarbageCollectorTaskHandler, loggerp *slog.Logger) {
-	// 	loggerp.Info("Starting attachment garbage collector...")
-	//
-	// 	for {
-	// 		if err := task.Execute(context.Background()); err != nil {
-	// 			loggerp.Error("Failed executing attachment garbage collector",
-	// 				slog.Any("error", err))
-	// 		}
-	// 		// port.logger.Debug("Attachment garbage collector will run again in 15 seconds...")
-	// 		time.Sleep(15 * time.Second)
-	// 	}
-	// }(port.attachmentGarbageCollectorTaskHandler, port.logger)
-	//
-	// //------------------
-	// // DEPRECATED CODE:
-	// //------------------
-	// // go func(task *taskhandler.BlockchainSyncWithBlockchainAuthorityTaskHandler, loggerp *slog.Logger) {
-	// // 	loggerp.Info("Starting blockchain sync with the Authority...")
-	// //
-	// // 	for {
-	// // 		if err := task.Execute(context.Background()); err != nil {
-	// // 			loggerp.Error("Failed executing blockchain sync with the Authority.",
-	// // 				slog.Any("error", err))
-	// // 		}
-	// // 		// port.logger.Debug("Blockchain sync with the Authority will rerun again in 15 seconds...")
-	// // 		time.Sleep(15 * time.Second)
-	// // 	}
-	// // }(port.blockchainSyncWithBlockchainAuthorityTaskHandler, port.logger)
-	//
-	// go func(task *taskhandler.BlockchainSyncWithBlockchainAuthorityViaServerSentEventsTaskHandler, loggerp *slog.Logger) {
-	// 	loggerp.Info("Starting blockchain sync with the Authority...")
-	//
-	// 	for {
-	// 		if err := task.Execute(context.Background()); err != nil {
-	// 			loggerp.Error("Failed executing blockchain sync with the Authority via SSE.",
-	// 				slog.Any("error", err))
-	// 		}
-	// 		port.logger.Debug("Blockchain sync with the Authority will rerun again in 10 seconds...")
-	// 		time.Sleep(10 * time.Second)
-	// 	}
-	// }(port.blockchainSyncWithBlockchainAuthorityViaServerSentEventsTaskHandler, port.logger)
+	for {
+		if err := port.updateFaucetBalanceByAuthorityTask.Execute(context.Background()); err != nil {
+			port.logger.Error("Failed running remote account balance sync - Trying again in 10 seconds...",
+				slog.Any("error", err))
+			time.Sleep(10 * time.Second)
+			continue
+		}
+		time.Sleep(10 * time.Second)
+		port.logger.Debug("Finished sync'ing remote account balance, will sync again...")
+	}
 }
 
-func (port *taskManagerImpl) Shutdown(ctx context.Context) {
+func (port *taskManagerImpl) Shutdown() {
 	port.logger.Info("Gracefully shutting down Task Manager")
 }

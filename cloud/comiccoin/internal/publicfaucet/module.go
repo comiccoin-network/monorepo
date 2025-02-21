@@ -26,6 +26,7 @@ import (
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/me"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/task"
+	tsk_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/task/faucet"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/bannedipaddress"
 	r_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/faucet"
 	r_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/remoteaccountbalance"
@@ -254,13 +255,6 @@ func NewModule(
 	//// Interface
 	////
 
-	// --- Tasks ---
-
-	taskManager := task.NewTaskManager(
-		cfg,
-		logger,
-	)
-
 	// --- Hello ---
 
 	getHelloHTTPHandler := http_hello.NewGetHelloHTTPHandler(
@@ -332,6 +326,20 @@ func NewModule(
 		getFaucetByChainIDHTTPHandler,
 		faucetServerSentEventsHTTPHandler,
 		dashboardHTTPHandler,
+	)
+
+	// --- Tasks ---
+
+	balanceSyncTask := tsk_faucet.NewUpdateFaucetBalanceByAuthorityTask(
+		cfg,
+		logger,
+		updateFaucetBalanceByAuthorityService,
+	)
+
+	taskManager := task.NewTaskManager(
+		cfg,
+		logger,
+		balanceSyncTask,
 	)
 
 	// --- Initialize ---

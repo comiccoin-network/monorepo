@@ -20,7 +20,7 @@ func (impl *remoteAccountBalanceImpl) FetchFromAuthority(ctx context.Context, ad
 		slog.String("server_url", impl.Config.Blockchain.AuthorityServerURL))
 
 	// Create registration endpoint URL
-	remoteURL := fmt.Sprintf("%s/authority/api/v1/account-balance?address=", impl.Config.Blockchain.AuthorityServerURL, addr.String())
+	remoteURL := fmt.Sprintf("%s/authority/api/v1/account-balance?address=%s", impl.Config.Blockchain.AuthorityServerURL, addr.String())
 
 	// Create a new HTTP request with the access token in the Authorization header
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, remoteURL, nil)

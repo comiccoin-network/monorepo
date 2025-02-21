@@ -5,8 +5,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	dom "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/faucet"
 )
 
@@ -53,5 +53,5 @@ func (uc *faucetUpdateByChainIDUseCaseImpl) Execute(ctx context.Context, faucet 
 	// STEP 2: Update database record.
 	//
 
-	return uc.repo.Create(ctx, faucet)
+	return uc.repo.UpdateByChainID(ctx, faucet)
 }

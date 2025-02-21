@@ -13,7 +13,7 @@ import (
 )
 
 type UpdateFaucetBalanceByAuthorityService interface {
-	ExecuteByChainID(ctx context.Context) (*FaucetDTO, error)
+	Execute(ctx context.Context) error
 }
 
 type updateFaucetBalanceByAuthorityImpl struct {
@@ -40,7 +40,7 @@ func NewUpdateFaucetBalanceByAuthorityService(
 	}
 }
 
-func (svc *updateFaucetBalanceByAuthorityImpl) ExecuteByChainID(ctx context.Context) (*FaucetDTO, error) {
+func (svc *updateFaucetBalanceByAuthorityImpl) Execute(ctx context.Context) error {
 	//
 	// STEP 1: Get from database.
 	//
@@ -48,12 +48,12 @@ func (svc *updateFaucetBalanceByAuthorityImpl) ExecuteByChainID(ctx context.Cont
 	faucet, err := svc.getFaucetByChainIDUseCase.Execute(ctx, svc.config.Blockchain.ChainID)
 	if err != nil {
 		svc.logger.Error("failed getting faucet by chain id error", slog.Any("err", err))
-		return nil, err
+		return err
 	}
 	if faucet == nil {
 		err := fmt.Errorf("faucet d.n.e. for chain ID: %v", svc.config.Blockchain.ChainID)
 		svc.logger.Error("failed getting faucet by chain id error", slog.Any("err", err))
-		return nil, err
+		return err
 	}
 
 	//
@@ -62,13 +62,15 @@ func (svc *updateFaucetBalanceByAuthorityImpl) ExecuteByChainID(ctx context.Cont
 
 	remoteAccountBalance, err := svc.fetchRemoteAccountBalanceFromAuthorityUseCase.Execute(ctx, svc.config.Blockchain.PublicFaucetAccountAddress)
 	if err != nil {
-		svc.logger.Error("failed getting balance from authority error", slog.Any("err", err))
-		return nil, err
+		svc.logger.Error("failed getting balance from authority error",
+			slog.Any("address", svc.config.Blockchain.PublicFaucetAccountAddress),
+			slog.Any("err", err))
+		return err
 	}
 	if remoteAccountBalance == nil {
 		err := fmt.Errorf("balance d.n.e. for address: %v", svc.config.Blockchain.PublicFaucetAccountAddress)
 		svc.logger.Error("failed getting faucet by chain id error", slog.Any("err", err))
-		return nil, err
+		return err
 	}
 
 	//
@@ -81,7 +83,7 @@ func (svc *updateFaucetBalanceByAuthorityImpl) ExecuteByChainID(ctx context.Cont
 		err := svc.faucetUpdateByChainIDUseCase.Execute(ctx, faucet)
 		if err != nil {
 			svc.logger.Error("failed updating", slog.Any("err", err))
-			return nil, err
+			return err
 		}
 	}
 
@@ -89,16 +91,5 @@ func (svc *updateFaucetBalanceByAuthorityImpl) ExecuteByChainID(ctx context.Cont
 	// STEP 4: Format to DTO
 	//
 
-	return &FaucetDTO{
-		ChainID:                    faucet.ChainID,
-		Balance:                    faucet.Balance,
-		UsersCount:                 faucet.UsersCount,
-		TotalCoinsDistributed:      faucet.TotalCoinsDistributed,
-		TotalTransactions:          faucet.DistributationRatePerDay,
-		DistributationRatePerDay:   faucet.DistributationRatePerDay,
-		TotalCoinsDistributedToday: faucet.TotalCoinsDistributedToday,
-		TotalTransactionsToday:     faucet.TotalTransactionsToday,
-		CreatedAt:                  faucet.CreatedAt,
-		LastModifiedAt:             faucet.LastModifiedAt,
-	}, nil
+	return nil
 }

@@ -24,9 +24,7 @@ func NewGetAccountBalanceHTTPHandler(
 }
 
 func (h *GetAccountBalanceHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
-	h.logger.Debug("Account balance requested")
 
 	// Here is where you extract url parameters.
 	query := r.URL.Query()

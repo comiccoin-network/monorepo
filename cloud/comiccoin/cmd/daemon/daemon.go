@@ -124,6 +124,7 @@ func doRunDaemon() {
 	)
 
 	publicfaucetHTTPServer := publicfaucetModule.GetHTTPServerInstance()
+	publicfaucetTaskManager := publicfaucetModule.GetTaskManagerInstance()
 
 	//
 	// STEP 4:
@@ -153,8 +154,12 @@ func doRunDaemon() {
 	// Run in background
 	go httpServ.Run()
 	defer httpServ.Shutdown()
+
 	go authorityTaskManager.Run()
 	defer authorityTaskManager.Shutdown()
+
+	go publicfaucetTaskManager.Run()
+	defer publicfaucetTaskManager.Shutdown()
 
 	logger.Info("ComicCoin Authority is running.")
 

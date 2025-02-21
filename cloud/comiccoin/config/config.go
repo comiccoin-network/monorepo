@@ -120,10 +120,10 @@ func NewProvider() *Configuration {
 	publicFaucetAccountAddress := getEnv("COMICCOIN_BLOCKCHAIN_PUBLICFAUCET_ACCOUNT_ADDRESS", false)
 	if publicFaucetAccountAddress != "" {
 		address := common.HexToAddress(publicFaucetAccountAddress)
-		c.Blockchain.ProofOfAuthorityAccountAddress = &address
+		c.Blockchain.PublicFaucetAccountAddress = &address
 	}
-	c.Blockchain.ProofOfAuthorityWalletMnemonic = getSecureStringEnv("COMICCOIN_BLOCKCHAIN_PUBLICFAUCET_WALLET_MNEMONIC", false)
-	c.Blockchain.ProofOfAuthorityWalletPath = getEnv("COMICCOIN_BLOCKCHAIN_PUBLICFAUCET_WALLET_PATH", false)
+	c.Blockchain.PublicFaucetWalletMnemonic = getSecureStringEnv("COMICCOIN_BLOCKCHAIN_PUBLICFAUCET_WALLET_MNEMONIC", false)
+	c.Blockchain.PublicFaucetWalletPath = getEnv("COMICCOIN_BLOCKCHAIN_PUBLICFAUCET_WALLET_PATH", false)
 
 	// --- Database section ---
 	c.DB.URI = getEnv("COMICCOIN_DB_URI", true)
