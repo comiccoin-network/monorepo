@@ -11,6 +11,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/task"
 	taskhandler "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/task/handler"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/repo"
+	sv_account "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/account"
 	sv_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/blockchainstate"
 	sv_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/blockdata"
 	sv_blocktx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/blocktx"
@@ -258,6 +259,9 @@ func NewModule(
 		getGenesisBlockDataUseCase,
 	)
 
+	// Account
+	getAccountUseService := sv_account.NewGetAccountService(logger, getAccountUseCase)
+
 	// Blockchain State
 	getBlockchainStateService := sv_blockchainstate.NewGetBlockchainStateService(
 		cfg,
@@ -443,6 +447,10 @@ func NewModule(
 		passp,
 		tokenMintService,
 	)
+	getAccountBalance := httphandler.NewGetAccountBalanceHTTPHandler(
+		logger,
+		getAccountUseService,
+	)
 	httpMiddleware := httpmiddle.NewMiddleware(
 		logger,
 		blackp,
@@ -468,6 +476,7 @@ func NewModule(
 		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
 		tokenListByOwnerHTTPHandler,
 		tokenMintServiceHTTPHandler,
+		getAccountBalance,
 	)
 
 	return &AuthorityModule{

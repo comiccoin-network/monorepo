@@ -5,19 +5,18 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"math/big"
 	"time"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
 )
 
 type FaucetDTO struct {
 	ChainID                    uint16    `bson:"chain_id" json:"chain_id"`
-	Balance                    *big.Int  `bson:"balance" json:"balance"`
+	Balance                    uint64    `bson:"balance" json:"balance"`
 	UsersCount                 uint16    `bson:"users_count" json:"users_count"`
-	TotalCoinsDistributed      *big.Int  `bson:"total_coins_distributed" json:"total_coins_distributed"`
+	TotalCoinsDistributed      uint64    `bson:"total_coins_distributed" json:"total_coins_distributed"`
 	TotalTransactions          uint16    `bson:"total_transactions" json:"total_transactions"`
 	DistributationRatePerDay   uint16    `bson:"distribution_rate_per_day" json:"distribution_rate_per_day"`
 	TotalCoinsDistributedToday uint16    `bson:"total_coins_distributed_today" json:"total_coins_distributed_today"`

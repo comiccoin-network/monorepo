@@ -55,6 +55,9 @@ type BlockchainConfig struct {
 	ProofOfAuthorityWalletMnemonic *sstring.SecureString
 	ProofOfAuthorityWalletPath     string
 
+	// The location of the authority address.
+	AuthorityServerURL string
+
 	// (Only set by Public Faucet node)
 	PublicFaucetAccountAddress *common.Address
 	PublicFaucetWalletMnemonic *sstring.SecureString
@@ -111,6 +114,7 @@ func NewProvider() *Configuration {
 	}
 	c.Blockchain.ProofOfAuthorityWalletMnemonic = getSecureStringEnv("COMICCOIN_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_MNEMONIC", false)
 	c.Blockchain.ProofOfAuthorityWalletPath = getEnv("COMICCOIN_BLOCKCHAIN_PROOF_OF_AUTHORITY_WALLET_PATH", false)
+	c.Blockchain.AuthorityServerURL = getEnv("COMICCOIN_BLOCKCHAIN_AUTHORITY_SERVER_URL", true)
 
 	// Public Faucet only.
 	publicFaucetAccountAddress := getEnv("COMICCOIN_BLOCKCHAIN_PUBLICFAUCET_ACCOUNT_ADDRESS", false)

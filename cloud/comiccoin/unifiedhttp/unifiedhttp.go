@@ -145,16 +145,19 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 
 	case p[0] == "authority":
 		// Handle new API endpoints.
+		port.logger.Debug("entering authority module...")
 		port.authorityHTTPServer.HandleIncomingHTTPRequest(w, r)
 		return
 
 	case p[0] == "gateway":
 		// Handle new API endpoints.
+		port.logger.Debug("entering gateway module...")
 		port.gatewayHTTPServer.HandleIncomingHTTPRequest(w, r)
 		return
 
 	case p[0] == "publicfaucet":
 		// Handle new API endpoints.
+		port.logger.Debug("entering publicfaucet module...")
 		port.publicfaucetHTTPServer.HandleIncomingHTTPRequest(w, r)
 		return
 

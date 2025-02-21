@@ -47,6 +47,7 @@ type httpServerImpl struct {
 	getLatestBlockTransactionByAddressServerSentEventsHTTPHandler *handler.GetLatestBlockTransactionByAddressServerSentEventsHTTPHandler
 	tokenListByOwnerHTTPHandler                                   *handler.TokenListByOwnerHTTPHandler
 	tokenMintServiceHTTPHandler                                   *handler.TokenMintServiceHTTPHandler
+	getAccountBalanceHTTPHandler                                  *handler.GetAccountBalanceHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -70,6 +71,7 @@ func NewHTTPServer(
 	http14 *handler.MempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler,
 	http15 *handler.TokenListByOwnerHTTPHandler,
 	http16 *handler.TokenMintServiceHTTPHandler,
+	http17 *handler.GetAccountBalanceHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.IP == "" {
@@ -100,6 +102,7 @@ func NewHTTPServer(
 		mempoolTransactionReceiveDTOFromNetworkServiceHTTPHandler:     http14,
 		tokenListByOwnerHTTPHandler:                                   http15,
 		tokenMintServiceHTTPHandler:                                   http16,
+		getAccountBalanceHTTPHandler:                                  http17,
 	}
 
 	return port
@@ -127,7 +130,7 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		// Log a message to indicate that a request has been received.
 		// But only do this if client is attempting to access our API endpoints.
 		if n > 2 {
-			port.logger.Debug("",
+			port.logger.Debug("New API executed",
 				slog.Any("method", r.Method),
 				slog.Any("url_tokens", p),
 				slog.Int("url_token_count", n))
@@ -187,9 +190,20 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		case n == 4 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "tokens" && r.Method == http.MethodPost:
 			port.tokenMintServiceHTTPHandler.Execute(w, r)
 
+		case n == 4 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "account-balance" && r.Method == http.MethodGet:
+			port.getAccountBalanceHTTPHandler.Execute(w, r)
+
 		// --- CATCH ALL: D.N.E. ---
 		default:
-			// DEVELOPERS NOTE: We will not be returning 404 b/c that is handled in the unifiedhttp handler.
+			// Log a message to indicate that the request is not found.
+			port.logger.Debug("404 request",
+				slog.Any("method", r.Method),
+				slog.Any("url_tokens", p),
+				slog.Int("url_token_count", n),
+			)
+
+			// Return a 404 response.
+			http.NotFound(w, r)
 		}
 	})
 	handler(w, r)
@@ -209,7 +223,7 @@ func (port *httpServerImpl) HandleIncomingDeprecatedPathHTTPRequest(w http.Respo
 		// Log a message to indicate that a request has been received.
 		// But only do this if client is attempting to access our API endpoints.
 		if n > 2 {
-			port.logger.Debug("",
+			port.logger.Debug("Deprecated API executed",
 				slog.Any("method", r.Method),
 				slog.Any("url_tokens", p),
 				slog.Int("url_token_count", n))
@@ -269,14 +283,17 @@ func (port *httpServerImpl) HandleIncomingDeprecatedPathHTTPRequest(w http.Respo
 		case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "tokens" && r.Method == http.MethodPost:
 			port.tokenMintServiceHTTPHandler.Execute(w, r)
 
+		case n == 3 && p[0] == "api" && p[1] == "v1" && p[2] == "account-balance" && r.Method == http.MethodGet:
+			port.getAccountBalanceHTTPHandler.Execute(w, r)
+
 		// --- CATCH ALL: D.N.E. ---
 		default:
-			// // Log a message to indicate that the request is not found.
-			// port.logger.Debug("404 request",
-			// 	slog.Any("method", r.Method),
-			// 	slog.Any("url_tokens", p),
-			// 	slog.Int("url_token_count", n),
-			// )
+			// Log a message to indicate that the request is not found.
+			port.logger.Debug("404 request",
+				slog.Any("method", r.Method),
+				slog.Any("url_tokens", p),
+				slog.Int("url_token_count", n),
+			)
 
 			// Return a 404 response.
 			http.NotFound(w, r)

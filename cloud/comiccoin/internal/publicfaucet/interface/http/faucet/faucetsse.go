@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
 )
 
@@ -84,14 +84,15 @@ func (h *FaucetServerSentEventsHTTPHandler) Execute(w http.ResponseWriter, r *ht
 				var sssData string
 
 				sssData = fmt.Sprintf("%v|%v|%v|%v|%v|%v|%v|%v",
-					faucet.Balance.String(),
+					faucet.Balance,
 					faucet.UsersCount,
-					faucet.TotalCoinsDistributed.String(),
+					faucet.TotalCoinsDistributed,
 					faucet.TotalTransactions,
 					faucet.DistributationRatePerDay,
 					faucet.TotalCoinsDistributedToday,
 					faucet.TotalTransactionsToday,
-					faucet.LastModifiedAt.String())
+					faucet.LastModifiedAt,
+				)
 
 				// For debugging purposes only. (Uncommenting will make for noisy console logs)
 				h.logger.Debug("Sending sse to client...",

@@ -139,7 +139,15 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 
 			// --- CATCH ALL: D.N.E. ---
 		default:
-			// DEVELOPERS NOTE: We will not be returning 404 b/c that is handled in the unifiedhttp handler.
+			// Log a message to indicate that the request is not found.
+			port.logger.Debug("404 request",
+				slog.Any("method", r.Method),
+				slog.Any("url_tokens", p),
+				slog.Int("url_token_count", n),
+			)
+
+			// Return a 404 response.
+			http.NotFound(w, r)
 		}
 	})
 	handler(w, r)

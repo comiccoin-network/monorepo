@@ -28,6 +28,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/task"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/bannedipaddress"
 	r_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/faucet"
+	r_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/remoteaccountbalance"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/user"
 	sv_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/dashboard"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
@@ -35,6 +36,7 @@ import (
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/me"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/bannedipaddress"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
+	uc_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/remoteaccountbalance"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
 )
 
@@ -97,6 +99,7 @@ func NewModule(
 	banIPAddrRepo := r_banip.NewRepository(cfg, logger, dbClient)
 	userRepo := r_user.NewRepository(cfg, logger, dbClient)
 	faucetRepo := r_faucet.NewRepository(cfg, logger, dbClient)
+	remoteaccountbalance := r_remoteaccountbalance.NewRepository(cfg, logger)
 
 	////
 	//// Use-case
@@ -184,6 +187,13 @@ func NewModule(
 	_ = checkIfFaucetExistsByChainIDUseCase
 	_ = createIfFaucetDNEForMainNetBlockchainUseCase
 
+	// --- RemoteAccountBalance ---
+
+	fetchRemoteAccountBalanceFromAuthorityUseCase := uc_remoteaccountbalance.NewFetchRemoteAccountBalanceFromAuthorityUseCase(
+		logger,
+		remoteaccountbalance,
+	)
+
 	////
 	//// Service
 	////
@@ -222,6 +232,14 @@ func NewModule(
 		logger,
 		getFaucetByChainIDUseCase,
 	)
+	updateFaucetBalanceByAuthorityService := svc_faucet.NewUpdateFaucetBalanceByAuthorityService(
+		cfg,
+		logger,
+		getFaucetByChainIDUseCase,
+		fetchRemoteAccountBalanceFromAuthorityUseCase,
+		faucetUpdateByChainIDUseCase,
+	)
+	_ = updateFaucetBalanceByAuthorityService
 
 	// --- Dashboard ---
 

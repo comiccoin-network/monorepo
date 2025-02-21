@@ -3,7 +3,6 @@ package faucet
 import (
 	"context"
 	"log/slog"
-	"math/big"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -40,9 +39,9 @@ func (impl faucetImpl) CreateFaucetForMainNetBlockchain(ctx context.Context) err
 	faucet := &dom.Faucet{
 		ID:                         primitive.NewObjectID(),
 		ChainID:                    constants.ChainIDMainNet,
-		Balance:                    big.NewInt(0),
+		Balance:                    0,
 		UsersCount:                 0,
-		TotalCoinsDistributed:      big.NewInt(0),
+		TotalCoinsDistributed:      0,
 		TotalTransactions:          0,
 		DistributationRatePerDay:   0,
 		TotalCoinsDistributedToday: 0,

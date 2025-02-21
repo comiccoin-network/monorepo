@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"math/big"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,15 +16,15 @@ import (
 )
 
 type TransactionDTO struct {
-	ChainID       uint16   `bson:"chain_id" json:"chain_id"`
-	FaucetBalance *big.Int `bson:"faucet_balance" json:"faucet_balance"`
+	ChainID       uint16 `bson:"chain_id" json:"chain_id"`
+	FaucetBalance uint64 `bson:"faucet_balance" json:"faucet_balance"`
 }
 
 type DashboardDTO struct {
 	ChainID                 uint16            `bson:"chain_id" json:"chain_id"`
-	FaucetBalance           *big.Int          `bson:"faucet_balance" json:"faucet_balance"`
-	UserBalance             *big.Int          `bson:"user_balance" json:"user_balance"`
-	TotalCoinsClaimedByUser *big.Int          `bson:"total_coins_claimed_by_user" json:"total_coins_claimed"`
+	FaucetBalance           uint64            `bson:"faucet_balance" json:"faucet_balance"`
+	UserBalance             uint64            `bson:"user_balance" json:"user_balance"`
+	TotalCoinsClaimedByUser uint64            `bson:"total_coins_claimed_by_user" json:"total_coins_claimed"`
 	Transactions            []*TransactionDTO `bson:"transactions" json:"transactions"`
 	LastModifiedAt          time.Time         `bson:"last_modified_at,omitempty" json:"last_modified_at,omitempty"`
 
@@ -115,9 +114,9 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 
 	return &DashboardDTO{
 		ChainID:                 faucet.ChainID,
-		FaucetBalance:           big.NewInt(0),
-		UserBalance:             big.NewInt(0),
-		TotalCoinsClaimedByUser: big.NewInt(0),
+		FaucetBalance:           0,
+		UserBalance:             0,
+		TotalCoinsClaimedByUser: 0,
 		Transactions:            txs,
 		LastModifiedAt:          faucet.LastModifiedAt,
 		LastClaimTime:           user.LastClaimTime,
