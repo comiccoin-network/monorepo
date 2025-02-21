@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet/updatebalance.go
-package getFaucet
+package faucet
 
 import (
 	"context"

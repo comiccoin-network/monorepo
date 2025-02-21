@@ -39,6 +39,7 @@ import (
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
 	uc_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/remoteaccountbalance"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
+	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/walletutil"
 )
 
 type PublicFaucetModule struct {
@@ -154,6 +155,14 @@ func NewModule(
 	_ = userCreateUseCase
 	_ = userUpdateUseCase
 
+	// --- Private Key ---
+
+	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
+		cfg,
+		logger,
+		keystore,
+	)
+
 	// --- Faucet ---
 
 	createFaucetUseCase := uc_faucet.NewCreateFaucetUseCase(
@@ -233,6 +242,14 @@ func NewModule(
 		logger,
 		getFaucetByChainIDUseCase,
 	)
+
+	getPublicFaucetPrivateKeyService := svc_faucet.NewGetPublicFaucetPrivateKeyService(
+		cfg,
+		logger,
+		privateKeyFromHDWalletUseCase,
+	)
+	_ = getPublicFaucetPrivateKeyService //TODO: Utilize in coin transfer
+
 	updateFaucetBalanceByAuthorityService := svc_faucet.NewUpdateFaucetBalanceByAuthorityService(
 		cfg,
 		logger,
@@ -240,7 +257,6 @@ func NewModule(
 		fetchRemoteAccountBalanceFromAuthorityUseCase,
 		faucetUpdateByChainIDUseCase,
 	)
-	_ = updateFaucetBalanceByAuthorityService
 
 	// --- Dashboard ---
 
