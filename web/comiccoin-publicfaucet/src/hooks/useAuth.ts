@@ -1,27 +1,31 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useAuth.ts
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { API_CONFIG } from "@/config/env";
 
-// Define our token structure
+// First, let's define our interfaces for better type safety
 interface Tokens {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
 }
 
-// Define the shape of our auth state
 interface AuthState {
   tokens: Tokens | null;
   isAuthenticated: boolean;
+  isRefreshing: boolean;
   setTokens: (tokens: Tokens | null) => void;
   clearTokens: () => void;
+  refreshTokens: () => Promise<boolean>;
 }
 
-// Custom storage implementation with logging
+// Here's our custom storage implementation that was missing before
+// This adds logging and better error handling around localStorage operations
 const createAuthStorage = () => {
   return createJSONStorage(() => ({
     getItem: (name: string) => {
       try {
+        // Try to get the item from localStorage
         const value = localStorage.getItem(name);
 
         if (!value) {
@@ -29,6 +33,7 @@ const createAuthStorage = () => {
           return null;
         }
 
+        // Parse the stored data and verify its structure
         const parsed = JSON.parse(value);
         const hasTokens = !!parsed?.state?.tokens;
 
@@ -37,6 +42,7 @@ const createAuthStorage = () => {
           storageKey: name,
         });
 
+        // Validate the token structure
         if (!hasTokens) {
           console.warn("⚠️ AUTH VALIDATION: Invalid token structure", {
             reason: "Missing required token data",
@@ -46,6 +52,7 @@ const createAuthStorage = () => {
 
         return value;
       } catch (error) {
+        // Handle any errors during storage operations
         console.error("💥 AUTH ERROR: Failed reading from storage", error);
         return null;
       }
@@ -71,13 +78,14 @@ const createAuthStorage = () => {
   }));
 };
 
-// Create our Zustand store with persistence
+// Now we can create our Zustand store with persistence
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // Initial state
       tokens: null,
       isAuthenticated: false,
+      isRefreshing: false,
 
       // Actions
       setTokens: (tokens) => {
@@ -87,7 +95,7 @@ export const useAuthStore = create<AuthState>()(
         });
 
         if (tokens) {
-          // Ensure timestamp is in milliseconds
+          // Convert timestamp to milliseconds if needed
           if (tokens.expiresAt < 1000000000000) {
             tokens.expiresAt *= 1000;
           }
@@ -105,24 +113,69 @@ export const useAuthStore = create<AuthState>()(
           tokens,
           isAuthenticated: !!tokens,
         });
-
-        console.log("✨ AUTH STATE: Update complete", {
-          isAuthenticated: !!tokens,
-        });
       },
 
       clearTokens: () => {
         console.log("🚪 AUTH LOGOUT: Starting cleanup");
-
-        // Clear any legacy storage
-        localStorage.removeItem("auth_tokens");
-
+        localStorage.removeItem("auth_tokens"); // Clear legacy storage
         set({
           tokens: null,
           isAuthenticated: false,
         });
+      },
 
-        console.log("✅ AUTH LOGOUT: Cleanup complete");
+      // Centralized refresh token logic
+      refreshTokens: async () => {
+        const state = get();
+
+        // Prevent multiple simultaneous refresh attempts
+        if (state.isRefreshing) {
+          console.log("🔄 Token refresh already in progress");
+          return false;
+        }
+
+        if (!state.tokens?.refreshToken) {
+          console.log("❌ No refresh token available");
+          state.clearTokens();
+          return false;
+        }
+
+        try {
+          set({ isRefreshing: true });
+          console.log("🔄 Attempting to refresh tokens");
+
+          const response = await fetch(
+            `${API_CONFIG.baseUrl}/publicfaucet/api/v1/token/refresh`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                refresh_token: state.tokens.refreshToken,
+              }),
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error(`Refresh failed: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          state.setTokens({
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token,
+            expiresAt: data.expires_at,
+          });
+
+          console.log("✅ Token refresh successful");
+          return true;
+        } catch (error) {
+          console.error("❌ Token refresh failed:", error);
+          state.clearTokens();
+          return false;
+        } finally {
+          set({ isRefreshing: false });
+        }
       },
     }),
     {
