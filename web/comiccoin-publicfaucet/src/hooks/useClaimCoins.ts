@@ -1,7 +1,7 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useClaimCoins.ts
 import { useState } from "react";
 import { CONFIG } from "@/config/env";
-import { createAuthenticatedFetch } from "@/utils/api";
+import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
 import { useRefreshToken } from "@/hooks/useRefreshToken";
 
 interface User {
@@ -28,7 +28,7 @@ const useClaimCoins = (): UseClaimCoinsResult => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const refreshToken = useRefreshToken();
-  const fetchWithAuth = createAuthenticatedFetch(refreshToken);
+  const fetchWithAuth = useAuthenticatedFetch();
 
   const claimCoins = async (): Promise<User> => {
     try {

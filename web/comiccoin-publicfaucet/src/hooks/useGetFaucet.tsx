@@ -1,6 +1,6 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useGetFaucet.ts
 import { useState, useEffect } from "react";
-import { createAuthenticatedFetch } from "@/utils/api";
+import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
 import { API_CONFIG } from "@/config/env";
 
 // Type for big.Int values from backend
@@ -50,7 +50,7 @@ export function useGetFaucet(
   const [error, setError] = useState<Error | null>(null);
 
   // Create authenticated fetch instance
-  const fetchWithAuth = createAuthenticatedFetch();
+  const fetchWithAuth = useAuthenticatedFetch();
 
   // Fetch faucet data
   const fetchFaucetData = async () => {

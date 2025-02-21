@@ -1,6 +1,6 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useMeConnectWallet.tsimport { useState } from "react";
 import { useState } from "react";
-import { createAuthenticatedFetch } from "@/utils/api";
+import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
 import { API_CONFIG } from "@/config/env";
 
 // Define the response type for the connect wallet endpoint
@@ -12,9 +12,11 @@ interface ConnectWalletResponse {
 export function usePostMeConnectWallet() {
   const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const fetchWithAuth = createAuthenticatedFetch();
+  const fetchWithAuth = useAuthenticatedFetch();
 
-  const postMeConnectWallet = async (walletAddress: string): Promise<boolean> => {
+  const postMeConnectWallet = async (
+    walletAddress: string,
+  ): Promise<boolean> => {
     console.log("🔄 Starting wallet connection process");
     setIsPosting(true);
     setError(null);
@@ -48,7 +50,9 @@ export function usePostMeConnectWallet() {
       return true;
     } catch (err) {
       console.error("❌ Wallet connection error:", err);
-      setError(err instanceof Error ? err : new Error("Failed to connect wallet"));
+      setError(
+        err instanceof Error ? err : new Error("Failed to connect wallet"),
+      );
       return false;
     } finally {
       setIsPosting(false);

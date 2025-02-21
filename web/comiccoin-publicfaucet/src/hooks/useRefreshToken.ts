@@ -7,9 +7,11 @@ export function useRefreshToken() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { tokens, setTokens, clearTokens } = useAuthStore();
 
+  // This is our main refresh function that will be used by createAuthenticatedFetch
   const refreshTokens = useCallback(async (): Promise<boolean> => {
+    // Add a mutex lock to prevent multiple simultaneous refresh attempts
     if (isRefreshing) {
-      console.log("🔄 Token refresh already in progress");
+      console.log("🔒 Token refresh already in progress");
       return false;
     }
 
@@ -24,7 +26,7 @@ export function useRefreshToken() {
       console.log("🔄 Attempting to refresh tokens");
 
       const response = await fetch(
-        `${API_CONFIG.baseUrl}/publicfaucet/api/vi/token/refresh`,
+        `${API_CONFIG.baseUrl}/publicfaucet/api/v1/token/refresh`,
         {
           method: "POST",
           headers: {
@@ -40,13 +42,7 @@ export function useRefreshToken() {
         throw new Error(`Refresh failed with status: ${response.status}`);
       }
 
-      const responseText = await response.text();
-
-      if (!responseText) {
-        throw new Error("Empty response from refresh endpoint");
-      }
-
-      const data = JSON.parse(responseText);
+      const data = await response.json();
 
       if (!data.access_token || !data.refresh_token) {
         throw new Error("Invalid token data received");

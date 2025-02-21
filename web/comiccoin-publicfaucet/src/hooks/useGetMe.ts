@@ -1,6 +1,6 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useGetMe.ts
 import { useState, useEffect, useCallback } from "react";
-import { createAuthenticatedFetch } from "@/utils/api";
+import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
 import { API_CONFIG } from "@/config/env";
 
 // The API returns wallet_address as a string or null, not as an object
@@ -37,7 +37,7 @@ export function useGetMe({
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const fetchWithAuth = createAuthenticatedFetch();
+  const fetchWithAuth = useAuthenticatedFetch();
 
   const fetchUserData = useCallback(async (): Promise<User> => {
     try {

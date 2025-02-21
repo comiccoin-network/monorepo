@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { createAuthenticatedFetch } from "@/utils/api";
 import { API_CONFIG } from "@/config/env";
+import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
 
 // Type for big.Int values from backend
 type BigIntString = string;
@@ -52,7 +52,7 @@ export function useGetDashboard(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchWithAuth = createAuthenticatedFetch();
+  const fetchWithAuth = useAuthenticatedFetch();
 
   const fetchDashboardData = async () => {
     try {

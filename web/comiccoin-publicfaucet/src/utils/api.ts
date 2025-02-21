@@ -5,9 +5,17 @@ interface AuthenticatedFetchOptions extends RequestInit {
   skipAuth?: boolean;
 }
 
+// First, let's modify how we handle the refresh function
 export const createAuthenticatedFetch = (
   refreshTokensFn: () => Promise<boolean>,
 ) => {
+  // Ensure refreshTokensFn is provided
+  if (!refreshTokensFn) {
+    throw new Error(
+      "refreshTokensFn must be provided to createAuthenticatedFetch",
+    );
+  }
+
   return async (url: string, options: AuthenticatedFetchOptions = {}) => {
     const { tokens, clearTokens } = useAuthStore.getState();
 
@@ -64,8 +72,18 @@ export const createAuthenticatedFetch = (
   };
 };
 
-// Example usage in a component or hook
+// Modify the hook to ensure refreshTokens is always defined
 export const useAuthenticatedFetch = () => {
   const refreshTokens = useRefreshToken();
-  return createAuthenticatedFetch(refreshTokens);
+
+  // Add validation
+  if (!refreshTokens) {
+    throw new Error("useRefreshToken must return a valid refresh function");
+  }
+
+  // Memoize the authenticated fetch to prevent unnecessary recreations
+  return React.useMemo(
+    () => createAuthenticatedFetch(refreshTokens),
+    [refreshTokens],
+  );
 };
