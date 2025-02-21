@@ -285,6 +285,11 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 	user.LastClaimTime = time.Now()
 	user.NextClaimTime = time.Now().Add(24 * time.Hour) // Next claim is 24 hours after last claim
 	user.ModifiedAt = time.Now()
+	if err := svc.userUpdateUseCase.Execute(sessCtx, user); err != nil {
+		svc.logger.Error("Failed to save user",
+			slog.Any("error", err))
+		return nil, err
+	}
 	svc.logger.Debug("User has claimed coins",
 		slog.Any("last_claim_time", user.LastClaimTime),
 		slog.Any("next_claim_time", user.NextClaimTime),
