@@ -14,11 +14,11 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	dom_auth_memp "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
-	dom_auth_stx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	dom_auth_tx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	uc_auth_memp "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltxdto"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/distributedmutex"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
 	uc_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/remoteaccountbalance"
@@ -291,9 +291,14 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 
 	// Defensive code: In case the transactions haven't been initialized previously.
 	if user.ClaimedCoinTransactions == nil {
-		user.ClaimedCoinTransactions = make([]*dom_auth_stx.SignedTransaction, 0)
+		user.ClaimedCoinTransactions = make([]*dom_user.UserClaimedCoinTransaction, 0)
 	}
-	user.ClaimedCoinTransactions = append(user.ClaimedCoinTransactions, &stx)
+	claim := &dom_user.UserClaimedCoinTransaction{
+		ID:        primitive.NewObjectID(),
+		Timestamp: time.Now(),
+		Amount:    svc.config.Blockchain.PublicFaucetClaimCoinsReward,
+	}
+	user.ClaimedCoinTransactions = append(user.ClaimedCoinTransactions, claim)
 
 	// Increment the total coins claimed by user.
 	user.TotalCoinsClaimed += svc.config.Blockchain.PublicFaucetClaimCoinsReward

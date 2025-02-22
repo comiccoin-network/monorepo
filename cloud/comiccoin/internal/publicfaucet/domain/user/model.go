@@ -6,8 +6,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-
-	dom_auth_stx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 )
 
 const (
@@ -118,43 +116,13 @@ type User struct {
 	NextClaimTime time.Time `bson:"next_claim_time" json:"next_claim_time"`
 
 	// Keep track of all of the transactions that the user claimed.
-	ClaimedCoinTransactions []*dom_auth_stx.SignedTransaction `bson:"claimed_coin_transactions" json:"claimed_coin_transactions"`
+	ClaimedCoinTransactions []*UserClaimedCoinTransaction `bson:"claimed_coin_transactions" json:"claimed_coin_transactions"`
 
 	TotalCoinsClaimed uint64 `bson:"total_coins_claimed" json:"total_coins_claimed,omitempty"`
 }
 
-type UserComment struct {
-	ID               primitive.ObjectID `bson:"_id" json:"id"`
-	CreatedAt        time.Time          `bson:"created_at,omitempty" json:"created_at,omitempty"`
-	CreatedByUserID  primitive.ObjectID `bson:"created_by_user_id" json:"created_by_user_id"`
-	CreatedByName    string             `bson:"created_by_name" json:"created_by_name"`
-	ModifiedAt       time.Time          `bson:"modified_at,omitempty" json:"modified_at,omitempty"`
-	ModifiedByUserID primitive.ObjectID `bson:"modified_by_user_id" json:"modified_by_user_id"`
-	ModifiedByName   string             `bson:"modified_by_name" json:"modified_by_name"`
-	Content          string             `bson:"content" json:"content"`
-}
-
-type UserAsSelectOption struct {
-	Value primitive.ObjectID `bson:"_id" json:"value"` // Extract from the database `_id` field and output through API as `value`.
-	Label string             `bson:"name" json:"label"`
-}
-
-type UserFilter struct {
-	Name                      *string    `json:"name,omitempty"`
-	Status                    int8       `json:"status,omitempty"`
-	CreatedAtStart            *time.Time `json:"created_at_start,omitempty"`
-	CreatedAtEnd              *time.Time `json:"created_at_end,omitempty"`
-	ProfileVerificationStatus int8       `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
-
-	// Cursor-based pagination
-	LastID        *primitive.ObjectID `json:"last_id,omitempty"`
-	LastCreatedAt *time.Time          `json:"last_created_at,omitempty"`
-	Limit         int64               `json:"limit"`
-}
-
-type UserFilterResult struct {
-	Users         []*User            `json:"users"`
-	HasMore       bool               `json:"has_more"`
-	LastID        primitive.ObjectID `json:"last_id,omitempty"`
-	LastCreatedAt time.Time          `json:"last_created_at,omitempty"`
+type UserClaimedCoinTransaction struct {
+	ID        primitive.ObjectID `bson:"_id" json:"id"`
+	Timestamp time.Time          `bson:"timestamp,omitempty" json:"timestamp,omitempty"`
+	Amount    uint64             `bson:"amount,omitempty" json:"amount,omitempty"`
 }

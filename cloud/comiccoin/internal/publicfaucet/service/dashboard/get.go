@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
-	dom_auth_stx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
 	uc_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/remoteaccountbalance"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
@@ -31,7 +31,7 @@ type DashboardDTO struct {
 	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`
 
 	// Keep track of all of the transactions that the user claimed.
-	Transactions []*dom_auth_stx.SignedTransaction `bson:"transactions" json:"transactions"`
+	Transactions []*dom_user.UserClaimedCoinTransaction `bson:"transactions" json:"transactions"`
 }
 
 type GetDashboardService interface {
@@ -122,7 +122,7 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 
 	// Special circumstance #2
 	if user.ClaimedCoinTransactions == nil {
-		user.ClaimedCoinTransactions = make([]*dom_auth_stx.SignedTransaction, 0)
+		user.ClaimedCoinTransactions = make([]*dom_user.UserClaimedCoinTransaction, 0)
 	}
 
 	// Return our dashboard response.
