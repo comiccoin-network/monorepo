@@ -200,7 +200,7 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 	tx := &dom_auth_tx.Transaction{
 		ChainID:    svc.config.Blockchain.ChainID,
 		NonceBytes: big.NewInt(time.Now().Unix()).Bytes(),
-		From:       svc.config.Blockchain.ProofOfAuthorityAccountAddress,
+		From:       svc.config.Blockchain.PublicFaucetAccountAddress,
 		To:         user.WalletAddress,
 		Value:      svc.config.Blockchain.PublicFaucetClaimCoinsReward + svc.config.Blockchain.TransactionFee, // Note: The transaction fee gets reclaimed by the Authority, so it's fully recirculating when authority calls this.
 		Data:       []byte{},
@@ -215,7 +215,7 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 	}
 
 	// Defensive Coding.
-	if err := stx.Validate(svc.config.Blockchain.ChainID, true); err != nil {
+	if err := stx.Validate(svc.config.Blockchain.ChainID, false); err != nil {
 		svc.logger.Debug("Failed to validate signature of the signed transaction",
 			slog.Any("error", signingErr))
 		return nil, signingErr
