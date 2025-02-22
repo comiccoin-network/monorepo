@@ -1,11 +1,9 @@
 package task
 
 import (
-	"context"
 	"log/slog"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
-	taskhandler "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/task/handler"
 )
 
 type TaskManager interface {
@@ -14,21 +12,21 @@ type TaskManager interface {
 }
 
 type taskManagerImpl struct {
-	cfg                                           *config.Configuration
-	logger                                        *slog.Logger
-	proofOfAuthorityConsensusMechanismTaskHandler *taskhandler.ProofOfAuthorityConsensusMechanismTaskHandler
+	cfg    *config.Configuration
+	logger *slog.Logger
+	// proofOfAuthorityConsensusMechanismTaskHandler *taskhandler.ProofOfAuthorityConsensusMechanismTaskHandler
 }
 
 func NewTaskManager(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	task1 *taskhandler.ProofOfAuthorityConsensusMechanismTaskHandler,
+	// task1 *taskhandler.ProofOfAuthorityConsensusMechanismTaskHandler,
 
 ) TaskManager {
 	port := &taskManagerImpl{
 		cfg:    cfg,
 		logger: logger,
-		proofOfAuthorityConsensusMechanismTaskHandler: task1,
+		// proofOfAuthorityConsensusMechanismTaskHandler: task1,
 	}
 	return port
 }
@@ -36,21 +34,21 @@ func NewTaskManager(
 func (port *taskManagerImpl) Run() {
 	// ctx := context.Background()
 	port.logger.Info("Running Task Manager")
-	backgroundCtx := context.Background()
+	// backgroundCtx := context.Background()
 
-	go func(task *taskhandler.ProofOfAuthorityConsensusMechanismTaskHandler, loggerp *slog.Logger) {
-		loggerp.Info("Starting PoA consensus mechanism...")
-
-		for {
-			if err := task.Execute(backgroundCtx); err != nil {
-				loggerp.Error("Failed executing PoA consensus mechanism",
-					slog.Any("error", err))
-			}
-			// DEVELOPERS NOTE:
-			// No need for delays, automatically start executing again.
-			port.logger.Debug("poa consensus mechanism will run again ...")
-		}
-	}(port.proofOfAuthorityConsensusMechanismTaskHandler, port.logger)
+	// go func(task *taskhandler.ProofOfAuthorityConsensusMechanismTaskHandler, loggerp *slog.Logger) {
+	// 	loggerp.Info("Starting PoA consensus mechanism...")
+	//
+	// 	for {
+	// 		if err := task.Execute(backgroundCtx); err != nil {
+	// 			loggerp.Error("Failed executing PoA consensus mechanism",
+	// 				slog.Any("error", err))
+	// 		}
+	// 		// DEVELOPERS NOTE:
+	// 		// No need for delays, automatically start executing again.
+	// 		port.logger.Debug("poa consensus mechanism will run again ...")
+	// 	}
+	// }(port.proofOfAuthorityConsensusMechanismTaskHandler, port.logger)
 }
 
 func (port *taskManagerImpl) Shutdown() {

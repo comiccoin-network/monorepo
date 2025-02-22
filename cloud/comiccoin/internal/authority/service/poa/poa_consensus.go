@@ -11,6 +11,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
+	dom "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/blockdata"
@@ -23,7 +24,7 @@ import (
 )
 
 type ProofOfAuthorityConsensusMechanismService interface {
-	Execute(ctx context.Context) error
+	Execute(ctx context.Context, mempoolTx *dom.MempoolTransaction) error
 }
 
 // ProofOfAuthorityConsensusMechanismService represents the service which
@@ -32,26 +33,25 @@ type ProofOfAuthorityConsensusMechanismService interface {
 // Would you like to know more?
 // https://coinmarketcap.com/academy/glossary/proof-of-authority-poa
 type proofOfAuthorityConsensusMechanismServiceImpl struct {
-	config                                     *config.Configuration
-	logger                                     *slog.Logger
-	dmutex                                     distributedmutex.Adapter
-	dbClient                                   *mongo.Client
-	getProofOfAuthorityPrivateKeyService       GetProofOfAuthorityPrivateKeyService
-	mempoolTransactionInsertionDetectorUseCase uc_mempooltx.MempoolTransactionInsertionDetectorUseCase
-	mempoolTransactionDeleteByIDUseCase        uc_mempooltx.MempoolTransactionDeleteByIDUseCase
-	getBlockchainStateUseCase                  uc_blockchainstate.GetBlockchainStateUseCase
-	upsertBlockchainStateUseCase               uc_blockchainstate.UpsertBlockchainStateUseCase
-	getGenesisBlockDataUseCase                 uc_genesisblockdata.GetGenesisBlockDataUseCase
-	getBlockDataUseCase                        uc_blockdata.GetBlockDataUseCase
-	getAccountUseCase                          uc_account.GetAccountUseCase
-	getAccountsHashStateUseCase                uc_account.GetAccountsHashStateUseCase
-	upsertAccountUseCase                       uc_account.UpsertAccountUseCase
-	getTokenUseCase                            uc_token.GetTokenUseCase
-	getTokensHashStateUseCase                  uc_token.GetTokensHashStateUseCase
-	upsertTokenIfPreviousTokenNonceGTEUseCase  uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
-	proofOfWorkUseCase                         uc_pow.ProofOfWorkUseCase
-	upsertBlockDataUseCase                     uc_blockdata.UpsertBlockDataUseCase
-	blockchainStatePublishUseCase              uc_blockchainstate.BlockchainStatePublishUseCase
+	config                                    *config.Configuration
+	logger                                    *slog.Logger
+	dmutex                                    distributedmutex.Adapter
+	dbClient                                  *mongo.Client
+	getProofOfAuthorityPrivateKeyService      GetProofOfAuthorityPrivateKeyService
+	mempoolTransactionDeleteByIDUseCase       uc_mempooltx.MempoolTransactionDeleteByIDUseCase
+	getBlockchainStateUseCase                 uc_blockchainstate.GetBlockchainStateUseCase
+	upsertBlockchainStateUseCase              uc_blockchainstate.UpsertBlockchainStateUseCase
+	getGenesisBlockDataUseCase                uc_genesisblockdata.GetGenesisBlockDataUseCase
+	getBlockDataUseCase                       uc_blockdata.GetBlockDataUseCase
+	getAccountUseCase                         uc_account.GetAccountUseCase
+	getAccountsHashStateUseCase               uc_account.GetAccountsHashStateUseCase
+	upsertAccountUseCase                      uc_account.UpsertAccountUseCase
+	getTokenUseCase                           uc_token.GetTokenUseCase
+	getTokensHashStateUseCase                 uc_token.GetTokensHashStateUseCase
+	upsertTokenIfPreviousTokenNonceGTEUseCase uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase
+	proofOfWorkUseCase                        uc_pow.ProofOfWorkUseCase
+	upsertBlockDataUseCase                    uc_blockdata.UpsertBlockDataUseCase
+	blockchainStatePublishUseCase             uc_blockchainstate.BlockchainStatePublishUseCase
 }
 
 func NewProofOfAuthorityConsensusMechanismService(
@@ -60,26 +60,25 @@ func NewProofOfAuthorityConsensusMechanismService(
 	dmutex distributedmutex.Adapter,
 	client *mongo.Client,
 	s1 GetProofOfAuthorityPrivateKeyService,
-	uc1 uc_mempooltx.MempoolTransactionInsertionDetectorUseCase,
-	uc2 uc_mempooltx.MempoolTransactionDeleteByIDUseCase,
-	uc3 uc_blockchainstate.GetBlockchainStateUseCase,
-	uc4 uc_blockchainstate.UpsertBlockchainStateUseCase,
-	uc5 uc_genesisblockdata.GetGenesisBlockDataUseCase,
-	uc6 uc_blockdata.GetBlockDataUseCase,
-	uc7 uc_account.GetAccountUseCase,
-	uc8 uc_account.GetAccountsHashStateUseCase,
-	uc9 uc_account.UpsertAccountUseCase,
-	uc10 uc_token.GetTokenUseCase,
-	uc11 uc_token.GetTokensHashStateUseCase,
-	uc12 uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
-	uc13 uc_pow.ProofOfWorkUseCase,
-	uc14 uc_blockdata.UpsertBlockDataUseCase,
-	uc15 uc_blockchainstate.BlockchainStatePublishUseCase,
+	uc1 uc_mempooltx.MempoolTransactionDeleteByIDUseCase,
+	uc2 uc_blockchainstate.GetBlockchainStateUseCase,
+	uc3 uc_blockchainstate.UpsertBlockchainStateUseCase,
+	uc4 uc_genesisblockdata.GetGenesisBlockDataUseCase,
+	uc5 uc_blockdata.GetBlockDataUseCase,
+	uc6 uc_account.GetAccountUseCase,
+	uc7 uc_account.GetAccountsHashStateUseCase,
+	uc8 uc_account.UpsertAccountUseCase,
+	uc9 uc_token.GetTokenUseCase,
+	uc10 uc_token.GetTokensHashStateUseCase,
+	uc11 uc_token.UpsertTokenIfPreviousTokenNonceGTEUseCase,
+	uc12 uc_pow.ProofOfWorkUseCase,
+	uc13 uc_blockdata.UpsertBlockDataUseCase,
+	uc14 uc_blockchainstate.BlockchainStatePublishUseCase,
 ) ProofOfAuthorityConsensusMechanismService {
-	return &proofOfAuthorityConsensusMechanismServiceImpl{config, logger, dmutex, client, s1, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14, uc15}
+	return &proofOfAuthorityConsensusMechanismServiceImpl{config, logger, dmutex, client, s1, uc1, uc2, uc3, uc4, uc5, uc6, uc7, uc8, uc9, uc10, uc11, uc12, uc13, uc14}
 }
 
-func (s *proofOfAuthorityConsensusMechanismServiceImpl) Execute(ctx context.Context) error {
+func (s *proofOfAuthorityConsensusMechanismServiceImpl) Execute(ctx context.Context, mempoolTx *dom.MempoolTransaction) error {
 	// Protect our resource - this PoA consensus mechanism can only exist as
 	// a single instance any time. So if we have more then one authority nodes
 	// running on the network, coordinate view the distributed mutext, that
@@ -88,16 +87,9 @@ func (s *proofOfAuthorityConsensusMechanismServiceImpl) Execute(ctx context.Cont
 	defer s.dmutex.Release(ctx, "ProofOfAuthorityConsensusMechanism")
 
 	//
-	// STEP 1: Wait to receive new data...
+	// STEP 1: For debugging purposes only.
 	//
 
-	s.logger.Debug("Memory pool waiting to receive transactions...")
-	mempoolTx, err := s.mempoolTransactionInsertionDetectorUseCase.Execute(ctx)
-	if err != nil {
-		s.logger.Error("Failed detecting insertion changes.",
-			slog.Any("error", err))
-		return err
-	}
 	s.logger.Debug("New memory pool transaction detected!",
 		slog.Any("chain_id", mempoolTx.ChainID),
 		slog.Any("nonce", mempoolTx.GetNonce()),

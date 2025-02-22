@@ -8,7 +8,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
-	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltx"
+	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/poa"
 )
 
 type MempoolTransactionReceiveDTOFromNetworkService interface {
@@ -16,17 +16,17 @@ type MempoolTransactionReceiveDTOFromNetworkService interface {
 }
 
 type mempoolTransactionReceiveDTOFromNetworkServiceImpl struct {
-	config                          *config.Configuration
-	logger                          *slog.Logger
-	mempoolTransactionCreateUseCase uc_mempooltx.MempoolTransactionCreateUseCase
+	config                                    *config.Configuration
+	logger                                    *slog.Logger
+	proofOfAuthorityConsensusMechanismService sv_poa.ProofOfAuthorityConsensusMechanismService
 }
 
 func NewMempoolTransactionReceiveDTOFromNetworkService(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	uc uc_mempooltx.MempoolTransactionCreateUseCase,
+	proofOfAuthorityConsensusMechanismService sv_poa.ProofOfAuthorityConsensusMechanismService,
 ) MempoolTransactionReceiveDTOFromNetworkService {
-	return &mempoolTransactionReceiveDTOFromNetworkServiceImpl{cfg, logger, uc}
+	return &mempoolTransactionReceiveDTOFromNetworkServiceImpl{cfg, logger, proofOfAuthorityConsensusMechanismService}
 }
 
 func (s *mempoolTransactionReceiveDTOFromNetworkServiceImpl) Execute(ctx context.Context, dto *domain.MempoolTransactionDTO) error {
@@ -69,21 +69,14 @@ func (s *mempoolTransactionReceiveDTOFromNetworkServiceImpl) Execute(ctx context
 	)
 
 	//
-	// STEP 3: Save to our database.
+	// STEP 3: Perform proof of authority work immediately.
 	//
 
-	// DEVELOPERS NOTE:
-	// What happens when we save the mempooltx submission? Our application
-	// is constantly waiting to detect any new transactions in the database
-	// and once we submit this current transaction, then the `Proof of
-	// Authority` consensus mechanism will activate and execute. Therefore,
-	// all we have to do from this service perspective is just save the
-	// network submission.
-	upsertErr := s.mempoolTransactionCreateUseCase.Execute(ctx, mempoolTx)
-	if upsertErr != nil {
+	execErr := s.proofOfAuthorityConsensusMechanismService.Execute(ctx, mempoolTx)
+	if execErr != nil {
 		// s.logger.Warn("Validation failed for received",
 		// 	slog.Any("error", upsertErr))
-		return upsertErr
+		return execErr
 	}
 	return nil
 

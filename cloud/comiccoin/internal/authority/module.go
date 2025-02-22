@@ -9,7 +9,6 @@ import (
 	httphandler "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/http/handler"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/http/middleware"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/task"
-	taskhandler "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/task/handler"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/repo"
 	sv_account "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/account"
 	sv_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/blockchainstate"
@@ -243,6 +242,7 @@ func NewModule(
 		// When we are done, we will need to terminate our access to this resource.
 		mempoolTransactionInsertionDetectorUseCase.Terminate()
 	}()
+	_ = mempoolTransactionInsertionDetectorUseCase
 
 	// Proof of Work
 	proofOfWorkUseCase := uc_pow.NewProofOfWorkUseCase(
@@ -311,13 +311,6 @@ func NewModule(
 		getTokenUseCase,
 	)
 
-	// MempoolTransaction
-	mempoolTransactionReceiveDTOFromNetworkService := sv_mempooltx.NewMempoolTransactionReceiveDTOFromNetworkService(
-		cfg,
-		logger,
-		mempoolTransactionCreateUseCase,
-	)
-
 	// Proof of Authority Consensus Mechanism
 	getProofOfAuthorityPrivateKeyService := sv_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
@@ -330,7 +323,6 @@ func NewModule(
 		dmutex,
 		dbClient, // We do this so we can use MongoDB's "transactions"
 		getProofOfAuthorityPrivateKeyService,
-		mempoolTransactionInsertionDetectorUseCase,
 		mempoolTransactionDeleteByIDUseCase,
 		getBlockchainStateUseCase,
 		upsertBlockchainStateUseCase,
@@ -345,6 +337,13 @@ func NewModule(
 		proofOfWorkUseCase,
 		upsertBlockDataUseCase,
 		blockchainStatePublishUseCase,
+	)
+
+	// MempoolTransaction
+	mempoolTransactionReceiveDTOFromNetworkService := sv_mempooltx.NewMempoolTransactionReceiveDTOFromNetworkService(
+		cfg,
+		logger,
+		proofOfAuthorityConsensusMechanismService,
 	)
 
 	// Tokens
@@ -381,15 +380,15 @@ func NewModule(
 	//
 
 	// --- Task Manager --- //
-	poaConsensusMechanismTask := taskhandler.NewProofOfAuthorityConsensusMechanismTaskHandler(
-		cfg,
-		logger,
-		proofOfAuthorityConsensusMechanismService,
-	)
+	// poaConsensusMechanismTask := taskhandler.NewProofOfAuthorityConsensusMechanismTaskHandler(
+	// 	cfg,
+	// 	logger,
+	// 	proofOfAuthorityConsensusMechanismService,
+	// )
 	taskManager := task.NewTaskManager(
 		cfg,
 		logger,
-		poaConsensusMechanismTask,
+		// poaConsensusMechanismTask,
 	)
 
 	// --- HTTP --- //
