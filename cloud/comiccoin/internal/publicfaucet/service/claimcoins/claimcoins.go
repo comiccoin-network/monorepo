@@ -127,7 +127,7 @@ func NewClaimCoinsService(
 
 func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federatedidentityID primitive.ObjectID) (*ClaimCoinsResponse, error) {
 	//
-	// Lookup related records.
+	// Get related records.
 	//
 
 	faucet, err := svc.getFaucetByChainIDUseCase.Execute(sessCtx, svc.config.Blockchain.ChainID)
@@ -177,7 +177,7 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 
 	remoteAccount, err := svc.fetchRemoteAccountBalanceFromAuthorityUseCase.Execute(sessCtx, svc.config.Blockchain.PublicFaucetAccountAddress)
 	if err != nil {
-		svc.logger.Error("failed getting balance from authority error",
+		svc.logger.Error("failed getting account balance from authority error",
 			slog.Any("address", svc.config.Blockchain.PublicFaucetAccountAddress),
 			slog.Any("err", err))
 		return nil, err
@@ -239,11 +239,6 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 		slog.Any("tx_nonce", stx.GetNonce()))
 
 	//
-	// Submit the signed transaction to the Authority.
-	//
-
-	//
-	// STEP 3
 	// Send our pending signed transaction to the authority's mempool to wait
 	// in a queue to be processed.
 	//
