@@ -285,6 +285,7 @@ func NewModule(
 	claimCoinsService := svc_claimcoins.NewClaimCoinsService(
 		cfg,
 		logger,
+		dmutex,
 		getFaucetByChainIDUseCase,
 		fetchRemoteAccountBalanceFromAuthorityUseCase,
 		getPublicFaucetPrivateKeyService,

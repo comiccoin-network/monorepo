@@ -9,8 +9,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/merkle"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/distributedmutex"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/account"
@@ -20,6 +18,8 @@ import (
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltx"
 	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/pow"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/token"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/merkle"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/distributedmutex"
 )
 
 type ProofOfAuthorityConsensusMechanismService interface {

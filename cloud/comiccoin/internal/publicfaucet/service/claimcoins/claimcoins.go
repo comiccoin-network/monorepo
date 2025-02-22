@@ -16,6 +16,7 @@ import (
 	dom_auth_memp "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	dom_auth_tx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	uc_auth_memp "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltxdto"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/distributedmutex"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
@@ -95,6 +96,7 @@ type ClaimCoinsService interface {
 type claimCoinsServiceImpl struct {
 	config                                                  *config.Configuration
 	logger                                                  *slog.Logger
+	dmutex                                                  distributedmutex.Adapter
 	getFaucetByChainIDUseCase                               uc_faucet.GetFaucetByChainIDUseCase
 	fetchRemoteAccountBalanceFromAuthorityUseCase           uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase
 	getPublicFaucetPrivateKeyService                        svc_faucet.GetPublicFaucetPrivateKeyService
@@ -106,6 +108,7 @@ type claimCoinsServiceImpl struct {
 func NewClaimCoinsService(
 	config *config.Configuration,
 	logger *slog.Logger,
+	dmutex distributedmutex.Adapter,
 	getFaucetByChainIDUseCase uc_faucet.GetFaucetByChainIDUseCase,
 	fetchRemoteAccountBalanceFromAuthorityUseCase uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase,
 	getPublicFaucetPrivateKeyService svc_faucet.GetPublicFaucetPrivateKeyService,
@@ -116,6 +119,7 @@ func NewClaimCoinsService(
 	return &claimCoinsServiceImpl{
 		config:                    config,
 		logger:                    logger,
+		dmutex:                    dmutex,
 		getFaucetByChainIDUseCase: getFaucetByChainIDUseCase,
 		fetchRemoteAccountBalanceFromAuthorityUseCase:           fetchRemoteAccountBalanceFromAuthorityUseCase,
 		getPublicFaucetPrivateKeyService:                        getPublicFaucetPrivateKeyService,
@@ -126,6 +130,11 @@ func NewClaimCoinsService(
 }
 
 func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federatedidentityID primitive.ObjectID) (*ClaimCoinsResponse, error) {
+	// Protect our resource - Make it executed only once at any period of
+	// time, this is to protect faucet balance.
+	svc.dmutex.Acquire(sessCtx, "ClaimCoinsServiceExecution")
+	defer svc.dmutex.Release(sessCtx, "ClaimCoinsServiceExecution")
+
 	//
 	// Get related records.
 	//
