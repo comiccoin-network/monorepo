@@ -206,9 +206,12 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 	// Create our pending transaction and sign it with the faucet's private key.
 	//
 
+	nonceBigInt := big.NewInt(time.Now().Unix())
+	nonceBytes := nonceBigInt.Bytes()
+
 	tx := &dom_auth_tx.Transaction{
 		ChainID:    svc.config.Blockchain.ChainID,
-		NonceBytes: big.NewInt(time.Now().Unix()).Bytes(),
+		NonceBytes: nonceBytes,
 		From:       svc.config.Blockchain.PublicFaucetAccountAddress,
 		To:         user.WalletAddress,
 		Value:      svc.config.Blockchain.PublicFaucetClaimCoinsReward + svc.config.Blockchain.TransactionFee, // Note: The transaction fee gets reclaimed by the Authority, so it's fully recirculating when authority calls this.
