@@ -298,7 +298,7 @@ const DashboardPage = () => {
               >
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=ethereum:${
-                    user?.walletAddress ||
+                    dashboard?.wallet_address ||
                     "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
                   }`}
                   alt="Wallet QR Code"
@@ -314,14 +314,14 @@ const DashboardPage = () => {
                   role="textbox"
                   aria-label="Your wallet address"
                 >
-                  {user?.walletAddress
-                    ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`
+                  {dashboard?.wallet_address
+                    ? `${dashboard.wallet_address.slice(0, 6)}...${dashboard.wallet_address.slice(-4)}`
                     : "0x742d...f44e"}
                 </code>
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      user?.walletAddress ||
+                      dashboard?.wallet_address ||
                         "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
                     );
                     // TODO: Add toast notification for copied address
