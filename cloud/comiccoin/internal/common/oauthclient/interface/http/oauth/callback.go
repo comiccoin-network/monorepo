@@ -102,11 +102,11 @@ func (h *CallbackHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Add OAuth response parameters
-		params := fmt.Sprintf("access_token=%v&refresh_token=%v&expires_at=%v&session_id=%v",
+		params := fmt.Sprintf("access_token=%v&refresh_token=%v&expires_at=%v&federatedidentity_id=%v",
 			response.AccessToken,
 			response.RefreshToken,
 			response.ExpiresAt.Unix(),
-			response.SessionID)
+			response.FederatedIdentityID)
 
 		redirectURL += params
 

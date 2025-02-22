@@ -8,6 +8,7 @@ interface Tokens {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
+  federatedidentityID: string;
 }
 
 interface AuthState {
@@ -35,7 +36,11 @@ const createAuthStorage = () => {
         const tokens = parsed?.state?.tokens;
 
         // Perform thorough validation of the token structure
-        if (!tokens?.accessToken || !tokens?.refreshToken) {
+        if (
+          !tokens?.accessToken ||
+          !tokens?.refreshToken ||
+          !tokens?.federatedidentityID
+        ) {
           console.warn("⚠️ AUTH VALIDATION: Invalid token structure");
           return null;
         }
@@ -129,6 +134,7 @@ export const useAuthStore = create<AuthState>()(
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
+                federatedidentity_id: state.tokens.federatedidentityID,
                 refresh_token: state.tokens.refreshToken,
               }),
             },
@@ -144,7 +150,11 @@ export const useAuthStore = create<AuthState>()(
           // Parse and validate the response
           const data = await response.json();
 
-          if (!data.access_token || !data.refresh_token) {
+          if (
+            !data.access_token ||
+            !data.refresh_token ||
+            !data.federatedidentity_id
+          ) {
             throw new Error("Invalid token data received");
           }
 
@@ -153,6 +163,7 @@ export const useAuthStore = create<AuthState>()(
             accessToken: data.access_token,
             refreshToken: data.refresh_token,
             expiresAt: data.expires_at,
+            federatedidentityID: data.federatedidentity_id,
           });
 
           console.log("✅ Token refresh successful");

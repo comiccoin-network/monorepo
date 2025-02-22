@@ -35,15 +35,26 @@ export default function AuthCallback() {
         const accessToken = searchParams.get("access_token");
         const refreshToken = searchParams.get("refresh_token");
         const expiresAt = searchParams.get("expires_at");
+        const federatedidentityID = searchParams.get("federatedidentity_id");
 
         console.log("🔍 AUTH CALLBACK: Validating tokens", {
           hasAccessToken: !!accessToken,
           hasRefreshToken: !!refreshToken,
           hasExpiryTime: !!expiresAt,
+          hasFederatedIdentityID: !!federatedidentityID,
         });
 
-        if (!accessToken || !refreshToken || !expiresAt) {
-          throw new Error("Missing tokens");
+        if (!accessToken) {
+          throw new Error("Missing access tokens");
+        }
+        if (!refreshToken) {
+          throw new Error("Missing refresh tokens");
+        }
+        if (!expiresAt) {
+          throw new Error("Missing expires at");
+        }
+        if (!federatedidentityID) {
+          throw new Error("Missing federated identity ID");
         }
 
         // Step 2: Store tokens in auth store
@@ -52,6 +63,7 @@ export default function AuthCallback() {
           accessToken,
           refreshToken,
           expiresAt: parseInt(expiresAt, 10),
+          federatedidentityID: federatedidentityID,
         });
 
         try {

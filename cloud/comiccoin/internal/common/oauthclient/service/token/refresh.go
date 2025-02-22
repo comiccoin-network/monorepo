@@ -22,10 +22,11 @@ type RefreshRequest struct {
 }
 
 type RefreshResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	TokenType    string `json:"token_type"`
-	ExpiresIn    int    `json:"expires_in"`
+	AccessToken         string             `json:"access_token"`
+	FederatedIdentityID primitive.ObjectID `json:"federatedidentity_id"`
+	RefreshToken        string             `json:"refresh_token"`
+	TokenType           string             `json:"token_type"`
+	ExpiresIn           int                `json:"expires_in"`
 }
 
 type RefreshTokenService interface {
@@ -57,6 +58,9 @@ func NewRefreshTokenService(
 }
 
 func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *RefreshRequest) (*RefreshResponse, error) {
+	if req.FederatedIdentityID.IsZero() {
+		return nil, errors.New("federatedidentity_id is required")
+	}
 	if req.RefreshToken == "" {
 		return nil, errors.New("refresh_token is required")
 	}
@@ -76,6 +80,7 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 
 	// Add debug logging to see what we received
 	s.logger.Debug("received token response from OAuth server",
+		slog.String("federatedidentity_id", req.FederatedIdentityID.Hex()),
 		slog.String("token_type", tokenResp.TokenType),
 		slog.Int("expires_in", tokenResp.ExpiresIn),
 		slog.Time("expires_at", tokenResp.ExpiresAt),
@@ -119,9 +124,10 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 	s.logger.Info("token refreshed successfully")
 
 	return &RefreshResponse{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		TokenType:    tokenResp.TokenType,
-		ExpiresIn:    tokenResp.ExpiresIn,
+		FederatedIdentityID: req.FederatedIdentityID,
+		AccessToken:         token.AccessToken,
+		RefreshToken:        token.RefreshToken,
+		TokenType:           tokenResp.TokenType,
+		ExpiresIn:           tokenResp.ExpiresIn,
 	}, nil
 }
