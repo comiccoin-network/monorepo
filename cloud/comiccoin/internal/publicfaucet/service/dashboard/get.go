@@ -7,30 +7,31 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	dom_auth_stx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
+	uc_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/remoteaccountbalance"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
 )
 
-type TransactionDTO struct {
-	ChainID       uint16 `bson:"chain_id" json:"chain_id"`
-	FaucetBalance uint64 `bson:"faucet_balance" json:"faucet_balance"`
-}
-
 type DashboardDTO struct {
-	ChainID                 uint16            `bson:"chain_id" json:"chain_id"`
-	FaucetBalance           uint64            `bson:"faucet_balance" json:"faucet_balance"`
-	UserBalance             uint64            `bson:"user_balance" json:"user_balance"`
-	TotalCoinsClaimedByUser uint64            `bson:"total_coins_claimed_by_user" json:"total_coins_claimed"`
-	Transactions            []*TransactionDTO `bson:"transactions" json:"transactions"`
-	LastModifiedAt          time.Time         `bson:"last_modified_at,omitempty" json:"last_modified_at,omitempty"`
+	ChainID                 uint16    `bson:"chain_id" json:"chain_id"`
+	FaucetBalance           uint64    `bson:"faucet_balance" json:"faucet_balance"`
+	UserBalance             uint64    `bson:"user_balance" json:"user_balance"`
+	TotalCoinsClaimedByUser uint64    `bson:"total_coins_claimed_by_user" json:"total_coins_claimed"`
+	LastModifiedAt          time.Time `bson:"last_modified_at,omitempty" json:"last_modified_at,omitempty"`
 
-	LastClaimTime time.Time `bson:"last_claim_time" json:"last_claim_time"`
-	NextClaimTime time.Time `bson:"next_claim_time" json:"next_claim_time"`
-	CanClaim      bool      `bson:"can_claim" json:"can_claim"`
+	LastClaimTime time.Time       `bson:"last_claim_time" json:"last_claim_time"`
+	NextClaimTime time.Time       `bson:"next_claim_time" json:"next_claim_time"`
+	CanClaim      bool            `bson:"can_claim" json:"can_claim"`
+	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`
+
+	// Keep track of all of the transactions that the user claimed.
+	Transactions []*dom_auth_stx.SignedTransaction `bson:"transactions" json:"transactions"`
 }
 
 type GetDashboardService interface {
@@ -38,10 +39,11 @@ type GetDashboardService interface {
 }
 
 type getDashboardServiceImpl struct {
-	config                              *config.Configuration
-	logger                              *slog.Logger
-	getFaucetByChainIDUseCase           uc_faucet.GetFaucetByChainIDUseCase
-	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase
+	config                                        *config.Configuration
+	logger                                        *slog.Logger
+	getFaucetByChainIDUseCase                     uc_faucet.GetFaucetByChainIDUseCase
+	userGetByFederatedIdentityIDUseCase           uc_user.UserGetByFederatedIdentityIDUseCase
+	fetchRemoteAccountBalanceFromAuthorityUseCase uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase
 }
 
 func NewGetDashboardService(
@@ -49,12 +51,14 @@ func NewGetDashboardService(
 	logger *slog.Logger,
 	getFaucetByChainIDUseCase uc_faucet.GetFaucetByChainIDUseCase,
 	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase,
+	fetchRemoteAccountBalanceFromAuthorityUseCase uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase,
 ) GetDashboardService {
 	return &getDashboardServiceImpl{
 		config:                              config,
 		logger:                              logger,
 		getFaucetByChainIDUseCase:           getFaucetByChainIDUseCase,
 		userGetByFederatedIdentityIDUseCase: userGetByFederatedIdentityIDUseCase,
+		fetchRemoteAccountBalanceFromAuthorityUseCase: fetchRemoteAccountBalanceFromAuthorityUseCase,
 	}
 }
 
@@ -91,21 +95,24 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 		return nil, err
 	}
 
-	_ = user
+	//
+	// Get remote records.
+	//
 
-	txs := make([]*TransactionDTO, 0)
-
-	// // For example purposes, let's set some hard-coded values
-	// now := time.Now()
-	// lastClaimTime := now.Add(-20 * time.Hour)          // Assuming user claimed 20 hours ago
-	// nextClaimTime := lastClaimTime.Add(24 * time.Hour) // Next claim is 24 hours after last claim
-	// canClaim := now.After(nextClaimTime)
+	// Developers note: Remote server returns 404 error if account d.n.e. which is OK,
+	// as a result, we will skip any errors here and only check if we get user
+	// wallet balance response.
+	var userWalletBalance uint64
+	remoteAccount, _ := svc.fetchRemoteAccountBalanceFromAuthorityUseCase.Execute(sessCtx, user.WalletAddress)
+	if remoteAccount != nil {
+		userWalletBalance = remoteAccount.Balance
+	}
 
 	//
 	// Return the results
 	//
 
-	// Special circumstances
+	// Special circumstance #1
 	var canClaim bool
 	if user.LastClaimTime.IsZero() || user.NextClaimTime.IsZero() {
 		canClaim = true
@@ -113,20 +120,22 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 		canClaim = time.Now().After(user.NextClaimTime)
 	}
 
-	svc.logger.Debug("execution finished")
+	// Special circumstance #2
+	if user.ClaimedCoinTransactions == nil {
+		user.ClaimedCoinTransactions = make([]*dom_auth_stx.SignedTransaction, 0)
+	}
 
+	// Return our dashboard response.
 	return &DashboardDTO{
 		ChainID:                 faucet.ChainID,
-		FaucetBalance:           0,
-		UserBalance:             0,
-		TotalCoinsClaimedByUser: 0,
-		Transactions:            txs,
+		FaucetBalance:           faucet.Balance,
+		UserBalance:             userWalletBalance,
+		TotalCoinsClaimedByUser: user.TotalCoinsClaimed,
+		Transactions:            user.ClaimedCoinTransactions,
 		LastModifiedAt:          faucet.LastModifiedAt,
 		LastClaimTime:           user.LastClaimTime,
 		NextClaimTime:           user.NextClaimTime,
 		CanClaim:                canClaim,
-		// LastClaimTime: lastClaimTime,
-		// NextClaimTime: nextClaimTime,
-		// CanClaim:      canClaim,
+		WalletAddress:           user.WalletAddress,
 	}, nil
 }

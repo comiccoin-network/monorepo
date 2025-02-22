@@ -140,7 +140,6 @@ func (svc *fetchRemoteFederdatedIdentityServiceImpl) Execute(ctx context.Context
 			HasPreviouslyPurchasedFromFacebookMarketplace:   rfi.HasPreviouslyPurchasedFromFacebookMarketplace,
 			HasRegularlyAttendedComicConsOrCollectibleShows: rfi.HasRegularlyAttendedComicConsOrCollectibleShows,
 			WalletAddress:             rfi.WalletAddress,
-			LastCoinsDepositAt:        rfi.LastCoinsDepositAt,
 			ProfileVerificationStatus: rfi.ProfileVerificationStatus,
 		}
 
@@ -206,7 +205,6 @@ func (svc *fetchRemoteFederdatedIdentityServiceImpl) Execute(ctx context.Context
 		fi.HasPreviouslyPurchasedFromFacebookMarketplace = rfi.HasPreviouslyPurchasedFromFacebookMarketplace
 		fi.HasRegularlyAttendedComicConsOrCollectibleShows = rfi.HasRegularlyAttendedComicConsOrCollectibleShows
 		fi.WalletAddress = rfi.WalletAddress
-		fi.LastCoinsDepositAt = rfi.LastCoinsDepositAt
 		fi.ProfileVerificationStatus = rfi.ProfileVerificationStatus
 
 		if err := svc.federatedIdentityUpdateUseCase.Execute(ctx, fi); err != nil {

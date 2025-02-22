@@ -278,6 +278,7 @@ func NewModule(
 		logger,
 		getFaucetByChainIDUseCase,
 		userGetByFederatedIdentityIDUseCase,
+		fetchRemoteAccountBalanceFromAuthorityUseCase,
 	)
 
 	// --- Claim Coins ---

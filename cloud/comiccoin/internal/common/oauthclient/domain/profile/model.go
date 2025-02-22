@@ -22,48 +22,48 @@ const (
 )
 
 type ComicCoinProfile struct {
-	ID                        primitive.ObjectID `bson:"_id" json:"id"`
-	Email                     string             `bson:"email" json:"email"`
-	FirstName                 string             `bson:"first_name" json:"first_name"`
-	LastName                  string             `bson:"last_name" json:"last_name"`
-	Name                      string             `bson:"name" json:"name"`
-	LexicalName               string             `bson:"lexical_name" json:"lexical_name"`
-	PasswordHashAlgorithm     string             `bson:"password_hash_algorithm" json:"password_hash_algorithm,omitempty"`
-	PasswordHash              string             `bson:"password_hash" json:"password_hash,omitempty"`
-	Role                      int8               `bson:"role" json:"role"`
-	WasEmailVerified          bool               `bson:"was_email_verified" json:"was_email_verified,omitempty"`
-	EmailVerificationCode     string             `bson:"email_verification_code,omitempty" json:"email_verification_code,omitempty"`
-	EmailVerificationExpiry   time.Time          `bson:"email_verification_expiry,omitempty" json:"email_verification_expiry,omitempty"`
-	Phone                     string             `bson:"phone" json:"phone,omitempty"`
-	Country                   string             `bson:"country" json:"country,omitempty"`
-	Timezone                  string             `bson:"timezone" json:"timezone"`
-	Region                    string             `bson:"region" json:"region,omitempty"`
-	City                      string             `bson:"city" json:"city,omitempty"`
-	PostalCode                string             `bson:"postal_code" json:"postal_code,omitempty"`
-	AddressLine1              string             `bson:"address_line1" json:"address_line1,omitempty"`
-	AddressLine2              string             `bson:"address_line2" json:"address_line2,omitempty"`
-	HasShippingAddress        bool               `bson:"has_shipping_address" json:"has_shipping_address,omitempty"`
-	ShippingName              string             `bson:"shipping_name" json:"shipping_name,omitempty"`
-	ShippingPhone             string             `bson:"shipping_phone" json:"shipping_phone,omitempty"`
-	ShippingCountry           string             `bson:"shipping_country" json:"shipping_country,omitempty"`
-	ShippingRegion            string             `bson:"shipping_region" json:"shipping_region,omitempty"`
-	ShippingCity              string             `bson:"shipping_city" json:"shipping_city,omitempty"`
-	ShippingPostalCode        string             `bson:"shipping_postal_code" json:"shipping_postal_code,omitempty"`
-	ShippingAddressLine1      string             `bson:"shipping_address_line1" json:"shipping_address_line1,omitempty"`
-	ShippingAddressLine2      string             `bson:"shipping_address_line2" json:"shipping_address_line2,omitempty"`
-	HowDidYouHearAboutUs      int8               `bson:"how_did_you_hear_about_us" json:"how_did_you_hear_about_us,omitempty"`
-	HowDidYouHearAboutUsOther string             `bson:"how_did_you_hear_about_us_other" json:"how_did_you_hear_about_us_other,omitempty"`
-	AgreeTermsOfService       bool               `bson:"agree_terms_of_service" json:"agree_terms_of_service,omitempty"`
-	AgreePromotions           bool               `bson:"agree_promotions" json:"agree_promotions,omitempty"`
-	CreatedFromIPAddress      string             `bson:"created_from_ip_address" json:"created_from_ip_address"`
-	CreatedByFederatedIdentityID           primitive.ObjectID `bson:"created_by_federatedidentity_id" json:"created_by_federatedidentity_id"`
-	CreatedAt                 time.Time          `bson:"created_at" json:"created_at,omitempty"`
-	CreatedByName             string             `bson:"created_by_name" json:"created_by_name"`
-	ModifiedFromIPAddress     string             `bson:"modified_from_ip_address" json:"modified_from_ip_address"`
-	ModifiedByFederatedIdentityID          primitive.ObjectID `bson:"modified_by_federatedidentity_id" json:"modified_by_federatedidentity_id"`
-	ModifiedAt                time.Time          `bson:"modified_at" json:"modified_at,omitempty"`
-	ModifiedByName            string             `bson:"modified_by_name" json:"modified_by_name"`
-	Status                    int8               `bson:"status" json:"status"`
+	ID                            primitive.ObjectID `bson:"_id" json:"id"`
+	Email                         string             `bson:"email" json:"email"`
+	FirstName                     string             `bson:"first_name" json:"first_name"`
+	LastName                      string             `bson:"last_name" json:"last_name"`
+	Name                          string             `bson:"name" json:"name"`
+	LexicalName                   string             `bson:"lexical_name" json:"lexical_name"`
+	PasswordHashAlgorithm         string             `bson:"password_hash_algorithm" json:"password_hash_algorithm,omitempty"`
+	PasswordHash                  string             `bson:"password_hash" json:"password_hash,omitempty"`
+	Role                          int8               `bson:"role" json:"role"`
+	WasEmailVerified              bool               `bson:"was_email_verified" json:"was_email_verified,omitempty"`
+	EmailVerificationCode         string             `bson:"email_verification_code,omitempty" json:"email_verification_code,omitempty"`
+	EmailVerificationExpiry       time.Time          `bson:"email_verification_expiry,omitempty" json:"email_verification_expiry,omitempty"`
+	Phone                         string             `bson:"phone" json:"phone,omitempty"`
+	Country                       string             `bson:"country" json:"country,omitempty"`
+	Timezone                      string             `bson:"timezone" json:"timezone"`
+	Region                        string             `bson:"region" json:"region,omitempty"`
+	City                          string             `bson:"city" json:"city,omitempty"`
+	PostalCode                    string             `bson:"postal_code" json:"postal_code,omitempty"`
+	AddressLine1                  string             `bson:"address_line1" json:"address_line1,omitempty"`
+	AddressLine2                  string             `bson:"address_line2" json:"address_line2,omitempty"`
+	HasShippingAddress            bool               `bson:"has_shipping_address" json:"has_shipping_address,omitempty"`
+	ShippingName                  string             `bson:"shipping_name" json:"shipping_name,omitempty"`
+	ShippingPhone                 string             `bson:"shipping_phone" json:"shipping_phone,omitempty"`
+	ShippingCountry               string             `bson:"shipping_country" json:"shipping_country,omitempty"`
+	ShippingRegion                string             `bson:"shipping_region" json:"shipping_region,omitempty"`
+	ShippingCity                  string             `bson:"shipping_city" json:"shipping_city,omitempty"`
+	ShippingPostalCode            string             `bson:"shipping_postal_code" json:"shipping_postal_code,omitempty"`
+	ShippingAddressLine1          string             `bson:"shipping_address_line1" json:"shipping_address_line1,omitempty"`
+	ShippingAddressLine2          string             `bson:"shipping_address_line2" json:"shipping_address_line2,omitempty"`
+	HowDidYouHearAboutUs          int8               `bson:"how_did_you_hear_about_us" json:"how_did_you_hear_about_us,omitempty"`
+	HowDidYouHearAboutUsOther     string             `bson:"how_did_you_hear_about_us_other" json:"how_did_you_hear_about_us_other,omitempty"`
+	AgreeTermsOfService           bool               `bson:"agree_terms_of_service" json:"agree_terms_of_service,omitempty"`
+	AgreePromotions               bool               `bson:"agree_promotions" json:"agree_promotions,omitempty"`
+	CreatedFromIPAddress          string             `bson:"created_from_ip_address" json:"created_from_ip_address"`
+	CreatedByFederatedIdentityID  primitive.ObjectID `bson:"created_by_federatedidentity_id" json:"created_by_federatedidentity_id"`
+	CreatedAt                     time.Time          `bson:"created_at" json:"created_at,omitempty"`
+	CreatedByName                 string             `bson:"created_by_name" json:"created_by_name"`
+	ModifiedFromIPAddress         string             `bson:"modified_from_ip_address" json:"modified_from_ip_address"`
+	ModifiedByFederatedIdentityID primitive.ObjectID `bson:"modified_by_federatedidentity_id" json:"modified_by_federatedidentity_id"`
+	ModifiedAt                    time.Time          `bson:"modified_at" json:"modified_at,omitempty"`
+	ModifiedByName                string             `bson:"modified_by_name" json:"modified_by_name"`
+	Status                        int8               `bson:"status" json:"status"`
 
 	// The name of the payment processor we are using to handle payments with
 	// this particular member.
@@ -106,10 +106,6 @@ type ComicCoinProfile struct {
 	// WalletAddress variable holds the address of the federatedidentity's wallet
 	// which is used by this publicfaucet application to send.
 	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`
-
-	// LastCoinsDepositAt variable keeps track of when this publicfaucet sent coins
-	// to this federatedidentity's account.
-	LastCoinsDepositAt time.Time `bson:"last_coins_deposit_at" json:"last_coins_deposit_at"`
 
 	// ProfileVerificationStatus indicates the profile verification status of this federatedidentity account.
 	ProfileVerificationStatus int8 `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`

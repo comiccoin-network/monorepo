@@ -108,10 +108,6 @@ type FederatedIdentity struct {
 	// which is used by this gateway application to send.
 	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`
 
-	// LastCoinsDepositAt variable keeps track of when this gateway sent coins
-	// to this federatedidentity's account.
-	LastCoinsDepositAt time.Time `bson:"last_coins_deposit_at" json:"last_coins_deposit_at"`
-
 	// ProfileVerificationStatus indicates the profile verification status of this federatedidentity account.
 	ProfileVerificationStatus int8 `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
 }

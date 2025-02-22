@@ -127,7 +127,6 @@ func doRunFetchProfile(accessToken, federatedidentityID string) {
 		fmt.Printf("has_previously_purchased_from_facebook_marketplace: %v\n", profile.HasPreviouslyPurchasedFromFacebookMarketplace)
 		fmt.Printf("has_regularly_attended_comic_cons_or_collectible_shows: %v\n", profile.HasRegularlyAttendedComicConsOrCollectibleShows)
 		fmt.Printf("wallet_address: %v\n", profile.WalletAddress)
-		fmt.Printf("last_coins_deposit_at: %v\n", profile.LastCoinsDepositAt)
 		fmt.Printf("profile_verification_status: %v\n", profile.ProfileVerificationStatus)
 	}
 }

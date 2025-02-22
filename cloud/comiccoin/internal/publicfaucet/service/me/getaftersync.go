@@ -76,7 +76,6 @@ type MeResponseDTO struct {
 	// HasPreviouslyPurchasedFromFacebookMarketplace   int8               `bson:"has_previously_purchased_from_facebook_marketplace" json:"has_previously_purchased_from_facebook_marketplace"`
 	// HasRegularlyAttendedComicConsOrCollectibleShows int8               `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
 	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`
-	// LastCoinsDepositAt                              time.Time          `bson:"last_coins_deposit_at" json:"last_coins_deposit_at"`
 	// ProfileVerificationStatus                       int8               `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
 }
 
@@ -205,7 +204,6 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 			HasPreviouslyPurchasedFromFacebookMarketplace:   federatedidentity.HasPreviouslyPurchasedFromFacebookMarketplace,
 			HasRegularlyAttendedComicConsOrCollectibleShows: federatedidentity.HasRegularlyAttendedComicConsOrCollectibleShows,
 			WalletAddress:             federatedidentity.WalletAddress,
-			LastCoinsDepositAt:        federatedidentity.LastCoinsDepositAt,
 			ProfileVerificationStatus: federatedidentity.ProfileVerificationStatus,
 		}
 		if err := s.userCreateUseCase.Execute(ctx, user); err != nil {
@@ -320,7 +318,6 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 		user.HasPreviouslyPurchasedFromFacebookMarketplace = remotefi.HasPreviouslyPurchasedFromFacebookMarketplace
 		user.HasRegularlyAttendedComicConsOrCollectibleShows = remotefi.HasRegularlyAttendedComicConsOrCollectibleShows
 		user.WalletAddress = remotefi.WalletAddress
-		user.LastCoinsDepositAt = remotefi.LastCoinsDepositAt
 		user.ProfileVerificationStatus = remotefi.ProfileVerificationStatus
 
 		if err := s.userUpdateUseCase.Execute(ctx, user); err != nil {

@@ -14,6 +14,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	dom_auth_memp "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
+	dom_auth_stx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	dom_auth_tx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	uc_auth_memp "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltxdto"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/distributedmutex"
@@ -83,7 +84,6 @@ type ClaimCoinsResponse struct {
 	// HasPreviouslyPurchasedFromFacebookMarketplace   int8               `bson:"has_previously_purchased_from_facebook_marketplace" json:"has_previously_purchased_from_facebook_marketplace"`
 	// HasRegularlyAttendedComicConsOrCollectibleShows int8               `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
 	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`
-	// LastCoinsDepositAt                              time.Time          `bson:"last_coins_deposit_at" json:"last_coins_deposit_at"`
 	// ProfileVerificationStatus                       int8               `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
 	LastClaimTime time.Time `bson:"last_claim_time" json:"last_claim_time"`
 	NextClaimTime time.Time `bson:"next_claim_time" json:"next_claim_time"`
@@ -286,9 +286,25 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 	// Update user record.
 	//
 
+	// Defensive code: In case the transactions haven't been initialized previously.
+	if user.ClaimedCoinTransactions == nil {
+		user.ClaimedCoinTransactions = make([]*dom_auth_stx.SignedTransaction, 0)
+	}
+	user.ClaimedCoinTransactions = append(user.ClaimedCoinTransactions, &stx)
+
+	// Increment the total coins claimed by user.
+	user.TotalCoinsClaimed += svc.config.Blockchain.PublicFaucetClaimCoinsReward
+
+	// Set that we claimed coins right now.
 	user.LastClaimTime = time.Now()
-	user.NextClaimTime = time.Now().Add(24 * time.Hour) // Next claim is 24 hours after last claim
+
+	// Next claim is 24 hours after last claim
+	user.NextClaimTime = time.Now().Add(24 * time.Hour)
+
+	// Useful to keep.
 	user.ModifiedAt = time.Now()
+
+	// Save to the database.
 	if err := svc.userUpdateUseCase.Execute(sessCtx, user); err != nil {
 		svc.logger.Error("Failed to save user",
 			slog.Any("error", err))
@@ -298,6 +314,7 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 		slog.Any("last_claim_time", user.LastClaimTime),
 		slog.Any("next_claim_time", user.NextClaimTime),
 		slog.Any("can_claim", canClaim),
+		slog.Any("stx", stx),
 	)
 
 	//

@@ -6,6 +6,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	dom_auth_stx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 )
 
 const (
@@ -106,10 +108,6 @@ type User struct {
 	// which is used by this gateway application to send.
 	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`
 
-	// LastCoinsDepositAt variable keeps track of when this gateway sent coins
-	// to this user's account.
-	LastCoinsDepositAt time.Time `bson:"last_coins_deposit_at" json:"last_coins_deposit_at"`
-
 	// ProfileVerificationStatus indicates the profile verification status of this user account.
 	ProfileVerificationStatus int8 `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
 
@@ -118,6 +116,11 @@ type User struct {
 
 	// NextClaimTime indicates the next available time the user is able to claim a bunch of coins immediatly
 	NextClaimTime time.Time `bson:"next_claim_time" json:"next_claim_time"`
+
+	// Keep track of all of the transactions that the user claimed.
+	ClaimedCoinTransactions []*dom_auth_stx.SignedTransaction `bson:"claimed_coin_transactions" json:"claimed_coin_transactions"`
+
+	TotalCoinsClaimed uint64 `bson:"total_coins_claimed" json:"total_coins_claimed,omitempty"`
 }
 
 type UserComment struct {
