@@ -22,6 +22,7 @@ import (
 	http_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/faucet"
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/me"
+	http_transactions "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/transactions"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -62,6 +63,8 @@ type httpServerImpl struct {
 	dashboard *http_dashboard.DashboardHTTPHandler
 
 	postClaimCoins *http_claimcoins.PostClaimCoinsHTTPHandler
+
+	getUserTransactionsHTTPHandler *http_transactions.GetUserTransactionsHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -77,6 +80,7 @@ func NewHTTPServer(
 	faucetServerSentEventsHTTPHandler *http_faucet.FaucetServerSentEventsHTTPHandler,
 	dashboard *http_dashboard.DashboardHTTPHandler,
 	postClaimCoins *http_claimcoins.PostClaimCoinsHTTPHandler,
+	getUserTransactionsHTTPHandler *http_transactions.GetUserTransactionsHTTPHandler,
 ) HTTPServer {
 
 	// Create a new HTTP server instance.
@@ -92,6 +96,7 @@ func NewHTTPServer(
 		faucetServerSentEventsHTTPHandler: faucetServerSentEventsHTTPHandler,
 		dashboard:                         dashboard,
 		postClaimCoins:                    postClaimCoins,
+		getUserTransactionsHTTPHandler:    getUserTransactionsHTTPHandler,
 	}
 
 	return port
@@ -175,9 +180,13 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "faucet" && p[4] == "sse" && r.Method == http.MethodPost:
 			port.faucetServerSentEventsHTTPHandler.Execute(w, r)
 
-			// Claim Coins
+		// Claim Coins
 		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "claim-coins" && r.Method == http.MethodPost:
 			port.postClaimCoins.Execute(w, r)
+
+		// Transactions List
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "transactions" && r.Method == http.MethodGet:
+			port.getUserTransactionsHTTPHandler.Execute(w, r)
 
 		// --- CATCH ALL: D.N.E. ---
 		default:

@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet/getbychainid.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/dashboard/get.go
 package dashboard
 
 import (

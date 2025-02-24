@@ -28,6 +28,7 @@ import (
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/me"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware"
+	http_transactions "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/transactions"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/task"
 	tsk_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/task/faucet"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/bannedipaddress"
@@ -39,6 +40,7 @@ import (
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
 	svc_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/hello"
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/me"
+	svc_transactions "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/transactions"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/bannedipaddress"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
 	uc_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/remoteaccountbalance"
@@ -281,6 +283,15 @@ func NewModule(
 		fetchRemoteAccountBalanceFromAuthorityUseCase,
 	)
 
+	// --- Transactions ---
+
+	getUserTransactionsService := svc_transactions.NewGetUserTransactionsService(
+		cfg,
+		logger,
+		userGetByFederatedIdentityIDUseCase,
+	)
+	_ = getUserTransactionsService
+
 	// --- Claim Coins ---
 
 	claimCoinsService := svc_claimcoins.NewClaimCoinsService(
@@ -346,6 +357,15 @@ func NewModule(
 		getDasbhoardService,
 	)
 
+	// --- Transactions ---
+
+	getUserTransactionsHTTPHandler := http_transactions.NewGetUserTransactionsHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		getUserTransactionsService,
+	)
+
 	// --- Claim Coins ---
 
 	postClaimCoinsHTTPHandler := http_claimcoins.NewPostClaimCoinsHTTPHandler(
@@ -380,6 +400,7 @@ func NewModule(
 		faucetServerSentEventsHTTPHandler,
 		dashboardHTTPHandler,
 		postClaimCoinsHTTPHandler,
+		getUserTransactionsHTTPHandler,
 	)
 
 	// --- Tasks ---
