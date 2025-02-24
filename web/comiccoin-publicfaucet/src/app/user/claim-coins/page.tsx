@@ -5,13 +5,29 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMe } from "@/hooks/useMe";
 import useClaimCoins from "@/hooks/useClaimCoins";
+import { useGetFaucet } from "@/hooks/useGetFaucet";
 import { Coins, Gift, Clock } from "lucide-react";
+import { API_CONFIG } from "@/config/env";
 
 const ClaimCoinsPage = () => {
   const router = useRouter();
   const { updateUser } = useMe();
   const { claimCoins, isLoading: isClaimingCoins } = useClaimCoins();
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+
+  // Use the faucet hook to get daily_coins_reward
+  // Assuming chainId is 1, update with the correct chainId from your config
+  const chainId = API_CONFIG.chainId || 1;
+  const {
+    faucet,
+    isLoading: isFaucetLoading,
+    error: faucetError,
+  } = useGetFaucet(chainId, {
+    refreshInterval: 60000, // Refresh every minute
+  });
+
+  // Get the daily reward amount from faucet data
+  const dailyReward = faucet?.daily_coins_reward || 500; // Fallback to 500 if not available yet
 
   const handleClaimCoins = async () => {
     try {
@@ -59,7 +75,9 @@ const ClaimCoinsPage = () => {
               <h2 className="text-xl font-semibold text-purple-800">
                 Daily Reward Ready!
               </h2>
-              <p className="text-gray-600">Claim your 500 ComicCoins today</p>
+              <p className="text-gray-600">
+                Claim your {dailyReward} ComicCoins today
+              </p>
             </div>
           </div>
 
@@ -70,7 +88,11 @@ const ClaimCoinsPage = () => {
               <div className="flex items-center justify-center gap-2">
                 <Coins className="h-6 w-6 text-purple-600" />
                 <span className="text-2xl font-bold text-purple-700">
-                  500 CC
+                  {isFaucetLoading ? (
+                    <span className="text-sm opacity-70">Loading...</span>
+                  ) : (
+                    `${dailyReward} CC`
+                  )}
                 </span>
               </div>
             </div>
@@ -79,7 +101,7 @@ const ClaimCoinsPage = () => {
           {/* Claim Button */}
           <button
             onClick={handleClaimCoins}
-            disabled={isClaimingCoins}
+            disabled={isClaimingCoins || isFaucetLoading}
             className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl py-4 px-6 text-lg font-semibold hover:from-purple-700 hover:to-purple-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
           >
             {isClaimingCoins ? (
@@ -117,7 +139,7 @@ const ClaimCoinsPage = () => {
             <h2 className="text-2xl font-bold text-purple-800 mb-2">
               Congratulations!
             </h2>
-            <p className="text-gray-600">You've claimed 500 CC!</p>
+            <p className="text-gray-600">You've claimed {dailyReward} CC!</p>
           </div>
         </div>
       )}

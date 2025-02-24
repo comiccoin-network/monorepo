@@ -18,6 +18,7 @@ interface FaucetDTO {
   total_transactions_today: number;
   created_at?: string;
   last_modified_at?: string;
+  daily_coins_reward: number;
 }
 
 interface UseGetFaucetOptions {
