@@ -125,13 +125,21 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 		user.ClaimedCoinTransactions = make([]*dom_user.UserClaimedCoinTransaction, 0)
 	}
 
+	// Limit transactions to maximum of 5
+	var limitedTransactions []*dom_user.UserClaimedCoinTransaction
+	if len(user.ClaimedCoinTransactions) <= 5 {
+		limitedTransactions = user.ClaimedCoinTransactions
+	} else {
+		limitedTransactions = user.ClaimedCoinTransactions[:5]
+	}
+
 	// Return our dashboard response.
 	return &DashboardDTO{
 		ChainID:                 faucet.ChainID,
 		FaucetBalance:           faucet.Balance,
 		UserBalance:             userWalletBalance,
 		TotalCoinsClaimedByUser: user.TotalCoinsClaimed,
-		Transactions:            user.ClaimedCoinTransactions,
+		Transactions:            limitedTransactions,
 		LastModifiedAt:          faucet.LastModifiedAt,
 		LastClaimTime:           user.LastClaimTime,
 		NextClaimTime:           user.NextClaimTime,
