@@ -332,9 +332,47 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 	// Update the faucet.
 	//
 
+	// First, check if we need to reset daily counters based on last modified time
+	// This approach considers "today" as a 24-hour period from midnight UTC
+	currentTime := time.Now().UTC()
+	currentDate := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.UTC)
+	lastModifiedDate := time.Date(
+		faucet.LastModifiedAt.Year(),
+		faucet.LastModifiedAt.Month(),
+		faucet.LastModifiedAt.Day(),
+		0, 0, 0, 0, time.UTC,
+	)
+
+	// If the last modification was on a previous day, reset the daily counters
+	if currentDate.After(lastModifiedDate) {
+		svc.logger.Debug("Resetting daily faucet counters - new day detected",
+			slog.Time("currentDate", currentDate),
+			slog.Time("lastModifiedDate", lastModifiedDate))
+
+		// Store previous day's distribution rate before resetting
+		if faucet.TotalCoinsDistributedToday > 0 && faucet.TotalTransactionsToday > 0 {
+			faucet.DistributationRatePerDay = faucet.TotalCoinsDistributedToday
+		}
+
+		// Reset daily counters
+		faucet.TotalCoinsDistributedToday = 0
+		faucet.TotalTransactionsToday = 0
+	}
+
+	// Update total distributions
 	faucet.TotalCoinsDistributed += svc.config.Blockchain.PublicFaucetClaimCoinsReward + svc.config.Blockchain.TransactionFee
 	faucet.TotalTransactions += 1
-	faucet.LastModifiedAt = time.Now()
+
+	// Update daily counters
+	faucet.TotalCoinsDistributedToday += svc.config.Blockchain.PublicFaucetClaimCoinsReward + svc.config.Blockchain.TransactionFee
+	faucet.TotalTransactionsToday += 1
+
+	// Calculate distribution rate per day
+	// Using a simple approach: total coins distributed today (this becomes the daily rate when the day ends)
+	// This will be preserved as the previous day's rate when counters reset
+	faucet.DistributationRatePerDay = faucet.TotalCoinsDistributedToday
+
+	faucet.LastModifiedAt = lastModifiedDate
 	if err := svc.faucetUpdateByChainIDUseCase.Execute(sessCtx, faucet); err != nil {
 		svc.logger.Error("Failed to save faucet",
 			slog.Any("error", err))
