@@ -70,11 +70,13 @@ export function useRegistrationUrl(): UseRegistrationUrlReturn {
       console.log("Data received:", data);
       setRegistrationUrl(data.registration_url);
     } catch (err) {
+      // Use type checking to safely log error information
       console.log("Detailed error information:", {
         error: err,
-        message: err.message,
-        stack: err.stack,
+        message: err instanceof Error ? err.message : "Unknown error",
+        stack: err instanceof Error ? err.stack : "No stack trace available",
       });
+
       setError(
         err instanceof Error ? err : new Error("An unknown error occurred"),
       );

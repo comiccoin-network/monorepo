@@ -5,7 +5,10 @@ import { useAuthStore } from "./useAuth";
 import { API_CONFIG } from "@/config/env";
 
 // Create a standalone refresh function instead of using a hook
-const refreshTokens = async (currentRefreshToken: string): Promise<boolean> => {
+const refreshTokens = async (
+  currentRefreshToken: string,
+  federatedidentityID: string,
+): Promise<boolean> => {
   try {
     console.log("🔄 Attempting to refresh tokens");
 
@@ -18,6 +21,7 @@ const refreshTokens = async (currentRefreshToken: string): Promise<boolean> => {
         },
         body: JSON.stringify({
           refresh_token: currentRefreshToken,
+          federatedidentity_id: federatedidentityID,
         }),
       },
     );
@@ -28,18 +32,23 @@ const refreshTokens = async (currentRefreshToken: string): Promise<boolean> => {
 
     const data = await response.json();
 
-    if (!data.access_token || !data.refresh_token) {
+    if (
+      !data.access_token ||
+      !data.refresh_token ||
+      !data.federatedidentity_id
+    ) {
       throw new Error("Invalid token data received");
     }
 
     // Get the setTokens function from the store
     const { setTokens } = useAuthStore.getState();
 
-    // Update tokens in the store
+    // Update tokens in the store with federatedidentityID
     setTokens({
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
       expiresAt: data.expires_at,
+      federatedidentityID: data.federatedidentity_id,
     });
 
     console.log("✅ Successfully refreshed tokens");
@@ -57,11 +66,11 @@ export function useAuthenticatedFetch() {
 
   // Create a function that will handle the token refresh using the current refresh token
   const handleTokenRefresh = useCallback(async () => {
-    if (!tokens?.refreshToken) {
+    if (!tokens?.refreshToken || !tokens?.federatedidentityID) {
       return false;
     }
-    return refreshTokens(tokens.refreshToken);
-  }, [tokens?.refreshToken]);
+    return refreshTokens(tokens.refreshToken, tokens.federatedidentityID);
+  }, [tokens?.refreshToken, tokens?.federatedidentityID]);
 
   // Create the authenticated fetch instance with the refresh token function
   const authenticatedFetch = useCallback(

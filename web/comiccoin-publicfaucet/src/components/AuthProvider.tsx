@@ -3,10 +3,12 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/hooks/useAuth";
+import { useMe } from "@/hooks/useMe";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
-  const { setTokens, setUser } = useAuthStore();
+  const { setTokens } = useAuthStore();
+  const { updateUser } = useMe(); // Use updateUser from useMe instead of setUser
 
   useEffect(() => {
     console.log("🔄 AuthProvider: Starting hydration check");
@@ -17,7 +19,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const currentState = useAuthStore.getState();
         console.log("📊 Current store state:", {
           hasTokens: !!currentState.tokens,
-          hasUser: !!currentState.user,
           isAuthenticated: currentState.isAuthenticated,
         });
 
@@ -54,9 +55,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }
 
-          if (state?.user) {
-            console.log("👤 Setting user data");
-            setUser(state.user);
+          // Check for user data in localStorage directly
+          const userData = localStorage.getItem("user");
+          if (userData) {
+            console.log("👤 Setting user data from localStorage");
+            try {
+              const user = JSON.parse(userData);
+              updateUser(user);
+            } catch (error) {
+              console.log("❌ Error parsing user data:", error);
+            }
           }
         } else {
           console.log("ℹ️ No auth storage found");
@@ -72,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     hydrateAuth();
-  }, [setTokens, setUser]);
+  }, [setTokens, updateUser]);
 
   if (!isHydrated) {
     console.log("⏳ Waiting for hydration");

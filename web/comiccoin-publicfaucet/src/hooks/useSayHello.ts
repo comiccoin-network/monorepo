@@ -1,7 +1,7 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useSayHello.ts
 // hooks/useSayHello.ts
 import { useState, useCallback } from "react";
-import { createAuthenticatedFetch } from "@/utils/api";
+import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 import { API_CONFIG } from "@/config/env";
 
 interface FederatedIdentity {
@@ -28,7 +28,8 @@ export function useSayHello(): UseSayHelloReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchWithAuth = createAuthenticatedFetch();
+  // Use the useAuthenticatedFetch hook instead of directly calling createAuthenticatedFetch
+  const fetchWithAuth = useAuthenticatedFetch();
 
   const sayHello = useCallback(
     async (message: string) => {
