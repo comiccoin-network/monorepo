@@ -299,6 +299,7 @@ func NewModule(
 		logger,
 		dmutex,
 		getFaucetByChainIDUseCase,
+		faucetUpdateByChainIDUseCase,
 		fetchRemoteAccountBalanceFromAuthorityUseCase,
 		getPublicFaucetPrivateKeyService,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase, // (External package)

@@ -98,6 +98,7 @@ type claimCoinsServiceImpl struct {
 	logger                                                  *slog.Logger
 	dmutex                                                  distributedmutex.Adapter
 	getFaucetByChainIDUseCase                               uc_faucet.GetFaucetByChainIDUseCase
+	faucetUpdateByChainIDUseCase                            uc_faucet.FaucetUpdateByChainIDUseCase
 	fetchRemoteAccountBalanceFromAuthorityUseCase           uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase
 	getPublicFaucetPrivateKeyService                        svc_faucet.GetPublicFaucetPrivateKeyService
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_auth_memp.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
@@ -110,6 +111,7 @@ func NewClaimCoinsService(
 	logger *slog.Logger,
 	dmutex distributedmutex.Adapter,
 	getFaucetByChainIDUseCase uc_faucet.GetFaucetByChainIDUseCase,
+	faucetUpdateByChainIDUseCase uc_faucet.FaucetUpdateByChainIDUseCase,
 	fetchRemoteAccountBalanceFromAuthorityUseCase uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase,
 	getPublicFaucetPrivateKeyService svc_faucet.GetPublicFaucetPrivateKeyService,
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_auth_memp.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
@@ -117,10 +119,11 @@ func NewClaimCoinsService(
 	userUpdateUseCase uc_user.UserUpdateUseCase,
 ) ClaimCoinsService {
 	return &claimCoinsServiceImpl{
-		config:                    config,
-		logger:                    logger,
-		dmutex:                    dmutex,
-		getFaucetByChainIDUseCase: getFaucetByChainIDUseCase,
+		config:                       config,
+		logger:                       logger,
+		dmutex:                       dmutex,
+		getFaucetByChainIDUseCase:    getFaucetByChainIDUseCase,
+		faucetUpdateByChainIDUseCase: faucetUpdateByChainIDUseCase,
 		fetchRemoteAccountBalanceFromAuthorityUseCase:           fetchRemoteAccountBalanceFromAuthorityUseCase,
 		getPublicFaucetPrivateKeyService:                        getPublicFaucetPrivateKeyService,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase: submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
@@ -324,6 +327,19 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 		slog.Any("can_claim", canClaim),
 		slog.Any("stx", stx),
 	)
+
+	//
+	// Update the faucet.
+	//
+
+	faucet.TotalCoinsDistributed += svc.config.Blockchain.PublicFaucetClaimCoinsReward + svc.config.Blockchain.TransactionFee
+	faucet.TotalTransactions += 1
+	faucet.LastModifiedAt = time.Now()
+	if err := svc.faucetUpdateByChainIDUseCase.Execute(sessCtx, faucet); err != nil {
+		svc.logger.Error("Failed to save faucet",
+			slog.Any("error", err))
+		return nil, err
+	}
 
 	//
 	// Return `Me` profile details.
