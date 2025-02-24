@@ -56,6 +56,7 @@ type httpServerImpl struct {
 
 	getMeHTTPHandler               *http_me.GetMeHTTPHandler
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler
+	putUpdateMeHTTPHandler         *http_me.PutUpdateMeHTTPHandler
 
 	getFaucetByChainID                *http_faucet.GetFaucetByChainIDHTTPHandler
 	faucetServerSentEventsHTTPHandler *http_faucet.FaucetServerSentEventsHTTPHandler
@@ -76,6 +77,7 @@ func NewHTTPServer(
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
+	putUpdateMeHTTPHandler *http_me.PutUpdateMeHTTPHandler,
 	getFaucetByChainID *http_faucet.GetFaucetByChainIDHTTPHandler,
 	faucetServerSentEventsHTTPHandler *http_faucet.FaucetServerSentEventsHTTPHandler,
 	dashboard *http_dashboard.DashboardHTTPHandler,
@@ -92,6 +94,7 @@ func NewHTTPServer(
 		getHelloHTTPHandler:               getHelloHTTPHandler,
 		getMeHTTPHandler:                  getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler:    postMeConnectWalletHTTPHandler,
+		putUpdateMeHTTPHandler:            putUpdateMeHTTPHandler,
 		getFaucetByChainID:                getFaucetByChainID,
 		faucetServerSentEventsHTTPHandler: faucetServerSentEventsHTTPHandler,
 		dashboard:                         dashboard,
@@ -166,6 +169,8 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 			port.getMeHTTPHandler.Execute(w, r)
 		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "me" && p[4] == "connect-wallet" && r.Method == http.MethodPost:
 			port.postMeConnectWalletHTTPHandler.Execute(w, r)
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "me" && r.Method == http.MethodPut:
+			port.putUpdateMeHTTPHandler.Execute(w, r)
 
 		// Faucet
 		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "faucet" && r.Method == http.MethodGet:

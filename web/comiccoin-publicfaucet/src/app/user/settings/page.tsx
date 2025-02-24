@@ -1,8 +1,10 @@
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/settings/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMe } from "@/hooks/useMe";
+import { usePutUpdateMe } from "@/hooks/usePutUpdateMe";
 import {
   Settings,
   User,
@@ -15,8 +17,6 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
-import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
-import { API_CONFIG } from "@/config/env";
 
 // Country options for dropdown
 const countries = [
@@ -50,8 +50,19 @@ const timezones = [
 
 export default function Page() {
   const router = useRouter();
-  const { user, isLoading: isUserLoading, error: userError, refetch } = useMe();
-  const fetchWithAuth = useAuthenticatedFetch();
+  // Check if refetch exists in useMe output before destructuring
+  const meData = useMe();
+  const user = meData?.user;
+  const isUserLoading = meData?.isLoading;
+  const userError = meData?.error;
+
+  const {
+    updateMe,
+    isLoading: isUpdating,
+    error: updateError,
+    isSuccess,
+    reset,
+  } = usePutUpdateMe();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -65,10 +76,7 @@ export default function Page() {
   });
 
   // UI state
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formStatus, setFormStatus] = useState(null); // 'success', 'error', or null
   const [formMessage, setFormMessage] = useState("");
-  const [isEditable, setIsEditable] = useState(false); // To control form editability
 
   // Initialize form data with user data when it loads
   useEffect(() => {
@@ -87,6 +95,33 @@ export default function Page() {
     }
   }, [user]);
 
+  // Reset form message when update status changes
+  useEffect(() => {
+    if (isSuccess) {
+      setFormMessage("Your settings have been updated successfully!");
+      // Reset success message after a delay
+      const timer = setTimeout(() => {
+        reset();
+        setFormMessage("");
+
+        // Reload the page after successful update to refresh user data
+        // This is a simpler alternative to calling refetch()
+        if (typeof window !== "undefined") {
+          window.location.reload();
+        }
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+
+    if (updateError) {
+      setFormMessage(
+        updateError.message ||
+          "An error occurred while updating your settings. Please try again.",
+      );
+    }
+  }, [isSuccess, updateError, reset]);
+
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -99,9 +134,6 @@ export default function Page() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setFormStatus(null);
-    setFormMessage("");
 
     try {
       // Prepare data for API
@@ -115,42 +147,13 @@ export default function Page() {
         // Note: Don't include wallet_address as it should be updated through a different flow
       };
 
-      // Send update request
-      const response = await fetchWithAuth(
-        `${API_CONFIG.baseUrl}/publicfaucet/api/v1/me`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(apiData),
-        },
-      );
+      // Send update request using our custom hook
+      await updateMe(apiData);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update settings");
-      }
-
-      // Update was successful
-      setFormStatus("success");
-      setFormMessage("Your settings have been updated successfully!");
-      refetch(); // Refresh user data in context
-
-      // Reset success message after a delay
-      setTimeout(() => {
-        setFormStatus(null);
-        setFormMessage("");
-      }, 5000);
+      // We'll handle the refresh in the useEffect when isSuccess becomes true
     } catch (err) {
       console.error("Error updating settings:", err);
-      setFormStatus("error");
-      setFormMessage(
-        err.message ||
-          "An error occurred while updating your settings. Please try again.",
-      );
-    } finally {
-      setIsSubmitting(false);
+      // Error is already handled by the hook
     }
   };
 
@@ -186,25 +189,21 @@ export default function Page() {
       </header>
 
       {/* Form Status Message */}
-      {formStatus && (
+      {(isSuccess || updateError) && formMessage && (
         <div
           className={`mb-6 p-4 rounded-lg ${
-            formStatus === "success"
+            isSuccess
               ? "bg-green-50 border border-green-200"
               : "bg-red-50 border border-red-200"
           }`}
         >
           <div className="flex items-center">
-            {formStatus === "success" ? (
+            {isSuccess ? (
               <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
             ) : (
               <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
             )}
-            <p
-              className={
-                formStatus === "success" ? "text-green-700" : "text-red-700"
-              }
-            >
+            <p className={isSuccess ? "text-green-700" : "text-red-700"}>
               {formMessage}
             </p>
           </div>
@@ -419,10 +418,10 @@ export default function Page() {
             <div className="md:col-span-2 mt-8">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isUpdating}
                 className="w-full lg:w-auto bg-purple-600 text-white py-2 px-6 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex items-center justify-center disabled:opacity-70"
               >
-                {isSubmitting ? (
+                {isUpdating ? (
                   <>
                     <svg
                       className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"

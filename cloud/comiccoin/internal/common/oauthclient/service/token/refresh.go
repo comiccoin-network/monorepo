@@ -10,6 +10,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/token"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/oauth"
@@ -58,9 +59,6 @@ func NewRefreshTokenService(
 }
 
 func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *RefreshRequest) (*RefreshResponse, error) {
-	if req.FederatedIdentityID.IsZero() {
-		return nil, errors.New("federatedidentity_id is required")
-	}
 	if req.RefreshToken == "" {
 		return nil, errors.New("refresh_token is required")
 	}
@@ -80,17 +78,24 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 
 	// Add debug logging to see what we received
 	s.logger.Debug("received token response from OAuth server",
-		slog.String("federatedidentity_id", req.FederatedIdentityID.Hex()),
+		slog.String("federatedidentity_id", tokenResp.FederatedIdentityID),
 		slog.String("token_type", tokenResp.TokenType),
 		slog.Int("expires_in", tokenResp.ExpiresIn),
 		slog.Time("expires_at", tokenResp.ExpiresAt),
 		slog.Bool("has_access_token", tokenResp.AccessToken != ""),
 		slog.Bool("has_refresh_token", tokenResp.RefreshToken != ""))
 
+	federatedidentityID, err := primitive.ObjectIDFromHex(tokenResp.FederatedIdentityID)
+	if err != nil {
+		return nil, httperror.NewForBadRequest(&map[string]string{
+			"federatedidentity_id": "invalid format",
+		})
+	}
+
 	// Create our domain token with the refreshed values
 	token := &dom_token.Token{
 		ID:                  primitive.NewObjectID(),
-		FederatedIdentityID: req.FederatedIdentityID,
+		FederatedIdentityID: federatedidentityID,
 		AccessToken:         tokenResp.AccessToken,
 		RefreshToken:        tokenResp.RefreshToken,
 		ExpiresAt:           time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second), // Calculate expiry from ExpiresIn

@@ -26,11 +26,12 @@ type RefreshTokenRequestDTO struct {
 
 // RefreshTokenResponseDTO represents the response after refreshing tokens
 type RefreshTokenResponseDTO struct {
-	AccessToken  string `json:"access_token"`
-	TokenType    string `json:"token_type"`
-	ExpiresIn    int    `json:"expires_in"`
-	RefreshToken string `json:"refresh_token"`
-	Scope        string `json:"scope,omitempty"`
+	AccessToken         string `json:"access_token"`
+	TokenType           string `json:"token_type"`
+	ExpiresIn           int    `json:"expires_in"`
+	RefreshToken        string `json:"refresh_token"`
+	Scope               string `json:"scope,omitempty"`
+	FederatedIdentityID string `json:"federatedidentity_id,omitempty"`
 }
 
 type RefreshTokenService interface {
@@ -187,10 +188,11 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 	}
 
 	return &RefreshTokenResponseDTO{
-		AccessToken:  newAccessToken,
-		TokenType:    "Bearer",
-		ExpiresIn:    3600,
-		RefreshToken: newRefreshToken,
-		Scope:        existingToken.Scope,
+		AccessToken:         newAccessToken,
+		TokenType:           "Bearer",
+		FederatedIdentityID: existingToken.FederatedIdentityID,
+		ExpiresIn:           3600,
+		RefreshToken:        newRefreshToken,
+		Scope:               existingToken.Scope,
 	}, nil
 }

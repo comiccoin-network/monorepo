@@ -252,6 +252,13 @@ func NewModule(
 		userGetByFederatedIdentityIDUseCase,
 		userUpdateUseCase,
 	)
+	updateMeSyncService := svc_me.NewUpdateMeSyncService(
+		cfg,
+		logger,
+		oauthClientManager,
+		userGetByFederatedIdentityIDUseCase,
+		userUpdateUseCase,
+	)
 
 	// --- Faucet ---
 
@@ -337,6 +344,13 @@ func NewModule(
 		meConnectWalletService,
 	)
 
+	putUpdateMeHTTPHandler := http_me.NewPutUpdateMeHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		updateMeSyncService,
+	)
+
 	// --- Faucet ---
 
 	getFaucetByChainIDHTTPHandler := http_faucet.NewGetFaucetByChainIDHTTPHandler(
@@ -400,6 +414,7 @@ func NewModule(
 		getHelloHTTPHandler,
 		getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler,
+		putUpdateMeHTTPHandler,
 		getFaucetByChainIDHTTPHandler,
 		faucetServerSentEventsHTTPHandler,
 		dashboardHTTPHandler,

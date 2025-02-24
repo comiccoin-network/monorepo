@@ -11,12 +11,13 @@ type AuthorizationResponse struct {
 }
 
 type TokenResponse struct {
-	AccessToken  string    `json:"access_token"`
-	TokenType    string    `json:"token_type"`
-	ExpiresIn    int       `json:"expires_in"`
-	ExpiresAt    time.Time `json:"expires_at"`
-	RefreshToken string    `json:"refresh_token"`
-	Scope        string    `json:"scope"`
+	AccessToken         string    `json:"access_token"`
+	TokenType           string    `json:"token_type"`
+	ExpiresIn           int       `json:"expires_in"`
+	ExpiresAt           time.Time `json:"expires_at"`
+	RefreshToken        string    `json:"refresh_token"`
+	Scope               string    `json:"scope"`
+	FederatedIdentityID string    `json:"federatedidentity_id,omitempty"`
 }
 
 type IntrospectionResponse struct {
