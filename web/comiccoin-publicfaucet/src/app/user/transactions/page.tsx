@@ -6,11 +6,23 @@ import { useRouter } from "next/navigation";
 import { Coins, ArrowLeft, ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 
-import { useGetTransactions } from "@/hooks/useGetTransactions";
+import { useGetTransactions, Transaction } from "@/hooks/useGetTransactions";
+
+// Define valid sorting fields as a subset of keys from Transaction
+type SortableField = keyof Pick<Transaction, "timestamp" | "amount">;
+
+// Define sort direction
+type SortDirection = "asc" | "desc";
+
+// Define sort state
+interface SortState {
+  field: SortableField;
+  direction: SortDirection;
+}
 
 const TransactionsPage = () => {
   const router = useRouter();
-  const [sortBy, setSortBy] = useState({
+  const [sortBy, setSortBy] = useState<SortState>({
     field: "timestamp",
     direction: "desc",
   });
@@ -27,18 +39,22 @@ const TransactionsPage = () => {
     const direction = sortBy.direction === "asc" ? 1 : -1;
 
     if (sortBy.field === "timestamp") {
-      return direction * (new Date(aValue) - new Date(bValue));
+      return (
+        direction *
+        (new Date(aValue as string).getTime() -
+          new Date(bValue as string).getTime())
+      );
     }
 
     if (typeof aValue === "string") {
-      return direction * aValue.localeCompare(bValue);
+      return direction * aValue.localeCompare(bValue as string);
     }
 
-    return direction * (aValue - bValue);
+    return direction * ((aValue as number) - (bValue as number));
   });
 
   // Format date/time
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
@@ -50,7 +66,7 @@ const TransactionsPage = () => {
   };
 
   // Handle sort
-  const handleSort = (field) => {
+  const handleSort = (field: SortableField) => {
     setSortBy({
       field,
       direction:

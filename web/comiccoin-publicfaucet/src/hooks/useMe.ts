@@ -9,8 +9,8 @@ interface User {
   last_name: string;
   name: string;
   lexical_name: string;
-  phone: string;
-  country: string;
+  phone?: string;
+  country?: string;
   timezone: string;
   wallet_address: string | null;
 }

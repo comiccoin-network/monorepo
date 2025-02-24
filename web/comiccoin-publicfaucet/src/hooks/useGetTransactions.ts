@@ -1,5 +1,4 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useGetTransactions.ts
-// src/hooks/useGetTransactions.ts
 import { useState, useEffect, useCallback } from "react";
 import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
 import { API_CONFIG } from "@/config/env";

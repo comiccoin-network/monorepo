@@ -18,10 +18,11 @@ export default function LoginCallPage() {
   }, []);
 
   // Initialize the authorization hook with the callback URL
-  const { authUrl, state, expiresAt, isLoading, error } = useAuthorizationUrl({
-    redirectUri: `${window.location.origin}/auth-callback`,
-    scope: "read, write",
-  });
+  const { authUrl, state, expiresAt, isLoading, error, refetch } =
+    useAuthorizationUrl({
+      redirectUri: `${window.location.origin}/auth-callback`,
+      scope: "read, write",
+    });
 
   useEffect(() => {
     if (authUrl) {

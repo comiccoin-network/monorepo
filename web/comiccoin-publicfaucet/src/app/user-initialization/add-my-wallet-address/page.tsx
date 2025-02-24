@@ -1,4 +1,3 @@
-// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/user-initialization/add-my-wallet-address.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,7 +18,20 @@ import {
   Shield,
 } from "lucide-react";
 
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, walletAddress }) => {
+// Add interface for ConfirmationModal props
+interface ConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  walletAddress: string;
+}
+
+const ConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  walletAddress,
+}: ConfirmationModalProps) => {
   if (!isOpen) return null;
 
   return (
@@ -91,7 +103,7 @@ export default function AddMyWalletAddressPage() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // // Handle initial authentication check and redirection
+  // Handle initial authentication check and redirection
   useEffect(() => {
     //   const checkUserWallet = async () => {
     //     try {
@@ -219,12 +231,13 @@ export default function AddMyWalletAddressPage() {
             {/* Get a Wallet Section */}
             <div className="mb-8">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Don't have a wallet?
+                {"Don't have a wallet?"}
               </h2>
               <div className="bg-purple-50 rounded-lg p-6 space-y-4">
                 <p className="text-gray-700">
-                  You'll need a ComicCoin wallet to receive and manage your
-                  coins. Get started with:
+                  {
+                    "You'll need a ComicCoin wallet to receive and manage your coins. Get started with:"
+                  }
                 </p>
                 <div className="grid gap-4">
                   <a
@@ -334,8 +347,8 @@ export default function AddMyWalletAddressPage() {
                   disabled={isPosting}
                 />
                 <p className="mt-2 text-sm text-gray-500">
-                  Your wallet address should start with "0x" followed by 40
-                  characters
+                  Your wallet address should start with &quot;0x&quot; followed
+                  by 40 characters
                 </p>
               </div>
 

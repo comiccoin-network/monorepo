@@ -7,7 +7,6 @@ import { useMe } from "@/hooks/useMe";
 import useClaimCoins from "@/hooks/useClaimCoins";
 import { useGetFaucet } from "@/hooks/useGetFaucet";
 import { Coins, Gift, Clock } from "lucide-react";
-import { API_CONFIG } from "@/config/env";
 
 const ClaimCoinsPage = () => {
   const router = useRouter();
@@ -16,8 +15,8 @@ const ClaimCoinsPage = () => {
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
   // Use the faucet hook to get daily_coins_reward
-  // Assuming chainId is 1, update with the correct chainId from your config
-  const chainId = API_CONFIG.chainId || 1;
+  // Just hardcode the chainId to 1 (presumably Ethereum mainnet)
+  const chainId = 1;
   const {
     faucet,
     isLoading: isFaucetLoading,
@@ -84,7 +83,9 @@ const ClaimCoinsPage = () => {
           {/* Reward Display */}
           <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 mb-6">
             <div className="text-center">
-              <p className="text-sm text-purple-600 mb-2">Today's Reward</p>
+              <p className="text-sm text-purple-600 mb-2">
+                Today&apos;s Reward
+              </p>
               <div className="flex items-center justify-center gap-2">
                 <Coins className="h-6 w-6 text-purple-600" />
                 <span className="text-2xl font-bold text-purple-700">
@@ -125,8 +126,8 @@ const ClaimCoinsPage = () => {
             When can I claim again?
           </h3>
           <p className="text-gray-600">
-            You can claim ComicCoins once every 24 hours. After claiming, you'll
-            need to wait until tomorrow to claim again.
+            You can claim ComicCoins once every 24 hours. After claiming,
+            you&apos;ll need to wait until tomorrow to claim again.
           </p>
         </div>
       </div>
@@ -139,7 +140,9 @@ const ClaimCoinsPage = () => {
             <h2 className="text-2xl font-bold text-purple-800 mb-2">
               Congratulations!
             </h2>
-            <p className="text-gray-600">You've claimed {dailyReward} CC!</p>
+            <p className="text-gray-600">
+              You&apos;ve claimed {dailyReward} CC!
+            </p>
           </div>
         </div>
       )}

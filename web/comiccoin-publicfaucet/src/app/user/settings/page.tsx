@@ -18,8 +18,25 @@ import {
   CheckCircle,
 } from "lucide-react";
 
+// Type definitions for form data
+interface FormData {
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  country: string;
+  timezone: string;
+  wallet_address: string;
+}
+
+// Type for country/timezone options
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
 // Country options for dropdown
-const countries = [
+const countries: SelectOption[] = [
   { value: "", label: "Select a country" },
   { value: "US", label: "United States" },
   { value: "CA", label: "Canada" },
@@ -32,7 +49,7 @@ const countries = [
 ];
 
 // Timezone options for dropdown
-const timezones = [
+const timezones: SelectOption[] = [
   { value: "", label: "Select a timezone" },
   { value: "America/New_York", label: "Eastern Time (ET)" },
   { value: "America/Chicago", label: "Central Time (CT)" },
@@ -50,11 +67,11 @@ const timezones = [
 
 export default function Page() {
   const router = useRouter();
-  // Check if refetch exists in useMe output before destructuring
-  const meData = useMe();
-  const user = meData?.user;
-  const isUserLoading = meData?.isLoading;
-  const userError = meData?.error;
+  // From the error, we can see useMe() only returns { user, updateUser, clearUser }
+  const { user } = useMe();
+
+  // Instead of using isLoading and error from useMe, manage loading state ourselves
+  const [isUserLoading, setIsUserLoading] = useState(true);
 
   const {
     updateMe,
@@ -65,7 +82,7 @@ export default function Page() {
   } = usePutUpdateMe();
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: "",
     first_name: "",
     last_name: "",
@@ -92,6 +109,15 @@ export default function Page() {
           ? user.wallet_address.toString()
           : "",
       });
+      setIsUserLoading(false);
+    } else {
+      // If we've attempted to load user data but it's not available after a short delay,
+      // consider it as "not loading" to potentially show the login message
+      const timer = setTimeout(() => {
+        setIsUserLoading(false);
+      }, 1000);
+
+      return () => clearTimeout(timer);
     }
   }, [user]);
 
@@ -123,7 +149,9 @@ export default function Page() {
   }, [isSuccess, updateError, reset]);
 
   // Handle input changes
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -132,7 +160,7 @@ export default function Page() {
   };
 
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -159,10 +187,6 @@ export default function Page() {
 
   if (isUserLoading) {
     return <div className="py-8 text-center">Loading your settings...</div>;
-  }
-
-  if (userError) {
-    return <div className="py-8 text-center">Error: {userError.message}</div>;
   }
 
   if (!user) {

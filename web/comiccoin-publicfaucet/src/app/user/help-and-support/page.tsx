@@ -19,8 +19,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+// Define an interface for the FAQItem props
+interface FAQItemProps {
+  question: string;
+  answer: string;
+}
+
 // FAQ item component with HTML rendering support
-const FAQItem = ({ question, answer }) => {
+const FAQItem = ({ question, answer }: FAQItemProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -47,12 +53,26 @@ const FAQItem = ({ question, answer }) => {
   );
 };
 
+// Define types for your FAQ data
+interface FAQ {
+  question: string;
+  answer: string;
+}
+
+// Define type for your contact form
+interface ContactForm {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
 export default function Page() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [messageSubmitted, setMessageSubmitted] = useState(false);
-  const [contactForm, setContactForm] = useState({
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [messageSubmitted, setMessageSubmitted] = useState<boolean>(false);
+  const [contactForm, setContactForm] = useState<ContactForm>({
     name: "",
     email: "",
     subject: "",
@@ -60,7 +80,7 @@ export default function Page() {
   });
 
   // FAQ data
-  const faqs = [
+  const faqs: FAQ[] = [
     {
       question: "What is ComicCoin?",
       answer:
@@ -106,7 +126,9 @@ export default function Page() {
   );
 
   // Handle contact form input changes
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setContactForm((prev) => ({
       ...prev,
@@ -115,7 +137,7 @@ export default function Page() {
   };
 
   // Handle contact form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 

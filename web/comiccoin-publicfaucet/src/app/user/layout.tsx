@@ -22,34 +22,43 @@ import { useMe } from "@/hooks/useMe";
 import { useAuthStore } from "@/hooks/useAuth";
 import { RequireWallet } from "@/components/RequireWallet";
 
+// Define interface for SignOutModal props
+interface SignOutModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  isLoggingOut: boolean;
+}
+
+// Define interface for NavLink props
+interface NavLinkProps {
+  item: {
+    name: string;
+    href: string;
+    icon: React.ElementType;
+    description: string;
+  };
+  isMobile?: boolean;
+}
+
+// Define interface for SignOutButton props
+interface SignOutButtonProps {
+  isMobile?: boolean;
+}
+
 // Custom Modal Component for Sign Out confirmation
-const SignOutModal = ({ isOpen, onClose, onConfirm, isLoggingOut }) => {
+const SignOutModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoggingOut,
+}: SignOutModalProps) => {
   if (!isOpen) return null;
 
   // Handle click outside modal
-  const handleBackdropClick = (e) => {
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      setIsLoggingOut(true);
-
-      // Execute logout from auth store
-      clearTokens(); // Changed from logout() to clearTokens()
-
-      // Additional cleanup if needed
-      localStorage.removeItem("user_preferences");
-      sessionStorage.clear();
-
-      // Navigate to login page
-      router.push("/get-started");
-    } catch (error) {
-      console.error("Error during sign out:", error);
-      setIsLoggingOut(false);
-      setIsSignOutModalOpen(false);
     }
   };
 
@@ -121,7 +130,7 @@ const SignOutModal = ({ isOpen, onClose, onConfirm, isLoggingOut }) => {
   );
 };
 
-// Navigation items configuration remains the same
+// Navigation items configuration
 const navigationItems = [
   {
     name: "Dashboard",
@@ -134,12 +143,6 @@ const navigationItems = [
     href: "/user/transactions",
     icon: History,
     description: "View your claim history",
-  },
-  {
-    name: "My Wallet",
-    href: "/user/wallet",
-    icon: Wallet,
-    description: "Manage your wallet settings",
   },
   {
     name: "Settings",
@@ -207,7 +210,7 @@ function UserLayout({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   // Navigation link component with active state handling
-  const NavLink = ({ item, isMobile = false }) => {
+  const NavLink = ({ item, isMobile = false }: NavLinkProps) => {
     const isActive = pathname === item.href;
     const baseClasses = `group flex items-center gap-x-3 rounded-md p-2 text-sm font-medium transition-colors`;
     const mobileClasses = isMobile ? "text-base" : "";
@@ -233,7 +236,7 @@ function UserLayout({ children }: { children: React.ReactNode }) {
   };
 
   // Sign out button component
-  const SignOutButton = ({ isMobile = false }) => (
+  const SignOutButton = ({ isMobile = false }: SignOutButtonProps) => (
     <button
       onClick={() => setIsSignOutModalOpen(true)}
       disabled={isLoggingOut}
@@ -293,8 +296,8 @@ function UserLayout({ children }: { children: React.ReactNode }) {
                       {user?.name || "User"}
                     </span>
                     <span className="text-xs text-gray-500">
-                      {user?.walletAddress
-                        ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`
+                      {user?.wallet_address
+                        ? `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}`
                         : ""}
                     </span>
                   </div>
@@ -317,11 +320,11 @@ function UserLayout({ children }: { children: React.ReactNode }) {
                 <div className="flex h-full flex-col overflow-y-auto pt-16">
                   <nav className="flex-1 space-y-1 px-4 py-4">
                     {navigationItems.map((item) => (
-                      <NavLink key={item.name} item={item} isMobile />
+                      <NavLink key={item.name} item={item} isMobile={true} />
                     ))}
                   </nav>
                   <div className="border-t border-gray-200 p-4">
-                    <SignOutButton isMobile />
+                    <SignOutButton isMobile={true} />
                   </div>
                 </div>
               </div>

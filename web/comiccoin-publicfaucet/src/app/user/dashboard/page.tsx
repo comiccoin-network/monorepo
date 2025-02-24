@@ -22,8 +22,25 @@ import { ClaimStreak } from "@/components/dashboard/ClaimStreak";
 
 import { useGetDashboard } from "@/hooks/useGetDashboard";
 
+// Define the types for claims that our ClaimsList component expects
+interface Claim {
+  id: string;
+  timestamp: Date;
+  amount: number;
+  address: string;
+  status: "completed" | "pending";
+  hash: string;
+}
+
+// Define the actual structure of transactions from backend
+interface UserClaimedCoinTransaction {
+  id: string;
+  timestamp: string; // ISO date string from API
+  amount: number;
+}
+
 // Generate more mock data
-const generateMockClaims = (count, isPersonal = false) => {
+const generateMockClaims = (count: number, isPersonal = false): Claim[] => {
   return Array.from({ length: count }, (_, i) => ({
     id: `${isPersonal ? "p" : "n"}-${i + 1}`,
     timestamp: new Date(Date.now() - i * 5 * 60000), // 5 minutes apart
@@ -34,6 +51,21 @@ const generateMockClaims = (count, isPersonal = false) => {
     status: "completed",
     hash: `0x${Math.random().toString(16).slice(2, 42)}`,
   }));
+};
+
+// Convert a UserClaimedCoinTransaction to a Claim
+const transactionToClaim = (
+  tx: UserClaimedCoinTransaction,
+  address: string,
+): Claim => {
+  return {
+    id: tx.id,
+    timestamp: new Date(tx.timestamp),
+    amount: tx.amount,
+    address: address, // Use the wallet address from dashboard
+    status: "completed", // Assuming all transactions are completed
+    hash: "", // No hash in the DTO, so use empty string
+  };
 };
 
 const MOCK_YOUR_CLAIMS = generateMockClaims(10, true);
@@ -65,6 +97,17 @@ const DashboardPage = () => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!dashboard) return <div>No data available</div>;
+
+  // Get the wallet address from user (since it's not in dashboard)
+  const walletAddress =
+    user?.wallet_address || "0x0000000000000000000000000000000000000000";
+
+  // Convert transactions to the format our ClaimsList component expects
+  const transactionClaims: Claim[] = dashboard.transactions
+    ? (dashboard.transactions as UserClaimedCoinTransaction[]).map((tx) =>
+        transactionToClaim(tx, walletAddress),
+      )
+    : [];
 
   return (
     <div className="py-8">
@@ -213,12 +256,9 @@ const DashboardPage = () => {
               aria-label="Your recent claims"
               className="divide-y divide-gray-100"
             >
-              {dashboard.transactions && dashboard.transactions.length > 0 ? (
+              {transactionClaims.length > 0 ? (
                 // If we have transactions, display them using ClaimsList
-                <ClaimsList
-                  claims={dashboard.transactions.slice(0, 5)}
-                  isPersonal
-                />
+                <ClaimsList claims={transactionClaims.slice(0, 5)} isPersonal />
               ) : (
                 // Empty state with encouraging message
                 <div className="py-12 text-center">
@@ -233,8 +273,8 @@ const DashboardPage = () => {
                   </h3>
                   <p className="text-sm text-gray-500 max-w-sm mx-auto">
                     Your transaction history will appear here after you claim
-                    your first ComicCoins. Click the "Claim Coins" button above
-                    to get started!
+                    your first ComicCoins. Click the &quot;Claim Coins&quot;
+                    button above to get started!
                   </p>
                 </div>
               )}
@@ -297,10 +337,7 @@ const DashboardPage = () => {
                 aria-label="QR code for your Ethereum wallet address"
               >
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=ethereum:${
-                    dashboard?.wallet_address ||
-                    "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
-                  }`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=ethereum:${walletAddress}`}
                   alt="Wallet QR Code"
                   className="w-full h-full"
                 />
@@ -314,16 +351,13 @@ const DashboardPage = () => {
                   role="textbox"
                   aria-label="Your wallet address"
                 >
-                  {dashboard?.wallet_address
-                    ? `${dashboard.wallet_address.slice(0, 6)}...${dashboard.wallet_address.slice(-4)}`
-                    : "0x742d...f44e"}
+                  {walletAddress
+                    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+                    : "0x0000...0000"}
                 </code>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(
-                      dashboard?.wallet_address ||
-                        "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-                    );
+                    navigator.clipboard.writeText(walletAddress);
                     // TODO: Add toast notification for copied address
                   }}
                   className="p-2 hover:bg-purple-50 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
