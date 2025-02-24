@@ -25,17 +25,12 @@ export const ClaimsList = ({ claims, isPersonal = false }: ClaimsListProps) => {
   const formatAddress = (address: string) =>
     `${address.slice(0, 6)}...${address.slice(-4)}`;
 
-  const handleClaimClick = (id: string) => {
-    router.push(`/user/transactions/${id}`);
-  };
-
   return (
     <div className="space-y-2">
       {claims.map((claim) => (
         <div
           key={claim.id}
-          onClick={() => handleClaimClick(claim.id)}
-          className="flex items-center justify-between p-3 hover:bg-purple-50 rounded-lg cursor-pointer transition-colors"
+          className="flex items-center justify-between p-3 hover:bg-purple-50 rounded-lg transition-colors"
         >
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-4 w-4 text-green-500" />
