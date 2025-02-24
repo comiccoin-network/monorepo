@@ -135,12 +135,12 @@ const navigationItems = [
     icon: History,
     description: "View your claim history",
   },
-  {
-    name: "My Wallet",
-    href: "/user/wallet",
-    icon: Wallet,
-    description: "Manage your wallet settings",
-  },
+  // {
+  //   name: "My Wallet",
+  //   href: "/user/wallet",
+  //   icon: Wallet,
+  //   description: "Manage your wallet settings",
+  // },
   {
     name: "Settings",
     href: "/user/settings",
