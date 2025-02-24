@@ -2,10 +2,11 @@
 package faucet
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"fmt"
 	"log/slog"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
@@ -13,7 +14,7 @@ import (
 )
 
 type GetPublicFaucetPrivateKeyService interface {
-	Execute(ctx context.Context) (*ecdsa.PrivateKey, error)
+	Execute(sessCtx mongo.SessionContext) (*ecdsa.PrivateKey, error)
 }
 
 type getPublicFaucetPrivateKeyServiceImpl struct {
@@ -30,7 +31,7 @@ func NewGetPublicFaucetPrivateKeyService(
 	return &getPublicFaucetPrivateKeyServiceImpl{cfg, logger, uc1}
 }
 
-func (s *getPublicFaucetPrivateKeyServiceImpl) Execute(ctx context.Context) (*ecdsa.PrivateKey, error) {
+func (s *getPublicFaucetPrivateKeyServiceImpl) Execute(sessCtx mongo.SessionContext) (*ecdsa.PrivateKey, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -52,7 +53,7 @@ func (s *getPublicFaucetPrivateKeyServiceImpl) Execute(ctx context.Context) (*ec
 	// STEP 2: Get private key
 	//
 
-	privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(ctx, s.config.Blockchain.PublicFaucetWalletMnemonic, s.config.Blockchain.PublicFaucetWalletPath)
+	privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(sessCtx, s.config.Blockchain.PublicFaucetWalletMnemonic, s.config.Blockchain.PublicFaucetWalletPath)
 	if err != nil {
 		s.logger.Error("failed getting wallet private key",
 			slog.Any("error", err))

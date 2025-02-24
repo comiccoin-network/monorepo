@@ -2,10 +2,11 @@
 package faucet
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
@@ -27,7 +28,7 @@ type FaucetDTO struct {
 }
 
 type GetFaucetService interface {
-	ExecuteByChainID(ctx context.Context, chainID uint16) (*FaucetDTO, error)
+	ExecuteByChainID(sessCtx mongo.SessionContext, chainID uint16) (*FaucetDTO, error)
 }
 
 type getFaucetServiceImpl struct {
@@ -48,7 +49,7 @@ func NewGetFaucetService(
 	}
 }
 
-func (svc *getFaucetServiceImpl) ExecuteByChainID(ctx context.Context, chainID uint16) (*FaucetDTO, error) {
+func (svc *getFaucetServiceImpl) ExecuteByChainID(sessCtx mongo.SessionContext, chainID uint16) (*FaucetDTO, error) {
 	//
 	// STEP 1: Validation.
 	//
@@ -67,7 +68,7 @@ func (svc *getFaucetServiceImpl) ExecuteByChainID(ctx context.Context, chainID u
 	// STEP 2: Get from database.
 	//
 
-	faucet, err := svc.getFaucetByChainIDUseCase.Execute(ctx, chainID)
+	faucet, err := svc.getFaucetByChainIDUseCase.Execute(sessCtx, chainID)
 	if err != nil {
 		svc.logger.Error("failed getting faucet by chain id error", slog.Any("err", err))
 		return nil, err

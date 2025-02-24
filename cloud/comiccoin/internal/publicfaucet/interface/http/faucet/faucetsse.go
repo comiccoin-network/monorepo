@@ -9,21 +9,25 @@ import (
 	"strconv"
 	"time"
 
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
 )
 
 type FaucetServerSentEventsHTTPHandler struct {
-	logger  *slog.Logger
-	service svc_faucet.GetFaucetService
+	logger   *slog.Logger
+	dbClient *mongo.Client
+	service  svc_faucet.GetFaucetService
 }
 
 func NewFaucetServerSentEventsHTTPHandler(
 	logger *slog.Logger,
+	dbClient *mongo.Client,
 	s svc_faucet.GetFaucetService,
 ) *FaucetServerSentEventsHTTPHandler {
-	return &FaucetServerSentEventsHTTPHandler{logger, s}
+	return &FaucetServerSentEventsHTTPHandler{logger, dbClient, s}
 }
 
 func (h *FaucetServerSentEventsHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
@@ -74,11 +78,41 @@ func (h *FaucetServerSentEventsHTTPHandler) Execute(w http.ResponseWriter, r *ht
 			return
 		case <-t.C:
 
-			faucet, err := h.service.ExecuteByChainID(ctx, chainID)
+			////
+			//// Start the transaction.
+			////
+
+			session, err := h.dbClient.StartSession()
 			if err != nil {
+				h.logger.Error("start session error",
+					slog.Any("error", err))
 				httperror.ResponseError(w, err)
 				return
 			}
+			defer session.EndSession(ctx)
+
+			// Define a transaction function with a series of operations
+			transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
+				faucet, err := h.service.ExecuteByChainID(sessCtx, chainID)
+				if err != nil {
+					h.logger.Error("failed executing",
+						slog.Any("error", err))
+					return nil, err
+				}
+				return faucet, nil
+			}
+
+			// Start a transaction
+			result, txErr := session.WithTransaction(ctx, transactionFunc)
+			if txErr != nil {
+				h.logger.Error("session failed error",
+					slog.Any("error", txErr))
+				httperror.ResponseError(w, txErr)
+				return
+			}
+
+			// Encode response
+			faucet := result.(*svc_faucet.FaucetDTO)
 
 			if faucet != nil {
 				var sssData string

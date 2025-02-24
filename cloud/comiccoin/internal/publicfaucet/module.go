@@ -348,6 +348,7 @@ func NewModule(
 
 	faucetServerSentEventsHTTPHandler := http_faucet.NewFaucetServerSentEventsHTTPHandler(
 		logger,
+		dbClient,
 		getFaucetService,
 	)
 
@@ -417,6 +418,7 @@ func NewModule(
 	taskManager := task.NewTaskManager(
 		cfg,
 		logger,
+		dbClient,
 		balanceSyncTask,
 	)
 

@@ -2,10 +2,11 @@
 package faucet
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
@@ -13,7 +14,7 @@ import (
 )
 
 type UpdateFaucetBalanceByAuthorityService interface {
-	Execute(ctx context.Context) error
+	Execute(sessCtx mongo.SessionContext) error
 }
 
 type updateFaucetBalanceByAuthorityImpl struct {
@@ -40,12 +41,12 @@ func NewUpdateFaucetBalanceByAuthorityService(
 	}
 }
 
-func (svc *updateFaucetBalanceByAuthorityImpl) Execute(ctx context.Context) error {
+func (svc *updateFaucetBalanceByAuthorityImpl) Execute(sessCtx mongo.SessionContext) error {
 	//
 	// STEP 1: Get from database.
 	//
 
-	faucet, err := svc.getFaucetByChainIDUseCase.Execute(ctx, svc.config.Blockchain.ChainID)
+	faucet, err := svc.getFaucetByChainIDUseCase.Execute(sessCtx, svc.config.Blockchain.ChainID)
 	if err != nil {
 		svc.logger.Error("failed getting faucet by chain id error", slog.Any("err", err))
 		return err
@@ -60,7 +61,7 @@ func (svc *updateFaucetBalanceByAuthorityImpl) Execute(ctx context.Context) erro
 	// STEP 2: Get account balance from the Authority.
 	//
 
-	remoteAccountBalance, err := svc.fetchRemoteAccountBalanceFromAuthorityUseCase.Execute(ctx, svc.config.Blockchain.PublicFaucetAccountAddress)
+	remoteAccountBalance, err := svc.fetchRemoteAccountBalanceFromAuthorityUseCase.Execute(sessCtx, svc.config.Blockchain.PublicFaucetAccountAddress)
 	if err != nil {
 		svc.logger.Error("failed getting balance from authority error",
 			slog.Any("address", svc.config.Blockchain.PublicFaucetAccountAddress),
@@ -80,7 +81,7 @@ func (svc *updateFaucetBalanceByAuthorityImpl) Execute(ctx context.Context) erro
 	if faucet.Balance != remoteAccountBalance.Balance {
 		faucet.Balance = remoteAccountBalance.Balance
 		faucet.LastModifiedAt = time.Now()
-		err := svc.faucetUpdateByChainIDUseCase.Execute(ctx, faucet)
+		err := svc.faucetUpdateByChainIDUseCase.Execute(sessCtx, faucet)
 		if err != nil {
 			svc.logger.Error("failed updating", slog.Any("err", err))
 			return err

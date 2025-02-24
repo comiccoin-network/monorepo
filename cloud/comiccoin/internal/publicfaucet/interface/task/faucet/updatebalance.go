@@ -1,8 +1,9 @@
 package faucet
 
 import (
-	"context"
 	"log/slog"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
@@ -22,6 +23,6 @@ func NewUpdateFaucetBalanceByAuthorityTask(
 	return &UpdateFaucetBalanceByAuthorityTask{config, logger, updateFaucetBalanceByAuthorityService}
 }
 
-func (s *UpdateFaucetBalanceByAuthorityTask) Execute(ctx context.Context) error {
-	return s.updateFaucetBalanceByAuthorityService.Execute(ctx)
+func (s *UpdateFaucetBalanceByAuthorityTask) Execute(sessCtx mongo.SessionContext) error {
+	return s.updateFaucetBalanceByAuthorityService.Execute(sessCtx)
 }

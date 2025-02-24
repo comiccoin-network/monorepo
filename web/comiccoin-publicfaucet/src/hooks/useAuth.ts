@@ -36,12 +36,22 @@ const createAuthStorage = () => {
         const tokens = parsed?.state?.tokens;
 
         // Perform thorough validation of the token structure
-        if (
-          !tokens?.accessToken ||
-          !tokens?.refreshToken ||
-          !tokens?.federatedidentityID
-        ) {
-          console.warn("⚠️ AUTH VALIDATION: Invalid token structure");
+        if (!tokens?.accessToken) {
+          console.warn(
+            "⚠️ AUTH VALIDATION: Invalid token structure - access token",
+          );
+          return null;
+        }
+        if (!tokens?.refreshToken) {
+          console.warn(
+            "⚠️ AUTH VALIDATION: Invalid token structure - refresh token",
+          );
+          return null;
+        }
+        if (!tokens?.federatedidentityID) {
+          console.warn(
+            "⚠️ AUTH VALIDATION: Invalid token structure - federatedidentityID",
+          );
           return null;
         }
 
