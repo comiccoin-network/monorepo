@@ -2,7 +2,6 @@
 package me
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -10,10 +9,12 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient"
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
+	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
 )
 
@@ -80,7 +81,7 @@ type MeResponseDTO struct {
 }
 
 type GetMeAfterRemoteSyncService interface {
-	Execute(ctx context.Context, shouldSyncNow bool) (*MeResponseDTO, error)
+	Execute(sessCtx mongo.SessionContext, shouldSyncNow bool) (*MeResponseDTO, error)
 }
 
 type getMeAfterRemoteSyncServiceImpl struct {
@@ -90,6 +91,8 @@ type getMeAfterRemoteSyncServiceImpl struct {
 	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase
 	userCreateUseCase                   uc_user.UserCreateUseCase
 	userUpdateUseCase                   uc_user.UserUpdateUseCase
+	getFaucetByChainIDUseCase           uc_faucet.GetFaucetByChainIDUseCase
+	faucetUpdateByChainIDUseCase        uc_faucet.FaucetUpdateByChainIDUseCase
 }
 
 func NewGetMeAfterRemoteSyncService(
@@ -99,6 +102,8 @@ func NewGetMeAfterRemoteSyncService(
 	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase,
 	userCreateUseCase uc_user.UserCreateUseCase,
 	userUpdateUseCase uc_user.UserUpdateUseCase,
+	getFaucetByChainIDUseCase uc_faucet.GetFaucetByChainIDUseCase,
+	faucetUpdateByChainIDUseCase uc_faucet.FaucetUpdateByChainIDUseCase,
 ) GetMeAfterRemoteSyncService {
 	return &getMeAfterRemoteSyncServiceImpl{
 		config:                              config,
@@ -107,40 +112,42 @@ func NewGetMeAfterRemoteSyncService(
 		userGetByFederatedIdentityIDUseCase: userGetByFederatedIdentityIDUseCase,
 		userCreateUseCase:                   userCreateUseCase,
 		userUpdateUseCase:                   userUpdateUseCase,
+		getFaucetByChainIDUseCase:           getFaucetByChainIDUseCase,
+		faucetUpdateByChainIDUseCase:        faucetUpdateByChainIDUseCase,
 	}
 }
 
-func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyncNow bool) (*MeResponseDTO, error) {
-	s.logger.Debug("executing...")
+func (svc *getMeAfterRemoteSyncServiceImpl) Execute(sessCtx mongo.SessionContext, shouldSyncNow bool) (*MeResponseDTO, error) {
+	svc.logger.Debug("executing...")
 
 	// Get authenticated federatedidentity ID from context. This is loaded in
 	// by the `AuthMiddleware` found via:
 	// - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go
-	federatedidentityID, ok := ctx.Value("federatedidentity_id").(primitive.ObjectID)
+	federatedidentityID, ok := sessCtx.Value("federatedidentity_id").(primitive.ObjectID)
 	if !ok {
-		s.logger.Error("Failed getting federatedidentity_id from local context",
+		svc.logger.Error("Failed getting federatedidentity_id from local context",
 			slog.Any("error", "Not found in context: federatedidentity_id"))
 		return nil, errors.New("federatedidentity not found in context")
 	}
 
 	// Get the local saved federated identity details that were saved
 	// after the successful oAuth 2.0.
-	federatedidentity, err := s.oauthManager.GetLocalFederatedIdentityByFederatedIdentityID(ctx, federatedidentityID)
+	federatedidentity, err := svc.oauthManager.GetLocalFederatedIdentityByFederatedIdentityID(sessCtx, federatedidentityID)
 	if err != nil {
-		s.logger.Error("Failed getting local federatedidentity id", slog.Any("error", err))
+		svc.logger.Error("Failed getting local federatedidentity id", slog.Any("error", err))
 		return nil, err
 	}
 	if federatedidentity == nil {
 		err := fmt.Errorf("FederatedIdentity does not exist for id: %v", federatedidentityID.Hex())
-		s.logger.Error("Failed getting local federatedidentity id", slog.Any("error", err))
+		svc.logger.Error("Failed getting local federatedidentity id", slog.Any("error", err))
 		return nil, err
 	}
 
 	// Get the user account (aka "Me") and if it doesn't exist then we will
 	// create it immediately here and now.
-	user, err := s.userGetByFederatedIdentityIDUseCase.Execute(ctx, federatedidentityID)
+	user, err := svc.userGetByFederatedIdentityIDUseCase.Execute(sessCtx, federatedidentityID)
 	if err != nil {
-		s.logger.Error("Failed getting me", slog.Any("error", err))
+		svc.logger.Error("Failed getting me", slog.Any("error", err))
 		return nil, err
 	}
 	if user == nil {
@@ -206,13 +213,42 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 			WalletAddress:             federatedidentity.WalletAddress,
 			ProfileVerificationStatus: federatedidentity.ProfileVerificationStatus,
 		}
-		if err := s.userCreateUseCase.Execute(ctx, user); err != nil {
-			s.logger.Error("Failed creating me", slog.Any("error", err))
+		if err := svc.userCreateUseCase.Execute(sessCtx, user); err != nil {
+			svc.logger.Error("Failed creating me", slog.Any("error", err))
 			return nil, err
 		}
 
-		s.logger.Debug("Initial user created locally from federated identity",
+		svc.logger.Debug("Initial user created locally from federated identity",
 			slog.Any("user_id", userID))
+
+		//
+		// DEVELOPERS Note: We need to keep a record of user count.
+		//
+
+		faucet, err := svc.getFaucetByChainIDUseCase.Execute(sessCtx, svc.config.Blockchain.ChainID)
+		if err != nil {
+			svc.logger.Error("failed getting faucet by chain id error", slog.Any("err", err))
+			return nil, err
+		}
+		if faucet == nil {
+			err := fmt.Errorf("faucet d.n.e. for chain ID: %v", svc.config.Blockchain.ChainID)
+			svc.logger.Error("failed getting faucet by chain id error", slog.Any("err", err))
+			return nil, err
+		}
+
+		faucet.LastModifiedAt = time.Date(
+			faucet.LastModifiedAt.Year(),
+			faucet.LastModifiedAt.Month(),
+			faucet.LastModifiedAt.Day(),
+			0, 0, 0, 0, time.UTC,
+		)
+		faucet.UsersCount += 1 // Add one to account for our new user.
+		if err := svc.faucetUpdateByChainIDUseCase.Execute(sessCtx, faucet); err != nil {
+			svc.logger.Error("Failed to save faucet",
+				slog.Any("error", err))
+			return nil, err
+		}
+
 	}
 
 	// DEVELOPERS NOTE:
@@ -221,7 +257,7 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 
 	if user.ModifiedAt.Add(12 * time.Hour).Before(time.Now()) {
 		shouldSyncNow = true
-		s.logger.Debug("Forcing refresh of user with remote gateway to maintain close data integrity",
+		svc.logger.Debug("Forcing refresh of user with remote gateway to maintain close data integrity",
 			slog.Any("user_id", user.ID))
 	}
 
@@ -236,28 +272,28 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 		// Get access token from context. This is loaded in
 		// by the `AuthMiddleware` found via:
 		// - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go
-		accessToken, ok := ctx.Value("access_token").(string)
+		accessToken, ok := sessCtx.Value("access_token").(string)
 		if !ok {
-			s.logger.Error("Failed getting access_token from local context",
+			svc.logger.Error("Failed getting access_token from local context",
 				slog.Any("error", "Not found in context: federatedidentity_id"))
 			return nil, errors.New("access_token not found in context")
 		}
 
-		s.logger.Debug("Beginning to fetch from remote gateway...",
+		svc.logger.Debug("Beginning to fetch from remote gateway...",
 			slog.Any("user_id", user.ID))
 
-		remotefi, err := s.oauthManager.FetchFederatedIdentityFromRemoteByAccessToken(ctx, accessToken)
+		remotefi, err := svc.oauthManager.FetchFederatedIdentityFromRemoteByAccessToken(sessCtx, accessToken)
 		if err != nil {
-			s.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
+			svc.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
 			return nil, err
 		}
 		if remotefi == nil {
 			err := errors.New("nil returned for federated identity for the provided access token")
-			s.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
+			svc.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
 			return nil, err
 		}
 
-		s.logger.Debug("Successfully fetched from remote gateway",
+		svc.logger.Debug("Successfully fetched from remote gateway",
 			slog.Any("user_id", user.ID))
 
 		//
@@ -320,12 +356,12 @@ func (s *getMeAfterRemoteSyncServiceImpl) Execute(ctx context.Context, shouldSyn
 		user.WalletAddress = remotefi.WalletAddress
 		user.ProfileVerificationStatus = remotefi.ProfileVerificationStatus
 
-		if err := s.userUpdateUseCase.Execute(ctx, user); err != nil {
-			s.logger.Debug("Failed updating user after sync with remote service", slog.Any("error", err))
+		if err := svc.userUpdateUseCase.Execute(sessCtx, user); err != nil {
+			svc.logger.Debug("Failed updating user after sync with remote service", slog.Any("error", err))
 			return nil, err
 		}
 
-		s.logger.Debug("User updated from latest federated identity from the remote gateway",
+		svc.logger.Debug("User updated from latest federated identity from the remote gateway",
 			slog.Any("user_id", user.ID))
 	}
 

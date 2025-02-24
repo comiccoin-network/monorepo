@@ -241,6 +241,8 @@ func NewModule(
 		userGetByFederatedIdentityIDUseCase,
 		userCreateUseCase,
 		userUpdateUseCase,
+		getFaucetByChainIDUseCase,
+		faucetUpdateByChainIDUseCase,
 	)
 
 	meConnectWalletService := svc_me.NewMeConnectWalletService(

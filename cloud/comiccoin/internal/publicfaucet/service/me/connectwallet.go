@@ -2,7 +2,6 @@
 package me
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
@@ -22,7 +22,7 @@ type MeConnectWalletRequestDTO struct {
 }
 
 type MeConnectWalletService interface {
-	Execute(ctx context.Context, req *MeConnectWalletRequestDTO) (*MeResponseDTO, error)
+	Execute(sessCtx mongo.SessionContext, req *MeConnectWalletRequestDTO) (*MeResponseDTO, error)
 }
 
 type meConnectWalletServiceImpl struct {
@@ -49,7 +49,7 @@ func NewMeConnectWalletService(
 	}
 }
 
-func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnectWalletRequestDTO) (*MeResponseDTO, error) {
+func (s *meConnectWalletServiceImpl) Execute(sessCtx mongo.SessionContext, req *MeConnectWalletRequestDTO) (*MeResponseDTO, error) {
 	//
 	// STEP 1: Get required from context.
 	//
@@ -57,7 +57,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 	// Get authenticated federatedidentity ID from context. This is loaded in
 	// by the `AuthMiddleware` found via:
 	// - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go
-	federatedidentityID, ok := ctx.Value("federatedidentity_id").(primitive.ObjectID)
+	federatedidentityID, ok := sessCtx.Value("federatedidentity_id").(primitive.ObjectID)
 	if !ok {
 		s.logger.Error("Failed getting local federatedidentity id",
 			slog.Any("error", "Not found in context: federatedidentity_id"))
@@ -97,7 +97,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 
 	// Get the user account (aka "Me") and if it doesn't exist then we will
 	// create it immediately here and now.
-	user, err := s.userGetByFederatedIdentityIDUseCase.Execute(ctx, federatedidentityID)
+	user, err := s.userGetByFederatedIdentityIDUseCase.Execute(sessCtx, federatedidentityID)
 	if err != nil {
 		s.logger.Error("Failed getting me", slog.Any("error", err))
 		return nil, err
@@ -114,7 +114,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 
 	walletAddress := common.HexToAddress(strings.ToLower(req.WalletAddress))
 	user.WalletAddress = &walletAddress
-	if err := s.userUpdateUseCase.Execute(ctx, user); err != nil {
+	if err := s.userUpdateUseCase.Execute(sessCtx, user); err != nil {
 		s.logger.Debug("Failed updating user", slog.Any("error", err))
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 	// Get access token from context. This is loaded in
 	// by the `AuthMiddleware` found via:
 	// - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go
-	accessToken, ok := ctx.Value("access_token").(string)
+	accessToken, ok := sessCtx.Value("access_token").(string)
 	if !ok {
 		s.logger.Error("Failed getting access_token from local context",
 			slog.Any("error", "Not found in context: federatedidentity_id"))
@@ -138,7 +138,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 
 	// Get the local saved federated identity details that were saved
 	// after the successful oAuth 2.0.
-	remotefi, err := s.oauthManager.FetchFederatedIdentityFromRemoteByAccessToken(ctx, accessToken)
+	remotefi, err := s.oauthManager.FetchFederatedIdentityFromRemoteByAccessToken(sessCtx, accessToken)
 	if err != nil {
 		s.logger.Debug("Failed fetching remote federated identity", slog.Any("error", err))
 		return nil, err
@@ -156,7 +156,7 @@ func (s *meConnectWalletServiceImpl) Execute(ctx context.Context, req *MeConnect
 	remotefi.WalletAddress = &walletAddress
 
 	// Submit to our remote gateway
-	if err := s.oauthManager.UpdateFederatedIdentityInRemoteWithAccessToken(ctx, remotefi, accessToken); err != nil {
+	if err := s.oauthManager.UpdateFederatedIdentityInRemoteWithAccessToken(sessCtx, remotefi, accessToken); err != nil {
 		s.logger.Error("Failed updating remote gateway", slog.Any("error", err))
 		return nil, err
 	}
