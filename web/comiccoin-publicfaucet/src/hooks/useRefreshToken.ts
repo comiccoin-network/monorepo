@@ -13,10 +13,10 @@ export function useRefreshToken() {
       return false;
     }
 
-    if (!tokens?.refreshToken || !tokens?.federatedidentityId) {
+    if (!tokens?.refreshToken || !tokens?.federatedidentityID) {
       console.log("❌ Missing required token data", {
         hasRefreshToken: !!tokens?.refreshToken,
-        hasFederatedId: !!tokens?.federatedidentityId,
+        hasFederatedId: !!tokens?.federatedidentityID,
       });
       clearTokens();
       return false;
@@ -25,7 +25,7 @@ export function useRefreshToken() {
     try {
       setIsRefreshing(true);
       console.log("🔄 Attempting to refresh tokens", {
-        federatedId: tokens.federatedidentityId,
+        federatedId: tokens.federatedidentityID,
       });
 
       const response = await fetch(
@@ -36,7 +36,7 @@ export function useRefreshToken() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            federatedidentity_id: tokens.federatedidentityId,
+            federatedidentity_id: tokens.federatedidentityID,
             refresh_token: tokens.refreshToken,
           }),
         },
@@ -60,7 +60,7 @@ export function useRefreshToken() {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
         expiresAt: data.expires_at,
-        federatedidentityId: data.federatedidentity_id,
+        federatedidentityID: data.federatedidentity_id,
       });
 
       console.log("✅ Successfully refreshed tokens");

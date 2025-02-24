@@ -33,6 +33,26 @@ const SignOutModal = ({ isOpen, onClose, onConfirm, isLoggingOut }) => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      setIsLoggingOut(true);
+
+      // Execute logout from auth store
+      clearTokens(); // Changed from logout() to clearTokens()
+
+      // Additional cleanup if needed
+      localStorage.removeItem("user_preferences");
+      sessionStorage.clear();
+
+      // Navigate to login page
+      router.push("/get-started");
+    } catch (error) {
+      console.error("Error during sign out:", error);
+      setIsLoggingOut(false);
+      setIsSignOutModalOpen(false);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
@@ -146,7 +166,7 @@ function UserLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useMe();
-  const { logout } = useAuthStore();
+  const { clearTokens } = useAuthStore();
 
   // Handle actual sign out process
   const handleSignOut = async () => {
@@ -154,14 +174,14 @@ function UserLayout({ children }: { children: React.ReactNode }) {
       setIsLoggingOut(true);
 
       // Execute logout from auth store
-      logout();
+      clearTokens(); // Changed from logout() to clearTokens()
 
       // Additional cleanup if needed
       localStorage.removeItem("user_preferences");
       sessionStorage.clear();
 
       // Navigate to login page
-      router.push("/login");
+      router.push("/get-started");
     } catch (error) {
       console.error("Error during sign out:", error);
       setIsLoggingOut(false);
