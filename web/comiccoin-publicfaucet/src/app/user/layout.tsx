@@ -135,12 +135,12 @@ const navigationItems = [
     icon: History,
     description: "View your claim history",
   },
-  // {
-  //   name: "My Wallet",
-  //   href: "/user/wallet",
-  //   icon: Wallet,
-  //   description: "Manage your wallet settings",
-  // },
+  {
+    name: "My Wallet",
+    href: "/user/wallet",
+    icon: Wallet,
+    description: "Manage your wallet settings",
+  },
   {
     name: "Settings",
     href: "/user/settings",
@@ -149,7 +149,7 @@ const navigationItems = [
   },
   {
     name: "Help & Support",
-    href: "/user/help",
+    href: "/user/help-and-support",
     icon: HelpCircle,
     description: "Get help and support",
   },
