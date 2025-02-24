@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"sort"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -124,6 +125,11 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 	if user.ClaimedCoinTransactions == nil {
 		user.ClaimedCoinTransactions = make([]*dom_user.UserClaimedCoinTransaction, 0)
 	}
+
+	// Apply sorting so most recent transactions will be at the top.
+	sort.Slice(user.ClaimedCoinTransactions, func(i, j int) bool {
+		return user.ClaimedCoinTransactions[i].Timestamp.After(user.ClaimedCoinTransactions[j].Timestamp)
+	})
 
 	// Limit transactions to maximum of 5
 	var limitedTransactions []*dom_user.UserClaimedCoinTransaction

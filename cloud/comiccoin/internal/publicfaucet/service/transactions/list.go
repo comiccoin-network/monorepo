@@ -4,6 +4,7 @@ package transactions
 import (
 	"errors"
 	"log/slog"
+	"sort"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -58,5 +59,9 @@ func (svc *getUserTransactionsServiceImpl) Execute(sessCtx mongo.SessionContext)
 		return nil, err
 	}
 
+	sort.Slice(user.ClaimedCoinTransactions, func(i, j int) bool {
+		return user.ClaimedCoinTransactions[i].Timestamp.After(user.ClaimedCoinTransactions[j].Timestamp)
+	})
 	return user.ClaimedCoinTransactions, nil
+
 }
