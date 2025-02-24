@@ -27,7 +27,7 @@ const ClaimCoinsPage = () => {
   });
 
   // Get the daily reward amount from faucet data
-  const dailyReward = faucet?.daily_coins_reward || 500; // Fallback to 500 if not available yet
+  const dailyReward = faucet?.daily_coins_reward || 2; // Fallback to 2 if not available yet
 
   const handleClaimCoins = async () => {
     try {
