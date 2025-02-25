@@ -1,9 +1,9 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/user/transactions/page.tsx
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Coins, ArrowLeft, ArrowUpDown, Loader2 } from "lucide-react";
+import { Coins, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 
 import { useGetTransactions, Transaction } from "@/hooks/useGetTransactions";
@@ -26,6 +26,27 @@ const TransactionsPage = () => {
     field: "timestamp",
     direction: "desc",
   });
+  const [expandedTransaction, setExpandedTransaction] = useState<string | null>(null);
+
+  // Prevent iOS scroll bounce
+  useEffect(() => {
+    const preventTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+
+    document.body.addEventListener("touchmove", preventTouchMove, {
+      passive: false,
+    });
+
+    document.body.style.overscrollBehavior = "none";
+    document.documentElement.style.overscrollBehavior = "none";
+
+    return () => {
+      document.body.removeEventListener("touchmove", preventTouchMove);
+      document.body.style.overscrollBehavior = "";
+      document.documentElement.style.overscrollBehavior = "";
+    };
+  }, []);
 
   // Fetch transactions data
   const { transactions, isLoading, error, refetch } = useGetTransactions({
@@ -57,12 +78,19 @@ const TransactionsPage = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
       month: "short",
       day: "numeric",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     }).format(date);
+  };
+
+  // Handle transaction expansion
+  const toggleTransactionExpand = (transactionId: string) => {
+    setExpandedTransaction(
+      expandedTransaction === transactionId ? null : transactionId
+    );
   };
 
   // Handle sort
@@ -78,8 +106,10 @@ const TransactionsPage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-purple-50 py-8 flex flex-col items-center justify-center">
-        <Loader2 className="h-12 w-12 text-purple-600 animate-spin mb-4" />
-        <p className="text-gray-600">Loading your transaction history...</p>
+        <div className="animate-pulse">
+          <Coins className="h-12 w-12 text-purple-300 mb-4" />
+        </div>
+        <p className="text-gray-600">Loading transactions...</p>
       </div>
     );
   }
@@ -110,31 +140,61 @@ const TransactionsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-purple-50 py-8 px-4">
-      {/* Header with navigation back to dashboard */}
-      <header className="mb-8">
-        <div className="flex items-center mb-4">
-          <Link
-            href="/user/dashboard"
-            className="inline-flex items-center text-purple-600 hover:text-purple-800 mr-4"
-            aria-label="Back to dashboard"
-          >
-            <ArrowLeft className="w-5 h-5 mr-1" />
-            Back to Dashboard
-          </Link>
-          <h1 className="text-2xl font-bold text-purple-800">
-            Transaction History
-          </h1>
+    <div
+      className="min-h-screen bg-purple-50 py-4 px-4 touch-manipulation"
+      style={{
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      {/* Header */}
+      <header className="mb-6 flex items-center justify-between">
+        <div>
+          <div className="flex items-center">
+            <Link
+              href="/user/dashboard"
+              className="mr-3 text-purple-600 hover:text-purple-800"
+              aria-label="Back to dashboard"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <h1 className="text-2xl font-bold text-purple-800">
+              Transactions
+            </h1>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">
+            Your ComicCoin transaction history
+          </p>
         </div>
-        <p className="text-gray-600 text-sm">
-          View your ComicCoin transaction history
-        </p>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => handleSort("timestamp")}
+            className="p-2 rounded-full hover:bg-purple-100 transition-colors"
+          >
+            {sortBy.field === "timestamp" && sortBy.direction === "asc" ? (
+              <ChevronUp className="w-4 h-4 text-purple-600" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-purple-600" />
+            )}
+          </button>
+          <button
+            onClick={() => handleSort("amount")}
+            className="p-2 rounded-full hover:bg-purple-100 transition-colors"
+          >
+            {sortBy.field === "amount" && sortBy.direction === "asc" ? (
+              <ChevronUp className="w-4 h-4 text-purple-600" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-purple-600" />
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Transactions Section */}
-      <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-purple-100">
+      <div className="space-y-4">
         {transactions.length === 0 ? (
-          <div className="py-12 text-center">
+          <div className="bg-white rounded-xl p-6 text-center shadow-sm">
             <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-purple-50">
               <Coins className="w-8 h-8 text-purple-600" aria-hidden="true" />
             </div>
@@ -147,64 +207,40 @@ const TransactionsPage = () => {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort("timestamp")}
-                  >
-                    <div className="flex items-center">
-                      <span>Date & Time</span>
-                      <ArrowUpDown className="w-4 h-4 ml-1" />
-                    </div>
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Transaction ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort("amount")}
-                  >
-                    <div className="flex items-center">
-                      <span>Amount</span>
-                      <ArrowUpDown className="w-4 h-4 ml-1" />
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {sortedTransactions.map((transaction, index) => (
-                  <tr
-                    key={transaction.id || index}
-                    className="hover:bg-gray-50"
-                  >
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {formatDate(transaction.timestamp)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500 font-mono">
+          sortedTransactions.map((transaction) => (
+            <div
+              key={transaction.id}
+              className="bg-white rounded-xl shadow-sm overflow-hidden"
+            >
+              <div
+                onClick={() => toggleTransactionExpand(transaction.id)}
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-purple-50 transition-colors"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-base font-semibold text-purple-700">
+                      {transaction.amount} CC
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {formatDate(transaction.timestamp)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {expandedTransaction === transaction.id && (
+                <div className="px-4 pb-4 bg-purple-50">
+                  <div className="border-t border-purple-200 pt-3">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">Transaction ID</span>
+                      <span className="text-gray-800 font-mono">
                         {transaction.id}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-purple-700">
-                        {transaction.amount} CC
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
         )}
       </div>
     </div>
