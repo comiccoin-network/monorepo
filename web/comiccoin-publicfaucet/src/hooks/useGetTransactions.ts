@@ -23,11 +23,11 @@ interface UseGetTransactionsReturn {
 }
 
 export function useGetTransactions({
-  refreshInterval,
+  refreshInterval = 60000,
   enabled = true,
 }: UseGetTransactionsOptions = {}): UseGetTransactionsReturn {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const fetchWithAuth = useAuthenticatedFetch();
 
@@ -54,16 +54,21 @@ export function useGetTransactions({
         throw new Error(`Failed to fetch transactions: ${response.statusText}`);
       }
 
-      const transactionData: Transaction[] = await response.json();
+      const transactionData = await response.json();
+
+      // Ensure transactionData is an array
+      const validTransactions: Transaction[] = Array.isArray(transactionData)
+        ? transactionData
+        : [];
 
       console.log("✅ TRANSACTIONS FETCH: Success", {
-        count: transactionData.length,
+        count: validTransactions.length,
       });
 
-      setTransactions(transactionData);
+      setTransactions(validTransactions);
       setError(null);
 
-      return transactionData;
+      return validTransactions;
     } catch (err) {
       console.log("❌ TRANSACTIONS FETCH: Failed", {
         error: err instanceof Error ? err.message : "Unknown error",
@@ -84,6 +89,7 @@ export function useGetTransactions({
       console.log("🔄 TRANSACTIONS FETCH: Auto-fetching on mount");
       fetchTransactions().catch((error) => {
         console.log("❌ TRANSACTIONS FETCH: Auto-fetch failed", error);
+        setIsLoading(false);
       });
     }
   }, [enabled, fetchTransactions]);

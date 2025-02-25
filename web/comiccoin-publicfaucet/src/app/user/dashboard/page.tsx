@@ -4,22 +4,14 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMe } from "@/hooks/useMe";
-import {
-  Coins,
-  Clock,
-  TrendingUp,
-  Wallet,
-  Flame,
-  ArrowRight,
-  Copy,
-} from "lucide-react";
+import { Coins, TrendingUp, Wallet, ArrowRight, Copy } from "lucide-react";
 import Link from "next/link";
 
 import { CountdownTimer } from "@/components/dashboard/CountdownTimer";
 import { ClaimsList } from "@/components/dashboard/ClaimsList";
 
 import { useGetDashboard } from "@/hooks/useGetDashboard";
-import { toast } from "sonner"; // Assuming you're using a toast library
+import { toast } from "sonner";
 
 // Existing interfaces remain the same
 interface Claim {
@@ -36,8 +28,6 @@ interface UserClaimedCoinTransaction {
   timestamp: string;
   amount: number;
 }
-
-// Keep existing mock data and transaction conversion functions
 
 const DashboardPage = () => {
   const router = useRouter();
@@ -123,26 +113,26 @@ const DashboardPage = () => {
 
   return (
     <div
-      className="py-8 touch-manipulation"
+      className="bg-purple-50 min-h-screen py-4 px-4"
       style={{
         WebkitUserSelect: "none",
         userSelect: "none",
         WebkitTapHighlightColor: "transparent",
       }}
     >
-      {/* Header with improved touch interactions */}
-      <header className="mb-8">
+      {/* Header with iOS-style design */}
+      <header className="mb-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-purple-800 mb-2">
+            <h1 className="text-2xl font-bold text-purple-800 mb-1">
               Welcome back, {user?.name || "Comic Enthusiast"}!
             </h1>
-            <p className="text-gray-600" role="doc-subtitle">
+            <p className="text-gray-600 text-sm" role="doc-subtitle">
               Claim your free ComicCoins every 24 hours
             </p>
           </div>
           <button
-            className="inline-flex items-center justify-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors gap-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 active:scale-95"
+            className="inline-flex items-center justify-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors gap-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 active:scale-95"
             onClick={() => {
               router.push("/user/claim-coins");
             }}
@@ -151,94 +141,60 @@ const DashboardPage = () => {
             onTouchStart={() => setIsTouchActive(true)}
             onTouchEnd={() => setIsTouchActive(false)}
           >
-            <Coins className="w-5 h-5" aria-hidden="true" />
-            <span>{dashboard.can_claim ? "Claim Coins" : "Wait to Claim"}</span>
+            <Coins className="w-4 h-4" aria-hidden="true" />
+            <span className="text-sm">
+              {dashboard.can_claim ? "Claim Coins" : "Wait to Claim"}
+            </span>
           </button>
         </div>
       </header>
 
-      {/* Stats Grid with improved mobile responsiveness */}
-      <div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
-        role="region"
-        aria-label="Account Overview"
-      >
+      {/* Balance Cards with iOS-inspired design */}
+      <div className="space-y-4 mb-6">
         {/* Faucet Balance Card */}
-        <div className="relative bg-white rounded-xl overflow-hidden shadow-sm">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-50 to-white opacity-50"></div>
-          <div className="relative p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-purple-800">
-                Faucet Balance
-              </h2>
-              <Coins className="h-6 w-6 text-purple-600" aria-hidden="true" />
-            </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm flex justify-between items-center">
+          <div>
+            <h2 className="text-sm text-gray-600 mb-1">Faucet Balance</h2>
             <div
-              className="text-2xl sm:text-3xl font-bold text-purple-700"
+              className="text-2xl font-bold text-purple-700"
               aria-label={`${dashboard.faucet_balance} ComicCoins available for distribution`}
             >
               {dashboard.faucet_balance} CC
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">
-              Available for distribution
-            </div>
           </div>
+          <Coins className="h-6 w-6 text-purple-600" aria-hidden="true" />
         </div>
 
         {/* Your Balance Card */}
-        <div className="relative bg-white rounded-xl overflow-hidden shadow-sm">
-          <div className="absolute inset-0 bg-gradient-to-r from-green-50 to-white opacity-50"></div>
-          <div className="relative p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-purple-800">
-                Your Balance
-              </h2>
-              <Wallet className="h-6 w-6 text-purple-600" aria-hidden="true" />
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span
-                className="text-2xl sm:text-3xl font-bold text-purple-700"
-                aria-label={`${dashboard.user_balance} ComicCoins in your wallet`}
-              >
-                {dashboard.user_balance} CC
-              </span>
-            </div>
-            <div className="text-xs sm:text-sm text-gray-600">
-              Current wallet balance
+        <div className="bg-white rounded-xl p-4 shadow-sm flex justify-between items-center">
+          <div>
+            <h2 className="text-sm text-gray-600 mb-1">Your Balance</h2>
+            <div
+              className="text-2xl font-bold text-purple-700"
+              aria-label={`${dashboard.user_balance} ComicCoins in your wallet`}
+            >
+              {dashboard.user_balance} CC
             </div>
           </div>
+          <Wallet className="h-6 w-6 text-purple-600" aria-hidden="true" />
         </div>
 
         {/* Total Claimed Card */}
-        <div className="relative bg-white rounded-xl overflow-hidden shadow-sm">
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-50 to-white opacity-50"></div>
-          <div className="relative p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-purple-800">
-                Total Claimed
-              </h2>
-              <TrendingUp
-                className="h-6 w-6 text-purple-600"
-                aria-hidden="true"
-              />
-            </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm flex justify-between items-center">
+          <div>
+            <h2 className="text-sm text-gray-600 mb-1">Total Claimed</h2>
             <div
-              className="text-2xl sm:text-3xl font-bold text-purple-700"
+              className="text-2xl font-bold text-purple-700"
               aria-label={`${dashboard.total_coins_claimed} ComicCoins claimed in total`}
             >
               {dashboard.total_coins_claimed} CC
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">
-              Lifetime earnings
-            </div>
           </div>
+          <TrendingUp className="h-6 w-6 text-purple-600" aria-hidden="true" />
         </div>
 
         {/* Countdown Timer */}
-        <div
-          className="relative rounded-xl overflow-hidden transition-all duration-300"
-          aria-live="polite"
-        >
+        <div className="bg-white rounded-xl p-4 shadow-sm">
           <CountdownTimer
             nextClaimTime={dashboard.next_claim_time}
             canClaim={dashboard.can_claim}
@@ -246,117 +202,91 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Main Content Grid with improved mobile layout */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left Column - Claims */}
-        <div className="lg:w-2/3 space-y-6">
-          {/* Your Claims Section */}
-          <section
-            className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-purple-100 focus-within:ring-2 focus-within:ring-purple-200 transition-shadow"
-            aria-labelledby="your-claims-title"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h2
-                id="your-claims-title"
-                className="text-lg font-semibold text-purple-800"
-              >
-                Your Claims
-              </h2>
-              {dashboard.transactions && dashboard.transactions.length > 0 && (
-                <Link
-                  href="/user/transactions?filter=personal"
-                  className="text-purple-600 hover:text-purple-700 flex items-center gap-1 text-sm group focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg px-2 py-1 active:bg-purple-50"
-                  aria-label="View all your claims history"
-                >
-                  See More
-                  <ArrowRight
-                    className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                    aria-hidden="true"
-                  />
-                </Link>
-              )}
-            </div>
-            <div
-              role="feed"
-              aria-label="Your recent claims"
-              className="divide-y divide-gray-100"
+      {/* Your Claims Section */}
+      <section className="bg-white rounded-xl p-4 shadow-sm mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-purple-800">Your Claims</h2>
+          {dashboard.transactions && dashboard.transactions.length > 0 && (
+            <Link
+              href="/user/transactions?filter=personal"
+              className="text-purple-600 hover:text-purple-700 flex items-center gap-1 text-sm group focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg px-2 py-1 active:bg-purple-50"
+              aria-label="View all your claims history"
             >
-              {transactionClaims.length > 0 ? (
-                <ClaimsList claims={transactionClaims.slice(0, 5)} isPersonal />
-              ) : (
-                <div className="py-12 text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-purple-50">
-                    <Coins
-                      className="w-6 h-6 text-purple-600"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-1">
-                    No claims yet
-                  </h3>
-                  <p className="text-sm text-gray-500 max-w-sm mx-auto">
-                    Your transaction history will appear here after you claim
-                    your first ComicCoins. Click the &quot;Claim Coins&quot;
-                    button above to get started!
-                  </p>
-                </div>
-              )}
-            </div>
-          </section>
+              See More
+              <ArrowRight
+                className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                aria-hidden="true"
+              />
+            </Link>
+          )}
         </div>
+        <div
+          role="feed"
+          aria-label="Your recent claims"
+          className="divide-y divide-gray-100"
+        >
+          {transactionClaims.length > 0 ? (
+            <ClaimsList claims={transactionClaims.slice(0, 5)} isPersonal />
+          ) : (
+            <div className="py-8 text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-purple-50">
+                <Coins className="w-6 h-6 text-purple-600" aria-hidden="true" />
+              </div>
+              <h3 className="text-sm font-medium text-gray-900 mb-1">
+                No claims yet
+              </h3>
+              <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                Your transaction history will appear here after you claim your
+                first ComicCoins. Click the "Claim Coins" button above to get
+                started!
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
 
-        {/* Right Column - Wallet */}
-        <div className="lg:w-1/3 space-y-6">
-          {/* Wallet QR */}
-          <section
-            className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-purple-100 focus-within:ring-2 focus-within:ring-purple-200 transition-shadow"
-            aria-labelledby="wallet-title"
+      {/* Wallet Section */}
+      <section className="bg-white rounded-xl p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-purple-800 mb-4">
+          Your Wallet
+        </h2>
+        <div className="flex justify-center mb-4">
+          <div
+            className="w-48 h-48 p-2 bg-white rounded-xl shadow-sm"
+            role="img"
+            aria-label="QR code for your Ethereum wallet address"
           >
-            <h2
-              id="wallet-title"
-              className="text-lg font-semibold text-purple-800 mb-6"
-            >
-              Your Wallet
-            </h2>
-            <div className="flex justify-center mb-6">
-              <div
-                className="w-48 sm:w-64 h-48 sm:h-64 p-4 bg-white rounded-xl shadow-sm"
-                role="img"
-                aria-label="QR code for your Ethereum wallet address"
-              >
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=ethereum:${walletAddress}`}
-                  alt="Wallet QR Code"
-                  className="w-full h-full"
-                />
-              </div>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-2">Receive coins at:</p>
-              <div className="flex items-center justify-center gap-2">
-                <code
-                  className="bg-purple-50 px-3 py-1 rounded text-sm font-mono text-purple-700"
-                  role="textbox"
-                  aria-label="Your wallet address"
-                >
-                  {walletAddress
-                    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-                    : "0x0000...0000"}
-                </code>
-                <button
-                  onClick={copyWalletAddress}
-                  className="p-2 hover:bg-purple-50 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors active:bg-purple-100"
-                  aria-label="Copy wallet address to clipboard"
-                  onTouchStart={() => setIsTouchActive(true)}
-                  onTouchEnd={() => setIsTouchActive(false)}
-                >
-                  <Copy className="w-4 h-4 text-gray-500" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-          </section>
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=ethereum:${walletAddress}`}
+              alt="Wallet QR Code"
+              className="w-full h-full"
+            />
+          </div>
         </div>
-      </div>
+        <div className="text-center">
+          <p className="text-sm text-gray-600 mb-2">Receive coins at:</p>
+          <div className="flex items-center justify-center gap-2">
+            <code
+              className="bg-purple-50 px-3 py-1 rounded text-sm font-mono text-purple-700"
+              role="textbox"
+              aria-label="Your wallet address"
+            >
+              {walletAddress
+                ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+                : "0x0000...0000"}
+            </code>
+            <button
+              onClick={copyWalletAddress}
+              className="p-2 hover:bg-purple-50 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors active:bg-purple-100"
+              aria-label="Copy wallet address to clipboard"
+              onTouchStart={() => setIsTouchActive(true)}
+              onTouchEnd={() => setIsTouchActive(false)}
+            >
+              <Copy className="w-4 h-4 text-gray-500" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
