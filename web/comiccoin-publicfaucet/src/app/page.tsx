@@ -20,9 +20,112 @@ import {
   BookOpen,
 } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { API_CONFIG } from "@/config/env";
 
 const FaucetPage = () => {
   const currentYear = new Date().getFullYear();
+
+  // Define types for faucet data
+  type BigIntString = string;
+
+  interface FaucetDTO {
+    id: string;
+    chain_id: number;
+    balance: BigIntString;
+    users_count: number;
+    total_coins_distributed: BigIntString;
+    total_transactions: number;
+    distribution_rate_per_day: number;
+    total_coins_distributed_today: number;
+    total_transactions_today: number;
+    created_at?: string;
+    last_modified_at?: string;
+    daily_coins_reward: number;
+  }
+
+  // Set up state for faucet data
+  const [faucet, setFaucet] = useState<FaucetDTO | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  // Chain ID for the ComicCoin network
+  const chainId = 1;
+
+  // Function to fetch faucet data
+  const fetchFaucetData = async () => {
+    try {
+      console.log(`🔄 Fetching faucet data for chain ID: ${chainId}`);
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch(
+        `${API_CONFIG.baseUrl}/publicfaucet/api/v1/faucet/${chainId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch faucet data: ${response.statusText}`);
+      }
+
+      const data: FaucetDTO = await response.json();
+      console.log("✅ Faucet data received:", {
+        chainId: data.chain_id,
+        balance: data.balance,
+        usersCount: data.users_count,
+      });
+
+      setFaucet(data);
+      setError(null);
+    } catch (err) {
+      console.error("❌ Error fetching faucet data:", err);
+      setError(
+        err instanceof Error ? err : new Error("Failed to fetch faucet data")
+      );
+      setFaucet(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Set up initial fetch and refresh interval
+  useEffect(() => {
+    // Initial fetch
+    fetchFaucetData();
+
+    // Set up 60-second refresh interval
+    const refreshInterval = 60000;
+    console.log(`⏰ Setting up refresh interval: ${refreshInterval}ms`);
+    const intervalId = setInterval(fetchFaucetData, refreshInterval);
+
+    // Cleanup interval on unmount
+    return () => {
+      console.log("🧹 Cleaning up refresh interval");
+      clearInterval(intervalId);
+    };
+  }, [chainId]);
+
+  // Function to manually refresh data
+  const refetch = fetchFaucetData;
+
+  // Format balance for display
+  const formatBalance = (balanceStr: string | undefined) => {
+    if (!balanceStr) return "0";
+
+    try {
+      // The balance is already in ComicCoin units, not wei
+      const balance = parseInt(balanceStr);
+      return balance.toLocaleString();
+    } catch (e) {
+      console.error("Error formatting balance:", e);
+      return "0";
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
@@ -65,19 +168,37 @@ const FaucetPage = () => {
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-white opacity-20 blur transform scale-110 rounded-full"></div>
                 <div className="relative">
-                  <p className="text-5xl sm:text-6xl md:text-7xl font-bold mb-2 flex items-center justify-center gap-4 text-white">
-                    <Sparkles
-                      className="h-12 w-12 text-amber-300"
-                      aria-hidden="true"
-                    />
-                    <span className="bg-gradient-to-r from-amber-300 to-yellow-500 text-transparent bg-clip-text">
-                      1,000,000 CC
-                    </span>
-                    <Sparkles
-                      className="h-12 w-12 text-amber-300"
-                      aria-hidden="true"
-                    />
-                  </p>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center gap-4">
+                      <RefreshCw className="h-12 w-12 text-white animate-spin" />
+                      <span className="text-5xl sm:text-6xl md:text-7xl font-bold">Loading...</span>
+                    </div>
+                  ) : error ? (
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <p className="text-5xl sm:text-6xl md:text-7xl font-bold text-red-300">Error Loading Data</p>
+                      <button
+                        onClick={refetch}
+                        className="mt-4 bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors flex items-center gap-2"
+                      >
+                        <RefreshCw className="h-5 w-5" />
+                        Retry
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-5xl sm:text-6xl md:text-7xl font-bold mb-2 flex items-center justify-center gap-4 text-white">
+                      <Sparkles
+                        className="h-12 w-12 text-amber-300"
+                        aria-hidden="true"
+                      />
+                      <span className="bg-gradient-to-r from-amber-300 to-yellow-500 text-transparent bg-clip-text">
+                        {formatBalance(faucet?.balance)} CC
+                      </span>
+                      <Sparkles
+                        className="h-12 w-12 text-amber-300"
+                        aria-hidden="true"
+                      />
+                    </p>
+                  )}
                 </div>
               </div>
               <p className="text-lg sm:text-xl text-indigo-100 max-w-2xl mx-auto mt-8 mb-8 sm:mb-10">
@@ -91,6 +212,11 @@ const FaucetPage = () => {
                 Start Claiming Now
                 <ArrowRight className="w-6 h-6" />
               </Link>
+              {!isLoading && !error && faucet && (
+                <p className="mt-4 text-indigo-100">
+                  Daily Reward: <span className="font-bold">{faucet.daily_coins_reward} CC</span>
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -215,23 +341,43 @@ const FaucetPage = () => {
           </div>
         </section>
 
-        {/* Stats Section - Updated metrics */}
+        {/* Stats Section - Updated with dynamic data */}
         <section className="bg-white py-16">
           <div className="max-w-6xl mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
                 <p className="text-4xl font-bold text-purple-600 mb-2">
-                  10,000+
+                  {isLoading ? (
+                    <RefreshCw className="h-8 w-8 inline-block animate-spin text-purple-400" />
+                  ) : error ? (
+                    "Error"
+                  ) : (
+                    <>{faucet?.users_count?.toLocaleString() || "0"}+</>
+                  )}
                 </p>
                 <p className="text-gray-600">Active Users</p>
               </div>
               <div className="text-center">
-                <p className="text-4xl font-bold text-purple-600 mb-2">1M+</p>
+                <p className="text-4xl font-bold text-purple-600 mb-2">
+                  {isLoading ? (
+                    <RefreshCw className="h-8 w-8 inline-block animate-spin text-purple-400" />
+                  ) : error ? (
+                    "Error"
+                  ) : (
+                    <>{formatBalance(faucet?.total_coins_distributed)}+</>
+                  )}
+                </p>
                 <p className="text-gray-600">Coins Distributed</p>
               </div>
               <div className="text-center">
                 <p className="text-4xl font-bold text-purple-600 mb-2">
-                  500/day
+                  {isLoading ? (
+                    <RefreshCw className="h-8 w-8 inline-block animate-spin text-purple-400" />
+                  ) : error ? (
+                    "Error"
+                  ) : (
+                    <>{faucet?.distribution_rate_per_day}/day</>
+                  )}
                 </p>
                 <p className="text-gray-600">Distribution Rate</p>
               </div>
@@ -327,6 +473,11 @@ const FaucetPage = () => {
                   © {currentYear} ComicCoin Network. All rights reserved.
                 </span>
               </p>
+              {!isLoading && !error && faucet && (
+                <p className="mt-4 text-sm text-purple-300">
+                  Today's Stats: {faucet.total_coins_distributed_today} coins distributed in {faucet.total_transactions_today} transactions
+                </p>
+              )}
             </div>
           </div>
         </footer>
