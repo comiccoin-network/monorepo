@@ -1,9 +1,9 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useAuth.ts
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 import { API_CONFIG } from "@/config/env";
 
-// Define our types for better type safety and code clarity
+// Interfaces for tokens and auth state
 interface Tokens {
   accessToken: string;
   refreshToken: string;
@@ -20,68 +20,37 @@ interface AuthState {
   refreshTokens: () => Promise<boolean>;
 }
 
-// Our custom storage implementation with robust error handling
-const createAuthStorage = () => {
-  return createJSONStorage(() => ({
-    getItem: (name: string) => {
-      try {
-        const value = localStorage.getItem(name);
-        if (!value) {
-          console.log("📭 AUTH STATE: No tokens found in storage");
-          return null;
-        }
+// Simplified storage middleware for Next.js and browser compatibility
+const createBrowserStorage = () => ({
+  getItem: (key: string) => {
+    if (typeof window === "undefined") return null;
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    } catch (error) {
+      console.error("Error reading from localStorage", error);
+      return null;
+    }
+  },
+  setItem: (key: string, value: any) => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error("Error writing to localStorage", error);
+    }
+  },
+  removeItem: (key: string) => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error("Error removing from localStorage", error);
+    }
+  },
+});
 
-        // Parse and validate the stored data structure
-        const parsed = JSON.parse(value);
-        const tokens = parsed?.state?.tokens;
-
-        // Perform thorough validation of the token structure
-        if (!tokens?.accessToken) {
-          console.warn(
-            "⚠️ AUTH VALIDATION: Invalid token structure - access token",
-          );
-          return null;
-        }
-        if (!tokens?.refreshToken) {
-          console.warn(
-            "⚠️ AUTH VALIDATION: Invalid token structure - refresh token",
-          );
-          return null;
-        }
-        if (!tokens?.federatedidentityID) {
-          console.warn(
-            "⚠️ AUTH VALIDATION: Invalid token structure - federatedidentityID",
-          );
-          return null;
-        }
-
-        console.log("📦 AUTH STATE: Valid tokens found in storage");
-        return value;
-      } catch (error) {
-        console.log("💥 AUTH ERROR: Storage read failed", error);
-        return null;
-      }
-    },
-    setItem: (name: string, value: string) => {
-      try {
-        localStorage.setItem(name, value);
-        console.log("✅ AUTH STORAGE: Tokens saved successfully");
-      } catch (error) {
-        console.log("💥 AUTH ERROR: Storage write failed", error);
-      }
-    },
-    removeItem: (name: string) => {
-      try {
-        localStorage.removeItem(name);
-        console.log("✅ AUTH CLEANUP: Storage cleared successfully");
-      } catch (error) {
-        console.log("💥 AUTH ERROR: Storage cleanup failed", error);
-      }
-    },
-  }));
-};
-
-// Create our Zustand store with persistence and proper token management
+// Create the authentication store with simplified persistence
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -89,6 +58,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isRefreshing: false,
 
+      // Set tokens with basic validation
       setTokens: (tokens) => {
         if (tokens) {
           // Ensure timestamp is in milliseconds
@@ -111,11 +81,13 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      // Clear tokens and authentication state
       clearTokens: () => {
         console.log("🚪 AUTH LOGOUT: Cleaning up");
         set({ tokens: null, isAuthenticated: false });
       },
 
+      // Refresh tokens with error handling
       refreshTokens: async () => {
         const state = get();
 
@@ -135,7 +107,7 @@ export const useAuthStore = create<AuthState>()(
           set({ isRefreshing: true });
           console.log("🔄 Attempting token refresh");
 
-          // Make the refresh request with proper error handling
+          // Make the refresh request
           const response = await fetch(
             `${API_CONFIG.baseUrl}/publicfaucet/api/v1/token/refresh`,
             {
@@ -150,7 +122,7 @@ export const useAuthStore = create<AuthState>()(
             },
           );
 
-          // Handle non-200 responses properly
+          // Handle non-200 responses
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             console.log("❌ Refresh failed:", errorData);
@@ -188,8 +160,8 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: "auth",
-      storage: createAuthStorage(),
+      name: "auth-tokens", // Simple key for localStorage
+      storage: createBrowserStorage(), // Use simplified storage
       partialize: (state) => ({
         tokens: state.tokens,
         isAuthenticated: state.isAuthenticated,
