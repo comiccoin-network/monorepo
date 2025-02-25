@@ -8,12 +8,21 @@ import { Loader2, ArrowRight, ExternalLink } from "lucide-react";
 
 export default function RegisterCallPage() {
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  // Use an empty object for initial params if needed by your hook
   const { registrationUrl, isLoading, error, refetch } = useRegistrationUrl();
+
   const [showManualButton, setShowManualButton] = useState(false);
   const [processedUrl, setProcessedUrl] = useState("");
 
+  // Set client-side flag
   useEffect(() => {
-    if (registrationUrl) {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (registrationUrl && typeof window !== 'undefined') {
       const updatedUrl = registrationUrl.replace(
         "comiccoin_gateway",
         "127.0.0.1",
@@ -39,7 +48,7 @@ export default function RegisterCallPage() {
   }, [registrationUrl]);
 
   const handleManualRedirect = () => {
-    if (processedUrl) {
+    if (processedUrl && typeof window !== 'undefined') {
       // Open new tab
       window.open(processedUrl, "_blank");
       // Close current tab

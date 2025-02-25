@@ -10,22 +10,25 @@ export default function LoginCallPage() {
   const router = useRouter();
   const [showManualButton, setShowManualButton] = useState(false);
   const [processedUrl, setProcessedUrl] = useState("");
-  const [redirectUri, setRedirectUri] = useState<string>("");
+  const [redirectUri, setRedirectUri] = useState("");
 
   // Set up redirect URI once we're on the client side
   useEffect(() => {
-    setRedirectUri(`${window.location.origin}/auth-callback`);
+    // This will only run on the client
+    if (typeof window !== 'undefined') {
+      setRedirectUri(`${window.location.origin}/auth-callback`);
+    }
   }, []);
 
   // Initialize the authorization hook with the callback URL
   const { authUrl, state, expiresAt, isLoading, error, refetch } =
     useAuthorizationUrl({
-      redirectUri: `${window.location.origin}/auth-callback`,
+      redirectUri: redirectUri || '',
       scope: "read, write",
     });
 
   useEffect(() => {
-    if (authUrl) {
+    if (authUrl && typeof window !== 'undefined') {
       const updatedUrl = authUrl.replace("comiccoin_gateway", "127.0.0.1");
       setProcessedUrl(updatedUrl);
       console.log("Attempting redirect to:", updatedUrl);

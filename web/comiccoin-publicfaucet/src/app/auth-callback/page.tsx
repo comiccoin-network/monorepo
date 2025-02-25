@@ -1,13 +1,14 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/auth-callback/page.tsx
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useGetMe } from "@/hooks/useGetMe";
 import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 
-export default function AuthCallback() {
+// Create a client component that uses the search params
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fetchWithAuth = useAuthenticatedFetch();
@@ -143,5 +144,28 @@ export default function AuthCallback() {
         <p className="text-gray-600">Redirecting to dashboard...</p>
       </div>
     </div>
+  );
+}
+
+// Loading fallback for Suspense
+function AuthCallbackLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="relative">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500" />
+        <div className="absolute -bottom-8 left-0 right-0 text-center text-sm text-gray-600">
+          Loading...
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main component with Suspense
+export default function AuthCallback() {
+  return (
+    <Suspense fallback={<AuthCallbackLoading />}>
+      <AuthCallbackContent />
+    </Suspense>
   );
 }
