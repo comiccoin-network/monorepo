@@ -1,9 +1,9 @@
 # DEVELOPERS NOTE:
-# THE PURPOSE OF THIS DOCKERFILE IS TO BUILD THE COMICCOIN-AUTHORITY EXECUTABLE
-# IN A CONTAINER FOR A LINUX ENVIRONMENT USING A AMD64 PROCESSOR CHIPSET. WE
-# PURPOSEFULLY CHOSE THIS ENVIRONMENT / CHIPSET BECAUSE THIS IS THE SAME AS
-# OUR PRIVATE CLOUD HOSTING PROVIDER AS THE PURPOSE OF THIS CONTAINER IS TO
-# RUN IN THEIR INFRASTRUCTURE.
+# THE PURPOSE OF THIS DOCKERFILE IS TO BUILD THE COMICCOIN-MODULAR-MONOLITH
+# EXECUTABLE IN A CONTAINER FOR A LINUX ENVIRONMENT USING A AMD64 PROCESSOR
+# CHIPSET. WE PURPOSEFULLY CHOSE THIS ENVIRONMENT / CHIPSET BECAUSE THIS IS
+# THE SAME AS OUR PRIVATE CLOUD HOSTING PROVIDER AS THE PURPOSE OF THIS
+# CONTAINER IS TO RUN IN THEIR INFRASTRUCTURE.
 
 ###
 ### Build Stage
@@ -32,7 +32,7 @@ COPY . .
 
 # Run command as described:
 # go build will build a 64bit Linux executable binary file named server in the current directory
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o comiccoin-authority .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o comiccoin .
 
 ###
 ### Run stage.
@@ -41,7 +41,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o comiccoin-authority .
 FROM alpine:latest
 
 # Copy only required data into this image
-COPY --from=build-env /app/comiccoin-authority .
+COPY --from=build-env /app/comiccoin .
 
 # Copy all the static content necessary for this application to run.
 COPY --from=build-env /app/static ./static
@@ -49,4 +49,4 @@ COPY --from=build-env /app/static ./static
 EXPOSE 8000
 
 # Run the server executable
-CMD [ "/comiccoin-authority", "daemon"]
+CMD [ "/comiccoin", "daemon"]
