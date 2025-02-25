@@ -1,7 +1,7 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/settings/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMe } from "@/hooks/useMe";
 import { usePutUpdateMe } from "@/hooks/usePutUpdateMe";
@@ -45,7 +45,6 @@ const countries: SelectOption[] = [
   { value: "DE", label: "Germany" },
   { value: "FR", label: "France" },
   { value: "JP", label: "Japan" },
-  // Add more countries as needed
 ];
 
 // Timezone options for dropdown
@@ -62,15 +61,34 @@ const timezones: SelectOption[] = [
   { value: "Europe/London", label: "Greenwich Mean Time (GMT)" },
   { value: "Europe/Berlin", label: "Central European Time (CET)" },
   { value: "Asia/Tokyo", label: "Japan Standard Time (JST)" },
-  // Add more timezones as needed
 ];
 
 export default function Page() {
   const router = useRouter();
-  // From the error, we can see useMe() only returns { user, updateUser, clearUser }
   const { user } = useMe();
+  const formRef = useRef<HTMLFormElement>(null);
 
-  // Instead of using isLoading and error from useMe, manage loading state ourselves
+  // Prevent iOS scroll bounce
+  useEffect(() => {
+    const preventTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+
+    document.body.addEventListener("touchmove", preventTouchMove, {
+      passive: false,
+    });
+
+    document.body.style.overscrollBehavior = "none";
+    document.documentElement.style.overscrollBehavior = "none";
+
+    return () => {
+      document.body.removeEventListener("touchmove", preventTouchMove);
+      document.body.style.overscrollBehavior = "";
+      document.documentElement.style.overscrollBehavior = "";
+    };
+  }, []);
+
+  // Loading state
   const [isUserLoading, setIsUserLoading] = useState(true);
 
   const {
@@ -111,8 +129,6 @@ export default function Page() {
       });
       setIsUserLoading(false);
     } else {
-      // If we've attempted to load user data but it's not available after a short delay,
-      // consider it as "not loading" to potentially show the login message
       const timer = setTimeout(() => {
         setIsUserLoading(false);
       }, 1000);
@@ -125,13 +141,15 @@ export default function Page() {
   useEffect(() => {
     if (isSuccess) {
       setFormMessage("Your settings have been updated successfully!");
-      // Reset success message after a delay
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       const timer = setTimeout(() => {
         reset();
         setFormMessage("");
 
         // Reload the page after successful update to refresh user data
-        // This is a simpler alternative to calling refetch()
         if (typeof window !== "undefined") {
           window.location.reload();
         }
@@ -164,7 +182,6 @@ export default function Page() {
     e.preventDefault();
 
     try {
-      // Prepare data for API
       const apiData = {
         email: formData.email,
         first_name: formData.first_name,
@@ -172,42 +189,55 @@ export default function Page() {
         phone: formData.phone || null,
         country: formData.country || null,
         timezone: formData.timezone,
-        // Note: Don't include wallet_address as it should be updated through a different flow
       };
 
-      // Send update request using our custom hook
       await updateMe(apiData);
-
-      // We'll handle the refresh in the useEffect when isSuccess becomes true
     } catch (err) {
       console.error("Error updating settings:", err);
-      // Error is already handled by the hook
     }
   };
 
   if (isUserLoading) {
-    return <div className="py-8 text-center">Loading your settings...</div>;
+    return (
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse mb-4">
+            <Settings className="h-12 w-12 mx-auto text-purple-300" />
+          </div>
+          <p className="text-gray-600">Loading your settings...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {
     return (
-      <div className="py-8 text-center">
-        Please log in to view your settings.
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Please log in to view your settings.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="py-8">
+    <div
+      className="min-h-screen bg-purple-50 py-4 px-4 touch-manipulation"
+      style={{
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
       {/* Header */}
-      <header className="mb-8">
-        <div className="flex items-center mb-4">
-          <Settings className="h-8 w-8 text-purple-600 mr-3" />
-          <h1 className="text-3xl font-bold text-purple-800">
+      <header className="mb-6">
+        <div className="flex items-center mb-2">
+          <Settings className="h-6 w-6 text-purple-600 mr-2" />
+          <h1 className="text-2xl font-bold text-purple-800">
             Account Settings
           </h1>
         </div>
-        <p className="text-gray-600">
+        <p className="text-xs text-gray-600">
           Manage your profile and account preferences
         </p>
       </header>
@@ -215,7 +245,7 @@ export default function Page() {
       {/* Form Status Message */}
       {(isSuccess || updateError) && formMessage && (
         <div
-          className={`mb-6 p-4 rounded-lg ${
+          className={`mb-4 p-3 rounded-lg ${
             isSuccess
               ? "bg-green-50 border border-green-200"
               : "bg-red-50 border border-red-200"
@@ -223,11 +253,11 @@ export default function Page() {
         >
           <div className="flex items-center">
             {isSuccess ? (
-              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+              <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
             ) : (
-              <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+              <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
             )}
-            <p className={isSuccess ? "text-green-700" : "text-red-700"}>
+            <p className={`text-sm ${isSuccess ? "text-green-700" : "text-red-700"}`}>
               {formMessage}
             </p>
           </div>
@@ -235,251 +265,254 @@ export default function Page() {
       )}
 
       {/* Settings Form */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-purple-100">
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Profile Information Section */}
-            <div className="md:col-span-2">
-              <h2 className="text-xl font-semibold text-purple-800 mb-4 flex items-center">
-                <User className="h-5 w-5 text-purple-600 mr-2" />
-                Profile Information
-              </h2>
-              <div className="border-b border-gray-200 mb-6"></div>
-            </div>
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        className="space-y-6"
+      >
+        {/* Profile Information Section */}
+        <div className="bg-white rounded-xl p-4 shadow-sm">
+          <div className="flex items-center mb-4">
+            <User className="h-5 w-5 text-purple-600 mr-2" />
+            <h2 className="text-base font-semibold text-purple-800">
+              Profile Information
+            </h2>
+          </div>
 
-            {/* Email */}
-            <div className="col-span-1">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Your email address"
-                />
+          {/* Email */}
+          <div className="mb-4">
+            <label
+              htmlFor="email"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              Email Address <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Mail className="h-4 w-4 text-gray-400" />
               </div>
-            </div>
-
-            {/* First Name */}
-            <div className="col-span-1">
-              <label
-                htmlFor="first_name"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                First Name <span className="text-red-500">*</span>
-              </label>
               <input
-                type="text"
-                id="first_name"
-                name="first_name"
+                type="email"
+                id="email"
+                name="email"
                 required
-                value={formData.first_name}
+                value={formData.email}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Your first name"
+                className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Your email address"
               />
-            </div>
-
-            {/* Last Name */}
-            <div className="col-span-1">
-              <label
-                htmlFor="last_name"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Last Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="last_name"
-                name="last_name"
-                required
-                value={formData.last_name}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Your last name"
-              />
-            </div>
-
-            {/* Phone */}
-            <div className="col-span-1">
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Phone Number
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Your phone number (optional)"
-                />
-              </div>
-            </div>
-
-            {/* Location Section */}
-            <div className="md:col-span-2 mt-6">
-              <h2 className="text-xl font-semibold text-purple-800 mb-4 flex items-center">
-                <Globe className="h-5 w-5 text-purple-600 mr-2" />
-                Location Settings
-              </h2>
-              <div className="border-b border-gray-200 mb-6"></div>
-            </div>
-
-            {/* Country */}
-            <div className="col-span-1">
-              <label
-                htmlFor="country"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Country
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Globe className="h-5 w-5 text-gray-400" />
-                </div>
-                <select
-                  id="country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none"
-                >
-                  {countries.map((country) => (
-                    <option key={country.value} value={country.value}>
-                      {country.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Timezone */}
-            <div className="col-span-1">
-              <label
-                htmlFor="timezone"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Timezone <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Clock className="h-5 w-5 text-gray-400" />
-                </div>
-                <select
-                  id="timezone"
-                  name="timezone"
-                  required
-                  value={formData.timezone}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none"
-                >
-                  {timezones.map((timezone) => (
-                    <option key={timezone.value} value={timezone.value}>
-                      {timezone.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Wallet Information Section */}
-            <div className="md:col-span-2 mt-6">
-              <h2 className="text-xl font-semibold text-purple-800 mb-4 flex items-center">
-                <Wallet className="h-5 w-5 text-purple-600 mr-2" />
-                Wallet Information
-              </h2>
-              <div className="border-b border-gray-200 mb-6"></div>
-            </div>
-
-            {/* Wallet Address */}
-            <div className="md:col-span-2">
-              <label
-                htmlFor="wallet_address"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Wallet Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Wallet className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  id="wallet_address"
-                  name="wallet_address"
-                  value={formData.wallet_address}
-                  disabled={true} // Wallet address should not be directly editable
-                  className="w-full pl-10 px-4 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed"
-                />
-              </div>
-              <p className="mt-1 text-sm text-gray-500">
-                Your wallet address is created when you first sign up and cannot
-                be changed through this form.
-              </p>
-            </div>
-
-            {/* Submit Button */}
-            <div className="md:col-span-2 mt-8">
-              <button
-                type="submit"
-                disabled={isUpdating}
-                className="w-full lg:w-auto bg-purple-600 text-white py-2 px-6 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex items-center justify-center disabled:opacity-70"
-              >
-                {isUpdating ? (
-                  <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-5 w-5 mr-2" />
-                    Save Changes
-                  </>
-                )}
-              </button>
             </div>
           </div>
-        </form>
-      </div>
+
+          {/* First Name */}
+          <div className="mb-4">
+            <label
+              htmlFor="first_name"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              First Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="first_name"
+              name="first_name"
+              required
+              value={formData.first_name}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="Your first name"
+            />
+          </div>
+
+          {/* Last Name */}
+          <div className="mb-4">
+            <label
+              htmlFor="last_name"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              Last Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="last_name"
+              name="last_name"
+              required
+              value={formData.last_name}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="Your last name"
+            />
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label
+              htmlFor="phone"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              Phone Number
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Phone className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Your phone number (optional)"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Location Settings Section */}
+        <div className="bg-white rounded-xl p-4 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Globe className="h-5 w-5 text-purple-600 mr-2" />
+            <h2 className="text-base font-semibold text-purple-800">
+              Location Settings
+            </h2>
+          </div>
+
+          {/* Country */}
+          <div className="mb-4">
+            <label
+              htmlFor="country"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              Country
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Globe className="h-4 w-4 text-gray-400" />
+              </div>
+              <select
+                id="country"
+                name="country"
+                value={formData.country}
+                onChange={handleInputChange}
+                className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none"
+              >
+                {countries.map((country) => (
+                  <option key={country.value} value={country.value}>
+                    {country.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Timezone */}
+          <div>
+            <label
+              htmlFor="timezone"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              Timezone <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Clock className="h-4 w-4 text-gray-400" />
+              </div>
+              <select
+                id="timezone"
+                name="timezone"
+                required
+                value={formData.timezone}
+                onChange={handleInputChange}
+                className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none"
+              >
+                {timezones.map((timezone) => (
+                  <option key={timezone.value} value={timezone.value}>
+                    {timezone.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Wallet Information Section */}
+  <div className="bg-white rounded-xl p-4 shadow-sm">
+    <div className="flex items-center mb-4">
+      <Wallet className="h-5 w-5 text-purple-600 mr-2" />
+      <h2 className="text-base font-semibold text-purple-800">
+        Wallet Information
+      </h2>
     </div>
-  );
+
+    {/* Wallet Address */}
+    <div>
+      <label
+        htmlFor="wallet_address"
+        className="block text-xs font-medium text-gray-700 mb-1"
+      >
+        Wallet Address
+      </label>
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Wallet className="h-4 w-4 text-gray-400" />
+        </div>
+        <input
+          type="text"
+          id="wallet_address"
+          name="wallet_address"
+          value={formData.wallet_address}
+          disabled={true}
+          className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed"
+        />
+      </div>
+      <p className="mt-1 text-xs text-gray-500">
+        Your wallet address is created when you first sign up and cannot
+        be changed through this form.
+      </p>
+    </div>
+  </div>
+
+  {/* Submit Button */}
+  <div className="mt-6">
+    <button
+      type="submit"
+      disabled={isUpdating}
+      className="w-full bg-purple-600 text-white py-3 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex items-center justify-center disabled:opacity-70 active:scale-95"
+    >
+      {isUpdating ? (
+        <>
+          <svg
+            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          Saving...
+        </>
+      ) : (
+        <>
+          <Save className="h-5 w-5 mr-2" />
+          Save Changes
+        </>
+      )}
+    </button>
+  </div>
+</form>
+</div>
+);
 }
