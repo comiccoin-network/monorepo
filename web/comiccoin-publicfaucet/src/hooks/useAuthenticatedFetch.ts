@@ -51,13 +51,16 @@ export function useAuthenticatedFetch() {
         throw new Error("No refresh token available");
       }
 
-      const response = await fetch(`${API_CONFIG.baseUrl}/auth/refresh`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${API_CONFIG.baseUrl}/publicfaucet/api/v1/token/refresh`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ refresh_token: refreshToken }),
         },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Token refresh failed");

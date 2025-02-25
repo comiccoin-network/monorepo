@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { CONFIG } from "@/config/env";
 import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
-import { useRefreshToken } from "@/hooks/useRefreshToken";
 
 interface User {
   federatedidentity_id: string;
@@ -27,7 +26,6 @@ interface UseClaimCoinsResult {
 const useClaimCoins = (): UseClaimCoinsResult => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const refreshToken = useRefreshToken();
   const fetchWithAuth = useAuthenticatedFetch();
 
   const claimCoins = async (): Promise<User> => {
