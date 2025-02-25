@@ -12,6 +12,7 @@ import { ClaimsList } from "@/components/dashboard/ClaimsList";
 
 import { useGetDashboard } from "@/hooks/useGetDashboard";
 import { toast } from "sonner";
+import { withAuth } from "@/hocs/withAuth";
 
 // Existing interfaces remain the same
 interface Claim {
@@ -107,7 +108,9 @@ const DashboardPage = () => {
         WebkitOverflowScrolling: "touch", // Enable smooth scrolling on iOS
       }}
     >
-      <div className="max-w-md mx-auto"> {/* Constrain content width */}
+      <div className="max-w-md mx-auto">
+        {" "}
+        {/* Constrain content width */}
         {/* Header with iOS-style design */}
         <header className="mb-6">
           <div className="flex justify-between items-start">
@@ -136,7 +139,6 @@ const DashboardPage = () => {
             </button>
           </div>
         </header>
-
         {/* Balance Cards with iOS-inspired design */}
         <div className="space-y-4 mb-6">
           {/* Faucet Balance Card */}
@@ -178,7 +180,10 @@ const DashboardPage = () => {
                 {dashboard.total_coins_claimed} CC
               </div>
             </div>
-            <TrendingUp className="h-6 w-6 text-purple-600" aria-hidden="true" />
+            <TrendingUp
+              className="h-6 w-6 text-purple-600"
+              aria-hidden="true"
+            />
           </div>
 
           {/* Countdown Timer */}
@@ -189,11 +194,12 @@ const DashboardPage = () => {
             />
           </div>
         </div>
-
         {/* Your Claims Section */}
         <section className="bg-white rounded-xl p-4 shadow-sm mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-purple-800">Your Claims</h2>
+            <h2 className="text-lg font-semibold text-purple-800">
+              Your Claims
+            </h2>
             {dashboard.transactions && dashboard.transactions.length > 0 && (
               <Link
                 href="/user/transactions?filter=personal"
@@ -218,7 +224,10 @@ const DashboardPage = () => {
             ) : (
               <div className="py-8 text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-purple-50">
-                  <Coins className="w-6 h-6 text-purple-600" aria-hidden="true" />
+                  <Coins
+                    className="w-6 h-6 text-purple-600"
+                    aria-hidden="true"
+                  />
                 </div>
                 <h3 className="text-sm font-medium text-gray-900 mb-1">
                   No claims yet
@@ -232,9 +241,10 @@ const DashboardPage = () => {
             )}
           </div>
         </section>
-
         {/* Wallet Section */}
-        <section className="bg-white rounded-xl p-4 shadow-sm mb-20"> {/* Added mb-20 to create bottom padding */}
+        <section className="bg-white rounded-xl p-4 shadow-sm mb-20">
+          {" "}
+          {/* Added mb-20 to create bottom padding */}
           <h2 className="text-lg font-semibold text-purple-800 mb-4">
             Your Wallet
           </h2>
@@ -280,4 +290,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default withAuth(DashboardPage);

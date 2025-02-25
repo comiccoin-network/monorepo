@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { withAuth } from "@/hocs/withAuth";
+
 // Define an interface for the FAQItem props
 interface FAQItemProps {
   question: string;
@@ -67,7 +69,7 @@ interface ContactForm {
   message: string;
 }
 
-export default function Page() {
+function Page() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -266,3 +268,5 @@ export default function Page() {
     </div>
   );
 }
+
+export default withAuth(Page);

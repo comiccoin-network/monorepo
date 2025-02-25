@@ -3,16 +3,25 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/hooks/useAuth";
-import { useMe } from "@/hooks/useMe";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useGetMe } from "@/hooks/useGetMe";
+import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 
 export default function AuthCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setTokens } = useAuthStore();
-  const { updateUser } = useMe(); // We only need updateUser from useMe
-  const { refetch: fetchUserProfile, isLoading } = useGetMe({
+  const fetchWithAuth = useAuthenticatedFetch();
+
+  // Create local storage hooks for tokens
+  const [tokens, setTokens] = useLocalStorage("auth_tokens", {
+    accessToken: null,
+    refreshToken: null,
+    expiresAt: null,
+    federatedidentityID: null,
+  });
+
+  // Use the useGetMe hook with initial disabled state
+  const { user, isLoading, error, refetch } = useGetMe({
     enabled: false,
     should_sync_now: true,
   });
@@ -44,39 +53,33 @@ export default function AuthCallback() {
           hasFederatedIdentityID: !!federatedidentityID,
         });
 
-        if (!accessToken) {
-          throw new Error("Missing access tokens");
-        }
-        if (!refreshToken) {
-          throw new Error("Missing refresh tokens");
-        }
-        if (!expiresAt) {
-          throw new Error("Missing expires at");
-        }
-        if (!federatedidentityID) {
+        // Validation checks
+        if (!accessToken) throw new Error("Missing access tokens");
+        if (!refreshToken) throw new Error("Missing refresh tokens");
+        if (!expiresAt) throw new Error("Missing expires at");
+        if (!federatedidentityID)
           throw new Error("Missing federated identity ID");
-        }
 
-        // Step 2: Store tokens in auth store
+        // Step 2: Store tokens in local storage
         console.log("💾 AUTH CALLBACK: Storing tokens");
         setTokens({
           accessToken,
           refreshToken,
           expiresAt: parseInt(expiresAt, 10),
-          federatedidentityID: federatedidentityID,
+          federatedidentityID,
         });
 
         try {
-          // Step 3: Fetch fresh profile using new tokens
+          // Step 3: Fetch user profile using the pre-configured useGetMe hook
           console.log("👤 AUTH CALLBACK: Fetching latest profile");
-          const userData = await fetchUserProfile();
-          // Step 4: Store user data in local useMe store
-          console.log("📱 AUTH CALLBACK: Updating local user data", {
+          const userData = await refetch();
+
+          // Step 4: Profile fetched successfully
+          console.log("📱 AUTH CALLBACK: User profile retrieved", {
             email: userData.email,
             wallet_address: userData.wallet_address,
           });
-          // Use updateUser from useMe to handle local storage
-          updateUser(userData);
+
           // Step 5: Navigate to dashboard
           console.log("🎯 AUTH CALLBACK: Success - redirecting to dashboard");
           router.replace("/user/dashboard");
@@ -98,17 +101,46 @@ export default function AuthCallback() {
     }
 
     handleAuth();
-  }, [searchParams, setTokens, updateUser, router, fetchUserProfile]);
+  }, [searchParams, router, refetch, setTokens]);
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500" />
+          <div className="absolute -bottom-8 left-0 right-0 text-center text-sm text-gray-600">
+            Fetching your profile...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl text-red-500 mb-4">Authentication Failed</h2>
+          <p className="text-gray-600">{error.message}</p>
+          <button
+            onClick={() => router.replace("/")}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+          >
+            Return to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Successful authentication with user data
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="relative">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500" />
-        <div className="absolute -bottom-8 left-0 right-0 text-center text-sm text-gray-600">
-          {isLoading
-            ? "Fetching your profile..."
-            : "Processing authentication..."}
-        </div>
+      <div className="text-center">
+        <h2 className="text-2xl mb-4">Welcome, {user?.name || "User"}!</h2>
+        <p className="text-gray-600">Redirecting to dashboard...</p>
       </div>
     </div>
   );

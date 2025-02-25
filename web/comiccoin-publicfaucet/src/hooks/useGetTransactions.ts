@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useGetTransactions.ts
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
 import { API_CONFIG } from "@/config/env";
 
@@ -29,13 +29,33 @@ export function useGetTransactions({
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // Use a ref to track mounted state
+  const isMountedRef = useRef(true);
+
+  // Use a ref to prevent multiple simultaneous fetches
+  const isFetchingRef = useRef(false);
+
   const fetchWithAuth = useAuthenticatedFetch();
 
   const fetchTransactions = useCallback(async (): Promise<Transaction[]> => {
+    // Prevent multiple simultaneous fetches
+    if (isFetchingRef.current) {
+      console.log("🚫 TRANSACTIONS FETCH: Already in progress");
+      return transactions;
+    }
+
     try {
       console.log("💼 TRANSACTIONS FETCH: Starting");
 
-      setIsLoading(true);
+      // Mark that a fetch is in progress
+      isFetchingRef.current = true;
+
+      // Only set loading if no transactions exist
+      if (transactions.length === 0) {
+        setIsLoading(true);
+      }
+
       setError(null);
 
       const url = new URL(
@@ -65,8 +85,11 @@ export function useGetTransactions({
         count: validTransactions.length,
       });
 
-      setTransactions(validTransactions);
-      setError(null);
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setTransactions(validTransactions);
+        setError(null);
+      }
 
       return validTransactions;
     } catch (err) {
@@ -76,31 +99,52 @@ export function useGetTransactions({
 
       const error =
         err instanceof Error ? err : new Error("Failed to fetch transactions");
-      setError(error);
-      setTransactions([]);
+
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setError(error);
+        setTransactions([]);
+      }
+
       throw error;
     } finally {
-      setIsLoading(false);
+      // Mark fetch as complete
+      isFetchingRef.current = false;
+
+      // Only set loading to false if component is still mounted
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, [fetchWithAuth]);
+  }, [fetchWithAuth, transactions.length]);
 
   useEffect(() => {
-    if (enabled) {
+    // Reset mounted ref
+    isMountedRef.current = true;
+
+    // Fetch only if enabled and no existing transactions
+    if (enabled && transactions.length === 0) {
       console.log("🔄 TRANSACTIONS FETCH: Auto-fetching on mount");
       fetchTransactions().catch((error) => {
         console.log("❌ TRANSACTIONS FETCH: Auto-fetch failed", error);
-        setIsLoading(false);
       });
     }
-  }, [enabled, fetchTransactions]);
 
-  // Set up interval for periodic refreshing if specified
+    // Cleanup function
+    return () => {
+      // Mark as unmounted
+      isMountedRef.current = false;
+    };
+  }, [enabled, fetchTransactions, transactions.length]);
+
+  // Interval effect with more robust management
   useEffect(() => {
     if (!refreshInterval || !enabled) return;
 
     console.log(
       `⏰ TRANSACTIONS FETCH: Setting up refresh interval of ${refreshInterval}ms`,
     );
+
     const intervalId = setInterval(() => {
       console.log("⏰ TRANSACTIONS FETCH: Refresh interval triggered");
       fetchTransactions().catch((error) => {
@@ -108,6 +152,7 @@ export function useGetTransactions({
       });
     }, refreshInterval);
 
+    // Cleanup interval on unmount or when dependencies change
     return () => {
       console.log("⏰ TRANSACTIONS FETCH: Clearing refresh interval");
       clearInterval(intervalId);

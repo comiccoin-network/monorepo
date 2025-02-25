@@ -17,6 +17,7 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
+import { withAuth } from "@/hocs/withAuth";
 
 // Type definitions for form data
 interface FormData {
@@ -63,7 +64,7 @@ const timezones: SelectOption[] = [
   { value: "Asia/Tokyo", label: "Japan Standard Time (JST)" },
 ];
 
-export default function Page() {
+function Page() {
   const router = useRouter();
   const { user } = useMe();
   const formRef = useRef<HTMLFormElement>(null);
@@ -130,7 +131,7 @@ export default function Page() {
       setFormMessage("Your settings have been updated successfully!");
 
       // Scroll to top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
 
       const timer = setTimeout(() => {
         reset();
@@ -214,7 +215,9 @@ export default function Page() {
         WebkitOverflowScrolling: "touch", // Enable smooth scrolling on iOS
       }}
     >
-      <div className="max-w-md mx-auto"> {/* Added container for better mobile layout */}
+      <div className="max-w-md mx-auto">
+        {" "}
+        {/* Added container for better mobile layout */}
         {/* Header */}
         <header className="mb-6">
           <div className="flex items-center mb-2">
@@ -227,7 +230,6 @@ export default function Page() {
             Manage your profile and account preferences
           </p>
         </header>
-
         {/* Form Status Message */}
         {(isSuccess || updateError) && formMessage && (
           <div
@@ -243,263 +245,262 @@ export default function Page() {
               ) : (
                 <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
               )}
-              <p className={`text-sm ${isSuccess ? "text-green-700" : "text-red-700"}`}>
+              <p
+                className={`text-sm ${isSuccess ? "text-green-700" : "text-red-700"}`}
+              >
                 {formMessage}
               </p>
             </div>
           </div>
         )}
-
         {/* Settings Form */}
-      <form
-        ref={formRef}
-        onSubmit={handleSubmit}
-        className="space-y-6"
-      >
-        {/* Profile Information Section */}
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <div className="flex items-center mb-4">
-            <User className="h-5 w-5 text-purple-600 mr-2" />
-            <h2 className="text-base font-semibold text-purple-800">
-              Profile Information
-            </h2>
-          </div>
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+          {/* Profile Information Section */}
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <div className="flex items-center mb-4">
+              <User className="h-5 w-5 text-purple-600 mr-2" />
+              <h2 className="text-base font-semibold text-purple-800">
+                Profile Information
+              </h2>
+            </div>
 
-          {/* Email */}
-          <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Email Address <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-4 w-4 text-gray-400" />
+            {/* Email */}
+            <div className="mb-4">
+              <label
+                htmlFor="email"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Your email address"
+                />
               </div>
+            </div>
+
+            {/* First Name */}
+            <div className="mb-4">
+              <label
+                htmlFor="first_name"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                First Name <span className="text-red-500">*</span>
+              </label>
               <input
-                type="email"
-                id="email"
-                name="email"
+                type="text"
+                id="first_name"
+                name="first_name"
                 required
-                value={formData.email}
+                value={formData.first_name}
                 onChange={handleInputChange}
-                className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Your email address"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Your first name"
               />
             </div>
-          </div>
 
-          {/* First Name */}
-          <div className="mb-4">
-            <label
-              htmlFor="first_name"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              First Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="first_name"
-              name="first_name"
-              required
-              value={formData.first_name}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Your first name"
-            />
-          </div>
-
-          {/* Last Name */}
-          <div className="mb-4">
-            <label
-              htmlFor="last_name"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Last Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="last_name"
-              name="last_name"
-              required
-              value={formData.last_name}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Your last name"
-            />
-          </div>
-
-          {/* Phone */}
-          <div>
-            <label
-              htmlFor="phone"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Phone Number
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Phone className="h-4 w-4 text-gray-400" />
-              </div>
+            {/* Last Name */}
+            <div className="mb-4">
+              <label
+                htmlFor="last_name"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                Last Name <span className="text-red-500">*</span>
+              </label>
               <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
+                type="text"
+                id="last_name"
+                name="last_name"
+                required
+                value={formData.last_name}
                 onChange={handleInputChange}
-                className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Your phone number (optional)"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Your last name"
               />
             </div>
-          </div>
-        </div>
 
-        {/* Location Settings Section */}
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <div className="flex items-center mb-4">
-            <Globe className="h-5 w-5 text-purple-600 mr-2" />
-            <h2 className="text-base font-semibold text-purple-800">
-              Location Settings
-            </h2>
-          </div>
-
-          {/* Country */}
-          <div className="mb-4">
-            <label
-              htmlFor="country"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Country
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Globe className="h-4 w-4 text-gray-400" />
-              </div>
-              <select
-                id="country"
-                name="country"
-                value={formData.country}
-                onChange={handleInputChange}
-                className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none"
+            {/* Phone */}
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-xs font-medium text-gray-700 mb-1"
               >
-                {countries.map((country) => (
-                  <option key={country.value} value={country.value}>
-                    {country.label}
-                  </option>
-                ))}
-              </select>
+                Phone Number
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Phone className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Your phone number (optional)"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Timezone */}
-          <div>
-            <label
-              htmlFor="timezone"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Timezone <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Clock className="h-4 w-4 text-gray-400" />
-              </div>
-              <select
-                id="timezone"
-                name="timezone"
-                required
-                value={formData.timezone}
-                onChange={handleInputChange}
-                className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none"
+          {/* Location Settings Section */}
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <div className="flex items-center mb-4">
+              <Globe className="h-5 w-5 text-purple-600 mr-2" />
+              <h2 className="text-base font-semibold text-purple-800">
+                Location Settings
+              </h2>
+            </div>
+
+            {/* Country */}
+            <div className="mb-4">
+              <label
+                htmlFor="country"
+                className="block text-xs font-medium text-gray-700 mb-1"
               >
-                {timezones.map((timezone) => (
-                  <option key={timezone.value} value={timezone.value}>
-                    {timezone.label}
-                  </option>
-                ))}
-              </select>
+                Country
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Globe className="h-4 w-4 text-gray-400" />
+                </div>
+                <select
+                  id="country"
+                  name="country"
+                  value={formData.country}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none"
+                >
+                  {countries.map((country) => (
+                    <option key={country.value} value={country.value}>
+                      {country.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Timezone */}
+            <div>
+              <label
+                htmlFor="timezone"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                Timezone <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Clock className="h-4 w-4 text-gray-400" />
+                </div>
+                <select
+                  id="timezone"
+                  name="timezone"
+                  required
+                  value={formData.timezone}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none"
+                >
+                  {timezones.map((timezone) => (
+                    <option key={timezone.value} value={timezone.value}>
+                      {timezone.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Wallet Information Section */}
-  <div className="bg-white rounded-xl p-4 shadow-sm">
-    <div className="flex items-center mb-4">
-      <Wallet className="h-5 w-5 text-purple-600 mr-2" />
-      <h2 className="text-base font-semibold text-purple-800">
-        Wallet Information
-      </h2>
-    </div>
+          {/* Wallet Information Section */}
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <div className="flex items-center mb-4">
+              <Wallet className="h-5 w-5 text-purple-600 mr-2" />
+              <h2 className="text-base font-semibold text-purple-800">
+                Wallet Information
+              </h2>
+            </div>
 
-    {/* Wallet Address */}
-    <div>
-      <label
-        htmlFor="wallet_address"
-        className="block text-xs font-medium text-gray-700 mb-1"
-      >
-        Wallet Address
-      </label>
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Wallet className="h-4 w-4 text-gray-400" />
-        </div>
-        <input
-          type="text"
-          id="wallet_address"
-          name="wallet_address"
-          value={formData.wallet_address}
-          disabled={true}
-          className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed"
-        />
-      </div>
-      <p className="mt-1 text-xs text-gray-500">
-        Your wallet address is created when you first sign up and cannot
-        be changed through this form.
-      </p>
-    </div>
-  </div>
+            {/* Wallet Address */}
+            <div>
+              <label
+                htmlFor="wallet_address"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                Wallet Address
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Wallet className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="wallet_address"
+                  name="wallet_address"
+                  value={formData.wallet_address}
+                  disabled={true}
+                  className="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed"
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Your wallet address is created when you first sign up and cannot
+                be changed through this form.
+              </p>
+            </div>
+          </div>
 
-  {/* Submit Button */}
-  <div className="mt-6">
-    <button
-      type="submit"
-      disabled={isUpdating}
-      className="w-full bg-purple-600 text-white py-3 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex items-center justify-center disabled:opacity-70 active:scale-95"
-    >
-      {isUpdating ? (
-        <>
-          <svg
-            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
-          Saving...
-        </>
-      ) : (
-        <>
-          <Save className="h-5 w-5 mr-2" />
-          Save Changes
-        </>
-      )}
-    </button>
-  </div>
-</form>
+          {/* Submit Button */}
+          <div className="mt-6">
+            <button
+              type="submit"
+              disabled={isUpdating}
+              className="w-full bg-purple-600 text-white py-3 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex items-center justify-center disabled:opacity-70 active:scale-95"
+            >
+              {isUpdating ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-5 w-5 mr-2" />
+                  Save Changes
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 }
+
+export default withAuth(Page);

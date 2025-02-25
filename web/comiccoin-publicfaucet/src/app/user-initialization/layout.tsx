@@ -3,7 +3,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/hooks/useAuth";
 
 export default function UserInitializationLayout({
   children,
@@ -11,16 +10,15 @@ export default function UserInitializationLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      console.log(
-        "❌ Kicking user off `/user-initialization` into `/get-started` page.",
-      );
-      router.push("/get-started");
-    }
-  }, [isAuthenticated, router]);
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     console.log(
+  //       "❌ Kicking user off `/user-initialization` into `/get-started` page.",
+  //     );
+  //     router.push("/get-started");
+  //   }
+  // }, [isAuthenticated, router]);
 
   // Optimized layout for better mobile support
   return (

@@ -18,6 +18,8 @@ import {
   Shield,
 } from "lucide-react";
 
+import { withAuth } from "@/hocs/withAuth";
+
 // Add interface for ConfirmationModal props
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -91,7 +93,7 @@ const ConfirmationModal = ({
   );
 };
 
-export default function AddMyWalletAddressPage() {
+function AddMyWalletAddressPage() {
   const router = useRouter();
   const { user, updateUser } = useMe();
   const {
@@ -374,3 +376,5 @@ export default function AddMyWalletAddressPage() {
     </>
   );
 }
+
+export default withAuth(AddMyWalletAddressPage);

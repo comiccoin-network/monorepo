@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Coins, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 
+import { withAuth } from "@/hocs/withAuth";
 import { useGetTransactions, Transaction } from "@/hooks/useGetTransactions";
 
 // Define valid sorting fields as a subset of keys from Transaction
@@ -26,7 +27,9 @@ const TransactionsPage = () => {
     field: "timestamp",
     direction: "desc",
   });
-  const [expandedTransaction, setExpandedTransaction] = useState<string | null>(null);
+  const [expandedTransaction, setExpandedTransaction] = useState<string | null>(
+    null,
+  );
 
   // Prevent iOS scroll bounce
   useEffect(() => {
@@ -89,7 +92,7 @@ const TransactionsPage = () => {
   // Handle transaction expansion
   const toggleTransactionExpand = (transactionId: string) => {
     setExpandedTransaction(
-      expandedTransaction === transactionId ? null : transactionId
+      expandedTransaction === transactionId ? null : transactionId,
     );
   };
 
@@ -159,9 +162,7 @@ const TransactionsPage = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <h1 className="text-2xl font-bold text-purple-800">
-              Transactions
-            </h1>
+            <h1 className="text-2xl font-bold text-purple-800">Transactions</h1>
           </div>
           <p className="text-xs text-gray-600 mt-1">
             Your ComicCoin transaction history
@@ -247,4 +248,4 @@ const TransactionsPage = () => {
   );
 };
 
-export default TransactionsPage;
+export default withAuth(TransactionsPage);
