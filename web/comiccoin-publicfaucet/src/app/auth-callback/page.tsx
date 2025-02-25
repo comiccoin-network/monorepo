@@ -7,14 +7,22 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useGetMe } from "@/hooks/useGetMe";
 import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch";
 
+// Define the token interface for better type safety
+interface AuthTokens {
+  accessToken: string | null;
+  refreshToken: string | null;
+  expiresAt: number | null;
+  federatedidentityID: string | null;
+}
+
 // Create a client component that uses the search params
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fetchWithAuth = useAuthenticatedFetch();
 
-  // Create local storage hooks for tokens
-  const [tokens, setTokens] = useLocalStorage("auth_tokens", {
+  // Create local storage hooks for tokens with proper typing
+  const [tokens, setTokens] = useLocalStorage<AuthTokens>("auth_tokens", {
     accessToken: null,
     refreshToken: null,
     expiresAt: null,

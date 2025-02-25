@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useGetDashboard.ts
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { API_CONFIG } from "@/config/env";
 import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
 
@@ -8,7 +8,6 @@ type BigIntString = string;
 
 // Type for transaction data
 interface TransactionDTO {
-  // Add transaction fields based on your needs
   id: string;
   // ... other transaction fields
 }
@@ -35,19 +34,18 @@ interface UseGetDashboardReturn {
   dashboard: DashboardDTO | null;
   isLoading: boolean;
   error: Error | null;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<DashboardDTO | null>;
 }
 
 /**
- * Custom hook to fetch dashboard data for a specific chain ID
- *
- * @param options - Configuration options for the hook
- * @returns Object containing dashboard data, loading state, error state, and refetch function
+ * Custom hook to fetch dashboard data
  */
 export function useGetDashboard(
-  options: UseGetDashboardOptions = {},
+  options: UseGetDashboardOptions = {}
 ): UseGetDashboardReturn {
-  const { enabled = true, refreshInterval = 0 } = options;
+  // Extract options with defaults
+  const enabled = options.enabled !== false; // Default to true if not explicitly set to false
+  const refreshInterval = options.refreshInterval || 0;
 
   const [dashboard, setDashboard] = useState<DashboardDTO | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,69 +53,79 @@ export function useGetDashboard(
 
   const fetchWithAuth = useAuthenticatedFetch();
 
-  const fetchDashboardData = async () => {
+  // Store the latest fetchWithAuth function
+  const fetchWithAuthRef = useRef(fetchWithAuth);
+  useEffect(() => {
+    fetchWithAuthRef.current = fetchWithAuth;
+  }, [fetchWithAuth]);
+
+  // Store the enabled state and refresh interval
+  const enabledRef = useRef(enabled);
+  const refreshIntervalRef = useRef(refreshInterval);
+
+  useEffect(() => {
+    enabledRef.current = enabled;
+    refreshIntervalRef.current = refreshInterval;
+  }, [enabled, refreshInterval]);
+
+  const fetchDashboardData = useCallback(async (): Promise<DashboardDTO | null> => {
     try {
-      console.log(`🔄 Fetching dashboard data.`);
       setIsLoading(true);
       setError(null);
 
-      const response = await fetchWithAuth(
+      const response = await fetchWithAuthRef.current(
         `${API_CONFIG.baseUrl}/publicfaucet/api/v1/dashboard`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (!response.ok) {
-        throw new Error(
-          `Failed to fetch dashboard data: ${response.statusText}`,
-        );
+        throw new Error(`Failed to fetch dashboard data: ${response.statusText}`);
       }
 
       const data: DashboardDTO = await response.json();
-      console.log("✅ Dashboard data received:", {
-        faucetBalance: data.faucet_balance,
-        userBalance: data.user_balance,
-        totalClaimed: data.total_coins_claimed,
-        transactionCount: data.transactions.length,
-      });
-
       setDashboard(data);
       setError(null);
+      return data;
     } catch (err) {
-      console.error("❌ Error fetching dashboard data:", err);
-      setError(
-        err instanceof Error
-          ? err
-          : new Error("Failed to fetch dashboard data"),
-      );
+      const errorObj = err instanceof Error
+        ? err
+        : new Error("Failed to fetch dashboard data");
+
+      setError(errorObj);
       setDashboard(null);
+      return null;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []); // No dependencies, we use refs instead
 
+  // Set up the initial fetch and interval
   useEffect(() => {
     if (!enabled) {
-      console.log("⏸️ Dashboard data fetch disabled");
       return;
     }
 
+    // Initial fetch
     fetchDashboardData();
 
+    // Set up interval if needed
     if (refreshInterval > 0) {
-      console.log(`⏰ Setting up refresh interval: ${refreshInterval}ms`);
-      const intervalId = setInterval(fetchDashboardData, refreshInterval);
+      const intervalId = setInterval(() => {
+        if (enabledRef.current) {
+          fetchDashboardData();
+        }
+      }, refreshInterval);
 
       return () => {
-        console.log("🧹 Cleaning up refresh interval");
         clearInterval(intervalId);
       };
     }
-  }, [enabled, refreshInterval]);
+  }, [enabled, refreshInterval, fetchDashboardData]);
 
   return {
     dashboard,
@@ -126,47 +134,3 @@ export function useGetDashboard(
     refetch: fetchDashboardData,
   };
 }
-
-// Example usage:
-/*
-import { useGetDashboard } from '@/hooks/useGetDashboard';
-
-function DashboardInfo({ chainId }: { chainId: number }) {
-  const {
-    dashboard,
-    isLoading,
-    error,
-    refetch
-  } = useGetDashboard(chainId, {
-    enabled: true,
-    refreshInterval: 30000 // Refresh every 30 seconds
-  });
-
-  if (isLoading) {
-    return <div>Loading dashboard data...</div>;
-  }
-
-  if (error) {
-    return (
-      <div>
-        <p>Error: {error.message}</p>
-        <button onClick={refetch}>Try Again</button>
-      </div>
-    );
-  }
-
-  if (!dashboard) {
-    return <div>No dashboard data available</div>;
-  }
-
-  return (
-    <div>
-      <h2>Dashboard Info for Chain {dashboard.chain_id}</h2>
-      <p>Faucet Balance: {dashboard.faucet_balance}</p>
-      <p>Your Balance: {dashboard.user_balance}</p>
-      <p>Total Claimed: {dashboard.total_coins_claimed}</p>
-      <p>Recent Transactions: {dashboard.transactions.length}</p>
-    </div>
-  );
-}
-*/

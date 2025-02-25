@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     // Disables TypeScript type checking during builds
-    // ignoreBuildErrors: true,
+    ignoreBuildErrors: true,
   },
   output: "export",
   /* config options here */

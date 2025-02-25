@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useMe } from "@/hooks/useMe";
 import { RequireWallet } from "@/components/RequireWallet";
+import TokenStorage from "@/utils/tokenStorage"; // Import the TokenStorage utility
 
 // Define interface for SignOutModal props
 interface SignOutModalProps {
@@ -173,8 +174,8 @@ function UserLayout({ children }: { children: React.ReactNode }) {
     try {
       setIsLoggingOut(true);
 
-      // Execute logout from auth store
-      clearTokens(); // Changed from logout() to clearTokens()
+      // Execute logout from auth store using the imported TokenStorage utility
+      TokenStorage.clearTokens(); // Now properly using TokenStorage.clearTokens()
 
       // Additional cleanup if needed
       localStorage.removeItem("user_preferences");

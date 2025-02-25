@@ -86,14 +86,16 @@ export function useGetFaucet(
         );
       }
 
-      // Set up API URL safely
-      let apiUrl = "";
-      try {
-        apiUrl = `${API_CONFIG.baseUrl}/publicfaucet/api/v1/faucet/${chainId}`;
-      } catch (e) {
-        console.error("❌ Error constructing API URL:", e);
-        throw new Error("Configuration error. Please try again later.");
+      // Get the API base URL from the config
+      // This will now properly use the env variables based on the environment (dev/prod)
+      const baseUrl = API_CONFIG.baseUrl;
+
+      if (!baseUrl) {
+        throw new Error("API base URL is not configured properly.");
       }
+
+      const apiUrl = `${baseUrl}/publicfaucet/api/v1/faucet/${chainId}`;
+      console.log(`📡 Connecting to API: ${apiUrl}`);
 
       // Set timeout for the fetch to prevent hanging
       const controller = new AbortController();
@@ -147,8 +149,8 @@ export function useGetFaucet(
         err instanceof Error ? err : new Error("Failed to fetch faucet data"),
       );
 
-      // Use fallback data in production environments after a short delay
-      if (useFallbackOnError && process.env.NODE_ENV === "production") {
+      // Use fallback data if the option is enabled
+      if (useFallbackOnError) {
         setTimeout(() => {
           console.log("Using fallback data due to API error");
           setFaucet(fallbackData);
