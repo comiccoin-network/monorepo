@@ -38,7 +38,7 @@ export default function RegisterCanceledPage() {
                 Return Home
               </button>
               <button
-                onClick={() => router.push("/register-launchpad")}
+                onClick={() => router.push("/register-call")}
                 className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg flex items-center justify-center gap-2 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -48,7 +48,7 @@ export default function RegisterCanceledPage() {
 
             {/* Additional context */}
             <p className="text-sm text-gray-500 mt-6">
-              Need help? Contact our support team at support@comiccoin.com
+              Need help? Contact our support team at hello@comiccoin.com
             </p>
           </div>
         </div>

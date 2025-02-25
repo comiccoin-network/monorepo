@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/register-launchpad/page.tsx
+// github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/register-call/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
