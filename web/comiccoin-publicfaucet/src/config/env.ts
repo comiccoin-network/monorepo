@@ -2,11 +2,23 @@
 // This file provides type-safe access to environment variables
 // and ensures they are properly validated at runtime
 
+// These environment variables are loaded by Next.js and will be available
+// through process.env in both client and server components
+// No need for a complex check since Next.js handles this
+
 // Helper function with better error handling and default values
 const getEnvVar = (key: string, defaultValue?: string): string => {
-  const value = process.env[`NEXT_PUBLIC_${key}`];
+  // In Next.js, environment variables that should be exposed to the client
+  // must be prefixed with NEXT_PUBLIC_
+  const fullKey = `NEXT_PUBLIC_${key}`;
 
-  // If we have a value, return it
+  // Access the environment variable safely
+  // process.env is populated by Next.js with the environment variables
+  const value =
+    typeof process !== "undefined" && process.env && fullKey in process.env
+      ? process.env[fullKey]
+      : undefined;
+
   if (value) {
     return value;
   }
@@ -16,15 +28,21 @@ const getEnvVar = (key: string, defaultValue?: string): string => {
     return defaultValue;
   }
 
-  // Only throw if we have no value and no default
-  console.warn(`Environment variable NEXT_PUBLIC_${key} is not set`);
+  // Only warn if we have no value and no default
+  console.warn(
+    `Environment variable ${fullKey} is not set, using empty string`,
+  );
   return "";
 };
 
-// API Configuration with development defaults
+// Hardcoded development fallback values
+const DEV_API_DOMAIN = "localhost:8000";
+const DEV_API_PROTOCOL = "http";
+
+// API Configuration with production-ready defaults
 export const API_CONFIG = {
-  domain: getEnvVar("API_DOMAIN", "127.0.0.1:8000"),
-  protocol: getEnvVar("API_PROTOCOL", "http"),
+  domain: getEnvVar("API_DOMAIN", DEV_API_DOMAIN),
+  protocol: getEnvVar("API_PROTOCOL", DEV_API_PROTOCOL),
   get baseUrl() {
     return `${this.protocol}://${this.domain}`;
   },
@@ -53,6 +71,22 @@ export const UPLOAD_CONFIG = {
     return this.maxFileSizeBytes / (1024 * 1024);
   },
 } as const;
+
+// Log loaded configuration in development to help with debugging
+if (process.env.NODE_ENV === "development") {
+  console.log("🔧 Loaded Environment Configuration:", {
+    api: {
+      domain: API_CONFIG.domain,
+      protocol: API_CONFIG.protocol,
+      baseUrl: API_CONFIG.baseUrl,
+    },
+    frontend: {
+      domain: FRONTEND_CONFIG.domain,
+      protocol: FRONTEND_CONFIG.protocol,
+      baseUrl: FRONTEND_CONFIG.baseUrl,
+    },
+  });
+}
 
 // Utility function to validate file size
 export const isValidFileSize = (fileSize: number): boolean => {

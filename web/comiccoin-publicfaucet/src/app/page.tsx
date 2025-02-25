@@ -18,98 +18,17 @@ import {
   BookOpen,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { API_CONFIG } from "@/config/env";
+import { useGetFaucet } from "@/hooks/useGetFaucet";
 
 const FaucetPage = () => {
   const currentYear = new Date().getFullYear();
 
-  // Define types for faucet data
-  type BigIntString = string;
-
-  interface FaucetDTO {
-    id: string;
-    chain_id: number;
-    balance: BigIntString;
-    users_count: number;
-    total_coins_distributed: BigIntString;
-    total_transactions: number;
-    distribution_rate_per_day: number;
-    total_coins_distributed_today: number;
-    total_transactions_today: number;
-    created_at?: string;
-    last_modified_at?: string;
-    daily_coins_reward: number;
-  }
-
-  // Set up state for faucet data
-  const [faucet, setFaucet] = useState<FaucetDTO | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  // Chain ID for the ComicCoin network
-  const chainId = 1;
-
-  // Function to fetch faucet data
-  const fetchFaucetData = async () => {
-    try {
-      console.log(`🔄 Fetching faucet data for chain ID: ${chainId}`);
-      setIsLoading(true);
-      setError(null);
-
-      const response = await fetch(
-        `${API_CONFIG.baseUrl}/publicfaucet/api/v1/faucet/${chainId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch faucet data: ${response.statusText}`);
-      }
-
-      const data: FaucetDTO = await response.json();
-      console.log("✅ Faucet data received:", {
-        chainId: data.chain_id,
-        balance: data.balance,
-        usersCount: data.users_count,
-      });
-
-      setFaucet(data);
-      setError(null);
-    } catch (err) {
-      console.error("❌ Error fetching faucet data:", err);
-      setError(
-        err instanceof Error ? err : new Error("Failed to fetch faucet data"),
-      );
-      setFaucet(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Set up initial fetch and refresh interval
-  useEffect(() => {
-    // Initial fetch
-    fetchFaucetData();
-
-    // Set up 60-second refresh interval
-    const refreshInterval = 60000;
-    console.log(`⏰ Setting up refresh interval: ${refreshInterval}ms`);
-    const intervalId = setInterval(fetchFaucetData, refreshInterval);
-
-    // Cleanup interval on unmount
-    return () => {
-      console.log("🧹 Cleaning up refresh interval");
-      clearInterval(intervalId);
-    };
-  }, [chainId]);
-
-  // Function to manually refresh data
-  const refetch = fetchFaucetData;
+  // Use the hook with chainId 1 (ComicCoin network)
+  // Refresh data every 60 seconds
+  const { faucet, isLoading, error, refetch } = useGetFaucet(1, {
+    enabled: true,
+    refreshInterval: 60000,
+  });
 
   // Format balance for display
   const formatBalance = (balanceStr: string | undefined) => {
@@ -176,8 +95,8 @@ const FaucetPage = () => {
                     </div>
                   ) : error ? (
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-red-300">
-                        Error
+                      <p className="text-xl sm:text-2xl font-bold text-red-300">
+                        {error.message || "Error loading data"}
                       </p>
                       <button
                         onClick={refetch}
@@ -358,7 +277,7 @@ const FaucetPage = () => {
                   {isLoading ? (
                     <RefreshCw className="h-6 w-6 inline-block animate-spin text-purple-400" />
                   ) : error ? (
-                    "Error"
+                    "—"
                   ) : (
                     <>{faucet?.users_count?.toLocaleString() || "0"}+</>
                   )}
@@ -372,7 +291,7 @@ const FaucetPage = () => {
                   {isLoading ? (
                     <RefreshCw className="h-6 w-6 inline-block animate-spin text-purple-400" />
                   ) : error ? (
-                    "Error"
+                    "—"
                   ) : (
                     <>{formatBalance(faucet?.total_coins_distributed)}+</>
                   )}
@@ -386,7 +305,7 @@ const FaucetPage = () => {
                   {isLoading ? (
                     <RefreshCw className="h-6 w-6 inline-block animate-spin text-purple-400" />
                   ) : error ? (
-                    "Error"
+                    "—"
                   ) : (
                     <>{faucet?.distribution_rate_per_day}/day</>
                   )}

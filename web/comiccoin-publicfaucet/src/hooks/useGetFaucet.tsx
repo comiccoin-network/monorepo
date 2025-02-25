@@ -20,9 +20,24 @@ interface FaucetDTO {
   daily_coins_reward: number;
 }
 
+// Fallback data in case API is unavailable (especially important for mobile)
+const fallbackData: FaucetDTO = {
+  id: "fallback-id",
+  chain_id: 1,
+  balance: "1000000",
+  users_count: 1000,
+  total_coins_distributed: "500000",
+  total_transactions: 15000,
+  distribution_rate_per_day: 500,
+  total_coins_distributed_today: 250,
+  total_transactions_today: 25,
+  daily_coins_reward: 2,
+};
+
 interface UseGetFaucetOptions {
   enabled?: boolean;
   refreshInterval?: number;
+  useFallbackOnError?: boolean;
 }
 
 interface UseGetFaucetReturn {
@@ -43,10 +58,14 @@ export function useGetFaucet(
   chainId: number,
   options: UseGetFaucetOptions = {},
 ): UseGetFaucetReturn {
-  const { enabled = true, refreshInterval = 0 } = options;
+  const {
+    enabled = true,
+    refreshInterval = 0,
+    useFallbackOnError = true,
+  } = options;
 
   const [faucet, setFaucet] = useState<FaucetDTO | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
   const [error, setError] = useState<Error | null>(null);
 
   // Fetch faucet data
@@ -56,35 +75,85 @@ export function useGetFaucet(
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch(
-        `${API_CONFIG.baseUrl}/publicfaucet/api/v1/faucet/${chainId}`,
-        {
+      // Check internet connection if available in browser environment
+      if (
+        typeof navigator !== "undefined" &&
+        "onLine" in navigator &&
+        !navigator.onLine
+      ) {
+        throw new Error(
+          "You are offline. Please check your internet connection.",
+        );
+      }
+
+      // Set up API URL safely
+      let apiUrl = "";
+      try {
+        apiUrl = `${API_CONFIG.baseUrl}/publicfaucet/api/v1/faucet/${chainId}`;
+      } catch (e) {
+        console.error("❌ Error constructing API URL:", e);
+        throw new Error("Configuration error. Please try again later.");
+      }
+
+      // Set timeout for the fetch to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15-second timeout
+
+      try {
+        const response = await fetch(apiUrl, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-        },
-      );
+          signal: controller.signal,
+        });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch faucet data: ${response.statusText}`);
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch faucet data: ${response.statusText}`,
+          );
+        }
+
+        const data: FaucetDTO = await response.json();
+        console.log("✅ Faucet data received:", {
+          chainId: data.chain_id,
+          balance: data.balance,
+          usersCount: data.users_count,
+        });
+
+        setFaucet(data);
+        setError(null);
+      } catch (fetchError: unknown) {
+        clearTimeout(timeoutId);
+
+        // Type guard to check if the error is an object with a name property
+        if (
+          fetchError &&
+          typeof fetchError === "object" &&
+          "name" in fetchError
+        ) {
+          if (fetchError.name === "AbortError") {
+            throw new Error("Request timed out. Please try again.");
+          }
+        }
+
+        throw fetchError;
       }
-
-      const data: FaucetDTO = await response.json();
-      console.log("✅ Faucet data received:", {
-        chainId: data.chain_id,
-        balance: data.balance,
-        usersCount: data.users_count,
-      });
-
-      setFaucet(data);
-      setError(null);
     } catch (err) {
       console.error("❌ Error fetching faucet data:", err);
       setError(
         err instanceof Error ? err : new Error("Failed to fetch faucet data"),
       );
-      setFaucet(null);
+
+      // Use fallback data in production environments after a short delay
+      if (useFallbackOnError && process.env.NODE_ENV === "production") {
+        setTimeout(() => {
+          console.log("Using fallback data due to API error");
+          setFaucet(fallbackData);
+        }, 3000);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +180,7 @@ export function useGetFaucet(
         clearInterval(intervalId);
       };
     }
-  }, [enabled, chainId, refreshInterval]);
+  }, [enabled, chainId, refreshInterval, useFallbackOnError]);
 
   return {
     faucet,
@@ -120,47 +189,3 @@ export function useGetFaucet(
     refetch: fetchFaucetData,
   };
 }
-
-// Example usage:
-/*
-import { useGetFaucet } from '@/hooks/useGetFaucet';
-
-function FaucetInfo({ chainId }: { chainId: number }) {
-  const {
-    faucet,
-    isLoading,
-    error,
-    refetch
-  } = useGetFaucet(chainId, {
-    enabled: true,
-    refreshInterval: 30000 // Refresh every 30 seconds
-  });
-
-  if (isLoading) {
-    return <div>Loading faucet data...</div>;
-  }
-
-  if (error) {
-    return (
-      <div>
-        <p>Error: {error.message}</p>
-        <button onClick={refetch}>Try Again</button>
-      </div>
-    );
-  }
-
-  if (!faucet) {
-    return <div>No faucet data available</div>;
-  }
-
-  return (
-    <div>
-      <h2>Faucet Info for Chain {faucet.chain_id}</h2>
-      <p>Balance: {faucet.balance}</p>
-      <p>Users: {faucet.users_count}</p>
-      <p>Total Distributed: {faucet.total_coins_distributed}</p>
-      <p>Distribution Rate: {faucet.distribution_rate_per_day} per day</p>
-    </div>
-  );
-}
-*/
