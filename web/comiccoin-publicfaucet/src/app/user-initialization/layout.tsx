@@ -22,10 +22,10 @@ export default function UserInitializationLayout({
     }
   }, [isAuthenticated, router]);
 
-  // Return just the content, not a full HTML document
+  // Optimized layout for better mobile support
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-purple-50 flex flex-col items-center justify-center p-4">
-      {children}
+    <div className="min-h-screen bg-purple-50 flex flex-col items-center justify-center px-4 py-6 sm:py-8 md:p-4 overflow-auto">
+      <div className="w-full max-w-2xl">{children}</div>
     </div>
   );
 }

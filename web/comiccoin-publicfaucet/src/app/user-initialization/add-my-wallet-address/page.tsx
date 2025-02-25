@@ -36,17 +36,17 @@ const ConfirmationModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl max-w-md w-full p-6 relative">
+      <div className="bg-white rounded-xl max-w-md w-full p-4 sm:p-6 relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-600"
         >
           <X className="h-5 w-5" />
         </button>
 
-        <div className="mb-6 text-center">
-          <Shield className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-gray-900 mb-2">
+        <div className="mb-4 sm:mb-6 text-center">
+          <Shield className="h-10 w-10 sm:h-12 sm:w-12 text-purple-600 mx-auto mb-3 sm:mb-4" />
+          <h3 className="text-lg font-bold text-gray-900 mb-1 sm:mb-2">
             Confirm Your Wallet
           </h3>
           <p className="text-sm text-gray-600">
@@ -54,13 +54,13 @@ const ConfirmationModal = ({
           </p>
         </div>
 
-        <div className="bg-purple-50 p-4 rounded-lg mb-6">
+        <div className="bg-purple-50 p-3 sm:p-4 rounded-lg mb-4 sm:mb-6">
           <p className="font-mono text-sm text-purple-800 break-all">
             {walletAddress}
           </p>
         </div>
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
           <div className="flex gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div>
@@ -72,16 +72,16 @@ const ConfirmationModal = ({
           </div>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-3 sm:gap-4">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            className="flex-1 px-3 sm:px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm sm:text-base"
           >
             Double-check
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            className="flex-1 px-3 sm:px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm sm:text-base"
           >
             Confirm Address
           </button>
@@ -105,28 +105,7 @@ export default function AddMyWalletAddressPage() {
 
   // Handle initial authentication check and redirection
   useEffect(() => {
-    //   const checkUserWallet = async () => {
-    //     try {
-    //       // Only redirect if user exists and already has a wallet
-    //       if (user && user.wallet_address) {
-    //         console.log("🔄 User already has a wallet, redirecting to dashboard");
-    //         await router.replace("/user/dashboard");
-    //         return;
-    //       }
-
-    //       // Log the current state for debugging
-    //       console.log("👤 User wallet status:", {
-    //         hasUser: !!user,
-    //         hasWallet: user?.wallet_address,
-    //       });
-    //     } catch (error) {
-    //       console.error("❌ Error during initialization:", error);
-    //     } finally {
     setIsInitializing(false);
-    //     }
-    //   };
-
-    //   checkUserWallet();
   }, [user, router]);
 
   // Don't render the main content while checking user status
@@ -134,7 +113,7 @@ export default function AddMyWalletAddressPage() {
     return (
       <div className="min-h-screen bg-purple-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-purple-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading your account...</p>
         </div>
       </div>
@@ -183,12 +162,12 @@ export default function AddMyWalletAddressPage() {
   return (
     <>
       {/* Simple Navigation */}
-      <nav className="bg-white border-b border-purple-100">
+      <nav className="bg-white border-b border-purple-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
+          <div className="flex justify-between h-14 sm:h-16 items-center">
             <div className="flex items-center">
-              <Coins className="h-8 w-8 text-purple-600" />
-              <span className="ml-2 text-xl font-bold text-purple-800">
+              <Coins className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+              <span className="ml-2 text-lg sm:text-xl font-bold text-purple-800 truncate">
                 ComicCoin Faucet
               </span>
             </div>
@@ -196,102 +175,108 @@ export default function AddMyWalletAddressPage() {
         </div>
       </nav>
 
-      <div className="min-h-[calc(100vh-4rem)] bg-purple-50 flex flex-col items-center justify-center p-4">
-        <div className="max-w-2xl w-full space-y-6">
+      <div className="min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] bg-purple-50 flex flex-col py-4 px-3 sm:p-4 overflow-auto">
+        <div className="max-w-2xl w-full mx-auto space-y-4 sm:space-y-6">
           {/* Step Indicator */}
-          <div className="bg-white rounded-xl p-6 border-2 border-purple-200 text-center">
-            <h2 className="text-lg font-semibold text-purple-800 mb-2">
+          <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-purple-200 text-center">
+            <h2 className="text-base sm:text-lg font-semibold text-purple-800 mb-2">
               Setup Progress
             </h2>
             <div className="flex items-center justify-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500"></div>
               <div className="flex-1 h-1 bg-green-500"></div>
-              <div className="w-3 h-3 rounded-full bg-purple-600 ring-4 ring-purple-100"></div>
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-purple-600 ring-4 ring-purple-100"></div>
               <div className="flex-1 h-1 bg-gray-200"></div>
-              <div className="w-3 h-3 rounded-full bg-gray-200"></div>
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-gray-200"></div>
             </div>
-            <div className="mt-2 text-sm text-gray-600">
+            <div className="mt-2 text-xs sm:text-sm text-gray-600">
               Step 2 of 3: Connect Wallet
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="bg-white rounded-xl shadow-lg p-8 border-2 border-purple-200">
-            <div className="flex justify-center mb-6">
-              <Coins className="h-12 w-12 text-purple-600" />
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border-2 border-purple-200">
+            <div className="flex justify-center mb-4 sm:mb-6">
+              <Coins className="h-10 w-10 sm:h-12 sm:w-12 text-purple-600" />
             </div>
 
             <h1
-              className="text-2xl font-bold text-center text-purple-800 mb-6"
-              style={{ fontFamily: "Comic Sans MS, cursive" }}
+              className="text-xl sm:text-2xl font-bold text-center text-purple-800 mb-4 sm:mb-6"
+              style={{ fontFamily: "Comic Sans MS" }}
             >
               Connect Your Wallet
             </h1>
 
             {/* Get a Wallet Section */}
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="mb-6 sm:mb-8">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                 {"Don't have a wallet?"}
               </h2>
-              <div className="bg-purple-50 rounded-lg p-6 space-y-4">
-                <p className="text-gray-700">
+              <div className="bg-purple-50 rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
+                <p className="text-sm sm:text-base text-gray-700">
                   {
                     "You'll need a ComicCoin wallet to receive and manage your coins. Get started with:"
                   }
                 </p>
-                <div className="grid gap-4">
+                <div className="grid gap-3 sm:gap-4">
                   <a
                     href="https://comiccoinwallet.com/get-started"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-4 bg-white rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between p-3 sm:p-4 bg-white rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <Globe className="h-6 w-6 text-purple-600" />
+                      <Globe className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                       <div>
-                        <div className="font-medium">Web Wallet</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="font-medium text-sm sm:text-base">
+                          Web Wallet
+                        </div>
+                        <div className="text-xs sm:text-sm text-gray-500">
                           No installation required - get started instantly
                         </div>
                       </div>
                     </div>
-                    <ExternalLink className="h-5 w-5 text-gray-400" />
+                    <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   </a>
 
                   <a
                     href="https://comiccoinwallet.com/download-native-wallet"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-4 bg-white rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between p-3 sm:p-4 bg-white rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <Smartphone className="h-6 w-6 text-purple-600" />
+                      <Smartphone className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                       <div>
-                        <div className="font-medium">Mobile App</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="font-medium text-sm sm:text-base">
+                          Mobile App
+                        </div>
+                        <div className="text-xs sm:text-sm text-gray-500">
                           Available for iOS and Android
                         </div>
                       </div>
                     </div>
-                    <ExternalLink className="h-5 w-5 text-gray-400" />
+                    <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   </a>
 
                   <a
                     href="https://comiccoinwallet.com/download-native-wallet"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-4 bg-white rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between p-3 sm:p-4 bg-white rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <Download className="h-6 w-6 text-purple-600" />
+                      <Download className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                       <div>
-                        <div className="font-medium">Desktop Wallet</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="font-medium text-sm sm:text-base">
+                          Desktop Wallet
+                        </div>
+                        <div className="text-xs sm:text-sm text-gray-500">
                           For Windows, Mac, and Linux
                         </div>
                       </div>
                     </div>
-                    <ExternalLink className="h-5 w-5 text-gray-400" />
+                    <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   </a>
                 </div>
               </div>
@@ -299,7 +284,7 @@ export default function AddMyWalletAddressPage() {
 
             {/* Show API error if it exists */}
             {postError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
                 <div className="flex gap-2">
                   <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                   <div>
@@ -310,14 +295,14 @@ export default function AddMyWalletAddressPage() {
             )}
 
             {/* Enter Wallet Address */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
               <div className="flex gap-2">
                 <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-medium text-yellow-800 mb-1">
+                  <h3 className="font-medium text-yellow-800 mb-1 text-sm sm:text-base">
                     Important
                   </h3>
-                  <p className="text-sm text-yellow-800">
+                  <p className="text-xs sm:text-sm text-yellow-800">
                     Make sure to enter your wallet address correctly. If you
                     enter the wrong address, your ComicCoins will be sent to
                     someone else and cannot be recovered!
@@ -326,7 +311,7 @@ export default function AddMyWalletAddressPage() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div>
                 <label
                   htmlFor="wallet"
@@ -339,14 +324,17 @@ export default function AddMyWalletAddressPage() {
                   type="text"
                   value={walletAddress}
                   onChange={(e) => setWalletAddress(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="0x..."
                   required
                   pattern="^0x[a-fA-F0-9]{40}$"
                   title="Please enter a valid Ethereum wallet address"
                   disabled={isPosting}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                 />
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-xs sm:text-sm text-gray-500">
                   Your wallet address should start with &quot;0x&quot; followed
                   by 40 characters
                 </p>
@@ -357,7 +345,7 @@ export default function AddMyWalletAddressPage() {
                 disabled={
                   isPosting || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)
                 }
-                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 text-sm sm:text-base bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPosting ? "Connecting..." : "Connect Wallet"}
               </button>
@@ -365,10 +353,10 @@ export default function AddMyWalletAddressPage() {
           </div>
 
           {/* Help Link */}
-          <div className="text-center">
+          <div className="text-center pb-6">
             <Link
               href="/help/wallet-setup"
-              className="inline-flex items-center text-purple-600 hover:text-purple-700"
+              className="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm sm:text-base"
             >
               Need help setting up your wallet?
               <ChevronRight className="h-4 w-4 ml-1" />

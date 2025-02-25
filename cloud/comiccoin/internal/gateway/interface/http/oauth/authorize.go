@@ -15,15 +15,20 @@ import (
 
 const loginFormTemplate = `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>OAuth 2.0 Authorization</title>
-	<style>
+    <style>
         /* Reset and base styles */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
         }
 
         /* Create full-height gradient background matching platform */
@@ -32,10 +37,12 @@ const loginFormTemplate = `
             background: linear-gradient(135deg, #6949FF 0%, #876BFF 100%);
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
+            -webkit-text-size-adjust: 100%;
+            overflow-x: hidden;
         }
 
         /* Main card container with consistent shadow and radius */
@@ -43,14 +50,14 @@ const loginFormTemplate = `
             background-color: white;
             width: 100%;
             max-width: 480px;
-            padding: 32px;
-            border-radius: 24px;
+            padding: 24px;
+            border-radius: 20px;
             box-shadow: 0 4px 24px rgba(26, 21, 35, 0.08);
         }
 
         /* Typography matching platform */
         h1 {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
             color: #1A1523;
             margin: 0 0 8px 0;
@@ -61,7 +68,7 @@ const loginFormTemplate = `
             font-size: 14px;
             color: #6B7280;
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
 
         /* Application info section */
@@ -74,7 +81,7 @@ const loginFormTemplate = `
 
         .app-info-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 8px;
         }
 
@@ -86,12 +93,14 @@ const loginFormTemplate = `
             font-size: 14px;
             color: #6B7280;
             width: 100px;
+            flex-shrink: 0;
         }
 
         .app-info-value {
             font-size: 14px;
             color: #1A1523;
             font-weight: 500;
+            word-break: break-word;
         }
 
         /* Form styling */
@@ -109,12 +118,14 @@ const loginFormTemplate = `
 
         input {
             width: 100%;
-            padding: 12px;
+            padding: 14px 12px;
             border: 1px solid #E5E7EB;
             border-radius: 12px;
-            font-size: 15px;
+            font-size: 16px;
             transition: all 0.2s ease;
             background-color: #F9FAFB;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         input:focus {
@@ -129,18 +140,88 @@ const loginFormTemplate = `
             width: 100%;
             background: #6949FF;
             color: white;
-            padding: 12px;
+            padding: 14px 12px;
             border: none;
             border-radius: 12px;
             font-weight: 500;
-            font-size: 15px;
+            font-size: 16px;
             cursor: pointer;
             transition: background-color 0.2s ease;
             margin-top: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            min-height: 50px;
+            touch-action: manipulation;
         }
 
-        button:hover {
+        button:hover, button:active {
             background: #5538E2;
+        }
+
+        /* Mobile device specific adjustments */
+        @media screen and (max-width: 430px) {
+            .container {
+                padding: 20px;
+                border-radius: 16px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .subtitle {
+                margin-bottom: 20px;
+            }
+
+            .app-info {
+                padding: 14px;
+                margin-bottom: 20px;
+            }
+
+            .app-info-label {
+                width: 90px;
+            }
+        }
+
+        /* iPhone SE and other small screens */
+        @media screen and (max-width: 375px) and (max-height: 667px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 16px;
+            }
+
+            .form-group {
+                margin-bottom: 16px;
+            }
+        }
+
+        /* Landscape mode */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            body {
+                align-items: flex-start;
+                padding: 12px;
+            }
+
+            .container {
+                margin: 12px auto;
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 18px;
+                margin-bottom: 4px;
+            }
+
+            .subtitle {
+                margin-bottom: 16px;
+            }
+
+            .form-group {
+                margin-bottom: 12px;
+            }
         }
     </style>
 </head>
@@ -172,7 +253,10 @@ const loginFormTemplate = `
                     id="username"
                     name="username"
                     required
-                    autocomplete="email">
+                    autocomplete="email"
+                    autocapitalize="off"
+                    autocorrect="off"
+                    spellcheck="false">
             </div>
 
             <div class="form-group">
