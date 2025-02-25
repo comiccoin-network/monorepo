@@ -68,24 +68,11 @@ export default function Page() {
   const { user } = useMe();
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Prevent iOS scroll bounce
+  // Remove previous touch prevention
   useEffect(() => {
-    const preventTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-    };
-
-    document.body.addEventListener("touchmove", preventTouchMove, {
-      passive: false,
-    });
-
-    document.body.style.overscrollBehavior = "none";
-    document.documentElement.style.overscrollBehavior = "none";
-
-    return () => {
-      document.body.removeEventListener("touchmove", preventTouchMove);
-      document.body.style.overscrollBehavior = "";
-      document.documentElement.style.overscrollBehavior = "";
-    };
+    // Reset any previous overscroll settings
+    document.body.style.overscrollBehavior = "";
+    document.documentElement.style.overscrollBehavior = "";
   }, []);
 
   // Loading state
@@ -222,49 +209,48 @@ export default function Page() {
 
   return (
     <div
-      className="min-h-screen bg-purple-50 py-4 px-4 touch-manipulation"
+      className="min-h-screen bg-purple-50 py-4 px-4 overflow-y-auto"
       style={{
-        WebkitUserSelect: "none",
-        userSelect: "none",
-        WebkitTapHighlightColor: "transparent",
+        WebkitOverflowScrolling: "touch", // Enable smooth scrolling on iOS
       }}
     >
-      {/* Header */}
-      <header className="mb-6">
-        <div className="flex items-center mb-2">
-          <Settings className="h-6 w-6 text-purple-600 mr-2" />
-          <h1 className="text-2xl font-bold text-purple-800">
-            Account Settings
-          </h1>
-        </div>
-        <p className="text-xs text-gray-600">
-          Manage your profile and account preferences
-        </p>
-      </header>
-
-      {/* Form Status Message */}
-      {(isSuccess || updateError) && formMessage && (
-        <div
-          className={`mb-4 p-3 rounded-lg ${
-            isSuccess
-              ? "bg-green-50 border border-green-200"
-              : "bg-red-50 border border-red-200"
-          }`}
-        >
-          <div className="flex items-center">
-            {isSuccess ? (
-              <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-            ) : (
-              <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
-            )}
-            <p className={`text-sm ${isSuccess ? "text-green-700" : "text-red-700"}`}>
-              {formMessage}
-            </p>
+      <div className="max-w-md mx-auto"> {/* Added container for better mobile layout */}
+        {/* Header */}
+        <header className="mb-6">
+          <div className="flex items-center mb-2">
+            <Settings className="h-6 w-6 text-purple-600 mr-2" />
+            <h1 className="text-2xl font-bold text-purple-800">
+              Account Settings
+            </h1>
           </div>
-        </div>
-      )}
+          <p className="text-xs text-gray-600">
+            Manage your profile and account preferences
+          </p>
+        </header>
 
-      {/* Settings Form */}
+        {/* Form Status Message */}
+        {(isSuccess || updateError) && formMessage && (
+          <div
+            className={`mb-4 p-3 rounded-lg ${
+              isSuccess
+                ? "bg-green-50 border border-green-200"
+                : "bg-red-50 border border-red-200"
+            }`}
+          >
+            <div className="flex items-center">
+              {isSuccess ? (
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
+              )}
+              <p className={`text-sm ${isSuccess ? "text-green-700" : "text-red-700"}`}>
+                {formMessage}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Settings Form */}
       <form
         ref={formRef}
         onSubmit={handleSubmit}
@@ -513,6 +499,7 @@ export default function Page() {
     </button>
   </div>
 </form>
-</div>
-);
+      </div>
+    </div>
+  );
 }
