@@ -83,7 +83,7 @@ const CountdownTimer: React.FC<{
 };
 
 // ClaimsList component
-const ClaimsList: React.FC<{ claims: Claim[] }> = ({ claims }) => {
+const ClaimsList: React.FC<{ claims: Claim[], isPersonal?: boolean }> = ({ claims, isPersonal }) => {
   if (claims.length === 0) {
     return <div className="text-center text-gray-500 py-4">No claims found</div>;
   }
@@ -145,6 +145,9 @@ const SkeletonCard: React.FC = () => (
 // Main Dashboard Component
 const DashboardPageContent: React.FC = () => {
   const { user } = useMe();
+  const [isTouchActive, setIsTouchActive] = useState(false);
+
+  // Use a reasonable refresh interval (30 seconds) to avoid hammering the API
   const { dashboard, isLoading, error, refetch } = useDashboard({
     refreshInterval: 30000,
   });
@@ -407,7 +410,7 @@ const DashboardPageContent: React.FC = () => {
         </div>
         <div className="px-4 py-3 sm:px-5">
           {transactionClaims.length > 0 ? (
-            <ClaimsList claims={transactionClaims.slice(0, 5)} isPersonal />
+            <ClaimsList claims={transactionClaims.slice(0, 5)} isPersonal={true} />
           ) : (
             <div className="py-8 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-purple-100">

@@ -24,7 +24,7 @@ export const withAuth = <P extends object>(
     const { user, isLoading } = useMe();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // Authentication check effect
+    // Authentication check effect - runs only once on mount
     useEffect(() => {
       const checkAuthStatus = () => {
         const authenticated = authService.isAuthenticated();
@@ -38,13 +38,7 @@ export const withAuth = <P extends object>(
 
       // Initial check
       checkAuthStatus();
-
-      // Optional: Set up periodic auth checks if needed
-      const intervalId = setInterval(checkAuthStatus, 60000); // Every minute
-
-      // Cleanup interval on component unmount
-      return () => clearInterval(intervalId);
-    }, [navigate, isLoading]); // Removed checkInterval, added necessary dependencies
+    }, [navigate, isLoading]); // Only includes required dependencies
 
     // Show loading state while checking auth
     if (isLoading) {

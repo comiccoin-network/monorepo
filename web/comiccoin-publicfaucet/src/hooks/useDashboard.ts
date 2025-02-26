@@ -33,6 +33,7 @@ export function useDashboard({
   // Use refs to track component mount state and prevent race conditions
   const isMountedRef = useRef(true);
   const isFetchingRef = useRef(false);
+  const initialFetchDoneRef = useRef(false);
 
   // Store options in refs to access latest values in callbacks
   const enabledRef = useRef(enabled);
@@ -51,16 +52,18 @@ export function useDashboard({
    */
   const fetchDashboardData = useCallback(async (): Promise<DashboardDTO | null> => {
     // Skip if already fetching or component unmounted
-    if (isFetchingRef.current || !isMountedRef.current) {
-      console.log("🚫 DASHBOARD: Fetch skipped - already in progress or component unmounted");
+    if (isFetchingRef.current || !isMountedRef.current || !enabledRef.current) {
+      console.log("🚫 DASHBOARD: Fetch skipped - already in progress, disabled, or component unmounted");
       return dashboard;
     }
 
     // Check if authenticated
     if (!authService.isAuthenticated()) {
       console.log("🔒 DASHBOARD: Not authenticated, skipping fetch");
-      setIsLoading(false);
-      setError(new Error("Not authenticated"));
+      if (isMountedRef.current) {
+        setIsLoading(false);
+        setError(new Error("Not authenticated"));
+      }
       return null;
     }
 
@@ -69,11 +72,9 @@ export function useDashboard({
       isFetchingRef.current = true;
 
       // Only set loading if we don't already have data (to prevent flicker)
-      if (!dashboard) {
+      if (!dashboard && !initialFetchDoneRef.current && isMountedRef.current) {
         setIsLoading(true);
       }
-
-      setError(null);
 
       // Get fresh data from API
       const data = await dashboardService.getDashboard();
@@ -83,6 +84,7 @@ export function useDashboard({
         setDashboard(data);
         setError(null);
         setIsLoading(false);
+        initialFetchDoneRef.current = true;
       }
 
       return data;
@@ -97,13 +99,14 @@ export function useDashboard({
       if (isMountedRef.current) {
         setError(errorObj);
         setIsLoading(false);
+        initialFetchDoneRef.current = true;
       }
 
       return null;
     } finally {
       isFetchingRef.current = false;
     }
-  }, [dashboard]);
+  }, []); // Empty dependency array to prevent recreation on dashboard changes
 
   /**
    * Clear the dashboard cache and fetch fresh data
@@ -121,6 +124,7 @@ export function useDashboard({
   useEffect(() => {
     // Reset mounted ref
     isMountedRef.current = true;
+    initialFetchDoneRef.current = false;
 
     if (!enabled) {
       setIsLoading(false);
@@ -132,6 +136,7 @@ export function useDashboard({
     if (cachedData) {
       setDashboard(cachedData);
       setIsLoading(false);
+      initialFetchDoneRef.current = true;
     }
 
     // Then fetch fresh data (regardless of cache)
@@ -141,7 +146,7 @@ export function useDashboard({
     return () => {
       isMountedRef.current = false;
     };
-  }, [enabled, cacheMaxAge, fetchDashboardData]);
+  }, [enabled, cacheMaxAge, fetchDashboardData]); // Only run on mount/unmount and option changes
 
   // Set up refresh interval
   useEffect(() => {
@@ -161,7 +166,7 @@ export function useDashboard({
     return () => {
       clearInterval(intervalId);
     };
-  }, [enabled, refreshInterval, fetchDashboardData]);
+  }, [enabled, refreshInterval, fetchDashboardData]); // Only recreate interval when these change
 
   return {
     dashboard,

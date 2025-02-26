@@ -32,16 +32,37 @@ export function useTransactions({
   const isFetchingRef = useRef(false);
   const hasInitialFetchedRef = useRef(false);
   const refreshAttemptsRef = useRef(0);
+  const transactionsRef = useRef<Transaction[]>([]);
+  const enabledRef = useRef(enabled);
+  const refreshIntervalRef = useRef(refreshInterval);
   const MAX_REFRESH_ATTEMPTS = 3;
+
+  // Update refs when props change
+  useEffect(() => {
+    enabledRef.current = enabled;
+    refreshIntervalRef.current = refreshInterval;
+  }, [enabled, refreshInterval]);
+
+  // Keep transactions ref in sync with state
+  useEffect(() => {
+    transactionsRef.current = transactions;
+  }, [transactions]);
 
   /**
    * Fetch transactions data with error handling and state updates
+   * Removed transactions dependency to prevent infinite loop
    */
   const fetchTransactions = useCallback(async (force = false): Promise<Transaction[]> => {
     // Prevent multiple simultaneous fetches
     if (isFetchingRef.current && !force) {
       console.log("🚫 TRANSACTIONS HOOK: Already in progress");
-      return transactions;
+      return transactionsRef.current;
+    }
+
+    // Skip fetch if disabled
+    if (!enabledRef.current) {
+      console.log("🚫 TRANSACTIONS HOOK: Fetch skipped - hook is disabled");
+      return transactionsRef.current;
     }
 
     try {
@@ -96,7 +117,7 @@ export function useTransactions({
       if (isMountedRef.current) {
         setError(errorObj);
         // Keep previous transactions if available
-        if (transactions.length === 0) {
+        if (transactionsRef.current.length === 0) {
           setTransactions([]);
         }
         setIsLoading(false);
@@ -107,18 +128,20 @@ export function useTransactions({
       // Mark fetch as complete
       isFetchingRef.current = false;
     }
-  }, [transactions]);
+  }, []); // Empty dependency array to prevent recreation on transactions changes
 
   // Effect for initial fetch - runs only once on mount
   useEffect(() => {
     // Reset mounted ref
     isMountedRef.current = true;
+    hasInitialFetchedRef.current = false;
 
     // Try to load from cache first for quick initial render
     const cachedTransactions = transactionsService.getCachedTransactions();
     if (cachedTransactions && enabled) {
       setTransactions(cachedTransactions);
       setIsLoading(false);
+      hasInitialFetchedRef.current = true;
     }
 
     // Perform initial fetch only if enabled
@@ -137,7 +160,7 @@ export function useTransactions({
       console.log("🧹 TRANSACTIONS HOOK: Component unmounting");
       isMountedRef.current = false;
     };
-  }, [enabled, fetchTransactions]); // Added fetchTransactions to dependency array
+  }, [enabled, fetchTransactions]); // fetchTransactions won't change so this runs once
 
   // Separate effect for the refresh interval
   useEffect(() => {
@@ -149,7 +172,7 @@ export function useTransactions({
 
     const intervalId = setInterval(() => {
       // Skip refresh if component is unmounted or if we've hit max attempts
-      if (!isMountedRef.current) {
+      if (!isMountedRef.current || !enabledRef.current) {
         return;
       }
 
@@ -174,7 +197,7 @@ export function useTransactions({
     return () => {
       clearInterval(intervalId);
     };
-  }, [enabled, refreshInterval, fetchTransactions]); // Added fetchTransactions to dependency array
+  }, [enabled, refreshInterval, fetchTransactions]); // fetchTransactions won't change
 
   return {
     transactions,
