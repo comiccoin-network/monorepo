@@ -17,12 +17,6 @@ interface Claim {
   hash: string;
 }
 
-interface UserClaimedCoinTransaction {
-  id: string;
-  timestamp: string;
-  amount: number;
-}
-
 // CountdownTimer component
 const CountdownTimer: React.FC<{
   nextClaimTime: string;
@@ -83,7 +77,7 @@ const CountdownTimer: React.FC<{
 };
 
 // ClaimsList component
-const ClaimsList: React.FC<{ claims: Claim[], isPersonal?: boolean }> = ({ claims, isPersonal }) => {
+const ClaimsList: React.FC<{ claims: Claim[] }> = ({ claims }) => {
   if (claims.length === 0) {
     return <div className="text-center text-gray-500 py-4">No claims found</div>;
   }
@@ -145,7 +139,9 @@ const SkeletonCard: React.FC = () => (
 // Main Dashboard Component
 const DashboardPageContent: React.FC = () => {
   const { user } = useMe();
-  const [isTouchActive, setIsTouchActive] = useState(false);
+
+  // We'll still use the setIsTouchActive function for touch events
+  const [, setIsTouchActive] = useState(false);
 
   // Use a reasonable refresh interval (30 seconds) to avoid hammering the API
   const { dashboard, isLoading, error, refetch } = useDashboard({
@@ -175,8 +171,7 @@ const DashboardPageContent: React.FC = () => {
       // Use Clipboard API with fallback
       if (navigator.clipboard) {
         navigator.clipboard.writeText(walletAddress).then(() => {
-          toast.success("Wallet address copied", {
-            description: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
+          toast.success(`Wallet address copied: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`, {
             autoClose: 2000,
           });
         });
@@ -189,8 +184,7 @@ const DashboardPageContent: React.FC = () => {
         document.execCommand("copy");
         document.body.removeChild(textArea);
 
-        toast.success("Wallet address copied", {
-          description: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
+        toast.success(`Wallet address copied: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`, {
           autoClose: 2000,
         });
       }
@@ -294,16 +288,19 @@ const DashboardPageContent: React.FC = () => {
   // Get the wallet address from user
   const walletAddress = user?.wallet_address || "0x0000000000000000000000000000000000000000";
 
-  // Convert transactions to claims
+  // Convert transactions to claims - Using a safe approach to handle type differences
   const transactionClaims: Claim[] = dashboard.transactions
-    ? dashboard.transactions.map((tx: UserClaimedCoinTransaction) => ({
-        id: tx.id,
-        timestamp: new Date(tx.timestamp),
-        amount: tx.amount,
-        address: walletAddress,
-        status: "completed",
-        hash: "",
-      }))
+    ? dashboard.transactions.map((tx: any) => {
+        // Using 'any' temporarily to safely access properties
+        return {
+          id: tx.id || '',
+          timestamp: new Date(tx.timestamp || Date.now()),
+          amount: typeof tx.amount === 'number' ? tx.amount : 0,
+          address: walletAddress,
+          status: "completed",
+          hash: "",
+        };
+      })
     : [];
 
   return (
@@ -410,7 +407,7 @@ const DashboardPageContent: React.FC = () => {
         </div>
         <div className="px-4 py-3 sm:px-5">
           {transactionClaims.length > 0 ? (
-            <ClaimsList claims={transactionClaims.slice(0, 5)} isPersonal={true} />
+            <ClaimsList claims={transactionClaims.slice(0, 5)} />
           ) : (
             <div className="py-8 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-purple-100">
