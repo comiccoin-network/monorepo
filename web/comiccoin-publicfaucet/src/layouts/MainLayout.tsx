@@ -116,15 +116,6 @@ const MainLayoutContent: React.FC = () => {
                   </div>
                   <button
                     onClick={() => {
-                      navigateTo("/user/settings");
-                      setProfileDropdownOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Settings
-                  </button>
-                  <button
-                    onClick={() => {
                       navigateTo("/user/transactions");
                       setProfileDropdownOpen(false);
                     }}
@@ -132,6 +123,16 @@ const MainLayoutContent: React.FC = () => {
                   >
                     Transactions
                   </button>
+                  <button
+                    onClick={() => {
+                      navigateTo("/user/settings");
+                      setProfileDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Settings
+                  </button>
+
                   <button
                     onClick={() => {
                       handleLogout();
@@ -173,6 +174,16 @@ const MainLayoutContent: React.FC = () => {
                 }`}
               >
                 Dashboard
+              </button>
+              <button
+                onClick={() => navigateTo("/user/transactions")}
+                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/user/transactions')
+                    ? 'bg-purple-100 text-purple-700'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Transactions
               </button>
               <button
                 onClick={() => navigateTo("/user/settings")}
