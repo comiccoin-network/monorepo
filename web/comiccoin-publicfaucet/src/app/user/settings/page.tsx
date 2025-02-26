@@ -1,6 +1,8 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/settings/page.tsx
 "use client";
 
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMe } from "@/hooks/useMe";
@@ -66,8 +68,10 @@ const timezones: SelectOption[] = [
 
 function Page() {
   const router = useRouter();
-  const { user } = useMe();
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Use a ref to track whether form data has been initialized
+  const isFormInitialized = useRef(false);
 
   // Remove previous touch prevention
   useEffect(() => {
@@ -76,8 +80,9 @@ function Page() {
     document.documentElement.style.overscrollBehavior = "";
   }, []);
 
-  // Loading state
-  const [isUserLoading, setIsUserLoading] = useState(true);
+  // Use the Me hook for user data
+  // Disable automatic data fetching to allow the withAuth HOC to handle authentication
+  const { user, isLoading, error } = useMe();
 
   const {
     updateMe,
@@ -102,8 +107,9 @@ function Page() {
   const [formMessage, setFormMessage] = useState("");
 
   // Initialize form data with user data when it loads
+  // Use the isFormInitialized ref to avoid re-initializing on every render
   useEffect(() => {
-    if (user) {
+    if (user && !isFormInitialized.current) {
       setFormData({
         email: user.email || "",
         first_name: user.first_name || "",
@@ -115,13 +121,7 @@ function Page() {
           ? user.wallet_address.toString()
           : "",
       });
-      setIsUserLoading(false);
-    } else {
-      const timer = setTimeout(() => {
-        setIsUserLoading(false);
-      }, 1000);
-
-      return () => clearTimeout(timer);
+      isFormInitialized.current = true;
     }
   }, [user]);
 
@@ -149,14 +149,14 @@ function Page() {
     if (updateError) {
       setFormMessage(
         updateError.message ||
-          "An error occurred while updating your settings. Please try again.",
+          "An error occurred while updating your settings. Please try again."
       );
     }
   }, [isSuccess, updateError, reset]);
 
   // Handle input changes
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -185,7 +185,8 @@ function Page() {
     }
   };
 
-  if (isUserLoading) {
+  // Show loading state
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -198,11 +199,19 @@ function Page() {
     );
   }
 
-  if (!user) {
+  // Show error state if there's an error fetching user data
+  if (error) {
     return (
       <div className="min-h-screen bg-purple-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Please log in to view your settings.</p>
+          <AlertCircle className="h-12 w-12 mx-auto text-red-400 mb-4" />
+          <p className="text-gray-600">There was an error loading your profile.</p>
+          <button
+            onClick={() => router.push('/')}
+            className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-md"
+          >
+            Return Home
+          </button>
         </div>
       </div>
     );
@@ -216,8 +225,6 @@ function Page() {
       }}
     >
       <div className="max-w-md mx-auto">
-        {" "}
-        {/* Added container for better mobile layout */}
         {/* Header */}
         <header className="mb-6">
           <div className="flex items-center mb-2">
