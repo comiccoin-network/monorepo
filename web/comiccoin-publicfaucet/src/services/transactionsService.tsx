@@ -1,6 +1,5 @@
 // src/services/transactionsService.ts
 import authService from './authService';
-import { API_CONFIG } from "@/config/env";
 
 // Define Transaction interface based on actual data structure
 export interface Transaction {

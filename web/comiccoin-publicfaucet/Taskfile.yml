@@ -1,28 +1,49 @@
 version: "3"
 
 tasks:
-  desc: "start the project (for web-development only)"
-  start:
+  # Development task to start the local development server
+  dev:
+    desc: "Start the development server with hot module replacement"
     cmds:
       - npm run dev
 
-  # Note: Only executed by devops team.
-  buildprod:
-    desc: "build the production version of the project"
+  # Production build task
+  build:
+    desc: "Build the production version of the project"
+    cmds:
+      # Build the project using Vite's build command
+      - npm run build
+
+  # Deployment task (similar to the original, but adapted for Vite)
+  deploy:
+    desc: "Build and deploy the production version to a static site repository"
     cmds:
       # Build the project
-      - npm run build:prod
+      - npm run build
 
       # Checkout prod branch in the target repo
       - git -C ../../../comiccoin-publicfaucet-static checkout -B prod
 
-      # Copy build files (Next.js generates the "out" directory by default for static exports)
-      - cp -Rf ./out/* ../../../comiccoin-publicfaucet-static
+      # Copy build files (Vite generates the "dist" directory by default)
+      - cp -Rf ./dist/* ../../../comiccoin-publicfaucet-static
 
       # Remove build directory
-      - rm -Rf ./out
+      - rm -Rf ./dist
 
       # Commit and push changes
       - git -C ../../../comiccoin-publicfaucet-static add --all
       - git -C ../../../comiccoin-publicfaucet-static commit -m 'Latest production deployment.'
       - git -C ../../../comiccoin-publicfaucet-static push origin prod
+
+  # Optional: Lint and type-check task
+  lint:
+    desc: "Run ESLint and TypeScript type checking"
+    cmds:
+      - npm run lint
+      - npm run typecheck
+
+  # Optional: Run tests
+  test:
+    desc: "Run project tests"
+    cmds:
+      - npm run test

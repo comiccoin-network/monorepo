@@ -1,4 +1,9 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosResponse,
+  AxiosError,
+  InternalAxiosRequestConfig
+} from 'axios';
 
 /**
  * Interface for auth tokens storage
@@ -18,6 +23,13 @@ interface TokenRefreshResponse {
   refresh_token: string;
   expires_at: number;
   federatedidentity_id: string;
+}
+
+/**
+ * Extended axios request config with retry flag
+ */
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
 }
 
 class AuthService {
@@ -130,7 +142,7 @@ class AuthService {
    * @param config - Axios request config
    * @returns Updated config with auth token
    */
-  private addTokenToRequest(config: AxiosRequestConfig): AxiosRequestConfig {
+  private addTokenToRequest(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
     const tokens = this.getTokens();
 
     if (tokens.accessToken) {
@@ -156,16 +168,16 @@ class AuthService {
    * @param error - Axios error
    * @returns Promise resolving to the original request with new token
    */
-  private async handleResponseError(error: AxiosError): Promise<AxiosResponse<any>> {
-    const originalRequest = error.config;
+  private async handleResponseError(error: AxiosError): Promise<AxiosResponse> {
+    const originalRequest = error.config as ExtendedAxiosRequestConfig;
 
     // If error is not 401 or the request already tried after refresh, just throw
-    if (error.response?.status !== 401 || (originalRequest as any)._retry) {
+    if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
 
     // Mark this request as retried to prevent infinite loops
-    (originalRequest as any)._retry = true;
+    originalRequest._retry = true;
 
     // If already refreshing, queue this request
     if (this.isRefreshing) {
