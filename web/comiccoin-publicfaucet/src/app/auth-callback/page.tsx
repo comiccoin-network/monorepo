@@ -71,12 +71,30 @@ function AuthCallbackContent() {
 
         // Step 2: Store tokens in local storage
         console.log("💾 AUTH CALLBACK: Storing tokens");
-        setTokens({
+
+        // Save tokens directly to localStorage first for immediate availability
+        const tokenData = {
           accessToken,
           refreshToken,
           expiresAt: parseInt(expiresAt, 10),
           federatedidentityID,
+        };
+
+        // Direct localStorage storage to ensure tokens are available immediately
+        localStorage.setItem("auth_tokens", JSON.stringify(tokenData));
+
+        // Then update the React state as well to maintain state consistency
+        setTokens(tokenData);
+
+        // Verify tokens were saved correctly
+        const storedTokens = localStorage.getItem("auth_tokens");
+        console.log("✅ AUTH CALLBACK: Storage verification", {
+          saved: !!storedTokens,
+          hasRefreshToken: storedTokens ? JSON.parse(storedTokens).refreshToken : false
         });
+
+        // Add a small delay to ensure browser storage is fully synchronized
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         try {
           // Step 3: Fetch user profile using the pre-configured useGetMe hook

@@ -11,11 +11,13 @@ interface FetchOptions extends RequestInit {
 }
 
 /**
- * Interface for token pair storage
+ * Interface for auth tokens storage - aligned with AuthCallbackContent
  */
-interface TokenPair {
+interface AuthTokens {
   accessToken: string | null;
   refreshToken: string | null;
+  expiresAt: number | null;
+  federatedidentityID: string | null;
 }
 
 /**
@@ -24,6 +26,8 @@ interface TokenPair {
 interface TokenRefreshResponse {
   access_token: string;
   refresh_token: string;
+  expires_at: number;
+  federatedidentity_id: string;
 }
 
 /**
@@ -33,21 +37,39 @@ interface TokenRefreshResponse {
 export function useAuthenticatedFetch() {
   const router = useRouter();
 
-  // Use local storage hook for managing tokens with type inference
-  const [tokens, setTokens] = useLocalStorage<TokenPair>("auth_tokens", {
+  // Use local storage hook for managing tokens with matching interface
+  const [tokens, setTokens] = useLocalStorage<AuthTokens>("auth_tokens", {
     accessToken: null,
     refreshToken: null,
+    expiresAt: null,
+    federatedidentityID: null,
   });
 
   /**
    * Perform token refresh
-   * @returns New access and refresh tokens, or null if refresh fails
+   * @returns New tokens object, or null if refresh fails
    */
-  const refreshTokens = async (): Promise<TokenPair | null> => {
+  const refreshTokens = async (): Promise<AuthTokens | null> => {
     try {
-      const { refreshToken } = tokens;
+      // Check localStorage directly first to bypass React state timing issues
+      let currentTokens: AuthTokens;
+      try {
+        const storedTokens = localStorage.getItem("auth_tokens");
+        currentTokens = storedTokens ? JSON.parse(storedTokens) : tokens;
+      } catch (e) {
+        // Fallback to React state if localStorage access fails
+        currentTokens = tokens;
+      }
+
+      console.log("🔄 TOKEN REFRESH: Starting with tokens", {
+        hasAccessToken: !!currentTokens.accessToken,
+        hasRefreshToken: !!currentTokens.refreshToken
+      });
+
+      const { refreshToken } = currentTokens;
 
       if (!refreshToken) {
+        console.error("❌ TOKEN REFRESH: No refresh token available");
         throw new Error("No refresh token available");
       }
 
@@ -63,27 +85,42 @@ export function useAuthenticatedFetch() {
       );
 
       if (!response.ok) {
-        throw new Error("Token refresh failed");
+        console.error("❌ TOKEN REFRESH: API call failed with status", response.status);
+        throw new Error(`Token refresh failed: ${response.status}`);
       }
 
       const data: TokenRefreshResponse = await response.json();
 
-      // Update tokens in local storage
-      const newTokens: TokenPair = {
+      // Update tokens in both localStorage and React state
+      const newTokens: AuthTokens = {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
+        expiresAt: data.expires_at,
+        federatedidentityID: data.federatedidentity_id,
       };
 
+      // Update localStorage directly first
+      localStorage.setItem("auth_tokens", JSON.stringify(newTokens));
+
+      // Then update React state
       setTokens(newTokens);
+
+      console.log("✅ TOKEN REFRESH: Successfully refreshed tokens");
 
       return newTokens;
     } catch (error) {
-      console.error("Token refresh error:", error);
+      console.error("❌ TOKEN REFRESH: Error", error);
 
-      // Clear tokens and redirect to get-started page
-      setTokens({ accessToken: null, refreshToken: null });
+      // Clear tokens from both localStorage and React state
+      localStorage.removeItem("auth_tokens");
+      setTokens({
+        accessToken: null,
+        refreshToken: null,
+        expiresAt: null,
+        federatedidentityID: null,
+      });
+
       router.push("/get-started");
-
       return null;
     }
   };
@@ -98,6 +135,26 @@ export function useAuthenticatedFetch() {
     input: RequestInfo | URL,
     options: FetchOptions = {},
   ): Promise<Response> => {
+    console.log("🔒 AUTH FETCH: Starting request to", typeof input === 'string' ? input : 'URL object');
+
+    // Read tokens directly from localStorage to avoid React state timing issues
+    let currentTokens: AuthTokens;
+    try {
+      const storedTokens = localStorage.getItem("auth_tokens");
+      currentTokens = storedTokens ? JSON.parse(storedTokens) : tokens;
+      console.log("🔍 AUTH FETCH: Retrieved tokens from storage", {
+        hasAccessToken: !!currentTokens.accessToken,
+        hasRefreshToken: !!currentTokens.refreshToken
+      });
+    } catch (e) {
+      // Fallback to React state if localStorage access fails
+      currentTokens = tokens;
+      console.log("⚠️ AUTH FETCH: Falling back to React state tokens", {
+        hasAccessToken: !!currentTokens.accessToken,
+        hasRefreshToken: !!currentTokens.refreshToken
+      });
+    }
+
     // Clone options to avoid mutating the original
     const fetchOptions: FetchOptions = { ...options };
 
@@ -108,24 +165,32 @@ export function useAuthenticatedFetch() {
     };
 
     // Add access token if available
-    const { accessToken } = tokens;
-    if (accessToken) {
+    if (currentTokens.accessToken) {
       fetchOptions.headers = {
         ...fetchOptions.headers,
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${currentTokens.accessToken}`,
       };
+      console.log("🔑 AUTH FETCH: Added authorization header");
+    } else {
+      console.warn("⚠️ AUTH FETCH: No access token available");
     }
 
     // Perform initial fetch
+    console.log("📡 AUTH FETCH: Sending initial request");
     let response = await fetch(input, fetchOptions);
+    console.log("📥 AUTH FETCH: Received response with status", response.status);
 
     // Check for unauthorized access
     if (response.status === 401) {
+      console.log("🔄 AUTH FETCH: Got 401, attempting token refresh");
+
       // Attempt to refresh tokens
       const refreshResult = await refreshTokens();
 
       // If refresh successful, retry the original request
       if (refreshResult?.accessToken) {
+        console.log("🔄 AUTH FETCH: Token refresh successful, retrying request");
+
         // Update Authorization header with new token
         fetchOptions.headers = {
           ...fetchOptions.headers,
@@ -133,13 +198,24 @@ export function useAuthenticatedFetch() {
         };
 
         // Retry the original request
+        console.log("📡 AUTH FETCH: Sending retry request");
         response = await fetch(input, fetchOptions);
+        console.log("📥 AUTH FETCH: Retry response with status", response.status);
+      } else {
+        console.error("❌ AUTH FETCH: Token refresh failed");
       }
     }
 
     // If still unauthorized after refresh, redirect to get-started
     if (response.status === 401) {
-      setTokens({ accessToken: null, refreshToken: null });
+      console.error("❌ AUTH FETCH: Still unauthorized after token refresh");
+      localStorage.removeItem("auth_tokens");
+      setTokens({
+        accessToken: null,
+        refreshToken: null,
+        expiresAt: null,
+        federatedidentityID: null,
+      });
       router.push("/get-started");
       throw new Error("Authentication failed");
     }
