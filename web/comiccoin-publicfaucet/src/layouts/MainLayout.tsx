@@ -1,17 +1,30 @@
 // src/layouts/MainLayout.tsx
-import React from "react";
-import { Outlet, Link, useLocation } from "react-router";
+import React, { useCallback } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { useMe } from "../hooks/useMe";
 import { withAuth } from "../hocs/withAuth";
 
 const MainLayoutContent: React.FC = () => {
   const { user, logout } = useMe();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Function to check if a path is active
   const isActive = (path: string) => {
     return location.pathname.startsWith(path);
   };
+
+  // Direct navigation function
+  const navigateTo = useCallback((path: string) => {
+    // Force page reload with the new URL
+    window.location.href = path;
+  }, []);
+
+  // Custom logout handler
+  const handleLogout = useCallback(() => {
+    logout();
+    window.location.href = "/get-started";
+  }, [logout]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -23,7 +36,7 @@ const MainLayoutContent: React.FC = () => {
             <h1 className="text-xl font-bold">ComicCoin Faucet</h1>
           </div>
 
-          {/* User profile dropdown */}
+          {/* User profile display */}
           <div className="relative">
             <div className="flex items-center space-x-2 cursor-pointer">
               <span>{user?.name}</span>
@@ -42,26 +55,29 @@ const MainLayoutContent: React.FC = () => {
           <div className="w-full md:w-64 mb-6 md:mb-0">
             <div className="bg-white p-4 rounded shadow">
               <nav className="space-y-2">
-                <Link to="/user/dashboard"
-                  className={`block px-4 py-2 rounded ${
+                {/* Plain buttons that trigger direct navigation */}
+                <button
+                  onClick={() => navigateTo("/user/dashboard")}
+                  className={`block w-full text-left px-4 py-2 rounded ${
                     isActive('/user/dashboard')
                       ? 'bg-blue-100 text-blue-700'
                       : 'hover:bg-gray-100'
                   }`}
                 >
                   Dashboard
-                </Link>
-                <Link to="/user/settings"
-                  className={`block px-4 py-2 rounded ${
+                </button>
+                <button
+                  onClick={() => navigateTo("/user/settings")}
+                  className={`block w-full text-left px-4 py-2 rounded ${
                     isActive('/user/settings')
                       ? 'bg-blue-100 text-blue-700'
                       : 'hover:bg-gray-100'
                   }`}
                 >
                   Settings
-                </Link>
+                </button>
                 <button
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 rounded hover:bg-red-100 text-red-600"
                 >
                   Logout

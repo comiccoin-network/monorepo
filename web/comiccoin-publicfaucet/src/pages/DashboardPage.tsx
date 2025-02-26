@@ -134,6 +134,10 @@ const DashboardPageContent: React.FC = () => {
     refreshInterval: 30000,
   });
 
+  const navigateTo = useCallback((path: string) => {
+    window.location.href = path;
+  }, []);
+
   // Display loading state
   if (isLoading && !dashboard) {
     return (
@@ -260,9 +264,7 @@ const DashboardPageContent: React.FC = () => {
             </div>
             <button
               className="inline-flex items-center justify-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors gap-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 active:scale-95"
-              onClick={() => {
-                navigate("/user/claim-coins");
-              }}
+              onClick={(e) => navigateTo("/user/claim-coins", e)}
               disabled={!dashboard.can_claim}
               aria-label="Claim your daily coins"
               onTouchStart={() => setIsTouchActive(true)}
@@ -328,7 +330,7 @@ const DashboardPageContent: React.FC = () => {
             </h2>
             {transactionClaims.length > 0 && (
               <button
-                onClick={() => navigate("/user/transactions?filter=personal")}
+                onClick={(e) => navigateTo("/user/transactions?filter=personal", e)}
                 className="text-purple-600 hover:text-purple-700 flex items-center gap-1 text-sm group focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg px-2 py-1 active:bg-purple-50"
                 aria-label="View all your claims history"
               >
