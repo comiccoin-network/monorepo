@@ -1,6 +1,6 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useClaimCoins.ts
 import { useState } from "react";
-import { CONFIG } from "@/config/env";
+import { API_CONFIG } from "@/config/env"; // Import the correct config
 import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
 
 interface User {
@@ -33,8 +33,9 @@ const useClaimCoins = (): UseClaimCoinsResult => {
       setIsLoading(true);
       setError(null);
 
+      // Use API_CONFIG.baseUrl instead of CONFIG.api.baseUrl
       const response = await fetchWithAuth(
-        `${CONFIG.api.baseUrl}/publicfaucet/api/v1/claim-coins`,
+        `${API_CONFIG.baseUrl}/publicfaucet/api/v1/claim-coins`,
         {
           method: "POST",
           headers: {

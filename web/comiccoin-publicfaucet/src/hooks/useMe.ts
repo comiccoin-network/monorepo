@@ -128,6 +128,14 @@ export function useMe({
     }
   }, [fetchWithAuth, should_sync_now, user]);
 
+  const updateUser = useCallback((userData: User) => {
+   if (isMountedRef.current) {
+     setUser(userData);
+     // Also mark that we've fetched data since we're directly setting user data
+     hasFetchedRef.current = true;
+   }
+ }, []);
+
   // Effect for initial fetch
   useEffect(() => {
     // Reset mounted ref
@@ -155,5 +163,6 @@ export function useMe({
     isLoading,
     error,
     refetch: fetchUserData,
+    updateUser,
   };
 }

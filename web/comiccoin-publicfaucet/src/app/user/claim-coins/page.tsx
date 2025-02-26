@@ -6,15 +6,16 @@ import { useRouter } from "next/navigation";
 import { useMe } from "@/hooks/useMe";
 import useClaimCoins from "@/hooks/useClaimCoins";
 import { useGetFaucet } from "@/hooks/useGetFaucet";
-import { Coins, Gift, Clock } from "lucide-react";
+import { Coins, Gift, Clock, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const ClaimCoinsPage = () => {
   const router = useRouter();
-  const { updateUser } = useMe();
+  const { refetch } = useMe(); // Use refetch instead of updateUser
   const { claimCoins, isLoading: isClaimingCoins } = useClaimCoins();
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [isTouchActive, setIsTouchActive] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Prevent iOS scroll bounce and improve touch interactions
   useEffect(() => {
@@ -51,12 +52,15 @@ const ClaimCoinsPage = () => {
   const dailyReward = faucet?.daily_coins_reward || 2; // Fallback to 2 if not available yet
 
   const handleClaimCoins = async () => {
+    // Clear any previous error
+    setErrorMessage(null);
+
     try {
       // Step 1: Claim coins and get updated user data
       const updatedUserData = await claimCoins();
 
-      // Step 2: Save updated user profile
-      updateUser(updatedUserData);
+      // Step 2: Refresh user profile data
+      await refetch();
 
       // Step 3: Show success toast and redirect
       toast.success("Coins Claimed!", {
@@ -67,11 +71,38 @@ const ClaimCoinsPage = () => {
       // Redirect to dashboard
       router.push("/user/dashboard");
     } catch (err) {
-      // Use toast for error handling
-      toast.error("Claim Failed", {
-        description: err instanceof Error ? err.message : "Unable to claim coins",
-      });
       console.error("Error during claim process:", err);
+
+      // Extract detailed error message from backend response
+      let message = "Unable to claim coins";
+
+      if (err instanceof Error) {
+        message = err.message;
+
+        // Check if the error has additional response data
+        // This handles the case where the error came from a fetch response
+        if ('response' in err && err.response instanceof Response) {
+          try {
+            const errorData = await err.response.json();
+            if (errorData && errorData.detail) {
+              message = errorData.detail;
+            } else if (errorData && errorData.message) {
+              message = errorData.message;
+            }
+          } catch (parseError) {
+            // If we can't parse the response, fall back to the original error message
+            console.error("Error parsing error response:", parseError);
+          }
+        }
+      }
+
+      // Set the error message to display on the page
+      setErrorMessage(message);
+
+      // Also show the error as a toast
+      toast.error("Claim Failed", {
+        description: message,
+      });
     }
   };
 
@@ -95,6 +126,17 @@ const ClaimCoinsPage = () => {
             Your daily ComicCoins are ready to be claimed
           </p>
         </div>
+
+        {/* Error message display */}
+        {errorMessage && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start">
+            <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Claim failed</h3>
+              <p className="text-xs text-red-700 mt-1">{errorMessage}</p>
+            </div>
+          </div>
+        )}
 
         {/* Claim Card */}
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
