@@ -1,0 +1,175 @@
+import { useState, useEffect, useCallback, useRef } from "react";
+import dashboardService, { DashboardDTO } from "../services/dashboardService";
+import authService from "../services/authService";
+
+interface UseDashboardOptions {
+  enabled?: boolean;
+  refreshInterval?: number;
+  cacheMaxAge?: number; // In milliseconds
+}
+
+interface UseDashboardReturn {
+  dashboard: DashboardDTO | null;
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => Promise<DashboardDTO | null>;
+  clearCache: () => void;
+}
+
+/**
+ * Custom hook for fetching and managing dashboard data with caching and auto-refresh
+ * @param options - Configuration options
+ * @returns Object containing dashboard data, loading/error states, and utility functions
+ */
+export function useDashboard({
+  enabled = true,
+  refreshInterval = 0, // No refresh by default
+  cacheMaxAge = 60000, // Default: 1 minute cache
+}: UseDashboardOptions = {}): UseDashboardReturn {
+  const [dashboard, setDashboard] = useState<DashboardDTO | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  // Use refs to track component mount state and prevent race conditions
+  const isMountedRef = useRef(true);
+  const isFetchingRef = useRef(false);
+
+  // Store options in refs to access latest values in callbacks
+  const enabledRef = useRef(enabled);
+  const refreshIntervalRef = useRef(refreshInterval);
+  const cacheMaxAgeRef = useRef(cacheMaxAge);
+
+  // Update refs when options change
+  useEffect(() => {
+    enabledRef.current = enabled;
+    refreshIntervalRef.current = refreshInterval;
+    cacheMaxAgeRef.current = cacheMaxAge;
+  }, [enabled, refreshInterval, cacheMaxAge]);
+
+  /**
+   * Fetch dashboard data from API with error handling
+   */
+  const fetchDashboardData = useCallback(async (): Promise<DashboardDTO | null> => {
+    // Skip if already fetching or component unmounted
+    if (isFetchingRef.current || !isMountedRef.current) {
+      console.log("🚫 DASHBOARD: Fetch skipped - already in progress or component unmounted");
+      return dashboard;
+    }
+
+    // Check if authenticated
+    if (!authService.isAuthenticated()) {
+      console.log("🔒 DASHBOARD: Not authenticated, skipping fetch");
+      setIsLoading(false);
+      setError(new Error("Not authenticated"));
+      return null;
+    }
+
+    try {
+      console.log("🔄 DASHBOARD: Fetching data");
+      isFetchingRef.current = true;
+
+      // Only set loading if we don't already have data (to prevent flicker)
+      if (!dashboard) {
+        setIsLoading(true);
+      }
+
+      setError(null);
+
+      // Get fresh data from API
+      const data = await dashboardService.getDashboard();
+
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setDashboard(data);
+        setError(null);
+        setIsLoading(false);
+      }
+
+      return data;
+    } catch (err) {
+      console.error("❌ DASHBOARD: Fetch failed", err);
+
+      const errorObj = err instanceof Error
+        ? err
+        : new Error("Failed to fetch dashboard data");
+
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setError(errorObj);
+        setIsLoading(false);
+      }
+
+      return null;
+    } finally {
+      isFetchingRef.current = false;
+    }
+  }, [dashboard]);
+
+  /**
+   * Clear the dashboard cache and fetch fresh data
+   */
+  const clearCache = useCallback(() => {
+    dashboardService.clearCache();
+    if (isMountedRef.current) {
+      setDashboard(null);
+      // Trigger a refetch after clearing cache
+      fetchDashboardData();
+    }
+  }, [fetchDashboardData]);
+
+  // Initial load effect - load from cache first, then fetch fresh data
+  useEffect(() => {
+    // Reset mounted ref
+    isMountedRef.current = true;
+
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Try to load from cache first for quick initial render
+    const cachedData = dashboardService.getCachedDashboard(cacheMaxAge);
+    if (cachedData) {
+      setDashboard(cachedData);
+      setIsLoading(false);
+    }
+
+    // Then fetch fresh data (regardless of cache)
+    fetchDashboardData();
+
+    // Cleanup function
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [enabled, cacheMaxAge, fetchDashboardData]);
+
+  // Set up refresh interval
+  useEffect(() => {
+    if (!enabled || refreshInterval <= 0) {
+      return;
+    }
+
+    console.log(`⏱️ DASHBOARD: Setting up refresh interval (${refreshInterval}ms)`);
+
+    const intervalId = setInterval(() => {
+      if (enabledRef.current && isMountedRef.current && !isFetchingRef.current) {
+        console.log("🔄 DASHBOARD: Auto-refreshing data");
+        fetchDashboardData();
+      }
+    }, refreshInterval);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [enabled, refreshInterval, fetchDashboardData]);
+
+  return {
+    dashboard,
+    isLoading,
+    error,
+    refetch: fetchDashboardData,
+    clearCache,
+  };
+}
+
+export default useDashboard;
