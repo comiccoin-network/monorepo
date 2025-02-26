@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { Coins, ArrowLeft, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+
+import withWallet from '../hocs/withWallet';
 import { withAuth } from "../hocs/withAuth";
 import { useTransactions, Transaction } from "../hooks/useTransactions";
 
@@ -325,5 +327,5 @@ const TransactionsPageContent: React.FC = () => {
 };
 
 // Wrap the component with the auth HOC and export
-const TransactionsPage = withAuth(TransactionsPageContent);
+const TransactionsPage = withAuth(withWallet(TransactionsPageContent));
 export default TransactionsPage;

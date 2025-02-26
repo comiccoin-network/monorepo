@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { useMe } from "../hooks/useMe";
 import { useDashboard } from "../hooks/useDashboard";
 import { withAuth } from "../hocs/withAuth";
+import withWallet from '../hocs/withWallet';
 
 // Type definitions
 interface Claim {
@@ -495,5 +496,5 @@ const DashboardPageContent: React.FC = () => {
 };
 
 // Wrap the component with the auth HOC and export
-const DashboardPage = withAuth(DashboardPageContent);
+const DashboardPage = withAuth(withWallet(DashboardPageContent));
 export default DashboardPage;

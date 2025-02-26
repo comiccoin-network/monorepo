@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router';
 
 // Layout
+import InitializationLayout from "./layouts/InitializationLayout";
 import MainLayout from "./layouts/MainLayout";
 
 // Public pages
@@ -15,6 +16,7 @@ import AuthCallbackPage from './pages/AuthCallbackPage';
 
 // Protected pages (already wrapped with withAuth HOC)
 import DashboardPage from "./pages/DashboardPage";
+import AddWalletAddressPage from "./pages/AddWalletAddressPage";
 import TransactionsPage from './pages/TransactionPage';
 import ClaimCoinsPage from './pages/ClaimCoinsPage';
 import SettingsPage from "./pages/SettingsPage";
@@ -31,6 +33,11 @@ function App() {
         <Route path="/register-call" element={<RegisterCallPage />} />
         <Route path="/login-call" element={<LoginCallPage />} />
         <Route path="/auth-callback" element={<AuthCallbackPage />} />
+
+        {/* User initialization flow with restricted layout */}
+       <Route path="/user-initialization" element={<InitializationLayout />}>
+         <Route path="add-my-wallet-address" element={<AddWalletAddressPage />} />
+       </Route>
 
         {/* Protected routes with layout */}
         <Route path="/user" element={<MainLayout />}>

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { authService } from '../services/authService';
 import { useMe } from '../hooks/useMe';
-import { User } from '../services/userService'; // Assuming you have a User type
+import { User } from '../services/userService';
 
 // Create a type for the HOC to improve type safety
 type WithAuthProps = {
@@ -23,29 +23,56 @@ export const withAuth = <P extends object>(
     const navigate = useNavigate();
     const { user, isLoading } = useMe();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const isMountedRef = useRef<boolean>(true);
 
     // Authentication check effect - runs only once on mount
     useEffect(() => {
-      const checkAuthStatus = () => {
-        const authenticated = authService.isAuthenticated();
-        setIsAuthenticated(authenticated);
+      isMountedRef.current = true;
 
-        // Redirect logic if not authenticated
-        if (!authenticated && !isLoading) {
+      const checkAuthStatus = () => {
+        try {
+          console.log("🔒 AUTH CHECK: Verifying user authentication");
+
+          const authenticated = authService.isAuthenticated();
+
+          if (isMountedRef.current) {
+            setIsAuthenticated(authenticated);
+          }
+
+          // Redirect logic if not authenticated
+          if (!authenticated && !isLoading) {
+            console.log("⚠️ AUTH CHECK: User is not authenticated, redirecting to login");
+            navigate('/get-started');
+          } else if (authenticated) {
+            console.log("✅ AUTH CHECK: User is authenticated");
+          }
+        } catch (error) {
+          console.error("❌ AUTH CHECK: Error checking authentication", error);
+
+          if (isMountedRef.current) {
+            setIsAuthenticated(false);
+          }
+
           navigate('/get-started');
         }
       };
 
       // Initial check
       checkAuthStatus();
+
+      // Cleanup function to prevent state updates after unmount
+      return () => {
+        isMountedRef.current = false;
+      };
     }, [navigate, isLoading]); // Only includes required dependencies
 
     // Show loading state while checking auth
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-pulse text-gray-600">
-            Loading authentication...
+        <div className="min-h-screen bg-purple-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Verifying your account...</p>
           </div>
         </div>
       );
@@ -60,6 +87,14 @@ export const withAuth = <P extends object>(
       />
     );
   };
+
+  // Display name for debugging
+  const wrappedComponentName =
+    WrappedComponent.displayName ||
+    WrappedComponent.name ||
+    'Component';
+
+  AuthWrapper.displayName = `withAuth(${wrappedComponentName})`;
 
   return AuthWrapper;
 };

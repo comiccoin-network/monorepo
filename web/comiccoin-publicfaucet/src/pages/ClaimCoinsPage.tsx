@@ -3,7 +3,8 @@ import { useNavigate } from "react-router";
 import { Coins, Gift, Clock, AlertCircle } from "lucide-react";
 import { toast } from "react-toastify";
 
-// Import custom hooks
+import { withAuth } from "../hocs/withAuth";
+import withWallet from '../hocs/withWallet';
 import { useMe } from "../hooks/useMe";
 import { useClaimCoins } from "../hooks/useClaimCoins";
 import { useGetFaucet } from "../hooks/useGetFaucet";
@@ -196,4 +197,4 @@ const ClaimCoinsPage: React.FC = () => {
   );
 };
 
-export default ClaimCoinsPage;
+export default withAuth(withWallet(ClaimCoinsPage));

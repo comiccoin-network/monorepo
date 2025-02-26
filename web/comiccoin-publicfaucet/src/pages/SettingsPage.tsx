@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
+
+import withWallet from '../hocs/withWallet';
 import { withAuth } from "../hocs/withAuth";
 import { usePutUpdateMe } from "../hooks/usePutUpdateMe";
 import { useMe } from "../hooks/useMe";
@@ -460,5 +462,5 @@ const SettingsPageContent: React.FC = () => {
  };
 
  // Wrap the component with the auth HOC
- const SettingsPage = withAuth(SettingsPageContent);
+ const SettingsPage = withAuth(withWallet(SettingsPageContent));
  export default SettingsPage;
