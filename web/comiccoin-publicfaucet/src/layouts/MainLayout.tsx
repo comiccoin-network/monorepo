@@ -5,7 +5,7 @@ import { withAuth } from "../hocs/withAuth";
 import { Menu, X } from "lucide-react";
 
 const MainLayoutContent: React.FC = () => {
-  const { user, logout } = useMe();
+  const { logout } = useMe();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

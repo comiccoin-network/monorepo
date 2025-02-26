@@ -1,19 +1,13 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { Link } from "react-router";
 import {
   HelpCircle,
   Mail,
-  MessageCircle,
   ChevronDown,
   ChevronUp,
   Search,
   Book,
-  FileText,
   Globe,
-  Twitter,
   Github,
-  Send,
 } from "lucide-react";
 
 import { withAuth } from "../hocs/withAuth";
@@ -58,31 +52,13 @@ interface FAQ {
   answer: string;
 }
 
-// Define type for your contact form
-interface ContactForm {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}
-
 // Define the component props
 interface HelpAndSupportPageProps {
-  isAuthenticated: boolean;
   user?: any;
 }
 
-function HelpAndSupportPage({ isAuthenticated, user }: HelpAndSupportPageProps) {
-  const navigate = useNavigate();
+function HelpAndSupportPage(_props: HelpAndSupportPageProps) {
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [messageSubmitted, setMessageSubmitted] = useState<boolean>(false);
-  const [contactForm, setContactForm] = useState<ContactForm>({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
 
   // FAQ data
   const faqs: FAQ[] = [
@@ -129,40 +105,6 @@ function HelpAndSupportPage({ isAuthenticated, user }: HelpAndSupportPageProps) 
       faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       faq.answer.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
-  // Handle contact form input changes
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setContactForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Handle contact form submission
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setMessageSubmitted(true);
-      setContactForm({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-      });
-
-      // Reset success message after 5 seconds
-      setTimeout(() => {
-        setMessageSubmitted(false);
-      }, 5000);
-    }, 1500);
-  };
 
   return (
     <div className="py-8">

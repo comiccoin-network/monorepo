@@ -1,16 +1,14 @@
 import React from "react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet } from "react-router";
 import { useMe } from "../hooks/useMe";
 import { withAuth } from "../hocs/withAuth";
-import { X } from "lucide-react";
 
 /**
  * Layout component for user initialization flows like wallet setup
  * Provides a restricted interface with no navigation to other app sections
  */
 const InitializationLayoutContent: React.FC = () => {
-  const { user, logout } = useMe();
-  const navigate = useNavigate();
+  const { logout } = useMe();
 
   // Custom logout handler
   const handleLogout = () => {

@@ -25,7 +25,7 @@ class WalletService {
         walletAddress: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
       });
 
-      const response = await this.api.post<ConnectWalletResponse>(
+      await this.api.post<ConnectWalletResponse>(
         '/publicfaucet/api/v1/me/connect-wallet',
         {
           wallet_address: walletAddress,

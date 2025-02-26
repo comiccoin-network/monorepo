@@ -54,7 +54,7 @@ export const withWallet = <P extends object>(
         <WrappedComponent
           {...props}
           hasWallet={!!(user?.wallet_address)}
-          walletAddress={user?.wallet_address}
+          walletAddress={user?.wallet_address ?? null}
         />
       );
     }
@@ -75,7 +75,7 @@ export const withWallet = <P extends object>(
       <WrappedComponent
         {...props}
         hasWallet={true}
-        walletAddress={user?.wallet_address}
+        walletAddress={user?.wallet_address ?? null}
       />
     );
   };
