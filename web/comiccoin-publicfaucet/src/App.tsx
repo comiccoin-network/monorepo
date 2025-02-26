@@ -12,6 +12,7 @@ import GetStartedPage from './pages/GetStartedPage';
 import RegisterCallPage from './pages/RegisterCallPage';
 import LoginCallPage from './pages/LoginCallPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
+import TransactionsPage from './pages/TransactionPage';
 
 // Protected pages (already wrapped with withAuth HOC)
 import DashboardPage from "./pages/DashboardPage";
@@ -31,10 +32,8 @@ function App() {
 
         {/* Protected routes with layout */}
         <Route path="/user" element={<MainLayout />}>
-          {/* Dashboard page (wrapped with withAuth in its own file) */}
           <Route path="dashboard" element={<DashboardPage />} />
-
-          {/* Settings page (wrapped with withAuth in its own file) */}
+          <Route path="transactions" element={<TransactionsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>
