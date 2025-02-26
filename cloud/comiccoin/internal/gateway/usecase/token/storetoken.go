@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/domain/token"
 )
 
@@ -64,7 +64,7 @@ func (uc *tokenStoreUseCaseImpl) Execute(ctx context.Context, token *dom_token.T
 	// Set expiration based on token type
 	switch token.TokenType {
 	case "access":
-		token.ExpiresAt = now.Add(1 * time.Hour) // Access tokens expire in 1 hour
+		token.ExpiresAt = now.Add(5 * time.Minute) // Access tokens expire in 5 minutes
 	case "refresh":
 		token.ExpiresAt = now.Add(30 * 24 * time.Hour) // Refresh tokens expire in 30 days
 	}

@@ -1,7 +1,7 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/app/user/transactions/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Coins, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
@@ -31,54 +31,55 @@ const TransactionsPage = () => {
     null,
   );
 
-  // Prevent iOS scroll bounce
+  // Prevent iOS scroll bounce - but make passive to avoid potential issues
   useEffect(() => {
-    const preventTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-    };
-
-    document.body.addEventListener("touchmove", preventTouchMove, {
-      passive: false,
-    });
-
+    // Use a more passive approach to prevent issues
     document.body.style.overscrollBehavior = "none";
     document.documentElement.style.overscrollBehavior = "none";
 
     return () => {
-      document.body.removeEventListener("touchmove", preventTouchMove);
       document.body.style.overscrollBehavior = "";
       document.documentElement.style.overscrollBehavior = "";
     };
   }, []);
 
-  // Fetch transactions data
+  // Fetch transactions data with a fixed refresh interval - disable auto refresh for now
   const { transactions, isLoading, error, refetch } = useGetTransactions({
-    refreshInterval: 60000, // Refresh every minute
+    refreshInterval: 0, // Disable auto-refresh temporarily to troubleshoot
+    enabled: true,
   });
 
-  // Apply sorting
-  const sortedTransactions = [...transactions].sort((a, b) => {
-    const aValue = a[sortBy.field];
-    const bValue = b[sortBy.field];
-    const direction = sortBy.direction === "asc" ? 1 : -1;
-
-    if (sortBy.field === "timestamp") {
-      return (
-        direction *
-        (new Date(aValue as string).getTime() -
-          new Date(bValue as string).getTime())
-      );
+  // Apply sorting with useMemo to prevent recalculation on every render
+  const sortedTransactions = useMemo(() => {
+    // Early return for empty arrays
+    if (!transactions || transactions.length === 0) {
+      return [];
     }
 
-    if (typeof aValue === "string") {
-      return direction * aValue.localeCompare(bValue as string);
-    }
+    // Sort the transactions
+    return [...transactions].sort((a, b) => {
+      const aValue = a[sortBy.field];
+      const bValue = b[sortBy.field];
+      const direction = sortBy.direction === "asc" ? 1 : -1;
 
-    return direction * ((aValue as number) - (bValue as number));
-  });
+      if (sortBy.field === "timestamp") {
+        return (
+          direction *
+          (new Date(aValue as string).getTime() -
+            new Date(bValue as string).getTime())
+        );
+      }
 
-  // Format date/time
-  const formatDate = (dateString: string) => {
+      if (typeof aValue === "string") {
+        return direction * aValue.localeCompare(bValue as string);
+      }
+
+      return direction * ((aValue as number) - (bValue as number));
+    });
+  }, [transactions, sortBy.field, sortBy.direction]);
+
+  // Memoize the date formatter to prevent recreation on every render
+  const formatDate = useMemo(() => (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
@@ -87,7 +88,7 @@ const TransactionsPage = () => {
       hour: "2-digit",
       minute: "2-digit",
     }).format(date);
-  };
+  }, []);
 
   // Handle transaction expansion
   const toggleTransactionExpand = (transactionId: string) => {
@@ -194,7 +195,7 @@ const TransactionsPage = () => {
 
       {/* Transactions Section */}
       <div className="space-y-4">
-        {transactions.length === 0 ? (
+        {(!transactions || transactions.length === 0) ? (
           <div className="bg-white rounded-xl p-6 text-center shadow-sm">
             <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-purple-50">
               <Coins className="w-8 h-8 text-purple-600" aria-hidden="true" />

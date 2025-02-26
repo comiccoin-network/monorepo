@@ -162,7 +162,7 @@ func (s *tokenServiceImpl) ExchangeToken(ctx context.Context, req *TokenRequestD
 		FederatedIdentityID: authCode.FederatedIdentityID,
 		AppID:               authCode.AppID,
 		Scope:               authCode.Scope,
-		ExpiresAt:           time.Now().Add(time.Hour),
+		ExpiresAt:           time.Now().Add(5 * time.Minute), // 5 minutes
 		IssuedAt:            time.Now(),
 		LastUsedAt:          time.Now(),
 	}

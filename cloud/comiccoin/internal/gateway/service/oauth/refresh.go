@@ -154,7 +154,7 @@ func (s *refreshTokenServiceImpl) RefreshToken(ctx context.Context, req *Refresh
 		FederatedIdentityID: existingToken.FederatedIdentityID,
 		AppID:               req.ClientID,
 		Scope:               existingToken.Scope,
-		ExpiresAt:           time.Now().Add(1 * time.Hour),
+		ExpiresAt:           time.Now().Add(5 * time.Minute),
 		IssuedAt:            time.Now(),
 		LastUsedAt:          time.Now(),
 	}

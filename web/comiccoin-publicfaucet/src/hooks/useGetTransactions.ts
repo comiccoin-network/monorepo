@@ -1,4 +1,5 @@
 // github.com/comiccoin-network/monorepo/web/comiccoin-publicfaucet/src/hooks/useGetTransactions.ts
+// Enhanced useGetTransactions hook with anti-loop protection
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
 import { API_CONFIG } from "@/config/env";
@@ -36,17 +37,35 @@ export function useGetTransactions({
   // Use a ref to prevent multiple simultaneous fetches
   const isFetchingRef = useRef(false);
 
-  // Store transactions in a ref to avoid dependency cycle
-  const transactionsRef = useRef<Transaction[]>([]);
+  // Add a ref to track if initial fetch has been performed
+  const hasInitialFetchedRef = useRef(false);
+
+  // Add a ref to track the last fetch time to prevent excessive fetching
+  const lastFetchTimeRef = useRef(0);
+
+  // Store refresh attempts count to prevent infinite refresh loops
+  const refreshAttemptsRef = useRef(0);
+  const MAX_REFRESH_ATTEMPTS = 3;
 
   const fetchWithAuth = useAuthenticatedFetch();
 
-  const fetchTransactions = useCallback(async (): Promise<Transaction[]> => {
+  const fetchTransactions = useCallback(async (force = false): Promise<Transaction[]> => {
     // Prevent multiple simultaneous fetches
-    if (isFetchingRef.current) {
+    if (isFetchingRef.current && !force) {
       console.log("🚫 TRANSACTIONS FETCH: Already in progress");
-      return transactionsRef.current;
+      return transactions;
     }
+
+    // Throttle fetches to prevent too many in short succession
+    const now = Date.now();
+    const timeSinceLastFetch = now - lastFetchTimeRef.current;
+    if (!force && timeSinceLastFetch < 2000 && lastFetchTimeRef.current !== 0) {
+      console.log("🚫 TRANSACTIONS FETCH: Throttled (too frequent)");
+      return transactions;
+    }
+
+    // Update last fetch time
+    lastFetchTimeRef.current = now;
 
     try {
       console.log("💼 TRANSACTIONS FETCH: Starting");
@@ -54,8 +73,8 @@ export function useGetTransactions({
       // Mark that a fetch is in progress
       isFetchingRef.current = true;
 
-      // Only set loading if no transactions exist
-      if (transactionsRef.current.length === 0) {
+      // Only set loading state on initial fetch or forced refresh
+      if (!hasInitialFetchedRef.current || force) {
         setIsLoading(true);
       }
 
@@ -91,10 +110,14 @@ export function useGetTransactions({
       // Only update state if component is still mounted
       if (isMountedRef.current) {
         setTransactions(validTransactions);
-        // Also update the ref
-        transactionsRef.current = validTransactions;
         setError(null);
+
+        // Reset refresh attempts on successful fetch
+        refreshAttemptsRef.current = 0;
       }
+
+      // Mark that we've done the initial fetch
+      hasInitialFetchedRef.current = true;
 
       return validTransactions;
     } catch (err) {
@@ -109,8 +132,6 @@ export function useGetTransactions({
       if (isMountedRef.current) {
         setError(error);
         setTransactions([]);
-        // Also update the ref
-        transactionsRef.current = [];
       }
 
       throw error;
@@ -123,29 +144,36 @@ export function useGetTransactions({
         setIsLoading(false);
       }
     }
-  }, [fetchWithAuth]); // Remove transactions.length from dependencies
+  }, [fetchWithAuth, transactions]);
 
-  // Initial fetch effect
+  // Initial fetch effect - simplified to run only once on mount
   useEffect(() => {
     // Reset mounted ref
     isMountedRef.current = true;
 
-    // Fetch only if enabled
-    if (enabled) {
+    // Reset fetch tracking
+    hasInitialFetchedRef.current = false;
+    lastFetchTimeRef.current = 0;
+
+    // Perform initial fetch only if enabled
+    if (enabled && !hasInitialFetchedRef.current) {
       console.log("🔄 TRANSACTIONS FETCH: Auto-fetching on mount");
-      fetchTransactions().catch((error) => {
+      fetchTransactions(true).catch((error) => {
         console.log("❌ TRANSACTIONS FETCH: Auto-fetch failed", error);
       });
+    } else if (!enabled) {
+      // If not enabled, we're not loading
+      setIsLoading(false);
     }
 
     // Cleanup function
     return () => {
-      // Mark as unmounted
+      console.log("🧹 TRANSACTIONS FETCH: Component unmounting");
       isMountedRef.current = false;
     };
-  }, [enabled, fetchTransactions]); // Remove transactions.length from dependencies
+  }, [enabled]); // Remove fetchTransactions from dependencies to prevent re-fetching on every hook recreation
 
-  // Interval effect with more robust management
+  // Separate effect for the interval to avoid it being re-created unnecessarily
   useEffect(() => {
     if (!refreshInterval || !enabled) return;
 
@@ -154,9 +182,24 @@ export function useGetTransactions({
     );
 
     const intervalId = setInterval(() => {
+      // Skip refresh if component is unmounted or if we've hit max attempts
+      if (!isMountedRef.current) {
+        console.log("⏰ TRANSACTIONS FETCH: Skipping refresh - component unmounted");
+        return;
+      }
+
+      if (refreshAttemptsRef.current >= MAX_REFRESH_ATTEMPTS) {
+        console.log("⏰ TRANSACTIONS FETCH: Max refresh attempts reached, skipping");
+        return;
+      }
+
       console.log("⏰ TRANSACTIONS FETCH: Refresh interval triggered");
+
       // Only fetch if not already fetching
       if (!isFetchingRef.current) {
+        // Increment refresh attempts
+        refreshAttemptsRef.current++;
+
         fetchTransactions().catch((error) => {
           console.log("❌ TRANSACTIONS FETCH: Refresh failed", error);
         });
@@ -170,12 +213,12 @@ export function useGetTransactions({
       console.log("⏰ TRANSACTIONS FETCH: Clearing refresh interval");
       clearInterval(intervalId);
     };
-  }, [enabled, fetchTransactions, refreshInterval]);
+  }, [enabled, refreshInterval]); // Keep fetchTransactions out of dependencies
 
   return {
     transactions,
     isLoading,
     error,
-    refetch: fetchTransactions,
+    refetch: () => fetchTransactions(true), // Force refresh on manual refetch
   };
 }
