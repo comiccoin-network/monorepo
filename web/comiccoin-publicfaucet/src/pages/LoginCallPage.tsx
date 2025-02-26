@@ -24,6 +24,8 @@ const LoginCallPage: React.FC = () => {
       scope: "read, write",
     });
 
+  console.log("Expires at:", expiresAt);
+
   useEffect(() => {
     if (authUrl && typeof window !== 'undefined') {
       const updatedUrl = authUrl.replace("comiccoin_gateway", "127.0.0.1");

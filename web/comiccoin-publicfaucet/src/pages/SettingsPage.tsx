@@ -41,7 +41,8 @@ const SettingsPageContent: React.FC = () => {
     isLoading: isUpdating,
     error: updateError,
     isSuccess,
-    reset: resetUpdateState
+    // Use underscore prefix to indicate intentional non-use
+    // reset: _resetUpdateState
   } = usePutUpdateMe();
 
   // Prevent iOS scroll bounce
@@ -92,7 +93,8 @@ const SettingsPageContent: React.FC = () => {
     let errorMessage = '';
     switch (name) {
       case 'email':
-        if (value && !/\S+@\S+\.\S+/.test(value)) {
+        // Use a more standard regex for email validation
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
           errorMessage = 'Invalid email format';
         }
         break;
@@ -103,7 +105,8 @@ const SettingsPageContent: React.FC = () => {
         }
         break;
       case 'phone':
-        if (value && !/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im.test(value)) {
+        // Improved phone number regex
+        if (value && !/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im.test(value)) {
           errorMessage = 'Invalid phone number format';
         }
         break;

@@ -137,7 +137,7 @@ export function useTransactions({
       console.log("🧹 TRANSACTIONS HOOK: Component unmounting");
       isMountedRef.current = false;
     };
-  }, [enabled]); // Dependencies exclude fetchTransactions to prevent unnecessary re-fetches
+  }, [enabled, fetchTransactions]); // Added fetchTransactions to dependency array
 
   // Separate effect for the refresh interval
   useEffect(() => {
@@ -174,7 +174,7 @@ export function useTransactions({
     return () => {
       clearInterval(intervalId);
     };
-  }, [enabled, refreshInterval]); // Dependencies exclude fetchTransactions
+  }, [enabled, refreshInterval, fetchTransactions]); // Added fetchTransactions to dependency array
 
   return {
     transactions,

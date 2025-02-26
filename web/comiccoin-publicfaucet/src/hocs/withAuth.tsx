@@ -1,104 +1,73 @@
-import React, { ComponentType, useEffect, useCallback, useState } from "react";
-import { useNavigate } from "react-router";
-import authService from "../services/authService";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { authService } from '../services/authService';
+import { useMe } from '../hooks/useMe';
+import { User } from '../services/userService'; // Assuming you have a User type
 
-// Create a separate loading component for better organization
-const AuthLoadingScreen: React.FC = () => {
-  return (
-    <div className="min-h-screen bg-purple-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-purple-600 mx-auto" />
-        <p className="mt-4 text-gray-600">Loading your account...</p>
-      </div>
-    </div>
-  );
+// Create a type for the HOC to improve type safety
+type WithAuthProps = {
+  isAuthenticated: boolean;
+  user?: User | null; // Optional user prop
 };
 
-interface WithAuthOptions {
-  redirectTo?: string;
-  checkInterval?: number;
-}
-
 /**
- * Higher-Order Component for client-side authentication protection
- * @param WrappedComponent - Component to be protected
- * @param options - Configuration options
- * @returns Protected component that checks for authentication
+ * Higher-Order Component to handle authentication and route protection
+ * @param WrappedComponent - The component to wrap with authentication
+ * @returns A new component that checks authentication status
  */
-export function withAuth<P extends object>(
-  WrappedComponent: ComponentType<P>,
-  options: WithAuthOptions = {}
-) {
-  // Default options
-  const {
-    redirectTo = "/get-started",
-    checkInterval = 0,
-  } = options;
-
-  // Create the protected component
-  function AuthProtectedComponent(props: P) {
+export const withAuth = <P extends object>(
+  WrappedComponent: React.ComponentType<P & WithAuthProps>
+) => {
+  // Create a new component that wraps the original
+  const AuthWrapper: React.FC<P> = (props) => {
     const navigate = useNavigate();
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+    const { user, isLoading } = useMe();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // Function to check authentication status
-    const checkAuth = useCallback(() => {
-      try {
-        // Use our authService to check authentication
-        const isAuthed = authService.isAuthenticated();
+    // Authentication check effect
+    useEffect(() => {
+      const checkAuthStatus = () => {
+        const authenticated = authService.isAuthenticated();
+        setIsAuthenticated(authenticated);
 
-        if (!isAuthed) {
-          console.log("🔒 AUTH HOC: Not authenticated, redirecting");
-          navigate(redirectTo, { replace: true });
-          setIsAuthenticated(false);
-        } else {
-          if (isAuthenticated !== true) {
-            console.log("🔓 AUTH HOC: User is authenticated");
-            setIsAuthenticated(true);
-          }
+        // Redirect logic if not authenticated
+        if (!authenticated && !isLoading) {
+          navigate('/get-started');
         }
-      } catch (error) {
-        console.error("❌ AUTH HOC: Authentication check failed:", error);
-        navigate(redirectTo, { replace: true });
-        setIsAuthenticated(false);
-      }
-    }, [navigate, isAuthenticated]);
+      };
 
-    // Initial authentication check
-    useEffect(() => {
-      checkAuth();
-    }, [checkAuth]);
+      // Initial check
+      checkAuthStatus();
 
-    // Optional periodic authentication check
-    useEffect(() => {
-      if (checkInterval > 0) {
-        const intervalId = setInterval(checkAuth, checkInterval);
-        return () => clearInterval(intervalId);
-      }
-    }, [checkAuth, checkInterval]);
+      // Optional: Set up periodic auth checks if needed
+      const intervalId = setInterval(checkAuthStatus, 60000); // Every minute
 
-    // If authentication status is not yet determined, show loading
-    if (isAuthenticated === null) {
-      return <AuthLoadingScreen />;
+      // Cleanup interval on component unmount
+      return () => clearInterval(intervalId);
+    }, [navigate, isLoading]); // Removed checkInterval, added necessary dependencies
+
+    // Show loading state while checking auth
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-pulse text-gray-600">
+            Loading authentication...
+          </div>
+        </div>
+      );
     }
 
-    // If not authenticated, render nothing as we're redirecting
-    if (isAuthenticated === false) {
-      return null;
-    }
+    // Render wrapped component with authentication status and user
+    return (
+      <WrappedComponent
+        {...props}
+        isAuthenticated={isAuthenticated}
+        user={user}
+      />
+    );
+  };
 
-    // Render the wrapped component if authenticated
-    return <WrappedComponent {...props} />;
-  }
-
-  // Set a display name for better debugging
-  const wrappedComponentName =
-    WrappedComponent.displayName ||
-    WrappedComponent.name ||
-    "Component";
-
-  AuthProtectedComponent.displayName = `withAuth(${wrappedComponentName})`;
-
-  return AuthProtectedComponent;
-}
+  return AuthWrapper;
+};
 
 export default withAuth;

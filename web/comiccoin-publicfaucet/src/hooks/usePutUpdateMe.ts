@@ -63,14 +63,15 @@ export function usePutUpdateMe(): UsePutUpdateMeReturn {
         setIsSuccess(false);
 
         // Remove any null or undefined values to avoid sending them to the API
-        const cleanData = Object.entries(data).reduce(
+        const cleanData = Object.entries(data).reduce<UpdateMeRequestDTO>(
           (acc, [key, value]) => {
             if (value !== null && value !== undefined) {
-              acc[key] = value;
+              // Type assertion to match UpdateMeRequestDTO keys
+              (acc as Record<string, unknown>)[key] = value;
             }
             return acc;
           },
-          {} as Record<string, any>,
+          {} as UpdateMeRequestDTO
         );
 
         console.log("📡 UPDATE PROFILE: Calling API");
@@ -121,39 +122,5 @@ export function usePutUpdateMe(): UsePutUpdateMeReturn {
   };
 }
 
-// Example usage in a component
-/*
-import { usePutUpdateMe } from './usePutUpdateMe';
-import { useGetMe } from './useGetMe';
-
-function ProfileForm() {
-  const { user, refetch } = useGetMe();
-  const { updateMe, isLoading, error, isSuccess } = usePutUpdateMe();
-
-  const handleSubmit = async (formData) => {
-    try {
-      await updateMe({
-        email: formData.email,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        phone: formData.phone,
-        country: formData.country,
-        timezone: formData.timezone,
-      });
-
-      // Refresh user data after successful update
-      await refetch();
-
-      // Handle success (e.g., show success message)
-    } catch (updateError) {
-      // Handle error (already tracked in the hook's error state)
-      console.error('Profile update failed', updateError);
-    }
-  };
-
-  // Render form with user data and submission handler
-  return (
-    // Your form implementation
-  );
-}
-*/
+export default usePutUpdateMe;
+export type { User, UpdateMeRequestDTO };

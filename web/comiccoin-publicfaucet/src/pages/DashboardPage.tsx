@@ -83,10 +83,7 @@ const CountdownTimer: React.FC<{
 };
 
 // ClaimsList component
-const ClaimsList: React.FC<{
-  claims: Claim[];
-  isPersonal?: boolean;
-}> = ({ claims, isPersonal = false }) => {
+const ClaimsList: React.FC<{ claims: Claim[] }> = ({ claims }) => {
   if (claims.length === 0) {
     return <div className="text-center text-gray-500 py-4">No claims found</div>;
   }
@@ -148,9 +145,6 @@ const SkeletonCard: React.FC = () => (
 // Main Dashboard Component
 const DashboardPageContent: React.FC = () => {
   const { user } = useMe();
-  const [isTouchActive, setIsTouchActive] = useState(false);
-
-  // Use the dashboard hook with 30 second refresh
   const { dashboard, isLoading, error, refetch } = useDashboard({
     refreshInterval: 30000,
   });
@@ -158,6 +152,49 @@ const DashboardPageContent: React.FC = () => {
   const navigateTo = useCallback((path: string) => {
     window.location.href = path;
   }, []);
+
+  // Prevent iOS scroll bounce
+  useEffect(() => {
+    document.body.style.overscrollBehavior = "none";
+    document.documentElement.style.overscrollBehavior = "none";
+
+    return () => {
+      document.body.style.overscrollBehavior = "";
+      document.documentElement.style.overscrollBehavior = "";
+    };
+  }, []);
+
+  // Copy wallet address function
+  const copyWalletAddress = () => {
+    const walletAddress = user?.wallet_address || "0x0000000000000000000000000000000000000000";
+
+    try {
+      // Use Clipboard API with fallback
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(walletAddress).then(() => {
+          toast.success("Wallet address copied", {
+            description: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
+            autoClose: 2000,
+          });
+        });
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = walletAddress;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+
+        toast.success("Wallet address copied", {
+          description: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
+          autoClose: 2000,
+        });
+      }
+    } catch {
+      toast.error("Failed to copy wallet address");
+    }
+  };
 
   // Display loading state
   if (isLoading && !dashboard) {
@@ -252,8 +289,7 @@ const DashboardPageContent: React.FC = () => {
   }
 
   // Get the wallet address from user
-  const walletAddress =
-    user?.wallet_address || "0x0000000000000000000000000000000000000000";
+  const walletAddress = user?.wallet_address || "0x0000000000000000000000000000000000000000";
 
   // Convert transactions to claims
   const transactionClaims: Claim[] = dashboard.transactions
@@ -266,36 +302,6 @@ const DashboardPageContent: React.FC = () => {
         hash: "",
       }))
     : [];
-
-  // Copy wallet address function
-  const copyWalletAddress = () => {
-    try {
-      // Use Clipboard API with fallback
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(walletAddress).then(() => {
-          toast.success("Wallet address copied", {
-            description: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
-            autoClose: 2000,
-          });
-        });
-      } else {
-        // Fallback for older browsers
-        const textArea = document.createElement("textarea");
-        textArea.value = walletAddress;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-
-        toast.success("Wallet address copied", {
-          description: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
-          autoClose: 2000,
-        });
-      }
-    } catch (err) {
-      toast.error("Failed to copy wallet address");
-    }
-  };
 
   return (
     <div className="space-y-6">

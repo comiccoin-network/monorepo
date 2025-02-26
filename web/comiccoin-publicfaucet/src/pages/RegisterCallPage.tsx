@@ -5,7 +5,6 @@ import { Loader2, ArrowRight, ExternalLink } from "lucide-react";
 
 const RegisterCallPage: React.FC = () => {
   const navigate = useNavigate();
-  const [isClient, setIsClient] = useState(false);
 
   // Use our registration URL hook
   const { registrationUrl, isLoading, error, refetch } = useRegistrationUrl();
@@ -13,10 +12,6 @@ const RegisterCallPage: React.FC = () => {
   const [showManualButton, setShowManualButton] = useState(false);
   const [processedUrl, setProcessedUrl] = useState("");
 
-  // Set client-side flag
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   useEffect(() => {
     if (registrationUrl && typeof window !== 'undefined') {

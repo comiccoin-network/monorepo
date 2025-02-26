@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import authorizationService, { AuthUrlResponse } from "../services/authorizationService";
+import authorizationService from "../services/authorizationService";
 
 // Parameters for the hook
 export interface UseAuthorizationUrlParams {
@@ -57,9 +57,11 @@ export function useAuthorizationUrl(
         setState(data.state);
         setExpiresAt(data.expires_at);
       } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error("An unknown error occurred")
-        );
+        const newError = err instanceof Error
+          ? err
+          : new Error("An unknown error occurred");
+
+        setError(newError);
         setAuthUrl(null);
         setState(null);
         setExpiresAt(null);
@@ -71,7 +73,13 @@ export function useAuthorizationUrl(
         });
       }
     },
-    [params?.redirectUri, params?.scope]
+    // Include all state variables used in the callback
+    [
+      params?.redirectUri,
+      params?.scope,
+      authUrl,
+      error
+    ]
   );
 
   // Fetch the authorization URL when the hook is first used and when deps change
