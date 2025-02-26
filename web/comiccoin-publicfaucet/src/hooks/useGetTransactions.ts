@@ -36,13 +36,16 @@ export function useGetTransactions({
   // Use a ref to prevent multiple simultaneous fetches
   const isFetchingRef = useRef(false);
 
+  // Store transactions in a ref to avoid dependency cycle
+  const transactionsRef = useRef<Transaction[]>([]);
+
   const fetchWithAuth = useAuthenticatedFetch();
 
   const fetchTransactions = useCallback(async (): Promise<Transaction[]> => {
     // Prevent multiple simultaneous fetches
     if (isFetchingRef.current) {
       console.log("🚫 TRANSACTIONS FETCH: Already in progress");
-      return transactions;
+      return transactionsRef.current;
     }
 
     try {
@@ -52,7 +55,7 @@ export function useGetTransactions({
       isFetchingRef.current = true;
 
       // Only set loading if no transactions exist
-      if (transactions.length === 0) {
+      if (transactionsRef.current.length === 0) {
         setIsLoading(true);
       }
 
@@ -88,6 +91,8 @@ export function useGetTransactions({
       // Only update state if component is still mounted
       if (isMountedRef.current) {
         setTransactions(validTransactions);
+        // Also update the ref
+        transactionsRef.current = validTransactions;
         setError(null);
       }
 
@@ -104,6 +109,8 @@ export function useGetTransactions({
       if (isMountedRef.current) {
         setError(error);
         setTransactions([]);
+        // Also update the ref
+        transactionsRef.current = [];
       }
 
       throw error;
@@ -116,14 +123,15 @@ export function useGetTransactions({
         setIsLoading(false);
       }
     }
-  }, [fetchWithAuth, transactions.length]);
+  }, [fetchWithAuth]); // Remove transactions.length from dependencies
 
+  // Initial fetch effect
   useEffect(() => {
     // Reset mounted ref
     isMountedRef.current = true;
 
-    // Fetch only if enabled and no existing transactions
-    if (enabled && transactions.length === 0) {
+    // Fetch only if enabled
+    if (enabled) {
       console.log("🔄 TRANSACTIONS FETCH: Auto-fetching on mount");
       fetchTransactions().catch((error) => {
         console.log("❌ TRANSACTIONS FETCH: Auto-fetch failed", error);
@@ -135,7 +143,7 @@ export function useGetTransactions({
       // Mark as unmounted
       isMountedRef.current = false;
     };
-  }, [enabled, fetchTransactions, transactions.length]);
+  }, [enabled, fetchTransactions]); // Remove transactions.length from dependencies
 
   // Interval effect with more robust management
   useEffect(() => {
@@ -147,9 +155,14 @@ export function useGetTransactions({
 
     const intervalId = setInterval(() => {
       console.log("⏰ TRANSACTIONS FETCH: Refresh interval triggered");
-      fetchTransactions().catch((error) => {
-        console.log("❌ TRANSACTIONS FETCH: Refresh failed", error);
-      });
+      // Only fetch if not already fetching
+      if (!isFetchingRef.current) {
+        fetchTransactions().catch((error) => {
+          console.log("❌ TRANSACTIONS FETCH: Refresh failed", error);
+        });
+      } else {
+        console.log("⏰ TRANSACTIONS FETCH: Skipping refresh - already fetching");
+      }
     }, refreshInterval);
 
     // Cleanup interval on unmount or when dependencies change
