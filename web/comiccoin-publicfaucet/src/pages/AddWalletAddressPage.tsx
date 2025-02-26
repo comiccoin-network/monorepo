@@ -174,6 +174,7 @@ function AddWalletAddressPage() {
   return (
     <>
       {/* Simple Navigation */}
+      {/*
       <nav className="bg-white border-b border-purple-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-14 sm:h-16 items-center">
@@ -186,6 +187,7 @@ function AddWalletAddressPage() {
           </div>
         </div>
       </nav>
+      */}
 
       <div className="min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] bg-purple-50 flex flex-col py-4 px-3 sm:p-4 overflow-auto">
         <div className="max-w-2xl w-full mx-auto space-y-4 sm:space-y-6">

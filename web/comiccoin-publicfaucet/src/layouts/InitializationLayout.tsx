@@ -20,26 +20,24 @@ const InitializationLayoutContent: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-purple-50">
-      {/* Simplified header - just logo and logout */}
+      {/* Simplified header - just logo and logout text */}
       <header className="bg-white border-b border-purple-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-14 sm:h-16 items-center">
             {/* Logo section */}
             <div className="flex items-center">
               <img src="/appicon-1024x1024.svg" alt="ComicCoin" className="h-8 w-auto" />
-              <h1 className="ml-3 text-lg sm:text-xl font-bold text-purple-800">
+              <span className="ml-2 text-lg sm:text-xl font-bold text-purple-800 truncate">
                 ComicCoin Faucet
-              </h1>
+              </span>
             </div>
 
-            {/* Only logout option */}
+            {/* Simple text logout */}
             <button
               onClick={handleLogout}
-              className="inline-flex items-center p-2 rounded-md text-gray-500 hover:text-red-600 hover:bg-gray-100"
-              title="Logout"
+              className="text-gray-500 hover:text-red-600 font-medium text-sm"
             >
-              <X className="h-5 w-5" />
-              <span className="ml-1 hidden sm:inline text-sm">Logout</span>
+              Logout
             </button>
           </div>
         </div>

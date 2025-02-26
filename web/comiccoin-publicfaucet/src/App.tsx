@@ -20,6 +20,7 @@ import AddWalletAddressPage from "./pages/AddWalletAddressPage";
 import TransactionsPage from './pages/TransactionPage';
 import ClaimCoinsPage from './pages/ClaimCoinsPage';
 import SettingsPage from "./pages/SettingsPage";
+import HelpAndSupportPage from "./pages/HelpAndSupportPage";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
           <Route path="claim-coins" element={<ClaimCoinsPage />} />
           <Route path="transactions" element={<TransactionsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="help-and-support" element={<HelpAndSupportPage />} />
         </Route>
       </Routes>
     </Router>
