@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { ArrowLeft } from "lucide-react";
 import { withAuth } from "../hocs/withAuth";
 import { usePutUpdateMe } from "../hooks/usePutUpdateMe";
 import { useMe } from "../hooks/useMe";
@@ -31,8 +33,8 @@ const timezones = [
   { value: "Asia/Tokyo", label: "Japan Standard Time (JST)" }
 ];
 
-const SettingsPage: React.FC = () => {
-  // Use hooks for user data and updating
+const SettingsPageContent: React.FC = () => {
+  const navigate = useNavigate();
   const { user, refetch } = useMe();
   const {
     updateMe,
@@ -41,6 +43,17 @@ const SettingsPage: React.FC = () => {
     isSuccess,
     reset: resetUpdateState
   } = usePutUpdateMe();
+
+  // Prevent iOS scroll bounce
+  useEffect(() => {
+    document.body.style.overscrollBehavior = "none";
+    document.documentElement.style.overscrollBehavior = "none";
+
+    return () => {
+      document.body.style.overscrollBehavior = "";
+      document.documentElement.style.overscrollBehavior = "";
+    };
+  }, []);
 
   // State for form data
   const [formData, setFormData] = useState<UpdateMeRequestDTO>({
@@ -158,288 +171,291 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  // Reset form message when navigating away from error/success state
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isSuccess || updateError) {
-      timer = setTimeout(() => {
-        resetUpdateState();
-      }, 3000);
-    }
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [isSuccess, updateError, resetUpdateState]);
+  // Navigate back to dashboard
+  const handleBackToDashboard = () => {
+    navigate("/user/dashboard");
+  };
 
-  // Loading state
+  // Render loading state
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-pulse text-center">
-          <p className="text-gray-600 mt-4">Loading settings...</p>
+      <div className="min-h-screen bg-purple-50 py-8 flex flex-col items-center justify-center">
+        <div className="animate-pulse">
+          <p className="text-gray-600">Loading settings...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
-      <div className="w-full max-w-4xl bg-white rounded-xl shadow-sm p-6 md:p-8">
-        {/* Page Layout Container */}
-        <div className="grid md:grid-cols-[1fr_2fr] gap-8">
-          {/* Left Side - Header and Description */}
-          <div className="border-b md:border-b-0 md:border-r border-gray-200 pr-0 md:pr-8 pb-6 md:pb-0">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Account Settings
-            </h1>
-            <p className="text-sm text-gray-600">
-              Manage your profile and account preferences.
-              Update your personal information and keep your account details current.
-            </p>
-          </div>
-
-          {/* Right Side - Form */}
-          <div className="pl-0 md:pl-8">
-            {/* Status Message */}
-            {(isSuccess || updateError) && (
-              <div className={`
-                mb-4 p-3 rounded-lg
-                ${isSuccess ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}
-              `}>
-                <p>
-                  {isSuccess
-                    ? 'Settings updated successfully!'
-                    : updateError?.message || 'Failed to update settings'}
-                </p>
-              </div>
-            )}
-
-            {/* Settings Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Form Fields in Two Columns on Desktop */}
-              <div className="grid md:grid-cols-2 gap-4">
-                {/* First Name */}
-                <div>
-                  <label
-                    htmlFor="first_name"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    id="first_name"
-                    name="first_name"
-                    value={formData.first_name}
-                    onChange={handleInputChange}
-                    className={`
-                      w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
-                      ${formErrors.first_name
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:ring-purple-500'}
-                    `}
-                    placeholder="Enter your first name"
-                  />
-                  {formErrors.first_name && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {formErrors.first_name}
-                    </p>
-                  )}
-                </div>
-
-                {/* Last Name */}
-                <div>
-                  <label
-                    htmlFor="last_name"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    id="last_name"
-                    name="last_name"
-                    value={formData.last_name}
-                    onChange={handleInputChange}
-                    className={`
-                      w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
-                      ${formErrors.last_name
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:ring-purple-500'}
-                    `}
-                    placeholder="Enter your last name"
-                  />
-                  {formErrors.last_name && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {formErrors.last_name}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={`
-                    w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
-                    ${formErrors.email
-                      ? 'border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-purple-500'}
-                  `}
-                  placeholder="Enter your email"
-                />
-                {formErrors.email && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {formErrors.email}
-                  </p>
-                )}
-              </div>
-
-              {/* Two-Column Layout for Phone, Country, Timezone */}
-              <div className="grid md:grid-cols-2 gap-4">
-                {/* Phone */}
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone || ''}
-                    onChange={handleInputChange}
-                    className={`
-                      w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
-                      ${formErrors.phone
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:ring-purple-500'}
-                    `}
-                    placeholder="Enter your phone number"
-                  />
-                  {formErrors.phone && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {formErrors.phone}
-                    </p>
-                  )}
-                </div>
-
-                {/* Country */}
-                <div>
-                  <label
-                    htmlFor="country"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Country
-                  </label>
-                  <select
-                    id="country"
-                    name="country"
-                    value={formData.country || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none"
-                  >
-                    {countries.map((country) => (
-                      <option key={country.value} value={country.value}>
-                        {country.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Timezone */}
-              <div>
-                <label
-                  htmlFor="timezone"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Timezone
-                </label>
-                <select
-                  id="timezone"
-                  name="timezone"
-                  value={formData.timezone}
-                  onChange={handleInputChange}
-                  className={`
-                    w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
-                    ${formErrors.timezone
-                      ? 'border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-purple-500'}
-                    appearance-none
-                  `}
-                >
-                  {timezones.map((timezone) => (
-                    <option key={timezone.value} value={timezone.value}>
-                      {timezone.label}
-                    </option>
-                  ))}
-                </select>
-                {formErrors.timezone && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {formErrors.timezone}
-                  </p>
-                )}
-              </div>
-
-              {/* Wallet Address (read-only) */}
-              <div>
-                <label
-                  htmlFor="wallet_address"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Wallet Address
-                </label>
-                <input
-                  type="text"
-                  id="wallet_address"
-                  name="wallet_address"
-                  value={formData.wallet_address}
-                  disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
-                  placeholder="Wallet address (cannot be changed)"
-                />
-                <p className="text-xs text-gray-500 mt-1"
-                >
-                  Wallet address is automatically generated and cannot be modified
-                </p>
-              </div>
-
-              {/* Submit Button */}
-              <div className="mt-6">
-                <button
-                  type="submit"
-                  disabled={isUpdating}
-                  className={`
-                    w-full py-3 rounded-md text-white transition-colors flex items-center justify-center
-                    ${isUpdating
-                      ? 'bg-purple-400 cursor-not-allowed'
-                      : 'bg-purple-600 hover:bg-purple-700'}
-                  `}
-                >
-                  {isUpdating ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
+    <div
+      className="max-w-3xl mx-auto py-4 px-4 md:px-6 touch-manipulation"
+      style={{
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      {/* Header */}
+      <header className="mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <button
+              onClick={handleBackToDashboard}
+              className="mr-3 text-purple-600 hover:text-purple-800 p-1 rounded-full hover:bg-purple-100"
+              aria-label="Back to dashboard"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-purple-800">Account Settings</h1>
+              <p className="text-xs text-gray-600 mt-1">
+                Manage your profile and account preferences
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
+      </header>
 
-// Wrap the component with the auth HOC
-export default withAuth(SettingsPage);
+      {/* Status Message */}
+      {(isSuccess || updateError) && (
+        <div className={`
+          mb-4 p-4 rounded-lg text-center
+          ${isSuccess ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}
+        `}>
+          <p>
+            {isSuccess
+              ? 'Settings updated successfully!'
+              : updateError?.message || 'Failed to update settings'}
+          </p>
+        </div>
+      )}
+
+      {/* Settings Form */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Two-Column Layout for Name Fields */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* First Name */}
+            <div>
+              <label
+                htmlFor="first_name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                First Name
+              </label>
+              <input
+                type="text"
+                id="first_name"
+                name="first_name"
+                value={formData.first_name}
+                onChange={handleInputChange}
+                className={`
+                  w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
+                  ${formErrors.first_name
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-purple-500'}
+                `}
+                placeholder="Enter your first name"
+              />
+              {formErrors.first_name && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.first_name}
+                </p>
+              )}
+            </div>
+
+            {/* Last Name */}
+            <div>
+              <label
+                htmlFor="last_name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Last Name
+              </label>
+              <input
+                type="text"
+                id="last_name"
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleInputChange}
+                className={`
+                  w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
+                  ${formErrors.last_name
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-purple-500'}
+                `}
+                placeholder="Enter your last name"
+              />
+              {formErrors.last_name && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.last_name}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Email */}
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className={`
+                w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
+                ${formErrors.email
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-purple-500'}
+              `}
+              placeholder="Enter your email"
+            />
+            {formErrors.email && (
+              <p className="text-red-500 text-xs mt-1">
+                {formErrors.email}
+              </p>
+            )}
+          </div>
+
+          {/* Two-Column Layout for Phone and Country */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Phone */}
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone || ''}
+                onChange={handleInputChange}
+                className={`
+                  w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
+                  ${formErrors.phone
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-purple-500'}
+                `}
+                placeholder="Enter your phone number"
+              />
+              {formErrors.phone && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.phone}
+                </p>
+              )}
+            </div>
+
+            {/* Country */}
+            <div>
+              <label
+                htmlFor="country"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Country
+              </label>
+              <select
+                id="country"
+                name="country"
+                value={formData.country || ''}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none"
+              >
+                {countries.map((country) => (
+                  <option key={country.value} value={country.value}>
+                    {country.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Timezone */}
+          <div>
+            <label
+              htmlFor="timezone"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Timezone
+            </label>
+            <select
+              id="timezone"
+              name="timezone"
+              value={formData.timezone}
+              onChange={handleInputChange}
+              className={`
+                w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
+                ${formErrors.timezone
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-purple-500'}
+                appearance-none
+              `}
+            >
+              {timezones.map((timezone) => (
+                <option key={timezone.value} value={timezone.value}>
+                  {timezone.label}
+                </option>
+              ))}
+            </select>
+            {formErrors.timezone && (
+              <p className="text-red-500 text-xs mt-1">
+                {formErrors.timezone}
+              </p>
+            )}
+          </div>
+
+          {/* Wallet Address (read-only) */}
+          <div>
+            <label
+              htmlFor="wallet_address"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Wallet Address
+            </label>
+            <input
+              type="text"
+              id="wallet_address"
+              name="wallet_address"
+              value={formData.wallet_address}
+              disabled
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+              placeholder="Wallet address (cannot be changed)"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+                Wallet address is automatically generated and cannot be modified
+             </p>
+           </div>
+
+           {/* Submit Button */}
+           <div className="mt-6">
+             <button
+               type="submit"
+               disabled={isUpdating}
+               className={`
+                 w-full py-3 rounded-md text-white transition-colors flex items-center justify-center
+                 ${isUpdating
+                   ? 'bg-purple-400 cursor-not-allowed'
+                   : 'bg-purple-600 hover:bg-purple-700'}
+               `}
+             >
+               {isUpdating ? 'Saving...' : 'Save Changes'}
+             </button>
+           </div>
+         </form>
+       </div>
+     </div>
+   );
+ };
+
+ // Wrap the component with the auth HOC
+ const SettingsPage = withAuth(SettingsPageContent);
+ export default SettingsPage;
