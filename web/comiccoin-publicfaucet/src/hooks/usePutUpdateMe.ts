@@ -16,6 +16,7 @@ export interface UpdateMeRequestDTO {
   country?: string | null;
   timezone: string;
   wallet_address?: string;
+  [key: string]: string | null | undefined; // Add index signature for flexible property access
 }
 
 /**
@@ -66,8 +67,8 @@ export function usePutUpdateMe(): UsePutUpdateMeReturn {
         const cleanData = Object.entries(data).reduce<UpdateMeRequestDTO>(
           (acc, [key, value]) => {
             if (value !== null && value !== undefined) {
-              // Type assertion to match UpdateMeRequestDTO keys
-              (acc as Record<string, unknown>)[key] = value;
+              // With the index signature added to UpdateMeRequestDTO, this is now type-safe
+              acc[key] = value;
             }
             return acc;
           },
@@ -123,4 +124,4 @@ export function usePutUpdateMe(): UsePutUpdateMeReturn {
 }
 
 export default usePutUpdateMe;
-export type { User, UpdateMeRequestDTO };
+export type { User };
