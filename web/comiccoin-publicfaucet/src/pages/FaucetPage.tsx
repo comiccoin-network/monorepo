@@ -20,9 +20,10 @@ import { useGetFaucet } from "../hooks/useGetFaucet";
 const FaucetPage: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
-  // Use the hook with chainId 1 (ComicCoin network)
-  // Refresh data every 60 seconds
-  const { faucet, isLoading, error, refetch } = useGetFaucet(1, {
+  // Use the hook with the properly structured options
+  // Explicitly set chainId as a number (1) rather than a boolean value
+  const { faucet, isLoading, error, refetch } = useGetFaucet({
+    chainId: 1, // Ensure this is a number, not a boolean
     enabled: true,
     refreshInterval: 60000,
   });
