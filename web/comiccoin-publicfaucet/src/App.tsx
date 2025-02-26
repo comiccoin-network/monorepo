@@ -12,16 +12,18 @@ import GetStartedPage from './pages/GetStartedPage';
 import RegisterCallPage from './pages/RegisterCallPage';
 import LoginCallPage from './pages/LoginCallPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
-import TransactionsPage from './pages/TransactionPage';
 
 // Protected pages (already wrapped with withAuth HOC)
 import DashboardPage from "./pages/DashboardPage";
+import TransactionsPage from './pages/TransactionPage';
+import ClaimCoinsPage from './pages/ClaimCoinsPage';
 import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Unprotected routes */}
         <Route path="/" element={<FaucetPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
@@ -33,6 +35,7 @@ function App() {
         {/* Protected routes with layout */}
         <Route path="/user" element={<MainLayout />}>
           <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="claim-coins" element={<ClaimCoinsPage />} />
           <Route path="transactions" element={<TransactionsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
