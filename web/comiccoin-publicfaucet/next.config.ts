@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  trailingSlash: true,
   eslint: {
     // Disables ESLint during production builds
     ignoreDuringBuilds: true,
