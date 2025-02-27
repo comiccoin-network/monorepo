@@ -2,10 +2,12 @@ import React from "react";
 import { Outlet } from "react-router";
 import { useMe } from "../hooks/useMe";
 import { withAuth } from "../hocs/withAuth";
+import { Coins, LogOut, Heart } from "lucide-react";
 
 /**
  * Layout component for user initialization flows like wallet setup
  * Provides a restricted interface with no navigation to other app sections
+ * Enhanced with accessibility improvements and consistent styling
  */
 const InitializationLayoutContent: React.FC = () => {
   const { logout } = useMe();
@@ -16,44 +18,68 @@ const InitializationLayoutContent: React.FC = () => {
     window.location.href = "/get-started";
   };
 
+  const currentYear = new Date().getFullYear();
+
   return (
-    <div className="min-h-screen flex flex-col bg-purple-50">
-      {/* Simplified header - just logo and logout text */}
-      <header className="bg-white border-b border-purple-100 sticky top-0 z-10">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50 to-white">
+      {/* Skip link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
+      >
+        Skip to main content
+      </a>
+
+      {/* Header - Styled consistently with other layouts */}
+      <header className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white sticky top-0 z-10 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-14 sm:h-16 items-center">
-            {/* Logo section */}
-            <div className="flex items-center">
-              <img src="/appicon-1024x1024.svg" alt="ComicCoin" className="h-8 w-auto" />
-              <span className="ml-2 text-lg sm:text-xl font-bold text-purple-800 truncate">
+          <div className="flex justify-between items-center h-16 sm:h-20">
+            {/* Logo section - Matches MainLayout */}
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0" aria-hidden="true">
+                <Coins className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-white" />
+              </div>
+              <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
                 ComicCoin Faucet
               </span>
             </div>
 
-            {/* Simple text logout */}
+            {/* Simple Logout button with improved accessibility */}
             <button
               onClick={handleLogout}
-              className="text-gray-500 hover:text-red-600 font-medium text-sm"
+              className="text-white hover:text-red-200 font-medium text-base flex items-center gap-2 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white"
+              aria-label="Logout from your account"
             >
-              Logout
+              <LogOut className="w-5 h-5" aria-hidden="true" />
+              <span>Logout</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Main content with explicit landmark */}
+      <main id="main-content" className="flex-1" role="main">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Outlet />
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-center text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} ComicCoin Network. All rights reserved.
-          </p>
+      {/* Footer - Styled consistently with other layouts */}
+      <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-6" role="contentinfo">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Simplified footer for initialization layout */}
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-4">
+              <Heart className="h-5 w-5 text-pink-300 mr-2" aria-hidden="true" />
+              <span className="text-lg font-bold">ComicCoin Network</span>
+            </div>
+            <p className="text-white mb-2">
+              © {currentYear} ComicCoin Network. All rights reserved.
+            </p>
+            <p className="text-sm text-white">
+              Built with ❤️ by the ComicCoin community
+            </p>
+          </div>
         </div>
       </footer>
     </div>
