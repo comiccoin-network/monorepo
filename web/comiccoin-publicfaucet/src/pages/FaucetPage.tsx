@@ -242,6 +242,7 @@ const FaucetPage: React.FC = () => {
         </section>
 
         {/* Community section */}
+        {/*
         <section className="bg-gradient-to-b from-purple-900 to-indigo-900 py-10">
           <div className="max-w-6xl mx-auto px-4">
             <div className="text-center text-white">
@@ -265,6 +266,7 @@ const FaucetPage: React.FC = () => {
             </div>
           </div>
         </section>
+        */}
 
         {/* Stats Section */}
         <section className="bg-white py-10">
