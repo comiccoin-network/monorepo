@@ -56,7 +56,7 @@ const MainLayoutContent: React.FC = () => {
 
   // Toggle mobile menu
   const toggleMobileMenu = () => {
-    setIsMenuOpen(!mobileMenuOpen);
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   const currentYear = new Date().getFullYear();
