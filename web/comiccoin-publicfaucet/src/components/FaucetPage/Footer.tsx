@@ -158,6 +158,7 @@ const Footer: FC<FooterProps> = ({ isLoading, error, faucet }) => {
                   <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               </li>
+              {/*
               <li>
                 <Link
                   to="/contact"
@@ -168,6 +169,7 @@ const Footer: FC<FooterProps> = ({ isLoading, error, faucet }) => {
                   <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               </li>
+              */}
             </ul>
           </div>
         </div>

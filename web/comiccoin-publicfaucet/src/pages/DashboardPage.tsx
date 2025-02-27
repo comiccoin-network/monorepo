@@ -477,6 +477,7 @@ const DashboardPageContent: React.FC = () => {
                 <p className="text-sm text-gray-500 mb-3">
                   Scan this QR code with your Ethereum wallet app to view your ComicCoins or send transactions.
                 </p>
+                {/*
                 <a
                   href={`https://etherscan.io/address/${walletAddress}`}
                   target="_blank"
@@ -486,6 +487,7 @@ const DashboardPageContent: React.FC = () => {
                   View on Etherscan
                   <ExternalLink size={14} className="ml-1" />
                 </a>
+                */}
               </div>
             </div>
           </div>
