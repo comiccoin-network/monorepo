@@ -13,6 +13,7 @@ import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import GetStartedPage from './pages/GetStartedPage'
 import RegisterPage from './pages/RegisterPage'
+import RegistrationSuccessPage from './pages/RegistrationSuccessPage'
 import RegisterCancelPage from './pages/RegisterCancelPage'
 import LoginCallPage from './pages/LoginCallPage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
@@ -35,6 +36,7 @@ function App() {
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/get-started" element={<GetStartedPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/register-success" element={<RegistrationSuccessPage />} />
                 <Route path="/register-canceled" element={<RegisterCancelPage />} />
                 <Route path="/login-call" element={<LoginCallPage />} />
                 <Route path="/auth-callback" element={<AuthCallbackPage />} />

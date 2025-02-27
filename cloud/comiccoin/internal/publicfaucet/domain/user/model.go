@@ -22,7 +22,6 @@ const (
 )
 
 type User struct {
-	FederateIdentityID        primitive.ObjectID `bson:"federatedidentity_id" json:"federatedidentity_id"`
 	ID                        primitive.ObjectID `bson:"_id" json:"id"`
 	Email                     string             `bson:"email" json:"email"`
 	FirstName                 string             `bson:"first_name" json:"first_name"`

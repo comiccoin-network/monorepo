@@ -1,5 +1,5 @@
-import { FC, useState, FormEvent, ChangeEvent } from 'react'
-import { Link } from 'react-router'
+import { FC, useState, FormEvent, ChangeEvent, useRef, useEffect } from 'react'
+import { Link, Navigate } from 'react-router' // Updated to include Navigate
 import {
     ArrowLeft,
     CheckCircle2,
@@ -24,8 +24,15 @@ interface RegisterFormData extends RegisterCustomerRequest {
 }
 
 const RegisterPage: FC = () => {
+    // State for redirecting on success
+    const [redirectTo, setRedirectTo] = useState<string>('')
+
     // Get registration functionality from our custom hook
     const { register, isLoading, error: apiError, success: apiSuccess, resetState } = useRegistration()
+
+    // Create a ref for the error summary div to scroll to
+    const errorSummaryRef = useRef<HTMLDivElement>(null)
+    const formRef = useRef<HTMLFormElement>(null)
 
     // State for form fields
     const [formData, setFormData] = useState<RegisterFormData>({
@@ -48,8 +55,37 @@ const RegisterPage: FC = () => {
     // Error summary for display in the error box
     const [errorSummary, setErrorSummary] = useState<string[]>([])
 
-    // State for form submission status
-    const [submitSuccess, setSubmitSuccess] = useState<boolean>(false)
+    // State to track if form has been submitted to prevent duplicate submissions
+    const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
+
+    // Effect to handle API errors when they change
+    useEffect(() => {
+        if (apiError) {
+            mapApiErrorsToFormFields()
+
+            // Scroll to the top of the form when errors occur
+            setTimeout(() => {
+                if (errorSummaryRef.current) {
+                    errorSummaryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                } else if (formRef.current) {
+                    formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                }
+            }, 100)
+
+            // Reset submission flag when we get an error
+            setIsSubmitted(false)
+        }
+    }, [apiError])
+
+    // Effect to handle successful registration
+    useEffect(() => {
+        if (apiSuccess) {
+            // Redirect to success page
+            setRedirectTo('/register-success')
+        }
+    }, [apiSuccess])
 
     // Handle input changes
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -113,36 +149,30 @@ const RegisterPage: FC = () => {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
 
+        // Prevent multiple submissions
+        if (isLoading || isSubmitted) {
+            return
+        }
+
         // Reset submission states
         resetState()
-        setSubmitSuccess(false)
         setErrors({})
         setErrorSummary([])
 
+        // Mark as submitted to prevent duplicate API calls
+        setIsSubmitted(true)
+
         try {
-            // Send registration request to API using our hook
+            // Send registration request to API using our hook - just once
             await register(formData)
 
-            // Set success status
-            setSubmitSuccess(true)
+            // No need to set a separate success state here
+            // We'll rely solely on apiSuccess from the hook
 
-            // Reset form after successful submission
-            setFormData({
-                first_name: '',
-                last_name: '',
-                email: '',
-                password: '',
-                password_confirm: '',
-                phone: '',
-                country: '',
-                country_other: '',
-                timezone: '',
-                agree_terms_of_service: false,
-                agree_promotions: false,
-            })
+            // Form reset will happen after redirect
         } catch (error) {
-            // Map API validation errors to form fields
-            mapApiErrorsToFormFields()
+            // mapApiErrorsToFormFields() will be called by the useEffect when apiError changes
+            // This ensures errors are always displayed regardless of when they occur
         }
     }
 
@@ -190,6 +220,11 @@ const RegisterPage: FC = () => {
         { value: 'UTC+12:00', label: '(UTC+12:00) Auckland, Fiji' },
     ]
 
+    // If redirectTo is set, redirect to that URL
+    if (redirectTo) {
+        return <Navigate to={redirectTo} />
+    }
+
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
             {/* Skip link for accessibility */}
@@ -220,442 +255,395 @@ const RegisterPage: FC = () => {
 
                 {/* Registration Form Section */}
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-12">
-                    {submitSuccess || apiSuccess ? (
-                        <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-green-100">
-                            <div className="text-center">
-                                <div className="bg-green-100 mx-auto rounded-full p-4 h-20 w-20 flex items-center justify-center mb-6">
-                                    <CheckCircle2 className="h-12 w-12 text-green-600" />
-                                </div>
-                                <h2 className="text-2xl font-bold text-green-700 mb-4">Registration Successful!</h2>
-                                <p className="text-gray-600 mb-8">
-                                    Your account has been created successfully. You can now log in and start collecting
-                                    your ComicCoins.
-                                </p>
-                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                    <Link
-                                        to="/login"
-                                        className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        Log In Now
-                                        <ArrowRight className="h-5 w-5" />
-                                    </Link>
-                                    <Link
-                                        to="/"
-                                        className="bg-white text-indigo-600 border border-indigo-200 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <ArrowLeft className="h-5 w-5" />
-                                        Back to Home
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="bg-white rounded-xl p-6 sm:p-8 shadow-lg">
-                            <h2 className="text-2xl sm:text-3xl font-bold text-purple-800 mb-6">Create Your Account</h2>
+                    <div className="bg-white rounded-xl p-6 sm:p-8 shadow-lg">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-purple-800 mb-6">Create Your Account</h2>
 
-                            {/* Display Error Summary Box */}
-                            {errorSummary.length > 0 && (
-                                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                                    <div className="flex items-center gap-2 font-medium mb-2">
-                                        <AlertTriangle className="h-5 w-5" />
-                                        <h3>Please correct the following errors:</h3>
-                                    </div>
-                                    <ul className="list-disc ml-5 space-y-1">
-                                        {errorSummary.map((error, index) => (
-                                            <li key={index}>{error}</li>
-                                        ))}
-                                    </ul>
+                        {/* Display Error Summary Box */}
+                        {errorSummary.length > 0 && (
+                            <div
+                                ref={errorSummaryRef}
+                                className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
+                            >
+                                <div className="flex items-center gap-2 font-medium mb-2">
+                                    <AlertTriangle className="h-5 w-5" />
+                                    <h3>Please correct the following errors:</h3>
+                                </div>
+                                <ul className="list-disc ml-5 space-y-1">
+                                    {errorSummary.map((error, index) => (
+                                        <li key={index}>{error}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Display API general error message if not already showing summary */}
+                        {apiError &&
+                            !apiError.errors &&
+                            typeof apiError.message === 'string' &&
+                            errorSummary.length === 0 && (
+                                <div
+                                    ref={errorSummaryRef}
+                                    className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
+                                >
+                                    <p className="font-medium">{apiError.message}</p>
                                 </div>
                             )}
 
-                            {/* Display API general error message if not already showing summary */}
-                            {apiError &&
-                                !apiError.errors &&
-                                typeof apiError.message === 'string' &&
-                                errorSummary.length === 0 && (
-                                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                                        <p className="font-medium">{apiError.message}</p>
+                        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+                            {/* Personal Information Section */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                                    <User className="h-5 w-5 text-purple-500" />
+                                    Personal Information
+                                </h3>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* First Name */}
+                                    <div>
+                                        <label
+                                            htmlFor="first_name"
+                                            className="block text-sm font-medium text-gray-700 mb-1"
+                                        >
+                                            First Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="first_name"
+                                            name="first_name"
+                                            value={formData.first_name}
+                                            onChange={handleInputChange}
+                                            className={`w-full px-4 py-3 rounded-lg border ${
+                                                errors.first_name ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                            } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                        />
+                                        {errors.first_name && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.first_name}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Last Name */}
+                                    <div>
+                                        <label
+                                            htmlFor="last_name"
+                                            className="block text-sm font-medium text-gray-700 mb-1"
+                                        >
+                                            Last Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="last_name"
+                                            name="last_name"
+                                            value={formData.last_name}
+                                            onChange={handleInputChange}
+                                            className={`w-full px-4 py-3 rounded-lg border ${
+                                                errors.last_name ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                            } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                        />
+                                        {errors.last_name && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.last_name}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Email */}
+                                <div>
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Email Address *
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Mail className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
+                                                errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                            } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                            placeholder="you@example.com"
+                                        />
+                                    </div>
+                                    {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                                </div>
+
+                                {/* Phone (Optional) */}
+                                <div>
+                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Phone Number <span className="text-gray-500 text-xs">(Optional)</span>
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Phone className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="tel"
+                                            id="phone"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleInputChange}
+                                            className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                            placeholder="+1 (555) 123-4567"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Location Information */}
+                            <div className="pt-4 space-y-4">
+                                <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                                    <Globe className="h-5 w-5 text-purple-500" />
+                                    Location Information
+                                </h3>
+
+                                {/* Country */}
+                                <div>
+                                    <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Country *
+                                    </label>
+                                    <select
+                                        id="country"
+                                        name="country"
+                                        value={formData.country}
+                                        onChange={handleInputChange}
+                                        className={`w-full px-4 py-3 rounded-lg border ${
+                                            errors.country ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                        } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white`}
+                                    >
+                                        {countries.map((country) => (
+                                            <option key={country.value} value={country.value}>
+                                                {country.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.country && <p className="mt-1 text-sm text-red-600">{errors.country}</p>}
+                                </div>
+
+                                {/* Other Country */}
+                                {formData.country === 'other' && (
+                                    <div>
+                                        <label
+                                            htmlFor="country_other"
+                                            className="block text-sm font-medium text-gray-700 mb-1"
+                                        >
+                                            Specify Country *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="country_other"
+                                            name="country_other"
+                                            value={formData.country_other}
+                                            onChange={handleInputChange}
+                                            className={`w-full px-4 py-3 rounded-lg border ${
+                                                errors.country_other ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                            } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                        />
+                                        {errors.country_other && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.country_other}</p>
+                                        )}
                                     </div>
                                 )}
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                {/* Personal Information Section */}
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                                        <User className="h-5 w-5 text-purple-500" />
-                                        Personal Information
-                                    </h3>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {/* First Name */}
-                                        <div>
-                                            <label
-                                                htmlFor="first_name"
-                                                className="block text-sm font-medium text-gray-700 mb-1"
-                                            >
-                                                First Name *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="first_name"
-                                                name="first_name"
-                                                value={formData.first_name}
-                                                onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-lg border ${
-                                                    errors.first_name ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                                                } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                            />
-                                            {errors.first_name && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.first_name}</p>
-                                            )}
+                                {/* Timezone */}
+                                <div>
+                                    <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Timezone *
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Clock className="h-5 w-5 text-gray-400" />
                                         </div>
-
-                                        {/* Last Name */}
-                                        <div>
-                                            <label
-                                                htmlFor="last_name"
-                                                className="block text-sm font-medium text-gray-700 mb-1"
-                                            >
-                                                Last Name *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="last_name"
-                                                name="last_name"
-                                                value={formData.last_name}
-                                                onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-lg border ${
-                                                    errors.last_name ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                                                } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                            />
-                                            {errors.last_name && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.last_name}</p>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Email */}
-                                    <div>
-                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Email Address *
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Mail className="h-5 w-5 text-gray-400" />
-                                            </div>
-                                            <input
-                                                type="email"
-                                                id="email"
-                                                name="email"
-                                                value={formData.email}
-                                                onChange={handleInputChange}
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
-                                                    errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                                                } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                                placeholder="you@example.com"
-                                            />
-                                        </div>
-                                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-                                    </div>
-
-                                    {/* Phone (Optional) */}
-                                    <div>
-                                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Phone Number <span className="text-gray-500 text-xs">(Optional)</span>
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Phone className="h-5 w-5 text-gray-400" />
-                                            </div>
-                                            <input
-                                                type="tel"
-                                                id="phone"
-                                                name="phone"
-                                                value={formData.phone}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                placeholder="+1 (555) 123-4567"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Location Information */}
-                                <div className="pt-4 space-y-4">
-                                    <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                                        <Globe className="h-5 w-5 text-purple-500" />
-                                        Location Information
-                                    </h3>
-
-                                    {/* Country */}
-                                    <div>
-                                        <label
-                                            htmlFor="country"
-                                            className="block text-sm font-medium text-gray-700 mb-1"
-                                        >
-                                            Country *
-                                        </label>
                                         <select
-                                            id="country"
-                                            name="country"
-                                            value={formData.country}
+                                            id="timezone"
+                                            name="timezone"
+                                            value={formData.timezone}
                                             onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 rounded-lg border ${
-                                                errors.country ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
+                                                errors.timezone ? 'border-red-300 bg-red-50' : 'border-gray-300'
                                             } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white`}
                                         >
-                                            {countries.map((country) => (
-                                                <option key={country.value} value={country.value}>
-                                                    {country.label}
+                                            {timezones.map((timezone) => (
+                                                <option key={timezone.value} value={timezone.value}>
+                                                    {timezone.label}
                                                 </option>
                                             ))}
                                         </select>
-                                        {errors.country && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.country}</p>
-                                        )}
                                     </div>
+                                    {errors.timezone && <p className="mt-1 text-sm text-red-600">{errors.timezone}</p>}
+                                </div>
+                            </div>
 
-                                    {/* Other Country */}
-                                    {formData.country === 'other' && (
-                                        <div>
-                                            <label
-                                                htmlFor="country_other"
-                                                className="block text-sm font-medium text-gray-700 mb-1"
-                                            >
-                                                Specify Country *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="country_other"
-                                                name="country_other"
-                                                value={formData.country_other}
-                                                onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-lg border ${
-                                                    errors.country_other
-                                                        ? 'border-red-300 bg-red-50'
-                                                        : 'border-gray-300'
-                                                } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                            />
-                                            {errors.country_other && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.country_other}</p>
-                                            )}
-                                        </div>
-                                    )}
+                            {/* Account Security */}
+                            <div className="pt-4 space-y-4">
+                                <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                                    <Lock className="h-5 w-5 text-purple-500" />
+                                    Account Security
+                                </h3>
 
-                                    {/* Timezone */}
-                                    <div>
-                                        <label
-                                            htmlFor="timezone"
-                                            className="block text-sm font-medium text-gray-700 mb-1"
-                                        >
-                                            Timezone *
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Clock className="h-5 w-5 text-gray-400" />
-                                            </div>
-                                            <select
-                                                id="timezone"
-                                                name="timezone"
-                                                value={formData.timezone}
-                                                onChange={handleInputChange}
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
-                                                    errors.timezone ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                                                } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white`}
-                                            >
-                                                {timezones.map((timezone) => (
-                                                    <option key={timezone.value} value={timezone.value}>
-                                                        {timezone.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        {errors.timezone && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.timezone}</p>
-                                        )}
-                                    </div>
+                                {/* Password */}
+                                <div>
+                                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Password *
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                        className={`w-full px-4 py-3 rounded-lg border ${
+                                            errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                        } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                        placeholder="At least 8 characters"
+                                    />
+                                    {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
                                 </div>
 
-                                {/* Account Security */}
-                                <div className="pt-4 space-y-4">
-                                    <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                                        <Lock className="h-5 w-5 text-purple-500" />
-                                        Account Security
-                                    </h3>
-
-                                    {/* Password */}
-                                    <div>
-                                        <label
-                                            htmlFor="password"
-                                            className="block text-sm font-medium text-gray-700 mb-1"
-                                        >
-                                            Password *
-                                        </label>
-                                        <input
-                                            type="password"
-                                            id="password"
-                                            name="password"
-                                            value={formData.password}
-                                            onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 rounded-lg border ${
-                                                errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                                            } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                            placeholder="At least 8 characters"
-                                        />
-                                        {errors.password && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Confirm Password */}
-                                    <div>
-                                        <label
-                                            htmlFor="password_confirm"
-                                            className="block text-sm font-medium text-gray-700 mb-1"
-                                        >
-                                            Confirm Password *
-                                        </label>
-                                        <input
-                                            type="password"
-                                            id="password_confirm"
-                                            name="password_confirm"
-                                            value={formData.password_confirm}
-                                            onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 rounded-lg border ${
-                                                errors.password_confirm ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                                            } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                        />
-                                        {errors.password_confirm && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.password_confirm}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Terms and Conditions */}
-                                <div className="pt-4 space-y-4">
-                                    <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                                        <Shield className="h-5 w-5 text-purple-500" />
-                                        Terms & Privacy
-                                    </h3>
-
-                                    {/* Terms of Service */}
-                                    <div className="flex items-start">
-                                        <div className="flex items-center h-5">
-                                            <input
-                                                id="agree_terms_of_service"
-                                                name="agree_terms_of_service"
-                                                type="checkbox"
-                                                checked={formData.agree_terms_of_service}
-                                                onChange={handleCheckboxChange}
-                                                className={`h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 ${
-                                                    errors.agree_terms_of_service ? 'border-red-300' : ''
-                                                }`}
-                                            />
-                                        </div>
-                                        <div className="ml-3 text-sm">
-                                            <label
-                                                htmlFor="agree_terms_of_service"
-                                                className="font-medium text-gray-700"
-                                            >
-                                                I agree to the{' '}
-                                                <Link
-                                                    to="/terms"
-                                                    className="text-purple-600 hover:text-purple-800 underline"
-                                                >
-                                                    Terms of Service
-                                                </Link>{' '}
-                                                and{' '}
-                                                <Link
-                                                    to="/privacy"
-                                                    className="text-purple-600 hover:text-purple-800 underline"
-                                                >
-                                                    Privacy Policy
-                                                </Link>{' '}
-                                                *
-                                            </label>
-                                            {errors.agree_terms_of_service && (
-                                                <p className="mt-1 text-sm text-red-600">
-                                                    {errors.agree_terms_of_service}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Promotional emails */}
-                                    <div className="flex items-start">
-                                        <div className="flex items-center h-5">
-                                            <input
-                                                id="agree_promotions"
-                                                name="agree_promotions"
-                                                type="checkbox"
-                                                checked={formData.agree_promotions}
-                                                onChange={handleCheckboxChange}
-                                                className="h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                                            />
-                                        </div>
-                                        <div className="ml-3 text-sm">
-                                            <label htmlFor="agree_promotions" className="font-medium text-gray-700">
-                                                I'd like to receive updates about new features, events, and other
-                                                comic-related content
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Submit Button */}
-                                <div className="pt-6">
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className={`w-full bg-indigo-600 text-white px-6 py-4 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 ${
-                                            isLoading ? 'opacity-70 cursor-not-allowed' : ''
-                                        }`}
+                                {/* Confirm Password */}
+                                <div>
+                                    <label
+                                        htmlFor="password_confirm"
+                                        className="block text-sm font-medium text-gray-700 mb-1"
                                     >
-                                        {isLoading ? (
-                                            <>
-                                                <svg
-                                                    className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <circle
-                                                        className="opacity-25"
-                                                        cx="12"
-                                                        cy="12"
-                                                        r="10"
-                                                        stroke="currentColor"
-                                                        strokeWidth="4"
-                                                    ></circle>
-                                                    <path
-                                                        className="opacity-75"
-                                                        fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                    ></path>
-                                                </svg>
-                                                Creating your account...
-                                            </>
-                                        ) : (
-                                            <>
-                                                Create Account
-                                                <ArrowRight className="h-5 w-5" />
-                                            </>
+                                        Confirm Password *
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="password_confirm"
+                                        name="password_confirm"
+                                        value={formData.password_confirm}
+                                        onChange={handleInputChange}
+                                        className={`w-full px-4 py-3 rounded-lg border ${
+                                            errors.password_confirm ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                        } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                    />
+                                    {errors.password_confirm && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.password_confirm}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Terms and Conditions */}
+                            <div className="pt-4 space-y-4">
+                                <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                                    <Shield className="h-5 w-5 text-purple-500" />
+                                    Terms & Privacy
+                                </h3>
+
+                                {/* Terms of Service */}
+                                <div className="flex items-start">
+                                    <div className="flex items-center h-5">
+                                        <input
+                                            id="agree_terms_of_service"
+                                            name="agree_terms_of_service"
+                                            type="checkbox"
+                                            checked={formData.agree_terms_of_service}
+                                            onChange={handleCheckboxChange}
+                                            className={`h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 ${
+                                                errors.agree_terms_of_service ? 'border-red-300' : ''
+                                            }`}
+                                        />
+                                    </div>
+                                    <div className="ml-3 text-sm">
+                                        <label htmlFor="agree_terms_of_service" className="font-medium text-gray-700">
+                                            I agree to the{' '}
+                                            <Link
+                                                to="/terms"
+                                                className="text-purple-600 hover:text-purple-800 underline"
+                                            >
+                                                Terms of Service
+                                            </Link>{' '}
+                                            and{' '}
+                                            <Link
+                                                to="/privacy"
+                                                className="text-purple-600 hover:text-purple-800 underline"
+                                            >
+                                                Privacy Policy
+                                            </Link>{' '}
+                                            *
+                                        </label>
+                                        {errors.agree_terms_of_service && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.agree_terms_of_service}</p>
                                         )}
-                                    </button>
+                                    </div>
                                 </div>
 
-                                {/* Sign In Link */}
-                                <div className="text-center pt-2">
-                                    <p className="text-gray-600">
-                                        Already have an account?{' '}
-                                        <Link to="/login" className="text-purple-600 hover:text-purple-800 font-medium">
-                                            Sign In
-                                        </Link>
-                                    </p>
+                                {/* Promotional emails */}
+                                <div className="flex items-start">
+                                    <div className="flex items-center h-5">
+                                        <input
+                                            id="agree_promotions"
+                                            name="agree_promotions"
+                                            type="checkbox"
+                                            checked={formData.agree_promotions}
+                                            onChange={handleCheckboxChange}
+                                            className="h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                        />
+                                    </div>
+                                    <div className="ml-3 text-sm">
+                                        <label htmlFor="agree_promotions" className="font-medium text-gray-700">
+                                            I'd like to receive updates about new features, events, and other
+                                            comic-related content
+                                        </label>
+                                    </div>
                                 </div>
-                            </form>
-                        </div>
-                    )}
+                            </div>
+
+                            {/* Submit Button */}
+                            <div className="pt-6">
+                                <button
+                                    type="submit"
+                                    disabled={isLoading || isSubmitted}
+                                    className={`w-full bg-indigo-600 text-white px-6 py-4 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 ${
+                                        isLoading || isSubmitted ? 'opacity-70 cursor-not-allowed' : ''
+                                    }`}
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <svg
+                                                className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle
+                                                    className="opacity-25"
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                ></circle>
+                                                <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                ></path>
+                                            </svg>
+                                            Creating your account...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Create Account
+                                            <ArrowRight className="h-5 w-5" />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+
+                            {/* Sign In Link */}
+                            <div className="text-center pt-2">
+                                <p className="text-gray-600">
+                                    Already have an account?{' '}
+                                    <Link to="/login" className="text-purple-600 hover:text-purple-800 font-medium">
+                                        Sign In
+                                    </Link>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </main>
 

@@ -104,7 +104,7 @@ func (h *GatewayUserRegisterHTTPHandler) Execute(w http.ResponseWriter, r *http.
 		return
 	}
 
-	resp := result.(sv_gateway.RegisterCustomerResponseIDO)
+	resp := result.(*sv_gateway.RegisterCustomerResponseIDO)
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {

@@ -26,13 +26,12 @@ import (
 )
 
 type ClaimCoinsResponse struct {
-	FederateIdentityID primitive.ObjectID `bson:"federatedidentity_id" json:"federatedidentity_id"`
-	ID                 primitive.ObjectID `bson:"_id" json:"id"`
-	Email              string             `bson:"email" json:"email"`
-	FirstName          string             `bson:"first_name" json:"first_name"`
-	LastName           string             `bson:"last_name" json:"last_name"`
-	Name               string             `bson:"name" json:"name"`
-	LexicalName        string             `bson:"lexical_name" json:"lexical_name"`
+	ID          primitive.ObjectID `bson:"_id" json:"id"`
+	Email       string             `bson:"email" json:"email"`
+	FirstName   string             `bson:"first_name" json:"first_name"`
+	LastName    string             `bson:"last_name" json:"last_name"`
+	Name        string             `bson:"name" json:"name"`
+	LexicalName string             `bson:"lexical_name" json:"lexical_name"`
 	// Role                    int8               `bson:"role" json:"role"`
 	// WasEmailVerified        bool               `bson:"was_email_verified" json:"was_email_verified,omitempty"`
 	// EmailVerificationCode   string             `bson:"email_verification_code,omitempty" json:"email_verification_code,omitempty"`
@@ -384,18 +383,17 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 	//
 
 	return &ClaimCoinsResponse{
-		FederateIdentityID: user.FederateIdentityID,
-		ID:                 user.ID,
-		Email:              user.Email,
-		FirstName:          user.FirstName,
-		LastName:           user.LastName,
-		Name:               user.Name,
-		LexicalName:        user.LexicalName,
-		Phone:              user.Phone,
-		Country:            user.Country,
-		Timezone:           user.Timezone,
-		WalletAddress:      user.WalletAddress,
-		LastClaimTime:      user.LastClaimTime,
-		NextClaimTime:      user.NextClaimTime,
+		ID:            user.ID,
+		Email:         user.Email,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Name:          user.Name,
+		LexicalName:   user.LexicalName,
+		Phone:         user.Phone,
+		Country:       user.Country,
+		Timezone:      user.Timezone,
+		WalletAddress: user.WalletAddress,
+		LastClaimTime: user.LastClaimTime,
+		NextClaimTime: user.NextClaimTime,
 	}, nil
 }
