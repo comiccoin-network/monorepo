@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user/model.go
-package domain
+package user
 
 import (
 	"time"

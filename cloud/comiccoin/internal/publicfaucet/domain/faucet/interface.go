@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/faucet/interface.go
-package domain
+package faucet
 
 import (
 	"context"

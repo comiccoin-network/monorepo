@@ -15,6 +15,7 @@ import GetStartedPage from './pages/GetStartedPage'
 import RegisterPage from './pages/RegisterPage'
 import RegistrationSuccessPage from './pages/RegistrationSuccessPage'
 import RegisterCancelPage from './pages/RegisterCancelPage'
+import EmailVerification from './pages/EmailVerificationPage'
 import LoginCallPage from './pages/LoginCallPage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
 
@@ -38,6 +39,7 @@ function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/register-success" element={<RegistrationSuccessPage />} />
                 <Route path="/register-canceled" element={<RegisterCancelPage />} />
+                <Route path="/verify" element={<EmailVerification />} />
                 <Route path="/login-call" element={<LoginCallPage />} />
                 <Route path="/auth-callback" element={<AuthCallbackPage />} />
 

@@ -50,6 +50,7 @@ type httpServerImpl struct {
 
 	// Protect API Endpoints
 	gatewayUserRegisterHTTPHandler *http_gateway.GatewayUserRegisterHTTPHandler
+	gatewayVerifyEmailHTTPHandler  *http_gateway.GatewayVerifyEmailHTTPHandler
 
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler
 
@@ -73,6 +74,7 @@ func NewHTTPServer(
 	logger *slog.Logger,
 	mid mid.Middleware,
 	gatewayUserRegisterHTTPHandler *http_gateway.GatewayUserRegisterHTTPHandler,
+	gatewayVerifyEmailHTTPHandler *http_gateway.GatewayVerifyEmailHTTPHandler,
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
@@ -90,6 +92,7 @@ func NewHTTPServer(
 		logger:                            logger,
 		middleware:                        mid,
 		gatewayUserRegisterHTTPHandler:    gatewayUserRegisterHTTPHandler,
+		gatewayVerifyEmailHTTPHandler:     gatewayVerifyEmailHTTPHandler,
 		getHelloHTTPHandler:               getHelloHTTPHandler,
 		getMeHTTPHandler:                  getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler:    postMeConnectWalletHTTPHandler,
@@ -133,8 +136,10 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		// Handle the request based on the URL path tokens.
 		switch {
 		// --- Unprotected API endpoints ---
-		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "register":
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "register" && r.Method == http.MethodPost:
 			port.gatewayUserRegisterHTTPHandler.Execute(w, r)
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "verify" && r.Method == http.MethodPost:
+			port.gatewayVerifyEmailHTTPHandler.Execute(w, r)
 
 		// --- Resource endpoints ---
 		// Hello

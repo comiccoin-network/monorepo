@@ -133,6 +133,11 @@ func NewModule(
 		logger,
 		userRepo,
 	)
+	userGetByVerificationCodeUseCase := uc_user.NewUserGetByVerificationCodeUseCase(
+		cfg,
+		logger,
+		userRepo,
+	)
 	userGetByIDUseCase := uc_user.NewUserGetByIDUseCase(
 		cfg,
 		logger,
@@ -320,6 +325,11 @@ func NewModule(
 		userUpdateUseCase,
 		sendUserVerificationEmailUseCase,
 	)
+	gatewayVerifyEmailService := svc_gateway.NewGatewayVerifyEmailService(
+		logger,
+		userGetByVerificationCodeUseCase,
+		userUpdateUseCase,
+	)
 
 	////
 	//// Interface
@@ -331,6 +341,11 @@ func NewModule(
 		logger,
 		dbClient,
 		gatewayUserRegisterService,
+	)
+	gatewayVerifyEmailHTTPHandler := http_gateway.NewGatewayVerifyEmailHTTPHandler(
+		logger,
+		dbClient,
+		gatewayVerifyEmailService,
 	)
 
 	// --- Hello ---
@@ -423,6 +438,7 @@ func NewModule(
 		logger,
 		httpMiddleware,
 		gatewayUserRegisterHTTPHandler,
+		gatewayVerifyEmailHTTPHandler,
 		getHelloHTTPHandler,
 		getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler,

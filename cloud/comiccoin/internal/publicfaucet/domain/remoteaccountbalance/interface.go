@@ -1,5 +1,5 @@
 // github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/remoteaccountbalance/interface.go
-package domain
+package remoteaccountbalance
 
 import (
 	"context"
