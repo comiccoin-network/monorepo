@@ -23,7 +23,6 @@ import (
 	unifiedmiddleware "github.com/comiccoin-network/monorepo/cloud/comiccoin/unifiedhttp/middleware"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet"
 )
 
@@ -91,23 +90,6 @@ func doRunDaemon() {
 	authorityHTTPServer := authorityModule.GetHTTPServerInstance()
 	authorityTaskManager := authorityModule.GetTaskManagerInstance()
 
-	// --- Gateway ---
-
-	gatewayModule := gateway.NewModule(
-		cfg,
-		logger,
-		dbClient,
-		keystore,
-		passp,
-		jwtp,
-		blackp,
-		redisCacheProvider,
-		dmutex,
-		ipcbp,
-	)
-
-	gatewayHTTPServer := gatewayModule.GetHTTPServerInstance()
-
 	// --- Public Faucet ---
 
 	publicfaucetModule := publicfaucet.NewModule(
@@ -142,7 +124,6 @@ func doRunDaemon() {
 		logger,
 		httpMiddleware,
 		authorityHTTPServer,
-		gatewayHTTPServer,
 		publicfaucetHTTPServer,
 	)
 

@@ -11,8 +11,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	authority_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/http"
-	gateway_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http"
-	publicfaucet_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/gateway/interface/http"
+	publicfaucet_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin/unifiedhttp/middleware"
 )
 
@@ -35,7 +34,6 @@ type unifiedHTTPServerImpl struct {
 
 	// Modules
 	authorityHTTPServer    authority_http.HTTPServer
-	gatewayHTTPServer      gateway_http.HTTPServer
 	publicfaucetHTTPServer publicfaucet_http.HTTPServer
 }
 
@@ -44,7 +42,6 @@ func NewUnifiedHTTPServer(
 	logger *slog.Logger,
 	mid mid.Middleware,
 	authorityHTTPServer authority_http.HTTPServer,
-	gatewayHTTPServer gateway_http.HTTPServer,
 	publicfaucetHTTPServer publicfaucet_http.HTTPServer,
 ) UnifiedHTTPServer {
 	// Check if the HTTP address is set in the configuration.
@@ -75,7 +72,6 @@ func NewUnifiedHTTPServer(
 		getVersionHTTPHandler:     NewGetVersionHTTPHandler(logger),
 		getHealthCheckHTTPHandler: NewGetHealthCheckHTTPHandler(logger),
 		authorityHTTPServer:       authorityHTTPServer,
-		gatewayHTTPServer:         gatewayHTTPServer,
 		publicfaucetHTTPServer:    publicfaucetHTTPServer,
 	}
 
@@ -149,12 +145,6 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 		port.authorityHTTPServer.HandleIncomingHTTPRequest(w, r)
 		return
 
-	case p[0] == "gateway":
-		// Handle new API endpoints.
-		port.logger.Debug("entering gateway module...")
-		port.gatewayHTTPServer.HandleIncomingHTTPRequest(w, r)
-		return
-
 	case p[0] == "publicfaucet":
 		// Handle new API endpoints.
 		port.logger.Debug("entering publicfaucet module...")
@@ -173,7 +163,6 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 		// - comiccoin-wallet
 		// - comiccoin-cli
 		// - comiccoin-nftminter
-		// - comiccoin-gateway
 
 		port.authorityHTTPServer.HandleIncomingDeprecatedPathHTTPRequest(w, r)
 	}
