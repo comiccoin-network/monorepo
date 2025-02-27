@@ -33,11 +33,10 @@ const GetStartedPage: FC = () => {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                                Welcome to ComicCoin Network
+                                Welcome to ComicCoin Faucet
                             </h1>
                             <p className="text-base sm:text-lg lg:text-xl text-indigo-100 max-w-3xl mx-auto">
-                                Access all ComicCoin Network applications with a single account. Join our community of
-                                comic collectors and creators today.
+                                Join our community of comic collectors and creators today and get free ComicCoins!
                             </p>
                             <Link
                                 to="/"
