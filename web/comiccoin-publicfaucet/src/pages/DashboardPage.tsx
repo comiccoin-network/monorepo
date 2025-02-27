@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Coins, TrendingUp, Wallet, ArrowRight, Copy, ExternalLink } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -18,7 +18,7 @@ interface Claim {
   hash: string;
 }
 
-// CountdownTimer component
+// CountdownTimer component with improved accessibility
 const CountdownTimer: React.FC<{
   nextClaimTime: string;
   canClaim: boolean;
@@ -52,13 +52,19 @@ const CountdownTimer: React.FC<{
     return () => clearInterval(interval);
   }, [calculateTimeRemaining]);
 
+  // For screen readers to announce time remaining
+  const timeRemainingText = canClaim
+    ? "Your next claim is available now"
+    : `Time until next claim: ${timeRemaining.hours} hours, ${timeRemaining.minutes} minutes, and ${timeRemaining.seconds} seconds`;
+
   return (
-    <div className="text-center">
+    <div className="text-center" aria-live="polite">
       <h2 className="text-sm font-medium text-gray-600 mb-2">Next Claim Available In</h2>
+      <span className="sr-only">{timeRemainingText}</span>
       {canClaim ? (
-        <div className="text-green-500 font-bold text-xl">Available Now!</div>
+        <div className="text-green-500 font-bold text-xl" aria-hidden="true">Available Now!</div>
       ) : (
-        <div className="flex justify-center gap-2 text-purple-700 font-mono">
+        <div className="flex flex-wrap justify-center gap-2 text-purple-700 font-mono" aria-hidden="true">
           <div className="bg-purple-50 px-3 py-2 rounded-lg">
             <span className="text-xl font-bold">{String(timeRemaining.hours).padStart(2, "0")}</span>
             <span className="text-xs block">hours</span>
@@ -77,7 +83,7 @@ const CountdownTimer: React.FC<{
   );
 };
 
-// ClaimsList component
+// ClaimsList component with improved accessibility
 const ClaimsList: React.FC<{ claims: Claim[] }> = ({ claims }) => {
   if (claims.length === 0) {
     return <div className="text-center text-gray-500 py-4">No claims found</div>;
@@ -85,51 +91,63 @@ const ClaimsList: React.FC<{ claims: Claim[] }> = ({ claims }) => {
 
   return (
     <div className="overflow-hidden sm:rounded-md">
-      <ul className="divide-y divide-gray-200">
-        {claims.map((claim) => (
-          <li key={claim.id} className="px-1 py-4 sm:px-4">
-            <div className="flex justify-between">
-              <div>
-                <p className="font-medium text-gray-900">
-                  {claim.amount} CC
-                </p>
-                <p className="text-sm text-gray-500">
-                  {claim.timestamp.toLocaleString()}
-                </p>
-              </div>
-              <div className="text-right flex flex-col justify-between items-end">
-                <span
-                  className={`inline-flex items-center px-2 py-1 text-xs rounded-full ${
-                    claim.status === "completed"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-yellow-100 text-yellow-800"
-                  }`}
-                >
-                  {claim.status === "completed" ? "Completed" : "Pending"}
-                </span>
-                {claim.hash && (
-                  <a
-                    href={`https://etherscan.io/tx/${claim.hash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-purple-600 hover:text-purple-800 mt-1 flex items-center"
+      <ul className="divide-y divide-gray-200" role="list" aria-label="Transaction history">
+        {claims.map((claim) => {
+          const formattedDate = claim.timestamp.toLocaleString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          return (
+            <li key={claim.id} className="px-1 py-4 sm:px-4">
+              <div className="flex justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {claim.amount} CC
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {formattedDate}
+                  </p>
+                </div>
+                <div className="text-right flex flex-col justify-between items-end">
+                  <span
+                    className={`inline-flex items-center px-2 py-1 text-xs rounded-full ${
+                      claim.status === "completed"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                    role="status"
                   >
-                    <span className="mr-1">View</span>
-                    <ExternalLink size={12} />
-                  </a>
-                )}
+                    {claim.status === "completed" ? "Completed" : "Pending"}
+                  </span>
+                  {claim.hash && (
+                    <a
+                      href={`https://etherscan.io/tx/${claim.hash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-purple-600 hover:text-purple-800 mt-1 flex items-center"
+                      aria-label={`View transaction ${claim.hash.substring(0, 6)}... on Etherscan`}
+                    >
+                      <span className="mr-1">View</span>
+                      <ExternalLink size={12} aria-hidden="true" />
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
 };
 
-// Skeleton loader for cards
+// Skeleton loader for cards with proper aria attributes
 const SkeletonCard: React.FC = () => (
-  <div className="bg-white rounded-xl p-4 shadow-sm">
+  <div className="bg-white rounded-xl p-4 shadow-sm" aria-hidden="true">
     <div className="animate-pulse">
       <div className="h-4 bg-gray-200 rounded w-1/3 mb-3"></div>
       <div className="h-6 bg-gray-200 rounded w-1/2"></div>
@@ -140,9 +158,8 @@ const SkeletonCard: React.FC = () => (
 // Main Dashboard Component
 const DashboardPageContent: React.FC = () => {
   const { user } = useMe();
-
-  // We'll still use the setIsTouchActive function for touch events
-  const [, setIsTouchActive] = useState(false);
+  const [activeButton, setActiveButton] = useState<string | null>(null);
+  const dashboardRef = useRef<HTMLDivElement>(null);
 
   // Use a reasonable refresh interval (30 seconds) to avoid hammering the API
   const { dashboard, isLoading, error, refetch } = useDashboard({
@@ -153,57 +170,115 @@ const DashboardPageContent: React.FC = () => {
     window.location.href = path;
   }, []);
 
-  // Prevent iOS scroll bounce
-  useEffect(() => {
-    document.body.style.overscrollBehavior = "none";
-    document.documentElement.style.overscrollBehavior = "none";
+  // Add touch-friendly button behavior
+  const handleTouchStart = (buttonId: string) => {
+    setActiveButton(buttonId);
+  };
 
+  const handleTouchEnd = () => {
+    setActiveButton(null);
+  };
+
+  // Optimize for iOS
+  useEffect(() => {
+    // Add viewport meta tag for iOS
+    let viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (!viewportMeta) {
+      viewportMeta = document.createElement('meta');
+      viewportMeta.setAttribute('name', 'viewport');
+      document.head.appendChild(viewportMeta);
+    }
+
+    viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
+
+    // Fix iOS momentum scrolling
+    if (dashboardRef.current) {
+      // Use string indexing to avoid TypeScript error with vendor prefixes
+      dashboardRef.current.style["WebkitOverflowScrolling" as any] = "touch";
+    }
+
+    // Prevent Safari's elastic scroll
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+    document.body.style.height = "100%";
+    document.body.style.overflowY = "scroll";
+    document.documentElement.style.position = "fixed";
+    document.documentElement.style.width = "100%";
+    document.documentElement.style.height = "100%";
+    document.documentElement.style.overflowY = "scroll";
+
+    // Cleanup
     return () => {
-      document.body.style.overscrollBehavior = "";
-      document.documentElement.style.overscrollBehavior = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.height = "";
+      document.body.style.overflowY = "";
+      document.documentElement.style.position = "";
+      document.documentElement.style.width = "";
+      document.documentElement.style.height = "";
+      document.documentElement.style.overflowY = "";
     };
   }, []);
 
-  // Copy wallet address function
+  // Copy wallet address function with proper error handling
   const copyWalletAddress = () => {
     const walletAddress = user?.wallet_address || "0x0000000000000000000000000000000000000000";
+    const displayAddress = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
 
     try {
       // Use Clipboard API with fallback
       if (navigator.clipboard) {
-        navigator.clipboard.writeText(walletAddress).then(() => {
-          toast.success(`Wallet address copied: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`, {
-            autoClose: 2000,
+        navigator.clipboard.writeText(walletAddress)
+          .then(() => {
+            toast.success(`Wallet address copied: ${displayAddress}`, {
+              autoClose: 2000,
+              position: "bottom-center"
+            });
+          })
+          .catch(err => {
+            console.error('Failed to copy: ', err);
+            toast.error("Failed to copy wallet address");
           });
-        });
       } else {
         // Fallback for older browsers
         const textArea = document.createElement("textarea");
         textArea.value = walletAddress;
+        // Ensure element is not visible
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
         document.body.appendChild(textArea);
+        textArea.focus();
         textArea.select();
-        document.execCommand("copy");
+
+        const successful = document.execCommand("copy");
         document.body.removeChild(textArea);
 
-        toast.success(`Wallet address copied: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`, {
-          autoClose: 2000,
-        });
+        if (successful) {
+          toast.success(`Wallet address copied: ${displayAddress}`, {
+            autoClose: 2000,
+            position: "bottom-center"
+          });
+        } else {
+          toast.error("Failed to copy wallet address");
+        }
       }
-    } catch {
+    } catch (err) {
+      console.error('Copy error: ', err);
       toast.error("Failed to copy wallet address");
     }
   };
 
-  // Display loading state
+  // Display loading state with proper aria attributes
   if (isLoading && !dashboard) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" aria-busy="true" aria-label="Loading dashboard content">
         <div className="animate-pulse flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="h-6 bg-gray-200 rounded w-48 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-40"></div>
+            <div className="h-6 bg-gray-200 rounded w-48 mb-2" aria-hidden="true"></div>
+            <div className="h-4 bg-gray-200 rounded w-40" aria-hidden="true"></div>
           </div>
-          <div className="h-10 bg-gray-200 rounded w-32 mt-4 sm:mt-0"></div>
+          <div className="h-10 bg-gray-200 rounded w-32 mt-4 sm:mt-0" aria-hidden="true"></div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -212,7 +287,7 @@ const DashboardPageContent: React.FC = () => {
           <SkeletonCard />
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm">
+        <div className="bg-white rounded-xl p-4 shadow-sm" aria-hidden="true">
           <div className="animate-pulse">
             <div className="h-5 bg-gray-200 rounded w-1/4 mb-4"></div>
             <div className="flex justify-center space-x-2">
@@ -223,7 +298,7 @@ const DashboardPageContent: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm">
+        <div className="bg-white rounded-xl p-4 shadow-sm" aria-hidden="true">
           <div className="animate-pulse">
             <div className="flex justify-between mb-4">
               <div className="h-5 bg-gray-200 rounded w-1/4"></div>
@@ -240,21 +315,22 @@ const DashboardPageContent: React.FC = () => {
     );
   }
 
-  // Display error state
+  // Display error state with proper aria attributes
   if (error) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm">
+      <div className="bg-white rounded-xl p-6 shadow-sm" role="alert" aria-labelledby="error-title">
         <div className="text-center">
           <div className="h-12 w-12 mx-auto mb-4 flex items-center justify-center rounded-full bg-red-100">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900">Error Loading Dashboard</h3>
+          <h3 id="error-title" className="text-lg font-medium text-gray-900">Error Loading Dashboard</h3>
           <p className="mt-2 text-gray-600">{error.message}</p>
           <button
             onClick={() => refetch()}
             className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            aria-label="Try loading dashboard again"
           >
             Try Again
           </button>
@@ -263,21 +339,22 @@ const DashboardPageContent: React.FC = () => {
     );
   }
 
-  // Display no data state
+  // Display no data state with proper aria attributes
   if (!dashboard) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm">
+      <div className="bg-white rounded-xl p-6 shadow-sm" role="alert" aria-labelledby="no-data-title">
         <div className="text-center">
           <div className="h-12 w-12 mx-auto mb-4 flex items-center justify-center rounded-full bg-yellow-100">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900">No Dashboard Data</h3>
+          <h3 id="no-data-title" className="text-lg font-medium text-gray-900">No Dashboard Data</h3>
           <p className="mt-2 text-gray-600">Unable to retrieve your dashboard information</p>
           <button
             onClick={() => refetch()}
             className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+            aria-label="Refresh dashboard data"
           >
             Refresh
           </button>
@@ -288,6 +365,7 @@ const DashboardPageContent: React.FC = () => {
 
   // Get the wallet address from user
   const walletAddress = user?.wallet_address || "0x0000000000000000000000000000000000000000";
+  const displayAddress = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
 
   // Convert transactions to claims - Using a safe approach to handle type differences
   const transactionClaims: Claim[] = dashboard.transactions
@@ -298,16 +376,16 @@ const DashboardPageContent: React.FC = () => {
           timestamp: new Date(tx.timestamp || Date.now()),
           amount: typeof tx.amount === 'number' ? tx.amount : 0,
           address: walletAddress,
-          status: "completed",
-          hash: "",
+          status: tx.status || "completed",
+          hash: tx.hash || "",
         };
       })
     : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-16 px-4 sm:px-6 md:px-8" ref={dashboardRef}>
       {/* Header with Claim Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-4 sm:pt-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             Welcome back, {user?.name || "Comic Enthusiast"}!
@@ -317,15 +395,17 @@ const DashboardPageContent: React.FC = () => {
           </p>
         </div>
         <button
-          className={`mt-4 sm:mt-0 inline-flex items-center justify-center px-4 py-2 rounded-lg text-white gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+          className={`mt-4 sm:mt-0 inline-flex items-center justify-center px-4 py-3 sm:py-2 rounded-lg text-white gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
             dashboard.can_claim
-              ? "bg-purple-600 hover:bg-purple-700 focus:ring-purple-500"
+              ? "bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 active:bg-purple-800"
               : "bg-gray-400 cursor-not-allowed"
-          }`}
+          } ${activeButton === 'claim' ? 'bg-purple-800' : ''}`}
           onClick={() => navigateTo("/user/claim-coins")}
           disabled={!dashboard.can_claim}
-          onTouchStart={() => setIsTouchActive(true)}
-          onTouchEnd={() => setIsTouchActive(false)}
+          onTouchStart={() => handleTouchStart('claim')}
+          onTouchEnd={handleTouchEnd}
+          aria-disabled={!dashboard.can_claim}
+          aria-label={dashboard.can_claim ? "Claim your ComicCoins now" : "Wait until next claim is available"}
         >
           <Coins className="w-4 h-4" aria-hidden="true" />
           <span>
@@ -337,7 +417,7 @@ const DashboardPageContent: React.FC = () => {
       {/* Balance Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Faucet Balance Card */}
-        <div className="bg-white rounded-xl p-5 shadow-sm">
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-purple-50 hover:border-purple-100 transition-colors">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-sm font-medium text-gray-600">Faucet Balance</h2>
@@ -350,7 +430,7 @@ const DashboardPageContent: React.FC = () => {
         </div>
 
         {/* Your Balance Card */}
-        <div className="bg-white rounded-xl p-5 shadow-sm">
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-purple-50 hover:border-purple-100 transition-colors">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-sm font-medium text-gray-600">Your Balance</h2>
@@ -363,7 +443,7 @@ const DashboardPageContent: React.FC = () => {
         </div>
 
         {/* Total Claimed Card */}
-        <div className="bg-white rounded-xl p-5 shadow-sm">
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-purple-50 hover:border-purple-100 transition-colors">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-sm font-medium text-gray-600">Total Claimed</h2>
@@ -377,7 +457,7 @@ const DashboardPageContent: React.FC = () => {
       </div>
 
       {/* Countdown Timer */}
-      <div className="bg-white rounded-xl p-5 shadow-sm">
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-purple-50 hover:border-purple-100 transition-colors">
         <CountdownTimer
           nextClaimTime={dashboard.next_claim_time}
           canClaim={dashboard.can_claim}
@@ -385,17 +465,21 @@ const DashboardPageContent: React.FC = () => {
       </div>
 
       {/* Your Claims Section */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-purple-50">
         <div className="p-5 border-b border-gray-200">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-medium text-gray-900">
+            <h2 className="text-lg font-medium text-gray-900" id="claims-heading">
               Your Claims
             </h2>
             {transactionClaims.length > 0 && (
               <button
                 onClick={() => navigateTo("/user/transactions?filter=personal")}
-                className="text-purple-600 hover:text-purple-800 flex items-center gap-1 text-sm focus:outline-none"
+                className={`text-purple-600 hover:text-purple-800 flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-md px-2 py-1 ${
+                  activeButton === 'see-more' ? 'text-purple-800' : ''
+                }`}
                 aria-label="View all your claims history"
+                onTouchStart={() => handleTouchStart('see-more')}
+                onTouchEnd={handleTouchEnd}
               >
                 See More
                 <ArrowRight
@@ -406,7 +490,7 @@ const DashboardPageContent: React.FC = () => {
             )}
           </div>
         </div>
-        <div className="px-4 py-3 sm:px-5">
+        <div className="px-4 py-3 sm:px-5" aria-labelledby="claims-heading">
           {transactionClaims.length > 0 ? (
             <ClaimsList claims={transactionClaims.slice(0, 5)} />
           ) : (
@@ -431,18 +515,18 @@ const DashboardPageContent: React.FC = () => {
       </div>
 
       {/* Wallet Section */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-purple-50">
         <div className="p-5 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">
+          <h2 className="text-lg font-medium text-gray-900" id="wallet-heading">
             Your Wallet
           </h2>
         </div>
-        <div className="p-5">
+        <div className="p-5" aria-labelledby="wallet-heading">
           <div className="flex flex-col items-center md:flex-row md:items-start md:space-x-6">
             <div
-              className="w-48 h-48 p-2 mb-4 md:mb-0 bg-white rounded-xl shadow-sm flex-shrink-0"
+              className="w-48 h-48 p-2 mb-4 md:mb-0 bg-white rounded-xl shadow-sm flex-shrink-0 border border-gray-100"
               role="img"
-              aria-label="QR code for your Ethereum wallet address"
+              aria-label={`QR code for your Ethereum wallet address: ${displayAddress}`}
             >
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=ethereum:${walletAddress}`}
@@ -455,17 +539,19 @@ const DashboardPageContent: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-center gap-2 mb-4">
                 <code
                   className="bg-gray-100 px-3 py-2 rounded font-mono text-sm text-gray-800 w-full break-all"
-                  role="textbox"
-                  aria-label="Your wallet address"
+                  tabIndex={0}
+                  aria-label={`Your wallet address: ${walletAddress}`}
                 >
                   {walletAddress}
                 </code>
                 <button
                   onClick={copyWalletAddress}
-                  className="sm:ml-2 p-2 hover:bg-gray-100 rounded-md flex items-center justify-center"
+                  className={`sm:ml-2 p-2 hover:bg-gray-100 rounded-md flex items-center justify-center transition-colors ${
+                    activeButton === 'copy' ? 'bg-gray-200' : ''
+                  }`}
                   aria-label="Copy wallet address to clipboard"
-                  onTouchStart={() => setIsTouchActive(true)}
-                  onTouchEnd={() => setIsTouchActive(false)}
+                  onTouchStart={() => handleTouchStart('copy')}
+                  onTouchEnd={handleTouchEnd}
                 >
                   <Copy className="h-5 w-5 text-gray-500" aria-hidden="true" />
                   <span className="sr-only">Copy to clipboard</span>
