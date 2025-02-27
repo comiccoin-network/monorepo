@@ -12,12 +12,14 @@ import (
 	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltxdto"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/distributedmutex"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/emailer/mailgun"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/blacklist"
 	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/password"
 	mongodb_cache "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodbcache"
 	redis_cache "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/memory/redis"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/templatedemailer"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http"
 	httpserver "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http"
 	http_claimcoins "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/claimcoins"
@@ -42,6 +44,7 @@ import (
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/me"
 	svc_transactions "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/transactions"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/bannedipaddress"
+	uc_emailer "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/emailer"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
 	uc_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/remoteaccountbalance"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
@@ -76,8 +79,14 @@ func NewModule(
 	ipcbp ipcb.Provider,
 ) *PublicFaucetModule {
 
+	////
+	//// Specific
+	////
+
 	mongodbCacheConfigurationProvider := mongodb_cache.NewCacheConfigurationProvider(cfg.DB.PublicFaucetName)
 	mongodbCacheProvider := mongodb_cache.NewCache(mongodbCacheConfigurationProvider, logger, dbClient)
+	emailer := mailgun.NewEmailer(cfg, logger)
+	templatedEmailer := templatedemailer.NewTemplatedEmailer(logger, emailer)
 
 	////
 	//// Repository
@@ -95,6 +104,14 @@ func NewModule(
 	////
 	//// Use-case
 	////
+
+	// --- Emailer ---
+
+	sendUserVerificationEmailUseCase := uc_emailer.NewSendUserVerificationEmailUseCase(
+		cfg,
+		logger,
+		templatedEmailer,
+	)
 
 	// --- Banned IP Addresses ---
 
@@ -301,6 +318,7 @@ func NewModule(
 		userGetByEmailUseCase,
 		userCreateUseCase,
 		userUpdateUseCase,
+		sendUserVerificationEmailUseCase,
 	)
 
 	////

@@ -103,6 +103,8 @@ type User struct {
 	HasPreviouslyPurchasedFromFacebookMarketplace   int8 `bson:"has_previously_purchased_from_facebook_marketplace" json:"has_previously_purchased_from_facebook_marketplace"`
 	HasRegularlyAttendedComicConsOrCollectibleShows int8 `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
 
+	ChainID uint16 `bson:"chain_id" json:"chain_id"`
+
 	// WalletAddress variable holds the address of the user's wallet
 	// which is used by this gateway application to send.
 	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`

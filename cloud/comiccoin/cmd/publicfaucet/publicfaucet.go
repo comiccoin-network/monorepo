@@ -3,8 +3,6 @@ package publicfaucet
 
 import (
 	"github.com/spf13/cobra"
-
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/cmd/publicfaucet/api"
 )
 
 func PublicFaucetCmd() *cobra.Command {
@@ -15,8 +13,6 @@ func PublicFaucetCmd() *cobra.Command {
 			// Do nothing...
 		},
 	}
-
-	cmd.AddCommand(api.APICmd())
 
 	return cmd
 }

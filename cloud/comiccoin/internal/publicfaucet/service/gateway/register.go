@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -18,6 +19,7 @@ import (
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/securestring"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodbcache"
 	domain "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
+	uc_emailer "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/emailer"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
 )
 
@@ -29,15 +31,15 @@ type GatewayUserRegisterService interface {
 }
 
 type gatewayUserRegisterServiceImpl struct {
-	config                *config.Configuration
-	logger                *slog.Logger
-	passwordProvider      password.Provider
-	cache                 mongodbcache.Cacher
-	jwtProvider           jwt.Provider
-	userGetByEmailUseCase uc_user.UserGetByEmailUseCase
-	userCreateUseCase     uc_user.UserCreateUseCase
-	userUpdateUseCase     uc_user.UserUpdateUseCase
-	// sendUserVerificationEmailUseCase *usecase.SendUserVerificationEmailUseCase
+	config                           *config.Configuration
+	logger                           *slog.Logger
+	passwordProvider                 password.Provider
+	cache                            mongodbcache.Cacher
+	jwtProvider                      jwt.Provider
+	userGetByEmailUseCase            uc_user.UserGetByEmailUseCase
+	userCreateUseCase                uc_user.UserCreateUseCase
+	userUpdateUseCase                uc_user.UserUpdateUseCase
+	sendUserVerificationEmailUseCase *uc_emailer.SendUserVerificationEmailUseCase
 }
 
 func NewGatewayUserRegisterService(
@@ -46,12 +48,12 @@ func NewGatewayUserRegisterService(
 	pp password.Provider,
 	cach mongodbcache.Cacher,
 	jwtp jwt.Provider,
-	uc2 uc_user.UserGetByEmailUseCase,
-	uc3 uc_user.UserCreateUseCase,
-	uc4 uc_user.UserUpdateUseCase,
-	// uc5 *usecase.SendUserVerificationEmailUseCase,
+	uc1 uc_user.UserGetByEmailUseCase,
+	uc2 uc_user.UserCreateUseCase,
+	uc3 uc_user.UserUpdateUseCase,
+	uc4 *uc_emailer.SendUserVerificationEmailUseCase,
 ) GatewayUserRegisterService {
-	return &gatewayUserRegisterServiceImpl{cfg, logger, pp, cach, jwtp, uc2, uc3, uc4}
+	return &gatewayUserRegisterServiceImpl{cfg, logger, pp, cach, jwtp, uc1, uc2, uc3, uc4}
 }
 
 type RegisterCustomerRequestIDO struct {
@@ -166,13 +168,11 @@ func (s *gatewayUserRegisterServiceImpl) Execute(
 		return nil, err
 	}
 
-	// // Send our verification email.
-	// if err := s.sendUserVerificationEmailUseCase.Execute(context.Background(), u); err != nil {
-	// 	// s.logger.Error("failed sending verification email with error", slog.Any("err", err))
-	// 	// return nil, err
-	//
-	// 	// Skip any error handling...
-	// }
+	// Send our verification email.
+	if err := s.sendUserVerificationEmailUseCase.Execute(context.Background(), u); err != nil {
+		s.logger.Error("failed sending verification email with error", slog.Any("err", err))
+		// Skip any error handling...
+	}
 
 	return s.registerWithUser(sessCtx, u)
 }
@@ -283,6 +283,7 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 		// HasPreviouslyPurchasedFromAuctionSite:           "",
 		// HasPreviouslyPurchasedFromFacebookMarketplace:   "",
 		// HasRegularlyAttendedComicConsOrCollectibleShows: "",
+		ChainID: s.config.Blockchain.ChainID,
 	}
 	if req.CountryOther != "" {
 		u.Country = req.CountryOther

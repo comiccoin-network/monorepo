@@ -13,12 +13,12 @@ import (
 )
 
 type Configuration struct {
-	App               AppConfig
-	Blockchain        BlockchainConfig
-	Cache             CacheConf
-	DB                DBConfig
-	NFTStore          NFTStorageConfig
-	PublicFaucetOAuth PublicFaucetOAuthConfig
+	App                 AppConfig
+	Blockchain          BlockchainConfig
+	Cache               CacheConf
+	DB                  DBConfig
+	NFTStore            NFTStorageConfig
+	PublicFaucetEmailer PublicFaucetMailgunConfig
 }
 
 type CacheConf struct {
@@ -76,15 +76,14 @@ type NFTStorageConfig struct {
 	URI string
 }
 
-type PublicFaucetOAuthConfig struct {
-	ServerURL                        string
-	ClientID                         string
-	ClientSecret                     string
-	ClientRedirectURI                string
-	ClientRegisterSuccessURI         string
-	ClientRegisterCancelURI          string
-	ClientAuthorizeOrLoginSuccessURI string
-	ClientAuthorizeOrLoginCancelURI  string
+type PublicFaucetMailgunConfig struct {
+	APIKey           string
+	Domain           string
+	APIBase          string
+	SenderEmail      string
+	MaintenanceEmail string
+	FrontendDomain   string
+	BackendDomain    string
 }
 
 func NewProvider() *Configuration {
@@ -139,15 +138,15 @@ func NewProvider() *Configuration {
 	c.NFTStore.URI = getEnv("COMICCOIN_NFT_STORAGE_URI", true)
 
 	// --- Public Faucet ---
-	// OAuth 2.0
-	c.PublicFaucetOAuth.ServerURL = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_SERVER_URL", true)
-	c.PublicFaucetOAuth.ClientID = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_ID", true)
-	c.PublicFaucetOAuth.ClientSecret = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_SECRET", true)
-	c.PublicFaucetOAuth.ClientRedirectURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REDIRECT_URI", true)
-	c.PublicFaucetOAuth.ClientRegisterSuccessURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REGISTER_SUCCESS_URI", true)
-	c.PublicFaucetOAuth.ClientRegisterCancelURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_REGISTER_CANCEL_URI", true)
-	c.PublicFaucetOAuth.ClientAuthorizeOrLoginSuccessURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_LOGIN_SUCCESS_URI", true)
-	c.PublicFaucetOAuth.ClientAuthorizeOrLoginCancelURI = getEnv("COMICCOIN_PUBLICFAUCET_OAUTH_CLIENT_LOGIN_CANCEL_URI", true)
+	// Mailgun section.
+	c.PublicFaucetEmailer.APIKey = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_API_KEY", true)
+	c.PublicFaucetEmailer.Domain = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_DOMAIN", true)
+	c.PublicFaucetEmailer.APIBase = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_API_BASE", true)
+	c.PublicFaucetEmailer.SenderEmail = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_SENDER_EMAIL", true)
+	c.PublicFaucetEmailer.MaintenanceEmail = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_MAINTENANCE_EMAIL", true)
+	c.PublicFaucetEmailer.FrontendDomain = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_FRONTEND_DOMAIN", true)
+	c.PublicFaucetEmailer.BackendDomain = getEnv("COMICCOIN_PUBLICFAUCET_MAILGUN_BACKEND_DOMAIN", true)
+
 	// Claim Coins Reward
 	c.Blockchain.PublicFaucetClaimCoinsReward = getUint64Env("COMICCOIN_PUBLICFAUCET_CLAIM_COINS_REWARD", true)
 
