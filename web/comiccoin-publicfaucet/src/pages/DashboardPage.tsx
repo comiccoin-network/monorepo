@@ -179,47 +179,6 @@ const DashboardPageContent: React.FC = () => {
     setActiveButton(null);
   };
 
-  // Optimize for iOS
-  useEffect(() => {
-    // Add viewport meta tag for iOS
-    let viewportMeta = document.querySelector('meta[name="viewport"]');
-    if (!viewportMeta) {
-      viewportMeta = document.createElement('meta');
-      viewportMeta.setAttribute('name', 'viewport');
-      document.head.appendChild(viewportMeta);
-    }
-
-    viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
-
-    // Fix iOS momentum scrolling
-    if (dashboardRef.current) {
-      // Use string indexing to avoid TypeScript error with vendor prefixes
-      dashboardRef.current.style["WebkitOverflowScrolling" as any] = "touch";
-    }
-
-    // Prevent Safari's elastic scroll
-    document.body.style.position = "fixed";
-    document.body.style.width = "100%";
-    document.body.style.height = "100%";
-    document.body.style.overflowY = "scroll";
-    document.documentElement.style.position = "fixed";
-    document.documentElement.style.width = "100%";
-    document.documentElement.style.height = "100%";
-    document.documentElement.style.overflowY = "scroll";
-
-    // Cleanup
-    return () => {
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.body.style.height = "";
-      document.body.style.overflowY = "";
-      document.documentElement.style.position = "";
-      document.documentElement.style.width = "";
-      document.documentElement.style.height = "";
-      document.documentElement.style.overflowY = "";
-    };
-  }, []);
-
   // Copy wallet address function with proper error handling
   const copyWalletAddress = () => {
     const walletAddress = user?.wallet_address || "0x0000000000000000000000000000000000000000";
@@ -269,10 +228,23 @@ const DashboardPageContent: React.FC = () => {
     }
   };
 
+  // Add gradient background to body
+  useEffect(() => {
+    // Set background gradient on body for full page coverage
+    document.body.classList.add('bg-gradient-to-b', 'from-purple-100', 'via-indigo-50', 'to-white');
+    document.body.style.minHeight = '100vh';
+
+    // Clean up when component unmounts
+    return () => {
+      document.body.classList.remove('bg-gradient-to-b', 'from-purple-100', 'via-indigo-50', 'to-white');
+      document.body.style.minHeight = '';
+    };
+  }, []);
+
   // Display loading state with proper aria attributes
   if (isLoading && !dashboard) {
     return (
-      <div className="space-y-6" aria-busy="true" aria-label="Loading dashboard content">
+      <div className="container mx-auto px-4 sm:px-0 py-8 space-y-6" aria-busy="true" aria-label="Loading dashboard content">
         <div className="animate-pulse flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="h-6 bg-gray-200 rounded w-48 mb-2" aria-hidden="true"></div>
@@ -297,20 +269,6 @@ const DashboardPageContent: React.FC = () => {
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm" aria-hidden="true">
-          <div className="animate-pulse">
-            <div className="flex justify-between mb-4">
-              <div className="h-5 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-5 bg-gray-200 rounded w-16"></div>
-            </div>
-            <div className="space-y-3">
-              <div className="h-14 bg-gray-200 rounded"></div>
-              <div className="h-14 bg-gray-200 rounded"></div>
-              <div className="h-14 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        </div>
       </div>
     );
   }
@@ -318,22 +276,24 @@ const DashboardPageContent: React.FC = () => {
   // Display error state with proper aria attributes
   if (error) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm" role="alert" aria-labelledby="error-title">
-        <div className="text-center">
-          <div className="h-12 w-12 mx-auto mb-4 flex items-center justify-center rounded-full bg-red-100">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      <div className="container mx-auto px-4 sm:px-0 py-8">
+        <div className="bg-white rounded-xl p-6 shadow-sm" role="alert" aria-labelledby="error-title">
+          <div className="text-center">
+            <div className="h-12 w-12 mx-auto mb-4 flex items-center justify-center rounded-full bg-red-100">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 id="error-title" className="text-lg font-medium text-gray-900">Error Loading Dashboard</h3>
+            <p className="mt-2 text-gray-600">{error.message}</p>
+            <button
+              onClick={() => refetch()}
+              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              aria-label="Try loading dashboard again"
+            >
+              Try Again
+            </button>
           </div>
-          <h3 id="error-title" className="text-lg font-medium text-gray-900">Error Loading Dashboard</h3>
-          <p className="mt-2 text-gray-600">{error.message}</p>
-          <button
-            onClick={() => refetch()}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-            aria-label="Try loading dashboard again"
-          >
-            Try Again
-          </button>
         </div>
       </div>
     );
@@ -342,22 +302,24 @@ const DashboardPageContent: React.FC = () => {
   // Display no data state with proper aria attributes
   if (!dashboard) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm" role="alert" aria-labelledby="no-data-title">
-        <div className="text-center">
-          <div className="h-12 w-12 mx-auto mb-4 flex items-center justify-center rounded-full bg-yellow-100">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+      <div className="container mx-auto px-4 sm:px-0 py-8">
+        <div className="bg-white rounded-xl p-6 shadow-sm" role="alert" aria-labelledby="no-data-title">
+          <div className="text-center">
+            <div className="h-12 w-12 mx-auto mb-4 flex items-center justify-center rounded-full bg-yellow-100">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 id="no-data-title" className="text-lg font-medium text-gray-900">No Dashboard Data</h3>
+            <p className="mt-2 text-gray-600">Unable to retrieve your dashboard information</p>
+            <button
+              onClick={() => refetch()}
+              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+              aria-label="Refresh dashboard data"
+            >
+              Refresh
+            </button>
           </div>
-          <h3 id="no-data-title" className="text-lg font-medium text-gray-900">No Dashboard Data</h3>
-          <p className="mt-2 text-gray-600">Unable to retrieve your dashboard information</p>
-          <button
-            onClick={() => refetch()}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-            aria-label="Refresh dashboard data"
-          >
-            Refresh
-          </button>
         </div>
       </div>
     );
@@ -383,9 +345,9 @@ const DashboardPageContent: React.FC = () => {
     : [];
 
   return (
-    <div className="space-y-6 pb-16 px-4 sm:px-6 md:px-8" ref={dashboardRef}>
+    <div className="container mx-auto px-4 sm:px-0 py-6">
       {/* Header with Claim Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-4 sm:pt-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             Welcome back, {user?.name || "Comic Enthusiast"}!
@@ -395,7 +357,7 @@ const DashboardPageContent: React.FC = () => {
           </p>
         </div>
         <button
-          className={`mt-4 sm:mt-0 inline-flex items-center justify-center px-4 py-3 sm:py-2 rounded-lg text-white gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
+          className={`mt-4 sm:mt-0 inline-flex items-center justify-center px-4 py-3 sm:py-2 rounded-lg text-white gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 ${
             dashboard.can_claim
               ? "bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 active:bg-purple-800"
               : "bg-gray-400 cursor-not-allowed"
@@ -415,41 +377,41 @@ const DashboardPageContent: React.FC = () => {
       </div>
 
       {/* Balance Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {/* Faucet Balance Card */}
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-purple-50 hover:border-purple-100 transition-colors">
+        <div className="bg-white rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-sm font-medium text-gray-600">Faucet Balance</h2>
               <p className="mt-1 text-2xl font-semibold text-purple-700">{dashboard.faucet_balance} CC</p>
             </div>
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-purple-100 rounded-full">
               <Coins className="h-6 w-6 text-purple-600" aria-hidden="true" />
             </div>
           </div>
         </div>
 
         {/* Your Balance Card */}
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-purple-50 hover:border-purple-100 transition-colors">
+        <div className="bg-white rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-sm font-medium text-gray-600">Your Balance</h2>
               <p className="mt-1 text-2xl font-semibold text-purple-700">{dashboard.user_balance} CC</p>
             </div>
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-purple-100 rounded-full">
               <Wallet className="h-6 w-6 text-purple-600" aria-hidden="true" />
             </div>
           </div>
         </div>
 
         {/* Total Claimed Card */}
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-purple-50 hover:border-purple-100 transition-colors">
+        <div className="bg-white rounded-xl p-5 shadow-sm">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-sm font-medium text-gray-600">Total Claimed</h2>
               <p className="mt-1 text-2xl font-semibold text-purple-700">{dashboard.total_coins_claimed} CC</p>
             </div>
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-purple-100 rounded-full">
               <TrendingUp className="h-6 w-6 text-purple-600" aria-hidden="true" />
             </div>
           </div>
@@ -457,7 +419,7 @@ const DashboardPageContent: React.FC = () => {
       </div>
 
       {/* Countdown Timer */}
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-purple-50 hover:border-purple-100 transition-colors">
+      <div className="bg-white rounded-xl p-5 shadow-sm mb-6">
         <CountdownTimer
           nextClaimTime={dashboard.next_claim_time}
           canClaim={dashboard.can_claim}
@@ -465,7 +427,7 @@ const DashboardPageContent: React.FC = () => {
       </div>
 
       {/* Your Claims Section */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-purple-50">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
         <div className="p-5 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-medium text-gray-900" id="claims-heading">
@@ -474,16 +436,12 @@ const DashboardPageContent: React.FC = () => {
             {transactionClaims.length > 0 && (
               <button
                 onClick={() => navigateTo("/user/transactions?filter=personal")}
-                className={`text-purple-600 hover:text-purple-800 flex items-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-md px-2 py-1 ${
-                  activeButton === 'see-more' ? 'text-purple-800' : ''
-                }`}
+                className="text-purple-600 hover:text-purple-800 flex items-center gap-1 text-sm"
                 aria-label="View all your claims history"
-                onTouchStart={() => handleTouchStart('see-more')}
-                onTouchEnd={handleTouchEnd}
               >
                 See More
                 <ArrowRight
-                  className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                  className="w-4 h-4"
                   aria-hidden="true"
                 />
               </button>
@@ -515,7 +473,7 @@ const DashboardPageContent: React.FC = () => {
       </div>
 
       {/* Wallet Section */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-purple-50">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-5 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900" id="wallet-heading">
             Your Wallet
@@ -546,9 +504,7 @@ const DashboardPageContent: React.FC = () => {
                 </code>
                 <button
                   onClick={copyWalletAddress}
-                  className={`sm:ml-2 p-2 hover:bg-gray-100 rounded-md flex items-center justify-center transition-colors ${
-                    activeButton === 'copy' ? 'bg-gray-200' : ''
-                  }`}
+                  className="sm:ml-2 p-2 hover:bg-gray-100 rounded-md flex items-center justify-center transition-colors"
                   aria-label="Copy wallet address to clipboard"
                   onTouchStart={() => handleTouchStart('copy')}
                   onTouchEnd={handleTouchEnd}
@@ -563,17 +519,6 @@ const DashboardPageContent: React.FC = () => {
                 <p className="text-sm text-gray-500 mb-3">
                   Scan this QR code with your Ethereum wallet app to view your ComicCoins or send transactions.
                 </p>
-                {/*
-                <a
-                  href={`https://etherscan.io/address/${walletAddress}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-sm text-purple-600 hover:text-purple-800"
-                >
-                  View on Etherscan
-                  <ExternalLink size={14} className="ml-1" />
-                </a>
-                */}
               </div>
             </div>
           </div>
