@@ -51,6 +51,8 @@ type httpServerImpl struct {
 	// Protect API Endpoints
 	gatewayUserRegisterHTTPHandler *http_gateway.GatewayUserRegisterHTTPHandler
 	gatewayVerifyEmailHTTPHandler  *http_gateway.GatewayVerifyEmailHTTPHandler
+	gatewayLoginHTTPHandler        *http_gateway.GatewayLoginHTTPHandler
+	gatewayLogoutHTTPHandler       *http_gateway.GatewayLogoutHTTPHandler
 
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler
 
@@ -75,6 +77,8 @@ func NewHTTPServer(
 	mid mid.Middleware,
 	gatewayUserRegisterHTTPHandler *http_gateway.GatewayUserRegisterHTTPHandler,
 	gatewayVerifyEmailHTTPHandler *http_gateway.GatewayVerifyEmailHTTPHandler,
+	gatewayLoginHTTPHandler *http_gateway.GatewayLoginHTTPHandler,
+	gatewayLogoutHTTPHandler *http_gateway.GatewayLogoutHTTPHandler,
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
@@ -93,6 +97,8 @@ func NewHTTPServer(
 		middleware:                        mid,
 		gatewayUserRegisterHTTPHandler:    gatewayUserRegisterHTTPHandler,
 		gatewayVerifyEmailHTTPHandler:     gatewayVerifyEmailHTTPHandler,
+		gatewayLoginHTTPHandler:           gatewayLoginHTTPHandler,
+		gatewayLogoutHTTPHandler:          gatewayLogoutHTTPHandler,
 		getHelloHTTPHandler:               getHelloHTTPHandler,
 		getMeHTTPHandler:                  getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler:    postMeConnectWalletHTTPHandler,
@@ -140,6 +146,10 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 			port.gatewayUserRegisterHTTPHandler.Execute(w, r)
 		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "verify" && r.Method == http.MethodPost:
 			port.gatewayVerifyEmailHTTPHandler.Execute(w, r)
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "login" && r.Method == http.MethodPost:
+			port.gatewayLoginHTTPHandler.Execute(w, r)
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "logout" && r.Method == http.MethodPost:
+			port.gatewayLogoutHTTPHandler.Execute(w, r)
 
 		// --- Resource endpoints ---
 		// Hello
