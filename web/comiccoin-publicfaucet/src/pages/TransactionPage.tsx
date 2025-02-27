@@ -496,8 +496,7 @@ const TransactionsPageContent: React.FC = () => {
         </svg>
       </button>
 
-      {/* Add global styles for animations */}
-      <style jsx global>{`
+      <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }

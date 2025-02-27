@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Coins, TrendingUp, Wallet, ArrowRight, Copy, ExternalLink } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -159,7 +159,6 @@ const SkeletonCard: React.FC = () => (
 const DashboardPageContent: React.FC = () => {
   const { user } = useMe();
   const [activeButton, setActiveButton] = useState<string | null>(null);
-  const dashboardRef = useRef<HTMLDivElement>(null);
 
   // Use a reasonable refresh interval (30 seconds) to avoid hammering the API
   const { dashboard, isLoading, error, refetch } = useDashboard({

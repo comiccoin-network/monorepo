@@ -10,12 +10,21 @@ import { useClaimCoins } from "../hooks/useClaimCoins";
 import { useGetFaucet } from "../hooks/useGetFaucet";
 
 // Animated loading spinner component
-const LoadingSpinner = () => (
+const LoadingSpinner: React.FC = () => (
   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" aria-hidden="true" />
 );
 
 // Enhanced card component with customizable visual styles
-const Card = ({
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+  withGlow?: boolean;
+  withBorder?: boolean;
+  withShadow?: "sm" | "md" | "lg" | "";
+  gradient?: boolean;
+}
+
+const Card: React.FC<CardProps> = ({
   children,
   className = "",
   withGlow = false,
@@ -39,7 +48,11 @@ const Card = ({
 );
 
 // Confetti animation component for successful claims
-const ClaimConfetti = ({ visible }) => {
+interface ClaimConfettiProps {
+  visible: boolean;
+}
+
+const ClaimConfetti: React.FC<ClaimConfettiProps> = ({ visible }) => {
   if (!visible) return null;
 
   return (
@@ -71,7 +84,7 @@ const ClaimConfetti = ({ visible }) => {
           />
         );
       })}
-      <style jsx="true">{`
+      <style>{`
         @keyframes confetti {
           0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
           100% { transform: translateY(calc(100vh + 10px)) rotate(720deg); opacity: 0; }
@@ -81,7 +94,10 @@ const ClaimConfetti = ({ visible }) => {
   );
 };
 
-const ClaimCoinsPage: React.FC = () => {
+// Define interface for component props
+interface ClaimCoinsPageProps {}
+
+const ClaimCoinsPage: React.FC<ClaimCoinsPageProps> = () => {
   const navigate = useNavigate();
   const { refetch } = useMe();
   const { claimCoins, isLoading: isClaimingCoins } = useClaimCoins();
@@ -115,7 +131,7 @@ const ClaimCoinsPage: React.FC = () => {
     // Apply momentum scrolling for iOS
     if (mainContainerRef.current) {
       // Use indexing to avoid TypeScript errors with vendor prefixes
-      mainContainerRef.current.style["WebkitOverflowScrolling" as any] = "touch";
+      (mainContainerRef.current.style as any)["WebkitOverflowScrolling"] = "touch";
     }
 
     // Fix for white borders and ensure full viewport coverage
@@ -210,10 +226,9 @@ const ClaimCoinsPage: React.FC = () => {
           background: "linear-gradient(to right, #8b5cf6, #6366f1)",
           color: "white",
           borderRadius: "10px",
-          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
-        },
-        progressStyle: {
-          background: "rgba(255, 255, 255, 0.4)"
+          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+          // Moved progressStyle into main style object
+          backgroundImage: "rgba(255, 255, 255, 0.4)"
         }
       });
 
@@ -235,7 +250,7 @@ const ClaimCoinsPage: React.FC = () => {
         navigate("/user/dashboard");
       }, 2500);
 
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error during claim process:", err);
 
       // Extract detailed error message from backend response
