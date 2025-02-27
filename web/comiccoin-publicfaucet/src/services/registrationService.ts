@@ -1,78 +1,97 @@
-import axios from 'axios';
+import axios, { AxiosResponse, AxiosError } from 'axios'
 
-// This interface defines the expected response from the API
-export interface RegistrationUrlResponse {
-  registration_url: string;
+// Base API configuration
+const apiClient = axios.create({
+    baseURL: `${import.meta.env.VITE_API_PROTOCOL}://${import.meta.env.VITE_API_DOMAIN}` || '',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+})
+
+// Registration request interface (matching Go struct)
+export interface RegisterCustomerRequest {
+    first_name: string
+    last_name: string
+    email: string
+    password: string
+    password_confirm: string
+    phone?: string
+    country?: string
+    country_other?: string
+    timezone: string
+    agree_terms_of_service: boolean
+    agree_promotions?: boolean
+}
+
+// Registration response interface
+export interface RegisterCustomerResponse {
+    success: boolean
+    message: string
+    user_id?: string
+    email?: string
+}
+
+// Error response interface
+export interface ApiErrorResponse {
+    success: boolean
+    message: string | Record<string, string>
+    errors?: {
+        [key: string]: string[]
+    }
 }
 
 class RegistrationService {
-  private readonly baseUrl: string;
+    /**
+     * Register a new customer
+     * @param data Registration data
+     * @returns Promise with registration result
+     */
+    async registerCustomer(data: RegisterCustomerRequest): Promise<RegisterCustomerResponse> {
+        try {
+            const response: AxiosResponse<RegisterCustomerResponse> = await apiClient.post(
+                '/publicfaucet/api/v1/register',
+                data
+            )
+            return response.data
+        } catch (error) {
+            // Handle axios errors
+            if (axios.isAxiosError(error)) {
+                const axiosError = error as AxiosError<any>
 
-  constructor() {
-    // Use Vite environment variables
-    const apiProtocol = import.meta.env.VITE_API_PROTOCOL || 'https';
-    const apiDomain = import.meta.env.VITE_API_DOMAIN;
+                // If we have a 400 error with field-specific errors in the format { field: "message" }
+                if (axiosError.response?.status === 400 && typeof axiosError.response.data === 'object') {
+                    throw {
+                        message: axiosError.response.data,
+                        status: axiosError.response.status,
+                    }
+                }
 
-    if (!apiDomain) {
-      console.error('API domain is not configured properly in environment variables.');
+                // If the server returned a response with our standard error format
+                else if (axiosError.response?.data) {
+                    throw {
+                        message: axiosError.response.data.message || 'Registration failed',
+                        errors: axiosError.response.data.errors || {},
+                        status: axiosError.response.status,
+                    }
+                }
+
+                // Network errors or other axios errors
+                throw {
+                    message: 'Network error. Please check your internet connection.',
+                    status: axiosError.response?.status || 0,
+                }
+            }
+
+            // For any other unexpected errors
+            throw {
+                message: 'An unexpected error occurred during registration.',
+                status: 500,
+            }
+        }
     }
-
-    this.baseUrl = `${apiProtocol}://${apiDomain}`;
-
-    // Add this temporary debug log
-    console.log("API Config:", {
-      baseUrl: this.baseUrl,
-      protocol: apiProtocol,
-      domain: apiDomain,
-    });
-  }
-
-  /**
-   * Fetch the registration URL from the API
-   * @returns Promise resolving to the registration URL response
-   */
-  public async getRegistrationUrl(): Promise<RegistrationUrlResponse> {
-    const apiUrl = `${this.baseUrl}/publicfaucet/api/v1/oauth/registration`;
-    console.log("Calling API:", apiUrl);
-
-    // Build the URL with success_uri parameter
-    const successUri = `${window.location.origin}/register-success`;
-    const finalUrl = `${apiUrl}?success_uri=${encodeURIComponent(successUri)}`;
-
-    console.log("Attempting to fetch registration URL:", {
-      apiUrl: finalUrl,
-    });
-
-    try {
-      const response = await axios.get<RegistrationUrlResponse>(finalUrl, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // No credentials for this endpoint
-      });
-
-      console.log("Response received:", {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-      });
-
-      console.log("Data received:", response.data);
-      return response.data;
-    } catch (err) {
-      // Log detailed error information
-      console.log("Detailed error information:", {
-        error: err,
-        message: err instanceof Error ? err.message : "Unknown error",
-        stack: err instanceof Error ? err.stack : "No stack trace available",
-        response: axios.isAxiosError(err) ? err.response?.data : undefined,
-      });
-
-      throw err instanceof Error ? err : new Error("An unknown error occurred");
-    }
-  }
 }
 
-// Export as singleton
-export const registrationService = new RegistrationService();
-export default registrationService;
+// Create a singleton instance of the service
+const registrationService = new RegistrationService()
+
+export default registrationService

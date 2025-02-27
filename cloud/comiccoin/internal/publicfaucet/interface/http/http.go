@@ -19,6 +19,7 @@ import (
 	http_claimcoins "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/claimcoins"
 	http_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/dashboard"
 	http_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/faucet"
+	http_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/gateway"
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/me"
 	http_transactions "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/transactions"
@@ -47,7 +48,9 @@ type httpServerImpl struct {
 	getVersionHTTPHandler     *http_system.GetVersionHTTPHandler
 	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler
 
-	// Resources
+	// Protect API Endpoints
+	gatewayUserRegisterHTTPHandler *http_gateway.GatewayUserRegisterHTTPHandler
+
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler
 
 	getMeHTTPHandler               *http_me.GetMeHTTPHandler
@@ -69,6 +72,7 @@ func NewHTTPServer(
 	cfg *config.Configuration,
 	logger *slog.Logger,
 	mid mid.Middleware,
+	gatewayUserRegisterHTTPHandler *http_gateway.GatewayUserRegisterHTTPHandler,
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
@@ -85,6 +89,7 @@ func NewHTTPServer(
 		cfg:                               cfg,
 		logger:                            logger,
 		middleware:                        mid,
+		gatewayUserRegisterHTTPHandler:    gatewayUserRegisterHTTPHandler,
 		getHelloHTTPHandler:               getHelloHTTPHandler,
 		getMeHTTPHandler:                  getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler:    postMeConnectWalletHTTPHandler,
@@ -127,31 +132,9 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 
 		// Handle the request based on the URL path tokens.
 		switch {
-		// // --- Auth endpoints ---
-		// case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "register":
-		// 	port.oauthClientManager.PostRegistrationHTTPHandler().Execute(w, r)
-		// case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "publicfaucet" && p[3] == "login" && r.Method == http.MethodPost:
-		// 	port.oauthClientManager.PostLoginHTTPHandler().Execute(w, r)
-		//
-		// 	// --- Token endpoints ---
-		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "token" && p[4] == "refresh" && r.Method == http.MethodPost:
-		// 	port.oauthClientManager.PostTokenRefreshHTTPHandler().Execute(w, r)
-		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "token" && p[4] == "introspect" && r.Method == http.MethodPost:
-		// 	port.oauthClientManager.PostTokenIntrospectionHTTPHandler().Execute(w, r)
-		//
-		// // --- oAuth endpoints ---
-		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "authorize" && r.Method == http.MethodGet:
-		// 	port.oauthClientManager.GetAuthURLHTTPHandler().Execute(w, r)
-		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "callback" && r.Method == http.MethodGet:
-		// 	port.oauthClientManager.CallbackHTTPHandler().Execute(w, r)
-		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "state" && r.Method == http.MethodGet:
-		// 	port.oauthClientManager.StateManagementHTTPHandler().VerifyState(w, r)
-		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "state" && r.Method == http.MethodDelete:
-		// 	port.oauthClientManager.StateManagementHTTPHandler().CleanupExpiredStates(w, r)
-		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "session" && r.Method == http.MethodGet:
-		// 	port.oauthClientManager.OAuthSessionInfoHTTPHandler().Execute(w, r)
-		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "registration" && r.Method == http.MethodGet: // Used by frontend
-		// 	port.oauthClientManager.GetRegistrationURLHTTPHandler().Execute(w, r)
+		// --- Unprotected API endpoints ---
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "register":
+			port.gatewayUserRegisterHTTPHandler.Execute(w, r)
 
 		// --- Resource endpoints ---
 		// Hello

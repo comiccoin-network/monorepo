@@ -23,6 +23,7 @@ import (
 	http_claimcoins "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/claimcoins"
 	http_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/dashboard"
 	http_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/faucet"
+	http_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/gateway"
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/me"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware"
@@ -36,6 +37,7 @@ import (
 	svc_claimcoins "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/claimcoins"
 	sv_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/dashboard"
 	svc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/faucet"
+	svc_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/gateway"
 	svc_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/hello"
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/me"
 	svc_transactions "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/transactions"
@@ -288,10 +290,30 @@ func NewModule(
 		userGetByFederatedIdentityIDUseCase,
 		userUpdateUseCase,
 	)
+	// --- Gateway ---
+
+	gatewayUserRegisterService := svc_gateway.NewGatewayUserRegisterService(
+		cfg,
+		logger,
+		passp,
+		mongodbCacheProvider,
+		jwtp,
+		userGetByEmailUseCase,
+		userCreateUseCase,
+		userUpdateUseCase,
+	)
 
 	////
 	//// Interface
 	////
+
+	// --- Gateway ---
+
+	gatewayUserRegisterHTTPHandler := http_gateway.NewGatewayUserRegisterHTTPHandler(
+		logger,
+		dbClient,
+		gatewayUserRegisterService,
+	)
 
 	// --- Hello ---
 
@@ -382,6 +404,7 @@ func NewModule(
 		cfg,
 		logger,
 		httpMiddleware,
+		gatewayUserRegisterHTTPHandler,
 		getHelloHTTPHandler,
 		getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler,

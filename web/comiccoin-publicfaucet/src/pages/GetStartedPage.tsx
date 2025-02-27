@@ -63,7 +63,7 @@ const GetStartedPage: FC = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 xl:gap-12 mb-12">
             {/* Register Option */}
-            <Link to="/register-call" className="group">
+            <Link to="/register" className="group">
               <div className="bg-white h-full p-6 sm:p-8 rounded-xl border-2 border-purple-100 hover:border-purple-400 transition-all duration-300 shadow-lg hover:shadow-xl flex flex-col items-center text-center">
                 <div className="p-4 bg-purple-50 rounded-full mb-6 group-hover:scale-110 transition-transform">
                   <UserPlus className="h-10 w-10 sm:h-12 sm:w-12 text-purple-600" />
@@ -83,7 +83,7 @@ const GetStartedPage: FC = () => {
             </Link>
 
             {/* Login Option */}
-            <Link to="/login-call" className="group">
+            <Link to="/login" className="group">
               <div className="bg-white h-full p-6 sm:p-8 rounded-xl border-2 border-purple-100 hover:border-purple-400 transition-all duration-300 shadow-lg hover:shadow-xl flex flex-col items-center text-center">
                 <div className="p-4 bg-purple-50 rounded-full mb-6 group-hover:scale-110 transition-transform">
                   <LogIn className="h-10 w-10 sm:h-12 sm:w-12 text-purple-600" />
