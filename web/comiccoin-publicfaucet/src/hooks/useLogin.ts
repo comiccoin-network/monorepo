@@ -7,11 +7,29 @@ interface LoginCredentials {
     password: string
 }
 
+// Login response interface matching the backend response
+interface LoginResponse {
+    user: {
+        id: string
+        email: string
+        firstName: string
+        lastName: string
+        name: string
+        role: number
+        wasEmailVerified?: boolean
+        // Other user fields
+    }
+    accessToken: string
+    accessTokenExpiryTime: string
+    refreshToken: string
+    refreshTokenExpiryTime: string
+}
+
 // Define the return type for the login hook
 interface UseLoginReturn {
     isLoading: boolean
     error: string | null
-    login: (credentials: LoginCredentials) => Promise<void>
+    login: (credentials: LoginCredentials) => Promise<LoginResponse | undefined>
     reset: () => void
 }
 
@@ -36,7 +54,7 @@ export const useLogin = (
      * @param credentials - User login credentials
      */
     const login = useCallback(
-        async (credentials: LoginCredentials): Promise<void> => {
+        async (credentials: LoginCredentials): Promise<LoginResponse | undefined> => {
             // Reset previous state
             setError(null)
             setIsLoading(true)
@@ -50,6 +68,9 @@ export const useLogin = (
 
                 // Call success callback if provided
                 onSuccess?.(response)
+
+                // Return the response so the component can use it
+                return response
             } catch (err) {
                 // Handle and set error
                 const errorMessage = err instanceof Error ? err.message : String(err)
@@ -57,6 +78,9 @@ export const useLogin = (
 
                 // Call error callback if provided
                 onError?.(errorMessage)
+
+                // Return undefined on error
+                return undefined
             } finally {
                 // Always set loading to false
                 setIsLoading(false)

@@ -99,6 +99,7 @@ const LoginPage: FC = () => {
     }
 
     // Handle form submission
+    // Handle form submission
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
 
@@ -117,13 +118,27 @@ const LoginPage: FC = () => {
 
         try {
             // Send login request to API using our hook
-            await login({
+            const response = await login({
                 email: formData.email,
                 password: formData.password,
             })
 
-            // On successful login, redirect to dashboard
-            setRedirectTo('/user/dashboard')
+            console.log('login was a success, saving response to local storage')
+
+            // Check if response exists (login succeeded)
+            if (response) {
+                // Save the access token / refresh token to local storage
+                localStorage.setItem('accessToken', response.access_token)
+                localStorage.setItem('refreshToken', response.refresh_token)
+                localStorage.setItem('accessTokenExpiry', response.access_token_expiry_time)
+                localStorage.setItem('refreshTokenExpiry', response.refresh_token_expiry_time)
+
+                // Save the user profile to local storage
+                localStorage.setItem('userProfile', JSON.stringify(response.user))
+
+                // On successful login, redirect to dashboard
+                setRedirectTo('/user/dashboard')
+            }
         } catch (error) {
             // mapApiErrorsToFormFields() will be called by the useEffect when apiError changes
             // This ensures errors are always displayed regardless of when they occur
