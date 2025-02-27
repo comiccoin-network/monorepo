@@ -116,6 +116,7 @@ const Header: FC<HeaderProps> = ({ showBackButton = false }) => {
             aria-label="Mobile Navigation"
           >
             <div className="px-4 pt-2 pb-3 space-y-1">
+              {/*
               <Link
                 to="/"
                 className="block w-full px-4 py-3 rounded-md text-base font-medium text-white hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-white flex items-center"
@@ -140,6 +141,7 @@ const Header: FC<HeaderProps> = ({ showBackButton = false }) => {
               >
                 Documentation
               </Link>
+              */}
 
               {/* Conditional mobile button with improved accessibility */}
               {showBackButton ? (
