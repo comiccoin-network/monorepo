@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import EmailVerificationService from '../services/emailVerificationService'
 
 /**
@@ -27,40 +27,43 @@ export const useEmailVerification = (
      * Verify email with the given code
      * @param code - Verification code to send
      */
-    const verifyEmail = async (code: string): Promise<void> => {
-        // Reset previous state
-        setError(null)
-        setIsLoading(true)
+    const verifyEmail = useCallback(
+        async (code: string): Promise<void> => {
+            // Reset previous state
+            setError(null)
+            setIsLoading(true)
 
-        try {
-            // Call the verification service
-            const result = await EmailVerificationService.verifyEmail(code)
+            try {
+                // Call the verification service
+                const result = await EmailVerificationService.verifyEmail(code)
 
-            // Call success callback if provided
-            onSuccess?.(result)
-        } catch (err) {
-            // Handle and set error
-            const errorMessage = err instanceof Error ? err.message : String(err)
-            setError(errorMessage)
+                // Call success callback if provided
+                onSuccess?.(result)
+            } catch (err) {
+                // Handle and set error
+                const errorMessage = err instanceof Error ? err.message : String(err)
+                setError(errorMessage)
 
-            // Call error callback if provided
-            onError?.(errorMessage)
-        } finally {
-            // Always set loading to false
-            setIsLoading(false)
+                // Call error callback if provided
+                onError?.(errorMessage)
+            } finally {
+                // Always set loading to false
+                setIsLoading(false)
 
-            // Call done callback if provided
-            onDone?.()
-        }
-    }
+                // Call done callback if provided
+                onDone?.()
+            }
+        },
+        [onSuccess, onError, onDone]
+    ) // Add dependencies to prevent unnecessary re-renders
 
     /**
      * Reset the hook's state
      */
-    const reset = () => {
+    const reset = useCallback(() => {
         setIsLoading(false)
         setError(null)
-    }
+    }, [])
 
     return {
         isLoading,
