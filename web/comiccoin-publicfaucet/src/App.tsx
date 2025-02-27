@@ -1,5 +1,7 @@
-// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router';
+
+// Import the new NotFoundPage
+import NotFoundPage from './pages/NotFoundPage';
 
 // Layout
 import InitializationLayout from "./layouts/InitializationLayout";
@@ -11,6 +13,7 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import GetStartedPage from './pages/GetStartedPage';
 import RegisterCallPage from './pages/RegisterCallPage';
+import RegisterCancelPage from './pages/RegisterCancelPage';
 import LoginCallPage from './pages/LoginCallPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 
@@ -32,13 +35,14 @@ function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/get-started" element={<GetStartedPage />} />
         <Route path="/register-call" element={<RegisterCallPage />} />
+        <Route path="/register-canceled" element={<RegisterCancelPage />} />
         <Route path="/login-call" element={<LoginCallPage />} />
         <Route path="/auth-callback" element={<AuthCallbackPage />} />
 
         {/* User initialization flow with restricted layout */}
-       <Route path="/user-initialization" element={<InitializationLayout />}>
-         <Route path="add-my-wallet-address" element={<AddWalletAddressPage />} />
-       </Route>
+        <Route path="/user-initialization" element={<InitializationLayout />}>
+          <Route path="add-my-wallet-address" element={<AddWalletAddressPage />} />
+        </Route>
 
         {/* Protected routes with layout */}
         <Route path="/user" element={<MainLayout />}>
@@ -48,6 +52,9 @@ function App() {
           <Route path="settings" element={<SettingsPage />} />
           <Route path="help-and-support" element={<HelpAndSupportPage />} />
         </Route>
+
+        {/* 404 Not Found Route (must be the last route) */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );
