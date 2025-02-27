@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
-	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient"
 
 	// http_introspection "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/introspection"
 	// http_login "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/login"
@@ -42,9 +41,6 @@ type httpServerImpl struct {
 	// logger is the logger for the HTTP server.
 	logger *slog.Logger
 
-	// Remote oAuth 2.0 connection handler.
-	oauthClientManager common_oauth.Manager
-
 	middleware mid.Middleware
 
 	// Core handlers
@@ -72,7 +68,6 @@ type httpServerImpl struct {
 func NewHTTPServer(
 	cfg *config.Configuration,
 	logger *slog.Logger,
-	manager common_oauth.Manager,
 	mid mid.Middleware,
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
@@ -89,7 +84,6 @@ func NewHTTPServer(
 	port := &httpServerImpl{
 		cfg:                               cfg,
 		logger:                            logger,
-		oauthClientManager:                manager,
 		middleware:                        mid,
 		getHelloHTTPHandler:               getHelloHTTPHandler,
 		getMeHTTPHandler:                  getMeHTTPHandler,
@@ -133,31 +127,31 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 
 		// Handle the request based on the URL path tokens.
 		switch {
-		// --- Auth endpoints ---
-		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "register":
-			port.oauthClientManager.PostRegistrationHTTPHandler().Execute(w, r)
-		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "publicfaucet" && p[3] == "login" && r.Method == http.MethodPost:
-			port.oauthClientManager.PostLoginHTTPHandler().Execute(w, r)
-
-			// --- Token endpoints ---
-		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "token" && p[4] == "refresh" && r.Method == http.MethodPost:
-			port.oauthClientManager.PostTokenRefreshHTTPHandler().Execute(w, r)
-		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "token" && p[4] == "introspect" && r.Method == http.MethodPost:
-			port.oauthClientManager.PostTokenIntrospectionHTTPHandler().Execute(w, r)
-
-		// --- oAuth endpoints ---
-		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "authorize" && r.Method == http.MethodGet:
-			port.oauthClientManager.GetAuthURLHTTPHandler().Execute(w, r)
-		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "callback" && r.Method == http.MethodGet:
-			port.oauthClientManager.CallbackHTTPHandler().Execute(w, r)
-		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "state" && r.Method == http.MethodGet:
-			port.oauthClientManager.StateManagementHTTPHandler().VerifyState(w, r)
-		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "state" && r.Method == http.MethodDelete:
-			port.oauthClientManager.StateManagementHTTPHandler().CleanupExpiredStates(w, r)
-		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "session" && r.Method == http.MethodGet:
-			port.oauthClientManager.OAuthSessionInfoHTTPHandler().Execute(w, r)
-		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "registration" && r.Method == http.MethodGet: // Used by frontend
-			port.oauthClientManager.GetRegistrationURLHTTPHandler().Execute(w, r)
+		// // --- Auth endpoints ---
+		// case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "register":
+		// 	port.oauthClientManager.PostRegistrationHTTPHandler().Execute(w, r)
+		// case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "publicfaucet" && p[3] == "login" && r.Method == http.MethodPost:
+		// 	port.oauthClientManager.PostLoginHTTPHandler().Execute(w, r)
+		//
+		// 	// --- Token endpoints ---
+		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "token" && p[4] == "refresh" && r.Method == http.MethodPost:
+		// 	port.oauthClientManager.PostTokenRefreshHTTPHandler().Execute(w, r)
+		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "token" && p[4] == "introspect" && r.Method == http.MethodPost:
+		// 	port.oauthClientManager.PostTokenIntrospectionHTTPHandler().Execute(w, r)
+		//
+		// // --- oAuth endpoints ---
+		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "authorize" && r.Method == http.MethodGet:
+		// 	port.oauthClientManager.GetAuthURLHTTPHandler().Execute(w, r)
+		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "callback" && r.Method == http.MethodGet:
+		// 	port.oauthClientManager.CallbackHTTPHandler().Execute(w, r)
+		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "state" && r.Method == http.MethodGet:
+		// 	port.oauthClientManager.StateManagementHTTPHandler().VerifyState(w, r)
+		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "state" && r.Method == http.MethodDelete:
+		// 	port.oauthClientManager.StateManagementHTTPHandler().CleanupExpiredStates(w, r)
+		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "session" && r.Method == http.MethodGet:
+		// 	port.oauthClientManager.OAuthSessionInfoHTTPHandler().Execute(w, r)
+		// case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "oauth" && p[4] == "registration" && r.Method == http.MethodGet: // Used by frontend
+		// 	port.oauthClientManager.GetRegistrationURLHTTPHandler().Execute(w, r)
 
 		// --- Resource endpoints ---
 		// Hello

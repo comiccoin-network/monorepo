@@ -12,8 +12,6 @@ import (
 	uc_mempooltxdto "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltxdto"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/distributedmutex"
-	common_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient"
-	common_oauth_config "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/blacklist"
 	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/jwt"
@@ -78,27 +76,6 @@ func NewModule(
 
 	mongodbCacheConfigurationProvider := mongodb_cache.NewCacheConfigurationProvider(cfg.DB.PublicFaucetName)
 	mongodbCacheProvider := mongodb_cache.NewCache(mongodbCacheConfigurationProvider, logger, dbClient)
-
-	oauthClientConfig := &common_oauth_config.Configuration{
-		OAuth: common_oauth_config.OAuthConfig{
-			ServerURL:                        cfg.PublicFaucetOAuth.ServerURL,
-			ClientID:                         cfg.PublicFaucetOAuth.ClientID,
-			ClientSecret:                     cfg.PublicFaucetOAuth.ClientSecret,
-			ClientRedirectURI:                cfg.PublicFaucetOAuth.ClientRedirectURI,
-			ClientRegisterSuccessURI:         cfg.PublicFaucetOAuth.ClientRegisterSuccessURI,
-			ClientRegisterCancelURI:          cfg.PublicFaucetOAuth.ClientRegisterCancelURI,
-			ClientAuthorizeOrLoginSuccessURI: cfg.PublicFaucetOAuth.ClientAuthorizeOrLoginSuccessURI,
-			ClientAuthorizeOrLoginCancelURI:  cfg.PublicFaucetOAuth.ClientAuthorizeOrLoginCancelURI,
-		},
-		DB: common_oauth_config.DBConfig{
-			URI:  cfg.DB.URI,
-			Name: cfg.DB.PublicFaucetName,
-		},
-	}
-	oauthClientManager, err := common_oauth.NewManager(context.Background(), oauthClientConfig, logger, mongodbCacheProvider, dbClient)
-	if err != nil {
-		log.Fatalf("Failed to load up our oAuth 2.0 Client manager")
-	}
 
 	////
 	//// Repository
@@ -229,7 +206,6 @@ func NewModule(
 	getHelloService := svc_hello.NewHelloService(
 		cfg,
 		logger,
-		oauthClientManager,
 	)
 
 	// --- Me ---
@@ -237,7 +213,6 @@ func NewModule(
 	getMeAfterRemoteSyncServiceImpl := svc_me.NewGetMeAfterRemoteSyncService(
 		cfg,
 		logger,
-		oauthClientManager,
 		userGetByFederatedIdentityIDUseCase,
 		userCreateUseCase,
 		userUpdateUseCase,
@@ -248,14 +223,12 @@ func NewModule(
 	meConnectWalletService := svc_me.NewMeConnectWalletService(
 		cfg,
 		logger,
-		oauthClientManager,
 		userGetByFederatedIdentityIDUseCase,
 		userUpdateUseCase,
 	)
 	updateMeSyncService := svc_me.NewUpdateMeSyncService(
 		cfg,
 		logger,
-		oauthClientManager,
 		userGetByFederatedIdentityIDUseCase,
 		userUpdateUseCase,
 	)
@@ -401,7 +374,6 @@ func NewModule(
 		ipcbp,
 		jwtp,
 		bannedIPAddressListAllValuesUseCase,
-		oauthClientManager,
 	)
 
 	// --- HTTP Server ---
@@ -409,7 +381,6 @@ func NewModule(
 	httpServ := http.NewHTTPServer(
 		cfg,
 		logger,
-		oauthClientManager,
 		httpMiddleware,
 		getHelloHTTPHandler,
 		getMeHTTPHandler,

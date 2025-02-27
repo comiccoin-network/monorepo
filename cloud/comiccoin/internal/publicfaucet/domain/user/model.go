@@ -29,6 +29,8 @@ type User struct {
 	LastName                  string             `bson:"last_name" json:"last_name"`
 	Name                      string             `bson:"name" json:"name"`
 	LexicalName               string             `bson:"lexical_name" json:"lexical_name"`
+	PasswordHashAlgorithm     string             `bson:"password_hash_algorithm" json:"-"`
+	PasswordHash              string             `bson:"password_hash" json:"-"`
 	Role                      int8               `bson:"role" json:"role"`
 	WasEmailVerified          bool               `bson:"was_email_verified" json:"was_email_verified,omitempty"`
 	EmailVerificationCode     string             `bson:"email_verification_code,omitempty" json:"email_verification_code,omitempty"`
