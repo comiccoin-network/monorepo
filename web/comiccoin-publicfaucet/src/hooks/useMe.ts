@@ -1,21 +1,12 @@
 // monorepo/web/comiccoin-publicfaucet/src/hooks/useMe.ts
 import { useState, useCallback } from 'react'
+import { User, STORAGE_KEYS, UseMeReturn } from '../types'
 
-// Define basic user type
-export interface User {
-    id: string
-    email: string
-    // other fields
-    wallet_address?: string
-}
-
-const USER_STORAGE_KEY = 'userProfile'
-
-export function useMe() {
+export function useMe(): UseMeReturn {
     // Read initial state from localStorage
     const getUserFromStorage = (): User | null => {
         try {
-            const stored = localStorage.getItem(USER_STORAGE_KEY)
+            const stored = localStorage.getItem(STORAGE_KEYS.USER_PROFILE)
             return stored ? JSON.parse(stored) : null
         } catch (err) {
             console.error('Failed to read user from storage:', err)
@@ -33,9 +24,9 @@ export function useMe() {
 
         // Update localStorage
         if (userData) {
-            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData))
+            localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(userData))
         } else {
-            localStorage.removeItem(USER_STORAGE_KEY)
+            localStorage.removeItem(STORAGE_KEYS.USER_PROFILE)
         }
     }, [])
 
@@ -45,9 +36,9 @@ export function useMe() {
         setUser(null)
 
         // Clear localStorage
-        localStorage.removeItem(USER_STORAGE_KEY)
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
+        localStorage.removeItem(STORAGE_KEYS.USER_PROFILE)
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
     }, [])
 
     return {
@@ -56,3 +47,5 @@ export function useMe() {
         logout,
     }
 }
+
+export default useMe

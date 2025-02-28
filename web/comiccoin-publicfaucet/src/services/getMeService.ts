@@ -1,6 +1,7 @@
 // monorepo/web/comiccoin-publicfaucet/src/services/getMeService.ts
 import { AxiosInstance } from 'axios'
 import getCustomAxios from '../helpers/customAxios'
+import { User } from '../types'
 
 class GetMeService {
     private readonly api: AxiosInstance
@@ -25,4 +26,3 @@ class GetMeService {
 
 export const getMeService = new GetMeService()
 export default getMeService
-export { User }

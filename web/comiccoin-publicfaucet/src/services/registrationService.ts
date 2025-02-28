@@ -1,6 +1,6 @@
 // monorepo/web/comiccoin-publicfaucet/src/services/registrationService.ts
 import axios, { AxiosResponse, AxiosError } from 'axios'
-import { RegisterCustomerRequest, RegisterCustomerResponse, ApiErrorResponse } from '../types'
+import { RegisterCustomerRequest, RegisterCustomerResponse } from '../types'
 
 // Base API configuration
 const apiClient = axios.create({

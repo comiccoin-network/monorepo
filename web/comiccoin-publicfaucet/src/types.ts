@@ -1,5 +1,16 @@
 // monorepo/web/comiccoin-publicfaucet/src/types.ts
 
+// Storage keys constants
+export const STORAGE_KEYS = {
+    USER_PROFILE: 'userProfile',
+    ACCESS_TOKEN: 'COMICCOIN_FAUCET_TOKEN_UTILITY_ACCESS_TOKEN_DATA',
+    REFRESH_TOKEN: 'COMICCOIN_FAUCET_TOKEN_UTILITY_REFRESH_TOKEN_DATA',
+}
+
+// ----------------------------------------------------------------
+// User related interfaces
+// ----------------------------------------------------------------
+
 // User model based on API response
 export interface User {
     id: string
@@ -12,6 +23,7 @@ export interface User {
     country?: string
     timezone: string
     wallet_address: string | null // This is a string, not an object
+    // Add any other user properties that may be returned from /me endpoint
 }
 
 // Interface for update user requests
@@ -27,17 +39,46 @@ export interface UpdateUserRequest {
     [key: string]: string | null | undefined // For flexible property access
 }
 
+// Return type for useMe hook
+export interface UseMeReturn {
+    user: User | null
+    updateUser: (userData: User | null) => void
+    logout: () => void
+}
+
+// Options for useGetMe hook
+export interface UseGetMeOptions {
+    enabled?: boolean
+    retry?: number
+}
+
+// Return type for useGetMe hook
+export interface UseGetMeReturn {
+    user: User | null
+    isLoading: boolean
+    error: ApiError | null
+    refetch: () => void
+}
+
+// ----------------------------------------------------------------
+// API Error interfaces
+// ----------------------------------------------------------------
+
+// Generic API error interface
+export interface ApiError extends Error {
+    status?: number
+    data?: any
+}
+
+// ----------------------------------------------------------------
+// Transaction related interfaces
+// ----------------------------------------------------------------
+
 // Transaction model based on API response
 export interface Transaction {
     id: string
     timestamp: string
     amount: number
-}
-
-// Custom API error interface
-export interface ApiError extends Error {
-    status?: number
-    data?: any
 }
 
 // Options for useTransactions hook
