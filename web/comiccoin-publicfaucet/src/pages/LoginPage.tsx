@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router'
 import { Mail, Lock, ArrowRight, AlertTriangle } from 'lucide-react'
 
 import { setAccessTokenInLocalStorage, setRefreshTokenInLocalStorage } from '../helpers/jwtUtility'
+import LoginService from '../services/loginService'
 import { useLogin } from '../hooks/useLogin'
 import { useMe } from '../hooks/useMe'
 import Header from '../components/FaucetPage/Header'
@@ -195,6 +196,9 @@ const LoginPage: FC = () => {
                 // Save the access token / refresh token to local storage
                 setAccessTokenInLocalStorage(response.access_token)
                 setRefreshTokenInLocalStorage(response.refresh_token)
+
+                // Use the service's storeTokens method to ensure consistency
+                LoginService.storeTokens(response.access_token, response.refresh_token)
 
                 console.log('👤 Saving user profile to local storage')
                 // Save the user profile to local storage

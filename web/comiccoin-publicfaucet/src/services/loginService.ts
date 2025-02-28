@@ -97,16 +97,18 @@ class LoginService {
      * @param refreshToken - JWT refresh token
      */
     storeTokens(accessToken: string, refreshToken: string): void {
-        localStorage.setItem('accessToken', accessToken)
-        localStorage.setItem('refreshToken', refreshToken)
+        // Use the same keys as jwtUtility
+        localStorage.setItem('COMICCOIN_FAUCET_TOKEN_UTILITY_ACCESS_TOKEN_DATA', accessToken)
+        localStorage.setItem('COMICCOIN_FAUCET_TOKEN_UTILITY_REFRESH_TOKEN_DATA', refreshToken)
+        console.log('🔑 Tokens stored using consistent keys')
     }
 
     /**
      * Remove authentication tokens from local storage
      */
     clearTokens(): void {
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('COMICCOIN_FAUCET_TOKEN_UTILITY_ACCESS_TOKEN_DATA')
+        localStorage.removeItem('COMICCOIN_FAUCET_TOKEN_UTILITY_REFRESH_TOKEN_DATA')
     }
 
     /**
@@ -114,7 +116,7 @@ class LoginService {
      * @returns Access token or null
      */
     getAccessToken(): string | null {
-        return localStorage.getItem('accessToken')
+        return localStorage.getItem('COMICCOIN_FAUCET_TOKEN_UTILITY_ACCESS_TOKEN_DATA')
     }
 }
 

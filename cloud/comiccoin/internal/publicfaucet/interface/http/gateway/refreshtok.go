@@ -99,7 +99,7 @@ func (h *GatewayRefreshTokenHTTPHandler) Execute(w http.ResponseWriter, r *http.
 		return
 	}
 
-	resp := result.(sv_gateway.GatewayRefreshTokenResponseIDO)
+	resp := result.(*sv_gateway.GatewayRefreshTokenResponseIDO)
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&resp); err != nil {

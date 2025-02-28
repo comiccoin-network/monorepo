@@ -153,7 +153,7 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 			port.gatewayLoginHTTPHandler.Execute(w, r)
 		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "logout" && r.Method == http.MethodPost:
 			port.gatewayLogoutHTTPHandler.Execute(w, r)
-		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "token" && p[4] == "refresh" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "token" && p[4] == "refresh" && r.Method == http.MethodPost:
 			port.gatewayRefreshTokenHTTPHandler.Execute(w, r)
 
 		// --- Resource endpoints ---

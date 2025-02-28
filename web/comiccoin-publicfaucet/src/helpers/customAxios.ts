@@ -183,6 +183,20 @@ const handleRefresh = async (
         console.log('✅ Refresh token request successful, status:', response.status)
         return response
     } catch (error: any) {
+        console.error('❌ Token refresh failed:', error)
+
+        // If refresh fails with 404, it might be a configuration issue
+        if (error.response?.status === 404) {
+            console.log('⚠️ Refresh endpoint not found (404). Check API configuration.')
+
+            // Force logout and redirect to login page if we get persistent 404s
+            // This provides a better UX than repeated failed requests
+            if (unauthorizedCallback) {
+                console.log('🔄 Redirecting to login due to refresh endpoint configuration issue')
+                unauthorizedCallback()
+            }
+        }
+
         // Check if the refresh token is also expired (401)
         if (error.response?.status === 401) {
             console.log('⛔ handleRefresh | 401 Unauthorized: Refresh token expired - login required')
