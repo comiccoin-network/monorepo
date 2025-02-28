@@ -227,15 +227,15 @@ const DashboardPageContent: React.FC = () => {
     }
   };
 
-  // Add gradient background to body
+  // Add solid background color to body
   useEffect(() => {
-    // Set background gradient on body for full page coverage
-    document.body.classList.add('bg-gradient-to-b', 'from-purple-100', 'via-indigo-50', 'to-white');
+    // Set solid background color on body for full page coverage
+    document.body.classList.add('bg-gray-100');
     document.body.style.minHeight = '100vh';
 
     // Clean up when component unmounts
     return () => {
-      document.body.classList.remove('bg-gradient-to-b', 'from-purple-100', 'via-indigo-50', 'to-white');
+      document.body.classList.remove('bg-gray-100');
       document.body.style.minHeight = '';
     };
   }, []);

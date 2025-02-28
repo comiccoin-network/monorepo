@@ -139,11 +139,11 @@ const ClaimCoinsPage: React.FC<ClaimCoinsPageProps> = () => {
         // Fix for white borders and ensure full viewport coverage
         document.body.style.margin = '0'
         document.body.style.padding = '0'
-        document.body.style.backgroundColor = '#8b5cf6' // Purple fallback color that matches the header
+        document.body.style.backgroundColor = '#f3f4f6' // Light gray background color
         document.documentElement.style.margin = '0'
         document.documentElement.style.padding = '0'
         document.documentElement.style.height = '100%'
-        document.documentElement.style.backgroundColor = '#8b5cf6'
+        document.documentElement.style.backgroundColor = '#f3f4f6'
 
         // Detect header height and adjust content accordingly
         const adjustForHeader = () => {
@@ -317,7 +317,7 @@ const ClaimCoinsPage: React.FC<ClaimCoinsPageProps> = () => {
     return (
         <div
             ref={mainContainerRef}
-            className="min-h-screen bg-gradient-to-b from-purple-100 via-indigo-50 to-white py-6 px-4 sm:px-6 md:py-8 overflow-auto"
+            className="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 md:py-8 overflow-auto"
             style={{
                 WebkitTapHighlightColor: 'transparent',
                 paddingBottom: 'env(safe-area-inset-bottom, 20px)',
