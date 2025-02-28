@@ -17,7 +17,6 @@ import RegistrationSuccessPage from './pages/RegistrationSuccessPage'
 import RegisterCancelPage from './pages/RegisterCancelPage'
 import EmailVerification from './pages/EmailVerificationPage'
 import LoginPage from './pages/LoginPage'
-import AuthCallbackPage from './pages/AuthCallbackPage'
 
 // Protected pages (already wrapped with withAuth HOC)
 import DashboardPage from './pages/DashboardPage'
@@ -42,7 +41,6 @@ function App() {
                 <Route path="/register-canceled" element={<RegisterCancelPage />} />
                 <Route path="/verify" element={<EmailVerification />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/auth-callback" element={<AuthCallbackPage />} />
 
                 {/* User initialization flow with restricted layout */}
                 <Route path="/user-initialization" element={<InitializationLayout />}>
