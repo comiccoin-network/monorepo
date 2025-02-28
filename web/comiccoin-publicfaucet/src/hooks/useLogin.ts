@@ -20,10 +20,10 @@ interface LoginResponse {
         wasEmailVerified?: boolean
         // Other user fields
     }
-    accessToken: string
-    accessTokenExpiryTime: string
-    refreshToken: string
-    refreshTokenExpiryTime: string
+    access_token: string
+    access_token_expiry_time: string
+    refresh_token: string
+    refresh_token_expiry_time: string
 }
 
 // Define the return type for the login hook
