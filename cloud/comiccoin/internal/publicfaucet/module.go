@@ -275,7 +275,7 @@ func NewModule(
 		cfg,
 		logger,
 		getFaucetByChainIDUseCase,
-		userGetByFederatedIdentityIDUseCase,
+		userGetByIDUseCase,
 		fetchRemoteAccountBalanceFromAuthorityUseCase,
 	)
 

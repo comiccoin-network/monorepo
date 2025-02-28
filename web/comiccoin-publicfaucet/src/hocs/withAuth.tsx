@@ -1,91 +1,57 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { getAccessTokenFromLocalStorage } from '../helpers/jwtUtility'
 
-// Type for the user profile
-export interface User {
-    id: string
-    email: string
-    first_name: string
-    last_name: string
-    name: string
-    role: number
-    // Add other properties as needed
-}
-
-// Props that will be injected by the HOC
-type WithAuthProps = {
-    isAuthenticated: boolean
-    user: User | null
-}
+// Loading component shown during authentication check
+const LoadingScreen: React.FC = () => (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-100 via-indigo-50 to-white">
+        <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-purple-800 text-lg font-medium">Loading...</p>
+        </div>
+    </div>
+)
 
 /**
- * Higher-Order Component to handle authentication based on local storage tokens
- * @param WrappedComponent - The component to wrap with authentication
- * @returns A new component that checks authentication status
+ * Higher-order component that protects routes requiring authentication
+ * Uses our JWT utility functions to check for valid tokens
  */
-export const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P & WithAuthProps>) => {
-    const AuthWrapper: React.FC<P> = (props) => {
-        const navigate = useNavigate()
-        const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
-        const [user, setUser] = useState<User | null>(null)
-        const [isChecking, setIsChecking] = useState<boolean>(true)
+export function withAuth<P extends object>(Component: React.ComponentType<P>): React.FC<P> {
+    const WithAuth: React.FC<P> = (props: P) => {
+        const [isLoading, setIsLoading] = useState(true)
+        const [isAuthenticated, setIsAuthenticated] = useState(false)
 
         useEffect(() => {
+            // Check for authentication status using our JWT utility
             const checkAuth = () => {
-                console.log('🔒 AUTH CHECK: Verifying user authentication')
+                const token = getAccessTokenFromLocalStorage()
 
-                // Check if we have both tokens and user profile in local storage
-                const accessToken = localStorage.getItem('accessToken')
-                const refreshToken = localStorage.getItem('refreshToken')
-                const userProfile = localStorage.getItem('userProfile')
-
-                if (accessToken && refreshToken && userProfile) {
-                    try {
-                        // Parse user profile
-                        const userData = JSON.parse(userProfile) as User
-                        setUser(userData)
-                        setIsAuthenticated(true)
-                        console.log('✅ AUTH CHECK: User is authenticated')
-                    } catch (error) {
-                        console.error('❌ AUTH CHECK: Error parsing user profile', error)
-                        setIsAuthenticated(false)
-                        navigate('/get-started')
-                    }
-                } else {
-                    console.log('⚠️ AUTH CHECK: Missing authentication data, redirecting to login')
-                    setIsAuthenticated(false)
-                    navigate('/get-started')
+                if (!token) {
+                    console.log('No auth token found, redirecting to login')
+                    window.location.href = '/login'
+                    return
                 }
 
-                // Authentication check complete
-                setIsChecking(false)
+                // Token exists, allow access to protected component
+                setIsAuthenticated(true)
+                setIsLoading(false)
             }
 
             checkAuth()
-        }, [navigate])
+        }, [])
 
-        // Show loading state while checking auth
-        if (isChecking) {
-            return (
-                <div className="min-h-screen bg-purple-50 flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Verifying your account...</p>
-                    </div>
-                </div>
-            )
+        // Show loading screen while checking authentication
+        if (isLoading) {
+            return <LoadingScreen />
         }
 
-        // Render the wrapped component with auth props
-        return <WrappedComponent {...props} isAuthenticated={isAuthenticated} user={user} />
+        // If authenticated, render the protected component
+        return isAuthenticated ? <Component {...props} /> : null
     }
 
-    // Display name for debugging
-    const wrappedComponentName = WrappedComponent.displayName || WrappedComponent.name || 'Component'
+    // Set displayName for debugging
+    WithAuth.displayName = `withAuth(${Component.displayName || Component.name || 'Component'})`
 
-    AuthWrapper.displayName = `withAuth(${wrappedComponentName})`
-
-    return AuthWrapper
+    return WithAuth
 }
 
 export default withAuth

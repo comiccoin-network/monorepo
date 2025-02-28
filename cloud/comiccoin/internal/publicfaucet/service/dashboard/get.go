@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
 	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/faucet"
 	uc_remoteaccountbalance "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/remoteaccountbalance"
@@ -43,7 +44,7 @@ type getDashboardServiceImpl struct {
 	config                                        *config.Configuration
 	logger                                        *slog.Logger
 	getFaucetByChainIDUseCase                     uc_faucet.GetFaucetByChainIDUseCase
-	userGetByFederatedIdentityIDUseCase           uc_user.UserGetByFederatedIdentityIDUseCase
+	userGetByIDUseCase                            uc_user.UserGetByIDUseCase
 	fetchRemoteAccountBalanceFromAuthorityUseCase uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase
 }
 
@@ -51,29 +52,28 @@ func NewGetDashboardService(
 	config *config.Configuration,
 	logger *slog.Logger,
 	getFaucetByChainIDUseCase uc_faucet.GetFaucetByChainIDUseCase,
-	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase,
+	userGetByIDUseCase uc_user.UserGetByIDUseCase,
 	fetchRemoteAccountBalanceFromAuthorityUseCase uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase,
 ) GetDashboardService {
 	return &getDashboardServiceImpl{
-		config:                              config,
-		logger:                              logger,
-		getFaucetByChainIDUseCase:           getFaucetByChainIDUseCase,
-		userGetByFederatedIdentityIDUseCase: userGetByFederatedIdentityIDUseCase,
+		config:                    config,
+		logger:                    logger,
+		getFaucetByChainIDUseCase: getFaucetByChainIDUseCase,
+		userGetByIDUseCase:        userGetByIDUseCase,
 		fetchRemoteAccountBalanceFromAuthorityUseCase: fetchRemoteAccountBalanceFromAuthorityUseCase,
 	}
 }
 
 func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*DashboardDTO, error) {
-	svc.logger.Debug("executing...")
+	//
+	// Get required from context.
+	//
 
-	// Get authenticated federatedidentity ID from context. This is loaded in
-	// by the `AuthMiddleware` found via:
-	// - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go
-	federatedidentityID, ok := sessCtx.Value("federatedidentity_id").(primitive.ObjectID)
+	userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
 	if !ok {
-		svc.logger.Error("Failed getting local federatedidentity id",
-			slog.Any("error", "Not found in context: federatedidentity_id"))
-		return nil, errors.New("federatedidentity_id has issue in context")
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return nil, errors.New("user id not found in context")
 	}
 
 	//
@@ -90,7 +90,7 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 		svc.logger.Error("failed getting faucet by chain id error", slog.Any("err", err))
 		return nil, err
 	}
-	user, err := svc.userGetByFederatedIdentityIDUseCase.Execute(sessCtx, federatedidentityID)
+	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
 	if err != nil {
 		svc.logger.Error("failed getting user error", slog.Any("err", err))
 		return nil, err
