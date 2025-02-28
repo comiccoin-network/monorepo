@@ -13,7 +13,6 @@ type Repository interface {
 	GetByID(ctx context.Context, id primitive.ObjectID) (*User, error)
 	GetByEmail(ctx context.Context, email string) (*User, error)
 	GetByVerificationCode(ctx context.Context, verificationCode string) (*User, error)
-	GetByFederatedIdentityID(ctx context.Context, fiid primitive.ObjectID) (*User, error)
 	DeleteByID(ctx context.Context, id primitive.ObjectID) error
 	CheckIfExistsByEmail(ctx context.Context, email string) (bool, error)
 	UpdateByID(ctx context.Context, m *User) error

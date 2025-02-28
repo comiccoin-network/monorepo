@@ -15,15 +15,14 @@ import (
 )
 
 type UpdateMeRequestDTO struct {
-	FederateIdentityID primitive.ObjectID `bson:"federatedidentity_id" json:"federatedidentity_id"`
-	ID                 primitive.ObjectID `bson:"_id" json:"id"`
-	Email              string             `bson:"email" json:"email"`
-	FirstName          string             `bson:"first_name" json:"first_name"`
-	LastName           string             `bson:"last_name" json:"last_name"`
-	Phone              string             `bson:"phone" json:"phone,omitempty"`
-	Country            string             `bson:"country" json:"country,omitempty"`
-	Timezone           string             `bson:"timezone" json:"timezone"`
-	WalletAddress      string             `bson:"wallet_address" json:"wallet_address"`
+	ID            primitive.ObjectID `bson:"_id" json:"id"`
+	Email         string             `bson:"email" json:"email"`
+	FirstName     string             `bson:"first_name" json:"first_name"`
+	LastName      string             `bson:"last_name" json:"last_name"`
+	Phone         string             `bson:"phone" json:"phone,omitempty"`
+	Country       string             `bson:"country" json:"country,omitempty"`
+	Timezone      string             `bson:"timezone" json:"timezone"`
+	WalletAddress string             `bson:"wallet_address" json:"wallet_address"`
 }
 
 type UpdateMeService interface {
