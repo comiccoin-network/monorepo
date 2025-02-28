@@ -2,6 +2,7 @@ import { FC, useState, FormEvent, ChangeEvent, useRef, useEffect } from 'react'
 import { Link, Navigate } from 'react-router' // Updated to include Navigate
 import {
     ArrowLeft,
+    ArrowDown,
     CheckCircle2,
     Globe,
     Lock,
@@ -398,7 +399,7 @@ const RegisterPage: FC = () => {
                                     Location Information
                                 </h3>
 
-                                {/* Country */}
+                                {/* Country - Fixed styling */}
                                 <div>
                                     <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
                                         Country *
@@ -408,9 +409,9 @@ const RegisterPage: FC = () => {
                                         name="country"
                                         value={formData.country}
                                         onChange={handleInputChange}
-                                        className={`w-full px-4 py-3 rounded-lg border ${
+                                        className={`w-full px-4 py-3 h-12 rounded-lg border ${
                                             errors.country ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                                        } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white`}
+                                        } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white appearance-none`}
                                     >
                                         {countries.map((country) => (
                                             <option key={country.value} value={country.value}>
@@ -460,9 +461,9 @@ const RegisterPage: FC = () => {
                                             name="timezone"
                                             value={formData.timezone}
                                             onChange={handleInputChange}
-                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
+                                            className={`w-full pl-10 pr-4 py-3 h-12 rounded-lg border ${
                                                 errors.timezone ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                                            } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white`}
+                                            } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white appearance-none`}
                                         >
                                             {timezones.map((timezone) => (
                                                 <option key={timezone.value} value={timezone.value}>
@@ -470,6 +471,9 @@ const RegisterPage: FC = () => {
                                                 </option>
                                             ))}
                                         </select>
+                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <ArrowDown className="h-4 w-4 text-gray-400" />
+                                        </div>
                                     </div>
                                     {errors.timezone && <p className="mt-1 text-sm text-red-600">{errors.timezone}</p>}
                                 </div>

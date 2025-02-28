@@ -15,148 +15,215 @@ interface LoginFormData {
 }
 
 const LoginPage: FC = () => {
+    console.log('🏁 LoginPage component mounted')
+
     // State for redirecting on success
     const [redirectTo, setRedirectTo] = useState<string>('')
+    console.log(`🧭 Current redirect state: ${redirectTo || 'Not set'}`)
 
     // Get login functionality from our custom hook
     const { login, isLoading, error: apiError, reset: resetLoginState } = useLogin()
+    console.log(
+        `🔄 Login hook state - Loading: ${isLoading ? '⏳ Yes' : '✅ No'}, Error: ${apiError ? '❌ Present' : '✅ None'}`
+    )
 
     // Get user profile management functionality
     const { updateUser } = useMe()
+    console.log('👤 User profile management hook initialized')
 
     // Create a ref for the error summary div to scroll to
     const errorSummaryRef = useRef<HTMLDivElement>(null)
     const formRef = useRef<HTMLFormElement>(null)
+    console.log('🔖 Form and error summary refs created')
 
     // State for form fields
     const [formData, setFormData] = useState<LoginFormData>({
         email: '',
         password: '',
     })
+    console.log('📝 Form data state initialized')
 
     // Field errors from API
     const [errors, setErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({})
+    console.log(`🚨 Field errors state: ${Object.keys(errors).length > 0 ? '❌ Has errors' : '✅ No errors'}`)
 
     // Error summary for display in the error box
     const [errorSummary, setErrorSummary] = useState<string[]>([])
+    console.log(`📋 Error summary state: ${errorSummary.length > 0 ? '❌ Has errors' : '✅ No errors'}`)
 
     // State to track if form has been submitted to prevent duplicate submissions
     const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
+    console.log(`📤 Form submission state: ${isSubmitted ? '🔒 Submitted' : '🔓 Not submitted'}`)
 
     // Effect to handle API errors when they change
     useEffect(() => {
+        console.log('🔄 useEffect triggered for API error changes')
+
         if (apiError) {
+            console.log('❌ API error detected:', apiError)
+            console.log('🔄 Mapping API errors to form fields')
             mapApiErrorsToFormFields()
 
+            console.log('📜 Scrolling to error summary')
             // Scroll to the top of the form when errors occur
             setTimeout(() => {
                 if (errorSummaryRef.current) {
+                    console.log('🔍 Error summary ref found, scrolling to it')
                     errorSummaryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 } else if (formRef.current) {
+                    console.log('🔍 Form ref found, scrolling to it')
                     formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 } else {
+                    console.log('🔍 No refs found, scrolling to top of window')
                     window.scrollTo({ top: 0, behavior: 'smooth' })
                 }
             }, 100)
 
             // Reset submission flag when we get an error
+            console.log('🔓 Resetting form submission state')
             setIsSubmitted(false)
+        } else {
+            console.log('✅ No API errors detected')
         }
     }, [apiError])
 
     // Handle input changes
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
-        setFormData((prev) => ({ ...prev, [name]: value }))
+        console.log(`📝 Input change: ${name} = ${value.substring(0, 1)}${'*'.repeat(Math.max(0, value.length - 1))}`)
+
+        setFormData((prev) => {
+            const updated = { ...prev, [name]: value }
+            console.log('📝 Form data updated')
+            return updated
+        })
+
         // Clear the error for this field when user starts typing
         if (errors[name as keyof LoginFormData]) {
-            setErrors((prev) => ({ ...prev, [name]: undefined }))
+            console.log(`🧹 Clearing error for field: ${name}`)
+            setErrors((prev) => {
+                const updated = { ...prev, [name]: undefined }
+                console.log('🚨 Field errors updated')
+                return updated
+            })
         }
     }
 
     // Map API errors to form fields
     const mapApiErrorsToFormFields = () => {
+        console.log('🗺️ Starting to map API errors to form fields')
+
         // Check for errors in API response
-        if (!apiError) return
+        if (!apiError) {
+            console.log('✅ No API errors to map')
+            return
+        }
 
         const newErrors: Partial<Record<keyof LoginFormData, string>> = {}
         const summary: string[] = []
 
         // Handle standard API error structure from our hook
         if (typeof apiError === 'string') {
+            console.log(`🚨 API error is a string: "${apiError}"`)
             summary.push(apiError)
         } else if (apiError instanceof Object) {
+            console.log('🚨 API error is an object, processing fields')
             // If error is an object with specific field errors
             Object.entries(apiError).forEach(([key, messages]) => {
                 const formField = key as keyof LoginFormData
+                console.log(`🔍 Processing error for field: ${formField}`)
+
                 if (Array.isArray(messages) && messages.length > 0) {
+                    console.log(`📝 Field ${formField} has array of errors, using first: "${messages[0]}"`)
                     newErrors[formField] = messages[0]
                     summary.push(messages[0])
                 } else if (typeof messages === 'string') {
+                    console.log(`📝 Field ${formField} has string error: "${messages}"`)
                     newErrors[formField] = messages
                     summary.push(messages)
                 }
             })
         }
 
+        console.log('📊 Error mapping complete:', { fieldErrors: newErrors, summary })
         setErrors(newErrors)
         setErrorSummary(summary)
     }
 
     // Handle form submission
-    // Handle form submission
     const handleSubmit = async (e: FormEvent) => {
+        console.log('🚀 Form submission initiated')
         e.preventDefault()
 
         // Prevent multiple submissions
         if (isLoading || isSubmitted) {
+            console.log('⚠️ Submission blocked - already loading or submitted')
             return
         }
 
         // Reset previous submission states
+        console.log('🧹 Resetting previous submission state')
         resetLoginState()
         setErrors({})
         setErrorSummary([])
 
         // Mark as submitted to prevent duplicate API calls
+        console.log('🔒 Setting form as submitted')
         setIsSubmitted(true)
 
         try {
+            console.log('🔑 Attempting login with credentials')
+            console.log(`📧 Email: ${formData.email}`)
+            console.log(`🔐 Password: ${'*'.repeat(formData.password.length)}`)
+
             // Send login request to API using our hook
             const response = await login({
                 email: formData.email,
                 password: formData.password,
             })
 
-            console.log('login was a success, saving response to local storage')
+            console.log('✅ Login successful!', {
+                responseReceived: !!response,
+                accessTokenPresent: response && !!response.access_token,
+                refreshTokenPresent: response && !!response.refresh_token,
+                userDataPresent: response && !!response.user,
+            })
 
             // Check if response exists (login succeeded)
             if (response) {
+                console.log('💾 Saving tokens to local storage')
                 // Save the access token / refresh token to local storage
                 setAccessTokenInLocalStorage(response.access_token)
                 setRefreshTokenInLocalStorage(response.refresh_token)
 
+                console.log('👤 Saving user profile to local storage')
                 // Save the user profile to local storage
                 localStorage.setItem('userProfile', JSON.stringify(response.user))
 
+                console.log('🔄 Updating user in global state')
                 // Update the user profile in the useMe hook (which will save to cache)
                 updateUser(response.user)
 
+                console.log('🧭 Setting redirect to dashboard')
                 // On successful login, redirect to dashboard
                 setRedirectTo('/user/dashboard')
+            } else {
+                console.warn('⚠️ Login response was empty despite successful request')
             }
         } catch (error) {
+            console.error('❌ Login failed with error:', error)
             // mapApiErrorsToFormFields() will be called by the useEffect when apiError changes
             // This ensures errors are always displayed regardless of when they occur
-            console.log(error)
         }
     }
 
     // If redirectTo is set, redirect to that URL
     if (redirectTo) {
+        console.log(`🧭 Redirecting to: ${redirectTo}`)
         return <Navigate to={redirectTo} />
     }
 
+    console.log('🎨 Rendering LoginPage component')
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
             {/* Skip link for accessibility */}
@@ -262,6 +329,7 @@ const LoginPage: FC = () => {
                                     className={`w-full bg-indigo-600 text-white px-6 py-4 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 ${
                                         isLoading || isSubmitted ? 'opacity-70 cursor-not-allowed' : ''
                                     }`}
+                                    onClick={() => console.log('👆 Login button clicked')}
                                 >
                                     {isLoading ? (
                                         <>
@@ -300,7 +368,11 @@ const LoginPage: FC = () => {
                             <div className="text-center pt-2">
                                 <p className="text-gray-600">
                                     Don't have an account?{' '}
-                                    <Link to="/register" className="text-purple-600 hover:text-purple-800 font-medium">
+                                    <Link
+                                        to="/register"
+                                        className="text-purple-600 hover:text-purple-800 font-medium"
+                                        onClick={() => console.log('👆 Sign Up link clicked')}
+                                    >
                                         Sign Up
                                     </Link>
                                 </p>
@@ -316,4 +388,16 @@ const LoginPage: FC = () => {
     )
 }
 
-export default LoginPage
+// Add component lifecycle logging
+const EnhancedLoginPage: FC = () => {
+    useEffect(() => {
+        console.log('🎬 LoginPage component mounted to DOM')
+        return () => {
+            console.log('🛑 LoginPage component unmounted from DOM')
+        }
+    }, [])
+
+    return <LoginPage />
+}
+
+export default EnhancedLoginPage
