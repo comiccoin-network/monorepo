@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
 )
@@ -19,41 +20,40 @@ type GetUserTransactionsService interface {
 }
 
 type getUserTransactionsServiceImpl struct {
-	config                              *config.Configuration
-	logger                              *slog.Logger
-	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase
+	config             *config.Configuration
+	logger             *slog.Logger
+	userGetByIDUseCase uc_user.UserGetByIDUseCase
 }
 
 func NewGetUserTransactionsService(
 	config *config.Configuration,
 	logger *slog.Logger,
-	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase,
+	userGetByIDUseCase uc_user.UserGetByIDUseCase,
 ) GetUserTransactionsService {
 	return &getUserTransactionsServiceImpl{
-		config:                              config,
-		logger:                              logger,
-		userGetByFederatedIdentityIDUseCase: userGetByFederatedIdentityIDUseCase,
+		config:             config,
+		logger:             logger,
+		userGetByIDUseCase: userGetByIDUseCase,
 	}
 }
 
 func (svc *getUserTransactionsServiceImpl) Execute(sessCtx mongo.SessionContext) ([]*dom_user.UserClaimedCoinTransaction, error) {
-	svc.logger.Debug("executing...")
+	//
+	// Get required from context.
+	//
 
-	// Get authenticated federatedidentity ID from context. This is loaded in
-	// by the `AuthMiddleware` found via:
-	// - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go
-	federatedidentityID, ok := sessCtx.Value("federatedidentity_id").(primitive.ObjectID)
+	userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
 	if !ok {
-		svc.logger.Error("Failed getting local federatedidentity id",
-			slog.Any("error", "Not found in context: federatedidentity_id"))
-		return nil, errors.New("federatedidentity_id has issue in context")
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return nil, errors.New("user id not found in context")
 	}
 
 	//
 	// Get related records.
 	//
 
-	user, err := svc.userGetByFederatedIdentityIDUseCase.Execute(sessCtx, federatedidentityID)
+	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
 	if err != nil {
 		svc.logger.Error("failed getting user error", slog.Any("err", err))
 		return nil, err

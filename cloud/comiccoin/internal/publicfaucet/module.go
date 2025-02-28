@@ -284,7 +284,7 @@ func NewModule(
 	getUserTransactionsService := svc_transactions.NewGetUserTransactionsService(
 		cfg,
 		logger,
-		userGetByFederatedIdentityIDUseCase,
+		userGetByIDUseCase,
 	)
 
 	// --- Claim Coins ---

@@ -51,9 +51,6 @@ func (s *meConnectWalletServiceImpl) Execute(sessCtx mongo.SessionContext, req *
 	// STEP 1: Get required from context.
 	//
 
-	// Get authenticated federatedidentity ID from context. This is loaded in
-	// by the `AuthMiddleware` found via:
-	// - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go
 	userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
 	if !ok {
 		s.logger.Error("Failed getting local user id",
