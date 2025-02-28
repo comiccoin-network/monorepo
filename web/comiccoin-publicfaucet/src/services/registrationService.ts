@@ -1,5 +1,6 @@
 // monorepo/web/comiccoin-publicfaucet/src/services/registrationService.ts
 import axios, { AxiosResponse, AxiosError } from 'axios'
+import { RegisterCustomerRequest, RegisterCustomerResponse, ApiErrorResponse } from '../types'
 
 // Base API configuration
 const apiClient = axios.create({
@@ -8,38 +9,6 @@ const apiClient = axios.create({
         'Content-Type': 'application/json',
     },
 })
-
-// Registration request interface (matching Go struct)
-export interface RegisterCustomerRequest {
-    first_name: string
-    last_name: string
-    email: string
-    password: string
-    password_confirm: string
-    phone?: string
-    country?: string
-    country_other?: string
-    timezone: string
-    agree_terms_of_service: boolean
-    agree_promotions?: boolean
-}
-
-// Registration response interface
-export interface RegisterCustomerResponse {
-    success: boolean
-    message: string
-    user_id?: string
-    email?: string
-}
-
-// Error response interface
-export interface ApiErrorResponse {
-    success: boolean
-    message: string | Record<string, string>
-    errors?: {
-        [key: string]: string[]
-    }
-}
 
 class RegistrationService {
     /**

@@ -1,22 +1,7 @@
 // monorepo/web/comiccoin-publicfaucet/src/hooks/useRegistration.ts
 import { useState } from 'react'
-import registrationService, { RegisterCustomerRequest, RegisterCustomerResponse } from '../services/registrationService'
-
-interface RegistrationError {
-    message: string
-    errors?: {
-        [key: string]: string[]
-    }
-    status?: number
-}
-
-interface UseRegistrationResult {
-    register: (data: RegisterCustomerRequest) => Promise<RegisterCustomerResponse>
-    isLoading: boolean
-    error: RegistrationError | null
-    success: boolean
-    resetState: () => void
-}
+import registrationService from '../services/registrationService'
+import { RegisterCustomerRequest, RegisterCustomerResponse, RegistrationError, UseRegistrationResult } from '../types'
 
 /**
  * Custom hook for handling user registration functionality

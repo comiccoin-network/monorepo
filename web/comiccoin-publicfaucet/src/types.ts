@@ -28,7 +28,6 @@ export interface UpdateUserRequest {
 }
 
 // Transaction model based on API response
-// Matches the backend UserClaimedCoinTransaction struct
 export interface Transaction {
     id: string
     timestamp: string
@@ -66,3 +65,60 @@ export interface SortState {
     field: SortableField
     direction: SortDirection
 }
+
+// ------------------------------------------------------------
+// Registration Types
+// ------------------------------------------------------------
+
+// Registration request interface (matching Go struct)
+export interface RegisterCustomerRequest {
+    first_name: string
+    last_name: string
+    email: string
+    password: string
+    password_confirm: string
+    phone?: string
+    country?: string
+    country_other?: string
+    timezone: string
+    agree_terms_of_service: boolean
+    agree_promotions?: boolean
+}
+
+// Registration response interface
+export interface RegisterCustomerResponse {
+    success: boolean
+    message: string
+    user_id?: string
+    email?: string
+}
+
+// API Error response interface
+export interface ApiErrorResponse {
+    success: boolean
+    message: string | Record<string, string>
+    errors?: {
+        [key: string]: string[]
+    }
+}
+
+// Registration error interface for hook
+export interface RegistrationError {
+    message: string | Record<string, string>
+    errors?: {
+        [key: string]: string[]
+    }
+    status?: number
+}
+
+// useRegistration hook return type
+export interface UseRegistrationResult {
+    register: (data: RegisterCustomerRequest) => Promise<RegisterCustomerResponse>
+    isLoading: boolean
+    error: RegistrationError | null
+    success: boolean
+    resetState: () => void
+}
+
+// Form data interface for registration page
+export interface RegisterFormData extends RegisterCustomerRequest {}

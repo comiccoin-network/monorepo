@@ -1,29 +1,11 @@
 // monorepo/web/comiccoin-publicfaucet/src/pages/RegisterPage.tsx
 import { FC, useState, FormEvent, ChangeEvent, useRef, useEffect } from 'react'
-import { Link, Navigate } from 'react-router' // Updated to include Navigate
-import {
-    ArrowLeft,
-    ArrowDown,
-    CheckCircle2,
-    Globe,
-    Lock,
-    Mail,
-    Phone,
-    Shield,
-    User,
-    Clock,
-    ArrowRight,
-    AlertTriangle,
-} from 'lucide-react'
+import { Link, Navigate } from 'react-router'
+import { ArrowDown, Globe, Lock, Mail, Phone, Shield, User, Clock, ArrowRight, AlertTriangle } from 'lucide-react'
 import Header from '../components/FaucetPage/Header'
 import Footer from '../components/FaucetPage/Footer'
 import { useRegistration } from '../hooks/useRegistration'
-import type { RegisterCustomerRequest } from '../services/registrationService'
-
-// Registration form data interface matching the Go struct
-interface RegisterFormData extends RegisterCustomerRequest {
-    // The interface inherits all fields from RegisterCustomerRequest
-}
+import { RegisterFormData } from '../types'
 
 const RegisterPage: FC = () => {
     // State for redirecting on success
