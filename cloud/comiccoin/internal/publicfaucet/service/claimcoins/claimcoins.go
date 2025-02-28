@@ -101,7 +101,7 @@ type claimCoinsServiceImpl struct {
 	fetchRemoteAccountBalanceFromAuthorityUseCase           uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase
 	getPublicFaucetPrivateKeyService                        svc_faucet.GetPublicFaucetPrivateKeyService
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_auth_memp.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
-	userGetByFederatedIdentityIDUseCase                     uc_user.UserGetByFederatedIdentityIDUseCase
+	userGetByIDUseCase                                      uc_user.UserGetByIDUseCase
 	userUpdateUseCase                                       uc_user.UserUpdateUseCase
 }
 
@@ -114,7 +114,7 @@ func NewClaimCoinsService(
 	fetchRemoteAccountBalanceFromAuthorityUseCase uc_remoteaccountbalance.FetchRemoteAccountBalanceFromAuthorityUseCase,
 	getPublicFaucetPrivateKeyService svc_faucet.GetPublicFaucetPrivateKeyService,
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_auth_memp.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
-	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase,
+	userGetByIDUseCase uc_user.UserGetByIDUseCase,
 	userUpdateUseCase uc_user.UserUpdateUseCase,
 ) ClaimCoinsService {
 	return &claimCoinsServiceImpl{
@@ -126,12 +126,12 @@ func NewClaimCoinsService(
 		fetchRemoteAccountBalanceFromAuthorityUseCase:           fetchRemoteAccountBalanceFromAuthorityUseCase,
 		getPublicFaucetPrivateKeyService:                        getPublicFaucetPrivateKeyService,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase: submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
-		userGetByFederatedIdentityIDUseCase:                     userGetByFederatedIdentityIDUseCase,
+		userGetByIDUseCase:                                      userGetByIDUseCase,
 		userUpdateUseCase:                                       userUpdateUseCase,
 	}
 }
 
-func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federatedidentityID primitive.ObjectID) (*ClaimCoinsResponse, error) {
+func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, userID primitive.ObjectID) (*ClaimCoinsResponse, error) {
 	// Protect our resource - Make it executed only once at any period of
 	// time, this is to protect faucet balance.
 	svc.dmutex.Acquire(sessCtx, "ClaimCoinsServiceExecution")
@@ -151,14 +151,14 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, federate
 		svc.logger.Error("failed getting faucet by chain id error", slog.Any("err", err))
 		return nil, err
 	}
-	user, err := svc.userGetByFederatedIdentityIDUseCase.Execute(sessCtx, federatedidentityID)
+	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
 	if err != nil {
-		svc.logger.Debug("Failed getting user by federatedidentity id", slog.Any("error", err))
+		svc.logger.Debug("Failed getting user by user id", slog.Any("error", err))
 		return nil, err
 	}
 	if user == nil {
-		err := fmt.Errorf("User does not exist for federatedidentity id: %v", federatedidentityID.Hex())
-		svc.logger.Debug("Failed getting user by federatedidentity id", slog.Any("error", err))
+		err := fmt.Errorf("User does not exist for user id: %v", userID.Hex())
+		svc.logger.Debug("Failed getting user by user id", slog.Any("error", err))
 		return nil, err
 	}
 	privateKey, err := svc.getPublicFaucetPrivateKeyService.Execute(sessCtx)

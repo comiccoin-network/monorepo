@@ -2,12 +2,15 @@
 package me
 
 import (
+	"errors"
+	"fmt"
 	"log/slog"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
 )
 
@@ -23,103 +26,88 @@ type UpdateMeRequestDTO struct {
 	WalletAddress      string             `bson:"wallet_address" json:"wallet_address"`
 }
 
-type UpdateMeSyncService interface {
+type UpdateMeService interface {
 	Execute(sessCtx mongo.SessionContext, req *UpdateMeRequestDTO) (*MeResponseDTO, error)
 }
 
-type updateMeSyncServiceImpl struct {
-	config                              *config.Configuration
-	logger                              *slog.Logger
-	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase
-	userUpdateUseCase                   uc_user.UserUpdateUseCase
+type updateMeServiceImpl struct {
+	config             *config.Configuration
+	logger             *slog.Logger
+	userGetByIDUseCase uc_user.UserGetByIDUseCase
+	userUpdateUseCase  uc_user.UserUpdateUseCase
 }
 
-func NewUpdateMeSyncService(
+func NewUpdateMeService(
 	config *config.Configuration,
 	logger *slog.Logger,
-	userGetByFederatedIdentityIDUseCase uc_user.UserGetByFederatedIdentityIDUseCase,
+	userGetByIDUseCase uc_user.UserGetByIDUseCase,
 	userUpdateUseCase uc_user.UserUpdateUseCase,
-) UpdateMeSyncService {
-	return &updateMeSyncServiceImpl{
-		config:                              config,
-		logger:                              logger,
-		userGetByFederatedIdentityIDUseCase: userGetByFederatedIdentityIDUseCase,
-		userUpdateUseCase:                   userUpdateUseCase,
+) UpdateMeService {
+	return &updateMeServiceImpl{
+		config:             config,
+		logger:             logger,
+		userGetByIDUseCase: userGetByIDUseCase,
+		userUpdateUseCase:  userUpdateUseCase,
 	}
 }
 
-func (svc *updateMeSyncServiceImpl) Execute(sessCtx mongo.SessionContext, req *UpdateMeRequestDTO) (*MeResponseDTO, error) {
-	return nil, nil
-	// svc.logger.Debug("executing...")
+func (svc *updateMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *UpdateMeRequestDTO) (*MeResponseDTO, error) {
+	// Get authenticated federatedidentity ID from context. This is loaded in
 	//
-	// // Get authenticated federatedidentity ID from context. This is loaded in
-	// // by the `AuthMiddleware` found via:
-	// // - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go
-	// federatedidentityID, ok := sessCtx.Value("federatedidentity_id").(primitive.ObjectID)
-	// if !ok {
-	// 	svc.logger.Error("Failed getting federatedidentity_id from local context",
-	// 		slog.Any("error", "Not found in context: federatedidentity_id"))
-	// 	return nil, errors.New("federatedidentity not found in context")
-	// }
+	// Get required from context.
 	//
-	// // Get the local saved federated identity details that were saved
-	// // after the successful oAuth 2.0.
-	// federatedidentity, err := svc.oauthManager.GetLocalFederatedIdentityByFederatedIdentityID(sessCtx, federatedidentityID)
-	// if err != nil {
-	// 	svc.logger.Error("Failed getting local federatedidentity id", slog.Any("error", err))
-	// 	return nil, err
-	// }
-	// if federatedidentity == nil {
-	// 	err := fmt.Errorf("FederatedIdentity does not exist for id: %v", federatedidentityID.Hex())
-	// 	svc.logger.Error("Failed getting local federatedidentity id", slog.Any("error", err))
-	// 	return nil, err
-	// }
+
+	userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	if !ok {
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return nil, errors.New("user id not found in context")
+	}
+
+	// Get the user account (aka "Me") and if it doesn't exist then we will
+	// create it immediately here and now.
+	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
+	if err != nil {
+		svc.logger.Error("Failed getting me", slog.Any("error", err))
+		return nil, err
+	}
+	if user == nil {
+		err := fmt.Errorf("User does not exist for federated identity id: %v", userID.Hex())
+		svc.logger.Error("Failed getting me", slog.Any("error", err))
+		return nil, err
+	}
+
 	//
-	// // Get the user account (aka "Me") and if it doesn't exist then we will
-	// // create it immediately here and now.
-	// user, err := svc.userGetByFederatedIdentityIDUseCase.Execute(sessCtx, federatedidentityID)
-	// if err != nil {
-	// 	svc.logger.Error("Failed getting me", slog.Any("error", err))
-	// 	return nil, err
-	// }
-	// if user == nil {
-	// 	err := fmt.Errorf("User does not exist for federated identity id: %v", federatedidentityID.Hex())
-	// 	svc.logger.Error("Failed getting me", slog.Any("error", err))
-	// 	return nil, err
-	// }
+	// Update local database.
 	//
-	// //
-	// // Update local database.
-	// //
-	//
-	// user.Email = req.Email
-	// user.FirstName = req.FirstName
-	// user.LastName = req.LastName
-	// user.FirstName = fmt.Sprintf("%v %v", req.FirstName, req.LastName)
-	// user.LexicalName = fmt.Sprintf("%v, %v", req.LastName, req.FirstName)
-	// user.Phone = req.Phone
-	// user.Country = req.Country
-	// user.Timezone = req.Timezone
-	//
-	// if err := svc.userUpdateUseCase.Execute(sessCtx, user); err != nil {
-	// 	svc.logger.Debug("Failed updating user", slog.Any("error", err))
-	// 	return nil, err
-	// }
-	//
-	// svc.logger.Debug("User updated ",
-	// 	slog.Any("user_id", user.ID))
-	//
-	// return &MeResponseDTO{
-	// 	FederateIdentityID: user.FederateIdentityID,
-	// 	ID:                 user.ID,
-	// 	Email:              user.Email,
-	// 	FirstName:          user.FirstName,
-	// 	LastName:           user.LastName,
-	// 	Name:               user.Name,
-	// 	LexicalName:        user.LexicalName,
-	// 	Phone:              user.Phone,
-	// 	Country:            user.Country,
-	// 	Timezone:           user.Timezone,
-	// 	WalletAddress:      user.WalletAddress,
-	// }, nil
+
+	user.Email = req.Email
+	user.FirstName = req.FirstName
+	user.LastName = req.LastName
+	user.FirstName = fmt.Sprintf("%v %v", req.FirstName, req.LastName)
+	user.LexicalName = fmt.Sprintf("%v, %v", req.LastName, req.FirstName)
+	user.Phone = req.Phone
+	user.Country = req.Country
+	user.Timezone = req.Timezone
+
+	if err := svc.userUpdateUseCase.Execute(sessCtx, user); err != nil {
+		svc.logger.Debug("Failed updating user", slog.Any("error", err))
+		return nil, err
+	}
+
+	svc.logger.Debug("User updated ",
+		slog.Any("user_id", user.ID))
+
+	return &MeResponseDTO{
+		ID:            user.ID,
+		Email:         user.Email,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Name:          user.Name,
+		LexicalName:   user.LexicalName,
+		Phone:         user.Phone,
+		Country:       user.Country,
+		Timezone:      user.Timezone,
+		WalletAddress: user.WalletAddress,
+	}, nil
 }

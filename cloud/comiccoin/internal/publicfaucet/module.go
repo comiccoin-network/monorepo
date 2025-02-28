@@ -240,10 +240,10 @@ func NewModule(
 		userGetByIDUseCase,
 		userUpdateUseCase,
 	)
-	updateMeSyncService := svc_me.NewUpdateMeSyncService(
+	updateMeService := svc_me.NewUpdateMeService(
 		cfg,
 		logger,
-		userGetByFederatedIdentityIDUseCase,
+		userGetByIDUseCase,
 		userUpdateUseCase,
 	)
 
@@ -387,7 +387,7 @@ func NewModule(
 		cfg,
 		logger,
 		dbClient,
-		updateMeSyncService,
+		updateMeService,
 	)
 
 	// --- Faucet ---

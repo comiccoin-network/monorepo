@@ -22,14 +22,14 @@ type PutUpdateMeHTTPHandler struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  svc_me.UpdateMeSyncService
+	service  svc_me.UpdateMeService
 }
 
 func NewPutUpdateMeHTTPHandler(
 	config *config.Configuration,
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service svc_me.UpdateMeSyncService,
+	service svc_me.UpdateMeService,
 ) *PutUpdateMeHTTPHandler {
 	return &PutUpdateMeHTTPHandler{
 		config:   config,

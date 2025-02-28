@@ -3,6 +3,7 @@ package me
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -127,6 +128,11 @@ func (svc *getMeServiceImpl) Execute(sessCtx mongo.SessionContext) (*MeResponseD
 	// create it immediately here and now.
 	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
 	if err != nil {
+		svc.logger.Error("Failed getting me", slog.Any("error", err))
+		return nil, err
+	}
+	if user == nil {
+		err := fmt.Errorf("User does not exist for federated identity id: %v", userID.Hex())
 		svc.logger.Error("Failed getting me", slog.Any("error", err))
 		return nil, err
 	}

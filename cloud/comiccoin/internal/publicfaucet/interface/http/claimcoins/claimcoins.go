@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	svc_claimcoins "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/claimcoins"
 )
@@ -44,14 +45,11 @@ func (h *PostClaimCoinsHTTPHandler) Execute(w http.ResponseWriter, r *http.Reque
 
 	ctx := r.Context()
 
-	// Get authenticated federatedidentity ID from context. This is loaded in
-	// by the `AuthMiddleware` found via:
-	// - github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http/middleware/auth.go
-	federatedidentityID, ok := ctx.Value("federatedidentity_id").(primitive.ObjectID)
+	userID, ok := ctx.Value(constants.SessionUserID).(primitive.ObjectID)
 	if !ok {
-		h.logger.Error("Failed getting local federatedidentity id",
-			slog.Any("error", "Not found in context: federatedidentity_id"))
-		httperror.ResponseError(w, errors.New("federatedidentity not found in context"))
+		h.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		httperror.ResponseError(w, errors.New("user id not found in context"))
 		return
 	}
 
@@ -71,7 +69,7 @@ func (h *PostClaimCoinsHTTPHandler) Execute(w http.ResponseWriter, r *http.Reque
 	// Define a transaction function with a series of operations
 	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
 		// Call service
-		response, err := h.service.Execute(sessCtx, federatedidentityID)
+		response, err := h.service.Execute(sessCtx, userID)
 		if err != nil {
 			h.logger.Error("failed to claim coins",
 				slog.Any("error", err))
