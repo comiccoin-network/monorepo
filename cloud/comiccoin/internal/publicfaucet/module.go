@@ -158,13 +158,7 @@ func NewModule(
 		logger,
 		userRepo,
 	)
-	_ = userGetBySessionIDUseCase
-	_ = userGetByEmailUseCase
-	_ = userGetByEmailUseCase
 	_ = userGetByIDUseCase
-	_ = userGetByFederatedIdentityIDUseCase
-	_ = userCreateUseCase
-	_ = userUpdateUseCase
 
 	// --- Private Key ---
 
@@ -201,12 +195,8 @@ func NewModule(
 		logger,
 		faucetRepo,
 	)
-
 	_ = createFaucetUseCase
-	_ = getFaucetByChainIDUseCase
-	_ = faucetUpdateByChainIDUseCase
 	_ = checkIfFaucetExistsByChainIDUseCase
-	_ = createIfFaucetDNEForMainNetBlockchainUseCase
 
 	// --- RemoteAccountBalance ---
 
@@ -247,7 +237,7 @@ func NewModule(
 	meConnectWalletService := svc_me.NewMeConnectWalletService(
 		cfg,
 		logger,
-		userGetByFederatedIdentityIDUseCase,
+		userGetByIDUseCase,
 		userUpdateUseCase,
 	)
 	updateMeSyncService := svc_me.NewUpdateMeSyncService(
@@ -296,7 +286,6 @@ func NewModule(
 		logger,
 		userGetByFederatedIdentityIDUseCase,
 	)
-	_ = getUserTransactionsService
 
 	// --- Claim Coins ---
 
@@ -450,6 +439,7 @@ func NewModule(
 		blackp,
 		ipcbp,
 		jwtp,
+		userGetBySessionIDUseCase,
 		bannedIPAddressListAllValuesUseCase,
 	)
 

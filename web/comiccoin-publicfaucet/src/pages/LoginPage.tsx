@@ -2,7 +2,9 @@ import { FC, useState, FormEvent, ChangeEvent, useRef, useEffect } from 'react'
 import { Link, Navigate } from 'react-router'
 import { Mail, Lock, ArrowRight, AlertTriangle } from 'lucide-react'
 
+import { setAccessTokenInLocalStorage, setRefreshTokenInLocalStorage } from '../helpers/jwtUtility'
 import { useLogin } from '../hooks/useLogin'
+import { useMe } from '../hooks/useMe'
 import Header from '../components/FaucetPage/Header'
 import Footer from '../components/FaucetPage/Footer'
 
@@ -18,6 +20,9 @@ const LoginPage: FC = () => {
 
     // Get login functionality from our custom hook
     const { login, isLoading, error: apiError, reset: resetLoginState } = useLogin()
+
+    // Get user profile management functionality
+    const { updateUser } = useMe()
 
     // Create a ref for the error summary div to scroll to
     const errorSummaryRef = useRef<HTMLDivElement>(null)
@@ -128,13 +133,14 @@ const LoginPage: FC = () => {
             // Check if response exists (login succeeded)
             if (response) {
                 // Save the access token / refresh token to local storage
-                localStorage.setItem('accessToken', response.access_token)
-                localStorage.setItem('refreshToken', response.refresh_token)
-                localStorage.setItem('accessTokenExpiry', response.access_token_expiry_time)
-                localStorage.setItem('refreshTokenExpiry', response.refresh_token_expiry_time)
+                setAccessTokenInLocalStorage(response.access_token)
+                setRefreshTokenInLocalStorage(response.refresh_token)
 
                 // Save the user profile to local storage
                 localStorage.setItem('userProfile', JSON.stringify(response.user))
+
+                // Update the user profile in the useMe hook (which will save to cache)
+                updateUser(response.user)
 
                 // On successful login, redirect to dashboard
                 setRedirectTo('/user/dashboard')
@@ -142,6 +148,7 @@ const LoginPage: FC = () => {
         } catch (error) {
             // mapApiErrorsToFormFields() will be called by the useEffect when apiError changes
             // This ensures errors are always displayed regardless of when they occur
+            console.log(error)
         }
     }
 

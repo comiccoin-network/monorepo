@@ -1,7 +1,6 @@
 go 1.23.0
 
 use (
-	./cloud/archive/comiccoin-faucet
 	./cloud/comiccoin
 	./native/desktop/comiccoin-cli
 	./native/desktop/comiccoin-nftminter

@@ -164,6 +164,10 @@ func (s *gatewayLoginServiceImpl) loginWithUser(sessCtx mongo.SessionContext, u 
 		return nil, err
 	}
 
+	// For debugging purposes we want to print the wallet address.
+	s.logger.Debug("login successfull",
+		slog.Any("wallet_address", u.WalletAddress))
+
 	// Return our auth keys.
 	return &GatewayLoginResponseIDO{
 		User:                   u,

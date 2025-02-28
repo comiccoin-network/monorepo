@@ -10,6 +10,7 @@ import (
 	ipcb "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/ipcountryblocker"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/jwt"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/bannedipaddress"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/user"
 )
 
 type Middleware interface {
@@ -21,6 +22,7 @@ type middleware struct {
 	logger                              *slog.Logger
 	blacklist                           blacklist.Provider
 	jwt                                 jwt.Provider
+	userGetBySessionIDUseCase           uc_user.UserGetBySessionIDUseCase
 	bannedIPAddressListAllValuesUseCase uc_bannedipaddress.BannedIPAddressListAllValuesUseCase
 	IPCountryBlocker                    ipcb.Provider
 }
@@ -30,6 +32,7 @@ func NewMiddleware(
 	blp blacklist.Provider,
 	ipcountryblocker ipcb.Provider,
 	jwtp jwt.Provider,
+	uc1 uc_user.UserGetBySessionIDUseCase,
 	uc2 uc_bannedipaddress.BannedIPAddressListAllValuesUseCase,
 ) Middleware {
 	return &middleware{
@@ -37,6 +40,7 @@ func NewMiddleware(
 		blacklist:                           blp,
 		IPCountryBlocker:                    ipcountryblocker,
 		jwt:                                 jwtp,
+		userGetBySessionIDUseCase:           uc1,
 		bannedIPAddressListAllValuesUseCase: uc2,
 	}
 }
@@ -54,7 +58,8 @@ func (mid *middleware) Attach(fn http.HandlerFunc) http.HandlerFunc {
 			mid.logger.Debug("applying auth_middleware...")
 
 			// Apply auth middleware for protected paths
-			// handler = mid.oauthClientManager.AuthMiddleware().Authenticate(handler)
+			handler = mid.PostJWTProcessorMiddleware(handler)
+			handler = mid.JWTProcessorMiddleware(handler)
 		}
 
 		handler(w, r)

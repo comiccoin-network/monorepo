@@ -10,6 +10,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.7.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/im7mortal/kmutex v1.0.2
+	github.com/mailgun/mailgun-go/v4 v4.22.1
 	github.com/miguelmota/go-ethereum-hdwallet v0.1.2
 	github.com/oschwald/geoip2-golang v1.11.0
 	github.com/redis/go-redis/v9 v9.7.0
@@ -47,7 +48,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/mailgun/errors v0.4.0 // indirect
-	github.com/mailgun/mailgun-go/v4 v4.22.1 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
