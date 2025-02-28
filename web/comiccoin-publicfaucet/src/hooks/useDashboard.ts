@@ -1,24 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+// monorepo/web/comiccoin-publicfaucet/src/hooks/useDashboard.ts
+import { useState, useCallback } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import dashboardService, { DashboardDTO } from '../services/dashboardService'
-
-interface ApiError extends Error {
-    status?: number
-    data?: any
-}
-
-interface UseDashboardOptions {
-    enabled?: boolean
-    refreshInterval?: number
-}
-
-interface UseDashboardReturn {
-    dashboard: DashboardDTO | null
-    isLoading: boolean
-    error: ApiError | null
-    refetch: () => void
-    clearCache: () => void
-}
+import dashboardService from '../services/dashboardService'
+import { ApiError, DashboardDTO, UseDashboardOptions, UseDashboardReturn } from '../types'
 
 export function useDashboard({ enabled = true, refreshInterval = 0 }: UseDashboardOptions = {}): UseDashboardReturn {
     const queryClient = useQueryClient()
@@ -33,12 +17,12 @@ export function useDashboard({ enabled = true, refreshInterval = 0 }: UseDashboa
         queryKey: ['dashboard'],
         queryFn: () => dashboardService.getDashboard(),
         enabled: enabled,
-        staleTime: refreshInterval, //Data is considered stale after this time (ms)
-        cacheTime: 5 * 60 * 1000, //Keep data in cache for 5 minutes
+        staleTime: refreshInterval, // Data is considered stale after this time (ms)
+        cacheTime: 5 * 60 * 1000, // Keep data in cache for 5 minutes
         refetchInterval: refreshInterval > 0 ? refreshInterval : false, // Only refetch if refreshInterval is set
         onError: (err: any) => {
             const apiError: ApiError =
-                err instanceof Error ? err : new ApiError(err.message || 'Failed to fetch dashboard data')
+                err instanceof Error ? err : new Error(err.message || 'Failed to fetch dashboard data')
             apiError.status = err.response?.status
             apiError.data = err.response?.data
             setError(apiError)
@@ -46,10 +30,16 @@ export function useDashboard({ enabled = true, refreshInterval = 0 }: UseDashboa
     })
 
     const clearCache = useCallback(() => {
-        queryClient.invalidateQueries(['dashboard']) //Invalidate cache
+        queryClient.invalidateQueries(['dashboard']) // Invalidate cache
     }, [queryClient])
 
-    return { dashboard, isLoading, error: error || queryError, refetch, clearCache }
+    return {
+        dashboard: dashboard || null,
+        isLoading,
+        error: error || (queryError as ApiError),
+        refetch,
+        clearCache,
+    }
 }
 
 export default useDashboard

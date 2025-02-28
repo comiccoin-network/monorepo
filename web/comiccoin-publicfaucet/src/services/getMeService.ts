@@ -1,7 +1,7 @@
 // monorepo/web/comiccoin-publicfaucet/src/services/getMeService.ts
 import { AxiosInstance } from 'axios'
 import getCustomAxios from '../helpers/customAxios'
-import { User } from '../types'
+import { User, API_ENDPOINTS } from '../types'
 
 class GetMeService {
     private readonly api: AxiosInstance
@@ -15,7 +15,7 @@ class GetMeService {
 
     public async getMe(): Promise<User> {
         try {
-            const response = await this.api.get<User>('/me')
+            const response = await this.api.get<User>(API_ENDPOINTS.ME)
             return response.data
         } catch (error: any) {
             console.error('❌ GET ME SERVICE: Failed to fetch user profile', error)

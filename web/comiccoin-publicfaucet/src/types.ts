@@ -1,6 +1,9 @@
 // monorepo/web/comiccoin-publicfaucet/src/types.ts
 
-// Storage keys constants
+// ----------------------------------------------------------------
+// Global constants for storage keys
+// ----------------------------------------------------------------
+
 export const STORAGE_KEYS = {
     USER_PROFILE: 'userProfile',
     ACCESS_TOKEN: 'COMICCOIN_FAUCET_TOKEN_UTILITY_ACCESS_TOKEN_DATA',
@@ -8,23 +11,166 @@ export const STORAGE_KEYS = {
 }
 
 // ----------------------------------------------------------------
-// User related interfaces
+// API Endpoints
 // ----------------------------------------------------------------
 
-// User model based on API response
+export const API_ENDPOINTS = {
+    REFRESH_TOKEN: '/token/refresh',
+    LOGIN: '/login',
+    DASHBOARD: '/dashboard',
+    REGISTER: '/register',
+    ME: '/me',
+}
+
+// ----------------------------------------------------------------
+// Authentication related interfaces
+// ----------------------------------------------------------------
+
+// Login request data for API
+export interface LoginRequestData {
+    email: string
+    password: string
+}
+
+// Login credentials for hooks (same as LoginRequestData but named differently for clarity)
+export interface LoginCredentials {
+    email: string
+    password: string
+}
+
+// API User model with camelCase (frontend model)
 export interface User {
+    id: string
+    email: string
+    firstName: string
+    lastName: string
+    name: string
+    lexicalName?: string
+    role?: number
+    wasEmailVerified?: boolean
+    phone?: string
+    country?: string
+    timezone?: string
+    walletAddress?: string | null
+}
+
+// API User model with snake_case (backend response model)
+export interface ApiUser {
     id: string
     email: string
     first_name: string
     last_name: string
     name: string
-    lexical_name: string
+    lexical_name?: string
+    role?: number
+    was_email_verified?: boolean
     phone?: string
     country?: string
-    timezone: string
-    wallet_address: string | null // This is a string, not an object
-    // Add any other user properties that may be returned from /me endpoint
+    timezone?: string
+    wallet_address?: string | null
 }
+
+// Authentication response from API with camelCase keys (for frontend use)
+export interface LoginResponse {
+    user: User
+    accessToken: string
+    accessTokenExpiryTime: string
+    refreshToken: string
+    refreshTokenExpiryTime: string
+}
+
+// Authentication response from API with snake_case keys (direct backend response)
+export interface ApiLoginResponse {
+    user: ApiUser
+    access_token: string
+    access_token_expiry_time: string
+    refresh_token: string
+    refresh_token_expiry_time: string
+}
+
+// Refresh token request payload
+export interface RefreshTokenRequest {
+    value: string
+}
+
+// Refresh token response from API (snake_case as returned by backend)
+export interface RefreshTokenResponse {
+    access_token: string
+    access_token_expiry_time?: string
+    refresh_token: string
+    refresh_token_expiry_time?: string
+}
+
+// Login form data interface
+export interface LoginFormData {
+    email: string
+    password: string
+}
+
+// Return type for useLogin hook
+export interface UseLoginReturn {
+    isLoading: boolean
+    error: string | null
+    login: (credentials: LoginCredentials) => Promise<LoginResponse | undefined>
+    reset: () => void
+}
+
+// ----------------------------------------------------------------
+// Dashboard related interfaces
+// ----------------------------------------------------------------
+
+// Dashboard data transfer object matching backend response
+export interface DashboardDTO {
+    chain_id: number
+    faucet_balance: number
+    user_balance: number
+    total_coins_claimed: number
+    last_modified_at?: string
+    last_claim_time: string
+    next_claim_time: string
+    can_claim: boolean
+    wallet_address: string | null
+    transactions: Transaction[]
+}
+
+// Options for useDashboard hook
+export interface UseDashboardOptions {
+    enabled?: boolean
+    refreshInterval?: number
+}
+
+// Return type for useDashboard hook
+export interface UseDashboardReturn {
+    dashboard: DashboardDTO | null
+    isLoading: boolean
+    error: ApiError | null
+    refetch: () => void
+    clearCache: () => void
+}
+
+// Component-specific claim interface (used in DashboardPage)
+export interface Claim {
+    id: string
+    timestamp: Date
+    amount: number
+    address: string
+    status: 'completed' | 'pending'
+    hash: string
+}
+
+// ----------------------------------------------------------------
+// API Error interfaces
+// ----------------------------------------------------------------
+
+// Generic API error interface
+export interface ApiError extends Error {
+    status?: number
+    data?: any
+}
+
+// ----------------------------------------------------------------
+// User related interfaces
+// ----------------------------------------------------------------
 
 // Interface for update user requests
 export interface UpdateUserRequest {
@@ -58,16 +204,6 @@ export interface UseGetMeReturn {
     isLoading: boolean
     error: ApiError | null
     refetch: () => void
-}
-
-// ----------------------------------------------------------------
-// API Error interfaces
-// ----------------------------------------------------------------
-
-// Generic API error interface
-export interface ApiError extends Error {
-    status?: number
-    data?: any
 }
 
 // ----------------------------------------------------------------
@@ -163,3 +299,31 @@ export interface UseRegistrationResult {
 
 // Form data interface for registration page
 export interface RegisterFormData extends RegisterCustomerRequest {}
+
+// Helper functions for transforming between snake_case and camelCase
+export const transformApiUserToUser = (apiUser: ApiUser): User => {
+    return {
+        id: apiUser.id,
+        email: apiUser.email,
+        firstName: apiUser.first_name,
+        lastName: apiUser.last_name,
+        name: apiUser.name,
+        lexicalName: apiUser.lexical_name,
+        role: apiUser.role,
+        wasEmailVerified: apiUser.was_email_verified,
+        phone: apiUser.phone,
+        country: apiUser.country,
+        timezone: apiUser.timezone,
+        walletAddress: apiUser.wallet_address,
+    }
+}
+
+export const transformApiLoginResponseToLoginResponse = (apiResponse: ApiLoginResponse): LoginResponse => {
+    return {
+        user: transformApiUserToUser(apiResponse.user),
+        accessToken: apiResponse.access_token,
+        accessTokenExpiryTime: apiResponse.access_token_expiry_time,
+        refreshToken: apiResponse.refresh_token,
+        refreshTokenExpiryTime: apiResponse.refresh_token_expiry_time,
+    }
+}
