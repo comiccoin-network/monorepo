@@ -143,11 +143,6 @@ func NewModule(
 		logger,
 		userRepo,
 	)
-	userGetByFederatedIdentityIDUseCase := uc_user.NewUserGetByFederatedIdentityIDUseCase(
-		cfg,
-		logger,
-		userRepo,
-	)
 	userCreateUseCase := uc_user.NewUserCreateUseCase(
 		cfg,
 		logger,
@@ -227,7 +222,7 @@ func NewModule(
 	getMeServiceImpl := svc_me.NewGetMeService(
 		cfg,
 		logger,
-		userGetByFederatedIdentityIDUseCase,
+		userGetByIDUseCase,
 		userCreateUseCase,
 		userUpdateUseCase,
 		getFaucetByChainIDUseCase,
