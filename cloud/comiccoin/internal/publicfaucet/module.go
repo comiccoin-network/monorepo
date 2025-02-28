@@ -298,7 +298,7 @@ func NewModule(
 		fetchRemoteAccountBalanceFromAuthorityUseCase,
 		getPublicFaucetPrivateKeyService,
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase, // (External package)
-		userGetByFederatedIdentityIDUseCase,
+		userGetByIDUseCase,
 		userUpdateUseCase,
 	)
 	// --- Gateway ---

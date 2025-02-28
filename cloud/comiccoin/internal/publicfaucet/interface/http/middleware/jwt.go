@@ -53,6 +53,10 @@ func (mid *middleware) JWTProcessorMiddleware(fn http.HandlerFunc) http.HandlerF
 
 			http.Error(w, "attempting to access a protected endpoint", http.StatusUnauthorized)
 			return
+		} else {
+			mid.logger.Warn("authorization not set", slog.Any("middleware", "JWTProcessorMiddleware"))
+			http.Error(w, "attempting to access a protected endpoint", http.StatusUnauthorized)
+			return
 		}
 
 		// Flow to the next middleware without anything done.

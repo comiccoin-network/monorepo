@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	dom_auth_memp "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	dom_auth_tx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	uc_auth_memp "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltxdto"
@@ -89,7 +90,7 @@ type ClaimCoinsResponse struct {
 }
 
 type ClaimCoinsService interface {
-	Execute(sessCtx mongo.SessionContext, federatedidentityID primitive.ObjectID) (*ClaimCoinsResponse, error)
+	Execute(sessCtx mongo.SessionContext) (*ClaimCoinsResponse, error)
 }
 
 type claimCoinsServiceImpl struct {
@@ -131,11 +132,24 @@ func NewClaimCoinsService(
 	}
 }
 
-func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, userID primitive.ObjectID) (*ClaimCoinsResponse, error) {
+func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext) (*ClaimCoinsResponse, error) {
 	// Protect our resource - Make it executed only once at any period of
 	// time, this is to protect faucet balance.
 	svc.dmutex.Acquire(sessCtx, "ClaimCoinsServiceExecution")
 	defer svc.dmutex.Release(sessCtx, "ClaimCoinsServiceExecution")
+
+	//
+	// Get required from context.
+	//
+
+	userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	if !ok {
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return nil, errors.New("user id not found in context")
+	}
+	svc.logger.Debug("Extracted from local context",
+		slog.Any("userID", userID))
 
 	//
 	// Get related records.
@@ -153,17 +167,17 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext, userID p
 	}
 	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
 	if err != nil {
-		svc.logger.Debug("Failed getting user by user id", slog.Any("error", err))
+		svc.logger.Error("failed getting user error", slog.Any("err", err))
 		return nil, err
 	}
 	if user == nil {
 		err := fmt.Errorf("User does not exist for user id: %v", userID.Hex())
-		svc.logger.Debug("Failed getting user by user id", slog.Any("error", err))
+		svc.logger.Error("Failed getting user by user id", slog.Any("error", err))
 		return nil, err
 	}
 	privateKey, err := svc.getPublicFaucetPrivateKeyService.Execute(sessCtx)
 	if err != nil {
-		svc.logger.Debug("Failed to get private key", slog.Any("error", err))
+		svc.logger.Error("Failed to get private key", slog.Any("error", err))
 		return nil, err
 	}
 

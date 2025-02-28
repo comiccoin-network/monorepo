@@ -75,6 +75,8 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 			slog.Any("error", "Not found in context: user_id"))
 		return nil, errors.New("user id not found in context")
 	}
+	svc.logger.Debug("Extracted from local context",
+		slog.Any("userID", userID))
 
 	//
 	// Get related records.
@@ -93,6 +95,11 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
 	if err != nil {
 		svc.logger.Error("failed getting user error", slog.Any("err", err))
+		return nil, err
+	}
+	if user == nil {
+		err := fmt.Errorf("User does not exist for user id: %v", userID.Hex())
+		svc.logger.Error("Failed getting user by user id", slog.Any("error", err))
 		return nil, err
 	}
 

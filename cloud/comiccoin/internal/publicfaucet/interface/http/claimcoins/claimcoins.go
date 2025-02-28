@@ -3,15 +3,12 @@ package claimcoins
 
 import (
 	"encoding/json"
-	"errors"
 	"log/slog"
 	"net/http"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	svc_claimcoins "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/claimcoins"
 )
@@ -45,14 +42,6 @@ func (h *PostClaimCoinsHTTPHandler) Execute(w http.ResponseWriter, r *http.Reque
 
 	ctx := r.Context()
 
-	userID, ok := ctx.Value(constants.SessionUserID).(primitive.ObjectID)
-	if !ok {
-		h.logger.Error("Failed getting local user id",
-			slog.Any("error", "Not found in context: user_id"))
-		httperror.ResponseError(w, errors.New("user id not found in context"))
-		return
-	}
-
 	////
 	//// Start the transaction.
 	////
@@ -69,7 +58,7 @@ func (h *PostClaimCoinsHTTPHandler) Execute(w http.ResponseWriter, r *http.Reque
 	// Define a transaction function with a series of operations
 	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
 		// Call service
-		response, err := h.service.Execute(sessCtx, userID)
+		response, err := h.service.Execute(sessCtx)
 		if err != nil {
 			h.logger.Error("failed to claim coins",
 				slog.Any("error", err))
