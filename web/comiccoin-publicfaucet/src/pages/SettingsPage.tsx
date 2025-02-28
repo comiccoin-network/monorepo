@@ -59,7 +59,6 @@ const SettingsPageContent: React.FC = () => {
 
     // Define loading state based on if we have user data
     const isLoadingUser = !user && isManuallyLoading
-    const userError = null // We don't track errors with the simpler hook
 
     // Function to refresh data (not needed with localStorage hook, but kept for UX consistency)
     const handleRefreshUserData = () => {
@@ -116,12 +115,12 @@ const SettingsPageContent: React.FC = () => {
         if (user) {
             setFormData({
                 email: user.email || '',
-                first_name: user.first_name || '',
-                last_name: user.last_name || '',
+                first_name: user.firstName || '',
+                last_name: user.lastName || '',
                 phone: user.phone || null,
                 country: user.country || null,
                 timezone: user.timezone || '',
-                wallet_address: user.wallet_address || '',
+                wallet_address: user.walletAddress || '',
             })
         }
     }, [user])

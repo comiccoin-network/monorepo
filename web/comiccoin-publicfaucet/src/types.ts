@@ -327,3 +327,41 @@ export const transformApiLoginResponseToLoginResponse = (apiResponse: ApiLoginRe
         refreshTokenExpiryTime: apiResponse.refresh_token_expiry_time,
     }
 }
+/**
+ * Transform a User object (camelCase) to ApiUser (snake_case) for API requests
+ * @param user - User object with camelCase properties
+ * @returns ApiUser object with snake_case properties for API requests
+ */
+export const transformUserToApiUser = (user: User): ApiUser => {
+    return {
+        id: user.id,
+        email: user.email,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        name: user.name,
+        lexical_name: user.lexicalName,
+        role: user.role,
+        was_email_verified: user.wasEmailVerified,
+        phone: user.phone,
+        country: user.country,
+        timezone: user.timezone,
+        wallet_address: user.walletAddress,
+    }
+}
+
+/**
+ * Helper to ensure we're using the right types in components
+ * @param obj - Object to check if it's a valid User
+ * @returns True if object has proper User interface structure
+ */
+export const isValidUserObject = (obj: any): obj is User => {
+    return (
+        obj &&
+        typeof obj === 'object' &&
+        'id' in obj &&
+        'email' in obj &&
+        'firstName' in obj && // Note camelCase property names
+        'lastName' in obj &&
+        'name' in obj
+    )
+}

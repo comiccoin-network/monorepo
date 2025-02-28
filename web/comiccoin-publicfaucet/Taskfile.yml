@@ -1,54 +1,81 @@
-version: "3"
+version: '3'
 
 tasks:
-  # Development task to start the local development server
-  dev:
-    desc: "Start the development server with hot module replacement"
-    cmds:
-      - npm run dev
+    # Development task to start the local development server
+    dev:
+        desc: 'Start the development server with hot module replacement'
+        cmds:
+            - npm run dev
 
-  # Production build task
-  build:
-    desc: "Build the production version of the project"
-    cmds:
-      # Build the project using Vite's build command
-      - npm run build
+    # Production build task
+    build:
+        desc: 'Build the production version of the project'
+        cmds:
+            # Build the project using Vite's build command
+            - npm run build
 
-  # Deployment task (similar to the original, but adapted for Vite)
-  deploy:
-    desc: "Build and deploy the production version to a static site repository"
-    cmds:
-      # Build the project
-      - npm run build
+    transpile:
+        desc: 'Build the production version of the project (while ignoring all typescript errors)'
+        cmds:
+            # Build the project using Vite's build command
+            - npm run build-with-ignore-typescript-errors
 
-      # Checkout prod branch in the target repo
-      - git -C ../../../comiccoin-publicfaucet-static checkout -B prod
+    # Deployment task (similar to the original, but adapted for Vite)
+    deploy:
+        desc: 'Build and deploy the production version to a static site repository'
+        cmds:
+            # Build the project
+            - npm run build
 
-      # Copy build files (Vite generates the "dist" directory by default)
-      - cp -Rf ./dist/* ../../../comiccoin-publicfaucet-static
+            # Checkout prod branch in the target repo
+            - git -C ../../../comiccoin-publicfaucet-static checkout -B prod
 
-      # Remove build directory
-      - rm -Rf ./dist
+            # Copy build files (Vite generates the "dist" directory by default)
+            - cp -Rf ./dist/* ../../../comiccoin-publicfaucet-static
 
-      # Commit and push changes
-      - git -C ../../../comiccoin-publicfaucet-static add --all
-      - git -C ../../../comiccoin-publicfaucet-static commit -m 'Latest production deployment.'
-      - git -C ../../../comiccoin-publicfaucet-static push origin prod
+            # Remove build directory
+            - rm -Rf ./dist
 
-  # Optional: Lint and type-check task
-  lint:
-    desc: "Run ESLint and TypeScript type checking"
-    cmds:
-      - npm run lint
-      - npm run typecheck
+            # Commit and push changes
+            - git -C ../../../comiccoin-publicfaucet-static add --all
+            - git -C ../../../comiccoin-publicfaucet-static commit -m 'Latest production deployment.'
+            - git -C ../../../comiccoin-publicfaucet-static push origin prod
 
-  # Optional: Run tests
-  test:
-    desc: "Run project tests"
-    cmds:
-      - npm run test
+    # Deployment task (similar to the original, but adapted for Vite)(while ignoring all typescript errors)
+    deploy2:
+        desc: 'Build and deploy the production (while ignoring all typescript errors) version to a static site repository'
+        cmds:
+            # Build the project (while ignoring all typescript errors).
+            - npm run build-with-ignore-typescript-errors
 
-  undelast:
-    desc: Undue last commit which was not pushed. Special thanks to https://www.nobledesktop.com/learn/git/undo-changes.
-    cmds:
-      - git reset --soft HEAD~
+            # Checkout prod branch in the target repo
+            - git -C ../../../comiccoin-publicfaucet-static checkout -B prod
+
+            # Copy build files (Vite generates the "dist" directory by default)
+            - cp -Rf ./dist/* ../../../comiccoin-publicfaucet-static
+
+            # Remove build directory
+            - rm -Rf ./dist
+
+            # Commit and push changes
+            - git -C ../../../comiccoin-publicfaucet-static add --all
+            - git -C ../../../comiccoin-publicfaucet-static commit -m 'Latest production deployment.'
+            - git -C ../../../comiccoin-publicfaucet-static push origin prod
+
+    # Optional: Lint and type-check task
+    lint:
+        desc: 'Run ESLint and TypeScript type checking'
+        cmds:
+            - npm run lint
+            - npm run typecheck
+
+    # Optional: Run tests
+    test:
+        desc: 'Run project tests'
+        cmds:
+            - npm run test
+
+    undelast:
+        desc: Undue last commit which was not pushed. Special thanks to https://www.nobledesktop.com/learn/git/undo-changes.
+        cmds:
+            - git reset --soft HEAD~

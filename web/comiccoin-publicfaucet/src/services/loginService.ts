@@ -1,5 +1,6 @@
 // monorepo/web/comiccoin-publicfaucet/src/services/loginService.ts
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
+import { User, ApiUser, transformApiUserToUser, STORAGE_KEYS } from '../types'
 
 // User type based on the provided Go struct
 interface User {

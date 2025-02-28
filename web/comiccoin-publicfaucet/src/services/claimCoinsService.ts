@@ -2,21 +2,7 @@
 import { AxiosInstance } from 'axios'
 import getCustomAxios from '../helpers/customAxios'
 import { getAccessTokenFromLocalStorage } from '../helpers/jwtUtility'
-
-// Define the User type which is returned by the API
-export interface User {
-    federatedidentity_id: string
-    id: string
-    email: string
-    first_name: string
-    last_name: string
-    name: string
-    lexical_name: string
-    phone?: string
-    country?: string
-    timezone: string
-    wallet_address: string | null
-}
+import { User } from '../types'
 
 /**
  * Service for claiming coins through the API
