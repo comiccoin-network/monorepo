@@ -1,6 +1,7 @@
 // monorepo/web/comiccoin-publicfaucet/src/services/transactionsService.ts
 import { AxiosInstance } from 'axios'
 import getCustomAxios from '../helpers/customAxios'
+import { Transaction } from '../types'
 
 class TransactionsService {
     private readonly api: AxiosInstance
@@ -25,4 +26,3 @@ class TransactionsService {
 
 export const transactionsService = new TransactionsService()
 export default transactionsService
-export { Transaction }

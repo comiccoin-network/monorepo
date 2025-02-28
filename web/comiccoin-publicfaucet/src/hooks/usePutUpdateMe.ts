@@ -1,6 +1,7 @@
 // monorepo/web/comiccoin-publicfaucet/src/hooks/usePutUpdateMe.ts
 import { useState, useCallback } from 'react'
-import userService, { User, UpdateUserRequest } from '../services/userService'
+import userService from '../services/userService'
+import { User, UpdateUserRequest } from '../types'
 
 /**
  * Return type for the usePutUpdateMe hook
@@ -104,4 +105,3 @@ export function usePutUpdateMe(): UsePutUpdateMeReturn {
 }
 
 export default usePutUpdateMe
-export type { User, UpdateUserRequest }

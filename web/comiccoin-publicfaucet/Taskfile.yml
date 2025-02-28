@@ -47,3 +47,8 @@ tasks:
     desc: "Run project tests"
     cmds:
       - npm run test
+
+  undelast:
+    desc: Undue last commit which was not pushed. Special thanks to https://www.nobledesktop.com/learn/git/undo-changes.
+    cmds:
+      - git reset --soft HEAD~

@@ -2,35 +2,7 @@
 import { AxiosInstance } from 'axios'
 import getCustomAxios from '../helpers/customAxios'
 import { getAccessTokenFromLocalStorage } from '../helpers/jwtUtility'
-
-// User model based on API response
-export interface User {
-    federatedidentity_id: string
-    id: string
-    email: string
-    first_name: string
-    last_name: string
-    name: string
-    lexical_name: string
-    phone?: string
-    country?: string
-    timezone: string
-    wallet_address: string | null // This is a string, not an object
-}
-
-// Interface for update user requests
-export interface UpdateUserRequest {
-    federatedidentity_id?: string
-    id?: string
-    email: string
-    first_name: string
-    last_name: string
-    phone?: string | null
-    country?: string | null
-    timezone: string
-    wallet_address?: string
-    [key: string]: string | null | undefined // For flexible property access
-}
+import { User, UpdateUserRequest } from '../types'
 
 class UserService {
     private readonly api: AxiosInstance
