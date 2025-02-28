@@ -20,7 +20,6 @@ import LoginPage from './pages/LoginPage'
 
 // Protected pages (already wrapped with withAuth HOC)
 import DashboardPage from './pages/DashboardPage'
-// import DashboardPage from './pages/DashboardPage2'
 import AddWalletAddressPage from './pages/AddWalletAddressPage'
 import TransactionsPage from './pages/TransactionPage'
 import ClaimCoinsPage from './pages/ClaimCoinsPage'
