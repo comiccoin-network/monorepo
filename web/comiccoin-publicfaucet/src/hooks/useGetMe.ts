@@ -1,139 +1,78 @@
-// monorepo/web/comiccoin-publicfaucet/src/hooks/useGetMe.ts
 import { useState, useEffect, useCallback, useRef } from 'react'
 import getMeService, { User } from '../services/getMeService'
 
+//Improved Error Type
+interface ApiError extends Error {
+    status?: number
+    data?: any
+}
+
 interface UseGetMeOptions {
     enabled?: boolean
+    retryDelay?: number // Add retry delay option
 }
 
 interface UseGetMeReturn {
     user: User | null
     isLoading: boolean
-    error: Error | null
+    error: ApiError | null
     refetch: () => Promise<User>
 }
 
-/**
- * Hook to fetch and manage current user data
- * Uses getMeService with custom Axios for automatic token refresh
- *
- * @param options - Configuration options for the hook
- * @returns Object containing user data, loading state, error state, and refetch function
- */
-export function useGetMe({ enabled = true }: UseGetMeOptions = {}): UseGetMeReturn {
+export function useGetMe({ enabled = true, retryDelay = 3000 }: UseGetMeOptions = {}): UseGetMeReturn {
     const [user, setUser] = useState<User | null>(null)
     const [isLoading, setIsLoading] = useState(enabled)
-    const [error, setError] = useState<Error | null>(null)
-
-    // Use refs to prevent issues with stale values in callbacks
-    const enabledRef = useRef(enabled)
+    const [error, setError] = useState<ApiError | null>(null)
     const isMountedRef = useRef(true)
-    const isInitialFetchRef = useRef(true)
-    const isFetchingRef = useRef(false)
+    const retryRef = useRef(0)
 
-    // Update refs when props change
-    useEffect(() => {
-        enabledRef.current = enabled
-    }, [enabled])
-
-    /**
-     * Fetch user data from the API
-     * Optimized to avoid race conditions and stale state updates
-     */
     const fetchUserData = useCallback(async (): Promise<User> => {
-        // Prevent multiple simultaneous fetches
-        if (isFetchingRef.current) {
-            console.log('🚫 PROFILE HOOK: Fetch already in progress, skipping')
-            throw new Error('Fetch already in progress')
-        }
+        setIsLoading(true)
+        setError(null)
 
         try {
-            console.log('👤 PROFILE HOOK: Starting fetch')
-
-            // Skip if not enabled or component unmounted
-            if (!enabledRef.current || !isMountedRef.current) {
-                console.log('🚫 PROFILE HOOK: Fetch skipped - disabled or unmounted')
+            if (!enabled || !isMountedRef.current) {
                 throw new Error('Fetch skipped - component disabled or unmounted')
             }
 
-            isFetchingRef.current = true
-            setIsLoading(true)
-            setError(null)
-
-            // Use the service to fetch user data with automatic token refresh
-            const userData = await getMeService.getMe()
-
-            // Only update state if component is still mounted
-            if (isMountedRef.current) {
-                setUser(userData)
-                setError(null)
-            }
-
-            return userData
+            return await getMeService.getMe()
         } catch (err: any) {
-            console.error('❌ PROFILE HOOK: Fetch failed', {
-                error: err?.message || 'Unknown error',
-                status: err?.status,
-                details: err?.data,
-            })
+            const apiError: ApiError =
+                err instanceof Error ? err : new ApiError(err.message || 'Failed to fetch user data')
+            apiError.status = err.status
+            apiError.data = err.data
 
-            // Only update state if component is still mounted
-            if (isMountedRef.current) {
-                // Set error state with improved type handling
-                const errorObj = err instanceof Error ? err : new Error(err?.message || 'Failed to fetch user data')
-
-                setError(errorObj)
-
-                // Don't clear user data on error if we already have it
-                // This prevents flashing empty UI on refresh errors
-                if (user === null) {
-                    setUser(null)
-                }
+            if (apiError.status === 401 && retryRef.current < 3) {
+                //Example retry for authentication failures
+                retryRef.current++
+                setTimeout(fetchUserData, retryDelay)
+                return null as any
             }
 
-            throw err instanceof Error ? err : new Error(err?.message || 'Failed to fetch user data')
+            setError(apiError)
+            console.error('❌ PROFILE HOOK: Fetch failed', apiError)
+            throw apiError
         } finally {
-            // Only update loading state if component is still mounted
             if (isMountedRef.current) {
                 setIsLoading(false)
-                isFetchingRef.current = false
             }
         }
-    }, []) // Empty dependency array to prevent recreation on each render
+    }, [enabled, retryDelay])
 
-    // Fetch user data when the hook is first used (if enabled)
     useEffect(() => {
-        // Only run this effect once
-        if (!isInitialFetchRef.current) return
-
-        // Mark that we've run the initial fetch
-        isInitialFetchRef.current = false
-
-        // Set mounted flag
         isMountedRef.current = true
-
         if (enabled) {
-            console.log('🔄 PROFILE HOOK: Auto-fetching on mount')
-            fetchUserData().catch((error) => {
-                if (error.message !== 'Fetch already in progress') {
-                    console.log('❌ PROFILE HOOK: Auto-fetch failed', error)
-                }
+            fetchUserData().catch((err) => {
+                console.error('❌ PROFILE HOOK: Initial fetch failed', err)
             })
         }
 
-        // Cleanup function to prevent state updates after unmount
         return () => {
             isMountedRef.current = false
         }
-    }, [enabled]) // Remove fetchUserData from dependencies to prevent loop
+    }, [enabled, fetchUserData])
 
-    // Return the current state and refetch function
-    return {
-        user,
-        isLoading,
-        error,
-        refetch: fetchUserData,
-    }
+    return { user, isLoading, error, refetch: fetchUserData }
 }
 
 export default useGetMe
