@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/pages/SettingsPage.tsx
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { ArrowLeft, Check, AlertCircle, Info, X } from 'lucide-react'

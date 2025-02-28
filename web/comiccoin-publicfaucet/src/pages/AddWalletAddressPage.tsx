@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/pages/AddWalletAddressPage.tsx
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { Link } from 'react-router'

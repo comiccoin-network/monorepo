@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/pages/LoginPage.tsx
 import { FC, useState, FormEvent, ChangeEvent, useRef, useEffect } from 'react'
 import { Link, Navigate } from 'react-router'
 import { Mail, Lock, ArrowRight, AlertTriangle } from 'lucide-react'

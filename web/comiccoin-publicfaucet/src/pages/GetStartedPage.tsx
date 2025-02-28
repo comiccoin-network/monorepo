@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/pages/GetStartedPage.tsx
 import { FC } from 'react'
 import { Link } from 'react-router'
 import { UserPlus, LogIn, Globe, Shield, KeyRound, ArrowRight } from 'lucide-react'

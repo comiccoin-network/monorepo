@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/pages/RegisterPage.tsx
 import { FC, useState, FormEvent, ChangeEvent, useRef, useEffect } from 'react'
 import { Link, Navigate } from 'react-router' // Updated to include Navigate
 import {

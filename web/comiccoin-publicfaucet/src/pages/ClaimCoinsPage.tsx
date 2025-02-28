@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/pages/ClaimCoinsPage.tsx
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { Coins, Gift, Clock, AlertCircle, ArrowLeft, Star, CheckCircle } from 'lucide-react'

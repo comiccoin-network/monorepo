@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/pages/EmailVerificationPage.tsx
 import React, { useEffect } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router'
 import { Coins, Mail, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react'
