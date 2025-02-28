@@ -1,9 +1,14 @@
 // monorepo/web/comiccoin-publicfaucet/src/services/loginService.ts
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
-import { User, ApiUser, transformApiUserToUser, STORAGE_KEYS } from '../types'
 
-// User type based on the provided Go struct
-interface User {
+// Login request interface matching the backend expectation
+interface LoginRequestData {
+    email: string
+    password: string
+}
+
+// User interface for login response
+interface UserResponse {
     id: string
     email: string
     firstName: string
@@ -14,15 +19,9 @@ interface User {
     // Add other relevant fields from the provided User struct
 }
 
-// Login request interface matching the backend expectation
-interface LoginRequestData {
-    email: string
-    password: string
-}
-
 // Login response interface matching the backend response
 interface LoginResponse {
-    user: User
+    user: UserResponse
     accessToken: string
     accessTokenExpiryTime: string
     refreshToken: string

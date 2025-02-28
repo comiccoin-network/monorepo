@@ -9,11 +9,14 @@ import Footer from '../components/FaucetPage/Footer'
 // Using similar structure and consistent styling with FaucetPage
 const GetStartedPage: FC = () => {
     // Use the same hook as in FaucetPage to get real data
-    const { faucet, isLoading, error } = useGetFaucet({
+    const { faucet, error } = useGetFaucet({
         chainId: 1,
         enabled: true,
         refreshInterval: 60000,
     })
+
+    // Derive loading state from faucet
+    const isLoading = !faucet && !error
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">

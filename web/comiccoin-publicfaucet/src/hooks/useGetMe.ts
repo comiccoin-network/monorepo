@@ -1,11 +1,10 @@
 // monorepo/web/comiccoin-publicfaucet/src/hooks/useGetMe.ts
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import getMeService from '../services/getMeService'
-import { ApiError, User, UseGetMeOptions, UseGetMeReturn } from '../types'
+import { ApiError, UseGetMeOptions, UseGetMeReturn } from '../types'
 
 export function useGetMe({ enabled = true, retry = 3 }: UseGetMeOptions = {}): UseGetMeReturn {
-    const queryClient = useQueryClient()
     const [error, setError] = useState<ApiError | null>(null)
 
     const {

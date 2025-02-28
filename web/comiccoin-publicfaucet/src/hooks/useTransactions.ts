@@ -1,19 +1,13 @@
 // monorepo/web/comiccoin-publicfaucet/src/hooks/useTransactions.ts
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import transactionsService from '../services/transactionsService'
-import {
-    Transaction,
-    ApiError,
-    UseTransactionsOptions,
-    UseTransactionsReturn
-} from '../types'
+import { ApiError, UseTransactionsOptions, UseTransactionsReturn, Transaction } from '../types'
 
 export function useTransactions({
     refreshInterval = 60000,
     enabled = true,
 }: UseTransactionsOptions = {}): UseTransactionsReturn {
-    const queryClient = useQueryClient()
     const [error, setError] = useState<ApiError | null>(null)
 
     const {
@@ -21,12 +15,12 @@ export function useTransactions({
         isLoading,
         refetch,
         error: queryError,
-    } = useQuery({
+    } = useQuery<Transaction[], Error>({
         queryKey: ['transactions'],
         queryFn: () => transactionsService.getTransactions(),
         enabled: enabled,
         staleTime: refreshInterval, // Data is considered stale after this time (ms)
-        cacheTime: 5 * 60 * 1000, // Keep data in cache for 5 minutes
+        gcTime: 5 * 60 * 1000, // Keep data in cache for 5 minutes (renamed from cacheTime)
         refetchInterval: refreshInterval > 0 ? refreshInterval : false, // Only refetch if refreshInterval is set
 
         onError: (err: any) => {
@@ -38,11 +32,15 @@ export function useTransactions({
         },
     })
 
+    const asyncRefetch = async (): Promise<void> => {
+        await refetch()
+    }
+
     return {
         transactions,
         isLoading,
         error: error || (queryError as ApiError),
-        refetch
+        refetch: asyncRefetch,
     }
 }
 
