@@ -103,6 +103,9 @@ const ClaimCoinsPage: React.FC<ClaimCoinsPageProps> = () => {
     const [claimSuccess, setClaimSuccess] = useState(false)
     const mainContainerRef = useRef<HTMLDivElement>(null)
 
+    // Track if redirection is scheduled
+    const redirectionScheduledRef = useRef<boolean>(false)
+
     // Get faucet data
     const { faucet, isLoading: isFaucetLoading } = useGetFaucet({
         chainId: 1,
@@ -201,6 +204,23 @@ const ClaimCoinsPage: React.FC<ClaimCoinsPageProps> = () => {
         }
     }, [])
 
+    // Effect to handle redirection after successful claim
+    useEffect(() => {
+        if (claimSuccess && !redirectionScheduledRef.current) {
+            redirectionScheduledRef.current = true
+
+            // Redirect to dashboard after a delay to show the success animation
+            const redirectTimer = setTimeout(() => {
+                navigate('/user/dashboard')
+            }, 2500) // Wait 2.5 seconds to show confetti animation
+
+            // Cleanup timer if component unmounts
+            return () => {
+                clearTimeout(redirectTimer)
+            }
+        }
+    }, [claimSuccess, navigate])
+
     // Function to handle coin claiming
     const handleClaimCoins = async () => {
         // Clear any previous error
@@ -226,7 +246,33 @@ const ClaimCoinsPage: React.FC<ClaimCoinsPageProps> = () => {
             setShowConfetti(true)
             setClaimSuccess(true)
 
-            // Rest of your success handling code...
+            // Step 3: Show success toast
+            toast.success(`You've claimed ${dailyReward} ComicCoins!`, {
+                autoClose: 3000,
+                position: 'bottom-center',
+                style: {
+                    background: 'linear-gradient(to right, #8b5cf6, #6366f1)',
+                    color: 'white',
+                    borderRadius: '10px',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                    backgroundImage: 'rgba(255, 255, 255, 0.4)',
+                },
+            })
+
+            // Announce success for screen readers
+            const successAnnouncement = document.createElement('div')
+            successAnnouncement.setAttribute('aria-live', 'assertive')
+            successAnnouncement.setAttribute('role', 'status')
+            successAnnouncement.className = 'sr-only'
+            successAnnouncement.textContent = `Success! You've claimed ${dailyReward} ComicCoins!`
+            document.body.appendChild(successAnnouncement)
+
+            // Remove announcement after it's been read
+            setTimeout(() => {
+                document.body.removeChild(successAnnouncement)
+            }, 4000)
+
+            // Note: The redirection is handled by the useEffect above
         } catch (err: unknown) {
             console.error('Error during claim process:', err)
 
