@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+// monorepo/web/comiccoin-publicfaucet/src/hooks/useGetMe.ts
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState, useCallback } from 'react'
 import getMeService, { User } from '../services/getMeService'
 
-//Improved Error Type
 interface ApiError extends Error {
     status?: number
     data?: any
@@ -9,70 +10,40 @@ interface ApiError extends Error {
 
 interface UseGetMeOptions {
     enabled?: boolean
-    retryDelay?: number // Add retry delay option
+    retry?: number // Add retry option
 }
 
 interface UseGetMeReturn {
     user: User | null
     isLoading: boolean
     error: ApiError | null
-    refetch: () => Promise<User>
+    refetch: () => void
 }
 
-export function useGetMe({ enabled = true, retryDelay = 3000 }: UseGetMeOptions = {}): UseGetMeReturn {
-    const [user, setUser] = useState<User | null>(null)
-    const [isLoading, setIsLoading] = useState(enabled)
+export function useGetMe({ enabled = true, retry = 3 }: UseGetMeOptions = {}): UseGetMeReturn {
+    const queryClient = useQueryClient()
     const [error, setError] = useState<ApiError | null>(null)
-    const isMountedRef = useRef(true)
-    const retryRef = useRef(0)
 
-    const fetchUserData = useCallback(async (): Promise<User> => {
-        setIsLoading(true)
-        setError(null)
-
-        try {
-            if (!enabled || !isMountedRef.current) {
-                throw new Error('Fetch skipped - component disabled or unmounted')
-            }
-
-            return await getMeService.getMe()
-        } catch (err: any) {
+    const {
+        data: user,
+        isLoading,
+        refetch,
+        error: queryError,
+    } = useQuery({
+        queryKey: ['user'],
+        queryFn: () => getMeService.getMe(),
+        enabled: enabled,
+        retry: retry, // Number of retries before giving up.
+        onError: (err: any) => {
             const apiError: ApiError =
                 err instanceof Error ? err : new ApiError(err.message || 'Failed to fetch user data')
-            apiError.status = err.status
-            apiError.data = err.data
-
-            if (apiError.status === 401 && retryRef.current < 3) {
-                //Example retry for authentication failures
-                retryRef.current++
-                setTimeout(fetchUserData, retryDelay)
-                return null as any
-            }
-
+            apiError.status = err.response?.status
+            apiError.data = err.response?.data
             setError(apiError)
-            console.error('❌ PROFILE HOOK: Fetch failed', apiError)
-            throw apiError
-        } finally {
-            if (isMountedRef.current) {
-                setIsLoading(false)
-            }
-        }
-    }, [enabled, retryDelay])
+        },
+    })
 
-    useEffect(() => {
-        isMountedRef.current = true
-        if (enabled) {
-            fetchUserData().catch((err) => {
-                console.error('❌ PROFILE HOOK: Initial fetch failed', err)
-            })
-        }
-
-        return () => {
-            isMountedRef.current = false
-        }
-    }, [enabled, fetchUserData])
-
-    return { user, isLoading, error, refetch: fetchUserData }
+    return { user, isLoading, error: error || queryError, refetch }
 }
 
 export default useGetMe
