@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/hooks/useEmailVerification.ts
 import { useState, useCallback } from 'react'
 import EmailVerificationService from '../services/emailVerificationService'
 

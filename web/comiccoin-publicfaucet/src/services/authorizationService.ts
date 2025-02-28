@@ -1,107 +1,105 @@
-import axios from 'axios';
+// monorepo/web/comiccoin-publicfaucet/src/services/authorizationService.ts
+import axios from 'axios'
 
 // This interface defines the expected response from the API
 export interface AuthUrlResponse {
-  auth_url: string;
-  state: string;
-  expires_at: number;
+    auth_url: string
+    state: string
+    expires_at: number
 }
 
 // Parameters for the authorization request
 export interface AuthorizationParams {
-  redirectUri?: string;
-  scope?: string;
+    redirectUri?: string
+    scope?: string
 }
 
 class AuthorizationService {
-  private readonly baseUrl: string;
+    private readonly baseUrl: string
 
-  constructor() {
-    // Use Vite environment variables
-    const apiProtocol = import.meta.env.VITE_API_PROTOCOL || 'https';
-    const apiDomain = import.meta.env.VITE_API_DOMAIN;
+    constructor() {
+        // Use Vite environment variables
+        const apiProtocol = import.meta.env.VITE_API_PROTOCOL || 'https'
+        const apiDomain = import.meta.env.VITE_API_DOMAIN
 
-    if (!apiDomain) {
-      console.error('API domain is not configured properly in environment variables.');
+        if (!apiDomain) {
+            console.error('API domain is not configured properly in environment variables.')
+        }
+
+        this.baseUrl = `${apiProtocol}://${apiDomain}`
+
+        console.log('🎯 Authorization Service Initialized', {
+            baseUrl: this.baseUrl,
+            protocol: apiProtocol,
+            domain: apiDomain,
+        })
     }
 
-    this.baseUrl = `${apiProtocol}://${apiDomain}`;
+    /**
+     * Fetch the authorization URL from the API
+     * @param redirectUri - The URI to redirect to after authorization
+     * @param scope - The scope of authorization
+     * @returns Promise resolving to the authorization URL response
+     */
+    public async getAuthorizationUrl(redirectUri: string = '', scope: string = ''): Promise<AuthUrlResponse> {
+        console.log('🚀 Starting Authorization URL Request', {
+            redirectUri,
+            scope,
+        })
 
-    console.log("🎯 Authorization Service Initialized", {
-      baseUrl: this.baseUrl,
-      protocol: apiProtocol,
-      domain: apiDomain,
-    });
-  }
+        try {
+            // Create URLSearchParams for the request parameters
+            const urlParams = new URLSearchParams()
+            if (redirectUri) urlParams.append('redirect_uri', redirectUri)
+            if (scope) urlParams.append('scope', scope)
 
-  /**
-   * Fetch the authorization URL from the API
-   * @param redirectUri - The URI to redirect to after authorization
-   * @param scope - The scope of authorization
-   * @returns Promise resolving to the authorization URL response
-   */
-  public async getAuthorizationUrl(
-    redirectUri: string = "",
-    scope: string = ""
-  ): Promise<AuthUrlResponse> {
-    console.log("🚀 Starting Authorization URL Request", {
-      redirectUri,
-      scope,
-    });
+            // Construct the full URL with parameters
+            const apiUrl = `${this.baseUrl}/publicfaucet/api/v1/oauth/authorize`
 
-    try {
-      // Create URLSearchParams for the request parameters
-      const urlParams = new URLSearchParams();
-      if (redirectUri) urlParams.append("redirect_uri", redirectUri);
-      if (scope) urlParams.append("scope", scope);
+            console.log('📤 Sending Request', {
+                url: apiUrl,
+                method: 'GET',
+                params: {
+                    redirect_uri: redirectUri,
+                    scope: scope,
+                },
+            })
 
-      // Construct the full URL with parameters
-      const apiUrl = `${this.baseUrl}/publicfaucet/api/v1/oauth/authorize`;
+            const response = await axios.get<AuthUrlResponse>(apiUrl, {
+                params: {
+                    redirect_uri: redirectUri,
+                    scope: scope,
+                },
+                headers: {
+                    Accept: 'application/json',
+                },
+            })
 
-      console.log("📤 Sending Request", {
-        url: apiUrl,
-        method: "GET",
-        params: {
-          redirect_uri: redirectUri,
-          scope: scope,
-        },
-      });
+            console.log('📥 Response Status:', {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers,
+            })
 
-      const response = await axios.get<AuthUrlResponse>(apiUrl, {
-        params: {
-          redirect_uri: redirectUri,
-          scope: scope,
-        },
-        headers: {
-          Accept: "application/json",
-        },
-      });
+            console.log('✅ Authorization URL Received:', {
+                authUrl: response.data.auth_url,
+                state: response.data.state,
+                expiresAt: new Date(response.data.expires_at * 1000).toLocaleString(),
+            })
 
-      console.log("📥 Response Status:", {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-      });
+            return response.data
+        } catch (err) {
+            console.log('💥 Error Details:', {
+                error: err,
+                message: err instanceof Error ? err.message : 'Unknown error',
+                response: axios.isAxiosError(err) ? err.response?.data : undefined,
+            })
 
-      console.log("✅ Authorization URL Received:", {
-        authUrl: response.data.auth_url,
-        state: response.data.state,
-        expiresAt: new Date(response.data.expires_at * 1000).toLocaleString(),
-      });
-
-      return response.data;
-    } catch (err) {
-      console.log("💥 Error Details:", {
-        error: err,
-        message: err instanceof Error ? err.message : "Unknown error",
-        response: axios.isAxiosError(err) ? err.response?.data : undefined,
-      });
-
-      throw err instanceof Error ? err : new Error("An unknown error occurred");
+            throw err instanceof Error ? err : new Error('An unknown error occurred')
+        }
     }
-  }
 }
 
 // Export as singleton
-export const authorizationService = new AuthorizationService();
-export default authorizationService;
+export const authorizationService = new AuthorizationService()
+export default authorizationService

@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/hooks/useRegistration.ts
 import { useState } from 'react'
 import registrationService, { RegisterCustomerRequest, RegisterCustomerResponse } from '../services/registrationService'
 

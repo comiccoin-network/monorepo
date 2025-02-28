@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/hooks/useClaimCoins.ts
 import { useState, useCallback } from 'react'
 import claimCoinsService, { User } from '../services/claimCoinsService'
 

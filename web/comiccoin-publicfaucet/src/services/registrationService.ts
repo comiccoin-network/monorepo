@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/services/registrationService.ts
 import axios, { AxiosResponse, AxiosError } from 'axios'
 
 // Base API configuration

@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
-import walletService from '../services/walletService';
+// monorepo/web/comiccoin-publicfaucet/src/hooks/useWalletConnect.ts
+import { useState, useCallback } from 'react'
+import walletService from '../services/walletService'
 
 interface UseWalletConnectReturn {
-  connectWallet: (walletAddress: string) => Promise<boolean>;
-  isConnecting: boolean;
-  error: Error | null;
+    connectWallet: (walletAddress: string) => Promise<boolean>
+    isConnecting: boolean
+    error: Error | null
 }
 
 /**
@@ -12,39 +13,39 @@ interface UseWalletConnectReturn {
  * @returns Object containing the connect function, loading state, and error state
  */
 export function useWalletConnect(): UseWalletConnectReturn {
-  const [isConnecting, setIsConnecting] = useState<boolean>(false);
-  const [error, setError] = useState<Error | null>(null);
+    const [isConnecting, setIsConnecting] = useState<boolean>(false)
+    const [error, setError] = useState<Error | null>(null)
 
-  /**
-   * Connect a wallet address to the user's account
-   * @param walletAddress - The wallet address to connect
-   * @returns Promise resolving to a boolean indicating success
-   */
-  const connectWallet = useCallback(async (walletAddress: string): Promise<boolean> => {
-    console.log("🔄 WALLET CONNECT: Starting wallet connection process", {
-      walletAddress: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
-    });
+    /**
+     * Connect a wallet address to the user's account
+     * @param walletAddress - The wallet address to connect
+     * @returns Promise resolving to a boolean indicating success
+     */
+    const connectWallet = useCallback(async (walletAddress: string): Promise<boolean> => {
+        console.log('🔄 WALLET CONNECT: Starting wallet connection process', {
+            walletAddress: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
+        })
 
-    setIsConnecting(true);
-    setError(null);
+        setIsConnecting(true)
+        setError(null)
 
-    try {
-      const success = await walletService.connectWallet(walletAddress);
-      console.log("✅ WALLET CONNECT: Wallet connected successfully");
-      return success;
-    } catch (err) {
-      console.error("❌ WALLET CONNECT: Wallet connection error:", err);
-      const formattedError = err instanceof Error ? err : new Error("Failed to connect wallet");
-      setError(formattedError);
-      return false;
-    } finally {
-      setIsConnecting(false);
+        try {
+            const success = await walletService.connectWallet(walletAddress)
+            console.log('✅ WALLET CONNECT: Wallet connected successfully')
+            return success
+        } catch (err) {
+            console.error('❌ WALLET CONNECT: Wallet connection error:', err)
+            const formattedError = err instanceof Error ? err : new Error('Failed to connect wallet')
+            setError(formattedError)
+            return false
+        } finally {
+            setIsConnecting(false)
+        }
+    }, [])
+
+    return {
+        connectWallet,
+        isConnecting,
+        error,
     }
-  }, []);
-
-  return {
-    connectWallet,
-    isConnecting,
-    error,
-  };
 }

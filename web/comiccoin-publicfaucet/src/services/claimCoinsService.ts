@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/services/claimCoinsService.ts
 import { AxiosInstance } from 'axios'
 import getCustomAxios from '../helpers/customAxios'
 import { getAccessTokenFromLocalStorage } from '../helpers/jwtUtility'

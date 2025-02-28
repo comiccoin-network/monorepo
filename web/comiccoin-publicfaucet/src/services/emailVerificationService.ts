@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-publicfaucet/src/services/emailVerificationService.ts
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
 
 /**
