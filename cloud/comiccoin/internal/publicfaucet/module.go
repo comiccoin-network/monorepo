@@ -224,7 +224,7 @@ func NewModule(
 
 	// --- Me ---
 
-	getMeAfterRemoteSyncServiceImpl := svc_me.NewGetMeAfterRemoteSyncService(
+	getMeServiceImpl := svc_me.NewGetMeService(
 		cfg,
 		logger,
 		userGetByFederatedIdentityIDUseCase,
@@ -373,7 +373,7 @@ func NewModule(
 		cfg,
 		logger,
 		dbClient,
-		getMeAfterRemoteSyncServiceImpl,
+		getMeServiceImpl,
 	)
 
 	postMeConnectWalletHTTPHandler := http_me.NewPostMeConnectWalletHTTPHandler(

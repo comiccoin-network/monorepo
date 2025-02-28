@@ -18,14 +18,14 @@ type GetMeHTTPHandler struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	dbClient *mongo.Client
-	service  svc_me.GetMeAfterRemoteSyncService
+	service  svc_me.GetMeService
 }
 
 func NewGetMeHTTPHandler(
 	config *config.Configuration,
 	logger *slog.Logger,
 	dbClient *mongo.Client,
-	service svc_me.GetMeAfterRemoteSyncService,
+	service svc_me.GetMeService,
 ) *GetMeHTTPHandler {
 	return &GetMeHTTPHandler{
 		config:   config,
@@ -40,12 +40,6 @@ func (h *GetMeHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	ctx := r.Context()
-
-	var shouldSyncNow bool
-	shouldSyncNowQuery := r.URL.Query().Get("should_sync_now")
-	if shouldSyncNowQuery == "true" || shouldSyncNowQuery == "True" || shouldSyncNowQuery == "1" {
-		shouldSyncNow = true
-	}
 
 	////
 	//// Start the transaction.
@@ -64,7 +58,7 @@ func (h *GetMeHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
 
 		// Call service
-		response, err := h.service.Execute(sessCtx, shouldSyncNow)
+		response, err := h.service.Execute(sessCtx)
 		if err != nil {
 			h.logger.Error("failed to get me",
 				slog.Any("error", err))
