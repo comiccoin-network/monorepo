@@ -1,12 +1,11 @@
-// monorepo/web/comiccoin-publicfaucet/src/pages/SettingsPage.tsx
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
-import { ArrowLeft, Check, AlertCircle, Info, X } from 'lucide-react'
+import { ArrowLeft, Check, AlertCircle, Info, X, RefreshCw } from 'lucide-react'
 
 import withWallet from '../hocs/withWallet'
 import { withAuth } from '../hocs/withAuth'
 import { usePutUpdateMe, UpdateUserRequest } from '../hooks/usePutUpdateMe'
-import { useGetMe } from '../hooks/useGetMe'
+import { useMe } from '../hooks/useMe' // Import the simpler hook that reads from localStorage
 
 // Define country and timezone options for dropdown selection
 const countries = [
@@ -51,9 +50,24 @@ interface FormField {
 
 const SettingsPageContent: React.FC = () => {
     const navigate = useNavigate()
-    // Replace useMe with useGetMe
-    const { user, isLoading: isLoadingUser, error: userError, refetch } = useGetMe()
     const statusRef = useRef<HTMLDivElement>(null)
+    const [isManuallyLoading, setIsManuallyLoading] = useState(false)
+
+    // Use the simpler useMe hook that reads from localStorage
+    const { user, updateUser } = useMe()
+
+    // Define loading state based on if we have user data
+    const isLoadingUser = !user && isManuallyLoading
+    const userError = null // We don't track errors with the simpler hook
+
+    // Function to refresh data (not needed with localStorage hook, but kept for UX consistency)
+    const handleRefreshUserData = () => {
+        setIsManuallyLoading(true)
+        // Simulate loading for a better UX transition
+        setTimeout(() => {
+            setIsManuallyLoading(false)
+        }, 1000)
+    }
 
     const { updateMe, isLoading: isUpdating, error: updateError, isSuccess } = usePutUpdateMe()
 
@@ -110,16 +124,6 @@ const SettingsPageContent: React.FC = () => {
             })
         }
     }, [user])
-
-    // Show error if user data couldn't be loaded
-    useEffect(() => {
-        if (userError) {
-            setStatusMessage({
-                type: 'error',
-                message: userError.message || 'Failed to load user data. Please try again later.',
-            })
-        }
-    }, [userError])
 
     // Update status message based on API call results
     useEffect(() => {
@@ -469,16 +473,11 @@ const SettingsPageContent: React.FC = () => {
             }
 
             // Attempt to update user profile
-            await updateMe(updateData)
+            const updatedUser = await updateMe(updateData)
 
-            // Refresh user data after successful update using the getMe service
-            if (typeof refetch === 'function') {
-                try {
-                    await refetch()
-                } catch (refetchError) {
-                    console.warn('Failed to refresh user data, but profile was updated successfully:', refetchError)
-                    // Continue with success flow even if refetch fails
-                }
+            // Update the user in local storage via the useMe hook
+            if (updatedUser && typeof updateUser === 'function') {
+                updateUser(updatedUser)
             }
 
             // Show success message
@@ -503,16 +502,23 @@ const SettingsPageContent: React.FC = () => {
     }
 
     // Render loading state if user data is not yet available
-    if (isLoadingUser && !user) {
+    if (isLoadingUser) {
         return (
-            <div
-                className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-8 flex flex-col items-center justify-center"
-                role="status"
-            >
-                <div className="animate-pulse space-y-4 text-center">
+            <div className="min-h-screen bg-gray-100 py-8 flex flex-col items-center justify-center" role="status">
+                <div className="animate-pulse space-y-6 text-center">
                     <div className="h-12 w-12 mx-auto rounded-full bg-purple-200"></div>
                     <p className="text-gray-600 font-medium">Loading your settings...</p>
                     <span className="sr-only">Loading settings</span>
+
+                    <div className="mt-4">
+                        <button
+                            onClick={handleRefreshUserData}
+                            className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                        >
+                            <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
+                            Retry Loading
+                        </button>
+                    </div>
                 </div>
             </div>
         )
@@ -520,7 +526,7 @@ const SettingsPageContent: React.FC = () => {
 
     return (
         <div
-            className="max-w-4xl mx-auto py-6 px-4 sm:px-6 md:py-8 lg:px-8 pb-20 sm:pb-10"
+            className="max-w-4xl mx-auto py-6 px-4 sm:px-6 md:py-8 lg:px-8 pb-20 sm:pb-10 bg-gray-100"
             style={{
                 WebkitTapHighlightColor: 'transparent',
             }}
