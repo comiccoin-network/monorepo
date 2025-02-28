@@ -18,3 +18,13 @@ func (impl userStorerImpl) DeleteByID(ctx context.Context, id primitive.ObjectID
 	}
 	return nil
 }
+
+func (impl userStorerImpl) DeleteByEmail(ctx context.Context, email string) error {
+	_, err := impl.Collection.DeleteOne(ctx, bson.M{"email": email})
+	if err != nil {
+		impl.Logger.Error("database failed deletion error",
+			slog.Any("error", err))
+		return err
+	}
+	return nil
+}

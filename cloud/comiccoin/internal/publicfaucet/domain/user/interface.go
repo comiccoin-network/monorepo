@@ -14,6 +14,7 @@ type Repository interface {
 	GetByEmail(ctx context.Context, email string) (*User, error)
 	GetByVerificationCode(ctx context.Context, verificationCode string) (*User, error)
 	DeleteByID(ctx context.Context, id primitive.ObjectID) error
+	DeleteByEmail(ctx context.Context, email string) error
 	CheckIfExistsByEmail(ctx context.Context, email string) (bool, error)
 	UpdateByID(ctx context.Context, m *User) error
 	// CountByFilter(ctx context.Context, filter *UserFilter) (uint64, error)
