@@ -89,44 +89,49 @@ export default function getCustomAxios(unauthorizedCallback: (() => void) | null
                         const respRefresh = await handleRefresh(refreshToken, unauthorizedCallback)
 
                         // On successful token refresh, run the following code
-                        if (respRefresh && respRefresh.status === 200) {
+                        if (respRefresh && (respRefresh.status === 200 || respRefresh.status === 201)) {
                             console.log('✅ Token refresh successful!')
+
                             // Extract the new values from the response
+                            // IMPORTANT: Make sure the property names match the API response
                             const { access_token: newAccessToken, refresh_token: newRefreshToken } = respRefresh.data
-                            console.log(
-                                '🔑 Received new access token:',
-                                newAccessToken ? '✅ Token received' : '❌ No token received'
-                            )
-                            console.log(
-                                '🔑 Received new refresh token:',
-                                newRefreshToken ? '✅ Token received' : '❌ No token received'
-                            )
 
-                            // Save the new tokens
-                            setAccessTokenInLocalStorage(newAccessToken)
-                            setRefreshTokenInLocalStorage(newRefreshToken)
-                            console.log('💾 New tokens saved to localStorage')
+                            console.log('🔑 Received new tokens:', {
+                                accessToken: newAccessToken ? '✅ Present' : '❌ Missing',
+                                refreshToken: newRefreshToken ? '✅ Present' : '❌ Missing',
+                            })
 
-                            // Reset our axios authorization header but keep the original configuration intact
-                            originalConfig = {
-                                ...originalConfig,
-                                headers: {
-                                    ...originalConfig.headers,
-                                    Authorization: `JWT ${newAccessToken}`,
-                                },
-                            } as InternalAxiosRequestConfig
-                            console.log('🔄 Updated request configuration with new token')
+                            if (newAccessToken && newRefreshToken) {
+                                // Save the new tokens
+                                console.log('💾 Saving new tokens to localStorage')
+                                setAccessTokenInLocalStorage(newAccessToken)
+                                setRefreshTokenInLocalStorage(newRefreshToken)
 
-                            // Retry the original request with the new token
-                            console.log('🔁 Retrying original request with new token')
-                            return customAxios(originalConfig)
+                                // Log the token refresh to confirm the update
+                                console.log('✅ Tokens updated after refresh')
+
+                                // Reset our axios authorization header but keep the original configuration intact
+                                originalConfig = {
+                                    ...originalConfig,
+                                    headers: {
+                                        ...originalConfig.headers,
+                                        Authorization: `JWT ${newAccessToken}`,
+                                    },
+                                } as InternalAxiosRequestConfig
+                                console.log('🔄 Updated request configuration with new token')
+
+                                // Retry the original request with the new token
+                                console.log('🔁 Retrying original request with new token')
+                                return customAxios(originalConfig)
+                            } else {
+                                console.error('❌ Refresh succeeded but tokens missing in response')
+                                throw new Error('Invalid token response format')
+                            }
                         }
                     } catch (refreshError) {
                         // If refresh token fails, we don't handle it here as it will fall through to the Promise.reject below
                         console.error('❌ Token refresh failed:', refreshError)
                     }
-                } else {
-                    console.log('⚠️ No refresh token available for token refresh')
                 }
             }
 
@@ -174,46 +179,21 @@ const handleRefresh = async (
     console.log('🔑 Set Authorization header for refresh request')
 
     try {
-        console.log('🌐 Sending refresh token request to:', COMICCOIN_FAUCET_REFRESH_TOKEN_API_ENDPOINT)
+        // Verify the endpoint is correct for your API
+        const refreshEndpoint = `${import.meta.env.VITE_API_PROTOCOL}://${import.meta.env.VITE_API_DOMAIN}/publicfaucet/api/v1/token/refresh`
+        console.log('🌐 Sending refresh token request to:', refreshEndpoint)
+
         // Attempt to refresh the token
-        const response = await axiosServiceRefresh.post<RefreshTokenResponse>(
-            COMICCOIN_FAUCET_REFRESH_TOKEN_API_ENDPOINT,
-            param
-        )
+        const response = await axiosServiceRefresh.post<RefreshTokenResponse>(refreshEndpoint, param)
         console.log('✅ Refresh token request successful, status:', response.status)
+
+        // LOG the response structure to debug
+        console.log('🔍 Refresh token response structure:', Object.keys(response.data))
+
         return response
     } catch (error: any) {
+        // Handle error and log details
         console.error('❌ Token refresh failed:', error)
-
-        // If refresh fails with 404, it might be a configuration issue
-        if (error.response?.status === 404) {
-            console.log('⚠️ Refresh endpoint not found (404). Check API configuration.')
-
-            // Force logout and redirect to login page if we get persistent 404s
-            // This provides a better UX than repeated failed requests
-            if (unauthorizedCallback) {
-                console.log('🔄 Redirecting to login due to refresh endpoint configuration issue')
-                unauthorizedCallback()
-            }
-        }
-
-        // Check if the refresh token is also expired (401)
-        if (error.response?.status === 401) {
-            console.log('⛔ handleRefresh | 401 Unauthorized: Refresh token expired - login required')
-
-            // If unauthorizedCallback is provided, invoke it
-            if (unauthorizedCallback) {
-                console.log('🔔 Executing unauthorizedCallback due to expired refresh token')
-                unauthorizedCallback()
-            } else {
-                console.log('⚠️ No unauthorizedCallback provided for expired refresh token')
-            }
-        } else {
-            console.log('❌ Other error during token refresh:', error.response?.status || 'No status', error.message)
-        }
-
-        // Re-throw the error to be handled by the caller
-        console.log('🔄 Re-throwing error to be handled by interceptor')
         throw error
     }
 }
