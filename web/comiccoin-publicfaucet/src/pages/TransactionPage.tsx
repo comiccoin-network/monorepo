@@ -5,7 +5,8 @@ import { Coins, ArrowLeft, ChevronDown, ChevronUp, ExternalLink, RefreshCw, Filt
 
 import withWallet from '../hocs/withWallet'
 import { withAuth } from '../hocs/withAuth'
-import { useTransactions, Transaction } from '../hooks/useTransactions'
+import { useTransactions } from '../hooks/useTransactions'
+import { Transaction } from '../types'
 
 // Define valid sorting fields as a subset of keys from Transaction
 type SortableField = keyof Pick<Transaction, 'timestamp' | 'amount'>

@@ -1,8 +1,7 @@
 // monorepo/web/comiccoin-publicfaucet/src/pages/AddWalletAddressPage.tsx
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { Link } from 'react-router'
-import { Coins, AlertTriangle, ExternalLink, ChevronRight, Smartphone, Globe, Download, X, Shield } from 'lucide-react'
+import { Coins, AlertTriangle, ExternalLink, Smartphone, Globe, Download, X, Shield } from 'lucide-react'
 
 import { useWalletConnect } from '../hooks/useWalletConnect'
 import { useMe } from '../hooks/useMe'

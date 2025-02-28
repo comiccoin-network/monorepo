@@ -4,7 +4,8 @@ import { ArrowLeft, Check, AlertCircle, Info, X, RefreshCw } from 'lucide-react'
 
 import withWallet from '../hocs/withWallet'
 import { withAuth } from '../hocs/withAuth'
-import { usePutUpdateMe, UpdateUserRequest } from '../hooks/usePutUpdateMe'
+import { usePutUpdateMe } from '../hooks/usePutUpdateMe'
+import { UpdateUserRequest } from '../types'
 import { useMe } from '../hooks/useMe' // Import the simpler hook that reads from localStorage
 
 // Define country and timezone options for dropdown selection

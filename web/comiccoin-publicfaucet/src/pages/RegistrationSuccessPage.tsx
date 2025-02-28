@@ -1,7 +1,7 @@
 // monorepo/web/comiccoin-publicfaucet/src/pages/RegistrationSuccessPage.tsx
 import { FC, useState } from 'react'
-import { Coins, Mail, ArrowRight, ArrowLeft } from 'lucide-react'
-import { Navigate, Link } from 'react-router'
+import { Mail, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Navigate } from 'react-router'
 import Header from '../components/FaucetPage/Header'
 import Footer from '../components/FaucetPage/Footer'
 
