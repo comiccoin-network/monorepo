@@ -53,6 +53,7 @@ type httpServerImpl struct {
 	gatewayVerifyEmailHTTPHandler  *http_gateway.GatewayVerifyEmailHTTPHandler
 	gatewayLoginHTTPHandler        *http_gateway.GatewayLoginHTTPHandler
 	gatewayLogoutHTTPHandler       *http_gateway.GatewayLogoutHTTPHandler
+	gatewayRefreshTokenHTTPHandler *http_gateway.GatewayRefreshTokenHTTPHandler
 
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler
 
@@ -79,6 +80,7 @@ func NewHTTPServer(
 	gatewayVerifyEmailHTTPHandler *http_gateway.GatewayVerifyEmailHTTPHandler,
 	gatewayLoginHTTPHandler *http_gateway.GatewayLoginHTTPHandler,
 	gatewayLogoutHTTPHandler *http_gateway.GatewayLogoutHTTPHandler,
+	gatewayRefreshTokenHTTPHandler *http_gateway.GatewayRefreshTokenHTTPHandler,
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
@@ -99,6 +101,7 @@ func NewHTTPServer(
 		gatewayVerifyEmailHTTPHandler:     gatewayVerifyEmailHTTPHandler,
 		gatewayLoginHTTPHandler:           gatewayLoginHTTPHandler,
 		gatewayLogoutHTTPHandler:          gatewayLogoutHTTPHandler,
+		gatewayRefreshTokenHTTPHandler:    gatewayRefreshTokenHTTPHandler,
 		getHelloHTTPHandler:               getHelloHTTPHandler,
 		getMeHTTPHandler:                  getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler:    postMeConnectWalletHTTPHandler,
@@ -150,6 +153,8 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 			port.gatewayLoginHTTPHandler.Execute(w, r)
 		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "logout" && r.Method == http.MethodPost:
 			port.gatewayLogoutHTTPHandler.Execute(w, r)
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "token" && p[4] == "refresh" && r.Method == http.MethodPost:
+			port.gatewayRefreshTokenHTTPHandler.Execute(w, r)
 
 		// --- Resource endpoints ---
 		// Hello

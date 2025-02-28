@@ -326,6 +326,12 @@ func NewModule(
 		logger,
 		mongodbCacheProvider,
 	)
+	gatewayRefreshTokenService := svc_gateway.NewGatewayRefreshTokenService(
+		logger,
+		mongodbCacheProvider,
+		jwtp,
+		userGetByEmailUseCase,
+	)
 
 	////
 	//// Interface
@@ -352,6 +358,11 @@ func NewModule(
 		logger,
 		dbClient,
 		gatewayLogoutService,
+	)
+	gatewayRefreshTokenHTTPHandler := http_gateway.NewGatewayRefreshTokenHTTPHandler(
+		logger,
+		dbClient,
+		gatewayRefreshTokenService,
 	)
 
 	// --- Hello ---
@@ -448,6 +459,7 @@ func NewModule(
 		gatewayVerifyEmailHTTPHandler,
 		gatewayLoginHTTPHandler,
 		gatewayLogoutHTTPHandler,
+		gatewayRefreshTokenHTTPHandler,
 		getHelloHTTPHandler,
 		getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler,

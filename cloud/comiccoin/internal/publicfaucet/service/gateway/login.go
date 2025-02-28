@@ -145,8 +145,8 @@ func (s *gatewayLoginServiceImpl) loginWithUser(sessCtx mongo.SessionContext, u 
 	}
 
 	// Set expiry duration.
-	atExpiry := 24 * time.Hour
-	rtExpiry := 14 * 24 * time.Hour
+	atExpiry := 5 * time.Minute     // 5 minutes
+	rtExpiry := 14 * 24 * time.Hour // 1 week
 
 	// Start our session using an access and refresh token.
 	sessionUUID := primitive.NewObjectID().Hex()
