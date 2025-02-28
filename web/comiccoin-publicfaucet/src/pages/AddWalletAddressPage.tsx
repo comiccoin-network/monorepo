@@ -140,24 +140,8 @@ function AddWalletAddressPage() {
     }
 
     return (
-        <>
-            {/* Simple Navigation */}
-            {/*
-      <nav className="bg-white border-b border-purple-100 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-14 sm:h-16 items-center">
-            <div className="flex items-center">
-              <Coins className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
-              <span className="ml-2 text-lg sm:text-xl font-bold text-purple-800 truncate">
-                ComicCoin Faucet
-              </span>
-            </div>
-          </div>
-        </div>
-      </nav>
-      */}
-
-            <div className="min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] bg-purple-50 flex flex-col py-4 px-3 sm:p-4 overflow-auto">
+        <div className="bg-purple-50 w-full">
+            <div className="w-full py-4 px-3 sm:p-4">
                 <div className="max-w-2xl w-full mx-auto space-y-4 sm:space-y-6">
                     {/* Step Indicator */}
                     <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-purple-200 text-center">
@@ -318,6 +302,7 @@ function AddWalletAddressPage() {
                     </div>
 
                     {/* Help Link */}
+                    {/*
                     <div className="text-center pb-6">
                         <Link
                             to="/help/wallet-setup"
@@ -327,6 +312,7 @@ function AddWalletAddressPage() {
                             <ChevronRight className="h-4 w-4 ml-1" />
                         </Link>
                     </div>
+                    */}
                 </div>
             </div>
 
@@ -336,7 +322,7 @@ function AddWalletAddressPage() {
                 onConfirm={handleConfirm}
                 walletAddress={walletAddress}
             />
-        </>
+        </div>
     )
 }
 
