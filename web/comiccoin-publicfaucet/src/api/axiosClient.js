@@ -67,7 +67,11 @@ axiosClient.interceptors.response.use(
     const originalRequest = error.config;
 
     // Add emoji-based logging to help with debugging
-    console.log("🌐 Response error:", error.response?.status);
+    console.log(
+      "🌐 Response error:",
+      error.response?.status,
+      error.response?.data,
+    );
 
     // If the error is not 401 or it's a failed refresh token request
     // or we've already tried to refresh once
@@ -98,6 +102,22 @@ axiosClient.interceptors.response.use(
 
       // Debug log to check the refresh token
       console.log("🔑 Refresh token exists:", !!refreshToken);
+
+      // Log token expiry times for debugging
+      if (authData.access_token_expiry_time) {
+        console.log(
+          "⏰ Access token expired at:",
+          new Date(authData.access_token_expiry_time).toLocaleString(),
+        );
+        console.log("⏰ Current time:", new Date().toLocaleString());
+      }
+
+      if (authData.refresh_token_expiry_time) {
+        console.log(
+          "⏰ Refresh token expires at:",
+          new Date(authData.refresh_token_expiry_time).toLocaleString(),
+        );
+      }
     } catch (error) {
       console.error("📝 Error parsing auth data:", error);
       refreshToken = null;
@@ -127,11 +147,11 @@ axiosClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      console.log("🔄 Attempting to refresh token");
+      console.log("🔄 Attempting to refresh token with correct payload format");
 
-      // Fix: Use the correct endpoint path for token refresh - no duplicate prefix
+      // The correct payload structure according to the Go backend
       const response = await axios.post(`${API_BASE_URL}/token/refresh`, {
-        refreshToken,
+        value: refreshToken,
       });
 
       console.log("✅ Token refresh successful");
@@ -148,12 +168,18 @@ axiosClient.interceptors.response.use(
         const updatedAuthData = {
           ...existingAuthData,
           access_token: authData.access_token,
-          access_token_expiry_time: authData.access_token_expiry_time,
+          access_token_expiry_time: authData.access_token_expiry_date, // Note: backend uses expiry_date not expiry_time
           refresh_token: authData.refresh_token,
-          refresh_token_expiry_time: authData.refresh_token_expiry_time,
+          refresh_token_expiry_time: authData.refresh_token_expiry_date, // Note: backend uses expiry_date not expiry_time
         };
 
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedAuthData));
+
+        // Log the new token expiry time
+        console.log(
+          "⏰ New access token expires at:",
+          new Date(authData.access_token_expiry_date).toLocaleString(),
+        );
       } catch (error) {
         console.error("📝 Failed to update tokens in storage", error);
       }
@@ -167,11 +193,12 @@ axiosClient.interceptors.response.use(
       return axiosClient(originalRequest);
     } catch (refreshError) {
       // Add detailed logging for refresh errors
-      console.error(
-        "❌ Token refresh failed:",
-        refreshError.response?.status,
-        refreshError.response?.data,
-      );
+      console.error("❌ Token refresh failed:", {
+        status: refreshError.response?.status,
+        data: refreshError.response?.data,
+        requestURL: `${API_BASE_URL}/token/refresh`,
+        sentPayload: { value: refreshToken },
+      });
 
       // Refresh failed, clear tokens and redirect to login
       localStorage.removeItem(AUTH_STORAGE_KEY);
