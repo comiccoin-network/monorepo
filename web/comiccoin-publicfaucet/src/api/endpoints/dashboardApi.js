@@ -7,8 +7,8 @@ import { usePrivateQuery } from "../../hooks/useApi";
  */
 export const useDashboard = (options = {}) => {
   return usePrivateQuery(["dashboard"], "/dashboard", {
-    // Transform the raw DTO into a more usable Dashboard object
-    select: (data) => fromDashboardDTO(data),
+    // Simply pass through the raw data from the API
+    // We'll handle calculation in the component with stable functions
     ...options,
   });
 };

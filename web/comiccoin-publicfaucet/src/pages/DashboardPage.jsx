@@ -1,5 +1,5 @@
 // src/pages/DashboardPage.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../api/endpoints/dashboardApi";
 
@@ -8,30 +8,68 @@ function DashboardPage() {
   const [timeRemaining, setTimeRemaining] = useState("");
 
   // Fetch dashboard data
-  const { data: dashboard, isLoading, error, refetch } = useDashboard();
+  const { data: dashboardData, isLoading, error, refetch } = useDashboard();
 
-  // Update time remaining every second
+  // Create a stable formatted time function using useCallback
+  const getFormattedTimeUntilNextClaim = useCallback(() => {
+    if (!dashboardData) return "";
+
+    const nextClaimTime = new Date(dashboardData.next_claim_time).getTime();
+    const now = Date.now();
+    const milliseconds = Math.max(0, nextClaimTime - now);
+
+    if (milliseconds === 0) {
+      return "Ready to claim";
+    }
+
+    const seconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) {
+      return `${days}d ${hours % 24}h`;
+    } else if (hours > 0) {
+      return `${hours}h ${minutes % 60}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  }, [dashboardData]);
+
+  // Check if refetch is needed
+  const shouldRefetch = useCallback(() => {
+    if (!dashboardData) return false;
+
+    const nextClaimTime = new Date(dashboardData.next_claim_time).getTime();
+    const now = Date.now();
+    return now >= nextClaimTime;
+  }, [dashboardData]);
+
+  // Update time remaining every second with stable dependencies
   useEffect(() => {
-    if (!dashboard) return;
+    if (!dashboardData) return;
 
     // Update immediately
-    setTimeRemaining(dashboard.getFormattedTimeUntilNextClaim());
+    setTimeRemaining(getFormattedTimeUntilNextClaim());
 
     // Then update every second
     const interval = setInterval(() => {
-      setTimeRemaining(dashboard.getFormattedTimeUntilNextClaim());
+      setTimeRemaining(getFormattedTimeUntilNextClaim());
 
       // If time has reached zero, refresh the data
-      if (dashboard.getTimeUntilNextClaim() <= 1000) {
+      if (shouldRefetch()) {
         refetch();
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [dashboard, refetch]);
+  }, [dashboardData, getFormattedTimeUntilNextClaim, shouldRefetch, refetch]);
 
   // Format a timestamp
   const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
     return new Date(timestamp).toLocaleString();
   };
 
@@ -45,6 +83,16 @@ function DashboardPage() {
       </div>
     );
 
+  // If dashboardData is undefined even after loading is complete, show an error
+  if (!dashboardData) {
+    return (
+      <div className="text-center py-10 text-yellow-600">
+        No dashboard data available. Please try again later.
+      </div>
+    );
+  }
+
+  // Now we know dashboardData exists, so we can safely access its properties
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header with logout button */}
@@ -76,16 +124,16 @@ function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold mb-4">Your Wallet</h2>
-          {dashboard.walletAddress ? (
+          {dashboardData.wallet_address ? (
             <>
               <p className="text-gray-600 mb-2">Address:</p>
               <p className="font-mono text-sm break-all bg-gray-100 p-2 rounded">
-                {dashboard.walletAddress}
+                {dashboardData.wallet_address}
               </p>
               <p className="mt-4 text-gray-600">
                 Balance:{" "}
                 <span className="font-semibold">
-                  {dashboard.userBalance.toLocaleString()} COMIC
+                  {dashboardData.user_balance.toLocaleString()} COMIC
                 </span>
               </p>
             </>
@@ -99,23 +147,23 @@ function DashboardPage() {
           <p className="text-gray-600 mb-2">
             Faucet Balance:{" "}
             <span className="font-semibold">
-              {dashboard.faucetBalance.toLocaleString()} COMIC
+              {dashboardData.faucet_balance.toLocaleString()} COMIC
             </span>
           </p>
           <p className="text-gray-600 mb-2">
             You've Claimed:{" "}
             <span className="font-semibold">
-              {dashboard.totalCoinsClaimedByUser.toLocaleString()} COMIC
+              {dashboardData.total_coins_claimed.toLocaleString()} COMIC
             </span>
           </p>
           <p className="text-gray-600 mb-2">
             Last Claim:{" "}
             <span className="font-semibold">
-              {formatDate(dashboard.lastClaimTime)}
+              {formatDate(dashboardData.last_claim_time)}
             </span>
           </p>
           <div className="mt-4">
-            {dashboard.canClaimNow() ? (
+            {dashboardData.can_claim ? (
               <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                 Claim Tokens Now
               </button>
@@ -133,7 +181,8 @@ function DashboardPage() {
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold mb-4">Transaction History</h2>
 
-        {dashboard.transactions.length === 0 ? (
+        {!dashboardData.transactions ||
+        dashboardData.transactions.length === 0 ? (
           <p className="text-gray-600">No transactions yet.</p>
         ) : (
           <div className="overflow-x-auto">
@@ -146,7 +195,7 @@ function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {dashboard.transactions.map((tx) => (
+                {dashboardData.transactions.map((tx) => (
                   <tr key={tx.id} className="border-t">
                     <td className="px-4 py-2 font-mono text-sm">
                       {tx.id.slice(0, 8)}...
