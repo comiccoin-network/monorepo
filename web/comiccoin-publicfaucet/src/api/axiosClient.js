@@ -48,7 +48,7 @@ axiosClient.interceptors.request.use(
       if (authData.access_token) {
         config.headers = {
           ...config.headers,
-          Authorization: `Bearer ${authData.access_token}`,
+          Authorization: `JWT ${authData.access_token}`,
         };
       }
     } catch (error) {
@@ -107,7 +107,7 @@ axiosClient.interceptors.response.use(
         failedQueue.push({ resolve, reject });
       })
         .then((token) => {
-          originalRequest.headers["Authorization"] = `Bearer ${token}`;
+          originalRequest.headers["Authorization"] = `JWT ${token}`;
           return axiosClient(originalRequest);
         })
         .catch((err) => Promise.reject(err));
@@ -147,8 +147,7 @@ axiosClient.interceptors.response.use(
       }
 
       // Update authorization header
-      originalRequest.headers["Authorization"] =
-        `Bearer ${authData.access_token}`;
+      originalRequest.headers["Authorization"] = `JWT ${authData.access_token}`;
 
       // Process queue of pending requests
       processQueue(null, authData.access_token);
