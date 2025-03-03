@@ -1,9 +1,12 @@
 // src/pages/DashboardPage.jsx
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router";
+
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../api/endpoints/dashboardApi";
 
 function DashboardPage() {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [timeRemaining, setTimeRemaining] = useState("");
 
@@ -164,7 +167,10 @@ function DashboardPage() {
           </p>
           <div className="mt-4">
             {dashboardData.can_claim ? (
-              <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+              <button
+                onClick={() => navigate("/claim-coins")}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              >
                 Claim Tokens Now
               </button>
             ) : (

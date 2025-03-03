@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import IndexPage from "./pages/IndexPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
+import ClaimCoinsPage from "./pages/ClaimCoinsPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -29,6 +30,8 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  console.log("🚀 App component initializing");
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -44,6 +47,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/claim-coins"
+              element={
+                <ProtectedRoute>
+                  <ClaimCoinsPage />
                 </ProtectedRoute>
               }
             />
