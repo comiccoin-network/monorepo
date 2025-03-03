@@ -52,7 +52,7 @@ axiosClient.interceptors.request.use(
         };
       }
     } catch (error) {
-      console.error("Error adding auth header:", error);
+      console.error("🔑 Error adding auth header:", error);
     }
 
     return config;
@@ -65,6 +65,9 @@ axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // Add emoji-based logging to help with debugging
+    console.log("🌐 Response error:", error.response?.status);
 
     // If the error is not 401 or it's a failed refresh token request
     // or we've already tried to refresh once
@@ -84,18 +87,25 @@ axiosClient.interceptors.response.use(
     // Mark as retried to prevent infinite loops
     originalRequest._retry = true;
 
+    console.log("🔄 Starting token refresh process");
+
     let refreshToken;
     try {
       const authData = JSON.parse(
         localStorage.getItem(AUTH_STORAGE_KEY) || "{}",
       );
       refreshToken = authData.refresh_token;
+
+      // Debug log to check the refresh token
+      console.log("🔑 Refresh token exists:", !!refreshToken);
     } catch (error) {
+      console.error("📝 Error parsing auth data:", error);
       refreshToken = null;
     }
 
     if (!refreshToken) {
       // No refresh token available, redirect to login
+      console.log("⚠️ No refresh token available, redirecting to login");
       localStorage.removeItem(AUTH_STORAGE_KEY);
       window.location.href = "/login";
       return Promise.reject(error);
@@ -103,6 +113,7 @@ axiosClient.interceptors.response.use(
 
     if (isRefreshing) {
       // If already refreshing, add this request to queue
+      console.log("⏳ Already refreshing, adding request to queue");
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject });
       })
@@ -116,13 +127,14 @@ axiosClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      // Try to refresh the token
-      const response = await axios.post(
-        `${API_BASE_URL}/publicfaucet/api/v1/token/refresh`,
-        {
-          refreshToken,
-        },
-      );
+      console.log("🔄 Attempting to refresh token");
+
+      // Fix: Use the correct endpoint path for token refresh - no duplicate prefix
+      const response = await axios.post(`${API_BASE_URL}/token/refresh`, {
+        refreshToken,
+      });
+
+      console.log("✅ Token refresh successful");
 
       // Store updated tokens in localStorage
       const authData = response.data;
@@ -143,7 +155,7 @@ axiosClient.interceptors.response.use(
 
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedAuthData));
       } catch (error) {
-        console.error("Failed to update tokens in storage", error);
+        console.error("📝 Failed to update tokens in storage", error);
       }
 
       // Update authorization header
@@ -154,6 +166,13 @@ axiosClient.interceptors.response.use(
 
       return axiosClient(originalRequest);
     } catch (refreshError) {
+      // Add detailed logging for refresh errors
+      console.error(
+        "❌ Token refresh failed:",
+        refreshError.response?.status,
+        refreshError.response?.data,
+      );
+
       // Refresh failed, clear tokens and redirect to login
       localStorage.removeItem(AUTH_STORAGE_KEY);
       processQueue(refreshError, null);
