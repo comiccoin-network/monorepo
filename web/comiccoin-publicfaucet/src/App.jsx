@@ -1,21 +1,60 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import "./App.css";
+// src/App.jsx
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { AuthProvider } from "./contexts/AuthContext";
+import LoginPage from "./pages/LoginPage";
+import IndexPage from "./pages/IndexPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import DashboardPage from "./pages/DashboardPage";
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        // Don't retry on 401 unauthorized as our interceptors handle that
+        if (error?.response?.status === 401) {
+          return false;
+        }
+        // Retry up to 3 times for other errors
+        return failureCount < 3;
+      },
+      staleTime: 30000, // Data is fresh for 30 seconds
+      cacheTime: 10 * 60 * 1000, // Cache for 10 minutes
+      refetchOnWindowFocus: true,
+    },
+  },
+});
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4">
-        <div>
-          <div className="text-xl font-medium text-black">
-            Tailwind CSS is working!
-          </div>
-          <p className="text-gray-500">
-            You have successfully integrated Tailwind with Vite and React.
-          </p>
-        </div>
-      </div>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<IndexPage />} />
+
+            {/* Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Redirect to dashboard if authenticated, else to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 
