@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import ClaimCoinsPage from "./pages/ClaimCoinsPage";
 import TransactionsPage from "./pages/TransactionsPage";
+import SettingsPage from "./pages/SettingsPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -48,7 +49,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <div>Add Wallet Address Page</div>{" "}
-                  {/* Replace with actual component */}
                 </ProtectedRoute>
               }
             />
@@ -72,12 +72,20 @@ function App() {
               }
             />
 
-            {/* Add new Transactions route */}
             <Route
               path="/transactions"
               element={
                 <ProtectedRoute>
                   <TransactionsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />
