@@ -127,6 +127,9 @@ func (s *gatewayUserRegisterServiceImpl) Execute(
 		e["password"] = "Password does not match"
 		e["password_confirm"] = "Password does not match"
 	}
+	if req.Phone == "" {
+		e["phone"] = "Phone confirm is required"
+	}
 	if req.Country == "" {
 		e["country"] = "Country is required"
 	} else {
@@ -241,7 +244,7 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 		PasswordHash:               passwordHash,
 		PasswordHashAlgorithm:      s.passwordProvider.AlgorithmName(),
 		Role:                       domain.UserRoleCustomer,
-		Phone:                      "",
+		Phone:                      req.Phone,
 		Country:                    req.Country,
 		Timezone:                   req.Timezone,
 		Region:                     "",

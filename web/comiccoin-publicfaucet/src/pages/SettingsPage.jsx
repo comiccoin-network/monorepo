@@ -15,32 +15,40 @@ import AppFooter from "../components/AppFooter";
 import withWallet from "../components/withWallet";
 import { usePutUpdateMe } from "../hooks/usePutUpdateMe";
 import { useAuth } from "../hooks/useAuth";
+import { useGetMe } from "../hooks/useGetMe";
 
 // Define country and timezone options for dropdown selection
 const countries = [
   { value: "", label: "Select a country" },
-  { value: "US", label: "United States" },
-  { value: "CA", label: "Canada" },
-  { value: "GB", label: "United Kingdom" },
-  { value: "AU", label: "Australia" },
-  { value: "DE", label: "Germany" },
-  { value: "FR", label: "France" },
-  { value: "JP", label: "Japan" },
+  { value: "us", label: "United States" },
+  { value: "ca", label: "Canada" },
+  { value: "gb", label: "United Kingdom" },
+  { value: "au", label: "Australia" },
+  { value: "de", label: "Germany" },
+  { value: "fr", label: "France" },
+  { value: "jp", label: "Japan" },
 ];
 
 const timezones = [
-  { value: "", label: "Select a timezone" },
-  { value: "America/New_York", label: "Eastern Time (ET)" },
-  { value: "America/Chicago", label: "Central Time (CT)" },
-  { value: "America/Denver", label: "Mountain Time (MT)" },
-  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
-  { value: "America/Anchorage", label: "Alaska Time" },
-  { value: "Pacific/Honolulu", label: "Hawaii Time" },
-  { value: "America/Toronto", label: "Eastern Time - Toronto" },
-  { value: "America/Vancouver", label: "Pacific Time - Vancouver" },
-  { value: "Europe/London", label: "Greenwich Mean Time (GMT)" },
-  { value: "Europe/Berlin", label: "Central European Time (CET)" },
-  { value: "Asia/Tokyo", label: "Japan Standard Time (JST)" },
+  { value: "", label: "Select Timezone..." },
+  { value: "UTC-12:00", label: "(UTC-12:00) International Date Line West" },
+  { value: "UTC-11:00", label: "(UTC-11:00) Samoa" },
+  { value: "UTC-10:00", label: "(UTC-10:00) Hawaii" },
+  { value: "UTC-09:00", label: "(UTC-09:00) Alaska" },
+  { value: "UTC-08:00", label: "(UTC-08:00) Pacific Time (US & Canada)" },
+  { value: "UTC-07:00", label: "(UTC-07:00) Mountain Time (US & Canada)" },
+  { value: "UTC-06:00", label: "(UTC-06:00) Central Time (US & Canada)" },
+  { value: "UTC-05:00", label: "(UTC-05:00) Eastern Time (US & Canada)" },
+  { value: "UTC-04:00", label: "(UTC-04:00) Atlantic Time (Canada)" },
+  { value: "UTC-03:00", label: "(UTC-03:00) Brasilia" },
+  { value: "UTC+00:00", label: "(UTC+00:00) London, Dublin, Lisbon" },
+  { value: "UTC+01:00", label: "(UTC+01:00) Berlin, Paris, Rome, Madrid" },
+  { value: "UTC+02:00", label: "(UTC+02:00) Athens, Istanbul, Cairo" },
+  { value: "UTC+03:00", label: "(UTC+03:00) Moscow, Baghdad" },
+  { value: "UTC+05:30", label: "(UTC+05:30) New Delhi, Mumbai" },
+  { value: "UTC+08:00", label: "(UTC+08:00) Beijing, Singapore, Hong Kong" },
+  { value: "UTC+09:00", label: "(UTC+09:00) Tokyo, Seoul" },
+  { value: "UTC+10:00", label: "(UTC+10:00) Sydney, Melbourne" },
 ];
 
 const SettingsPageContent = () => {
@@ -51,16 +59,31 @@ const SettingsPageContent = () => {
   // Use the useAuth hook to get current user data
   const { user, updateUser } = useAuth();
 
-  // Define loading state based on if we have user data
-  const isLoadingUser = !user && isManuallyLoading;
+  // Use the new useGetMe hook to fetch latest user data
+  const {
+    user: latestUserData,
+    isLoading: isLoadingUserData,
+    error: userDataError,
+    refetch: refreshUserData,
+  } = useGetMe();
 
-  // Function to refresh data (not needed with localStorage hook, but kept for UX consistency)
-  const handleRefreshUserData = () => {
+  // Define loading state based on if we have user data
+  const isLoadingUser = isLoadingUserData || (!user && isManuallyLoading);
+
+  // Function to refresh data using the new API call
+  const handleRefreshUserData = async () => {
     setIsManuallyLoading(true);
-    // Simulate loading for a better UX transition
-    setTimeout(() => {
-      setIsManuallyLoading(false);
-    }, 1000);
+    try {
+      await refreshUserData();
+      console.log("✅ User data refreshed successfully");
+    } catch (error) {
+      console.error("❌ Failed to refresh user data:", error);
+    } finally {
+      // Keep the slight delay for better UX transition
+      setTimeout(() => {
+        setIsManuallyLoading(false);
+      }, 1000);
+    }
   };
 
   const {
@@ -110,7 +133,22 @@ const SettingsPageContent = () => {
 
   // Initialize form data when user information loads
   useEffect(() => {
-    if (user) {
+    console.log("🔄 Updating form with latest user data", latestUserData);
+
+    // Use the latest user data from API if available
+    if (latestUserData) {
+      setFormData({
+        email: latestUserData.email || "",
+        first_name: latestUserData.first_name || "", // FIXED: Use snake_case from API
+        last_name: latestUserData.last_name || "", // FIXED: Use snake_case from API
+        phone: latestUserData.phone || null,
+        country: latestUserData.country || null,
+        timezone: latestUserData.timezone || "",
+        wallet_address: latestUserData.wallet_address || "", // FIXED: Use snake_case from API
+      });
+    }
+    // Fall back to auth context user data if API data isn't available yet
+    else if (user) {
       setFormData({
         email: user.email || "",
         first_name: user.firstName || "",
@@ -121,7 +159,18 @@ const SettingsPageContent = () => {
         wallet_address: user.walletAddress || "",
       });
     }
-  }, [user]);
+  }, [latestUserData, user]);
+
+  // Display error message if API fetch fails
+  useEffect(() => {
+    if (userDataError) {
+      setStatusMessage({
+        type: "error",
+        message:
+          "Failed to load your latest profile data. Using cached data instead.",
+      });
+    }
+  }, [userDataError]);
 
   // Update status message based on API call results
   useEffect(() => {
@@ -130,6 +179,9 @@ const SettingsPageContent = () => {
         type: "success",
         message: "Your settings have been updated successfully!",
       });
+
+      // Refresh user data after successful update
+      refreshUserData();
     } else if (updateError) {
       setStatusMessage({
         type: "error",
@@ -137,8 +189,9 @@ const SettingsPageContent = () => {
           updateError.message || "Failed to update settings. Please try again.",
       });
     }
-  }, [isSuccess, updateError]);
+  }, [isSuccess, updateError, refreshUserData]);
 
+  // Rest of your component remains the same...
   // Define form fields
   const personalFields = [
     {
@@ -205,6 +258,7 @@ const SettingsPageContent = () => {
 
   // Comprehensive field rendering
   const renderField = (field) => {
+    // Field rendering logic remains unchanged
     const hasError = !!formErrors[field.fieldKey];
     const isRequired = field.required;
 
@@ -495,11 +549,7 @@ const SettingsPageContent = () => {
       // Attempt to update user profile
       const updatedUser = await updateMe(updateData);
 
-      // Show success message
-      setStatusMessage({
-        type: "success",
-        message: "Your settings have been updated successfully!",
-      });
+      // Success message and status handling is done in the useEffect
     } catch (err) {
       console.error("Update failed", err);
 
