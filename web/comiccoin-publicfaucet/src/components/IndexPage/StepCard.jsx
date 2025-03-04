@@ -1,4 +1,5 @@
 // src/components/IndexPage/StepCard.jsx
+import React from "react";
 import { Link } from "react-router";
 import {
   ExternalLink,
@@ -8,18 +9,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-const StepCard = ({
-  id,
-  icon,
-  title,
-  description,
-  actionText,
-  actionUrl,
-  isExternalLink,
-  subtitle,
-  noAction,
-}) => {
-  // Function to render the correct icon
+const StepCard = ({ id, icon, title, description, subtitle }) => {
+  // Function to render the correct icon remains the same
   const getIcon = () => {
     switch (icon) {
       case "UserPlus":
@@ -34,9 +25,9 @@ const StepCard = ({
   };
 
   return (
-    <div className="bg-white rounded-xl p-5 sm:p-6 shadow-lg border border-purple-100 flex flex-col h-full transition-all duration-300 hover:shadow-xl">
+    <div className="bg-white rounded-xl p-6 shadow-lg border border-purple-100 flex flex-col h-full transition-all duration-300 hover:shadow-xl">
       {/* Step Number and Icon */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-5">
         <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center transform transition-transform duration-300 hover:scale-110">
           {getIcon()}
         </div>
@@ -46,35 +37,11 @@ const StepCard = ({
       </div>
 
       {/* Content */}
-      <div className="mb-6 flex-grow">
+      <div className="flex-grow">
         <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
         <p className="text-gray-600">{description}</p>
         {subtitle && <p className="text-sm text-gray-500 mt-2">{subtitle}</p>}
       </div>
-
-      {/* Action Button (Optional) */}
-      {!noAction &&
-        actionText &&
-        actionUrl &&
-        (isExternalLink ? (
-          <a
-            href={actionUrl}
-            className="mt-auto bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {actionText}
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        ) : (
-          <Link
-            to={actionUrl}
-            className="mt-auto bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-          >
-            {actionText}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        ))}
     </div>
   );
 };

@@ -13,6 +13,8 @@ import { Link } from "react-router";
 import { useGetFaucet } from "../hooks/useGetFaucet";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
+import WalletStepCard from "../components/IndexPage/WalletStepCard";
+import StepCard from "../components/IndexPage/StepCard";
 
 const IndexPage = () => {
   // Use the hook to fetch faucet data
@@ -132,169 +134,59 @@ const IndexPage = () => {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-            {/* Step 1: Get Wallet */}
-            <div className="bg-white rounded-xl p-6 lg:p-8 shadow-lg border border-purple-100 flex flex-col h-full">
-              <div className="flex items-center justify-between mb-4">
-                <div className="bg-purple-100 rounded-full w-14 h-14 flex items-center justify-center">
-                  <Wallet className="h-7 w-7 text-purple-600" />
-                </div>
-                <div className="bg-purple-100 text-purple-800 text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center">
-                  1
-                </div>
-              </div>
-
-              <div className="mb-6 flex-grow">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Get Wallet
-                </h3>
-                <p className="text-gray-600">
-                  Download our secure wallet app to store your coins
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-center mb-3">
-                  <img
-                    src="/apple-touch-icon.png"
-                    alt="ComicCoin Wallet"
-                    className="w-16 h-16 rounded-xl shadow-md"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <a
-                    href="https://apps.apple.com/ca/app/comiccoin-wallet/id6741118881"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center bg-black text-white py-2 px-3 rounded-lg hover:bg-gray-800 transition-colors"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="18"
-                      height="18"
-                      className="mr-1"
-                      fill="currentColor"
-                    >
-                      <path d="M17.05 20.28c-.98.95-2.05.86-3.1.43-1.1-.44-2.1-.48-3.26 0-1.46.62-2.2.44-3.1-.43C3.1 15.45 3.74 8.83 8.14 8.5c1.32.07 2.24.87 3.07.87.83 0 2.37-1.08 4-.92 1.53.13 2.72.77 3.47 1.97-3.12 1.95-2.6 5.93.33 7.16-.92 2.23-2.03 3.76-3.96 4.7zM12.9 7.34c-.76-1.27-.29-3.27 1.05-4.5 1.2 1.1 1.82 2.9 1.05 4.5-1.08.05-1.96-.27-2.1 0z" />
-                    </svg>
-                    <span className="text-xs">App Store</span>
-                  </a>
-
-                  <a
-                    href="https://play.google.com/store/apps/details?id=com.theshootingstarpress.comiccoinwallet"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center bg-black text-white py-2 px-3 rounded-lg hover:bg-gray-800 transition-colors"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="18"
-                      height="18"
-                      className="mr-1"
-                      fill="currentColor"
-                    >
-                      <path d="M17.9 5c.1.1.2.3.2.5v13c0 .2-.1.3-.2.5l-7.6-7 7.6-7z" />
-                      <path d="M4 18.1c-.1-.1-.1-.2-.1-.4V6.3c0-.1 0-.3.1-.4l7.7 6.1-7.7 6.1z" />
-                    </svg>
-                    <span className="text-xs">Google Play</span>
-                  </a>
-
-                  <a
-                    href="https://comiccoinwallet.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center bg-purple-600 text-white py-2 px-3 rounded-lg hover:bg-purple-700 transition-colors"
-                  >
-                    <Wallet className="h-4 w-4 mr-1" />
-                    <span className="text-xs">Web Wallet</span>
-                  </a>
-                </div>
-              </div>
-            </div>
+            {/* Step 1: Get Wallet - Using the custom component */}
+            <WalletStepCard />
 
             {/* Step 2: Register */}
-            <div className="bg-white rounded-xl p-6 lg:p-8 shadow-lg border border-purple-100 flex flex-col h-full">
-              <div className="flex items-center justify-between mb-4">
-                <div className="bg-purple-100 rounded-full w-14 h-14 flex items-center justify-center">
-                  <UserPlus className="h-7 w-7 text-purple-600" />
-                </div>
-                <div className="bg-purple-100 text-purple-800 text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center">
-                  2
-                </div>
-              </div>
-
-              <div className="mb-6 flex-grow">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Register
-                </h3>
-                <p className="text-gray-600">
-                  Create a ComicCoin Network account to access all network
-                  services with a single sign-on
-                </p>
-              </div>
-
-              <Link
-                to="/get-started"
-                className="mt-auto bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-              >
-                Join Network
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
+            <StepCard
+              id="2"
+              icon="UserPlus"
+              title="Register"
+              description="Create a ComicCoin Network account to access all network services with a single sign-on"
+              actionText="Join Network"
+              actionUrl="/register"
+              isExternalLink={false}
+            />
 
             {/* Step 3: Collect Coins */}
-            <div className="bg-white rounded-xl p-6 lg:p-8 shadow-lg border border-purple-100 flex flex-col h-full">
-              <div className="flex items-center justify-between mb-4">
-                <div className="bg-purple-100 rounded-full w-14 h-14 flex items-center justify-center">
-                  <Coins className="h-7 w-7 text-purple-600" />
-                </div>
-                <div className="bg-purple-100 text-purple-800 text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center">
-                  3
-                </div>
-              </div>
-
-              <div className="mb-6 flex-grow">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Collect Coins
-                </h3>
-                <p className="text-gray-600">
-                  Once signed in, you can claim coins every 24 hours. Enter your
-                  wallet address to claim your coins.
-                </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Each wallet can claim once every 24 hours.
-                </p>
-              </div>
-            </div>
+            <StepCard
+              id="3"
+              icon="Coins"
+              title="Collect Coins"
+              description="Once signed in, you can claim coins every 24 hours. Enter your wallet address to claim your coins."
+              subtitle="Each wallet can claim once every 24 hours."
+              noAction={true}
+            />
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 py-12 mb-12">
+        {/* Call to Action Section */}
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
               Ready to Start Collecting ComicCoins?
             </h2>
-            <p className="text-purple-200 text-lg mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
               Join thousands of users who have already claimed their free
               ComicCoins. Get your wallet, register, and start collecting today!
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
               <a
                 href="https://comiccoinwallet.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-white text-purple-700 px-6 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors inline-flex items-center justify-center gap-2"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-purple-700 rounded-xl font-bold hover:bg-purple-50 transition-colors shadow-lg group"
               >
-                <Wallet className="h-5 w-5" />
+                <Wallet className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
                 Get Wallet
               </a>
               <Link
-                to="/get-started"
-                className="bg-purple-800 bg-opacity-50 text-white border border-purple-300 px-6 py-3 rounded-lg font-bold hover:bg-opacity-75 transition-colors inline-flex items-center justify-center gap-2"
+                to="/register"
+                className="inline-flex items-center justify-center px-8 py-4 bg-purple-800 bg-opacity-50 text-white border border-purple-300 rounded-xl font-bold hover:bg-opacity-75 transition-colors shadow-lg group"
               >
+                <UserPlus className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
                 Register Now
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>
