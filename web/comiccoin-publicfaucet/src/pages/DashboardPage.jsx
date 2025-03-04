@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
-import TopNavigation from "../components/TopNavigation";
+import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
 import withWallet from "../components/withWallet";
 import { useAuth } from "../hooks/useAuth";
@@ -189,7 +189,7 @@ function DashboardPage() {
   if (isLoading && !dashboardData) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <TopNavigation />
+        <AppTopNavigation />
         <div
           className="container mx-auto px-4 py-6 max-w-5xl"
           aria-busy="true"
@@ -228,7 +228,7 @@ function DashboardPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <TopNavigation />
+        <AppTopNavigation />
         <div className="container mx-auto px-4 py-6 max-w-5xl">
           <div
             className="bg-white rounded-lg p-6 shadow-sm"
@@ -267,7 +267,7 @@ function DashboardPage() {
   if (!dashboardData) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <TopNavigation />
+        <AppTopNavigation />
         <div className="container mx-auto px-4 py-6 max-w-5xl">
           <div
             className="bg-white rounded-lg p-6 shadow-sm"
@@ -312,7 +312,7 @@ function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Navigation */}
-      <TopNavigation />
+      <AppTopNavigation />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-4 max-w-5xl flex-grow">

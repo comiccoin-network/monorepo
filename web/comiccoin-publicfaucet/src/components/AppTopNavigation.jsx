@@ -1,10 +1,10 @@
-// src/components/TopNavigation.jsx
+// src/components/AppTopNavigation.jsx
 import React from "react";
 import { Link, useLocation } from "react-router";
 import { Coins, LogOut, Settings, ClipboardList, Home } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
-const TopNavigation = () => {
+const AppTopNavigation = () => {
   const location = useLocation();
   const { logout } = useAuth();
 
@@ -100,4 +100,4 @@ const TopNavigation = () => {
   );
 };
 
-export default TopNavigation;
+export default AppTopNavigation;
