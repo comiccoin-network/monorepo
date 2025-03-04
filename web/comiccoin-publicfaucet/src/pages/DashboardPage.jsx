@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
 
+import withWallet from "../components/withWallet";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../api/endpoints/dashboardApi";
 
@@ -233,4 +234,4 @@ function getRoleName(roleNumber) {
   return roles[roleNumber] || `Role ${roleNumber}`;
 }
 
-export default DashboardPage;
+export default withWallet(DashboardPage);

@@ -90,6 +90,29 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const updateUser = useCallback((newUserData) => {
+    // Update user state
+    setUser(newUserData);
+
+    // Update in localStorage
+    try {
+      const authData = JSON.parse(
+        localStorage.getItem(AUTH_STORAGE_KEY) || "{}",
+      );
+
+      // Update the user property
+      const updatedAuthData = {
+        ...authData,
+        user: newUserData,
+      };
+
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedAuthData));
+      console.log("👤 User data updated in storage");
+    } catch (error) {
+      console.error("❌ Failed to update user in storage:", error);
+    }
+  }, []);
+
   // Proactive token refresh mechanism
   useEffect(() => {
     if (!user) return;
@@ -259,6 +282,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    updateUser,
     isAuthenticated,
     isLoading,
     login,

@@ -3,42 +3,47 @@ import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 
-/**
- * Higher-Order Component that checks if a user has a wallet connected
- * If not, redirects them to the wallet setup page
- */
 function withWallet(WrappedComponent) {
   function WalletWrapper(props) {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useAuth(); // Reuse your existing auth hook
+    const { user } = useAuth();
 
-    // Check if the user has a wallet address
-    const hasWallet = React.useMemo(
-      () => !!user?.walletAddress,
-      [user?.walletAddress],
-    );
+    console.log("🧐 withWallet HOC received user:", user);
+
+    // Check if the user has a wallet address (using snake_case property)
+    const hasWallet = React.useMemo(() => {
+      const walletExists = !!user?.wallet_address;
+      console.log("🔍 Wallet check:", {
+        walletExists,
+        address: user?.wallet_address,
+      });
+      return walletExists;
+    }, [user?.wallet_address]);
 
     // Redirect if needed (only on initial mount)
     useEffect(() => {
-      console.log("🔍 Checking wallet status:", {
+      const isInitFlow = location.pathname.includes("/user-initialization");
+
+      console.log("🔍 withWallet check:", {
         hasWallet,
-        walletAddress: user?.walletAddress,
+        isInitFlow,
+        walletAddress: user?.wallet_address,
+        pathname: location.pathname,
       });
 
-      const isInitFlow = location.pathname.includes("/user-initialization");
-      if (!isInitFlow && user && !user.walletAddress) {
+      if (!isInitFlow && user && !user.wallet_address) {
         console.log("🔄 No wallet found, redirecting to setup page");
         navigate("/user-initialization/add-my-wallet-address");
       }
-    }, []);
+    }, [user, hasWallet, location.pathname, navigate]);
 
     // Pass wallet information to the wrapped component
     return (
       <WrappedComponent
         {...props}
         hasWallet={hasWallet}
-        walletAddress={user?.walletAddress || null}
+        walletAddress={user?.wallet_address || null}
       />
     );
   }

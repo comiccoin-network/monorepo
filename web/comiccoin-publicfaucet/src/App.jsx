@@ -41,6 +41,17 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<IndexPage />} />
 
+            {/* User Initialization Routes */}
+            <Route
+              path="/user-initialization/add-my-wallet-address"
+              element={
+                <ProtectedRoute>
+                  <div>Add Wallet Address Page</div>{" "}
+                  {/* Replace with actual component */}
+                </ProtectedRoute>
+              }
+            />
+
             {/* Protected Routes */}
             <Route
               path="/dashboard"
