@@ -15,6 +15,8 @@ import AddWalletAddressPage from "./pages/AddWalletAddressPage";
 import ClaimCoinsPage from "./pages/ClaimCoinsPage";
 import TransactionsPage from "./pages/TransactionsPage";
 import SettingsPage from "./pages/SettingsPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -48,6 +50,8 @@ function App() {
             <Route path="/" element={<IndexPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/get-started" element={<GetStartedPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
 
             <Route
               path="/register-success"
