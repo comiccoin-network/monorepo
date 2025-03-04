@@ -17,7 +17,7 @@ const AppFooter = () => {
 
           {/* Version */}
           <div className="text-gray-400 text-xs mb-2 md:mb-0 order-3 md:order-2">
-            Version 1.0.3
+            Version 1.0.0
           </div>
 
           {/* Links */}
