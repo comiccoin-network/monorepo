@@ -160,9 +160,9 @@ const IndexPage = () => {
           </h2>
 
           {/* Always use a single row layout, with flex-wrap for very small screens */}
-          <div className="flex flex-wrap justify-center gap-6 lg:gap-8">
+          <div className="flex flex-col sm:flex-row justify-center gap-6 lg:gap-8">
             {steps.map((step) => (
-              <div key={step.id} className="w-full sm:w-80">
+              <div key={step.id} className="flex-1 min-w-0">
                 <StepCard {...step} />
               </div>
             ))}
