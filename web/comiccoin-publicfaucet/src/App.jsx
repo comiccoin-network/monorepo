@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import IndexPage from "./pages/IndexPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
+import AddWalletAddressPage from "./pages/AddWalletAddressPage";
 import ClaimCoinsPage from "./pages/ClaimCoinsPage";
 import TransactionsPage from "./pages/TransactionsPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -48,7 +49,7 @@ function App() {
               path="/user-initialization/add-my-wallet-address"
               element={
                 <ProtectedRoute>
-                  <div>Add Wallet Address Page</div>{" "}
+                  <AddWalletAddressPage />
                 </ProtectedRoute>
               }
             />
