@@ -11,8 +11,6 @@ import {
   FileText,
   BookOpen,
   ArrowRight,
-  Download,
-  Smartphone,
 } from "lucide-react";
 
 const Footer = ({ isLoading, error, faucet, formatBalance }) => {
@@ -21,87 +19,6 @@ const Footer = ({ isLoading, error, faucet, formatBalance }) => {
   return (
     <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white pt-10 pb-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Download App Section */}
-        <div className="mb-12 py-8 px-6 bg-indigo-900/40 rounded-xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold mb-4">
-                Get the ComicCoin Wallet
-              </h2>
-              <p className="text-purple-200 mb-6 max-w-md">
-                Download our secure wallet app to manage your ComicCoins on the
-                go. Available on iOS, Android, and as a web wallet.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <a
-                  href="https://apps.apple.com/ca/app/comiccoin-wallet/id6741118881"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center bg-black text-white px-5 py-2.5 rounded-lg hover:bg-gray-900 transition-colors"
-                >
-                  <div className="mr-3">
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="24"
-                      height="24"
-                      fill="currentColor"
-                    >
-                      <path d="M17.05 20.28c-.98.95-2.05.86-3.1.43-1.1-.44-2.1-.48-3.26 0-1.46.62-2.2.44-3.1-.43C3.1 15.45 3.74 8.83 8.14 8.5c1.32.07 2.24.87 3.07.87.83 0 2.37-1.08 4-.92 1.53.13 2.72.77 3.47 1.97-3.12 1.95-2.6 5.93.33 7.16-.92 2.23-2.03 3.76-3.96 4.7zM12.9 7.34c-.76-1.27-.29-3.27 1.05-4.5 1.2 1.1 1.82 2.9 1.05 4.5-1.08.05-1.96-.27-2.1 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-xs">Download on the</div>
-                    <div className="text-xl font-semibold -mt-1">App Store</div>
-                  </div>
-                </a>
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.theshootingstarpress.comiccoinwallet"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center bg-black text-white px-5 py-2.5 rounded-lg hover:bg-gray-900 transition-colors"
-                >
-                  <div className="mr-3">
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="24"
-                      height="24"
-                      fill="currentColor"
-                    >
-                      <path d="M17.9 5c.1.1.2.3.2.5v13c0 .2-.1.3-.2.5l-7.6-7 7.6-7zM4 18.1c-.1-.1-.1-.2-.1-.4V6.3c0-.1 0-.3.1-.4l7.7 6.1-7.7 6.1zM15.4 3.2l-9.8 5.6-2-1.6c-.3-.2-.5-.5-.5-.9 0-.3.2-.7.5-.9l2-1.6 9.8 5.6-9.8 5.6L4 13.8c-.3-.2-.5-.5-.5-.9 0-.3.2-.7.5-.9l2-1.6 9.4 5.4 9.4-5.4-9.8-5.6 9.8-5.6 9.4 5.4-9.4 5.4 9.8 5.6c.3.2.5.5.5.9 0 .3-.2.7-.5.9l-9.8 5.6L3.6 19c-.3-.2-.5-.5-.5-.9 0-.3.2-.7.5-.9l11.8-6.7 11.8 6.7c.3.2.5.5.5.9 0 .3-.2.7-.5.9l-11.8 6.7-11.8-6.7c-.3-.2-.5-.5-.5-.9 0-.3.2-.7.5-.9l11.8-6.7-11.8-6.7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-xs">GET IT ON</div>
-                    <div className="text-xl font-semibold -mt-1">
-                      Google Play
-                    </div>
-                  </div>
-                </a>
-                <a
-                  href="https://comiccoinwallet.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center bg-purple-600 text-white px-5 py-2.5 rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  <Wallet className="h-5 w-5 mr-2" />
-                  <span>Web Wallet</span>
-                </a>
-              </div>
-            </div>
-            {/* App Logo/Screenshot - replace the img src with your actual app icon */}
-            <div className="flex-shrink-0">
-              <div className="relative h-40 w-40 bg-purple-400 rounded-3xl overflow-hidden p-2 shadow-lg">
-                <div className="absolute inset-0 bg-purple-300/50 backdrop-blur-sm"></div>
-                <img
-                  src="/apple-touch-icon.png"
-                  alt="ComicCoin Wallet App"
-                  className="h-full w-full object-contain relative z-10"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Main Footer Sections */}
         <div className="flex flex-col md:flex-row md:space-x-24 mb-10">
           {/* About Section */}
