@@ -7,65 +7,73 @@ const StepCard = ({
   icon,
   title,
   description,
+  subtitle,
   actionText,
   actionUrl,
   isExternalLink,
-  subtitle,
   noAction,
 }) => {
-  // Function to render the correct icon
-  const getIcon = () => {
-    switch (icon) {
-      case "UserPlus":
-        return <UserPlus className="h-6 w-6 text-purple-600" />;
+  // Map icon strings to actual Lucide icon components
+  const getIcon = (iconName) => {
+    switch (iconName) {
       case "Wallet":
-        return <Wallet className="h-6 w-6 text-purple-600" />;
+        return <Wallet className="h-8 w-8 text-purple-600" />;
+      case "UserPlus":
+        return <UserPlus className="h-8 w-8 text-purple-600" />;
       case "Coins":
-        return <Coins className="h-6 w-6 text-purple-600" />;
+        return <Coins className="h-8 w-8 text-purple-600" />;
       default:
-        return <Coins className="h-6 w-6 text-purple-600" />;
+        return <Coins className="h-8 w-8 text-purple-600" />;
+    }
+  };
+
+  // Render action button or link based on props
+  const renderAction = () => {
+    if (noAction) return null;
+    if (!actionText || !actionUrl) return null;
+
+    if (isExternalLink) {
+      return (
+        <a
+          href={actionUrl}
+          className="bg-purple-600 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-purple-700 transition-colors text-sm sm:text-base active:bg-purple-800"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={actionText}
+        >
+          {actionText}
+          <ExternalLink className="w-4 h-4" />
+        </a>
+      );
+    } else {
+      return (
+        <Link
+          to={actionUrl}
+          className="bg-purple-600 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-purple-700 transition-colors text-sm sm:text-base active:bg-purple-800"
+          aria-label={actionText}
+        >
+          {actionText}
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      );
     }
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-lg border border-purple-100 flex flex-col h-full">
-      {/* Step Number and Icon */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center">
-          {getIcon()}
+    <div className="bg-white rounded-xl p-6 sm:p-8 shadow-lg border-2 border-purple-100 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+      <div className="flex flex-col items-center text-center h-full">
+        <div className="p-4 bg-purple-50 rounded-xl mb-6 transform transition-transform duration-300 hover:scale-110">
+          {getIcon(icon)}
         </div>
-        <div className="bg-purple-100 text-purple-800 text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center">
-          {id}
-        </div>
+        <h3 className="text-xl font-bold text-purple-800 mb-3">
+          {`Step ${id}: ${title}`}
+        </h3>
+        <p className="text-gray-600 mb-6 flex-grow">{description}</p>
+        {subtitle && (
+          <p className="text-xs sm:text-sm text-gray-500 mb-4">{subtitle}</p>
+        )}
+        <div className="mt-auto">{renderAction()}</div>
       </div>
-
-      {/* Content */}
-      <div className="mb-6 flex-grow">
-        <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-600">{description}</p>
-        {subtitle && <p className="text-sm text-gray-500 mt-2">{subtitle}</p>}
-      </div>
-
-      {/* Action Button (Optional) */}
-      {!noAction &&
-        (isExternalLink ? (
-          <a
-            href={actionUrl}
-            className="mt-auto bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {actionText}
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        ) : (
-          <Link
-            to={actionUrl}
-            className="mt-auto bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-          >
-            {actionText}
-          </Link>
-        ))}
     </div>
   );
 };

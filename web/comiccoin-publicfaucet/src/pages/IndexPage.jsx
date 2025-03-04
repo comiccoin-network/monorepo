@@ -1,14 +1,334 @@
 // src/pages/IndexPage.jsx
-import { Sparkles, RefreshCw, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import {
+  Sparkles,
+  RefreshCw,
+  ArrowRight,
+  ExternalLink,
+  Wallet,
+  UserPlus,
+  Coins,
+  Github,
+  Shield,
+  Heart,
+  Globe,
+  Download,
+  Menu,
+  X,
+  FileText,
+  BookOpen,
+  Code,
+} from "lucide-react";
 import { Link } from "react-router";
 import { useGetFaucet } from "../hooks/useGetFaucet";
-import Header from "../components/IndexPage/Header";
-import Footer from "../components/IndexPage/Footer";
-import StepCard from "../components/IndexPage/StepCard";
+
+const StepCard = ({
+  id,
+  icon,
+  title,
+  description,
+  subtitle,
+  actionText,
+  actionUrl,
+  isExternalLink,
+  noAction,
+}) => {
+  // Map icon strings to actual Lucide icon components
+  const getIcon = (iconName) => {
+    switch (iconName) {
+      case "Wallet":
+        return <Wallet className="h-8 w-8 text-purple-600" />;
+      case "UserPlus":
+        return <UserPlus className="h-8 w-8 text-purple-600" />;
+      case "Coins":
+        return <Coins className="h-8 w-8 text-purple-600" />;
+      default:
+        return <Coins className="h-8 w-8 text-purple-600" />;
+    }
+  };
+
+  // Render action button or link based on props
+  const renderAction = () => {
+    if (noAction) return null;
+    if (!actionText || !actionUrl) return null;
+
+    if (isExternalLink) {
+      return (
+        <a
+          href={actionUrl}
+          className="bg-purple-600 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-purple-700 transition-colors text-sm sm:text-base active:bg-purple-800"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={actionText}
+        >
+          {actionText}
+          <ExternalLink className="w-4 h-4" />
+        </a>
+      );
+    } else {
+      return (
+        <Link
+          to={actionUrl}
+          className="bg-purple-600 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-purple-700 transition-colors text-sm sm:text-base active:bg-purple-800"
+          aria-label={actionText}
+        >
+          {actionText}
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      );
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl p-6 sm:p-8 shadow-lg border-2 border-purple-100 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+      <div className="flex flex-col items-center text-center h-full">
+        <div className="p-4 bg-purple-50 rounded-xl mb-6 transform transition-transform duration-300 hover:scale-110">
+          {getIcon(icon)}
+        </div>
+        <h3 className="text-xl font-bold text-purple-800 mb-3">
+          {`Step ${id}: ${title}`}
+        </h3>
+        <p className="text-gray-600 mb-6 flex-grow">{description}</p>
+        {subtitle && (
+          <p className="text-xs sm:text-sm text-gray-500 mb-4">{subtitle}</p>
+        )}
+        <div className="mt-auto">{renderAction()}</div>
+      </div>
+    </div>
+  );
+};
+
+// Header Component
+const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  return (
+    <header className="relative z-10">
+      {/* Skip link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
+      >
+        Skip to main content
+      </a>
+
+      {/* Navigation bar with improved accessibility */}
+      <nav
+        className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white shadow-md"
+        aria-label="Main Navigation"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4 sm:py-5">
+            {/* Logo and Brand - Enhanced size and contrast */}
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0" aria-hidden="true">
+                <Coins className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-white" />
+              </div>
+              <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
+                ComicCoin Faucet
+              </span>
+            </div>
+
+            {/* Desktop Navigation Links with enhanced accessibility */}
+            <div className="hidden md:flex items-center space-x-6">
+              <Link
+                to="/get-started"
+                className="bg-white text-purple-700 px-5 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base active:bg-purple-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-700 focus:ring-white"
+                aria-label="Start claiming ComicCoins"
+              >
+                <Coins className="w-5 h-5" aria-hidden="true" />
+                <span>Claim Coins</span>
+              </Link>
+            </div>
+
+            {/* Mobile menu button with improved accessibility */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={toggleMenu}
+                className="inline-flex items-center justify-center p-3 rounded-md text-white hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-white"
+                aria-expanded={isMenuOpen}
+                aria-controls="mobile-menu"
+                aria-label={isMenuOpen ? "Close main menu" : "Open main menu"}
+              >
+                <span className="sr-only">
+                  {isMenuOpen ? "Close main menu" : "Open main menu"}
+                </span>
+                {isMenuOpen ? (
+                  <X className="h-6 w-6" aria-hidden="true" />
+                ) : (
+                  <Menu className="h-6 w-6" aria-hidden="true" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Navigation Menu with improved accessibility */}
+        {isMenuOpen && (
+          <div
+            className="md:hidden bg-purple-800 border-t border-purple-600 py-2 pb-4"
+            id="mobile-menu"
+            aria-label="Mobile Navigation"
+          >
+            <div className="px-4 pt-2 pb-3 space-y-1">
+              <Link
+                to="/get-started"
+                className="block mt-4 bg-white text-purple-700 px-4 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base w-full justify-center focus:outline-none focus:ring-2 focus:ring-purple-500"
+                onClick={() => setIsMenuOpen(false)}
+                aria-label="Start claiming ComicCoins"
+              >
+                <Coins className="w-5 h-5" aria-hidden="true" />
+                <span>Claim Coins</span>
+              </Link>
+            </div>
+          </div>
+        )}
+      </nav>
+    </header>
+  );
+};
+
+// Footer Component
+const Footer = ({ isLoading, error, faucet }) => {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white pt-12 pb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          {/* About Section */}
+          <div className="lg:col-span-2">
+            <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+              <Heart className="h-5 w-5 text-pink-300" />
+              <span>ComicCoin Network</span>
+            </h3>
+            <p className="text-purple-200 mb-4 max-w-md">
+              A community-driven blockchain platform designed for comic
+              collectors and creators. We're building an accessible ecosystem
+              that connects fans with their favorite comics while empowering
+              artists and publishers through blockchain technology.
+            </p>
+          </div>
+
+          {/* Resources Links */}
+          <div>
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+              <Code className="h-4 w-4 text-purple-300" />
+              <span>Resources</span>
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <a
+                  href="https://github.com/comiccoin-network/monorepo"
+                  className="hover:text-purple-200 flex items-center gap-2 group transition-colors duration-200"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Github className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                  <span>GitHub Repository</span>
+                  <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://comiccoinnetwork.com"
+                  className="hover:text-purple-200 flex items-center gap-2 group transition-colors duration-200"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Globe className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                  <span>Project Website</span>
+                  <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://comiccoinwallet.com"
+                  className="hover:text-purple-200 flex items-center gap-2 group transition-colors duration-200"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Wallet className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                  <span>Official Wallet</span>
+                  <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal Links */}
+          <div>
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+              <Shield className="h-4 w-4 text-purple-300" />
+              <span>Legal</span>
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  to="/terms"
+                  className="hover:text-purple-200 flex items-center gap-2 group transition-colors duration-200"
+                >
+                  <FileText className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                  <span>Terms of Service</span>
+                  <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/privacy"
+                  className="hover:text-purple-200 flex items-center gap-2 group transition-colors duration-200"
+                >
+                  <BookOpen className="h-4 w-4 text-purple-300 group-hover:text-purple-200" />
+                  <span>Privacy Policy</span>
+                  <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Network Stats Section */}
+        {!isLoading && !error && faucet && (
+          <div className="border-t border-purple-600 pt-6 mb-6">
+            <div className="text-center">
+              <p className="text-lg font-medium mb-2">Network Status</p>
+              <p className="text-xl font-bold text-purple-300">
+                {faucet.users_count?.toLocaleString() || "0"}+ Active Users
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Copyright Section */}
+        <div className="text-center pt-6 border-t border-purple-500/30">
+          <p className="flex items-center justify-center gap-2 text-purple-200">
+            <span>
+              © {currentYear} ComicCoin Network. All rights reserved.
+            </span>
+          </p>
+          <p className="mt-2 text-sm text-purple-300">
+            Built with ❤️ by the ComicCoin community
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+};
 
 const IndexPage = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   // Use the hook to fetch faucet data
-  const { faucet, isLoading, error, refetch } = useGetFaucet({
+  const {
+    data: faucet,
+    isLoading,
+    error,
+    refetch,
+  } = useGetFaucet({
     chainId: 1, // Ensure this is a number, not a boolean
     enabled: true,
     refreshInterval: 60000,
@@ -168,18 +488,8 @@ const IndexPage = () => {
             <div className="flex items-start space-x-4">
               <div className="mt-1 flex-shrink-0 bg-purple-100 p-3 rounded-full">
                 <div className="h-6 w-6 text-purple-600" aria-hidden="true">
-                  {/* Github icon would be rendered via the StepCard component */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                  </svg>
+                  {/* Github icon */}
+                  <Github className="h-6 w-6" />
                 </div>
               </div>
               <p className="text-gray-700 sm:text-lg leading-relaxed max-w-5xl">
