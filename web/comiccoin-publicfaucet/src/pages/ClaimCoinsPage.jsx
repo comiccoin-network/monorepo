@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useClaimCoins } from "../api/endpoints/claimCoinsApi";
 import { useFaucet } from "../api/endpoints/faucetApi";
+import withWallet from "../components/withWallet";
 
 function ClaimCoinsPage() {
   console.log("🚀 ClaimCoinsPage component initializing");
@@ -138,4 +139,4 @@ function ClaimCoinsPage() {
   );
 }
 
-export default ClaimCoinsPage;
+export default withWallet(ClaimCoinsPage);
