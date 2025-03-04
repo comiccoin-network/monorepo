@@ -22,6 +22,7 @@ const AppFooter = () => {
 
           {/* Links */}
           <div className="flex space-x-6 order-2 md:order-3 mb-2 md:mb-0">
+            {/*
             <Link
               to="/help"
               className="text-gray-500 hover:text-purple-600 flex items-center gap-1 text-xs"
@@ -29,6 +30,7 @@ const AppFooter = () => {
               <HelpCircle className="h-3 w-3" />
               <span>Help</span>
             </Link>
+             */}
 
             <Link
               to="/terms"
