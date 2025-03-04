@@ -119,49 +119,8 @@ function ClaimCoinsPageContent() {
   // Get the daily reward amount from faucet data
   const dailyReward = faucet?.daily_coins_reward || 2; // Fallback to 2 if not available yet
 
-  // Optimize for iOS and touch devices
+  // Add custom animation keyframes
   useEffect(() => {
-    // Add viewport meta tag for iOS
-    let viewportMeta = document.querySelector('meta[name="viewport"]');
-    if (!viewportMeta) {
-      viewportMeta = document.createElement("meta");
-      viewportMeta.setAttribute("name", "viewport");
-      document.head.appendChild(viewportMeta);
-    }
-
-    viewportMeta.setAttribute(
-      "content",
-      "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
-    );
-
-    // Apply momentum scrolling for iOS
-    if (mainContainerRef.current) {
-      // Use indexing to avoid TypeScript errors with vendor prefixes
-      mainContainerRef.current.style["WebkitOverflowScrolling"] = "touch";
-    }
-
-    // Fix for white borders and ensure full viewport coverage
-    document.body.style.margin = "0";
-    document.body.style.padding = "0";
-    document.body.style.backgroundColor = "#f3f4f6"; // Light gray background color
-    document.documentElement.style.margin = "0";
-    document.documentElement.style.padding = "0";
-    document.documentElement.style.height = "100%";
-    document.documentElement.style.backgroundColor = "#f3f4f6";
-
-    // Detect header height and adjust content accordingly
-    const adjustForHeader = () => {
-      const header = document.querySelector("header, nav, .navbar");
-      if (header && mainContainerRef.current) {
-        const headerHeight = header.getBoundingClientRect().height;
-        mainContainerRef.current.style.paddingTop = `calc(${headerHeight}px + 1rem)`;
-      }
-    };
-
-    // Run once and also add resize listener to adjust if header size changes
-    adjustForHeader();
-    window.addEventListener("resize", adjustForHeader);
-
     // Add custom animation styling to document
     const style = document.createElement("style");
     style.textContent = `
@@ -184,14 +143,6 @@ function ClaimCoinsPageContent() {
 
     // Cleanup function
     return () => {
-      document.body.style.margin = "";
-      document.body.style.padding = "";
-      document.body.style.backgroundColor = "";
-      document.documentElement.style.margin = "";
-      document.documentElement.style.padding = "";
-      document.documentElement.style.height = "";
-      document.documentElement.style.backgroundColor = "";
-      window.removeEventListener("resize", adjustForHeader);
       if (document.head.contains(style)) {
         document.head.removeChild(style);
       }
@@ -291,31 +242,40 @@ function ClaimCoinsPageContent() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <AppTopNavigation />
 
-      <div
+      <main
         ref={mainContainerRef}
-        className="flex-grow bg-gray-100 py-6 px-4 sm:px-6 md:py-8 overflow-auto"
+        className="container mx-auto px-4 py-4 max-w-5xl flex-grow"
         style={{
           WebkitTapHighlightColor: "transparent",
-          paddingBottom: "env(safe-area-inset-bottom, 20px)",
         }}
       >
         {/* Confetti animation for successful claims */}
         <ClaimConfetti visible={showConfetti} />
 
-        {/* Main Content Container */}
-        <div className="max-w-md mx-auto space-y-6">
-          {/* Back button for better navigation */}
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="flex items-center text-purple-600 font-medium text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-md p-2 hover:bg-white hover:bg-opacity-50 transition-colors"
-            aria-label="Go back to dashboard"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" aria-hidden="true" />
-            Back to Dashboard
-          </button>
+        {/* Header with Back Button - Matches TransactionsPage */}
+        <header className="mb-6 md:mb-8">
+          <div className="flex items-center">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="mr-3 text-purple-600 hover:text-purple-800 p-2 rounded-full hover:bg-purple-100 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+              aria-label="Back to dashboard"
+            >
+              <ArrowLeft className="w-5 h-5" aria-hidden="true" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-purple-900">
+                Claim ComicCoins
+              </h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Claim your daily ComicCoin reward
+              </p>
+            </div>
+          </div>
+        </header>
 
-          {/* Header with animation */}
-          <div className="text-center mb-8 pt-6 sm:pt-8">
+        <div className="max-w-md mx-auto space-y-6">
+          {/* Info box with animation */}
+          <div className="text-center mb-6">
             <div
               className="inline-block mb-3"
               style={{ animation: "float 3s ease-in-out infinite" }}
@@ -327,9 +287,6 @@ function ClaimCoinsPageContent() {
                 </div>
               </div>
             </div>
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-indigo-700 mb-3">
-              Claim Your ComicCoins!
-            </h1>
             <p className="text-sm text-gray-600 max-w-xs mx-auto">
               Your daily reward is ready to be collected. Claim now and start
               exploring premium content!
@@ -539,7 +496,28 @@ function ClaimCoinsPageContent() {
             </p>
           </Card>
         </div>
-      </div>
+
+        <style>{`
+          @keyframes confetti {
+            0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(calc(100vh + 10px)) rotate(720deg); opacity: 0; }
+          }
+          @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+          }
+          @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+          }
+          @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+          }
+        `}</style>
+      </main>
 
       <AppFooter />
     </div>
