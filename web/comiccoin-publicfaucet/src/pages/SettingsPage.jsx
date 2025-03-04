@@ -10,6 +10,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+import AppTopNavigation from "../components/AppTopNavigation";
+import AppFooter from "../components/AppFooter";
 import withWallet from "../components/withWallet";
 import { usePutUpdateMe } from "../hooks/usePutUpdateMe";
 import { useAuth } from "../hooks/useAuth";
@@ -520,266 +522,271 @@ const SettingsPageContent = () => {
   // Render loading state if user data is not yet available
   if (isLoadingUser) {
     return (
-      <div
-        className="min-h-screen bg-gray-100 py-8 flex flex-col items-center justify-center"
-        role="status"
-      >
-        <div className="animate-pulse space-y-6 text-center">
-          <div className="h-12 w-12 mx-auto rounded-full bg-purple-200"></div>
-          <p className="text-gray-600 font-medium">Loading your settings...</p>
-          <span className="sr-only">Loading settings</span>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <AppTopNavigation />
+        <div
+          className="flex-grow flex flex-col items-center justify-center py-8"
+          role="status"
+        >
+          <div className="animate-pulse space-y-6 text-center">
+            <div className="h-12 w-12 mx-auto rounded-full bg-purple-200"></div>
+            <p className="text-gray-600 font-medium">
+              Loading your settings...
+            </p>
+            <span className="sr-only">Loading settings</span>
 
-          <div className="mt-4">
-            <button
-              onClick={handleRefreshUserData}
-              className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
-              Retry Loading
-            </button>
+            <div className="mt-4">
+              <button
+                onClick={handleRefreshUserData}
+                className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
+                Retry Loading
+              </button>
+            </div>
           </div>
         </div>
+        <AppFooter />
       </div>
     );
   }
 
   return (
-    <div
-      className="max-w-4xl mx-auto py-6 px-4 sm:px-6 md:py-8 lg:px-8 pb-20 sm:pb-10 bg-gray-100"
-      style={{
-        WebkitTapHighlightColor: "transparent",
-      }}
-    >
-      {/* Header */}
-      <header className="mb-6 md:mb-8">
-        <div className="flex items-center">
-          <button
-            onClick={handleBackToDashboard}
-            className="mr-3 text-purple-600 hover:text-purple-800 p-2 rounded-full hover:bg-purple-100 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
-            aria-label="Back to dashboard"
-          >
-            <ArrowLeft className="w-5 h-5" aria-hidden="true" />
-          </button>
-          <div>
-            <h1
-              className="text-2xl font-bold text-purple-800"
-              id="settings-heading"
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <AppTopNavigation />
+      <main className="container mx-auto px-4 py-4 max-w-5xl flex-grow">
+        {/* Header */}
+        <header className="mb-6 md:mb-8">
+          <div className="flex items-center">
+            <button
+              onClick={handleBackToDashboard}
+              className="mr-3 text-purple-600 hover:text-purple-800 p-2 rounded-full hover:bg-purple-100 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+              aria-label="Back to dashboard"
             >
-              Account Settings
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Manage your profile and account preferences
-            </p>
+              <ArrowLeft className="w-5 h-5" aria-hidden="true" />
+            </button>
+            <div>
+              <h1
+                className="text-2xl font-bold text-purple-800"
+                id="settings-heading"
+              >
+                Account Settings
+              </h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Manage your profile and account preferences
+              </p>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Status Message */}
-      {statusMessage.type && (
-        <div
-          ref={statusRef}
-          className={`
-            mb-6 p-4 rounded-lg flex items-center justify-between
-            ${statusMessage.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}
-            animate-fadeIn
-          `}
-          role="alert"
-          aria-live="polite"
-        >
-          <div className="flex items-center space-x-3">
-            {statusMessage.type === "success" ? (
-              <Check
-                className="h-5 w-5 text-green-500 flex-shrink-0"
-                aria-hidden="true"
-              />
-            ) : (
-              <AlertCircle
-                className="h-5 w-5 text-red-500 flex-shrink-0"
-                aria-hidden="true"
-              />
-            )}
-            <p className="font-medium">{statusMessage.message}</p>
-          </div>
-          <button
-            onClick={() => setStatusMessage({ type: null, message: "" })}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-            aria-label="Dismiss message"
+        {/* Status Message */}
+        {statusMessage.type && (
+          <div
+            ref={statusRef}
+            className={`
+              mb-6 p-4 rounded-lg flex items-center justify-between
+              ${statusMessage.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}
+              animate-fadeIn
+            `}
+            role="alert"
+            aria-live="polite"
           >
-            <X className="h-5 w-5" aria-hidden="true" />
-          </button>
+            <div className="flex items-center space-x-3">
+              {statusMessage.type === "success" ? (
+                <Check
+                  className="h-5 w-5 text-green-500 flex-shrink-0"
+                  aria-hidden="true"
+                />
+              ) : (
+                <AlertCircle
+                  className="h-5 w-5 text-red-500 flex-shrink-0"
+                  aria-hidden="true"
+                />
+              )}
+              <p className="font-medium">{statusMessage.message}</p>
+            </div>
+            <button
+              onClick={() => setStatusMessage({ type: null, message: "" })}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+              aria-label="Dismiss message"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+        )}
+
+        {/* Settings Form */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+          <form
+            onSubmit={handleSubmit}
+            className="divide-y divide-gray-100"
+            aria-labelledby="settings-heading"
+            noValidate
+          >
+            {/* Personal Information Section */}
+            <section className="p-6 space-y-6">
+              <div className="pb-1">
+                <h2 className="text-lg font-medium text-purple-900 mb-1">
+                  Personal Information
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Update your basic profile information
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {personalFields.map(renderField)}
+              </div>
+            </section>
+
+            {/* Contact Information Section */}
+            <section className="p-6 space-y-6">
+              <div className="pb-1">
+                <h2 className="text-lg font-medium text-purple-900 mb-1">
+                  Contact Information
+                </h2>
+                <p className="text-sm text-gray-500">How we can reach you</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {contactFields.map(renderField)}
+              </div>
+            </section>
+
+            {/* Location Information Section */}
+            <section className="p-6 space-y-6">
+              <div className="pb-1">
+                <h2 className="text-lg font-medium text-purple-900 mb-1">
+                  Location & Preferences
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Set your regional preferences
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {locationFields.map(renderField)}
+              </div>
+            </section>
+
+            {/* Wallet Information Section */}
+            <section className="p-6 space-y-6">
+              <div className="pb-1">
+                <h2 className="text-lg font-medium text-purple-900 mb-1">
+                  Wallet Information
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Your ComicCoin wallet details
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                {renderField({
+                  id: "wallet_address",
+                  label: "Wallet Address",
+                  type: "text",
+                  name: "wallet_address",
+                  fieldKey: "wallet_address",
+                  placeholder: "Wallet address",
+                  disabled: true,
+                  helperText:
+                    "Your wallet address is automatically generated and cannot be modified",
+                  customClasses: "font-mono text-sm",
+                })}
+              </div>
+            </section>
+
+            {/* Form Actions */}
+            <section className="p-6 bg-gray-50">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:space-x-4 space-y-4 space-y-reverse sm:space-y-0">
+                <button
+                  type="button"
+                  onClick={handleBackToDashboard}
+                  className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className={`
+                    w-full sm:w-auto px-8 py-3 rounded-md text-white transition-colors shadow-sm flex items-center justify-center
+                    ${
+                      isUpdating
+                        ? "bg-purple-400 cursor-not-allowed"
+                        : "bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                    }
+                  `}
+                  aria-disabled={isUpdating}
+                >
+                  {isUpdating ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
+            </section>
+          </form>
         </div>
-      )}
 
-      {/* Settings Form */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-        <form
-          onSubmit={handleSubmit}
-          className="divide-y divide-gray-100"
-          aria-labelledby="settings-heading"
-          noValidate
-        >
-          {/* Personal Information Section */}
-          <section className="p-6 space-y-6">
-            <div className="pb-1">
-              <h2 className="text-lg font-medium text-purple-900 mb-1">
-                Personal Information
-              </h2>
-              <p className="text-sm text-gray-500">
-                Update your basic profile information
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {personalFields.map(renderField)}
-            </div>
-          </section>
-
-          {/* Contact Information Section */}
-          <section className="p-6 space-y-6">
-            <div className="pb-1">
-              <h2 className="text-lg font-medium text-purple-900 mb-1">
-                Contact Information
-              </h2>
-              <p className="text-sm text-gray-500">How we can reach you</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {contactFields.map(renderField)}
-            </div>
-          </section>
-
-          {/* Location Information Section */}
-          <section className="p-6 space-y-6">
-            <div className="pb-1">
-              <h2 className="text-lg font-medium text-purple-900 mb-1">
-                Location & Preferences
-              </h2>
-              <p className="text-sm text-gray-500">
-                Set your regional preferences
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {locationFields.map(renderField)}
-            </div>
-          </section>
-
-          {/* Wallet Information Section */}
-          <section className="p-6 space-y-6">
-            <div className="pb-1">
-              <h2 className="text-lg font-medium text-purple-900 mb-1">
-                Wallet Information
-              </h2>
-              <p className="text-sm text-gray-500">
-                Your ComicCoin wallet details
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              {renderField({
-                id: "wallet_address",
-                label: "Wallet Address",
-                type: "text",
-                name: "wallet_address",
-                fieldKey: "wallet_address",
-                placeholder: "Wallet address",
-                disabled: true,
-                helperText:
-                  "Your wallet address is automatically generated and cannot be modified",
-                customClasses: "font-mono text-sm",
-              })}
-            </div>
-          </section>
-
-          {/* Form Actions */}
-          <section className="p-6 bg-gray-50">
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:space-x-4 space-y-4 space-y-reverse sm:space-y-0">
-              <button
-                type="button"
-                onClick={handleBackToDashboard}
-                className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isUpdating}
-                className={`
-                  w-full sm:w-auto px-8 py-3 rounded-md text-white transition-colors shadow-sm flex items-center justify-center
-                  ${
-                    isUpdating
-                      ? "bg-purple-400 cursor-not-allowed"
-                      : "bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                  }
-                `}
-                aria-disabled={isUpdating}
-              >
-                {isUpdating ? (
-                  <>
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
-              </button>
-            </div>
-          </section>
-        </form>
-      </div>
-
-      {/* Add global styles for animations */}
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-in-out;
-        }
-
-        /* iOS-specific optimizations */
-        @supports (-webkit-touch-callout: none) {
-          .touch-manipulation {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+        {/* Add global styles for animations */}
+        <style>{`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.3s ease-in-out;
           }
 
-          /* Add padding at the bottom for iOS safe areas */
-          body {
-            padding-bottom: env(safe-area-inset-bottom);
-          }
+          /* iOS-specific optimizations */
+          @supports (-webkit-touch-callout: none) {
+            .touch-manipulation {
+              -webkit-touch-callout: none;
+              -webkit-user-select: none;
+              -khtml-user-select: none;
+              -moz-user-select: none;
+              -ms-user-select: none;
+              user-select: none;
+            }
 
-          /* Improve tap targets for iOS */
-          input, select, button {
-            min-height: 44px; /* Apple's recommended minimum tap target size */
+            /* Add padding at the bottom for iOS safe areas */
+            body {
+              padding-bottom: env(safe-area-inset-bottom);
+            }
+
+            /* Improve tap targets for iOS */
+            input, select, button {
+              min-height: 44px; /* Apple's recommended minimum tap target size */
+            }
           }
-        }
-      `}</style>
+        `}</style>
+      </main>
+      <AppFooter />
     </div>
   );
 };
