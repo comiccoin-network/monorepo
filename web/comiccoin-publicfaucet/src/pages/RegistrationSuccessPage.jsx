@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Mail, ArrowRight, ArrowLeft } from "lucide-react";
 import { Navigate } from "react-router";
+import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
 
 const RegistrationSuccessPage = () => {
@@ -23,11 +24,15 @@ const RegistrationSuccessPage = () => {
         Skip to main content
       </a>
 
+      {/* Add the Header component here */}
+      <Header showBackButton={true} />
+
       {/* Main Content - Centered both vertically and horizontally */}
       <main
         id="main-content"
         className="flex-grow flex items-center justify-center py-12 px-4"
       >
+        {/* Rest of your content remains the same */}
         <div className="w-full max-w-2xl">
           <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-purple-200">
             <div className="flex flex-col items-center space-y-8">
