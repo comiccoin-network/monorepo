@@ -63,23 +63,13 @@ const AppTopNavigation = () => {
                 </span>
               </Link>
 
-              <button
-                onClick={logout}
-                className="px-2 py-1 rounded-md text-sm font-medium hover:bg-purple-600"
-              >
-                <span className="flex items-center gap-1">
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </span>
-              </button>
-
               {/* Claim Button */}
               <Link
-                to="/claim-coins"
+                onClick={logout}
                 className="ml-2 bg-white text-purple-700 hover:bg-gray-100 px-3 py-1 rounded-md text-sm font-medium flex items-center gap-1"
               >
-                <Coins className="h-4 w-4" />
-                Claim Coins
+                <LogOut className="h-4 w-4" />
+                Logout
               </Link>
             </nav>
           </div>
