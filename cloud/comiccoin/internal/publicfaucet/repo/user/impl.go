@@ -3,7 +3,6 @@ package user
 
 import (
 	"context"
-	"log"
 	"log/slog"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -62,15 +61,36 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 			{Key: "address_line1", Value: "text"},
 		}},
 	})
+
 	if err != nil {
-		// It is important that we crash the app on startup to meet the
-		// requirements of `google/wire` framework.
-		log.Fatal(err)
+		loggerp.Error("failed creating indexes error", slog.Any("err", err))
+		return nil
 	}
-	s := &userStorerImpl{
+
+	return &userStorerImpl{
 		Logger:     loggerp,
 		DbClient:   client,
 		Collection: uc,
 	}
-	return s
+}
+
+// ListAll retrieves all users from the database
+func (impl userStorerImpl) ListAll(ctx context.Context) ([]*dom_user.User, error) {
+	impl.Logger.Debug("listing all users")
+
+	cursor, err := impl.Collection.Find(ctx, bson.M{})
+	if err != nil {
+		impl.Logger.Error("failed to query users", slog.Any("error", err))
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var users []*dom_user.User
+	if err = cursor.All(ctx, &users); err != nil {
+		impl.Logger.Error("failed to decode users", slog.Any("error", err))
+		return nil, err
+	}
+
+	impl.Logger.Debug("successfully retrieved all users", slog.Any("count", len(users)))
+	return users, nil
 }

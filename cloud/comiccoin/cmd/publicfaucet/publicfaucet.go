@@ -15,6 +15,7 @@ func PublicFaucetCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(GetDeleteUserCmd())
-
+	cmd.AddCommand(GetListUsersCmd())
+	
 	return cmd
 }
