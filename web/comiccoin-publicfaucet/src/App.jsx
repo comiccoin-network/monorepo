@@ -9,6 +9,7 @@ import IndexPage from "./pages/IndexPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import ClaimCoinsPage from "./pages/ClaimCoinsPage";
+import TransactionsPage from "./pages/TransactionsPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -67,6 +68,16 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ClaimCoinsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Add new Transactions route */}
+            <Route
+              path="/transactions"
+              element={
+                <ProtectedRoute>
+                  <TransactionsPage />
                 </ProtectedRoute>
               }
             />

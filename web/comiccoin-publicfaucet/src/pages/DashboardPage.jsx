@@ -186,7 +186,27 @@ function DashboardPage() {
 
       {/* Transaction history */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">Transaction History</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Transaction History</h2>
+          <button
+            onClick={() => navigate("/transactions")}
+            className="text-purple-600 hover:text-purple-800 flex items-center text-sm"
+          >
+            <span>View All</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 ml-1"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
 
         {!dashboardData.transactions ||
         dashboardData.transactions.length === 0 ? (
@@ -202,7 +222,8 @@ function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {dashboardData.transactions.map((tx) => (
+                {/* Show only the first 5 transactions */}
+                {dashboardData.transactions.slice(0, 5).map((tx) => (
                   <tr key={tx.id} className="border-t">
                     <td className="px-4 py-2 font-mono text-sm">
                       {tx.id.slice(0, 8)}...
