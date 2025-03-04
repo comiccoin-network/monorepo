@@ -1,5 +1,5 @@
 // src/components/IndexPage/Header.jsx
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router";
 import { Coins, Menu, X, ArrowLeft } from "lucide-react";
 
@@ -27,7 +27,7 @@ const Header = ({ showBackButton = false }) => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4 sm:py-5">
-            {/* Logo and Brand */}
+            {/* Logo and Brand - Enhanced size and contrast */}
             <Link to="/" className="flex items-center space-x-3">
               <div className="flex-shrink-0" aria-hidden="true">
                 <Coins className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-white" />
@@ -37,8 +37,9 @@ const Header = ({ showBackButton = false }) => {
               </span>
             </Link>
 
-            {/* Desktop Navigation Links */}
+            {/* Desktop Navigation Links with enhanced accessibility */}
             <div className="hidden md:flex items-center space-x-6">
+              {/* Conditional button with improved accessibility */}
               {showBackButton ? (
                 <Link
                   to="/"
@@ -60,7 +61,7 @@ const Header = ({ showBackButton = false }) => {
               )}
             </div>
 
-            {/* Mobile menu button */}
+            {/* Mobile menu button with improved accessibility */}
             <div className="md:hidden flex items-center">
               <button
                 onClick={toggleMenu}
@@ -82,7 +83,7 @@ const Header = ({ showBackButton = false }) => {
           </div>
         </div>
 
-        {/* Mobile Navigation Menu */}
+        {/* Mobile Navigation Menu with improved accessibility */}
         {isMenuOpen && (
           <div
             className="md:hidden bg-purple-800 border-t border-purple-600 py-2 pb-4"
@@ -90,6 +91,7 @@ const Header = ({ showBackButton = false }) => {
             aria-label="Mobile Navigation"
           >
             <div className="px-4 pt-2 pb-3 space-y-1">
+              {/* Conditional mobile button with improved accessibility */}
               {showBackButton ? (
                 <Link
                   to="/"
