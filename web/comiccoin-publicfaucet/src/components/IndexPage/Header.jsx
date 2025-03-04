@@ -27,43 +27,18 @@ const Header = ({ showBackButton = false }) => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4 sm:py-5">
-            {/* Logo and Brand - Enhanced size and contrast */}
-            <div className="flex items-center space-x-3">
+            {/* Logo and Brand */}
+            <Link to="/" className="flex items-center space-x-3">
               <div className="flex-shrink-0" aria-hidden="true">
                 <Coins className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-white" />
               </div>
               <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
                 ComicCoin Faucet
               </span>
-            </div>
+            </Link>
 
-            {/* Desktop Navigation Links with enhanced accessibility */}
+            {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center space-x-6">
-              {/*
-              <Link
-                to="/"
-                className="text-white hover:text-indigo-200 transition-colors px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-white"
-                aria-current={location.pathname === "/" ? "page" : undefined}
-              >
-                Home
-              </Link>
-              <Link
-                to="/about"
-                className="text-white hover:text-indigo-200 transition-colors px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-white"
-                aria-current={location.pathname === "/about" ? "page" : undefined}
-              >
-                About
-              </Link>
-              <Link
-                to="/docs"
-                className="text-white hover:text-indigo-200 transition-colors px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-white"
-                aria-current={location.pathname === "/docs" ? "page" : undefined}
-              >
-                Documentation
-              </Link>
-              */}
-
-              {/* Conditional button with improved accessibility */}
               {showBackButton ? (
                 <Link
                   to="/"
@@ -85,7 +60,7 @@ const Header = ({ showBackButton = false }) => {
               )}
             </div>
 
-            {/* Mobile menu button with improved accessibility */}
+            {/* Mobile menu button */}
             <div className="md:hidden flex items-center">
               <button
                 onClick={toggleMenu}
@@ -107,7 +82,7 @@ const Header = ({ showBackButton = false }) => {
           </div>
         </div>
 
-        {/* Mobile Navigation Menu with improved accessibility */}
+        {/* Mobile Navigation Menu */}
         {isMenuOpen && (
           <div
             className="md:hidden bg-purple-800 border-t border-purple-600 py-2 pb-4"
@@ -115,34 +90,6 @@ const Header = ({ showBackButton = false }) => {
             aria-label="Mobile Navigation"
           >
             <div className="px-4 pt-2 pb-3 space-y-1">
-              {/*
-              <Link
-                to="/"
-                className="block w-full px-4 py-3 rounded-md text-base font-medium text-white hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-white flex items-center"
-                onClick={() => setIsMenuOpen(false)}
-                aria-current={location.pathname === "/" ? "page" : undefined}
-              >
-                Home
-              </Link>
-              <Link
-                to="/about"
-                className="block w-full px-4 py-3 rounded-md text-base font-medium text-white hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-white flex items-center"
-                onClick={() => setIsMenuOpen(false)}
-                aria-current={location.pathname === "/about" ? "page" : undefined}
-              >
-                About
-              </Link>
-              <Link
-                to="/docs"
-                className="block w-full px-4 py-3 rounded-md text-base font-medium text-white hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-white flex items-center"
-                onClick={() => setIsMenuOpen(false)}
-                aria-current={location.pathname === "/docs" ? "page" : undefined}
-              >
-                Documentation
-              </Link>
-              */}
-
-              {/* Conditional mobile button with improved accessibility */}
               {showBackButton ? (
                 <Link
                   to="/"
