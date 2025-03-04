@@ -4,8 +4,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthProvider } from "./contexts/AuthContext";
-import LoginPage from "./pages/LoginPage";
 import IndexPage from "./pages/IndexPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import AddWalletAddressPage from "./pages/AddWalletAddressPage";
@@ -43,6 +45,11 @@ function App() {
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<IndexPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/register-success"
+              element={<RegistrationSuccessPage />}
+            />
 
             {/* User Initialization Routes */}
             <Route
