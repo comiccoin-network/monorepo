@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Mail, ArrowRight, ArrowLeft } from "lucide-react";
 import { Navigate } from "react-router";
+import Footer from "../components/IndexPage/Footer";
 
 const RegistrationSuccessPage = () => {
   // State for redirecting

@@ -9,13 +9,20 @@ import axiosClient, { publicEndpoint } from "../axiosClient";
  */
 export const registerCustomer = async (data) => {
   try {
+    // Using the full path from axiosClient base URL
     const response = await axiosClient.post(
-      "/publicfaucet/api/v1/register",
+      "/register",
       data,
       publicEndpoint({}),
     );
     return response.data;
   } catch (error) {
+    console.log("Registration error details:", {
+      error,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+
     // Handle axios errors
     if (axios.isAxiosError(error)) {
       // If we have a 400 error with field-specific errors in the format { field: "message" }
