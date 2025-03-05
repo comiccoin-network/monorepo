@@ -21,6 +21,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../api/endpoints/dashboardApi";
 
 // Integrated Hero and Countdown component
+// Improved HeroCountdown component with better visual contrast
 const HeroCountdown = ({ nextClaimTime, canClaim, userName, onClaimClick }) => {
   const [timeRemaining, setTimeRemaining] = useState({
     hours: 0,
@@ -62,12 +63,12 @@ const HeroCountdown = ({ nextClaimTime, canClaim, userName, onClaimClick }) => {
     if (canClaim) {
       return (
         <div className="flex flex-col items-center">
-          <span className="text-xl sm:text-2xl font-medium text-white mb-4">
+          <span className="text-xl sm:text-2xl font-medium text-purple-900 mb-4">
             Your coins are ready to claim!
           </span>
           <button
             onClick={onClaimClick}
-            className="px-6 py-3 bg-white text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-colors text-base sm:text-lg shadow-lg hover:shadow-xl flex items-center gap-2"
+            className="px-6 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition-colors text-base sm:text-lg shadow-lg hover:shadow-xl flex items-center gap-2"
           >
             Claim Your Coins Now
             <ArrowRight className="w-5 h-5" />
@@ -78,37 +79,37 @@ const HeroCountdown = ({ nextClaimTime, canClaim, userName, onClaimClick }) => {
 
     return (
       <div className="flex flex-col items-center">
-        <div className="text-white text-base sm:text-lg font-medium mb-4">
+        <div className="text-purple-900 text-base sm:text-lg font-medium mb-4">
           Next Claim Available In:
         </div>
         <div className="flex justify-center gap-3">
           <div className="text-center">
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
+            <div className="bg-purple-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
               <span className="text-xl sm:text-2xl font-bold text-white">
                 {padZero(timeRemaining.hours)}
               </span>
             </div>
-            <span className="text-xs sm:text-sm text-indigo-200 mt-1 block">
+            <span className="text-xs sm:text-sm text-purple-800 mt-1 block">
               hours
             </span>
           </div>
           <div className="text-center">
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
+            <div className="bg-purple-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
               <span className="text-xl sm:text-2xl font-bold text-white">
                 {padZero(timeRemaining.minutes)}
               </span>
             </div>
-            <span className="text-xs sm:text-sm text-indigo-200 mt-1 block">
+            <span className="text-xs sm:text-sm text-purple-800 mt-1 block">
               minutes
             </span>
           </div>
           <div className="text-center">
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
+            <div className="bg-purple-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
               <span className="text-xl sm:text-2xl font-bold text-white">
                 {padZero(timeRemaining.seconds)}
               </span>
             </div>
-            <span className="text-xs sm:text-sm text-indigo-200 mt-1 block">
+            <span className="text-xs sm:text-sm text-purple-800 mt-1 block">
               seconds
             </span>
           </div>
@@ -132,6 +133,8 @@ const HeroCountdown = ({ nextClaimTime, canClaim, userName, onClaimClick }) => {
             <button
               onClick={() => setExpanded(!expanded)}
               className="flex items-center gap-2 text-indigo-200 hover:text-white transition-colors mb-2 mx-auto"
+              aria-expanded={expanded}
+              aria-controls="countdown-timer"
             >
               <span>{expanded ? "Hide Timer" : "Show Timer"}</span>
               <ChevronDown
@@ -141,7 +144,11 @@ const HeroCountdown = ({ nextClaimTime, canClaim, userName, onClaimClick }) => {
           </div>
 
           {expanded && (
-            <div className="bg-indigo-500 bg-opacity-50 backdrop-blur-sm rounded-xl p-6 max-w-lg mx-auto mt-3 border border-indigo-400 border-opacity-30">
+            <div
+              id="countdown-timer"
+              className="bg-white rounded-xl p-6 max-w-lg mx-auto mt-3 shadow-lg"
+              aria-live="polite"
+            >
               {getTimeDisplay()}
             </div>
           )}
