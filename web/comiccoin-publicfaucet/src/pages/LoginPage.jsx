@@ -1,14 +1,18 @@
 // src/pages/LoginPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
+import { AlertCircle, Shield, LogIn, Mail, Lock, UserPlus } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { AlertCircle } from "lucide-react";
+import Header from "../components/IndexPage/Header";
+import Footer from "../components/IndexPage/Footer";
 
 function LoginPage() {
   console.log("🚀 LoginPage component initializing");
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,6 +37,16 @@ function LoginPage() {
     }
   }, [isAuthenticated, navigate]);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Clear error when typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("📝 Login form submitted");
@@ -41,10 +55,10 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      console.log("🔑 Attempting login with email:", email);
+      console.log("🔑 Attempting login with email:", formData.email);
       const loginRequest = {
-        email,
-        password,
+        email: formData.email,
+        password: formData.password,
       };
 
       await login(loginRequest);
@@ -90,106 +104,216 @@ function LoginPage() {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-100 to-white py-8">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-purple-800">
-          ComicCoin Faucet Login
-        </h1>
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+      {/* Skip link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
+      >
+        Skip to main content
+      </a>
 
-        {generalError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-            {generalError}
-          </div>
-        )}
+      {/* Include the common Header component */}
+      <Header showBackButton={true} />
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="block text-gray-700 text-sm font-bold mb-2"
-            >
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                // Clear error when typing
-                if (errors.email) {
-                  setErrors((prev) => ({ ...prev, email: undefined }));
-                }
-              }}
-              className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-                errors.email ? "border-red-500 bg-red-50" : ""
-              }`}
-              placeholder="Enter your email"
-              required
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600 flex items-center">
-                <AlertCircle className="h-4 w-4 mr-1" />
-                {errors.email}
+      <main id="main-content" className="flex-grow">
+        {/* Hero section */}
+        <div className="bg-gradient-to-b from-indigo-600 to-indigo-500 text-white py-12 sm:py-16 lg:py-20 mb-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+                Welcome Back
+              </h1>
+              <p className="text-base sm:text-lg lg:text-xl text-indigo-100 max-w-3xl mx-auto">
+                Sign in to access your account and claim your daily ComicCoins
               </p>
-            )}
+            </div>
+          </div>
+        </div>
+
+        {/* Form Content */}
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-white rounded-xl shadow-lg border border-purple-100 overflow-hidden mb-8">
+            {/* Form Header */}
+            <div className="px-6 py-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center">
+              <Shield className="h-7 w-7 mr-3 flex-shrink-0" />
+              <div>
+                <h2 className="text-xl font-semibold">
+                  Sign in to ComicCoin Faucet
+                </h2>
+                <p className="text-purple-100 text-sm mt-1">
+                  Access your account and daily rewards
+                </p>
+              </div>
+            </div>
+
+            {/* Form Body */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Display general error message if any */}
+              {generalError && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                  <div className="flex items-center gap-2 font-medium">
+                    <AlertCircle className="h-5 w-5" />
+                    <p>{generalError}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Email */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={`w-full pl-10 pr-3 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                      errors.email
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-300"
+                    }`}
+                    placeholder="you@example.com"
+                    required
+                  />
+                </div>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className={`w-full pl-10 pr-3 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                      errors.password
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-300"
+                    }`}
+                    placeholder="Enter your password"
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.password}
+                  </p>
+                )}
+              </div>
+
+              {/* Forgot Password Link (TODO: FUTURE */}
+              {/*
+              <div className="text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-purple-600 hover:text-purple-800"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+              */}
+
+              {/* Form Actions */}
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Signing in...
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="h-5 w-5" />
+                      Sign In
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
 
-          <div className="mb-6">
-            <label
-              htmlFor="password"
-              className="block text-gray-700 text-sm font-bold mb-2"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                // Clear error when typing
-                if (errors.password) {
-                  setErrors((prev) => ({ ...prev, password: undefined }));
-                }
-              }}
-              className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-                errors.password ? "border-red-500 bg-red-50" : ""
-              }`}
-              placeholder="Enter your password"
-              required
-              autoComplete="current-password"
-            />
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600 flex items-center">
-                <AlertCircle className="h-4 w-4 mr-1" />
-                {errors.password}
-              </p>
-            )}
+          {/* Registration Call to Action */}
+          <div className="bg-white rounded-xl shadow-md border border-purple-100 p-6 mb-12">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-1">
+                  Don't have an account?
+                </h3>
+                <p className="text-gray-600">
+                  Join our community and start collecting ComicCoins today
+                </p>
+              </div>
+              <Link
+                to="/register"
+                className="whitespace-nowrap inline-flex items-center gap-2 px-5 py-3 bg-purple-100 text-purple-700 rounded-lg font-medium hover:bg-purple-200 transition-colors"
+              >
+                <UserPlus className="h-5 w-5" />
+                Register Now
+              </Link>
+            </div>
           </div>
+        </div>
+      </main>
 
-          <div className="flex items-center justify-between mb-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className={`bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              {loading ? "Logging in..." : "Sign In"}
-            </button>
-          </div>
-
-          <div className="text-center">
-            <Link
-              to="/register"
-              className="text-purple-600 hover:text-purple-800 font-medium text-sm"
-            >
-              Don't have an account? Register here
-            </Link>
-          </div>
-        </form>
-      </div>
+      {/* Footer */}
+      <Footer
+        isLoading={false}
+        error={null}
+        faucet={{}}
+        formatBalance={(val) => val || "0"}
+      />
     </div>
   );
 }
