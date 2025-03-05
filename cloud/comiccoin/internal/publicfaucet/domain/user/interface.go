@@ -16,6 +16,7 @@ type Repository interface {
 	DeleteByID(ctx context.Context, id primitive.ObjectID) error
 	DeleteByEmail(ctx context.Context, email string) error
 	CheckIfExistsByEmail(ctx context.Context, email string) (bool, error)
+	GetByWalletAddress(ctx context.Context, walletAddress string) (*User, error)
 	UpdateByID(ctx context.Context, m *User) error
 	ListAll(ctx context.Context) ([]*User, error)
 	// CountByFilter(ctx context.Context, filter *UserFilter) (uint64, error)

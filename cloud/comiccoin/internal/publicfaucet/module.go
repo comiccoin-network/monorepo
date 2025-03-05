@@ -154,6 +154,10 @@ func NewModule(
 		userRepo,
 	)
 	_ = userGetByIDUseCase
+	userGetByWalletAddressUseCase := uc_user.NewUserGetByWalletAddressUseCase(
+		logger,
+		userRepo,
+	)
 
 	// --- Private Key ---
 
@@ -283,7 +287,7 @@ func NewModule(
 	)
 
 	// --- Claim Coins ---
-
+    
 	claimCoinsService := svc_claimcoins.NewClaimCoinsService(
 		cfg,
 		logger,
@@ -295,6 +299,7 @@ func NewModule(
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase, // (External package)
 		userGetByIDUseCase,
 		userUpdateUseCase,
+		userGetByWalletAddressUseCase,
 	)
 	// --- Gateway ---
 

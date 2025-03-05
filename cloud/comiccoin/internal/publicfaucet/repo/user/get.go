@@ -59,3 +59,19 @@ func (impl userStorerImpl) GetByVerificationCode(ctx context.Context, verificati
 	}
 	return &result, nil
 }
+
+func (impl userStorerImpl) GetByWalletAddress(ctx context.Context, walletAddress string) (*dom_user.User, error) {
+	filter := bson.M{"wallet_address": walletAddress}
+
+	var result dom_user.User
+	err := impl.Collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// This error means your query did not match any documents.
+			return nil, nil
+		}
+		impl.Logger.Error("database get by wallet address error", slog.Any("error", err))
+		return nil, err
+	}
+	return &result, nil
+}

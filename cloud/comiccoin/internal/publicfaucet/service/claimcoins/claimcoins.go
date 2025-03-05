@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/hello/service.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/claimcoins/claimcoins.go
 package hello
 
 import (
@@ -104,6 +104,7 @@ type claimCoinsServiceImpl struct {
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_auth_memp.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 	userGetByIDUseCase                                      uc_user.UserGetByIDUseCase
 	userUpdateUseCase                                       uc_user.UserUpdateUseCase
+	userGetByWalletAddressUseCase                          uc_user.UserGetByWalletAddressUseCase
 }
 
 func NewClaimCoinsService(
@@ -117,6 +118,7 @@ func NewClaimCoinsService(
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_auth_memp.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 	userGetByIDUseCase uc_user.UserGetByIDUseCase,
 	userUpdateUseCase uc_user.UserUpdateUseCase,
+	userGetByWalletAddressUseCase uc_user.UserGetByWalletAddressUseCase,
 ) ClaimCoinsService {
 	return &claimCoinsServiceImpl{
 		config:                       config,
@@ -129,6 +131,7 @@ func NewClaimCoinsService(
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase: submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 		userGetByIDUseCase:                                      userGetByIDUseCase,
 		userUpdateUseCase:                                       userUpdateUseCase,
+		userGetByWalletAddressUseCase:                          userGetByWalletAddressUseCase,
 	}
 }
 
@@ -175,6 +178,22 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext) (*ClaimC
 		svc.logger.Error("Failed getting user by user id", slog.Any("error", err))
 		return nil, err
 	}
+
+	// Check if the wallet address is already used by another user
+	if user.WalletAddress != nil {
+		existingUser, err := svc.userGetByWalletAddressUseCase.Execute(sessCtx, user.WalletAddress.Hex())
+		if err != nil {
+			svc.logger.Error("failed checking wallet address existence", slog.Any("err", err))
+			return nil, err
+		}
+		if existingUser != nil && existingUser.ID != user.ID {
+			svc.logger.Warn("wallet address already in use by another user",
+				slog.String("wallet_address", user.WalletAddress.Hex()),
+				slog.Any("existing_user_id", existingUser.ID))
+			return nil, httperror.NewForBadRequestWithSingleField("message", "wallet address is already in use by another user")
+		}
+	}
+
 	privateKey, err := svc.getPublicFaucetPrivateKeyService.Execute(sessCtx)
 	if err != nil {
 		svc.logger.Error("Failed to get private key", slog.Any("error", err))
