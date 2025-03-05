@@ -9,6 +9,7 @@ import GetStartedPage from "./pages/GetStartedPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
+import EmailVerificationPage from "./pages/EmailVerificationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import AddWalletAddressPage from "./pages/AddWalletAddressPage";
@@ -50,6 +51,7 @@ function App() {
             <Route path="/" element={<IndexPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/get-started" element={<GetStartedPage />} />
+            <Route path="/verify" element={<EmailVerificationPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
 
