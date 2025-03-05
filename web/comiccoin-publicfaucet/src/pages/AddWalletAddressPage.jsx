@@ -90,6 +90,7 @@ function AddWalletAddressPageContent() {
   const [walletAddress, setWalletAddress] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [localError, setLocalError] = useState(null);
 
   // Handle initial authentication check and redirection
   useEffect(() => {
@@ -113,6 +114,8 @@ function AddWalletAddressPageContent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Clear previous errors when opening confirmation modal
+    setLocalError(null);
     setShowConfirmation(true);
   };
 
@@ -120,45 +123,87 @@ function AddWalletAddressPageContent() {
     console.log("🔄 Starting wallet confirmation process");
 
     try {
-      const success = await connectWallet(walletAddress);
+      // Call the wallet connection API
+      const success = await connectWallet(walletAddress).catch((err) => {
+        // Direct error handling for the catch block
+        console.error("Caught error during wallet connect:", err);
 
-      if (success && user) {
-        // Make sure we have a user
-        console.log("✅ Wallet connected successfully");
+        // Check for API response with error message
+        if (err.response && err.response.data) {
+          // Log the full error response for debugging
+          console.log("API error response:", err.response.data);
 
-        // Update the entire user object with the new wallet address
-        if (user) {
-          const updatedUser = {
-            ...user,
-            walletAddress: walletAddress,
-            wallet_address: walletAddress,
-          };
-          updateUser(updatedUser);
+          // Extract message from response data
+          if (err.response.data.message) {
+            setLocalError(err.response.data.message);
+          } else {
+            // Fallback to stringifying the data object
+            setLocalError(JSON.stringify(err.response.data));
+          }
+        } else {
+          // Fallback for network or other errors
+          setLocalError(err.message || "Failed to connect wallet");
         }
 
-        console.log("🔄 Redirecting to dashboard");
-        navigate("/dashboard");
+        // Return false to indicate failure
+        return false;
+      });
 
-        setTimeout(() => {
-          console.log("🔄 Forcing page reload to refresh states");
-          window.location.href = "/dashboard";
-        }, 100);
+      // If successfully connected the wallet
+      if (success && user) {
+        console.log("✅ Wallet connected successfully");
+
+        // Update user data with the wallet address
+        const updatedUser = {
+          ...user,
+          walletAddress: walletAddress,
+          wallet_address: walletAddress,
+        };
+        updateUser(updatedUser);
+
+        console.log("👤 Updated user with wallet:", updatedUser);
+        console.log("🔄 Redirecting to dashboard");
+
+        // Navigate to dashboard
+        navigate("/dashboard");
       } else {
-        console.log("❌ Wallet connection failed");
-        setShowConfirmation(false);
+        console.log("❌ Wallet connection failed or was cancelled");
+        // Keep modal open if there's an error to display
+        if (!localError) {
+          setShowConfirmation(false);
+        }
       }
     } catch (error) {
       console.error("❌ Error during wallet confirmation:", error);
       setShowConfirmation(false);
-      
-      // Handle 400 errors from the backend
-      if (error.response?.status === 400) {
-        const errorMessage = error.response.data?.message || "Invalid wallet address";
-        setConnectError({ message: errorMessage });
+
+      // Extract error message from various possible formats
+      let errorMessage = "An unexpected error occurred";
+
+      if (error.response) {
+        // The request was made and the server responded with an error status
+        if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (typeof error.response.data === "string") {
+          errorMessage = error.response.data;
+        } else {
+          errorMessage = `Request failed: ${error.response.status}`;
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = "No response from server. Please check your connection.";
       } else {
-        setConnectError({ message: "An unexpected error occurred. Please try again." });
+        // Something else happened while setting up the request
+        errorMessage = error.message || errorMessage;
       }
+
+      setLocalError(errorMessage);
     }
+  };
+
+  // Close confirmation modal and clear error
+  const handleCloseConfirmation = () => {
+    setShowConfirmation(false);
   };
 
   return (
@@ -271,13 +316,17 @@ function AddWalletAddressPageContent() {
             </div>
 
             {/* Show API errors if they exist */}
-            {connectError && (
+            {(connectError || localError) && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
                 <div className="flex gap-2">
                   <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm text-red-800">
-                      {connectError?.message || "An error occurred"}
+                      {localError ||
+                        (typeof connectError === "object" &&
+                          connectError?.message) ||
+                        (typeof connectError === "string" && connectError) ||
+                        "An error occurred"}
                     </p>
                   </div>
                 </div>
@@ -341,25 +390,12 @@ function AddWalletAddressPageContent() {
               </button>
             </form>
           </div>
-
-          {/* Help Link */}
-          {/*
-                    <div className="text-center pb-6">
-                        <Link
-                            to="/help/wallet-setup"
-                            className="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm sm:text-base"
-                        >
-                            Need help setting up your wallet?
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                        </Link>
-                    </div>
-                    */}
         </div>
       </div>
 
       <ConfirmationModal
         isOpen={showConfirmation}
-        onClose={() => setShowConfirmation(false)}
+        onClose={handleCloseConfirmation}
         onConfirm={handleConfirm}
         walletAddress={walletAddress}
       />

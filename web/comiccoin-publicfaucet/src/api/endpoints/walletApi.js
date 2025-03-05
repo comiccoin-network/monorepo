@@ -53,8 +53,36 @@ export function useConnectWallet(options = {}) {
         }
       } catch (err) {
         console.error("❌ WALLET: Wallet connection error:", err);
-        const formattedError =
-          err instanceof Error ? err : new Error("Failed to connect wallet");
+
+        // Extract the actual error message from the API response
+        let errorMessage = "Failed to connect wallet";
+
+        // Check for Axios error with response data
+        if (err.response && err.response.data) {
+          // Log the entire response for debugging
+          console.log("WALLET API Error Details:", err.response.data);
+
+          // Extract the message from the response data
+          if (err.response.data.message) {
+            errorMessage = err.response.data.message;
+          } else if (typeof err.response.data === "string") {
+            errorMessage = err.response.data;
+          } else {
+            // If it's an object but doesn't have a message property
+            errorMessage = JSON.stringify(err.response.data);
+          }
+        } else if (err.message) {
+          // If there's no response data but there is an error message
+          errorMessage = err.message;
+        }
+
+        // Create a new error with the extracted message
+        const formattedError = new Error(errorMessage);
+
+        // Copy any useful properties from the original error
+        if (err.status) formattedError.status = err.status;
+        if (err.response) formattedError.response = err.response;
+
         setError(formattedError);
         return false;
       }
