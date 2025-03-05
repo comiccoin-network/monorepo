@@ -131,6 +131,8 @@ function AddWalletAddressPageContent() {
           const updatedUser = {
             ...user,
             walletAddress: walletAddress,
+            // This line is missing - we need to update both properties!
+            wallet_address: walletAddress,
           };
           updateUser(updatedUser);
         }
