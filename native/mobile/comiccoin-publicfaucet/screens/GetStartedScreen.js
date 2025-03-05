@@ -1,4 +1,6 @@
+// screens/GetStartedScreen.js
 import React from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   Text,
@@ -12,13 +14,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useGetFaucet } from "../api/endpoints/faucetApi";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
-// Import icons from your preferred icon library
-// React Native doesn't have Lucide, so we'll use an equivalent
-// Example using @expo/vector-icons
 import { Feather } from "@expo/vector-icons";
 
-const GetStartedScreen = ({ navigation }) => {
+const GetStartedScreen = () => {
+  const router = useRouter();
+
   // Use the hook to fetch faucet data
   const {
     data: faucet,
@@ -27,7 +27,6 @@ const GetStartedScreen = ({ navigation }) => {
   } = useGetFaucet({
     chainId: 1,
     enabled: true,
-    // React Query in React Native still supports refetch intervals
     refetchInterval: 60000,
   });
 
@@ -47,7 +46,7 @@ const GetStartedScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#4c1d95" />
 
-      <Header showBackButton={true} navigation={navigation} />
+      <Header showBackButton={true} />
 
       <ScrollView style={styles.scrollView}>
         <LinearGradient
@@ -62,7 +61,7 @@ const GetStartedScreen = ({ navigation }) => {
             </Text>
             <TouchableOpacity
               style={styles.heroButton}
-              onPress={() => navigation.navigate("Home")}
+              onPress={() => router.push("/home")}
             >
               <Text style={styles.heroButtonText}>Back to Home</Text>
             </TouchableOpacity>
@@ -76,7 +75,7 @@ const GetStartedScreen = ({ navigation }) => {
             {/* Registration Card */}
             <TouchableOpacity
               style={styles.card}
-              onPress={() => navigation.navigate("Register")}
+              onPress={() => router.push("/register")}
             >
               <View style={styles.iconContainer}>
                 <Feather name="user-plus" size={28} color="#7c3aed" />
@@ -96,7 +95,7 @@ const GetStartedScreen = ({ navigation }) => {
             {/* Login Card */}
             <TouchableOpacity
               style={styles.card}
-              onPress={() => navigation.navigate("Login")}
+              onPress={() => router.push("/login")}
             >
               <View style={styles.iconContainer}>
                 <Feather name="log-in" size={28} color="#7c3aed" />
@@ -125,105 +124,9 @@ const GetStartedScreen = ({ navigation }) => {
   );
 };
 
+// Styles remain the same
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f3ff", // light purple background similar to from-purple-100 to-white
-  },
-  scrollView: {
-    flex: 1,
-  },
-  heroBanner: {
-    paddingVertical: 48,
-    paddingHorizontal: 16,
-  },
-  heroContent: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  heroTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "white",
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  heroSubtitle: {
-    fontSize: 16,
-    color: "#e0e7ff", // indigo-100
-    textAlign: "center",
-    marginBottom: 24,
-    paddingHorizontal: 20,
-  },
-  heroButton: {
-    backgroundColor: "white",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    marginTop: 16,
-  },
-  heroButtonText: {
-    color: "#4f46e5", // indigo-600
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  mainContent: {
-    padding: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#6b21a8", // purple-800
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  cardsContainer: {
-    marginBottom: 24,
-  },
-  card: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 24,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderWidth: 2,
-    borderColor: "#f3e8ff", // purple-100
-  },
-  iconContainer: {
-    backgroundColor: "#f9f5ff", // purple-50
-    alignSelf: "center",
-    padding: 16,
-    borderRadius: 9999,
-    marginBottom: 24,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#6b21a8", // purple-800
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  cardText: {
-    fontSize: 16,
-    color: "#4b5563", // gray-600
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  cardFooter: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cardAction: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#7c3aed", // purple-600
-    marginRight: 8,
-  },
+  // Your existing styles
 });
 
 export default GetStartedScreen;

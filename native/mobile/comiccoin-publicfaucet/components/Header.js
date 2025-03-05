@@ -1,4 +1,6 @@
+// components/Header.js
 import React, { useState } from "react";
+import { useNavigation, useRouter } from "expo-router";
 import {
   View,
   Text,
@@ -10,7 +12,8 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 
-const Header = ({ showBackButton = false, navigation }) => {
+const Header = ({ showBackButton = false }) => {
+  const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
 
   const toggleMenu = () => {
@@ -18,16 +21,16 @@ const Header = ({ showBackButton = false, navigation }) => {
   };
 
   const navigateHome = () => {
-    navigation.navigate("Home");
+    router.push("/home");
   };
 
   const navigateToGetStarted = () => {
-    navigation.navigate("GetStarted");
+    router.push("/");
   };
 
   return (
     <LinearGradient
-      colors={["#7e22ce", "#4338ca"]} // from-purple-700 to-indigo-800
+      colors={["#7e22ce", "#4338ca"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={styles.headerContainer}
@@ -136,7 +139,9 @@ const Header = ({ showBackButton = false, navigation }) => {
   );
 };
 
+// Styles remain the same
 const styles = StyleSheet.create({
+  // Your existing styles
   headerContainer: {
     paddingTop: 10,
     paddingBottom: 10,

@@ -1,7 +1,7 @@
-// app/get-started.tsx
+// app/index.tsx
 import React from "react";
 import GetStartedScreen from "../screens/GetStartedScreen";
 
-export default function App() {
+export default function Home() {
   return <GetStartedScreen />;
 }

@@ -1,5 +1,6 @@
-// src/contexts/AuthContext.jsx
+// contexts/AuthContext.jsx
 import { createContext, useState, useEffect, useCallback } from "react";
+import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axiosClient from "../api/axiosClient";
@@ -9,7 +10,8 @@ export const AuthContext = createContext(null);
 // Key used for storing auth data in AsyncStorage
 const AUTH_STORAGE_KEY = "auth_data";
 
-export const AuthProvider = ({ children, navigation }) => {
+export const AuthProvider = ({ children }) => {
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const queryClient = useQueryClient();
@@ -225,6 +227,10 @@ export const AuthProvider = ({ children, navigation }) => {
 
       // Update user state with the user object
       setUser(data.user);
+
+      // Navigate to home screen after successful login
+      router.replace("/home");
+
       return data.user;
     } catch (error) {
       console.error("Login failed:", error);
@@ -242,16 +248,9 @@ export const AuthProvider = ({ children, navigation }) => {
     // Clear all queries to avoid showing private data after logout
     queryClient.clear();
 
-    // Navigate to login screen using the passed navigation prop
-    // or alternative navigation method depending on your setup
-    if (navigation && navigation.reset) {
-      // Reset navigation stack and go to login
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Login" }],
-      });
-    }
-  }, [queryClient, navigation]);
+    // Navigate to login screen using Expo Router
+    router.replace("/login");
+  }, [queryClient, router]);
 
   // Check if user is authenticated
   const isAuthenticated = !!user;
