@@ -2,6 +2,6 @@
 import React from "react";
 import GetStartedScreen from "../screens/GetStartedScreen";
 
-export default function App() {
+export default function GetStartedPage() {
   return <GetStartedScreen />;
 }
