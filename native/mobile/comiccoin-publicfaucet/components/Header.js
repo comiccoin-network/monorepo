@@ -1,6 +1,6 @@
 // components/Header.js
 import React, { useState } from "react";
-import { useNavigation, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Pressable,
   Modal,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
@@ -51,41 +52,6 @@ const Header = ({ showBackButton = false }) => {
           />
           <Text style={styles.logoText}>ComicCoin Faucet</Text>
         </TouchableOpacity>
-
-        {/* Action Button (visible on larger screens) */}
-        <View style={styles.desktopActions}>
-          {showBackButton ? (
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={navigateHome}
-              accessibilityRole="button"
-              accessibilityLabel="Go back to home page"
-            >
-              <Feather
-                name="arrow-left"
-                size={18}
-                color="#7e22ce"
-                style={styles.actionIcon}
-              />
-              <Text style={styles.actionText}>Back to Home</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={navigateToGetStarted}
-              accessibilityRole="button"
-              accessibilityLabel="Start claiming ComicCoins"
-            >
-              <Feather
-                name="dollar-sign"
-                size={18}
-                color="#7e22ce"
-                style={styles.actionIcon}
-              />
-              <Text style={styles.actionText}>Claim Coins</Text>
-            </TouchableOpacity>
-          )}
-        </View>
 
         {/* Mobile Menu Button */}
         <TouchableOpacity
@@ -139,17 +105,21 @@ const Header = ({ showBackButton = false }) => {
   );
 };
 
-// Styles remain the same
 const styles = StyleSheet.create({
-  // Your existing styles
   headerContainer: {
-    paddingTop: 10,
+    paddingTop: Platform.OS === "ios" ? 44 : 10,
     paddingBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   headerContent: {
     flexDirection: "row",
@@ -169,26 +139,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  desktopActions: {
-    // This would be shown only on tablets or larger screens
-    // We can use Platform.OS and Dimensions to conditionally show this
-    display: "none", // Default to none for mobile
-  },
-  actionButton: {
-    backgroundColor: "white",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  actionIcon: {
-    marginRight: 6,
-  },
-  actionText: {
-    color: "#7e22ce", // purple-700
-    fontWeight: "bold",
-  },
   menuButton: {
     padding: 8,
   },
@@ -199,29 +149,35 @@ const styles = StyleSheet.create({
   },
   menuContent: {
     backgroundColor: "white",
-    marginTop: 60, // Position below the header
+    marginTop: 60,
     borderRadius: 8,
     padding: 16,
     marginHorizontal: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 8,
-    backgroundColor: "#f3e8ff", // purple-100
+    backgroundColor: "#f3e8ff",
     borderRadius: 8,
   },
   menuItemText: {
     marginLeft: 8,
     fontSize: 16,
     fontWeight: "600",
-    color: "#7e22ce", // purple-700
+    color: "#7e22ce",
   },
 });
 

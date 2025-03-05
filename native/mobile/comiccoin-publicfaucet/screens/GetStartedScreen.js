@@ -9,6 +9,7 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useGetFaucet } from "../api/endpoints/faucetApi";
@@ -51,6 +52,8 @@ const GetStartedScreen = () => {
       <ScrollView style={styles.scrollView}>
         <LinearGradient
           colors={["#4f46e5", "#4338ca"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
           style={styles.heroBanner}
         >
           <View style={styles.heroContent}>
@@ -124,9 +127,122 @@ const GetStartedScreen = () => {
   );
 };
 
-// Styles remain the same
 const styles = StyleSheet.create({
-  // Your existing styles
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f3ff",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  heroBanner: {
+    paddingVertical: 48,
+    paddingHorizontal: 16,
+  },
+  heroContent: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: "#e0e7ff",
+    textAlign: "center",
+    marginBottom: 24,
+    paddingHorizontal: 20,
+  },
+  heroButton: {
+    backgroundColor: "white",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  heroButtonText: {
+    color: "#4f46e5",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  mainContent: {
+    padding: 24,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#6b21a8",
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  cardsContainer: {
+    marginBottom: 24,
+  },
+  card: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 24,
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+    borderWidth: 2,
+    borderColor: "#f3e8ff",
+  },
+  iconContainer: {
+    backgroundColor: "#f9f5ff",
+    alignSelf: "center",
+    padding: 16,
+    borderRadius: 9999,
+    marginBottom: 24,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#6b21a8",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  cardText: {
+    fontSize: 16,
+    color: "#4b5563",
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  cardFooter: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardAction: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#7c3aed",
+    marginRight: 8,
+  },
 });
 
 export default GetStartedScreen;
