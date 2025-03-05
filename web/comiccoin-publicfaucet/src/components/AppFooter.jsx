@@ -1,6 +1,6 @@
 // src/components/AppFooter.jsx
 import React from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import {
   Github,
   FileText,
@@ -13,6 +13,10 @@ import {
 
 const AppFooter = () => {
   const currentYear = new Date().getFullYear();
+  const location = useLocation();
+
+  // Get the current path to use as a referrer
+  const currentPath = location.pathname;
 
   return (
     <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-4 mt-auto">
@@ -53,7 +57,7 @@ const AppFooter = () => {
             </Link>
 
             <Link
-              to="/terms"
+              to={`/terms?referrer=${encodeURIComponent(currentPath)}`}
               className="text-purple-200 hover:text-white flex items-center gap-1.5 group transition-colors text-sm"
             >
               <FileText className="h-4 w-4" aria-hidden="true" />
@@ -65,7 +69,7 @@ const AppFooter = () => {
             </Link>
 
             <Link
-              to="/privacy"
+              to={`/privacy?referrer=${encodeURIComponent(currentPath)}`}
               className="text-purple-200 hover:text-white flex items-center gap-1.5 group transition-colors text-sm"
             >
               <Shield className="h-4 w-4" aria-hidden="true" />

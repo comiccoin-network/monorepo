@@ -1,11 +1,25 @@
 // src/pages/TermsPage.jsx
 import React from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { ArrowLeft, FileText } from "lucide-react";
 import AppFooter from "../components/AppFooter";
+import AppTopNavigation from "../components/AppTopNavigation";
 
 function TermsPage() {
   const currentYear = new Date().getFullYear();
+  const location = useLocation();
+
+  // Parse the referrer from the query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const referrer = queryParams.get("referrer") || "/";
+
+  // Determine if we should show the top navigation
+  // We'll show it if the referrer is a protected route like dashboard
+  const isFromProtectedRoute =
+    referrer.includes("/dashboard") ||
+    referrer.includes("/settings") ||
+    referrer.includes("/claim-coins") ||
+    referrer.includes("/transactions");
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -17,6 +31,9 @@ function TermsPage() {
         Skip to main content
       </a>
 
+      {/* Only show TopNavigation if coming from a protected route */}
+      {isFromProtectedRoute && <AppTopNavigation />}
+
       <main
         id="main-content"
         className="container mx-auto px-4 py-4 max-w-5xl flex-grow"
@@ -24,9 +41,9 @@ function TermsPage() {
         <header className="mb-6 md:mb-8">
           <div className="flex items-center">
             <Link
-              to="/"
+              to={referrer}
               className="mr-3 text-purple-600 hover:text-purple-800 p-2 rounded-full hover:bg-purple-100 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
-              aria-label="Back to Home"
+              aria-label={`Back to ${referrer === "/" ? "Home" : "Previous Page"}`}
             >
               <ArrowLeft className="w-5 h-5" aria-hidden="true" />
             </Link>
@@ -253,11 +270,11 @@ function TermsPage() {
 
         <div className="text-center mb-8">
           <Link
-            to="/"
+            to={referrer}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Return to Home
+            {referrer === "/" ? "Return to Home" : "Go Back"}
           </Link>
         </div>
       </main>
