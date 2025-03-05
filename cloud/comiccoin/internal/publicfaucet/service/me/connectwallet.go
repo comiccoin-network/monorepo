@@ -1,4 +1,4 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/me/service.go
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/me/connectwallet.go
 package me
 
 import (
@@ -26,10 +26,11 @@ type MeConnectWalletService interface {
 }
 
 type meConnectWalletServiceImpl struct {
-	config             *config.Configuration
-	logger             *slog.Logger
-	userGetByIDUseCase uc_user.UserGetByIDUseCase
-	userUpdateUseCase  uc_user.UserUpdateUseCase
+	config                        *config.Configuration
+	logger                        *slog.Logger
+	userGetByIDUseCase            uc_user.UserGetByIDUseCase
+	userUpdateUseCase             uc_user.UserUpdateUseCase
+	userGetByWalletAddressUseCase uc_user.UserGetByWalletAddressUseCase
 }
 
 func NewMeConnectWalletService(
@@ -37,12 +38,14 @@ func NewMeConnectWalletService(
 	logger *slog.Logger,
 	userGetByIDUseCase uc_user.UserGetByIDUseCase,
 	userUpdateUseCase uc_user.UserUpdateUseCase,
+	userGetByWalletAddressUseCase uc_user.UserGetByWalletAddressUseCase,
 ) MeConnectWalletService {
 	return &meConnectWalletServiceImpl{
-		config:             config,
-		logger:             logger,
-		userGetByIDUseCase: userGetByIDUseCase,
-		userUpdateUseCase:  userUpdateUseCase,
+		config:                        config,
+		logger:                        logger,
+		userGetByIDUseCase:            userGetByIDUseCase,
+		userUpdateUseCase:             userUpdateUseCase,
+		userGetByWalletAddressUseCase: userGetByWalletAddressUseCase,
 	}
 }
 
@@ -67,7 +70,7 @@ func (s *meConnectWalletServiceImpl) Execute(sessCtx mongo.SessionContext, req *
 		return nil, httperror.NewForBadRequestWithSingleField("non_field_error", "Wallet address is required in submission")
 	}
 
-	// San
+	// Sanitization
 	req.WalletAddress = strings.TrimSpace(req.WalletAddress)
 
 	e := make(map[string]string)
@@ -102,11 +105,47 @@ func (s *meConnectWalletServiceImpl) Execute(sessCtx mongo.SessionContext, req *
 		return nil, err
 	}
 
+	// Convert into our format.
+	walletAddress := common.HexToAddress(strings.ToLower(req.WalletAddress))
+
 	//
-	// STEP 4: Update database.
+	// STEP 4: Check if the wallet address is already used by another user
 	//
 
-	walletAddress := common.HexToAddress(strings.ToLower(req.WalletAddress))
+	// Lookup if another user already owns this wallet address.
+	// Check if wallet is owned by another user
+	existingUser, err := s.userGetByWalletAddressUseCase.Execute(sessCtx, &walletAddress)
+	if err != nil {
+		s.logger.Error("Failed checking wallet address existence", slog.Any("error", err))
+		return nil, err
+	}
+	if existingUser != nil {
+		s.logger.Warn("Existing user found whom already owns this wallet address",
+			slog.String("wallet_address", walletAddress.Hex()),
+			slog.Any("current_user_id", user.ID),
+			slog.Any("existing_user_id", existingUser.ID))
+
+		// Check if the existing user is the same as the current user.
+		if user.ID.String() != existingUser.ID.String() {
+			s.logger.Warn("Wallet address already in use by another user",
+				slog.String("wallet_address", walletAddress.Hex()),
+				slog.Any("existing_user_id", existingUser.ID))
+			return nil, httperror.NewForBadRequestWithSingleField("message", "wallet address is already in use by another user")
+		} else {
+			s.logger.Debug("User already owns this wallet address",
+				slog.String("wallet_address", walletAddress.Hex()),
+				slog.Any("user_id", user.ID))
+		}
+	} else {
+		s.logger.Debug("No existing user found whom already owns this wallet address",
+			slog.String("wallet_address", walletAddress.Hex()),
+			slog.Any("current_user_id", user.ID))
+	}
+
+	//
+	// STEP 5: Update database.
+	//
+
 	user.WalletAddress = &walletAddress
 	if err := s.userUpdateUseCase.Execute(sessCtx, user); err != nil {
 		s.logger.Debug("Failed updating user", slog.Any("error", err))
@@ -117,10 +156,10 @@ func (s *meConnectWalletServiceImpl) Execute(sessCtx mongo.SessionContext, req *
 		slog.Any("user_id", userID.Hex()))
 
 	//
-	// STEP 5: Retur results
+	// STEP 6: Retur results
 	//
 
-	s.logger.Debug("Successfully updated remote gateway",
+	s.logger.Debug("Successfully updated",
 		slog.Any("user_id", user.ID))
 
 	return &MeResponseDTO{

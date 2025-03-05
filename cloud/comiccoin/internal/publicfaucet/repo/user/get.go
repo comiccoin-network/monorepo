@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 func (impl userStorerImpl) GetByID(ctx context.Context, id primitive.ObjectID) (*dom_user.User, error) {
@@ -60,7 +61,7 @@ func (impl userStorerImpl) GetByVerificationCode(ctx context.Context, verificati
 	return &result, nil
 }
 
-func (impl userStorerImpl) GetByWalletAddress(ctx context.Context, walletAddress string) (*dom_user.User, error) {
+func (impl userStorerImpl) GetByWalletAddress(ctx context.Context, walletAddress *common.Address) (*dom_user.User, error) {
 	filter := bson.M{"wallet_address": walletAddress}
 
 	var result dom_user.User

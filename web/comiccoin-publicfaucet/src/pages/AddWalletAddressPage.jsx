@@ -131,7 +131,6 @@ function AddWalletAddressPageContent() {
           const updatedUser = {
             ...user,
             walletAddress: walletAddress,
-            // This line is missing - we need to update both properties!
             wallet_address: walletAddress,
           };
           updateUser(updatedUser);
@@ -151,6 +150,14 @@ function AddWalletAddressPageContent() {
     } catch (error) {
       console.error("❌ Error during wallet confirmation:", error);
       setShowConfirmation(false);
+      
+      // Handle 400 errors from the backend
+      if (error.response?.status === 400) {
+        const errorMessage = error.response.data?.message || "Invalid wallet address";
+        setConnectError({ message: errorMessage });
+      } else {
+        setConnectError({ message: "An unexpected error occurred. Please try again." });
+      }
     }
   };
 

@@ -104,7 +104,7 @@ type claimCoinsServiceImpl struct {
 	submitMempoolTransactionDTOToBlockchainAuthorityUseCase uc_auth_memp.SubmitMempoolTransactionDTOToBlockchainAuthorityUseCase
 	userGetByIDUseCase                                      uc_user.UserGetByIDUseCase
 	userUpdateUseCase                                       uc_user.UserUpdateUseCase
-	userGetByWalletAddressUseCase                          uc_user.UserGetByWalletAddressUseCase
+	userGetByWalletAddressUseCase                           uc_user.UserGetByWalletAddressUseCase
 }
 
 func NewClaimCoinsService(
@@ -131,7 +131,7 @@ func NewClaimCoinsService(
 		submitMempoolTransactionDTOToBlockchainAuthorityUseCase: submitMempoolTransactionDTOToBlockchainAuthorityUseCase,
 		userGetByIDUseCase:                                      userGetByIDUseCase,
 		userUpdateUseCase:                                       userUpdateUseCase,
-		userGetByWalletAddressUseCase:                          userGetByWalletAddressUseCase,
+		userGetByWalletAddressUseCase:                           userGetByWalletAddressUseCase,
 	}
 }
 
@@ -181,12 +181,12 @@ func (svc *claimCoinsServiceImpl) Execute(sessCtx mongo.SessionContext) (*ClaimC
 
 	// Check if the wallet address is already used by another user
 	if user.WalletAddress != nil {
-		existingUser, err := svc.userGetByWalletAddressUseCase.Execute(sessCtx, user.WalletAddress.Hex())
+		existingUser, err := svc.userGetByWalletAddressUseCase.Execute(sessCtx, user.WalletAddress)
 		if err != nil {
 			svc.logger.Error("failed checking wallet address existence", slog.Any("err", err))
 			return nil, err
 		}
-		if existingUser != nil && existingUser.ID != user.ID {
+		if existingUser != nil && existingUser.ID.String() != user.ID.String() {
 			svc.logger.Warn("wallet address already in use by another user",
 				slog.String("wallet_address", user.WalletAddress.Hex()),
 				slog.Any("existing_user_id", existingUser.ID))

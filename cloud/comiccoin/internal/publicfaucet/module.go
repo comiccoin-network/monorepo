@@ -238,6 +238,7 @@ func NewModule(
 		logger,
 		userGetByIDUseCase,
 		userUpdateUseCase,
+		userGetByWalletAddressUseCase,
 	)
 	updateMeService := svc_me.NewUpdateMeService(
 		cfg,
@@ -287,7 +288,7 @@ func NewModule(
 	)
 
 	// --- Claim Coins ---
-    
+
 	claimCoinsService := svc_claimcoins.NewClaimCoinsService(
 		cfg,
 		logger,
