@@ -1,7 +1,16 @@
 // src/pages/LoginPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
-import { AlertCircle, Shield, LogIn, Mail, Lock, UserPlus } from "lucide-react";
+import {
+  AlertCircle,
+  Shield,
+  LogIn,
+  Mail,
+  Lock,
+  UserPlus,
+  ArrowLeft,
+  ArrowRight,
+} from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
@@ -96,6 +105,11 @@ function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle cancel button click
+  const handleCancel = () => {
+    navigate("/get-started");
   };
 
   console.log("🎨 Rendering login form, errors:", {
@@ -230,24 +244,13 @@ function LoginPage() {
                 )}
               </div>
 
-              {/* Forgot Password Link (TODO: FUTURE */}
-              {/*
-              <div className="text-right">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-purple-600 hover:text-purple-800"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-              */}
-
-              {/* Form Actions */}
-              <div className="pt-2">
+              {/* Form Actions - Matching the Register page pattern */}
+              <div className="pt-6 flex flex-col sm:flex-row-reverse gap-3">
+                {/* Submit Button - Primary action first in code */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
@@ -279,6 +282,16 @@ function LoginPage() {
                       Sign In
                     </>
                   )}
+                </button>
+
+                {/* Cancel Button - Secondary action second in code */}
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={loading}
+                  className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
                 </button>
               </div>
             </form>
