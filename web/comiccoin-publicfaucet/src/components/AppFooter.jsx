@@ -1,58 +1,100 @@
 // src/components/AppFooter.jsx
 import React from "react";
 import { Link } from "react-router";
-import { Github, FileText, Shield, HelpCircle, Heart } from "lucide-react";
+import {
+  Github,
+  FileText,
+  Shield,
+  HelpCircle,
+  Coins,
+  ExternalLink,
+  ArrowRight,
+} from "lucide-react";
 
 const AppFooter = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="py-6 mt-auto bg-white border-t border-purple-100">
-      <div className="container mx-auto px-4 max-w-7xl">
+    <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-4 mt-auto">
+      <div className="container mx-auto px-4 max-w-5xl">
+        {/* Main content */}
         <div className="flex flex-col md:flex-row justify-between items-center">
-          {/* Copyright */}
-          <div className="mb-4 md:mb-0 text-gray-600 text-sm">
-            <div className="flex items-center justify-center md:justify-start gap-1 mb-1">
-              <Heart className="h-4 w-4 text-purple-500" />
-              <span>
-                © {currentYear} ComicCoin Network. All rights reserved.
-              </span>
+          {/* Logo and Copyright */}
+          <div className="mb-4 md:mb-0 flex items-center">
+            <Coins
+              className="h-5 w-5 text-purple-300 mr-2"
+              aria-hidden="true"
+            />
+            <div>
+              <div className="font-bold">ComicCoin Network</div>
+              <div className="text-purple-200 text-xs">
+                © {currentYear} All rights reserved
+              </div>
             </div>
           </div>
 
-          {/* Version */}
-          <div className="text-gray-500 text-xs mb-4 md:mb-0 order-3 md:order-2">
+          {/* Version info (only on medium screens and up) */}
+          <div className="hidden md:block text-purple-200 text-xs">
             Version 1.0.0
           </div>
 
           {/* Links */}
-          <div className="flex space-x-6 order-2 md:order-3 mb-2 md:mb-0">
+          <div className="flex items-center space-x-6">
+            <Link
+              to="/help"
+              className="text-purple-200 hover:text-white flex items-center gap-1.5 group transition-colors text-sm"
+            >
+              <HelpCircle className="h-4 w-4" aria-hidden="true" />
+              <span>Help</span>
+              <ArrowRight
+                className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-hidden="true"
+              />
+            </Link>
+
             <Link
               to="/terms"
-              className="text-gray-500 hover:text-purple-600 flex items-center gap-1 text-sm transition-colors"
+              className="text-purple-200 hover:text-white flex items-center gap-1.5 group transition-colors text-sm"
             >
-              <FileText className="h-4 w-4" />
+              <FileText className="h-4 w-4" aria-hidden="true" />
               <span>Terms</span>
+              <ArrowRight
+                className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-hidden="true"
+              />
             </Link>
 
             <Link
               to="/privacy"
-              className="text-gray-500 hover:text-purple-600 flex items-center gap-1 text-sm transition-colors"
+              className="text-purple-200 hover:text-white flex items-center gap-1.5 group transition-colors text-sm"
             >
-              <Shield className="h-4 w-4" />
+              <Shield className="h-4 w-4" aria-hidden="true" />
               <span>Privacy</span>
+              <ArrowRight
+                className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-hidden="true"
+              />
             </Link>
 
             <a
               href="https://github.com/comiccoin-network"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-500 hover:text-purple-600 flex items-center gap-1 text-sm transition-colors"
+              className="text-purple-200 hover:text-white flex items-center gap-1.5 group transition-colors text-sm"
             >
-              <Github className="h-4 w-4" />
-              <span>GitHub</span>
+              <Github className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden sm:inline">GitHub</span>
+              <ExternalLink
+                className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-hidden="true"
+              />
             </a>
           </div>
+        </div>
+
+        {/* Mobile version info (only on small screens) */}
+        <div className="md:hidden text-center mt-3 text-purple-200 text-xs">
+          Version 1.0.0
         </div>
       </div>
     </footer>

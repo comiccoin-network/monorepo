@@ -18,6 +18,7 @@ import TransactionsPage from "./pages/TransactionsPage";
 import SettingsPage from "./pages/SettingsPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import HelpAndSupportPage from "./pages/HelpAndSupportPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -103,6 +104,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/help"
+              element={
+                <ProtectedRoute>
+                  <HelpAndSupportPage />
                 </ProtectedRoute>
               }
             />
