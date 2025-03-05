@@ -113,7 +113,6 @@ const TransactionsPageContent = () => {
     }
 
     // If personal filter is applied, we could filter by user ID or other criteria
-    // This is just a placeholder - implement actual filtering logic based on your requirements
     if (filter === "personal") {
       return transactions; // In a real app, you'd filter by user ID or similar
     }
@@ -181,7 +180,7 @@ const TransactionsPageContent = () => {
 
   // Navigate back to dashboard
   const handleBackToDashboard = () => {
-    navigate("/dashboard"); // Changed back to match our JSX implementation
+    navigate("/dashboard");
   };
 
   // Set filter and update URL
@@ -261,15 +260,24 @@ const TransactionsPageContent = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
+      >
+        Skip to main content
+      </a>
+
       <AppTopNavigation />
+
       <main
-        className="container mx-auto px-4 py-4 max-w-5xl flex-grow"
+        id="main-content"
+        className="container mx-auto px-4 py-4 sm:py-6 max-w-5xl flex-grow"
         style={{
           WebkitTapHighlightColor: "transparent",
         }}
       >
         {/* Header */}
-        <header className="mb-6 md:mb-8">
+        <header className="mb-4 sm:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center">
               <button
@@ -392,23 +400,23 @@ const TransactionsPageContent = () => {
         {/* Transactions Section */}
         <div className="space-y-4">
           {!sortedTransactions || sortedTransactions.length === 0 ? (
-            <div className="bg-white rounded-xl p-8 text-center shadow-md border border-gray-100">
-              <div className="inline-flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-purple-100">
+            <div className="bg-white rounded-xl p-6 sm:p-8 text-center shadow-md border border-gray-100">
+              <div className="inline-flex items-center justify-center w-16 sm:w-20 h-16 sm:h-20 mb-4 sm:mb-6 rounded-full bg-purple-100">
                 <Coins
-                  className="w-10 h-10 text-purple-600"
+                  className="w-8 sm:w-10 h-8 sm:h-10 text-purple-600"
                   aria-hidden="true"
                 />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
                 No transactions found
               </h3>
-              <p className="text-base text-gray-600 max-w-md mx-auto">
+              <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto">
                 Your transaction history will appear here after you claim your
                 first ComicCoins.
               </p>
               <button
                 onClick={handleBackToDashboard}
-                className="mt-8 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-md inline-flex items-center focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                className="mt-6 sm:mt-8 px-5 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-md inline-flex items-center focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                 aria-label="Return to dashboard"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
@@ -465,8 +473,8 @@ const TransactionsPageContent = () => {
                         className="px-4 sm:px-5 pb-5 bg-purple-50 animate-fadeIn"
                       >
                         <div className="border-t border-purple-200 pt-4 space-y-3">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2 sm:col-span-1">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="col-span-1">
                               <div className="text-xs text-gray-600 mb-1">
                                 Transaction ID
                               </div>
@@ -475,7 +483,7 @@ const TransactionsPageContent = () => {
                               </div>
                             </div>
 
-                            <div className="col-span-2 sm:col-span-1">
+                            <div className="col-span-1">
                               <div className="text-xs text-gray-600 mb-1">
                                 Date & Time
                               </div>
@@ -598,6 +606,7 @@ const TransactionsPageContent = () => {
         }
       `}</style>
       </main>
+
       <AppFooter />
     </div>
   );

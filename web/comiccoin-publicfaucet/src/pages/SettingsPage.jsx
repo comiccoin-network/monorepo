@@ -191,7 +191,6 @@ const SettingsPageContent = () => {
     }
   }, [isSuccess, updateError, refreshUserData]);
 
-  // Rest of your component remains the same...
   // Define form fields
   const personalFields = [
     {
@@ -258,7 +257,6 @@ const SettingsPageContent = () => {
 
   // Comprehensive field rendering
   const renderField = (field) => {
-    // Field rendering logic remains unchanged
     const hasError = !!formErrors[field.fieldKey];
     const isRequired = field.required;
 
@@ -266,7 +264,7 @@ const SettingsPageContent = () => {
       <div key={field.id} className="space-y-1">
         <label
           htmlFor={field.id}
-          className="flex items-center text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-gray-700"
         >
           {field.label}
           {isRequired && (
@@ -308,7 +306,7 @@ const SettingsPageContent = () => {
               aria-invalid={hasError}
               aria-describedby={hasError ? `${field.id}-error` : undefined}
               className={`
-                w-full h-11 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 appearance-none
+                w-full h-10 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 appearance-none
                 ${hasError ? "border-red-500 focus:ring-red-500 pr-10" : "border-gray-300 focus:ring-purple-500"}
                 ${field.disabled ? "bg-gray-100 cursor-not-allowed" : ""}
                 ${field.customClasses || ""}
@@ -362,7 +360,7 @@ const SettingsPageContent = () => {
               name={field.name}
               value={formData[field.fieldKey]}
               disabled={true}
-              className="w-full h-11 px-3 py-2 pr-10 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed font-mono text-sm"
+              className="w-full h-10 px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed font-mono text-sm"
               placeholder={field.placeholder}
             />
             <button
@@ -451,7 +449,7 @@ const SettingsPageContent = () => {
               placeholder={field.placeholder}
               required={isRequired}
               className={`
-                w-full h-11 px-3 py-2 border rounded-md focus:outline-none focus:ring-2
+                w-full h-10 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2
                 ${hasError ? "border-red-500 focus:ring-red-500 pr-10" : "border-gray-300 focus:ring-purple-500"}
                 ${field.disabled ? "bg-gray-100 cursor-not-allowed" : ""}
                 ${field.customClasses || ""}
@@ -547,8 +545,7 @@ const SettingsPageContent = () => {
       };
 
       // Attempt to update user profile
-      const updatedUser = await updateMe(updateData);
-
+      await updateMe(updateData);
       // Success message and status handling is done in the useEffect
     } catch (err) {
       console.error("Update failed", err);
@@ -575,7 +572,7 @@ const SettingsPageContent = () => {
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <AppTopNavigation />
         <div
-          className="flex-grow flex flex-col items-center justify-center py-8"
+          className="flex-grow flex flex-col items-center justify-center bg-gradient-to-b from-purple-50 to-white py-8"
           role="status"
         >
           <div className="animate-pulse space-y-6 text-center">
@@ -588,7 +585,7 @@ const SettingsPageContent = () => {
             <div className="mt-4">
               <button
                 onClick={handleRefreshUserData}
-                className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
               >
                 <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
                 Retry Loading
@@ -603,10 +600,21 @@ const SettingsPageContent = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-purple-600 focus:text-white focus:z-50"
+      >
+        Skip to main content
+      </a>
+
       <AppTopNavigation />
-      <main className="container mx-auto px-4 py-4 max-w-5xl flex-grow">
+
+      <main
+        id="main-content"
+        className="container mx-auto px-4 py-4 sm:py-6 max-w-5xl flex-grow"
+      >
         {/* Header */}
-        <header className="mb-6 md:mb-8">
+        <header className="mb-4 sm:mb-6">
           <div className="flex items-center">
             <button
               onClick={handleBackToDashboard}
@@ -617,7 +625,7 @@ const SettingsPageContent = () => {
             </button>
             <div>
               <h1
-                className="text-2xl font-bold text-purple-800"
+                className="text-2xl font-bold text-purple-900"
                 id="settings-heading"
               >
                 Account Settings
@@ -634,7 +642,7 @@ const SettingsPageContent = () => {
           <div
             ref={statusRef}
             className={`
-              mb-6 p-4 rounded-lg flex items-center justify-between
+              mb-4 sm:mb-6 p-4 rounded-lg flex items-center justify-between
               ${statusMessage.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}
               animate-fadeIn
             `}
@@ -653,7 +661,7 @@ const SettingsPageContent = () => {
                   aria-hidden="true"
                 />
               )}
-              <p className="font-medium">{statusMessage.message}</p>
+              <p className="font-medium text-sm">{statusMessage.message}</p>
             </div>
             <button
               onClick={() => setStatusMessage({ type: null, message: "" })}
@@ -666,7 +674,7 @@ const SettingsPageContent = () => {
         )}
 
         {/* Settings Form */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
           <form
             onSubmit={handleSubmit}
             className="divide-y divide-gray-100"
@@ -674,63 +682,63 @@ const SettingsPageContent = () => {
             noValidate
           >
             {/* Personal Information Section */}
-            <section className="p-6 space-y-6">
+            <section className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               <div className="pb-1">
-                <h2 className="text-lg font-medium text-purple-900 mb-1">
+                <h2 className="text-lg font-medium text-purple-800 mb-1">
                   Personal Information
                 </h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-600">
                   Update your basic profile information
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                 {personalFields.map(renderField)}
               </div>
             </section>
 
             {/* Contact Information Section */}
-            <section className="p-6 space-y-6">
+            <section className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               <div className="pb-1">
-                <h2 className="text-lg font-medium text-purple-900 mb-1">
+                <h2 className="text-lg font-medium text-purple-800 mb-1">
                   Contact Information
                 </h2>
-                <p className="text-sm text-gray-500">How we can reach you</p>
+                <p className="text-sm text-gray-600">How we can reach you</p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                 {contactFields.map(renderField)}
               </div>
             </section>
 
             {/* Location Information Section */}
-            <section className="p-6 space-y-6">
+            <section className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               <div className="pb-1">
-                <h2 className="text-lg font-medium text-purple-900 mb-1">
+                <h2 className="text-lg font-medium text-purple-800 mb-1">
                   Location & Preferences
                 </h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-600">
                   Set your regional preferences
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                 {locationFields.map(renderField)}
               </div>
             </section>
 
             {/* Wallet Information Section */}
-            <section className="p-6 space-y-6">
+            <section className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               <div className="pb-1">
-                <h2 className="text-lg font-medium text-purple-900 mb-1">
+                <h2 className="text-lg font-medium text-purple-800 mb-1">
                   Wallet Information
                 </h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-600">
                   Your ComicCoin wallet details
                 </p>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {renderField({
                   id: "wallet_address",
                   label: "Wallet Address",
@@ -747,12 +755,12 @@ const SettingsPageContent = () => {
             </section>
 
             {/* Form Actions */}
-            <section className="p-6 bg-gray-50">
+            <section className="p-4 sm:p-6 bg-gray-50">
               <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:space-x-4 space-y-4 space-y-reverse sm:space-y-0">
                 <button
                   type="button"
                   onClick={handleBackToDashboard}
-                  className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full sm:w-auto px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   Cancel
                 </button>
@@ -760,7 +768,7 @@ const SettingsPageContent = () => {
                   type="submit"
                   disabled={isUpdating}
                   className={`
-                    w-full sm:w-auto px-8 py-3 rounded-md text-white transition-colors shadow-sm flex items-center justify-center
+                    w-full sm:w-auto px-6 py-2.5 rounded-lg text-white transition-colors shadow-sm flex items-center justify-center text-sm font-medium
                     ${
                       isUpdating
                         ? "bg-purple-400 cursor-not-allowed"
@@ -772,7 +780,7 @@ const SettingsPageContent = () => {
                   {isUpdating ? (
                     <>
                       <svg
-                        className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -836,6 +844,7 @@ const SettingsPageContent = () => {
           }
         `}</style>
       </main>
+
       <AppFooter />
     </div>
   );
