@@ -23,6 +23,9 @@ const EmailVerificationPage = () => {
   // Extract verification code from URL query parameters
   const verificationCode = searchParams.get("q") || "";
 
+  // Use a ref to track if verification has been attempted
+  const verificationAttempted = React.useRef(false);
+
   // Use the custom email verification hook
   const { isLoading, error, verifyEmail } = useEmailVerification(
     // onSuccess callback
@@ -39,10 +42,13 @@ const EmailVerificationPage = () => {
 
   // Trigger email verification on component mount
   useEffect(() => {
-    if (verificationCode) {
+    // Only verify once
+    if (verificationCode && !verificationAttempted.current) {
+      verificationAttempted.current = true;
       verifyEmail(verificationCode);
-    } else {
+    } else if (!verificationCode && !verificationAttempted.current) {
       // Redirect to home if no verification code
+      verificationAttempted.current = true;
       navigate("/");
     }
   }, [verificationCode, verifyEmail, navigate]);

@@ -19,6 +19,9 @@ export const useEmailVerification = (onSuccess, onError, onDone) => {
    */
   const verifyEmailFn = useCallback(
     async (code) => {
+      // Skip if already loading
+      if (isLoading) return;
+
       // Reset previous state
       setError(null);
       setIsLoading(true);
@@ -54,7 +57,7 @@ export const useEmailVerification = (onSuccess, onError, onDone) => {
         }
       }
     },
-    [onSuccess, onError, onDone],
+    [isLoading, onSuccess, onError, onDone],
   );
 
   /**
