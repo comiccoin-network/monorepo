@@ -48,7 +48,7 @@ const LightFooter = () => {
           <View style={styles.socialLinks}>
             <TouchableOpacity
               style={styles.socialIcon}
-              onPress={() => openLink("https://comiccoinfaucet.com")}
+              onPress={() => openLink("https://comiccoinnetwork.com")}
             >
               <Feather name="globe" size={18} color="#6b7280" />
             </TouchableOpacity>
