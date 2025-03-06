@@ -1,9 +1,12 @@
-// src/api/axiosClient.js
+// app/api/axiosClient.js
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import config from "../config";
+import Constants from "expo-constants";
 
-const API_BASE_URL = `${config.PUBLICFAUCET_URL}/publicfaucet/api/v1`;
+// Get API details from environment or Constants
+const API_DOMAIN = Constants.expoConfig?.extra?.apiDomain || "127.0.0.1:8000";
+const API_PROTOCOL = Constants.expoConfig?.extra?.apiProtocol || "http";
+const API_BASE_URL = `${API_PROTOCOL}://${API_DOMAIN}/publicfaucet/api/v1`;
 const AUTH_STORAGE_KEY = "auth_data";
 
 // Create axios instance
@@ -44,8 +47,8 @@ axiosClient.interceptors.request.use(
     }
 
     try {
-      const authDataJson = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const authData = authDataJson ? JSON.parse(authDataJson) : {};
+      const authDataString = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+      const authData = authDataString ? JSON.parse(authDataString) : {};
 
       if (authData.access_token) {
         config.headers = {
@@ -54,7 +57,7 @@ axiosClient.interceptors.request.use(
         };
       }
     } catch (error) {
-      console.log("🔑 Error adding auth header:", error);
+      console.error("🔑 Error adding auth header:", error);
     }
 
     return config;
@@ -97,8 +100,8 @@ axiosClient.interceptors.response.use(
 
     let refreshToken;
     try {
-      const authDataJson = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const authData = authDataJson ? JSON.parse(authDataJson) : {};
+      const authDataString = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+      const authData = authDataString ? JSON.parse(authDataString) : {};
       refreshToken = authData.refresh_token;
 
       // Debug log to check the refresh token
@@ -120,15 +123,16 @@ axiosClient.interceptors.response.use(
         );
       }
     } catch (error) {
-      console.log("📝 Error parsing auth data:", error);
+      console.error("📝 Error parsing auth data:", error);
       refreshToken = null;
     }
 
     if (!refreshToken) {
-      // No refresh token available - React Native can't use window.location.href
-      // Instead, we'll let the auth context handle navigation later
-      console.log("⚠️ No refresh token available, triggering logout");
+      // No refresh token available, redirect to login
+      console.log("⚠️ No refresh token available, redirecting to login");
       await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+      // In React Native we would use navigation to redirect to login
+      // Since we can't directly import navigation here, we'll need the calling code to handle this
       return Promise.reject(error);
     }
 
@@ -157,14 +161,14 @@ axiosClient.interceptors.response.use(
 
       console.log("✅ Token refresh successful");
 
-      // Store updated tokens in AsyncStorage (React Native's equivalent of localStorage)
+      // Store updated tokens in AsyncStorage
       const authData = response.data;
       try {
         // Get existing auth data to preserve user info
-        const existingAuthDataJson =
+        const existingAuthDataString =
           await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-        const existingAuthData = existingAuthDataJson
-          ? JSON.parse(existingAuthDataJson)
+        const existingAuthData = existingAuthDataString
+          ? JSON.parse(existingAuthDataString)
           : {};
 
         // Update only token-related fields
@@ -187,7 +191,7 @@ axiosClient.interceptors.response.use(
           new Date(authData.access_token_expiry_date).toLocaleString(),
         );
       } catch (error) {
-        console.log("📝 Failed to update tokens in storage", error);
+        console.error("📝 Failed to update tokens in storage", error);
       }
 
       // Update authorization header
@@ -199,7 +203,7 @@ axiosClient.interceptors.response.use(
       return axiosClient(originalRequest);
     } catch (refreshError) {
       // Add detailed logging for refresh errors
-      console.log("❌ Token refresh failed:", {
+      console.error("❌ Token refresh failed:", {
         status: refreshError.response?.status,
         data: refreshError.response?.data,
         requestURL: `${API_BASE_URL}/token/refresh`,
@@ -209,9 +213,7 @@ axiosClient.interceptors.response.use(
       // Refresh failed, clear tokens
       await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
       processQueue(refreshError, null);
-
-      // In React Native, we don't use window.location.href
-      // Navigation to login will be handled by the auth context
+      // Calling code will need to handle navigation to login screen
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
