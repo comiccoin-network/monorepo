@@ -1,108 +1,178 @@
-// src/components/AppFooter.jsx
 import React from "react";
-import { Link, useLocation } from "react-router";
-import {
-  Github,
-  FileText,
-  Shield,
-  HelpCircle,
-  Coins,
-  ExternalLink,
-  ArrowRight,
-} from "lucide-react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useRouter, usePathname } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
-const AppFooter = () => {
-  const currentYear = new Date().getFullYear();
-  const location = useLocation();
+const FooterNav = () => {
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // Get the current path to use as a referrer
-  const currentPath = location.pathname;
+  // Determine which screen is active
+  const isActive = (path) => {
+    return pathname === path;
+  };
 
   return (
-    <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-4 mt-auto">
-      <div className="container mx-auto px-4 max-w-5xl">
-        {/* Main content */}
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          {/* Logo and Copyright */}
-          <div className="mb-4 md:mb-0 flex items-center">
-            <Coins
-              className="h-5 w-5 text-purple-300 mr-2"
-              aria-hidden="true"
-            />
-            <div>
-              <div className="font-bold">ComicCoin Network</div>
-              <div className="text-purple-200 text-xs">
-                © {currentYear} All rights reserved
-              </div>
-            </div>
-          </div>
+    <View style={styles.container}>
+      {/* Dashboard Tab */}
+      <TouchableOpacity
+        style={styles.tabButton}
+        onPress={() => router.push("/(tabs)/dashboard")}
+        accessibilityRole="button"
+        accessibilityLabel="Dashboard"
+        accessibilityState={{ selected: isActive("/(tabs)/dashboard") }}
+      >
+        <Ionicons
+          name={isActive("/(tabs)/dashboard") ? "home" : "home-outline"}
+          size={24}
+          color={isActive("/(tabs)/dashboard") ? "#8347FF" : "#9CA3AF"}
+        />
+        <Text
+          style={[
+            styles.tabLabel,
+            isActive("/(tabs)/dashboard") && styles.activeTabLabel,
+          ]}
+        >
+          Home
+        </Text>
+      </TouchableOpacity>
 
-          {/* Version info (only on medium screens and up) */}
-          <div className="hidden md:block text-purple-200 text-xs">
-            Version 1.0.0
-          </div>
+      {/* Transactions Tab */}
+      <TouchableOpacity
+        style={styles.tabButton}
+        onPress={() => router.push("/transactions")}
+        accessibilityRole="button"
+        accessibilityLabel="Transactions"
+        accessibilityState={{ selected: isActive("/transactions") }}
+      >
+        <Ionicons
+          name={isActive("/transactions") ? "list" : "list-outline"}
+          size={24}
+          color={isActive("/transactions") ? "#8347FF" : "#9CA3AF"}
+        />
+        <Text
+          style={[
+            styles.tabLabel,
+            isActive("/transactions") && styles.activeTabLabel,
+          ]}
+        >
+          History
+        </Text>
+      </TouchableOpacity>
 
-          {/* Links */}
-          <div className="flex items-center space-x-6">
-            <Link
-              to="/help"
-              className="text-purple-200 hover:text-white flex items-center gap-1.5 group transition-colors text-sm"
-            >
-              <HelpCircle className="h-4 w-4" aria-hidden="true" />
-              <span>Help</span>
-              <ArrowRight
-                className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-hidden="true"
-              />
-            </Link>
+      {/* Claim Button (Center) */}
+      <TouchableOpacity
+        style={styles.claimButton}
+        onPress={() => router.push("/claim")}
+        accessibilityRole="button"
+        accessibilityLabel="Claim Coins"
+      >
+        <View style={styles.claimButtonInner}>
+          <Ionicons name="cash" size={24} color="white" />
+        </View>
+        <Text style={styles.claimLabel}>Claim</Text>
+      </TouchableOpacity>
 
-            <Link
-              to={`/terms?referrer=${encodeURIComponent(currentPath)}`}
-              className="text-purple-200 hover:text-white flex items-center gap-1.5 group transition-colors text-sm"
-            >
-              <FileText className="h-4 w-4" aria-hidden="true" />
-              <span>Terms</span>
-              <ArrowRight
-                className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-hidden="true"
-              />
-            </Link>
+      {/* Wallet Tab */}
+      <TouchableOpacity
+        style={styles.tabButton}
+        onPress={() => router.push("/wallet")}
+        accessibilityRole="button"
+        accessibilityLabel="Wallet"
+        accessibilityState={{ selected: isActive("/wallet") }}
+      >
+        <Ionicons
+          name={isActive("/wallet") ? "wallet" : "wallet-outline"}
+          size={24}
+          color={isActive("/wallet") ? "#8347FF" : "#9CA3AF"}
+        />
+        <Text
+          style={[
+            styles.tabLabel,
+            isActive("/wallet") && styles.activeTabLabel,
+          ]}
+        >
+          Wallet
+        </Text>
+      </TouchableOpacity>
 
-            <Link
-              to={`/privacy?referrer=${encodeURIComponent(currentPath)}`}
-              className="text-purple-200 hover:text-white flex items-center gap-1.5 group transition-colors text-sm"
-            >
-              <Shield className="h-4 w-4" aria-hidden="true" />
-              <span>Privacy</span>
-              <ArrowRight
-                className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-hidden="true"
-              />
-            </Link>
-
-            <a
-              href="https://github.com/comiccoin-network"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-purple-200 hover:text-white flex items-center gap-1.5 group transition-colors text-sm"
-            >
-              <Github className="h-4 w-4" aria-hidden="true" />
-              <span className="hidden sm:inline">GitHub</span>
-              <ExternalLink
-                className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-hidden="true"
-              />
-            </a>
-          </div>
-        </div>
-
-        {/* Mobile version info (only on small screens) */}
-        <div className="md:hidden text-center mt-3 text-purple-200 text-xs">
-          Version 1.0.0
-        </div>
-      </div>
-    </footer>
+      {/* Settings Tab */}
+      <TouchableOpacity
+        style={styles.tabButton}
+        onPress={() => router.push("/settings")}
+        accessibilityRole="button"
+        accessibilityLabel="Settings"
+        accessibilityState={{ selected: isActive("/settings") }}
+      >
+        <Ionicons
+          name={isActive("/settings") ? "settings" : "settings-outline"}
+          size={24}
+          color={isActive("/settings") ? "#8347FF" : "#9CA3AF"}
+        />
+        <Text
+          style={[
+            styles.tabLabel,
+            isActive("/settings") && styles.activeTabLabel,
+          ]}
+        >
+          Settings
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
-export default AppFooter;
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    height: 60,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#F1F1F1",
+    paddingHorizontal: 8,
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  tabButton: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100%",
+  },
+  tabLabel: {
+    fontSize: 10,
+    marginTop: 2,
+    color: "#9CA3AF",
+  },
+  activeTabLabel: {
+    color: "#8347FF",
+    fontWeight: "500",
+  },
+  claimButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingBottom: 15, // To account for the button extending upward
+  },
+  claimButtonInner: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#8347FF",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#8347FF",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+    marginTop: -20, // Push button up for half-circle effect
+  },
+  claimLabel: {
+    fontSize: 10,
+    marginTop: 4,
+    color: "#8347FF",
+    fontWeight: "500",
+  },
+});
+
+export default FooterNav;

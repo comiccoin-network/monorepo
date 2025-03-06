@@ -43,7 +43,7 @@ const LoginScreen = () => {
     // Redirect if already authenticated
     if (isAuthenticated) {
       console.log("👉 User is authenticated, redirecting to dashboard");
-      router.replace("/dashboard");
+      router.replace("/(tabs)/dashboard");
     }
   }, [isAuthenticated, router]);
 

@@ -1,4 +1,4 @@
-// app/api/endpoints/dashboardApi.js
+// api/endpoints/dashboardApi.js
 import { usePrivateQuery } from "../../hooks/useApi";
 
 /**

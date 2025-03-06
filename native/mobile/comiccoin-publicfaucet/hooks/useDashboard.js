@@ -1,4 +1,4 @@
-// app/hooks/useDashboard.js
+// hooks/useDashboard.js
 import { useState, useCallback, useEffect, useMemo } from "react";
 import {
   useDashboard as useRawDashboard,
@@ -76,3 +76,5 @@ export function useDashboard(options = {}) {
     ...rest,
   };
 }
+
+export default useDashboard;
