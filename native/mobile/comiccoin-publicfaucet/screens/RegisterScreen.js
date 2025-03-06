@@ -12,17 +12,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
-  Linking,
-  SafeAreaView,
+  Modal,
+  FlatList,
+  Pressable,
   StatusBar,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Picker } from "@react-native-picker/picker";
 import { Feather } from "@expo/vector-icons";
 import { useRegistration } from "../hooks/useRegistration";
 import Header from "../components/Header";
 import LightFooter from "../components/LightFooter";
+import CoinsIcon from "../components/CoinsIcon";
 
 const RegisterScreen = () => {
   const router = useRouter();
@@ -34,9 +34,8 @@ const RegisterScreen = () => {
     resetState,
   } = useRegistration();
 
-  // Scroll references
+  // Scroll reference
   const scrollViewRef = useRef(null);
-  const errorSummaryRef = useRef(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -62,6 +61,10 @@ const RegisterScreen = () => {
   // Password visibility toggles
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // State for dropdowns
+  const [countryModalVisible, setCountryModalVisible] = useState(false);
+  const [timezoneModalVisible, setTimezoneModalVisible] = useState(false);
 
   // State to track if form has been submitted to prevent duplicate submissions
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -141,6 +144,18 @@ const RegisterScreen = () => {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+  };
+
+  // Select country
+  const selectCountry = (country) => {
+    handleInputChange("country", country.value);
+    setCountryModalVisible(false);
+  };
+
+  // Select timezone
+  const selectTimezone = (timezone) => {
+    handleInputChange("timezone", timezone.value);
+    setTimezoneModalVisible(false);
   };
 
   // Handle form submission
@@ -225,10 +240,6 @@ const RegisterScreen = () => {
       // mapApiErrorsToFormFields() will be called by the useEffect when apiError changes
       console.error("Registration error:", error);
     }
-  };
-
-  const openUrl = (url) => {
-    Linking.openURL(url);
   };
 
   // List of countries for the dropdown
@@ -323,8 +334,8 @@ const RegisterScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#4f46e5" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#7e22ce" />
       <Header currentRoute="/register" />
 
       <KeyboardAvoidingView
@@ -338,6 +349,8 @@ const RegisterScreen = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
+          overScrollMode="never"
+          contentInsetAdjustmentBehavior="never"
         >
           {/* Hero Banner */}
           <LinearGradient
@@ -384,7 +397,7 @@ const RegisterScreen = () => {
 
             {/* Error Summary */}
             {errorSummary.length > 0 && (
-              <View ref={errorSummaryRef} style={styles.errorSummary}>
+              <View style={styles.errorSummary}>
                 <View style={styles.errorSummaryHeader}>
                   <Feather name="alert-triangle" size={20} color="#ef4444" />
                   <Text style={styles.errorSummaryTitle}>
@@ -406,25 +419,23 @@ const RegisterScreen = () => {
                 <Text style={styles.sectionTitle}>Personal Information</Text>
               </View>
 
-              <View style={styles.formRow}>
-                {/* First Name */}
-                {renderFormField(
-                  "First Name",
-                  "first_name",
-                  "Enter your first name",
-                  formData.first_name,
-                  true,
-                )}
+              {/* First Name */}
+              {renderFormField(
+                "First Name",
+                "first_name",
+                "Enter your first name",
+                formData.first_name,
+                true,
+              )}
 
-                {/* Last Name */}
-                {renderFormField(
-                  "Last Name",
-                  "last_name",
-                  "Enter your last name",
-                  formData.last_name,
-                  true,
-                )}
-              </View>
+              {/* Last Name */}
+              {renderFormField(
+                "Last Name",
+                "last_name",
+                "Enter your last name",
+                formData.last_name,
+                true,
+              )}
 
               {/* Email */}
               {renderFormField(
@@ -440,7 +451,7 @@ const RegisterScreen = () => {
 
               {/* Phone (Optional) */}
               {renderFormField(
-                "Phone Number (Optional)",
+                "Phone Number",
                 "phone",
                 "+1 (555) 123-4567",
                 formData.phone,
@@ -458,34 +469,31 @@ const RegisterScreen = () => {
                 <Text style={styles.sectionTitle}>Location Information</Text>
               </View>
 
-              {/* Country */}
+              {/* Country Custom Dropdown */}
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>
                   Country <Text style={styles.requiredStar}>*</Text>
                 </Text>
-                <View
+                <TouchableOpacity
                   style={[
-                    styles.pickerContainer,
-                    errors.country ? styles.pickerError : null,
+                    styles.dropdownButton,
+                    errors.country ? styles.inputError : null,
                   ]}
+                  onPress={() => setCountryModalVisible(true)}
                 >
-                  <Picker
-                    selectedValue={formData.country}
-                    onValueChange={(value) =>
-                      handleInputChange("country", value)
-                    }
-                    style={styles.picker}
-                    dropdownIconColor="#6b7280"
+                  <Text
+                    style={[
+                      styles.dropdownButtonText,
+                      !formData.country && styles.dropdownPlaceholder,
+                    ]}
                   >
-                    {countries.map((country) => (
-                      <Picker.Item
-                        key={country.value}
-                        label={country.label}
-                        value={country.value}
-                      />
-                    ))}
-                  </Picker>
-                </View>
+                    {formData.country
+                      ? countries.find((c) => c.value === formData.country)
+                          ?.label || formData.country
+                      : "Select Country..."}
+                  </Text>
+                  <Feather name="chevron-down" size={20} color="#9ca3af" />
+                </TouchableOpacity>
                 {errors.country && (
                   <View style={styles.errorContainer}>
                     <Feather
@@ -499,6 +507,43 @@ const RegisterScreen = () => {
                 )}
               </View>
 
+              {/* Country Modal */}
+              <Modal
+                visible={countryModalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setCountryModalVisible(false)}
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                      <Text style={styles.modalTitle}>Select Country</Text>
+                      <TouchableOpacity
+                        style={styles.modalCloseButton}
+                        onPress={() => setCountryModalVisible(false)}
+                      >
+                        <Feather name="x" size={24} color="#6b7280" />
+                      </TouchableOpacity>
+                    </View>
+                    <FlatList
+                      data={countries.filter((c) => c.value !== "")}
+                      keyExtractor={(item) => item.value}
+                      renderItem={({ item }) => (
+                        <TouchableOpacity
+                          style={styles.modalItem}
+                          onPress={() => selectCountry(item)}
+                        >
+                          <Text style={styles.modalItemText}>{item.label}</Text>
+                          {formData.country === item.value && (
+                            <Feather name="check" size={20} color="#7e22ce" />
+                          )}
+                        </TouchableOpacity>
+                      )}
+                    />
+                  </View>
+                </View>
+              </Modal>
+
               {/* Other Country - only shows if "other" is selected */}
               {formData.country === "other" &&
                 renderFormField(
@@ -509,36 +554,36 @@ const RegisterScreen = () => {
                   true,
                 )}
 
-              {/* Timezone */}
+              {/* Timezone Custom Dropdown */}
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>
                   Timezone <Text style={styles.requiredStar}>*</Text>
                 </Text>
-                <View
-                  style={[
-                    styles.pickerContainer,
-                    errors.timezone ? styles.pickerError : null,
-                  ]}
-                >
+                <View style={styles.inputWrapper}>
                   <View style={styles.inputIconLeft}>
                     <Feather name="clock" size={20} color="#9ca3af" />
                   </View>
-                  <Picker
-                    selectedValue={formData.timezone}
-                    onValueChange={(value) =>
-                      handleInputChange("timezone", value)
-                    }
-                    style={[styles.picker, styles.pickerWithIcon]}
-                    dropdownIconColor="#6b7280"
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownButton,
+                      styles.dropdownButtonWithIcon,
+                      errors.timezone ? styles.inputError : null,
+                    ]}
+                    onPress={() => setTimezoneModalVisible(true)}
                   >
-                    {timezones.map((timezone) => (
-                      <Picker.Item
-                        key={timezone.value}
-                        label={timezone.label}
-                        value={timezone.value}
-                      />
-                    ))}
-                  </Picker>
+                    <Text
+                      style={[
+                        styles.dropdownButtonText,
+                        !formData.timezone && styles.dropdownPlaceholder,
+                      ]}
+                    >
+                      {formData.timezone
+                        ? timezones.find((t) => t.value === formData.timezone)
+                            ?.label || formData.timezone
+                        : "Select Timezone..."}
+                    </Text>
+                    <Feather name="chevron-down" size={20} color="#9ca3af" />
+                  </TouchableOpacity>
                 </View>
                 {errors.timezone && (
                   <View style={styles.errorContainer}>
@@ -552,6 +597,43 @@ const RegisterScreen = () => {
                   </View>
                 )}
               </View>
+
+              {/* Timezone Modal */}
+              <Modal
+                visible={timezoneModalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setTimezoneModalVisible(false)}
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                      <Text style={styles.modalTitle}>Select Timezone</Text>
+                      <TouchableOpacity
+                        style={styles.modalCloseButton}
+                        onPress={() => setTimezoneModalVisible(false)}
+                      >
+                        <Feather name="x" size={24} color="#6b7280" />
+                      </TouchableOpacity>
+                    </View>
+                    <FlatList
+                      data={timezones.filter((t) => t.value !== "")}
+                      keyExtractor={(item) => item.value}
+                      renderItem={({ item }) => (
+                        <TouchableOpacity
+                          style={styles.modalItem}
+                          onPress={() => selectTimezone(item)}
+                        >
+                          <Text style={styles.modalItemText}>{item.label}</Text>
+                          {formData.timezone === item.value && (
+                            <Feather name="check" size={20} color="#7e22ce" />
+                          )}
+                        </TouchableOpacity>
+                      )}
+                    />
+                  </View>
+                </View>
+              </Modal>
             </View>
 
             {/* Account Security */}
@@ -720,7 +802,7 @@ const RegisterScreen = () => {
       </KeyboardAvoidingView>
 
       <LightFooter />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -736,7 +818,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    flexGrow: 1,
     paddingBottom: 24,
   },
   heroBanner: {
@@ -760,8 +841,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   formContainer: {
-    marginTop: -20,
-    marginHorizontal: 16,
+    margin: 16,
     backgroundColor: "white",
     borderRadius: 12,
     shadowColor: "#000",
@@ -775,6 +855,8 @@ const styles = StyleSheet.create({
   formHeader: {
     paddingVertical: 16,
     paddingHorizontal: 16,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   formHeaderContent: {
     flexDirection: "row",
@@ -833,9 +915,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#4b5563",
   },
-  formRow: {
-    flexDirection: "column",
-  },
   inputContainer: {
     marginBottom: 16,
   },
@@ -880,21 +959,65 @@ const styles = StyleSheet.create({
     borderColor: "#ef4444",
     backgroundColor: "#fef2f2",
   },
-  pickerContainer: {
+  dropdownButton: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    height: 44,
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderRadius: 8,
+    paddingHorizontal: 12,
     backgroundColor: "white",
   },
-  pickerError: {
-    borderColor: "#ef4444",
-    backgroundColor: "#fef2f2",
+  dropdownButtonWithIcon: {
+    paddingLeft: 40,
   },
-  picker: {
-    height: 44,
+  dropdownButtonText: {
+    fontSize: 16,
+    color: "#1f2937",
   },
-  pickerWithIcon: {
-    marginLeft: 40,
+  dropdownPlaceholder: {
+    color: "#9ca3af",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    maxHeight: "70%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1f2937",
+  },
+  modalCloseButton: {
+    padding: 4,
+  },
+  modalItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: "#1f2937",
   },
   errorContainer: {
     flexDirection: "row",
