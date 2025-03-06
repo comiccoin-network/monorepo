@@ -1,13 +1,21 @@
-// components/LightFooter.js
+import { useRouter } from "expo-router";// components/LightFooter.js
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 const LightFooter = () => {
   const currentYear = new Date().getFullYear();
+  const router = useRouter();
 
   const openLink = (url) => {
-    Linking.openURL(url);
+    if (url.startsWith('http')) {
+      Linking.openURL(url);
+    } else if (url.startsWith('mailto')) {
+      Linking.openURL(url);
+    } else {
+      // Internal navigation
+      router.push(url);
+    }
   };
 
   return (
@@ -16,21 +24,21 @@ const LightFooter = () => {
         <View style={styles.footerRow}>
           <TouchableOpacity
             style={styles.footerLink}
-            onPress={() => openLink("https://comiccoin.example.com/terms")}
+            onPress={() => openLink("/terms")}
           >
             <Text style={styles.footerLinkText}>Terms</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.footerLink}
-            onPress={() => openLink("https://comiccoin.example.com/privacy")}
+            onPress={() => openLink("/privacy")}
           >
             <Text style={styles.footerLinkText}>Privacy</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.footerLink}
-            onPress={() => openLink("https://comiccoin.example.com/help")}
+            onPress={() => openLink("/help")}
           >
             <Text style={styles.footerLinkText}>Help</Text>
           </TouchableOpacity>
@@ -40,21 +48,21 @@ const LightFooter = () => {
           <View style={styles.socialLinks}>
             <TouchableOpacity
               style={styles.socialIcon}
-              onPress={() => openLink("https://twitter.com/comiccoin")}
+              onPress={() => openLink("https://comiccoinfaucet.com")}
             >
-              <Feather name="twitter" size={18} color="#6b7280" />
+              <Feather name="globe" size={18} color="#6b7280" />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.socialIcon}
-              onPress={() => openLink("https://discord.gg/comiccoin")}
+              onPress={() => openLink("mailto:hello@comiccoin.ca")}
             >
-              <Feather name="message-circle" size={18} color="#6b7280" />
+              <Feather name="mail" size={18} color="#6b7280" />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.socialIcon}
-              onPress={() => openLink("https://github.com/comiccoin")}
+              onPress={() => openLink("https://github.com/comiccoin-network/monorepo")}
             >
               <Feather name="github" size={18} color="#6b7280" />
             </TouchableOpacity>
