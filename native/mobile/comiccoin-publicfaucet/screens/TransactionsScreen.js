@@ -292,7 +292,7 @@ const TransactionsScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#7e22ce" />
       <AppHeader
         title={`Transactions${filter === "personal" ? " (Personal)" : ""}`}
@@ -446,7 +446,7 @@ const TransactionsScreen = () => {
       ) : (
         renderEmptyState()
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
