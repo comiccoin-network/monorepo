@@ -9,11 +9,13 @@ import {
   Pressable,
   Modal,
   Platform,
+  StatusBar,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
+import CoinsIcon from "./CoinsIcon";
 
-const Header = ({ showBackButton = false }) => {
+const Header = ({ currentRoute }) => {
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -21,94 +23,46 @@ const Header = ({ showBackButton = false }) => {
     setMenuVisible(!menuVisible);
   };
 
+  // Only navigate if we're not already on the index page
   const navigateHome = () => {
-    router.push("/home");
-  };
-
-  const navigateToGetStarted = () => {
-    router.push("/");
+    if (currentRoute !== "/") {
+      router.push("/");
+    }
   };
 
   return (
-    <LinearGradient
-      colors={["#7e22ce", "#4338ca"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
-      style={styles.headerContainer}
-    >
-      <View style={styles.headerContent}>
-        {/* Logo and Brand */}
-        <TouchableOpacity
-          style={styles.logoContainer}
-          onPress={navigateHome}
-          accessibilityRole="button"
-          accessibilityLabel="ComicCoin Faucet, go to home"
-        >
-          <Feather
-            name="dollar-sign"
-            size={24}
-            color="white"
-            style={styles.logoIcon}
-          />
-          <Text style={styles.logoText}>ComicCoin Faucet</Text>
-        </TouchableOpacity>
-
-        {/* Mobile Menu Button */}
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={toggleMenu}
-          accessibilityRole="button"
-          accessibilityLabel={
-            menuVisible ? "Close main menu" : "Open main menu"
-          }
-        >
-          <Feather name={menuVisible ? "x" : "menu"} size={24} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Mobile Menu Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={menuVisible}
-        onRequestClose={toggleMenu}
+    <>
+      <StatusBar barStyle="light-content" backgroundColor="#7e22ce" />
+      <LinearGradient
+        colors={["#7e22ce", "#4338ca"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.headerContainer}
       >
-        <Pressable style={styles.modalOverlay} onPress={toggleMenu}>
-          <View style={styles.menuContent}>
-            {showBackButton ? (
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  toggleMenu();
-                  navigateHome();
-                }}
-              >
-                <Feather name="arrow-left" size={20} color="#7e22ce" />
-                <Text style={styles.menuItemText}>Back to Home</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  toggleMenu();
-                  navigateToGetStarted();
-                }}
-              >
-                <Feather name="dollar-sign" size={20} color="#7e22ce" />
-                <Text style={styles.menuItemText}>Claim Coins</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </Pressable>
-      </Modal>
-    </LinearGradient>
+        <View style={styles.headerContent}>
+          {/* Logo and Brand */}
+          <TouchableOpacity
+            style={styles.logoContainer}
+            onPress={navigateHome}
+            accessibilityRole="button"
+            accessibilityLabel="ComicCoin Faucet, go to home"
+          >
+            <View style={styles.logoIconContainer}>
+              <CoinsIcon size={24} color="white" />
+            </View>
+            <Text style={styles.logoText}>ComicCoin Faucet</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   headerContainer: {
-    paddingTop: Platform.OS === "ios" ? 44 : 10,
-    paddingBottom: 10,
+    width: "100%",
+    paddingTop: Platform.OS === "ios" ? 50 : StatusBar.currentHeight || 0,
+    paddingBottom: 15,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -131,13 +85,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  logoIcon: {
-    marginRight: 8,
+  logoIconContainer: {
+    marginRight: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
   logoText: {
     color: "white",
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
+    letterSpacing: 0.5,
   },
   menuButton: {
     padding: 8,

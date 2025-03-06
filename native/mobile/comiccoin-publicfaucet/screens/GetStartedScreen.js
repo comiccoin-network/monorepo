@@ -7,14 +7,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
-  StatusBar,
   Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useGetFaucet } from "../api/endpoints/faucetApi";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import LightFooter from "../components/LightFooter";
 import { Feather } from "@expo/vector-icons";
 
 const GetStartedScreen = () => {
@@ -44,12 +43,15 @@ const GetStartedScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#4c1d95" />
+    <View style={styles.container}>
+      <Header currentRoute="/" />
 
-      <Header showBackButton={true} />
-
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        bounces={false}
+        overScrollMode="never"
+        contentInsetAdjustmentBehavior="never"
+      >
         <LinearGradient
           colors={["#4f46e5", "#4338ca"]}
           start={{ x: 0, y: 0 }}
@@ -62,12 +64,6 @@ const GetStartedScreen = () => {
               Join our community of comic collectors and creators today and get
               free ComicCoins!
             </Text>
-            <TouchableOpacity
-              style={styles.heroButton}
-              onPress={() => router.push("/home")}
-            >
-              <Text style={styles.heroButtonText}>Back to Home</Text>
-            </TouchableOpacity>
           </View>
         </LinearGradient>
 
@@ -117,13 +113,8 @@ const GetStartedScreen = () => {
         </View>
       </ScrollView>
 
-      <Footer
-        isLoading={isLoading}
-        error={error}
-        faucet={faucet}
-        formatBalance={formatBalance}
-      />
-    </SafeAreaView>
+      <LightFooter />
+    </View>
   );
 };
 
@@ -138,6 +129,8 @@ const styles = StyleSheet.create({
   heroBanner: {
     paddingVertical: 48,
     paddingHorizontal: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   heroContent: {
     alignItems: "center",
