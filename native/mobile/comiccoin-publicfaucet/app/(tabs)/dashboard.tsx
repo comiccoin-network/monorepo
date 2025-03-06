@@ -137,37 +137,43 @@ export default function Dashboard() {
         }
       >
         {/* Hero section with welcome message and claim button */}
-        <LinearGradient
-          colors={["#7e22ce", "#4338ca"]}
-          style={styles.heroContainer}
-        >
-          <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeTitle}>Welcome back, {userName}!</Text>
-            <Text style={styles.welcomeSubtitle}>
-              Track your coins and claim daily rewards
-            </Text>
-          </View>
-
-          {canClaimNow ? (
-            <View style={styles.claimButtonContainer}>
-              <TouchableOpacity
-                style={styles.claimButton}
-                onPress={handleClaimPress}
-                activeOpacity={0.9}
-              >
-                <Text style={styles.claimButtonText}>Claim Your Coins Now</Text>
-                <Ionicons name="arrow-forward" size={20} color="white" />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.countdownContainer}>
-              <Text style={styles.countdownLabel}>
-                Next claim available in:
+        <View style={styles.heroSection}>
+          <LinearGradient
+            colors={["#8347FF", "#4338ca"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.heroGradient}
+          >
+            <View style={styles.welcomeSection}>
+              <Text style={styles.welcomeTitle}>Welcome back, {userName}!</Text>
+              <Text style={styles.welcomeSubtitle}>
+                Track your coins and claim daily rewards
               </Text>
-              <Text style={styles.countdownValue}>{timeUntilNextClaim}</Text>
             </View>
-          )}
-        </LinearGradient>
+
+            {canClaimNow ? (
+              <View style={styles.claimButtonContainer}>
+                <TouchableOpacity
+                  style={styles.claimButton}
+                  onPress={handleClaimPress}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.claimButtonText}>
+                    Claim Your Coins Now
+                  </Text>
+                  <Ionicons name="arrow-forward" size={20} color="#8347FF" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.countdownContainer}>
+                <Text style={styles.countdownLabel}>
+                  Next claim available in:
+                </Text>
+                <Text style={styles.countdownValue}>{timeUntilNextClaim}</Text>
+              </View>
+            )}
+          </LinearGradient>
+        </View>
 
         {/* Balance Cards */}
         <View style={styles.balanceCardsContainer}>
@@ -294,9 +300,21 @@ const styles = StyleSheet.create({
   },
 
   // Hero section styles
-  heroContainer: {
+  heroSection: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  heroGradient: {
     paddingVertical: 24,
     paddingHorizontal: 16,
+    borderRadius: 16,
   },
   welcomeSection: {
     marginBottom: 24,
@@ -310,7 +328,7 @@ const styles = StyleSheet.create({
   },
   welcomeSubtitle: {
     fontSize: 16,
-    color: "rgba(255, 255, 255, 0.8)",
+    color: "rgba(255, 255, 255, 0.9)",
     textAlign: "center",
   },
   claimButtonContainer: {
@@ -326,23 +344,32 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     width: "100%",
     maxWidth: 300,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   claimButtonText: {
-    color: "#7e22ce",
+    color: "#8347FF",
     fontWeight: "bold",
     fontSize: 18,
     marginRight: 8,
   },
   countdownContainer: {
     alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
   },
   countdownLabel: {
     fontSize: 16,
-    color: "rgba(255, 255, 255, 0.8)",
+    color: "rgba(255, 255, 255, 0.9)",
     marginBottom: 8,
   },
   countdownValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
     color: "white",
   },
