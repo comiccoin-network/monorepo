@@ -1,31 +1,28 @@
 // components/Header.js
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "expo-router";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  Pressable,
-  Modal,
-  Platform,
   StatusBar,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 import CoinsIcon from "./CoinsIcon";
 
-const Header = ({ currentRoute }) => {
+const Header = ({ showBackButton = false, title = "" }) => {
   const router = useRouter();
-  const [menuVisible, setMenuVisible] = useState(false);
 
-  const toggleMenu = () => {
-    setMenuVisible(!menuVisible);
+  const handleBack = () => {
+    router.back();
   };
 
-  // Only navigate if we're not already on the index page
   const navigateHome = () => {
-    if (currentRoute !== "/") {
+    // Only navigate to home if we're not already there
+    if (router.pathname !== "/") {
       router.push("/");
     }
   };
@@ -40,9 +37,23 @@ const Header = ({ currentRoute }) => {
         style={styles.headerContainer}
       >
         <View style={styles.headerContent}>
+          {showBackButton ? (
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBack}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <Feather name="arrow-left" size={24} color="white" />
+            </TouchableOpacity>
+          ) : null}
+
           {/* Logo and Brand */}
           <TouchableOpacity
-            style={styles.logoContainer}
+            style={[
+              styles.logoContainer,
+              showBackButton && styles.logoWithBackButton,
+            ]}
             onPress={navigateHome}
             accessibilityRole="button"
             accessibilityLabel="ComicCoin Faucet, go to home"
@@ -52,7 +63,17 @@ const Header = ({ currentRoute }) => {
             </View>
             <Text style={styles.logoText}>ComicCoin Faucet</Text>
           </TouchableOpacity>
+
+          {/* Empty view to balance the layout when back button is shown */}
+          {showBackButton ? <View style={styles.spacer} /> : null}
         </View>
+
+        {/* Optional title bar */}
+        {title ? (
+          <View style={styles.titleContainer}>
+            <Text style={styles.titleText}>{title}</Text>
+          </View>
+        ) : null}
       </LinearGradient>
     </>
   );
@@ -81,9 +102,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
   },
+  backButton: {
+    padding: 8,
+    marginLeft: -8,
+  },
   logoContainer: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+  },
+  logoWithBackButton: {
+    justifyContent: "flex-start",
   },
   logoIconContainer: {
     marginRight: 12,
@@ -100,45 +130,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     letterSpacing: 0.5,
   },
-  menuButton: {
-    padding: 8,
+  spacer: {
+    width: 40,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-start",
-  },
-  menuContent: {
-    backgroundColor: "white",
-    marginTop: 60,
-    borderRadius: 8,
-    padding: 16,
-    marginHorizontal: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
-  },
-  menuItem: {
-    flexDirection: "row",
+  titleContainer: {
+    marginTop: 8,
+    paddingHorizontal: 16,
     alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    backgroundColor: "#f3e8ff",
-    borderRadius: 8,
   },
-  menuItemText: {
-    marginLeft: 8,
-    fontSize: 16,
+  titleText: {
+    fontSize: 18,
     fontWeight: "600",
-    color: "#7e22ce",
+    color: "white",
   },
 });
 

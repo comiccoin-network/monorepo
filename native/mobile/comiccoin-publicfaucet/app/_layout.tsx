@@ -14,10 +14,58 @@ export default function RootLayout() {
         <AuthProvider>
           <Stack
             screenOptions={{
-              headerShown: false,
+              headerShown: false, // Hide the default header
               contentStyle: { backgroundColor: "#f5f3ff" },
+              animation: "slide_from_right", // Add smooth transitions
             }}
-          />
+          >
+            <Stack.Screen
+              name="index"
+              options={{ title: "ComicCoin Faucet" }}
+            />
+            <Stack.Screen
+              name="register"
+              options={{
+                title: "Register",
+                animation: "slide_from_right",
+              }}
+            />
+            <Stack.Screen
+              name="login"
+              options={{
+                title: "Login",
+                animation: "slide_from_right",
+              }}
+            />
+            <Stack.Screen
+              name="terms"
+              options={{
+                title: "Terms of Service",
+                animation: "slide_from_right",
+              }}
+            />
+            <Stack.Screen
+              name="privacy"
+              options={{
+                title: "Privacy Policy",
+                animation: "slide_from_right",
+              }}
+            />
+            <Stack.Screen
+              name="help"
+              options={{
+                title: "Help & Support",
+                animation: "slide_from_right",
+              }}
+            />
+            <Stack.Screen
+              name="register-success"
+              options={{
+                title: "Registration Success",
+                animation: "slide_from_right",
+              }}
+            />
+          </Stack>
         </AuthProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

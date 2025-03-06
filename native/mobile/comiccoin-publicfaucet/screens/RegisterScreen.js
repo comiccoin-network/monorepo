@@ -14,7 +14,6 @@ import {
   ActivityIndicator,
   Modal,
   FlatList,
-  Pressable,
   StatusBar,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -22,7 +21,6 @@ import { Feather } from "@expo/vector-icons";
 import { useRegistration } from "../hooks/useRegistration";
 import Header from "../components/Header";
 import LightFooter from "../components/LightFooter";
-import CoinsIcon from "../components/CoinsIcon";
 
 const RegisterScreen = () => {
   const router = useRouter();
@@ -308,6 +306,7 @@ const RegisterScreen = () => {
             keyboardType={keyboardType}
             secureTextEntry={secureTextEntry}
             autoCapitalize={keyboardType === "email-address" ? "none" : "words"}
+            placeholderTextColor="#9ca3af"
           />
           {rightIcon && (
             <TouchableOpacity
@@ -335,8 +334,8 @@ const RegisterScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#7e22ce" />
-      <Header currentRoute="/register" />
+      {/* Use the improved Header with back button */}
+      <Header showBackButton={true} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
