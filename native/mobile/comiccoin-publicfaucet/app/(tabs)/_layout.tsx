@@ -1,12 +1,14 @@
 import { Tabs } from "expo-router";
+import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../hooks/useAuth";
+import { LinearGradient } from "expo-linear-gradient";
+import CoinsIcon from "../../components/CoinsIcon";
 
 /**
  * This is the layout for the authenticated tab navigation
- * It creates a bottom tab bar with Dashboard, Transactions, Settings, and Logout
+ * Creates a bottom tab bar with Dashboard, Transactions, Settings, and Logout
  */
 export default function TabLayout() {
   const router = useRouter();
@@ -27,8 +29,12 @@ export default function TabLayout() {
           borderTopWidth: 1,
           borderTopColor: "#F1F1F1",
           height: 60,
-          paddingBottom: 10,
+          paddingBottom: 5,
           paddingTop: 5,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "500",
         },
       }}
     >
@@ -42,6 +48,17 @@ export default function TabLayout() {
               size={24}
               color={color}
             />
+          ),
+          tabBarLabel: ({ focused, color }) => (
+            <Text
+              style={{
+                color,
+                fontSize: 12,
+                fontWeight: focused ? "600" : "400",
+              }}
+            >
+              Dashboard
+            </Text>
           ),
         }}
       />
@@ -57,6 +74,17 @@ export default function TabLayout() {
               color={color}
             />
           ),
+          tabBarLabel: ({ focused, color }) => (
+            <Text
+              style={{
+                color,
+                fontSize: 12,
+                fontWeight: focused ? "600" : "400",
+              }}
+            >
+              Transactions
+            </Text>
+          ),
         }}
       />
 
@@ -71,6 +99,17 @@ export default function TabLayout() {
               color={color}
             />
           ),
+          tabBarLabel: ({ focused, color }) => (
+            <Text
+              style={{
+                color,
+                fontSize: 12,
+                fontWeight: focused ? "600" : "400",
+              }}
+            >
+              Settings
+            </Text>
+          ),
         }}
       />
 
@@ -81,8 +120,11 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <Ionicons name="log-out-outline" size={24} color={color} />
           ),
+          tabBarLabel: ({ color }) => (
+            <Text style={{ color, fontSize: 12 }}>Logout</Text>
+          ),
           tabBarButton: (props) => (
-            <Pressable {...props} onPress={handleLogout} />
+            <View {...props} style={props.style} onTouchEnd={handleLogout} />
           ),
         }}
         listeners={{

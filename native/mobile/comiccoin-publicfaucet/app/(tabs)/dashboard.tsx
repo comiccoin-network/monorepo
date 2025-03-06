@@ -7,86 +7,16 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  SafeAreaView,
+  StatusBar,
+  Platform,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../../hooks/useAuth";
 import { useDashboard } from "../../hooks/useDashboard";
-
-// Hero section with welcome and countdown
-const HeroSection = ({
-  userName,
-  canClaim,
-  timeUntilNextClaim,
-  onClaimPress,
-}) => {
-  const [showTimer, setShowTimer] = useState(true);
-
-  return (
-    <View style={styles.heroContainer}>
-      <Text style={styles.welcomeTitle}>Welcome back, {userName}!</Text>
-      <Text style={styles.welcomeSubtitle}>
-        Track your coins and claim daily rewards
-      </Text>
-
-      <TouchableOpacity
-        onPress={() => setShowTimer(!showTimer)}
-        style={styles.timerToggle}
-      >
-        <Text style={styles.timerToggleText}>
-          {showTimer ? "Hide Timer" : "Show Timer"}
-        </Text>
-        <Ionicons
-          name={showTimer ? "chevron-up" : "chevron-down"}
-          size={18}
-          color="#a5b4fc"
-        />
-      </TouchableOpacity>
-
-      {showTimer && (
-        <View style={styles.timerCard}>
-          {canClaim ? (
-            <View style={styles.claimReadyContainer}>
-              <Text style={styles.claimReadyText}>
-                Your coins are ready to claim!
-              </Text>
-              <TouchableOpacity
-                style={styles.claimButton}
-                onPress={onClaimPress}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.claimButtonText}>Claim Your Coins Now</Text>
-                <Ionicons name="arrow-forward" size={20} color="white" />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.countdownContainer}>
-              <Text style={styles.nextClaimText}>Next claim available in:</Text>
-              <Text style={styles.countdownText}>{timeUntilNextClaim}</Text>
-            </View>
-          )}
-        </View>
-      )}
-    </View>
-  );
-};
-
-// Balance Card component
-const BalanceCard = ({ title, amount, iconName }) => (
-  <View style={styles.balanceCard}>
-    <View>
-      <Text style={styles.balanceTitle}>{title}</Text>
-      <Text style={styles.balanceAmount}>
-        <Text style={styles.balanceValue}>{amount}</Text> CC
-      </Text>
-    </View>
-    <View style={styles.iconContainer}>
-      <Ionicons name={iconName} size={24} color="#8347FF" />
-    </View>
-  </View>
-);
+import CoinsIcon from "../../components/CoinsIcon";
+import Header from "../../components/Header";
 
 // Transaction Item component
 const TransactionItem = ({ amount, date, status = "Completed" }) => (
@@ -97,6 +27,27 @@ const TransactionItem = ({ amount, date, status = "Completed" }) => (
     </View>
     <View style={styles.statusBadge}>
       <Text style={styles.statusText}>{status}</Text>
+    </View>
+  </View>
+);
+
+// Balance Card component with icon
+const BalanceCard = ({ title, amount, iconName }) => (
+  <View style={styles.balanceCard}>
+    <View>
+      <Text style={styles.balanceTitle}>{title}</Text>
+      <Text style={styles.balanceAmount}>
+        <Text style={styles.balanceValue}>{amount}</Text> CC
+      </Text>
+    </View>
+    <View style={styles.iconContainer}>
+      {iconName === "wallet-outline" ? (
+        <Ionicons name="wallet-outline" size={24} color="#8347FF" />
+      ) : iconName === "cash-outline" ? (
+        <Ionicons name="cash-outline" size={24} color="#8347FF" />
+      ) : (
+        <Ionicons name="trending-up-outline" size={24} color="#8347FF" />
+      )}
     </View>
   </View>
 );
@@ -133,21 +84,21 @@ export default function Dashboard() {
   // Loading state
   if (isLoading && !dashboard) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="light" />
+      <View style={styles.container}>
+        <Header title="Dashboard" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#8347FF" />
           <Text style={styles.loadingText}>Loading your dashboard...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // Error state
   if (error && !dashboard) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="light" />
+      <View style={styles.container}>
+        <Header title="Dashboard" />
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={56} color="#EF4444" />
           <Text style={styles.errorTitle}>Couldn't load dashboard</Text>
@@ -156,7 +107,7 @@ export default function Dashboard() {
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -177,8 +128,8 @@ export default function Dashboard() {
 
   // Main dashboard render
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+    <View style={styles.container}>
+      <Header title="Dashboard" />
 
       <ScrollView
         contentContainerStyle={styles.contentContainer}
@@ -186,13 +137,38 @@ export default function Dashboard() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Hero section with welcome message and timer */}
-        <HeroSection
-          userName={userName}
-          canClaim={canClaimNow}
-          timeUntilNextClaim={timeUntilNextClaim}
-          onClaimPress={handleClaimPress}
-        />
+        {/* Hero section with welcome message and claim button */}
+        <LinearGradient
+          colors={["#7e22ce", "#4338ca"]}
+          style={styles.heroContainer}
+        >
+          <View style={styles.welcomeSection}>
+            <Text style={styles.welcomeTitle}>Welcome back, {userName}!</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Track your coins and claim daily rewards
+            </Text>
+          </View>
+
+          {canClaimNow ? (
+            <View style={styles.claimButtonContainer}>
+              <TouchableOpacity
+                style={styles.claimButton}
+                onPress={handleClaimPress}
+                activeOpacity={0.9}
+              >
+                <Text style={styles.claimButtonText}>Claim Your Coins Now</Text>
+                <Ionicons name="arrow-forward" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.countdownContainer}>
+              <Text style={styles.countdownLabel}>
+                Next claim available in:
+              </Text>
+              <Text style={styles.countdownValue}>{timeUntilNextClaim}</Text>
+            </View>
+          )}
+        </LinearGradient>
 
         {/* Balance Cards */}
         <View style={styles.balanceCardsContainer}>
@@ -226,7 +202,7 @@ export default function Dashboard() {
             {dashboard?.transactions?.length > 0 && (
               <TouchableOpacity
                 style={styles.seeAllButton}
-                onPress={() => router.push("/transactions")}
+                onPress={() => router.push("/(tabs)/transactions")}
               >
                 <Text style={styles.seeAllText}>See All</Text>
                 <Ionicons name="arrow-forward" size={16} color="white" />
@@ -266,7 +242,7 @@ export default function Dashboard() {
         {/* Space at the bottom to prevent content from being hidden by tab bar */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -320,11 +296,11 @@ const styles = StyleSheet.create({
 
   // Hero section styles
   heroContainer: {
-    backgroundColor: "#6C47FF",
-    paddingTop: 24,
-    paddingBottom: 32,
+    paddingVertical: 24,
     paddingHorizontal: 16,
-    alignItems: "center",
+  },
+  welcomeSection: {
+    marginBottom: 24,
   },
   welcomeTitle: {
     fontSize: 24,
@@ -337,67 +313,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "rgba(255, 255, 255, 0.8)",
     textAlign: "center",
-    marginBottom: 16,
   },
-  timerToggle: {
-    flexDirection: "row",
+  claimButtonContainer: {
     alignItems: "center",
-    marginBottom: 16,
-  },
-  timerToggleText: {
-    color: "rgba(255, 255, 255, 0.8)",
-    marginRight: 4,
-  },
-  timerCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 20,
-    width: "100%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  claimReadyContainer: {
-    alignItems: "center",
-  },
-  claimReadyText: {
-    fontSize: 18,
-    fontWeight: "500",
-    color: "#374151",
-    marginBottom: 16,
-    textAlign: "center",
   },
   claimButton: {
-    backgroundColor: "#8347FF",
+    backgroundColor: "white",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 100,
     width: "100%",
-    maxWidth: 280,
+    maxWidth: 300,
   },
   claimButtonText: {
-    color: "white",
+    color: "#7e22ce",
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 18,
     marginRight: 8,
   },
   countdownContainer: {
     alignItems: "center",
   },
-  nextClaimText: {
+  countdownLabel: {
     fontSize: 16,
-    color: "#6B7280",
+    color: "rgba(255, 255, 255, 0.8)",
     marginBottom: 8,
   },
-  countdownText: {
+  countdownValue: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#8347FF",
+    color: "white",
   },
 
   // Balance cards styles
