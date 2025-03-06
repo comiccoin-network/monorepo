@@ -3,21 +3,14 @@ import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../hooks/useAuth";
-import { LinearGradient } from "expo-linear-gradient";
-import CoinsIcon from "../../components/CoinsIcon";
 
 /**
  * This is the layout for the authenticated tab navigation
- * Creates a bottom tab bar with Dashboard, Transactions, Settings, and Logout
+ * Creates a bottom tab bar with Dashboard, Transactions, Settings, and More
  */
 export default function TabLayout() {
   const router = useRouter();
   const { logout } = useAuth();
-
-  const handleLogout = () => {
-    logout();
-    router.replace("/login");
-  };
 
   return (
     <Tabs
@@ -114,25 +107,29 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="logout"
+        name="more"
         options={{
-          title: "Logout",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="log-out-outline" size={24} color={color} />
+          title: "More",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={
+                focused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline"
+              }
+              size={24}
+              color={color}
+            />
           ),
-          tabBarLabel: ({ color }) => (
-            <Text style={{ color, fontSize: 12 }}>Logout</Text>
+          tabBarLabel: ({ focused, color }) => (
+            <Text
+              style={{
+                color,
+                fontSize: 12,
+                fontWeight: focused ? "600" : "400",
+              }}
+            >
+              More
+            </Text>
           ),
-          tabBarButton: (props) => (
-            <View {...props} style={props.style} onTouchEnd={handleLogout} />
-          ),
-        }}
-        listeners={{
-          tabPress: (e) => {
-            // Prevent default action
-            e.preventDefault();
-            handleLogout();
-          },
         }}
       />
     </Tabs>
