@@ -1,39 +1,21 @@
-// app/register.tsx
+// app/index.tsx
 import React from "react";
-import { Text, View, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "../contexts/AuthContext";
+import RegisterScreen from "../screens/RegisterScreen";
 
-export default function Register() {
+// Create a query client for React Query
+const queryClient = new QueryClient();
+
+export default function App() {
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Register Screen</Text>
-        <Text style={styles.subtitle}>Registration form will go here</Text>
-      </View>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <RegisterScreen />
+        </AuthProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f3ff",
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 16,
-    color: "#6b21a8",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#4b5563",
-    textAlign: "center",
-  },
-});
