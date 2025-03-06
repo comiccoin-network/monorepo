@@ -20,7 +20,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 import { useRegistration } from "../hooks/useRegistration";
 import Header from "../components/Header";
-import LightFooter from "../components/LightFooter";
 
 const RegisterScreen = () => {
   const router = useRouter();
@@ -799,8 +798,6 @@ const RegisterScreen = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      <LightFooter />
     </View>
   );
 };

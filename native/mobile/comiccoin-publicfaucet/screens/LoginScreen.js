@@ -16,7 +16,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../hooks/useAuth";
 import Header from "../components/Header";
-import LightFooter from "../components/LightFooter";
 
 const LoginScreen = () => {
   console.log("🚀 LoginScreen component initializing");
@@ -311,8 +310,6 @@ const LoginScreen = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      <LightFooter />
     </View>
   );
 };
