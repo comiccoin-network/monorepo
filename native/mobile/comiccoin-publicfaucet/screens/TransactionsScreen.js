@@ -15,8 +15,9 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
-import Header from "../components/Header";
+import AppHeader from "../components/AppHeader";
 import { useTransactions } from "../api/endpoints/transactionsApi";
+import { LinearGradient } from "expo-linear-gradient";
 
 const TransactionsScreen = () => {
   const router = useRouter();
@@ -112,13 +113,15 @@ const TransactionsScreen = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    return `${date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
-      hour: "2-digit",
+    })} at ${date.toLocaleTimeString("en-US", {
+      hour: "numeric",
       minute: "2-digit",
-    });
+      hour12: true,
+    })}`;
   };
 
   // Handle transaction expansion
@@ -152,7 +155,7 @@ const TransactionsScreen = () => {
   if (isLoading && !transactions) {
     return (
       <SafeAreaView style={styles.container}>
-        <Header showBackButton={true} title="Transactions" />
+        <AppHeader title="Transactions" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#8347FF" />
           <Text style={styles.loadingText}>Loading transactions...</Text>
@@ -165,7 +168,7 @@ const TransactionsScreen = () => {
   if (error && !transactions) {
     return (
       <SafeAreaView style={styles.container}>
-        <Header showBackButton={true} title="Transactions" />
+        <AppHeader title="Transactions" />
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={56} color="#EF4444" />
           <Text style={styles.errorTitle}>Couldn't load transactions</Text>
@@ -291,8 +294,7 @@ const TransactionsScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#7e22ce" />
-      <Header
-        showBackButton={true}
+      <AppHeader
         title={`Transactions${filter === "personal" ? " (Personal)" : ""}`}
       />
 
@@ -500,9 +502,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "white",
+    backgroundColor: "#ffffff",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
+    marginTop: 0,
   },
   filterContainer: {
     position: "relative",
@@ -605,7 +608,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 16,
-    paddingBottom: 80, // Extra padding for bottom tab bar
+    paddingBottom: 100, // Extra padding for bottom tab bar
   },
   transactionCard: {
     marginBottom: 12,

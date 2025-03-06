@@ -15,8 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../../hooks/useAuth";
 import { useDashboard } from "../../hooks/useDashboard";
-import CoinsIcon from "../../components/CoinsIcon";
-import Header from "../../components/Header";
+import AppHeader from "../../components/AppHeader";
 
 // Transaction Item component
 const TransactionItem = ({ amount, date, status = "Completed" }) => (
@@ -85,7 +84,7 @@ export default function Dashboard() {
   if (isLoading && !dashboard) {
     return (
       <View style={styles.container}>
-        <Header title="Dashboard" />
+        <AppHeader title="Dashboard" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#8347FF" />
           <Text style={styles.loadingText}>Loading your dashboard...</Text>
@@ -98,7 +97,7 @@ export default function Dashboard() {
   if (error && !dashboard) {
     return (
       <View style={styles.container}>
-        <Header title="Dashboard" />
+        <AppHeader title="Dashboard" />
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={56} color="#EF4444" />
           <Text style={styles.errorTitle}>Couldn't load dashboard</Text>
@@ -129,7 +128,7 @@ export default function Dashboard() {
   // Main dashboard render
   return (
     <View style={styles.container}>
-      <Header title="Dashboard" />
+      <AppHeader title="Dashboard" />
 
       <ScrollView
         contentContainerStyle={styles.contentContainer}
