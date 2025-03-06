@@ -37,7 +37,7 @@ const GetStartedScreen = () => {
       const balance = parseInt(balanceStr);
       return balance.toLocaleString();
     } catch (e) {
-      console.error("Error formatting balance:", e);
+      console.log("Error formatting balance:", e);
       return "0";
     }
   };

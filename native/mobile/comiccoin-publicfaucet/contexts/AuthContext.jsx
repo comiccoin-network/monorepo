@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
             : "Cannot determine",
         });
       } catch (error) {
-        console.error("Error parsing auth data for debug:", error);
+        console.log("Error parsing auth data for debug:", error);
       }
     };
 
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
         setUser(authData.user);
       }
     } catch (error) {
-      console.error("Failed to load user from storage:", error);
+      console.log("Failed to load user from storage:", error);
       await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
     } finally {
       setIsLoading(false);
@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }) => {
         ).toLocaleString(),
       });
     } catch (error) {
-      console.error("Failed to update tokens:", error);
+      console.log("Failed to update tokens:", error);
     }
   }, []);
 
@@ -122,7 +122,7 @@ export const AuthProvider = ({ children }) => {
       );
       console.log("👤 User data updated in storage");
     } catch (error) {
-      console.error("❌ Failed to update user in storage:", error);
+      console.log("❌ Failed to update user in storage:", error);
     }
   }, []);
 
@@ -161,7 +161,7 @@ export const AuthProvider = ({ children }) => {
           await refreshTokenWithAllFormats(authData.refresh_token);
         }
       } catch (error) {
-        console.error("Error checking token expiry:", error);
+        console.log("Error checking token expiry:", error);
       }
     };
 
@@ -185,7 +185,7 @@ export const AuthProvider = ({ children }) => {
 
         await updateTokens(tokenData);
       } catch (error) {
-        console.error(
+        console.log(
           "❌ Proactive token refresh failed:",
           error.response?.data || error.message,
         );
@@ -233,7 +233,7 @@ export const AuthProvider = ({ children }) => {
 
       return data.user;
     } catch (error) {
-      console.error("Login failed:", error);
+      console.log("Login failed:", error);
       throw error;
     } finally {
       setIsLoading(false);

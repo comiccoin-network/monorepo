@@ -235,7 +235,7 @@ const RegisterScreen = () => {
       // Success will be handled by the useEffect watching apiSuccess
     } catch (error) {
       // mapApiErrorsToFormFields() will be called by the useEffect when apiError changes
-      console.error("Registration error:", error);
+      console.log("Registration error:", error);
     }
   };
 

@@ -54,7 +54,7 @@ axiosClient.interceptors.request.use(
         };
       }
     } catch (error) {
-      console.error("🔑 Error adding auth header:", error);
+      console.log("🔑 Error adding auth header:", error);
     }
 
     return config;
@@ -120,7 +120,7 @@ axiosClient.interceptors.response.use(
         );
       }
     } catch (error) {
-      console.error("📝 Error parsing auth data:", error);
+      console.log("📝 Error parsing auth data:", error);
       refreshToken = null;
     }
 
@@ -187,7 +187,7 @@ axiosClient.interceptors.response.use(
           new Date(authData.access_token_expiry_date).toLocaleString(),
         );
       } catch (error) {
-        console.error("📝 Failed to update tokens in storage", error);
+        console.log("📝 Failed to update tokens in storage", error);
       }
 
       // Update authorization header
@@ -199,7 +199,7 @@ axiosClient.interceptors.response.use(
       return axiosClient(originalRequest);
     } catch (refreshError) {
       // Add detailed logging for refresh errors
-      console.error("❌ Token refresh failed:", {
+      console.log("❌ Token refresh failed:", {
         status: refreshError.response?.status,
         data: refreshError.response?.data,
         requestURL: `${API_BASE_URL}/token/refresh`,

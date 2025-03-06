@@ -73,7 +73,7 @@ const LoginScreen = () => {
       console.log("✅ Login successful");
       // The redirect will happen in the useEffect when isAuthenticated changes
     } catch (err) {
-      console.error("❌ Login error:", err);
+      console.log("❌ Login error:", err);
 
       // Handle field-specific errors from the backend
       if (err.response?.data && typeof err.response.data === "object") {
