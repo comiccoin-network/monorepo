@@ -15,11 +15,15 @@ import {
   Modal,
   FlatList,
   StatusBar,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
+
 import { useRegistration } from "../hooks/useRegistration";
+import registrationApi from "../api/endpoints/registrationApi";
 import Header from "../components/Header";
+import VerificationCodeModal from "../components/VerificationCodeModal";
 
 const RegisterScreen = () => {
   const router = useRouter();
@@ -66,6 +70,11 @@ const RegisterScreen = () => {
   // State to track if form has been submitted to prevent duplicate submissions
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // New state for verification modal
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState(null);
+
   // Effect to handle API errors when they change
   useEffect(() => {
     if (apiError) {
@@ -84,8 +93,8 @@ const RegisterScreen = () => {
   // Effect to handle successful registration
   useEffect(() => {
     if (apiSuccess) {
-      // Redirect to success page
-      router.push("/register-success");
+      // Show the verification modal instead of navigating
+      setShowVerificationModal(true);
     }
   }, [apiSuccess, router]);
 
@@ -153,6 +162,38 @@ const RegisterScreen = () => {
   const selectTimezone = (timezone) => {
     handleInputChange("timezone", timezone.value);
     setTimezoneModalVisible(false);
+  };
+
+  // Handle verification code submission
+  const handleVerifyCode = async (code) => {
+    try {
+      setIsVerifying(true);
+      setVerificationError(null);
+
+      // Now we can use the imported API directly
+      await registrationApi.verifyEmail(code);
+
+      // Success! Navigate to login screen
+      Alert.alert(
+        "Verification Successful",
+        "Your account has been verified. You can now login.",
+        [
+          {
+            text: "Go to Login",
+            onPress: () => router.replace("/login"),
+          },
+        ],
+      );
+
+      setShowVerificationModal(false);
+    } catch (error) {
+      console.error("Verification error:", error);
+      setVerificationError(
+        error.message || "Failed to verify code. Please try again.",
+      );
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   // Handle form submission
@@ -798,6 +839,16 @@ const RegisterScreen = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Verification Modal */}
+      <VerificationCodeModal
+        visible={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        onVerify={handleVerifyCode}
+        email={formData.email}
+        isVerifying={isVerifying}
+        verificationError={verificationError}
+      />
     </View>
   );
 };

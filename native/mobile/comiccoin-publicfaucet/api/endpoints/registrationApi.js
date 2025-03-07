@@ -13,7 +13,7 @@ export const registerUser = async (data) => {
     const response = await axiosClient.post(
       "/register",
       data,
-      publicEndpoint({})
+      publicEndpoint({}),
     );
     return response.data;
   } catch (error) {
@@ -62,15 +62,15 @@ export const registerUser = async (data) => {
 
 /**
  * Verify email address
- * @param {string} token Verification token
+ * @param {string} code Verification token
  * @returns {Promise} Promise with verification result
  */
-export const verifyEmail = async (token) => {
+export const verifyEmail = async (code) => {
   try {
     const response = await axiosClient.post(
-      "/verify-email",
-      { token },
-      publicEndpoint({})
+      "/verify-email-code",
+      { code },
+      publicEndpoint({}),
     );
     return response.data;
   } catch (error) {
@@ -111,7 +111,7 @@ export const resendVerificationEmail = async (email) => {
     const response = await axiosClient.post(
       "/resend-verification",
       { email },
-      publicEndpoint({})
+      publicEndpoint({}),
     );
     return response.data;
   } catch (error) {
@@ -124,7 +124,9 @@ export const resendVerificationEmail = async (email) => {
     if (axios.isAxiosError(error)) {
       if (error.response?.data) {
         throw {
-          message: error.response.data.message || "Failed to resend verification email",
+          message:
+            error.response.data.message ||
+            "Failed to resend verification email",
           status: error.response.status,
         };
       }
