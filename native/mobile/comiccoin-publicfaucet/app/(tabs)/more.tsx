@@ -1,7 +1,7 @@
 // app/(tabs)/more.tsx
 import React from "react";
 
-import withWallet from "../../components/withWallet";
+import withWallet from "../../hocs/withWallet";
 import MoreScreen from "../../screens/MoreScreen";
 
 const ProtectedMoreScreen = withWallet(MoreScreen);

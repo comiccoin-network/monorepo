@@ -1,7 +1,7 @@
 // app/(tabs)/dashboard.tsx
 import React from "react";
 
-import withWallet from "../../components/withWallet";
+import withWallet from "../../hocs/withWallet";
 import DashboardScreen from "../../screens/DashboardScreen";
 
 const ProtectedDashboardScreen = withWallet(DashboardScreen);
