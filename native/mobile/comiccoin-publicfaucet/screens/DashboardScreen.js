@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -51,6 +51,69 @@ const BalanceCard = ({ title, amount, iconName }) => (
   </View>
 );
 
+// Dynamic Countdown Component with seconds
+const CountdownTimer = ({ nextClaimTime }) => {
+  const [timeRemaining, setTimeRemaining] = useState({
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    totalSeconds: 0,
+  });
+
+  useEffect(() => {
+    // Calculate initial time difference
+    const calculateTimeRemaining = () => {
+      const now = new Date().getTime();
+      const claimTime = new Date(nextClaimTime).getTime();
+      const difference = Math.max(0, claimTime - now);
+
+      // If the difference is 0, return all zeros
+      if (difference <= 0) {
+        return { hours: 0, minutes: 0, seconds: 0, totalSeconds: 0 };
+      }
+
+      // Calculate hours, minutes, and seconds
+      const totalSeconds = Math.floor(difference / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      return { hours, minutes, seconds, totalSeconds };
+    };
+
+    // Set initial time
+    setTimeRemaining(calculateTimeRemaining());
+
+    // Set up interval to update every second
+    const timerId = setInterval(() => {
+      const newTimeRemaining = calculateTimeRemaining();
+      setTimeRemaining(newTimeRemaining);
+
+      // If countdown reaches 0, clear the interval
+      if (newTimeRemaining.totalSeconds <= 0) {
+        clearInterval(timerId);
+      }
+    }, 1000);
+
+    // Clean up interval on unmount
+    return () => clearInterval(timerId);
+  }, [nextClaimTime]);
+
+  // Format the display
+  const formatNumber = (num) => num.toString().padStart(2, "0");
+
+  return (
+    <View style={styles.countdownContainer}>
+      <Text style={styles.countdownLabel}>Next claim available in:</Text>
+      <Text style={styles.countdownValue}>
+        {timeRemaining.hours > 0 ? `${timeRemaining.hours}h ` : ""}
+        {formatNumber(timeRemaining.minutes)}m{" "}
+        {formatNumber(timeRemaining.seconds)}s
+      </Text>
+    </View>
+  );
+};
+
 export default function DashboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
@@ -59,14 +122,7 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   // Use our dashboard hook
-  const {
-    dashboard,
-    isLoading,
-    error,
-    refetch,
-    timeUntilNextClaim,
-    canClaimNow,
-  } = useDashboard();
+  const { dashboard, isLoading, error, refetch, canClaimNow } = useDashboard();
 
   // Handle pull-to-refresh
   const onRefresh = async () => {
@@ -165,12 +221,7 @@ export default function DashboardScreen() {
                 </TouchableOpacity>
               </View>
             ) : (
-              <View style={styles.countdownContainer}>
-                <Text style={styles.countdownLabel}>
-                  Next claim available in:
-                </Text>
-                <Text style={styles.countdownValue}>{timeUntilNextClaim}</Text>
-              </View>
+              <CountdownTimer nextClaimTime={dashboard?.nextClaimTime} />
             )}
           </LinearGradient>
         </View>
@@ -372,6 +423,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     color: "white",
+    fontVariant: ["tabular-nums"],
   },
 
   // Balance cards styles
