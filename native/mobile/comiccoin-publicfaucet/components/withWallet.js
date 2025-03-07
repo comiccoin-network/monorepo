@@ -44,10 +44,10 @@ function withWallet(WrappedComponent) {
       });
 
       // If the user doesn't have a wallet and we're not already in the initialization flow,
-      // redirect to the wallet setup screen
+      // go to the wallet setup screen.
       if (!isInitFlow && user && !hasWallet) {
         console.log("🔄 No wallet found, redirecting to setup page");
-        router.push("/(user-initialization)/add-my-wallet-address");
+        router.replace("/(user-initialization)/add-my-wallet-address");
       }
     }, [user, hasWallet, pathname, router]);
 

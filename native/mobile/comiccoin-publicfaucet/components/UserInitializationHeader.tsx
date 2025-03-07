@@ -1,13 +1,37 @@
 // components/UserInitializationHeader.tsx
 import React from "react";
-import { View, Text, StyleSheet, StatusBar, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+  Platform,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useAuth } from "../hooks/useAuth";
 
 /**
  * Custom header component for the user initialization flow
  * Includes back navigation and sign out functionality
  */
 const UserInitializationHeader = ({ title }) => {
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  // Handle back navigation
+  const handleBack = () => {
+    router.back();
+  };
+
+  // Handle signing out
+  const handleSignOut = () => {
+    logout();
+    // After logout, the AuthContext will automatically redirect to login screen
+  };
+
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#7e22ce" />
@@ -22,6 +46,16 @@ const UserInitializationHeader = ({ title }) => {
           <View style={styles.titleContainer}>
             <Text style={styles.titleText}>{title || "Connect Wallet"}</Text>
           </View>
+
+          {/* Right: Sign out button */}
+          <TouchableOpacity
+            style={styles.signOutButton}
+            onPress={handleSignOut}
+            accessibilityRole="button"
+            accessibilityLabel="Sign out"
+          >
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
         </View>
       </LinearGradient>
     </>

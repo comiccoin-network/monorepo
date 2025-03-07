@@ -198,6 +198,9 @@ export default function AddMyWalletAddressScreen() {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollViewContent}
           showsVerticalScrollIndicator={false}
+          bounces={false}
+          overScrollMode="never"
+          contentInsetAdjustmentBehavior="never"
         >
           {/* Hero Banner */}
           <LinearGradient

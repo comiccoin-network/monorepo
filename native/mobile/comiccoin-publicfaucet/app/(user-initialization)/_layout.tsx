@@ -9,6 +9,10 @@ export default function UserInitializationLayout() {
         // Completely disable the default header for all screens in this group
         headerShown: false,
 
+        // Use modal presentation to prevent back navigation through gestures
+        presentation: "card",
+        animation: "fade",
+
         // Disable gesture-based navigation
         gestureEnabled: false,
 
