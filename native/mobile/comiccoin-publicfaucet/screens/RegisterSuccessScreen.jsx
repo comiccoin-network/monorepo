@@ -17,7 +17,10 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Header from "../components/Header";
 import LightFooter from "../components/LightFooter";
-import { verifyEmailWithCode, resendVerificationCode } from "../api/endpoints/verifyEmailApi";
+import {
+  verifyEmailWithCode,
+  resendVerificationCode,
+} from "../api/endpoints/verifyEmailApi";
 import { useAuth } from "../hooks/useAuth";
 
 const RegisterSuccessScreen = () => {
@@ -67,7 +70,10 @@ const RegisterSuccessScreen = () => {
       }
     } catch (err) {
       console.error("❌ Verification failed:", err);
-      setError(err.message || "Verification failed. Please check the code and try again.");
+      setError(
+        err.message ||
+          "Verification failed. Please check the code and try again.",
+      );
     } finally {
       setIsVerifying(false);
     }
@@ -76,7 +82,10 @@ const RegisterSuccessScreen = () => {
   // Handle resending the verification code
   const handleResendCode = async () => {
     if (!userEmail) {
-      Alert.alert("Error", "Email address is required to resend the verification code.");
+      Alert.alert(
+        "Error",
+        "Email address is required to resend the verification code.",
+      );
       return;
     }
 
@@ -85,10 +94,16 @@ const RegisterSuccessScreen = () => {
 
     try {
       await resendVerificationCode(userEmail);
-      Alert.alert("Success", "A new verification code has been sent to your email address.");
+      Alert.alert(
+        "Success",
+        "A new verification code has been sent to your email address.",
+      );
     } catch (err) {
       console.error("❌ Resend code failed:", err);
-      setError(err.message || "Failed to resend verification code. Please try again later.");
+      setError(
+        err.message ||
+          "Failed to resend verification code. Please try again later.",
+      );
     } finally {
       setIsResending(false);
     }
@@ -123,16 +138,15 @@ const RegisterSuccessScreen = () => {
 
             {/* Title - Changes based on verification state */}
             <Text style={styles.title}>
-              {verificationSuccess
-                ? "Email Verified!"
-                : "Check Your Email"}
+              {verificationSuccess ? "Email Verified!" : "Check Your Email"}
             </Text>
 
             {/* Messages - Different for success/pending states */}
             {verificationSuccess ? (
               <View style={styles.messageContainer}>
                 <Text style={styles.successMessage}>
-                  Your email has been successfully verified! You can now access all features of ComicCoin Faucet.
+                  Your email has been successfully verified! You can now access
+                  all features of ComicCoin Faucet.
                 </Text>
                 <Text style={styles.redirectMessage}>
                   Redirecting to dashboard...
@@ -142,12 +156,13 @@ const RegisterSuccessScreen = () => {
               <View style={styles.messageContainer}>
                 <Text style={styles.message}>
                   We've sent a verification code to{" "}
-                  <Text style={styles.bold}>{userEmail}</Text>.
-                  Please enter the 6-digit code below to verify your email address.
+                  <Text style={styles.bold}>{userEmail}</Text>. Please enter the
+                  6-digit code below to verify your email address.
                 </Text>
 
                 <Text style={styles.subMessage}>
-                  Remember to check your spam or promotions folders if you don't see the email.
+                  Remember to check your spam or promotions folders if you don't
+                  see the email.
                 </Text>
 
                 {/* Verification Code Input */}
@@ -165,15 +180,14 @@ const RegisterSuccessScreen = () => {
                   />
 
                   {/* Error message */}
-                  {error ? (
-                    <Text style={styles.errorText}>{error}</Text>
-                  ) : null}
+                  {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
                   {/* Verification button */}
                   <TouchableOpacity
                     style={[
                       styles.verifyButton,
-                      (isVerifying || !verificationCode) && styles.disabledButton
+                      (isVerifying || !verificationCode) &&
+                        styles.disabledButton,
                     ]}
                     onPress={handleVerifyCode}
                     disabled={isVerifying || !verificationCode}
@@ -194,10 +208,12 @@ const RegisterSuccessScreen = () => {
                       onPress={handleResendCode}
                       disabled={isResending}
                     >
-                      <Text style={[
-                        styles.resendLinkText,
-                        isResending && styles.disabledText
-                      ]}>
+                      <Text
+                        style={[
+                          styles.resendLinkText,
+                          isResending && styles.disabledText,
+                        ]}
+                      >
                         {isResending ? "Sending..." : "Resend Code"}
                       </Text>
                     </TouchableOpacity>

@@ -40,7 +40,7 @@ type gatewayUserRegisterServiceImpl struct {
 	userGetByEmailUseCase            uc_user.UserGetByEmailUseCase
 	userCreateUseCase                uc_user.UserCreateUseCase
 	userUpdateUseCase                uc_user.UserUpdateUseCase
-	sendUserVerificationEmailUseCase *uc_emailer.SendUserVerificationEmailUseCase
+	sendUserVerificationEmailUseCase uc_emailer.SendUserVerificationEmailUseCase
 }
 
 func NewGatewayUserRegisterService(
@@ -52,7 +52,7 @@ func NewGatewayUserRegisterService(
 	uc1 uc_user.UserGetByEmailUseCase,
 	uc2 uc_user.UserCreateUseCase,
 	uc3 uc_user.UserUpdateUseCase,
-	uc4 *uc_emailer.SendUserVerificationEmailUseCase,
+	uc4 uc_emailer.SendUserVerificationEmailUseCase,
 ) GatewayUserRegisterService {
 	return &gatewayUserRegisterServiceImpl{cfg, logger, pp, cach, jwtp, uc1, uc2, uc3, uc4}
 }

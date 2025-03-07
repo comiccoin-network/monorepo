@@ -10,17 +10,20 @@ import (
 	domain "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
 )
 
-type SendUserVerificationEmailUseCase struct {
+type SendUserVerificationEmailUseCase interface {
+	Execute(ctx context.Context, user *domain.User) error
+}
+type sendUserVerificationEmailUseCaseImpl struct {
 	config  *config.Configuration
 	logger  *slog.Logger
 	emailer templatedemailer.TemplatedEmailer
 }
 
-func NewSendUserVerificationEmailUseCase(config *config.Configuration, logger *slog.Logger, emailer templatedemailer.TemplatedEmailer) *SendUserVerificationEmailUseCase {
-	return &SendUserVerificationEmailUseCase{config, logger, emailer}
+func NewSendUserVerificationEmailUseCase(config *config.Configuration, logger *slog.Logger, emailer templatedemailer.TemplatedEmailer) SendUserVerificationEmailUseCase {
+	return &sendUserVerificationEmailUseCaseImpl{config, logger, emailer}
 }
 
-func (uc *SendUserVerificationEmailUseCase) Execute(ctx context.Context, user *domain.User) error {
+func (uc *sendUserVerificationEmailUseCaseImpl) Execute(ctx context.Context, user *domain.User) error {
 	//
 	// STEP 1: Validation.
 	//

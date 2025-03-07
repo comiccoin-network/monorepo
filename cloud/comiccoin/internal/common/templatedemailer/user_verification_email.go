@@ -10,7 +10,11 @@ import (
 )
 
 func (impl *templatedEmailer) SendUserVerificationEmail(ctx context.Context, email, verificationCode, firstName string) error {
-	impl.Logger.Debug("sending email verification email...")
+	impl.Logger.Debug("sending email verification email...",
+		slog.String("email", email),
+		slog.String("verification_code", verificationCode),
+		slog.String("first_name", firstName),
+	)
 
 	// FOR TESTING PURPOSES ONLY.
 	fp := path.Join("templates", "publicfaucet/user_verification_email.html")
@@ -24,13 +28,13 @@ func (impl *templatedEmailer) SendUserVerificationEmail(ctx context.Context, ema
 
 	// Render the HTML template with our data.
 	data := struct {
-		Email            string
-		VerificationLink string
-		FirstName        string
+		Email             string
+		VerificationToken string
+		FirstName         string
 	}{
-		Email:            email,
-		VerificationLink: "https://" + impl.Emailer.GetFrontendDomainName() + "/verify?q=" + verificationCode,
-		FirstName:        firstName,
+		Email:             email,
+		VerificationToken: verificationCode,
+		FirstName:         firstName,
 	}
 	if err := tmpl.Execute(&processed, data); err != nil {
 		impl.Logger.Error("user verification template execution error", slog.Any("error", err))
