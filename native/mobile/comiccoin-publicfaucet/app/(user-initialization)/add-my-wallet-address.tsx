@@ -98,23 +98,6 @@ export default function AddMyWalletAddressScreen() {
     }
   }, [user]);
 
-  // Handle back navigation
-  const handleBack = () => {
-    router.back();
-  };
-
-  // Handle logout
-  const handleLogout = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: () => logout(),
-      },
-    ]);
-  };
-
   // Don't render the main content while checking user status
   if (isInitializing) {
     return (
