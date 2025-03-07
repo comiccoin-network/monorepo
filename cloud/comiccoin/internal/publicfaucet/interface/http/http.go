@@ -106,6 +106,7 @@ func NewHTTPServer(
 		gatewayRefreshTokenHTTPHandler:    gatewayRefreshTokenHTTPHandler,
 		getHelloHTTPHandler:               getHelloHTTPHandler,
 		getMeHTTPHandler:                  getMeHTTPHandler,
+		deleteMeHTTPHandler:               deleteMeHTTPHandler,
 		postMeConnectWalletHTTPHandler:    postMeConnectWalletHTTPHandler,
 		putUpdateMeHTTPHandler:            putUpdateMeHTTPHandler,
 		getFaucetByChainID:                getFaucetByChainID,
@@ -172,7 +173,7 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 			port.postMeConnectWalletHTTPHandler.Execute(w, r)
 		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "me" && r.Method == http.MethodPut:
 			port.putUpdateMeHTTPHandler.Execute(w, r)
-		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "me" && r.Method == http.MethodDelete:
+		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "me" && p[4] == "delete" && r.Method == http.MethodPost:
 			port.deleteMeHTTPHandler.Execute(w, r)
 
 		// Faucet

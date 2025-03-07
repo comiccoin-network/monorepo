@@ -32,26 +32,7 @@ const MoreScreen = () => {
   };
 
   const confirmDeleteAccount = () => {
-    Alert.alert(
-      "Delete Account",
-      "This action cannot be undone. All your data will be permanently deleted. Are you sure?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete Account",
-          onPress: () => {
-            // In a real app, you'd call an API to delete the account
-            Alert.alert(
-              "Account Deletion",
-              "Your account deletion request has been submitted. You will be signed out now.",
-            );
-            // Then logout
-            setTimeout(logout, 2000);
-          },
-          style: "destructive",
-        },
-      ],
-    );
+    router.push("/(tabs-more)/delete-account");
   };
 
   const handleSettingsPress = () => {
