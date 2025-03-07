@@ -28,13 +28,13 @@ func (impl *templatedEmailer) SendUserVerificationEmail(ctx context.Context, ema
 
 	// Render the HTML template with our data.
 	data := struct {
-		Email             string
-		VerificationToken string
-		FirstName         string
+		Email            string
+		VerificationCode string
+		FirstName        string
 	}{
-		Email:             email,
-		VerificationToken: verificationCode,
-		FirstName:         firstName,
+		Email:            email,
+		VerificationCode: verificationCode,
+		FirstName:        firstName,
 	}
 	if err := tmpl.Execute(&processed, data); err != nil {
 		impl.Logger.Error("user verification template execution error", slog.Any("error", err))
