@@ -55,7 +55,7 @@ const MoreScreen = () => {
   };
 
   const handleSettingsPress = () => {
-    router.push("/(tabs)/settings");
+    router.push("/(tabs-more)/settings");
   };
 
   // Grid items data

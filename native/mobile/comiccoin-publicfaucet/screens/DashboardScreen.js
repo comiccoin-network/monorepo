@@ -133,7 +133,7 @@ export default function DashboardScreen() {
 
   // Navigate to claim screen
   const handleClaimPress = () => {
-    router.push("/(dashboard)/claim");
+    router.push("/(tabs-dashboard)/claim");
   };
 
   // Loading state
