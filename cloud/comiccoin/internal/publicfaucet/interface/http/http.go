@@ -147,7 +147,9 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		// --- Unprotected API endpoints ---
 		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "register" && r.Method == http.MethodPost:
 			port.gatewayUserRegisterHTTPHandler.Execute(w, r)
-		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "verify" && r.Method == http.MethodPost:
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "verify-email-code" && r.Method == http.MethodPost:
+			port.gatewayVerifyEmailHTTPHandler.Execute(w, r)
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "verify" && r.Method == http.MethodPost: // DEPRECATED: Use verify-email-code instead
 			port.gatewayVerifyEmailHTTPHandler.Execute(w, r)
 		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "login" && r.Method == http.MethodPost:
 			port.gatewayLoginHTTPHandler.Execute(w, r)

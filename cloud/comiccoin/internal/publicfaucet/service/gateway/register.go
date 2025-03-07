@@ -14,6 +14,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/random"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/password"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/securestring"
@@ -233,6 +234,12 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 
 	ipAddress, _ := sessCtx.Value(constants.SessionIPAddress).(string)
 
+	emailVerificationCode, err := random.GenerateSixDigitCode()
+	if err != nil {
+		s.logger.Error("generating email verification code error", slog.Any("error", err))
+		return nil, err
+	}
+
 	userID := primitive.NewObjectID()
 	u := &domain.User{
 		ID:                         userID,
@@ -263,7 +270,7 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 		ModifiedByName:             fmt.Sprintf("%s %s", req.FirstName, req.LastName),
 		ModifiedFromIPAddress:      ipAddress,
 		WasEmailVerified:           false,
-		EmailVerificationCode:      primitive.NewObjectID().Hex(),
+		EmailVerificationCode:      fmt.Sprintf("%s", emailVerificationCode),
 		EmailVerificationExpiry:    time.Now().Add(72 * time.Hour),
 		Status:                     domain.UserStatusActive,
 		HasShippingAddress:         false,
