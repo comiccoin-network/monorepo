@@ -13,9 +13,9 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useAuth } from "../../hooks/useAuth";
-import { useDashboard } from "../../hooks/useDashboard";
-import AppHeader from "../../components/AppHeader";
+import { useAuth } from "../hooks/useAuth";
+import { useDashboard } from "../hooks/useDashboard";
+import AppHeader from "../components/AppHeader";
 
 // Transaction Item component
 const TransactionItem = ({ amount, date, status = "Completed" }) => (

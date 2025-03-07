@@ -1,9 +1,16 @@
-// src/hooks/useApi.js
+// hooks/useApi.js
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosClient, { publicEndpoint } from "../api/axiosClient";
 import { useAuth } from "./useAuth";
 
-// Hook for public API endpoints (no authentication required)
+/**
+ * Hook for public API endpoints that don't require authentication
+ *
+ * @param {Array|string} queryKey - Key for caching and identifying the query
+ * @param {string} endpoint - API endpoint path
+ * @param {Object} options - Additional options for the query
+ * @returns {Object} Query result including data, loading state, and error handling
+ */
 export const usePublicQuery = (queryKey, endpoint, options = {}) => {
   return useQuery({
     queryKey,
@@ -16,7 +23,14 @@ export const usePublicQuery = (queryKey, endpoint, options = {}) => {
   });
 };
 
-// Hook for private API endpoints (authentication required)
+/**
+ * Hook for private API endpoints that require authentication
+ *
+ * @param {Array|string} queryKey - Key for caching and identifying the query
+ * @param {string} endpoint - API endpoint path
+ * @param {Object} options - Additional options for the query
+ * @returns {Object} Query result including data, loading state, and error handling
+ */
 export const usePrivateQuery = (queryKey, endpoint, options = {}) => {
   const { isAuthenticated, logout } = useAuth();
   const queryClient = useQueryClient();
@@ -31,8 +45,7 @@ export const usePrivateQuery = (queryKey, endpoint, options = {}) => {
         // If the error is still 401 after the interceptor tried to refresh,
         // it means the refresh token also failed
         if (error.response?.status === 401) {
-          // Our interceptor already handles clearing tokens,
-          // but we should update our auth state
+          // Our interceptor handles token refresh, but we'll logout if that fails
           logout();
         }
         throw error;
@@ -51,7 +64,14 @@ export const usePrivateQuery = (queryKey, endpoint, options = {}) => {
   });
 };
 
-// Hook for private mutations (POST, PUT, DELETE)
+/**
+ * Hook for private mutations (POST, PUT, DELETE) that require authentication
+ *
+ * @param {string} endpoint - API endpoint path
+ * @param {string} method - HTTP method (post, put, delete, etc.)
+ * @param {Object} options - Additional options for the mutation
+ * @returns {Object} Mutation result including mutate function, loading state, and error handling
+ */
 export const usePrivateMutation = (endpoint, method = "post", options = {}) => {
   const { logout } = useAuth();
   const queryClient = useQueryClient();
