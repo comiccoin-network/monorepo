@@ -1,7 +1,7 @@
 // src/pages/RegistrationSuccessPage.jsx
 import { useState } from "react";
-import { Mail, ArrowRight, ArrowLeft } from "lucide-react";
-import { Navigate } from "react-router";
+import { Mail, ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { Link, Navigate } from "react-router";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
 
@@ -32,13 +32,13 @@ const RegistrationSuccessPage = () => {
         id="main-content"
         className="flex-grow flex items-center justify-center py-12 px-4"
       >
-        {/* Rest of your content remains the same */}
+        {/* Content card */}
         <div className="w-full max-w-2xl">
           <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-purple-200">
             <div className="flex flex-col items-center space-y-8">
               {/* Success Icon */}
               <div className="bg-green-100 rounded-full p-6 h-24 w-24 flex items-center justify-center">
-                <Mail className="h-12 w-12 text-green-600" />
+                <Check className="h-12 w-12 text-green-600" />
               </div>
 
               {/* Header */}
@@ -51,23 +51,23 @@ const RegistrationSuccessPage = () => {
                 <p className="text-lg">
                   Thank you for registering - an{" "}
                   <span className="font-bold">activation email</span> has been
-                  sent to you. Please be sure to check your social, promotions
-                  and spam folders if it does not arrive within 5 minutes.
+                  sent to you. Please check your inbox, including social,
+                  promotions, and spam folders.
                 </p>
 
                 <p className="text-gray-600">
-                  Your account has been created, but you'll need to confirm your
-                  email before you can start collecting your ComicCoins.
+                  Your account has been created, but you'll need to verify your
+                  email before you can start collecting ComicCoins.
                 </p>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                   <button
-                    onClick={() => setRedirectTo("/login")}
+                    onClick={() => setRedirectTo("/verify")}
                     className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
                   >
-                    Go to Login
-                    <ArrowRight className="h-5 w-5" />
+                    <Mail className="h-5 w-5" />
+                    Verify Email
                   </button>
                   <button
                     onClick={() => setRedirectTo("/")}
