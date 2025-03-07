@@ -1,4 +1,4 @@
-// app/claim.jsx
+// app/screens/ClaimScreen.jsx
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
