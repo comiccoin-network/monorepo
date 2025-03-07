@@ -242,14 +242,32 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = useCallback(async () => {
+    console.log("🚪 Logging out and resetting navigation...");
+
+    // First clear the stored data
     await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+
+    // Then update state to trigger auth change
     setUser(null);
 
-    // Clear all queries to avoid showing private data after logout
+    // Clear all queries
     queryClient.clear();
 
-    // Navigate to login screen using Expo Router
-    router.replace("/login");
+    // Use a more forceful navigation reset approach
+    try {
+      // Reset to root route
+      router.replace("/");
+
+      // Add a small delay before navigation to ensure state updates first
+      setTimeout(() => {
+        console.log("🔄 Navigation redirecting to initial screen...");
+        router.replace("/");
+      }, 100);
+    } catch (error) {
+      console.error("Navigation error during logout:", error);
+      // Fallback direct navigation
+      router.push("/");
+    }
   }, [queryClient, router]);
 
   // Check if user is authenticated
