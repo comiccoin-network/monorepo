@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -76,6 +77,61 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
   );
 };
 
+// External Link Confirmation Modal
+const ExternalLinkModal = ({ visible, onClose, onConfirm, url }) => {
+  if (!visible) return null;
+
+  return (
+    <Modal
+      transparent={true}
+      visible={visible}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Ionicons name="close" size={24} color="#9CA3AF" />
+          </TouchableOpacity>
+
+          <View style={styles.modalHeader}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="open-outline" size={32} color="#8347FF" />
+            </View>
+            <Text style={styles.modalTitle}>Leave App</Text>
+            <Text style={styles.modalSubtitle}>
+              You're about to be redirected to:
+            </Text>
+          </View>
+
+          <View style={styles.urlContainer}>
+            <Text style={styles.urlText}>{url}</Text>
+          </View>
+
+          <View style={styles.warningContainer}>
+            <View style={styles.warningIconContainer}>
+              <Ionicons name="information-circle" size={20} color="#3B82F6" />
+            </View>
+            <Text style={styles.warningText}>
+              You will be redirected to an external website. Are you sure you
+              want to proceed?
+            </Text>
+          </View>
+
+          <View style={styles.modalButtonsContainer}>
+            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
+              <Text style={styles.confirmButtonText}>Continue</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 export default function AddMyWalletAddressScreen() {
   const router = useRouter();
   const { user, updateUser, logout } = useAuth();
@@ -89,6 +145,9 @@ export default function AddMyWalletAddressScreen() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [localError, setLocalError] = useState(null);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
+  const [showExternalLinkModal, setShowExternalLinkModal] = useState(false);
+  const WALLET_WEBSITE_URL = "https://comiccoinwallet.com";
 
   // Handle initial authentication check
   useEffect(() => {
@@ -185,6 +244,31 @@ export default function AddMyWalletAddressScreen() {
     }
   };
 
+  const handleExternalLinkPress = () => {
+    setShowExternalLinkModal(true);
+  };
+
+  const handleOpenExternalLink = async () => {
+    setShowExternalLinkModal(false);
+    try {
+      const canOpen = await Linking.canOpenURL(WALLET_WEBSITE_URL);
+      if (canOpen) {
+        await Linking.openURL(WALLET_WEBSITE_URL);
+      } else {
+        Alert.alert(
+          "Cannot Open Link",
+          "Unable to open the website. Please try again later.",
+        );
+      }
+    } catch (error) {
+      console.error("Error opening URL:", error);
+      Alert.alert(
+        "Error",
+        "There was a problem opening the link. Please try again.",
+      );
+    }
+  };
+
   return (
     <View style={styles.mainContainer}>
       {/* Use the UserInitializationHeader component instead of inline header */}
@@ -212,7 +296,7 @@ export default function AddMyWalletAddressScreen() {
             <View style={styles.heroContent}>
               <Text style={styles.heroTitle}>Connect Your Wallet</Text>
               <Text style={styles.heroSubtitle}>
-                Link your ComicCoin wallet to start receiving daily rewards
+                Link your wallet to start receiving daily rewards
               </Text>
             </View>
           </LinearGradient>
@@ -228,9 +312,11 @@ export default function AddMyWalletAddressScreen() {
               <View style={styles.progressStepIncomplete}></View>
             </View>
             <View style={styles.progressLabels}>
-              <Text style={styles.progressLabelComplete}>Account</Text>
-              <Text style={styles.progressLabelCurrent}>Wallet</Text>
-              <Text style={styles.progressLabelIncomplete}>Verification</Text>
+              <Text style={styles.progressLabelComplete}>Register</Text>
+              <Text style={styles.progressLabelCurrent}>
+                &nbsp;&nbsp;&nbsp;&nbsp;Wallet
+              </Text>
+              <Text style={styles.progressLabelIncomplete}>Dashboard</Text>
             </View>
           </View>
 
@@ -278,7 +364,7 @@ export default function AddMyWalletAddressScreen() {
                 </View>
               )}
 
-              {/* Warning Message */}
+              {/* Warning Message - Improved to ensure text fits properly */}
               <View style={styles.warningContainer}>
                 <Ionicons
                   name="warning"
@@ -286,7 +372,7 @@ export default function AddMyWalletAddressScreen() {
                   color="#F59E0B"
                   style={styles.warningIcon}
                 />
-                <View>
+                <View style={styles.warningTextContainer}>
                   <Text style={styles.warningTitle}>Important</Text>
                   <Text style={styles.warningText}>
                     Make sure to enter your wallet address correctly. If you
@@ -343,78 +429,64 @@ export default function AddMyWalletAddressScreen() {
             </View>
           </View>
 
-          {/* Need a Wallet Info Card */}
-          <View style={styles.needWalletCard}>
-            <LinearGradient
-              colors={["#7e22ce", "#4338ca"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.cardHeader}
+          {/* Need a Wallet - Simplified Accordion */}
+          <View style={styles.accordionCard}>
+            <TouchableOpacity
+              style={styles.accordionHeader}
+              onPress={() => setIsAccordionOpen(!isAccordionOpen)}
             >
-              <Text style={styles.cardHeaderTitle}>Need a Wallet?</Text>
-              <Text style={styles.cardHeaderSubtitle}>
-                Get one of these options
-              </Text>
-            </LinearGradient>
-
-            <View style={styles.walletOptionsContainer}>
-              <TouchableOpacity style={styles.walletOption}>
-                <Ionicons
-                  name="globe-outline"
-                  size={24}
-                  color="#8347FF"
-                  style={styles.walletOptionIcon}
-                />
-                <View style={styles.walletOptionContent}>
-                  <Text style={styles.walletOptionTitle}>Web Wallet</Text>
-                  <Text style={styles.walletOptionSubtitle}>
-                    No installation required
-                  </Text>
+              <LinearGradient
+                colors={["#7e22ce", "#4338ca"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.accordionGradient}
+              >
+                <View style={styles.accordionHeaderContent}>
+                  <Text style={styles.accordionTitle}>Need a Wallet?</Text>
+                  <Ionicons
+                    name={isAccordionOpen ? "chevron-up" : "chevron-down"}
+                    size={24}
+                    color="white"
+                  />
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
+              </LinearGradient>
+            </TouchableOpacity>
 
-              <TouchableOpacity style={styles.walletOption}>
-                <Ionicons
-                  name="phone-portrait-outline"
-                  size={24}
-                  color="#8347FF"
-                  style={styles.walletOptionIcon}
-                />
-                <View style={styles.walletOptionContent}>
-                  <Text style={styles.walletOptionTitle}>Mobile App</Text>
-                  <Text style={styles.walletOptionSubtitle}>
-                    iOS and Android
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
+            {isAccordionOpen && (
+              <View style={styles.accordionContent}>
+                <Text style={styles.accordionText}>
+                  You'll need a ComicCoin wallet to receive coins. Visit the
+                  official ComicCoin wallet website to create one.
+                </Text>
 
-              <TouchableOpacity style={styles.walletOption}>
-                <Ionicons
-                  name="download-outline"
-                  size={24}
-                  color="#8347FF"
-                  style={styles.walletOptionIcon}
-                />
-                <View style={styles.walletOptionContent}>
-                  <Text style={styles.walletOptionTitle}>Desktop Wallet</Text>
-                  <Text style={styles.walletOptionSubtitle}>
-                    Windows, Mac, Linux
+                <TouchableOpacity
+                  style={styles.externalLinkButton}
+                  onPress={handleExternalLinkPress}
+                >
+                  <Text style={styles.externalLinkText}>
+                    Go to ComicCoin Wallet
                   </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
-            </View>
+                  <Ionicons name="open-outline" size={18} color="#8347FF" />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
+      {/* Confirmation Modals */}
       <ConfirmationModal
         visible={showConfirmation}
         onClose={() => setShowConfirmation(false)}
         onConfirm={handleConfirm}
         walletAddress={walletAddress}
+      />
+
+      <ExternalLinkModal
+        visible={showExternalLinkModal}
+        onClose={() => setShowExternalLinkModal(false)}
+        onConfirm={handleOpenExternalLink}
+        url={WALLET_WEBSITE_URL}
       />
     </View>
   );
@@ -646,6 +718,9 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginTop: 2,
   },
+  warningTextContainer: {
+    flex: 1, // Ensure text container takes remaining space
+  },
   warningTitle: {
     fontSize: 15,
     fontWeight: "600",
@@ -655,6 +730,7 @@ const styles = StyleSheet.create({
   warningText: {
     fontSize: 14,
     color: "#92400E",
+    flexWrap: "wrap", // Ensure text wraps properly
   },
   inputContainer: {
     marginBottom: 24,
@@ -706,8 +782,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginHorizontal: 8,
   },
-  needWalletCard: {
-    backgroundColor: "white",
+
+  // Accordion styles - simplified wallet section
+  accordionCard: {
     marginHorizontal: 16,
     borderRadius: 12,
     shadowColor: "#000",
@@ -717,36 +794,64 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginBottom: 24,
     overflow: "hidden",
+    backgroundColor: "white",
   },
-  walletOptionsContainer: {
-    padding: 8,
+  accordionHeader: {
+    overflow: "hidden",
+    borderRadius: 12,
   },
-  warningIconContainer: {
-    marginRight: 8,
+  accordionGradient: {
+    width: "100%",
   },
-  walletOption: {
+  accordionHeaderContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+  },
+  accordionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "white",
+  },
+  accordionContent: {
+    padding: 16,
+    backgroundColor: "white",
+  },
+  accordionText: {
+    fontSize: 15,
+    color: "#4B5563",
+    marginBottom: 16,
+    lineHeight: 22,
+  },
+  externalLinkButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F3FF",
+    justifyContent: "center",
+    backgroundColor: "#F3F4FF",
     padding: 12,
     borderRadius: 8,
-    marginBottom: 8,
   },
-  walletOptionIcon: {
-    marginRight: 12,
-  },
-  walletOptionContent: {
-    flex: 1,
-  },
-  walletOptionTitle: {
+  externalLinkText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#4B5563",
+    color: "#8347FF",
+    marginRight: 8,
   },
-  walletOptionSubtitle: {
-    fontSize: 12,
-    color: "#6B7280",
+
+  // URL container for external link modal
+  urlContainer: {
+    backgroundColor: "#F3F4FF",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
   },
+  urlText: {
+    fontSize: 14,
+    color: "#4338CA",
+    textAlign: "center",
+  },
+
   // Modal Styles
   modalOverlay: {
     flex: 1,
@@ -807,6 +912,9 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     fontSize: 14,
     color: "#4338CA",
+  },
+  warningIconContainer: {
+    marginRight: 8,
   },
   modalButtonsContainer: {
     flexDirection: "row",
