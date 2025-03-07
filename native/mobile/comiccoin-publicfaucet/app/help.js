@@ -1,6 +1,13 @@
 // app/help.js
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  StatusBar,
+} from "react-native";
 import { useRouter } from "expo-router";
 import Header from "../components/Header";
 import LightFooter from "../components/LightFooter";
@@ -12,7 +19,7 @@ const HelpScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#7e22ce" />
-      <Header currentRoute="/help" />
+      <Header showBackButton={true} />
 
       <ScrollView
         style={styles.scrollView}
@@ -27,68 +34,127 @@ const HelpScreen = () => {
 
           <View style={styles.faqItem}>
             <View style={styles.faqQuestion}>
-              <Feather name="help-circle" size={20} color="#7e22ce" style={styles.faqIcon} />
+              <Feather
+                name="help-circle"
+                size={20}
+                color="#7e22ce"
+                style={styles.faqIcon}
+              />
               <Text style={styles.questionText}>What is ComicCoin Faucet?</Text>
             </View>
             <Text style={styles.answerText}>
-              ComicCoin Faucet is a service that allows users to claim free ComicCoins, the digital currency used in the ComicCoin Network ecosystem. These coins can be used to access premium content, trade collectibles, and interact with various features of the platform.
+              ComicCoin Faucet is a service that allows users to claim free
+              ComicCoins, the digital currency used in the ComicCoin Network
+              ecosystem. These coins can be used to access premium content,
+              trade collectibles, and interact with various features of the
+              platform.
             </Text>
           </View>
 
           <View style={styles.faqItem}>
             <View style={styles.faqQuestion}>
-              <Feather name="help-circle" size={20} color="#7e22ce" style={styles.faqIcon} />
-              <Text style={styles.questionText}>How often can I claim ComicCoins?</Text>
+              <Feather
+                name="help-circle"
+                size={20}
+                color="#7e22ce"
+                style={styles.faqIcon}
+              />
+              <Text style={styles.questionText}>
+                How often can I claim ComicCoins?
+              </Text>
             </View>
             <Text style={styles.answerText}>
-              Users can claim ComicCoins once every 24 hours. The claim timer resets at midnight UTC. Premium members may have access to additional claims or higher amounts.
+              Users can claim ComicCoins once every 24 hours. The claim timer
+              resets at midnight UTC. Premium members may have access to
+              additional claims or higher amounts.
             </Text>
           </View>
 
           <View style={styles.faqItem}>
             <View style={styles.faqQuestion}>
-              <Feather name="help-circle" size={20} color="#7e22ce" style={styles.faqIcon} />
-              <Text style={styles.questionText}>How do I create a ComicCoin wallet?</Text>
+              <Feather
+                name="help-circle"
+                size={20}
+                color="#7e22ce"
+                style={styles.faqIcon}
+              />
+              <Text style={styles.questionText}>
+                How do I create a ComicCoin wallet?
+              </Text>
             </View>
             <Text style={styles.answerText}>
-              A ComicCoin wallet is automatically created when you register for an account. You can access your wallet through the dashboard after logging in. Your wallet address is unique to your account and is used to receive and store your ComicCoins.
+              A ComicCoin wallet is automatically created when you register for
+              an account. You can access your wallet through the dashboard after
+              logging in. Your wallet address is unique to your account and is
+              used to receive and store your ComicCoins.
             </Text>
           </View>
 
           <View style={styles.faqItem}>
             <View style={styles.faqQuestion}>
-              <Feather name="help-circle" size={20} color="#7e22ce" style={styles.faqIcon} />
-              <Text style={styles.questionText}>Can I transfer ComicCoins to other users?</Text>
+              <Feather
+                name="help-circle"
+                size={20}
+                color="#7e22ce"
+                style={styles.faqIcon}
+              />
+              <Text style={styles.questionText}>
+                Can I transfer ComicCoins to other users?
+              </Text>
             </View>
             <Text style={styles.answerText}>
-              Yes, you can transfer ComicCoins to other registered users by entering their wallet address or username in the "Send" section of your wallet dashboard. There is a small network fee for each transaction.
+              Yes, you can transfer ComicCoins to other registered users by
+              entering their wallet address or username in the "Send" section of
+              your wallet dashboard. There is a small network fee for each
+              transaction.
             </Text>
           </View>
 
           <View style={styles.faqItem}>
             <View style={styles.faqQuestion}>
-              <Feather name="help-circle" size={20} color="#7e22ce" style={styles.faqIcon} />
-              <Text style={styles.questionText}>I'm experiencing technical issues. What should I do?</Text>
+              <Feather
+                name="help-circle"
+                size={20}
+                color="#7e22ce"
+                style={styles.faqIcon}
+              />
+              <Text style={styles.questionText}>
+                I'm experiencing technical issues. What should I do?
+              </Text>
             </View>
             <Text style={styles.answerText}>
-              If you're experiencing technical issues, please try refreshing the app, checking your internet connection, and clearing your cache. If problems persist, please contact our support team at hello@comiccoin.ca with details about the issue.
+              If you're experiencing technical issues, please try refreshing the
+              app, checking your internet connection, and clearing your cache.
+              If problems persist, please contact our support team at
+              hello@comiccoin.ca with details about the issue.
             </Text>
           </View>
 
           <View style={styles.contactSection}>
             <Text style={styles.contactTitle}>Still Need Help?</Text>
             <Text style={styles.contactDesc}>
-              Our support team is available to assist you with any questions or concerns.
+              Our support team is available to assist you with any questions or
+              concerns.
             </Text>
 
             <View style={styles.contactButtons}>
               <TouchableOpacity style={styles.contactButton}>
-                <Feather name="mail" size={20} color="#7e22ce" style={styles.contactIcon} />
+                <Feather
+                  name="mail"
+                  size={20}
+                  color="#7e22ce"
+                  style={styles.contactIcon}
+                />
                 <Text style={styles.contactButtonText}>Email Support</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.contactButton}>
-                <Feather name="book-open" size={20} color="#7e22ce" style={styles.contactIcon} />
+                <Feather
+                  name="book-open"
+                  size={20}
+                  color="#7e22ce"
+                  style={styles.contactIcon}
+                />
                 <Text style={styles.contactButtonText}>Documentation</Text>
               </TouchableOpacity>
             </View>
