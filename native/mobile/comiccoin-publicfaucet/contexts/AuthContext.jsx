@@ -229,7 +229,7 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
 
       // Navigate to home screen after successful login
-      router.replace("/home");
+      router.replace("/(tabs)/dashboard");
 
       return data.user;
     } catch (error) {

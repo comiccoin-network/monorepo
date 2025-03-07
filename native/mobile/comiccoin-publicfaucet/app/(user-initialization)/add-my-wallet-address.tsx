@@ -1,5 +1,5 @@
 // app/(user-initialization)/add-my-wallet-address.tsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,13 +12,14 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  StatusBar,
 } from "react-native";
-import { Stack, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../../hooks/useAuth";
 import { useWalletConnect } from "../../hooks/useWalletConnect";
-import * as Animatable from "react-native-animatable";
+import UserInitializationHeader from "../../components/UserInitializationHeader";
 
 // Confirmation Modal component
 const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
@@ -75,9 +76,9 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
   );
 };
 
-export default function AddWalletAddressScreen() {
+export default function AddMyWalletAddressScreen() {
   const router = useRouter();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
   const {
     connectWallet,
     isConnecting,
@@ -96,6 +97,23 @@ export default function AddWalletAddressScreen() {
       setIsInitializing(false);
     }
   }, [user]);
+
+  // Handle back navigation
+  const handleBack = () => {
+    router.back();
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: () => logout(),
+      },
+    ]);
+  };
 
   // Don't render the main content while checking user status
   if (isInitializing) {
@@ -185,13 +203,9 @@ export default function AddWalletAddressScreen() {
   };
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: "Connect Wallet",
-          headerShown: true,
-        }}
-      />
+    <View style={styles.mainContainer}>
+      {/* Use the UserInitializationHeader component instead of inline header */}
+      <UserInitializationHeader title="Finish ComicCoin Faucet Setup" />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -416,14 +430,62 @@ export default function AddWalletAddressScreen() {
         onConfirm={handleConfirm}
         walletAddress={walletAddress}
       />
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  mainContainer: {
     flex: 1,
     backgroundColor: "#F5F7FA",
+  },
+  // Header styles
+  headerContainer: {
+    width: "100%",
+    paddingTop: Platform.OS === "ios" ? 50 : StatusBar.currentHeight || 0,
+    paddingBottom: 15,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "white",
+    textAlign: "center",
+    flex: 1,
+  },
+  backButton: {
+    padding: 8,
+    width: 44,
+    alignItems: "flex-start",
+  },
+  signOutButton: {
+    padding: 8,
+    width: 70,
+    alignItems: "flex-end",
+  },
+  signOutText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  container: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,
@@ -672,6 +734,9 @@ const styles = StyleSheet.create({
   },
   walletOptionsContainer: {
     padding: 8,
+  },
+  warningIconContainer: {
+    marginRight: 8,
   },
   walletOption: {
     flexDirection: "row",
