@@ -1,16 +1,35 @@
 // app/(dashboard)/_layout.tsx
 import { Stack } from "expo-router";
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function DashboardLayout() {
-  // Using Stack navigation gives us more control over transitions
-  // and lets us handle the screens as full-page overlays
+  const router = useRouter();
+
   return (
     <Stack
       screenOptions={{
-        headerShown: false, // Hide the header since we want a clean overlay
-        presentation: "fullScreenModal", // Make it take up the full screen
-        animation: "fade", // Smooth fade transition feels right for transaction states
+        headerStyle: {
+          backgroundColor: "#7e22ce", // Match the gradient start color of AppHeader
+        },
+        headerTintColor: "#ffffff", // White text for headers
+        headerTitleStyle: {
+          fontWeight: "600",
+          fontSize: 18,
+        },
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ marginLeft: 8 }}
+          >
+            <Ionicons name="arrow-back" size={24} color="#ffffff" />
+          </TouchableOpacity>
+        ),
+        // Apply a modal presentation style with fade animation
+        presentation: "modal",
+        animation: "fade",
         // Prevent going back with gestures since these are terminal states
         gestureEnabled: false,
       }}
