@@ -10,7 +10,7 @@ export default function UserInitializationLayout() {
         headerShown: false,
 
         // Use modal presentation to prevent back navigation through gestures
-        presentation: "card",
+        presentation: "modal",
         animation: "fade",
 
         // Disable gesture-based navigation
