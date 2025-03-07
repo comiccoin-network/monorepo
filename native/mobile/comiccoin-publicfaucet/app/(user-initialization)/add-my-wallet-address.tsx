@@ -1,4 +1,4 @@
-// app/(user-initialization)/add-wallet.tsx
+// app/(user-initialization)/add-my-wallet-address.tsx
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
