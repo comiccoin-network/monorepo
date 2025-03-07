@@ -1,4 +1,4 @@
-// app/screens/ClaimScreen.jsx
+// screens/ClaimScreen.js
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -8,14 +8,14 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import AppHeader from "../components/AppHeader";
 import { useClaimCoins } from "../api/endpoints/claimCoinsApi";
 import { useGetFaucet } from "../api/endpoints/faucetApi";
-import * as Animatable from "react-native-animatable"; // Make sure to install this package
+import * as Animatable from "react-native-animatable";
 
 // Animated confetti component
 const ConfettiPiece = ({ index }) => {
@@ -61,6 +61,13 @@ const ClaimConfetti = ({ visible }) => {
 
 // Loading spinner component
 const LoadingSpinner = () => <ActivityIndicator size="small" color="white" />;
+
+// Money icon component
+const MoneyIcon = ({ size = 40, color = "#8347FF" }) => (
+  <View style={styles.moneyIconContainer}>
+    <Ionicons name="cash-outline" size={size} color={color} />
+  </View>
+);
 
 export default function ClaimCoinsScreen() {
   const router = useRouter();
@@ -140,126 +147,124 @@ export default function ClaimCoinsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* We don't need to add AppHeader since the Stack navigation will automatically add a header with back button */}
-
       {/* Confetti animation for successful claims */}
       <ClaimConfetti visible={showConfetti} />
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.contentContainer}>
-          {/* Info box */}
-          <View style={styles.infoBox}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="cash-outline" size={24} color="#8347FF" />
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <MoneyIcon size={48} color="#8347FF" />
+          <Text style={styles.heroText}>
+            Your daily reward is ready to be collected. Claim now and start
+            exploring premium content!
+          </Text>
+        </View>
+
+        {/* Error message display */}
+        {errorMessage && (
+          <View style={styles.errorContainer}>
+            <Ionicons
+              name="alert-circle"
+              size={20}
+              color="#EF4444"
+              style={styles.errorIcon}
+            />
+            <View>
+              <Text style={styles.errorTitle}>Claim failed</Text>
+              <Text style={styles.errorMessage}>{errorMessage}</Text>
             </View>
-            <Text style={styles.infoText}>
-              Your daily reward is ready to be collected. Claim now and start
-              exploring premium content!
-            </Text>
           </View>
+        )}
 
-          {/* Error message display */}
-          {errorMessage && (
-            <View style={styles.errorContainer}>
-              <Ionicons
-                name="alert-circle"
-                size={20}
-                color="#EF4444"
-                style={styles.errorIcon}
-              />
-              <View>
-                <Text style={styles.errorTitle}>Claim failed</Text>
-                <Text style={styles.errorMessage}>{errorMessage}</Text>
+        {/* Claim Card */}
+        <View style={styles.claimCard}>
+          {/* Success state */}
+          {claimSuccess ? (
+            <View style={styles.successContainer}>
+              <View style={styles.successIconContainer}>
+                <Ionicons name="checkmark-circle" size={32} color="#10B981" />
               </View>
+              <Text style={styles.successTitle}>Claim Successful!</Text>
+              <Text style={styles.successMessage}>
+                Congratulations! {dailyReward} ComicCoins have been added to
+                your wallet.
+              </Text>
+              <Text style={styles.redirectingText}>
+                Redirecting to dashboard...
+              </Text>
             </View>
-          )}
-
-          {/* Claim Card */}
-          <View style={styles.claimCard}>
-            {/* Success state */}
-            {claimSuccess ? (
-              <View style={styles.successContainer}>
-                <View style={styles.successIconContainer}>
-                  <Ionicons name="checkmark-circle" size={32} color="#10B981" />
+          ) : (
+            <>
+              {/* Reward Header */}
+              <View style={styles.rewardHeader}>
+                <View style={styles.iconCirclePurple}>
+                  <Ionicons name="gift-outline" size={24} color="#8347FF" />
                 </View>
-                <Text style={styles.successTitle}>Claim Successful!</Text>
-                <Text style={styles.successMessage}>
-                  Congratulations! {dailyReward} ComicCoins have been added to
-                  your wallet.
-                </Text>
-                <Text style={styles.redirectingText}>
-                  Redirecting to dashboard...
-                </Text>
+                <View style={styles.rewardHeaderTextContainer}>
+                  <Text style={styles.rewardTitle}>Daily Reward Ready!</Text>
+                  <Text style={styles.rewardSubtitle}>
+                    Claim your {dailyReward} ComicCoins today
+                  </Text>
+                </View>
               </View>
-            ) : (
-              <>
-                {/* Reward Header */}
-                <View style={styles.rewardHeader}>
-                  <View style={styles.iconCirclePurple}>
-                    <Ionicons name="gift-outline" size={24} color="#8347FF" />
+
+              {/* Reward Display */}
+              <View style={styles.rewardDisplay}>
+                <Text style={styles.rewardLabel}>Today's Reward</Text>
+                <View style={styles.rewardAmount}>
+                  <View style={styles.iconCirclePurpleSmall}>
+                    <Ionicons name="cash" size={20} color="#8347FF" />
                   </View>
                   <View>
-                    <Text style={styles.rewardTitle}>Daily Reward Ready!</Text>
-                    <Text style={styles.rewardSubtitle}>
-                      Claim your {dailyReward} ComicCoins today
+                    <Text style={styles.rewardValue}>
+                      {isFaucetLoading ? (
+                        <ActivityIndicator size="small" color="#8347FF" />
+                      ) : (
+                        `${dailyReward} CC`
+                      )}
+                    </Text>
+                    <Text style={styles.rewardUnit}>ComicCoins</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Claim Button */}
+              <TouchableOpacity
+                style={[
+                  styles.claimButton,
+                  (isClaimingCoins || isFaucetLoading) &&
+                    styles.claimButtonDisabled,
+                ]}
+                onPress={handleClaimCoins}
+                disabled={isClaimingCoins || isFaucetLoading}
+              >
+                {isClaimingCoins ? (
+                  <View style={styles.buttonContent}>
+                    <LoadingSpinner />
+                    <Text style={styles.claimButtonText}>
+                      Claiming your coins...
                     </Text>
                   </View>
-                </View>
-
-                {/* Reward Display */}
-                <View style={styles.rewardDisplay}>
-                  <Text style={styles.rewardLabel}>Today's Reward</Text>
-                  <View style={styles.rewardAmount}>
-                    <View style={styles.iconCirclePurpleSmall}>
-                      <Ionicons name="cash" size={20} color="#8347FF" />
-                    </View>
-                    <View>
-                      <Text style={styles.rewardValue}>
-                        {isFaucetLoading ? (
-                          <ActivityIndicator size="small" color="#8347FF" />
-                        ) : (
-                          `${dailyReward} CC`
-                        )}
-                      </Text>
-                      <Text style={styles.rewardUnit}>ComicCoins</Text>
-                    </View>
+                ) : (
+                  <View style={styles.buttonContent}>
+                    <Ionicons name="cash" size={20} color="white" />
+                    <Text style={styles.claimButtonText}>
+                      Claim {dailyReward} ComicCoins
+                    </Text>
                   </View>
-                </View>
+                )}
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
 
-                {/* Claim Button */}
-                <TouchableOpacity
-                  style={[
-                    styles.claimButton,
-                    (isClaimingCoins || isFaucetLoading) &&
-                      styles.claimButtonDisabled,
-                  ]}
-                  onPress={handleClaimCoins}
-                  disabled={isClaimingCoins || isFaucetLoading}
-                >
-                  {isClaimingCoins ? (
-                    <View style={styles.buttonContent}>
-                      <LoadingSpinner />
-                      <Text style={styles.claimButtonText}>
-                        Claiming your coins...
-                      </Text>
-                    </View>
-                  ) : (
-                    <View style={styles.buttonContent}>
-                      <Ionicons name="cash" size={20} color="white" />
-                      <Text style={styles.claimButtonText}>
-                        Claim {dailyReward} ComicCoins
-                      </Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-
-          {/* Next Claim Time Information */}
+        {/* Information Cards */}
+        <View style={styles.infoCardsContainer}>
+          {/* When can I claim again */}
           <View style={styles.infoCard}>
             <View style={styles.infoCardHeader}>
               <Ionicons name="time-outline" size={20} color="#8347FF" />
@@ -271,7 +276,7 @@ export default function ClaimCoinsScreen() {
             </Text>
           </View>
 
-          {/* Additional help information */}
+          {/* What are ComicCoins */}
           <View style={styles.infoCard}>
             <View style={styles.infoCardHeader}>
               <Ionicons name="cash-outline" size={20} color="#8347FF" />
@@ -300,12 +305,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
-  contentContainer: {
-    padding: 16,
-    maxWidth: 600,
-    width: "100%",
-    alignSelf: "center",
-  },
   confettiContainer: {
     position: "absolute",
     width: "100%",
@@ -313,25 +312,26 @@ const styles = StyleSheet.create({
     zIndex: 10,
     pointerEvents: "none",
   },
-  infoBox: {
+  heroSection: {
     alignItems: "center",
-    marginBottom: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
   },
-  iconCircle: {
+  moneyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: "#F3F4FF",
-    width: 56,
-    height: 56,
-    borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
   },
-  infoText: {
+  heroText: {
     textAlign: "center",
-    color: "#6B7280",
-    fontSize: 14,
-    lineHeight: 20,
-    maxWidth: 300,
+    color: "#4B5563",
+    fontSize: 16,
+    lineHeight: 24,
+    marginHorizontal: 16,
   },
   errorContainer: {
     backgroundColor: "#FEF2F2",
@@ -342,6 +342,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     marginBottom: 16,
+    marginHorizontal: 16,
   },
   errorIcon: {
     marginRight: 8,
@@ -360,12 +361,13 @@ const styles = StyleSheet.create({
   claimCard: {
     backgroundColor: "white",
     borderRadius: 12,
-    padding: 16,
+    padding: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
+    marginHorizontal: 16,
     marginBottom: 16,
   },
   successContainer: {
@@ -401,6 +403,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
+  },
+  rewardHeaderTextContainer: {
+    flex: 1,
   },
   iconCirclePurple: {
     backgroundColor: "#F3F4FF",
@@ -458,7 +463,7 @@ const styles = StyleSheet.create({
   claimButton: {
     backgroundColor: "#8347FF",
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -475,6 +480,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
     marginLeft: 8,
+  },
+  infoCardsContainer: {
+    paddingHorizontal: 16,
   },
   infoCard: {
     backgroundColor: "white",
