@@ -158,6 +158,11 @@ func NewModule(
 		logger,
 		userRepo,
 	)
+	userDeleteByIDUseCase := uc_user.NewUserDeleteByIDUseCase(
+		cfg,
+		logger,
+		userRepo,
+	)
 
 	// --- Private Key ---
 
@@ -246,6 +251,14 @@ func NewModule(
 		userGetByWalletAddressUseCase,
 		userGetByIDUseCase,
 		userUpdateUseCase,
+	)
+
+	deleteMeService := svc_me.NewDeleteMeService(
+		cfg,
+		logger,
+		passp,
+		userGetByIDUseCase,
+		userDeleteByIDUseCase,
 	)
 
 	// --- Faucet ---
@@ -403,6 +416,13 @@ func NewModule(
 		updateMeService,
 	)
 
+	deleteMeHTTPHandler := http_me.NewDeleteMeHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		deleteMeService,
+	)
+
 	// --- Faucet ---
 
 	getFaucetByChainIDHTTPHandler := http_faucet.NewGetFaucetByChainIDHTTPHandler(
@@ -471,6 +491,7 @@ func NewModule(
 		getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler,
 		putUpdateMeHTTPHandler,
+		deleteMeHTTPHandler,
 		getFaucetByChainIDHTTPHandler,
 		faucetServerSentEventsHTTPHandler,
 		dashboardHTTPHandler,
