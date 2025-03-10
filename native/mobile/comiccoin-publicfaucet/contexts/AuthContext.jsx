@@ -2,13 +2,16 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axiosClient from "../api/axiosClient";
+import {
+  AUTH_STORAGE_KEY,
+  saveData,
+  loadData,
+  removeData,
+  updateData,
+} from "../utils/secureStorage";
 
 export const AuthContext = createContext(null);
-
-// Key used for storing auth data in AsyncStorage
-const AUTH_STORAGE_KEY = "auth_data";
 
 export const AuthProvider = ({ children }) => {
   const router = useRouter();
@@ -20,8 +23,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const debugAuthData = async () => {
       try {
-        const authDataJson = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-        const authData = authDataJson ? JSON.parse(authDataJson) : {};
+        const authData = (await loadData(AUTH_STORAGE_KEY)) || {};
 
         console.log("🔐 Auth data loaded:", {
           hasAccessToken: !!authData.access_token,
@@ -48,15 +50,14 @@ export const AuthProvider = ({ children }) => {
   // Function to load user from storage
   const loadUserFromStorage = useCallback(async () => {
     try {
-      const authDataJson = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const authData = authDataJson ? JSON.parse(authDataJson) : {};
+      const authData = (await loadData(AUTH_STORAGE_KEY)) || {};
 
       if (authData.user) {
         setUser(authData.user);
       }
     } catch (error) {
       console.log("Failed to load user from storage:", error);
-      await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+      await removeData(AUTH_STORAGE_KEY);
     } finally {
       setIsLoading(false);
     }
@@ -70,26 +71,13 @@ export const AuthProvider = ({ children }) => {
   // Update tokens after refresh
   const updateTokens = useCallback(async (newAuthData) => {
     try {
-      // Get existing auth data
-      const existingAuthDataJson = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const existingAuthData = existingAuthDataJson
-        ? JSON.parse(existingAuthDataJson)
-        : {};
-
-      // Update only the token-related fields
-      const updatedAuthData = {
-        ...existingAuthData,
+      // Update only the token-related fields using our new updateData function
+      await updateData(AUTH_STORAGE_KEY, {
         access_token: newAuthData.access_token,
         access_token_expiry_time: newAuthData.access_token_expiry_time,
         refresh_token: newAuthData.refresh_token,
         refresh_token_expiry_time: newAuthData.refresh_token_expiry_time,
-      };
-
-      // Save updated auth data
-      await AsyncStorage.setItem(
-        AUTH_STORAGE_KEY,
-        JSON.stringify(updatedAuthData),
-      );
+      });
 
       console.log("🔄 Tokens updated successfully:", {
         accessTokenExpiry: new Date(
@@ -105,21 +93,9 @@ export const AuthProvider = ({ children }) => {
     // Update user state
     setUser(newUserData);
 
-    // Update in AsyncStorage
+    // Update in SecureStorage
     try {
-      const authDataJson = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const authData = authDataJson ? JSON.parse(authDataJson) : {};
-
-      // Update the user property
-      const updatedAuthData = {
-        ...authData,
-        user: newUserData,
-      };
-
-      await AsyncStorage.setItem(
-        AUTH_STORAGE_KEY,
-        JSON.stringify(updatedAuthData),
-      );
+      await updateData(AUTH_STORAGE_KEY, { user: newUserData });
       console.log("👤 User data updated in storage");
     } catch (error) {
       console.log("❌ Failed to update user in storage:", error);
@@ -133,8 +109,7 @@ export const AuthProvider = ({ children }) => {
     // Function to check and refresh token if it's close to expiring
     const checkTokenExpiry = async () => {
       try {
-        const authDataJson = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-        const authData = authDataJson ? JSON.parse(authDataJson) : {};
+        const authData = (await loadData(AUTH_STORAGE_KEY)) || {};
 
         if (!authData.access_token_expiry_time) {
           console.log("⚠️ No access token expiry time set");
@@ -222,8 +197,8 @@ export const AuthProvider = ({ children }) => {
           : "Not set",
       });
 
-      // Store the complete auth data object exactly as received from the API
-      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
+      // Store the complete auth data object with our secure storage
+      await saveData(AUTH_STORAGE_KEY, data);
 
       // Update user state with the user object
       setUser(data.user);
@@ -244,8 +219,8 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(async () => {
     console.log("🚪 Logging out and resetting navigation...");
 
-    // First clear the stored data
-    await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+    // First clear the stored data with our new secure storage method
+    await removeData(AUTH_STORAGE_KEY);
 
     // Then update state to trigger auth change
     setUser(null);
@@ -276,8 +251,7 @@ export const AuthProvider = ({ children }) => {
   // Get current access token
   const getAccessToken = useCallback(async () => {
     try {
-      const authDataJson = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const authData = authDataJson ? JSON.parse(authDataJson) : {};
+      const authData = (await loadData(AUTH_STORAGE_KEY)) || {};
       return authData.access_token || null;
     } catch {
       return null;
@@ -287,8 +261,7 @@ export const AuthProvider = ({ children }) => {
   // Get refresh token
   const getRefreshToken = useCallback(async () => {
     try {
-      const authDataJson = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const authData = authDataJson ? JSON.parse(authDataJson) : {};
+      const authData = (await loadData(AUTH_STORAGE_KEY)) || {};
       return authData.refresh_token || null;
     } catch {
       return null;
@@ -298,8 +271,7 @@ export const AuthProvider = ({ children }) => {
   // Check if access token is expired
   const isAccessTokenExpired = useCallback(async () => {
     try {
-      const authDataJson = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const authData = authDataJson ? JSON.parse(authDataJson) : {};
+      const authData = (await loadData(AUTH_STORAGE_KEY)) || {};
 
       if (!authData.access_token_expiry_time) {
         return true;

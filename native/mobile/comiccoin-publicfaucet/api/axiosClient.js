@@ -1,13 +1,17 @@
-// app/api/axiosClient.js
+// api/axiosClient.js
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
+import {
+  AUTH_STORAGE_KEY,
+  loadData,
+  saveData,
+  removeData,
+} from "../utils/secureStorage";
 
 // Get API details from environment or Constants
 const API_DOMAIN = Constants.expoConfig?.extra?.apiDomain || "127.0.0.1:8000";
 const API_PROTOCOL = Constants.expoConfig?.extra?.apiProtocol || "http";
 const API_BASE_URL = `${API_PROTOCOL}://${API_DOMAIN}/publicfaucet/api/v1`;
-const AUTH_STORAGE_KEY = "auth_data";
 
 // Create axios instance
 const axiosClient = axios.create({
@@ -47,8 +51,7 @@ axiosClient.interceptors.request.use(
     }
 
     try {
-      const authDataString = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const authData = authDataString ? JSON.parse(authDataString) : {};
+      const authData = (await loadData(AUTH_STORAGE_KEY)) || {};
 
       if (authData.access_token) {
         config.headers = {
@@ -100,8 +103,7 @@ axiosClient.interceptors.response.use(
 
     let refreshToken;
     try {
-      const authDataString = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const authData = authDataString ? JSON.parse(authDataString) : {};
+      const authData = (await loadData(AUTH_STORAGE_KEY)) || {};
       refreshToken = authData.refresh_token;
 
       // Debug log to check the refresh token
@@ -130,7 +132,7 @@ axiosClient.interceptors.response.use(
     if (!refreshToken) {
       // No refresh token available, redirect to login
       console.log("⚠️ No refresh token available, redirecting to login");
-      await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+      await removeData(AUTH_STORAGE_KEY);
       // In React Native we would use navigation to redirect to login
       // Since we can't directly import navigation here, we'll need the calling code to handle this
       return Promise.reject(error);
@@ -161,15 +163,11 @@ axiosClient.interceptors.response.use(
 
       console.log("✅ Token refresh successful");
 
-      // Store updated tokens in AsyncStorage
+      // Store updated tokens in SecureStorage
       const authData = response.data;
       try {
         // Get existing auth data to preserve user info
-        const existingAuthDataString =
-          await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-        const existingAuthData = existingAuthDataString
-          ? JSON.parse(existingAuthDataString)
-          : {};
+        const existingAuthData = (await loadData(AUTH_STORAGE_KEY)) || {};
 
         // Update only token-related fields
         const updatedAuthData = {
@@ -180,10 +178,7 @@ axiosClient.interceptors.response.use(
           refresh_token_expiry_time: authData.refresh_token_expiry_date, // Note: backend uses expiry_date not expiry_time
         };
 
-        await AsyncStorage.setItem(
-          AUTH_STORAGE_KEY,
-          JSON.stringify(updatedAuthData),
-        );
+        await saveData(AUTH_STORAGE_KEY, updatedAuthData);
 
         // Log the new token expiry time
         console.log(
@@ -211,7 +206,7 @@ axiosClient.interceptors.response.use(
       });
 
       // Refresh failed, clear tokens
-      await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+      await removeData(AUTH_STORAGE_KEY);
       processQueue(refreshError, null);
       // Calling code will need to handle navigation to login screen
       return Promise.reject(refreshError);

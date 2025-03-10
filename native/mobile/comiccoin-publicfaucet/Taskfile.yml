@@ -45,3 +45,16 @@ tasks:
     desc: Reset the project to its initial state
     cmds:
       - npm run reset-project
+
+  clean:
+    desc: Clean the project's library dependencies.
+    cmds:
+      # Remove derived data
+      - rm -rf ~/Library/Developer/Xcode/DerivedData/comiccoinpublicfaucet-*
+
+      # Clean the Expo project
+      - npx expo clean
+
+      # Reinstall node modules
+      - rm -rf node_modules
+      - npm install
