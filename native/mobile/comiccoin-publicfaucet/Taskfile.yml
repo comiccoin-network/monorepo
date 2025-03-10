@@ -63,7 +63,7 @@ tasks:
       # - cd ..
 
       # Clean the Expo project
-      - npx expo clean
+      # - npx expo clean
 
       # Reinstall node modules
       - rm -rf node_modules
