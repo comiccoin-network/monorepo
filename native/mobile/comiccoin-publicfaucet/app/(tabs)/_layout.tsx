@@ -6,7 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 
 /**
  * This is the layout for the authenticated tab navigation
- * Creates a bottom tab bar with Dashboard, Transactions, Settings, and More
+ * Creates a bottom tab bar with Dashboard, Transactions and More
  */
 export default function TabLayout() {
   const router = useRouter();
@@ -76,31 +76,6 @@ export default function TabLayout() {
               }}
             >
               Transactions
-            </Text>
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "settings" : "settings-outline"}
-              size={24}
-              color={color}
-            />
-          ),
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              style={{
-                color,
-                fontSize: 12,
-                fontWeight: focused ? "600" : "400",
-              }}
-            >
-              Settings
             </Text>
           ),
         }}
