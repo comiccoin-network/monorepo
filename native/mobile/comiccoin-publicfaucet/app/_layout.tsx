@@ -2,7 +2,7 @@
 import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "../contexts/AuthContext";
+import { AuthProvider } from "../providers/AuthContext";
 import InternetProvider from "../providers/InternetProvider";
 
 // Create a query client for React Query
