@@ -40,3 +40,8 @@ tasks:
       - npm install react-native@latest
       - npm install expo@latest
       - npm install react-native-reanimated@latest
+
+  reset:
+    desc: Reset the project to its initial state
+    cmds:
+      - npm run reset-project
