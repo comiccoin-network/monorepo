@@ -1,13 +1,10 @@
+// Updated app/(tabs)/_layout.tsx for ComicCoin Faucet
 import { Tabs } from "expo-router";
-import { View, Text } from "react-native";
+import { View, Text, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../hooks/useAuth";
 
-/**
- * This is the layout for the authenticated tab navigation
- * Creates a bottom tab bar with Dashboard, Transactions and More
- */
 export default function TabLayout() {
   const router = useRouter();
   const { logout } = useAuth();
@@ -21,13 +18,25 @@ export default function TabLayout() {
         tabBarStyle: {
           borderTopWidth: 1,
           borderTopColor: "#F1F1F1",
-          height: 60,
-          paddingBottom: 5,
-          paddingTop: 5,
+          height: Platform.OS === "ios" ? 88 : 60,
+          paddingBottom: Platform.OS === "ios" ? 28 : 8,
+          paddingTop: 8,
+          ...Platform.select({
+            ios: {
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: -2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+            },
+            android: {
+              elevation: 3,
+            },
+          }),
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "500",
+          marginTop: 4,
         },
       }}
     >
@@ -42,17 +51,6 @@ export default function TabLayout() {
               color={color}
             />
           ),
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              style={{
-                color,
-                fontSize: 12,
-                fontWeight: focused ? "600" : "400",
-              }}
-            >
-              Dashboard
-            </Text>
-          ),
         }}
       />
 
@@ -66,17 +64,6 @@ export default function TabLayout() {
               size={24}
               color={color}
             />
-          ),
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              style={{
-                color,
-                fontSize: 12,
-                fontWeight: focused ? "600" : "400",
-              }}
-            >
-              Transactions
-            </Text>
           ),
         }}
       />
@@ -93,17 +80,6 @@ export default function TabLayout() {
               size={24}
               color={color}
             />
-          ),
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              style={{
-                color,
-                fontSize: 12,
-                fontWeight: focused ? "600" : "400",
-              }}
-            >
-              More
-            </Text>
           ),
         }}
       />
