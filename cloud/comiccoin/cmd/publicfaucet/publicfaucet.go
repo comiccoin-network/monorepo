@@ -14,6 +14,7 @@ func PublicFaucetCmd() *cobra.Command {
 		},
 	}
 
+	cmd.AddCommand(GetCreateUserCmd())
 	cmd.AddCommand(GetDeleteUserCmd())
 	cmd.AddCommand(GetListUsersCmd())
 	cmd.AddCommand(SendVerifyEmailCmd())
