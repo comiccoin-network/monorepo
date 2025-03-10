@@ -55,12 +55,12 @@ tasks:
       # Remove derived data
       - rm -rf ~/Library/Developer/Xcode/DerivedData/comiccoinpublicfaucet-*
 
-      # Remove iOS pods and reinstall
-      - cd ios
-      - rm -rf Pods
-      - rm -rf Podfile.lock
-      - pod install
-      - cd ..
+      # # Remove iOS pods and reinstall
+      # - cd ios
+      # - rm -rf Pods
+      # - rm -rf Podfile.lock
+      # - pod install
+      # - cd ..
 
       # Clean the Expo project
       - npx expo clean
@@ -68,3 +68,10 @@ tasks:
       # Reinstall node modules
       - rm -rf node_modules
       - npm install
+
+      # Prebuild the iOS and Android folders
+      - npx expo prebuild --clean
+
+      - cd ios
+      - pod install
+      - cd ..
