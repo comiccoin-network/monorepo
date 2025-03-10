@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'ComicCoin Faucet'
+rootProject.name = 'ComicCoin Public Faucet'
 
 dependencyResolutionManagement {
   versionCatalogs {
