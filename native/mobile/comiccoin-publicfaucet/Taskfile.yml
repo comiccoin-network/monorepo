@@ -49,8 +49,18 @@ tasks:
   clean:
     desc: Clean the project's library dependencies.
     cmds:
+      # Remove build cache
+      - rm -rf ios/build
+
       # Remove derived data
       - rm -rf ~/Library/Developer/Xcode/DerivedData/comiccoinpublicfaucet-*
+
+      # Remove iOS pods and reinstall
+      - cd ios
+      - rm -rf Pods
+      - rm -rf Podfile.lock
+      - pod install
+      - cd ..
 
       # Clean the Expo project
       - npx expo clean
