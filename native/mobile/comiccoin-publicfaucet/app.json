@@ -98,7 +98,7 @@
       [
         "expo-tracking-transparency",
         {
-          "userTrackingPermission": "This identifier will be used by ComicCoin Faucet to ensure only you get your daily ComicCoins and prevent duplicate claims."
+          "userTrackingPermission": "This identifier will be used by ComicCoin Public Faucet to ensure only you get your daily ComicCoins and prevent duplicate claims."
         }
       ]
     ],

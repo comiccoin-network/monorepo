@@ -24,14 +24,14 @@ const TermsScreen = () => {
 
           <Text style={styles.sectionTitle}>1. Acceptance of Terms</Text>
           <Text style={styles.paragraph}>
-            By accessing or using the ComicCoin Faucet service, you agree to be
-            bound by these Terms of Service. If you do not agree to these terms,
-            please do not use our service.
+            By accessing or using the ComicCoin Public Faucet service, you agree
+            to be bound by these Terms of Service. If you do not agree to these
+            terms, please do not use our service.
           </Text>
 
           <Text style={styles.sectionTitle}>2. Description of Service</Text>
           <Text style={styles.paragraph}>
-            ComicCoin Faucet is a service that allows users to claim free
+            ComicCoin Public Faucet is a service that allows users to claim free
             ComicCoins for use within the ComicCoin Network ecosystem. The
             service is provided "as is" and "as available" without warranties of
             any kind.

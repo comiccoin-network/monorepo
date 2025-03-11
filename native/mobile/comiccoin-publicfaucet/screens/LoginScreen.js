@@ -165,7 +165,7 @@ const LoginScreen = () => {
                 />
                 <View>
                   <Text style={styles.formHeaderTitle}>
-                    Sign in to ComicCoin Faucet
+                    Sign in to ComicCoin Public Faucet
                   </Text>
                   <Text style={styles.formHeaderSubtitle}>
                     Access your account and daily rewards

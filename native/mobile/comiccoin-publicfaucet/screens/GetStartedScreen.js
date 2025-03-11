@@ -155,8 +155,8 @@ const GetStartedScreen = () => {
           <Text style={styles.modalTitle}>Permission Required</Text>
 
           <Text style={styles.modalText}>
-            ComicCoin Faucet requires tracking permission to ensure each user
-            can claim coins only once per day and prevent duplicate claims.
+            ComicCoin Public Faucet requires tracking permission to ensure each
+            user can claim coins only once per day and prevent duplicate claims.
           </Text>
 
           <Text style={styles.modalText}>
@@ -180,7 +180,7 @@ const GetStartedScreen = () => {
                 if (Platform.OS === "ios") {
                   Alert.alert(
                     "Permission Required",
-                    "Please enable tracking in your device settings to use ComicCoin Faucet.",
+                    "Please enable tracking in your device settings to use ComicCoin Public Faucet.",
                     [{ text: "OK", onPress: () => console.log("OK Pressed") }],
                   );
                 } else {
@@ -223,7 +223,9 @@ const GetStartedScreen = () => {
           style={styles.heroBanner}
         >
           <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>Welcome to ComicCoin Faucet</Text>
+            <Text style={styles.heroTitle}>
+              Welcome to ComicCoin Public Faucet
+            </Text>
             <Text style={styles.heroSubtitle}>
               Join our community of comic collectors and creators today and get
               free ComicCoins!
@@ -246,9 +248,9 @@ const GetStartedScreen = () => {
               </View>
               <Text style={styles.cardTitle}>New to ComicCoin?</Text>
               <Text style={styles.cardText}>
-                Create your ComicCoin Network account to join our community of
-                comic enthusiasts. Get access to exclusive features and claim
-                your daily ComicCoins.
+                Create your ComicCoin Public Faucet account to join our
+                community of comic enthusiasts. Get access to exclusive features
+                and claim your daily ComicCoins.
               </Text>
               <View style={styles.cardFooter}>
                 <Text style={styles.cardAction}>Register Now</Text>

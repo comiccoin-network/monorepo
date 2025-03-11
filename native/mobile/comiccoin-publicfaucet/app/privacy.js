@@ -23,9 +23,9 @@ const PrivacyScreen = () => {
           <Text style={styles.title}>Privacy Policy</Text>
 
           <Text style={styles.paragraph}>
-            At ComicCoin Faucet, we are committed to protecting your privacy.
-            This Privacy Policy explains how we collect, use, and safeguard your
-            information when you use our service.
+            At ComicCoin Public Faucet, we are committed to protecting your
+            privacy. This Privacy Policy explains how we collect, use, and
+            safeguard your information when you use our service.
           </Text>
 
           <Text style={styles.sectionTitle}>1. Information We Collect</Text>

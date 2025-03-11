@@ -40,14 +40,16 @@ const HelpScreen = () => {
                 color="#7e22ce"
                 style={styles.faqIcon}
               />
-              <Text style={styles.questionText}>What is ComicCoin Faucet?</Text>
+              <Text style={styles.questionText}>
+                What is ComicCoin Public Faucet?
+              </Text>
             </View>
             <Text style={styles.answerText}>
-              ComicCoin Faucet is a service that allows users to claim free
-              ComicCoins, the digital currency used in the ComicCoin Network
-              ecosystem. These coins can be used to access premium content,
-              trade collectibles, and interact with various features of the
-              platform.
+              ComicCoin Public Faucet is a service that allows users to claim
+              free ComicCoins, the digital currency used in the ComicCoin
+              Network ecosystem. These coins can be used to access premium
+              content, trade collectibles, and interact with various features of
+              the platform.
             </Text>
           </View>
 

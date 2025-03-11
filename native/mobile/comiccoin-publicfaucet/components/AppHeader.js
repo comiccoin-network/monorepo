@@ -49,12 +49,12 @@ const AppHeader = ({ title = "", isTabScreen = true, rightElement = null }) => {
             style={styles.logoContainer}
             onPress={navigateToDashboard}
             accessibilityRole="button"
-            accessibilityLabel="ComicCoin Faucet, go to dashboard"
+            accessibilityLabel="ComicCoin Public Faucet, go to dashboard"
           >
             <View style={styles.logoIconContainer}>
               <CoinsIcon size={24} color="white" />
             </View>
-            <Text style={styles.logoText}>ComicCoin Faucet</Text>
+            <Text style={styles.logoText}>ComicCoin Public Faucet</Text>
           </TouchableOpacity>
 
           {rightElement ? rightElement : <View style={styles.spacerRight} />}

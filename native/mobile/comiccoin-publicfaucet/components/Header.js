@@ -56,12 +56,12 @@ const Header = ({ showBackButton = false, title = "" }) => {
             ]}
             onPress={navigateHome}
             accessibilityRole="button"
-            accessibilityLabel="ComicCoin Faucet, go to home"
+            accessibilityLabel="ComicCoin PublicFaucet, go to home"
           >
             <View style={styles.logoIconContainer}>
               <CoinsIcon size={24} color="white" />
             </View>
-            <Text style={styles.logoText}>ComicCoin Faucet</Text>
+            <Text style={styles.logoText}>ComicCoin Public Faucet</Text>
           </TouchableOpacity>
 
           {/* Empty view to balance the layout when back button is shown */}

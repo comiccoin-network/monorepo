@@ -102,7 +102,7 @@ const MoreScreen = () => {
         </View>
 
         <View style={styles.versionContainer}>
-          <Text style={styles.versionText}>ComicCoin Faucet v1.0.0</Text>
+          <Text style={styles.versionText}>ComicCoin Public Faucet v1.0.0</Text>
           <Text style={styles.copyrightText}>© 2025 ComicCoin Network</Text>
         </View>
       </View>

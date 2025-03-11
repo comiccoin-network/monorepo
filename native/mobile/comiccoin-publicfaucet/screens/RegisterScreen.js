@@ -425,7 +425,7 @@ const RegisterScreen = () => {
                 />
                 <View>
                   <Text style={styles.formHeaderTitle}>
-                    Register for ComicCoin Faucet
+                    Register for ComicCoin Public Faucet
                   </Text>
                   <Text style={styles.formHeaderSubtitle}>
                     Get started with daily free coins
