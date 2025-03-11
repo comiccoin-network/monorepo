@@ -1,6 +1,6 @@
 // api/axiosClient.js
 import axios from "axios";
-import Constants from "expo-constants";
+import config from "../config";
 import {
   AUTH_STORAGE_KEY,
   loadData,
@@ -8,10 +8,8 @@ import {
   removeData,
 } from "../utils/secureStorage";
 
-// Get API details from environment or Constants
-const API_DOMAIN = Constants.expoConfig?.extra?.apiDomain || "127.0.0.1:8000";
-const API_PROTOCOL = Constants.expoConfig?.extra?.apiProtocol || "http";
-const API_BASE_URL = `${API_PROTOCOL}://${API_DOMAIN}/publicfaucet/api/v1`;
+// Use the configuration from config/index.ts
+const API_BASE_URL = `${config.PUBLICFAUCET_URL}/publicfaucet/api/v1`;
 
 // Create axios instance
 const axiosClient = axios.create({
@@ -79,6 +77,10 @@ axiosClient.interceptors.response.use(
       "🌐 Response error:",
       error.response?.status,
       error.response?.data,
+      "URL:",
+      originalRequest.url,
+      "Base URL:",
+      API_BASE_URL,
     );
 
     // If the error is not 401 or it's a failed refresh token request

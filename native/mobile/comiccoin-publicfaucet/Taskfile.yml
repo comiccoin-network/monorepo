@@ -1,9 +1,14 @@
 version: "3"
 tasks:
-  start:
+  dev:
     desc: Start the developer instance
     cmds:
       - npm run start
+
+  prod:
+    desc: Start the production instance (on your mobile device, open up `Go Expo` app and connect to this instance)
+    cmds:
+      - npx expo start --no-dev --minify
 
   xcode:
     desc: Open iOS workspace in Xcode
@@ -11,7 +16,7 @@ tasks:
       - xed ios
 
   ios:
-    desc: Start the developer instance for iOS using Simulator
+    desc: Start the developer instance using iOS using Simulator and building native image
     cmds:
       - npx expo run:ios
 
