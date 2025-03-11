@@ -19,6 +19,33 @@
       },
       "entitlements": {
         "com.apple.developer.default-data-protection": "NSFileProtectionComplete"
+      },
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "CFBundleDisplayName": "Public Faucet"
+      },
+      "privacyManifests": {
+        "NSPrivacyTracking": true,
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "identifiers",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": true,
+            "NSPrivacyCollectedDataTypePurposes": ["app-functionality"]
+          },
+          {
+            "NSPrivacyCollectedDataType": "contactInfo",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["app-functionality"]
+          }
+        ],
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "idfa",
+            "NSPrivacyAccessedAPITypeReasons": ["9.1.1"]
+          }
+        ]
       }
     },
     "android": {
@@ -61,7 +88,7 @@
       [
         "expo-tracking-transparency",
         {
-          "userTrackingPermission": "This identifier will be used by faucet to ensure only you get your ComicCoins."
+          "userTrackingPermission": "This identifier will be used by ComicCoin Faucet to ensure only you get your daily ComicCoins and prevent duplicate claims."
         }
       ]
     ],

@@ -77,7 +77,4 @@ tasks:
 
       # Prebuild the iOS and Android folders
       - npx expo prebuild --clean
-
-      - cd ios
-      - pod install
-      - cd ..
+      - cd ios && pod install && cd ..
