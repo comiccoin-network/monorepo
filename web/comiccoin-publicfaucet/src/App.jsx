@@ -15,6 +15,7 @@ import DashboardPage from "./pages/DashboardPage";
 import AddWalletAddressPage from "./pages/AddWalletAddressPage";
 import ClaimCoinsPage from "./pages/ClaimCoinsPage";
 import TransactionsPage from "./pages/TransactionsPage";
+import MorePage from "./pages/MorePage";
 import SettingsPage from "./pages/SettingsPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
@@ -95,6 +96,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TransactionsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/more"
+              element={
+                <ProtectedRoute>
+                  <MorePage />
                 </ProtectedRoute>
               }
             />
