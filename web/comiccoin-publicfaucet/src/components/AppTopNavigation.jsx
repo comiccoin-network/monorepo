@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router";
 import {
   Coins,
   LogOut,
-  Settings,
+  Ellipsis,
   ClipboardList,
   Home,
   Menu,
@@ -79,17 +79,17 @@ const AppTopNavigation = () => {
               </Link>
 
               <Link
-                to="/settings"
+                to="/more"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive("/settings")
+                  isActive("/more")
                     ? "bg-purple-800 text-white"
                     : "text-purple-100 hover:bg-purple-600 hover:text-white"
                 }`}
-                aria-current={isActive("/settings") ? "page" : undefined}
+                aria-current={isActive("/more") ? "page" : undefined}
               >
                 <span className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Settings
+                  <Ellipsis className="h-5 w-5" />
+                  More
                 </span>
               </Link>
 
@@ -166,17 +166,17 @@ const AppTopNavigation = () => {
             </Link>
 
             <Link
-              to="/settings"
+              to="/more"
               className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                isActive("/settings")
+                isActive("/more")
                   ? "bg-purple-700 text-white"
                   : "text-purple-100 hover:bg-purple-700 hover:text-white"
               }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <span className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Settings
+                <Ellipsis className="h-5 w-5" />
+                More
               </span>
             </Link>
 
