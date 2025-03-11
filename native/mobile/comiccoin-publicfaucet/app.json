@@ -10,20 +10,23 @@
     "newArchEnabled": true,
     "jsEngine": "hermes",
     "ios": {
+      "infoPlist": {
+        "CFBundleDisplayName": "Public Faucet"
+      },
+      "appleTeamId": "LQQ8LQ952U",
+      "bundleIdentifier": "com.theshootingstarpress.comiccoinpublicfaucet",
       "usesAppleSignIn": false,
       "usesIcloudStorage": false,
       "supportsTablet": false,
-      "bundleIdentifier": "com.theshootingstarpress.comiccoinpublicfaucet",
       "config": {
         "usesNonExemptEncryption": false
       },
       "entitlements": {
         "com.apple.developer.default-data-protection": "NSFileProtectionComplete"
       },
-      "buildNumber": "1.0.0",
-      "infoPlist": {
-        "CFBundleDisplayName": "Public Faucet"
-      },
+      "version": "1.0.0",
+      "buildNumber": "4",
+
       "privacyManifests": {
         "NSPrivacyTracking": true,
         "NSPrivacyCollectedDataTypes": [
