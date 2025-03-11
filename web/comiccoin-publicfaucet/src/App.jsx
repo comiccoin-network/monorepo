@@ -16,6 +16,7 @@ import AddWalletAddressPage from "./pages/AddWalletAddressPage";
 import ClaimCoinsPage from "./pages/ClaimCoinsPage";
 import TransactionsPage from "./pages/TransactionsPage";
 import MorePage from "./pages/MorePage";
+import DeleteAccountPage from "./pages/DeleteAccountPage";
 import SettingsPage from "./pages/SettingsPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
@@ -114,6 +115,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/delete-account"
+              element={
+                <ProtectedRoute>
+                  <DeleteAccountPage />
                 </ProtectedRoute>
               }
             />
