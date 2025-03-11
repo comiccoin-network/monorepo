@@ -26,7 +26,6 @@
       },
       "version": "1.0.0",
       "buildNumber": "4",
-
       "privacyManifests": {
         "NSPrivacyTracking": true,
         "NSPrivacyCollectedDataTypes": [
