@@ -3,7 +3,7 @@ tasks:
   dev:
     desc: Start the developer instance
     cmds:
-      - npm run start
+      - npx expo start
 
   prod:
     desc: Start the production instance (on your mobile device, open up `Go Expo` app and connect to this instance)
