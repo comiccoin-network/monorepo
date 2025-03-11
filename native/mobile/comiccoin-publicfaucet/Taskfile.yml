@@ -21,9 +21,9 @@ tasks:
       - npx expo run:ios
 
   ios_device:
-    desc: Start the developer instance for iOS using physical device (please make sure your device is connected via cable and registered with Apple Developer program)
+    desc: Start the production instance for iOS using physical device (please make sure your device is connected via cable and registered with Apple Developer program)
     cmds:
-      - npx expo run:ios --device
+      - npx expo run:ios --device --configuration Release
 
   android:
     desc: Start the developer instance for Android
@@ -45,6 +45,7 @@ tasks:
       - npm install react-native@latest
       - npm install expo@latest
       - npm install react-native-reanimated@latest
+      - npx expo install --check
 
   reset:
     desc: Reset the project to its initial state
