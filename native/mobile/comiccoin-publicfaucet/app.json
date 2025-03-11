@@ -57,6 +57,12 @@
           "configureAndroidBackup": false,
           "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
         }
+      ],
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "This identifier will be used by faucet to ensure only you get your ComicCoins."
+        }
       ]
     ],
     "experiments": {
