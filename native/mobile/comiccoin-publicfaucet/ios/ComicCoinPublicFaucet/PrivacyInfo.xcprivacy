@@ -53,7 +53,7 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
+			<true/>
 		</dict>
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
@@ -66,7 +66,7 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
+			<true/>
 		</dict>
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
@@ -79,7 +79,7 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
+			<true/>
 		</dict>
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
@@ -103,7 +103,7 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
+			<true/>
 		</dict>
 	</array>
 	<key>NSPrivacyTracking</key>

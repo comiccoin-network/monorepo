@@ -10,17 +10,12 @@ tasks:
     cmds:
       - npx expo start --no-dev --minify
 
-  xcode:
-    desc: Open iOS workspace in Xcode
-    cmds:
-      - xed ios
-
   ios:
     desc: Start the developer instance using iOS using Simulator and building native image
     cmds:
       - npx expo run:ios
 
-  ios_device:
+  ios-device:
     desc: Start the production instance for iOS using physical device (please make sure your device is connected via cable and registered with Apple Developer program)
     cmds:
       - npx expo run:ios --device --configuration Release
@@ -29,6 +24,11 @@ tasks:
     desc: Build the iOS app using latest expo app.json
     cmds:
       - npx expo prebuild --platform ios --clean
+
+  ios-xcode:
+    desc: Open iOS workspace in Xcode. Run this code after executing `iso-build`.
+    cmds:
+      - xed ios
 
   android:
     desc: Start the developer instance for Android
