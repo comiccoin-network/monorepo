@@ -3,7 +3,7 @@ tasks:
   dev:
     desc: Start the developer instance
     cmds:
-      - npx expo start
+      - npm run start
 
   prod:
     desc: Start the production instance (on your mobile device, open up `Go Expo` app and connect to this instance)
@@ -34,6 +34,16 @@ tasks:
       - export PATH=$PATH:$ANDROID_HOME/platform-tools
       - npx expo run:android
 
+  android-v2:
+    desc: Start the developer instance for Android
+    cmds:
+      - export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
+      - export ANDROID_HOME=$HOME/Library/Android/sdk
+      - export PATH=$PATH:$ANDROID_HOME/emulator
+      - export PATH=$PATH:$ANDROID_HOME/platform-tools
+      - npx expo prebuild --platform android
+      - npx expo run:android
+
   doctor:
     desc: Perform a check on our expo codebase to discover an potential issue(s)
     cmds:
@@ -42,9 +52,9 @@ tasks:
   upgrade:
     desc: Uprade our core libraries
     cmds:
-      - npm install react-native@latest
-      - npm install expo@latest
-      - npm install react-native-reanimated@latest
+      - npx expo install react-native@latest
+      - npx expo install expo@latest
+      - npx expo install react-native-reanimated@latest
       - npx expo install --check
 
   reset:
