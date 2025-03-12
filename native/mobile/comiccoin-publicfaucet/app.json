@@ -41,7 +41,7 @@
           {
             "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeEmailAddress",
             "NSPrivacyCollectedDataTypeLinked": true,
-            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypeTracking": true,
             "NSPrivacyCollectedDataTypePurposes": [
               "NSPrivacyCollectedDataTypePurposeDeveloperAdvertising",
               "NSPrivacyCollectedDataTypePurposeAppFunctionality"
@@ -50,7 +50,7 @@
           {
             "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePhoneNumber",
             "NSPrivacyCollectedDataTypeLinked": true,
-            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypeTracking": true,
             "NSPrivacyCollectedDataTypePurposes": [
               "NSPrivacyCollectedDataTypePurposeDeveloperAdvertising",
               "NSPrivacyCollectedDataTypePurposeAppFunctionality"
@@ -67,7 +67,7 @@
           {
             "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherDataTypes",
             "NSPrivacyCollectedDataTypeLinked": true,
-            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypeTracking": true,
             "NSPrivacyCollectedDataTypePurposes": [
               "NSPrivacyCollectedDataTypePurposeAppFunctionality"
             ]
