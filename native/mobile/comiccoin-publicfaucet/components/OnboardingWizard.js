@@ -79,6 +79,30 @@ const WIZARD_SCREENS = [
   },
   {
     id: "3",
+    title: "About ComicCoin Public Faucet",
+    subtitle: "Your Gateway to Free ComicCoins",
+    description:
+      "ComicCoin Public Faucet is a free cloud service that distributes ComicCoins to registered users.",
+    websiteUrl: "http://comiccoinfaucet.com",
+    cloudDataInfo: {
+      title: "Data Stored in the Cloud",
+      description:
+        "This app communicates with our web service. The following information is stored securely in our cloud infrastructure:",
+      dataItems: [
+        { label: "Name", icon: "📝" },
+        { label: "Email", icon: "✉️" },
+        { label: "Phone Number", icon: "📱" },
+        { label: "Country", icon: "🌎" },
+        { label: "Timezone", icon: "🕒" },
+        { label: "Wallet Address", icon: "💼" },
+      ],
+    },
+    additionalInfo:
+      "We collect this information to prevent fraudulent activity and maintain the integrity of the ComicCoin distribution system. If you opt in to marketing communications, we may also use your data to share the latest ComicCoin developments with you.",
+    icon: "☁️",
+  },
+  {
+    id: "4",
     title: "Turn on tracking allows us to provide features like:",
     subtitle: "",
     description: "",
@@ -211,7 +235,49 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
             </View>
           )}
 
-          {/* Tracking benefits for screen 3 */}
+          {/* Cloud data info for screen 3 */}
+          {item.cloudDataInfo && (
+            <View style={styles.cloudDataContainer}>
+              <Text style={styles.cloudDataTitle}>
+                {item.cloudDataInfo.title}
+              </Text>
+              <Text style={styles.cloudDataDescription}>
+                {item.cloudDataInfo.description}
+              </Text>
+
+              <View style={styles.dataItemsContainer}>
+                {item.cloudDataInfo.dataItems.map((dataItem, index) => (
+                  <View key={index} style={styles.dataItem}>
+                    <Text style={styles.dataItemIcon}>{dataItem.icon}</Text>
+                    <Text style={styles.dataItemLabel}>{dataItem.label}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {item.additionalInfo && (
+                <Text style={styles.additionalInfoText}>
+                  {item.additionalInfo}
+                </Text>
+              )}
+
+              {item.websiteUrl && (
+                <TouchableOpacity
+                  style={styles.websiteBannerLink}
+                  onPress={() =>
+                    handleOpenLink(item.websiteUrl, "ComicCoin Faucet Website")
+                  }
+                >
+                  <Text style={styles.websiteBannerText}>
+                    Visit ComicCoin Faucet
+                  </Text>
+                  <Text style={styles.websiteBannerUrl}>{item.websiteUrl}</Text>
+                  <Text style={styles.websiteBannerIcon}>↗️</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* Tracking benefits for screen 4 */}
           {item.trackingBenefits && (
             <View style={styles.trackingContainer}>
               {item.trackingBenefits.map((benefit, benefitIndex) => (
@@ -485,12 +551,12 @@ const styles = StyleSheet.create({
     width,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 16,
   },
   slideContent: {
     backgroundColor: "white",
     borderRadius: 20,
-    padding: 24,
+    padding: 20,
     width: "100%",
     ...Platform.select({
       ios: {
@@ -505,14 +571,14 @@ const styles = StyleSheet.create({
     }),
   },
   stepIndicator: {
-    marginBottom: 20,
+    marginBottom: 12,
     width: "100%",
   },
   stepText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "600",
     color: "#6b21a8",
-    marginBottom: 8,
+    marginBottom: 6,
     textAlign: "center",
   },
   progressBar: {
@@ -528,38 +594,38 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     backgroundColor: "#f9f5ff",
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     alignSelf: "center",
-    marginBottom: 16,
+    marginBottom: 12,
     justifyContent: "center",
     alignItems: "center",
   },
   iconText: {
-    fontSize: 40,
+    fontSize: 36,
     textAlign: "center",
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#6b21a8",
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "600",
     color: "#7c3aed",
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   description: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#4b5563",
     textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 24,
+    marginBottom: 16,
+    lineHeight: 22,
   },
   // Additional content styling (Screen 1)
   additionalContainer: {
@@ -712,23 +778,23 @@ const styles = StyleSheet.create({
   pagination: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 20,
+    marginTop: 10,
   },
   paginationDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: "rgba(255, 255, 255, 0.5)",
-    marginHorizontal: 5,
+    marginHorizontal: 4,
   },
   paginationDotActive: {
     backgroundColor: "white",
-    width: 20,
+    width: 16,
   },
   navigationContainer: {
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingVertical: 16,
   },
   continueButton: {
     backgroundColor: "#7c3aed",
@@ -769,6 +835,95 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#6b21a8",
     fontWeight: "500",
+  },
+  // Cloud data styling (Screen 3)
+  cloudDataContainer: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  cloudDataTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#7c3aed",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  cloudDataDescription: {
+    fontSize: 14,
+    color: "#4b5563",
+    marginBottom: 12,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  dataItemsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  dataItem: {
+    width: "48%",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f9f5ff",
+    padding: 8,
+    borderRadius: 10,
+    marginBottom: 8,
+  },
+  dataItemIcon: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  dataItemLabel: {
+    fontSize: 15,
+    color: "#6b21a8",
+    fontWeight: "500",
+  },
+  additionalInfoText: {
+    fontSize: 13,
+    fontStyle: "italic",
+    color: "#6b7280",
+    textAlign: "center",
+    marginTop: 4,
+    marginBottom: 10,
+    lineHeight: 18,
+  },
+  websiteBannerLink: {
+    backgroundColor: "#8b5cf6",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    marginTop: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  websiteBannerText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: 2,
+  },
+  websiteBannerUrl: {
+    color: "#e0e7ff",
+    fontSize: 13,
+  },
+  websiteBannerIcon: {
+    color: "white",
+    fontSize: 16,
+    position: "absolute",
+    right: 16,
+    top: "50%",
+    marginTop: -8,
   },
   modalContent: {
     backgroundColor: "white",
