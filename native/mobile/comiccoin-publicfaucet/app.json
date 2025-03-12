@@ -25,9 +25,14 @@
         "com.apple.developer.default-data-protection": "NSFileProtectionComplete"
       },
       "version": "1.0.0",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "privacyManifests": {
         "NSPrivacyTracking": true,
+        "NSPrivacyTrackingDomains": [
+          "comiccoinfaucet.com",
+          "comiccoinwallet.com",
+          "comiccoin.net"
+        ],
         "NSPrivacyCollectedDataTypes": [
           {
             "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeName",
@@ -81,7 +86,8 @@
         "applinks:comiccoinwallet.com",
         "applinks:comiccoinnetwork.com",
         "applinks:comiccoin.ca",
-        "applinks:github.com/comiccoin-network/monorepo"
+        "applinks:github.com/comiccoin-network/monorepo",
+        "applinks:theshootingstarpress.com"
       ]
     },
     "android": {

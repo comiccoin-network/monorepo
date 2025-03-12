@@ -109,6 +109,10 @@
 	<key>NSPrivacyTracking</key>
 	<true/>
 	<key>NSPrivacyTrackingDomains</key>
-	<array/>
+	<array>
+		<string>comiccoinfaucet.com</string>
+		<string>comiccoinwallet.com</string>
+		<string>comiccoin.net</string>
+	</array>
 </dict>
 </plist>
