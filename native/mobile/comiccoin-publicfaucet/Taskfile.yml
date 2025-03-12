@@ -25,6 +25,11 @@ tasks:
     cmds:
       - npx expo run:ios --device --configuration Release
 
+  ios-build:
+    desc: Build the iOS app using latest expo app.json
+    cmds:
+      - npx expo prebuild --platform ios --clean
+
   android:
     desc: Start the developer instance for Android
     cmds:
