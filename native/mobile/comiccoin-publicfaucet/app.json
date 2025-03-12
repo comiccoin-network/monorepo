@@ -131,7 +131,7 @@
       [
         "expo-tracking-transparency",
         {
-          "userTrackingPermission": "This identifier will be used by ComicCoin Public Faucet to ensure only you get your daily ComicCoins and prevent duplicate claims."
+          "userTrackingPermission": "The app identifies you to ensure only you get your daily ComicCoins and prevent fraudulent claims to the public faucet."
         }
       ],
       [

@@ -17,6 +17,8 @@ import { useGetFaucet } from "../api/endpoints/faucetApi";
 import Header from "../components/Header";
 import LightFooter from "../components/LightFooter";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import OnboardingWizard from "../components/OnboardingWizard";
 import {
   requestTrackingPermissionsAsync,
   getTrackingPermissionsAsync,
@@ -30,6 +32,10 @@ const GetStartedScreen = () => {
   const [isTrackingAvailable, setIsTrackingAvailable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
+
   // Use the hook to fetch faucet data
   const {
     data: faucet,
@@ -40,6 +46,26 @@ const GetStartedScreen = () => {
     enabled: true,
     refetchInterval: 60000,
   });
+
+  // Check if the user has completed onboarding
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      try {
+        const onboardingCompleted = false;
+        // const onboardingCompleted = await AsyncStorage.getItem(
+        //   "@onboarding_completed",
+        // );
+        setShowOnboarding(onboardingCompleted !== "true");
+        setIsCheckingOnboarding(false);
+      } catch (error) {
+        console.error("Error checking onboarding status:", error);
+        setShowOnboarding(true);
+        setIsCheckingOnboarding(false);
+      }
+    };
+
+    checkOnboardingStatus();
+  }, []);
 
   // Check if tracking transparency is available on this device
   useEffect(() => {
@@ -60,6 +86,11 @@ const GetStartedScreen = () => {
 
     checkAvailability();
   }, []);
+
+  // Function to handle onboarding completion
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+  };
 
   // Function to request tracking permission
   const requestTrackingPermission = async (destination) => {
@@ -126,79 +157,21 @@ const GetStartedScreen = () => {
     requestTrackingPermission("/register");
   };
 
-  // Format balance for display
-  const formatBalance = (balanceStr) => {
-    if (!balanceStr) return "0";
-    try {
-      const balance = parseInt(balanceStr);
-      return balance.toLocaleString();
-    } catch (e) {
-      console.log("Error formatting balance:", e);
-      return "0";
-    }
-  };
-
-  // Permission denied modal
-  const PermissionDeniedModal = () => (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={isPermissionModalVisible}
-      onRequestClose={() => setPermissionModalVisible(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalIconContainer}>
-            <Feather name="alert-triangle" size={40} color="#7c3aed" />
-          </View>
-
-          <Text style={styles.modalTitle}>Permission Required</Text>
-
-          <Text style={styles.modalText}>
-            ComicCoin Public Faucet requires tracking permission to ensure each
-            user can claim coins only once per day and prevent duplicate claims.
-          </Text>
-
-          <Text style={styles.modalText}>
-            Without this permission, we cannot verify your unique identity and
-            you won't be able to claim your daily ComicCoins.
-          </Text>
-
-          <View style={styles.modalButtonsContainer}>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.secondaryButton]}
-              onPress={() => setPermissionModalVisible(false)}
-            >
-              <Text style={styles.secondaryButtonText}>Close</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.modalButton, styles.primaryButton]}
-              onPress={() => {
-                setPermissionModalVisible(false);
-                // On iOS, we need to direct users to settings
-                if (Platform.OS === "ios") {
-                  Alert.alert(
-                    "Permission Required",
-                    "Please enable tracking in your device settings to use ComicCoin Public Faucet.",
-                    [{ text: "OK", onPress: () => console.log("OK Pressed") }],
-                  );
-                } else {
-                  // On Android, we can request again
-                  if (permissionStatus === "denied") {
-                    requestTrackingPermission(router.pathname);
-                  }
-                }
-              }}
-            >
-              <Text style={styles.primaryButtonText}>Try Again</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+  // Show loading indicator while checking onboarding status
+  if (isCheckingOnboarding) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#7c3aed" />
       </View>
-    </Modal>
-  );
+    );
+  }
 
+  // Show onboarding wizard if needed
+  if (showOnboarding) {
+    return <OnboardingWizard onComplete={handleOnboardingComplete} />;
+  }
+
+  // The rest of your GetStartedScreen component remains unchanged
   return (
     <View style={styles.container}>
       <Header currentRoute="/" />
@@ -216,6 +189,7 @@ const GetStartedScreen = () => {
         overScrollMode="never"
         contentInsetAdjustmentBehavior="never"
       >
+        {/* Your existing content here */}
         <LinearGradient
           colors={["#4f46e5", "#4338ca"]}
           start={{ x: 0, y: 0 }}
@@ -284,14 +258,83 @@ const GetStartedScreen = () => {
       <LightFooter />
 
       {/* Permission Modal */}
-      <PermissionDeniedModal />
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isPermissionModalVisible}
+        onRequestClose={() => setPermissionModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalIconContainer}>
+              <Feather name="alert-triangle" size={40} color="#7c3aed" />
+            </View>
+
+            <Text style={styles.modalTitle}>Permission Required</Text>
+
+            <Text style={styles.modalText}>
+              ComicCoin Public Faucet requires tracking permission to ensure
+              each user can claim coins only once per day and prevent duplicate
+              claims.
+            </Text>
+
+            <Text style={styles.modalText}>
+              Without this permission, we cannot verify your unique identity and
+              you won't be able to claim your daily ComicCoins.
+            </Text>
+
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.secondaryButton]}
+                onPress={() => setPermissionModalVisible(false)}
+              >
+                <Text style={styles.secondaryButtonText}>Close</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.primaryButton]}
+                onPress={() => {
+                  setPermissionModalVisible(false);
+                  // On iOS, we need to direct users to settings
+                  if (Platform.OS === "ios") {
+                    Alert.alert(
+                      "Permission Required",
+                      "Please enable tracking in your device settings to use ComicCoin Public Faucet.",
+                      [
+                        {
+                          text: "OK",
+                          onPress: () => console.log("OK Pressed"),
+                        },
+                      ],
+                    );
+                  } else {
+                    // On Android, we can request again
+                    if (permissionStatus === "denied") {
+                      requestTrackingPermission(router.pathname);
+                    }
+                  }
+                }}
+              >
+                <Text style={styles.primaryButtonText}>Try Again</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  // Keep all your existing styles
   container: {
     flex: 1,
+    backgroundColor: "#f5f3ff",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#f5f3ff",
   },
   scrollView: {
@@ -320,29 +363,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 24,
     paddingHorizontal: 20,
-  },
-  heroButton: {
-    backgroundColor: "white",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    marginTop: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  heroButtonText: {
-    color: "#4f46e5",
-    fontWeight: "bold",
-    fontSize: 16,
   },
   mainContent: {
     padding: 24,
@@ -407,7 +427,6 @@ const styles = StyleSheet.create({
     color: "#7c3aed",
     marginRight: 8,
   },
-
   // Modal styles
   modalOverlay: {
     flex: 1,
