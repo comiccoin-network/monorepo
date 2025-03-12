@@ -43,8 +43,6 @@ const AppHeader = ({ title = "", isTabScreen = true, rightElement = null }) => {
       >
         {/* App Branding */}
         <View style={styles.headerContent}>
-          <View style={styles.spacerLeft} />
-
           <TouchableOpacity
             style={styles.logoContainer}
             onPress={navigateToDashboard}
@@ -54,10 +52,19 @@ const AppHeader = ({ title = "", isTabScreen = true, rightElement = null }) => {
             <View style={styles.logoIconContainer}>
               <CoinsIcon size={24} color="white" />
             </View>
-            <Text style={styles.logoText}>ComicCoin Public Faucet</Text>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+              style={styles.logoText}
+            >
+              ComicCoin Public Faucet
+            </Text>
           </TouchableOpacity>
 
-          {rightElement ? rightElement : <View style={styles.spacerRight} />}
+          {rightElement && (
+            <View style={styles.rightElementContainer}>{rightElement}</View>
+          )}
         </View>
 
         {/* Screen Title */}
@@ -90,15 +97,15 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 16,
   },
   logoContainer: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
     justifyContent: "center",
-    flex: 3,
   },
   logoIconContainer: {
     marginRight: 12,
@@ -114,12 +121,11 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     letterSpacing: 0.5,
+    maxWidth: "85%",
   },
-  spacerLeft: {
-    flex: 1,
-  },
-  spacerRight: {
-    flex: 1,
+  rightElementContainer: {
+    position: "absolute",
+    right: 16,
   },
   titleContainer: {
     marginTop: 8,

@@ -8,7 +8,7 @@ export default function ClaimPage() {
     <>
       <Stack.Screen
         options={{
-          title: "Claim Coins",
+          title: "Dashboard",
           headerShown: true,
         }}
       />
