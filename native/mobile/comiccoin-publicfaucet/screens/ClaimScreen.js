@@ -8,7 +8,8 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
-  Image,
+  StatusBar,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,6 +17,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useClaimCoins } from "../api/endpoints/claimCoinsApi";
 import { useGetFaucet } from "../api/endpoints/faucetApi";
 import * as Animatable from "react-native-animatable";
+import Header from "../components/Header";
 
 // Animated confetti component
 const ConfettiPiece = ({ index }) => {
@@ -99,7 +101,7 @@ export default function ClaimCoinsScreen() {
 
       // Redirect to dashboard after a delay to show the success animation
       const redirectTimer = setTimeout(() => {
-        router.back();
+        router.push("/(tabs)/dashboard");
       }, 2500); // Wait 2.5 seconds to show confetti animation
 
       // Cleanup timer if component unmounts
@@ -147,6 +149,9 @@ export default function ClaimCoinsScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Custom Header */}
+      <Header showBackButton={true} title="Claim Coins" />
+
       {/* Confetti animation for successful claims */}
       <ClaimConfetti visible={showConfetti} />
 
@@ -299,6 +304,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F7FA",
   },
+  // Header styles
+  headerContainer: {
+    width: "100%",
+    paddingTop: Platform.OS === "ios" ? 50 : StatusBar.currentHeight || 0,
+    paddingBottom: 15,
+  },
+  headerContent: {
+    flexDirection: "column",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backIcon: {
+    marginRight: 6,
+  },
+  backButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  headerTitle: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "600",
+    marginTop: 8,
+  },
+  // Existing styles
   scrollView: {
     flex: 1,
   },
