@@ -26,7 +26,7 @@
         "com.apple.developer.default-data-protection": "NSFileProtectionComplete"
       },
       "version": "1.0.0",
-      "buildNumber": "6",
+      "buildNumber": "7",
       "privacyManifests": {
         "NSPrivacyTracking": true,
         "NSPrivacyTrackingDomains": [
@@ -131,7 +131,7 @@
       [
         "expo-tracking-transparency",
         {
-          "userTrackingPermission": "The app identifies you to ensure only you get your daily ComicCoins and prevent fraudulent claims to the public faucet."
+          "userTrackingPermission": "This is essential for your ComicCoin account services, including daily rewards, balance tracking, and secure transactions. Without it, we cannot properly maintain your account or distribute your ComicCoins."
         }
       ],
       [

@@ -60,7 +60,7 @@
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
 	</array>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>The app identifies you to ensure only you get your daily ComicCoins and prevent fraudulent claims to the public faucet.</string>
+	<string>This is essential for your ComicCoin account services, including daily rewards, balance tracking, and secure transactions. Without it, we cannot properly maintain your account or distribute your ComicCoins.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>SplashScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
