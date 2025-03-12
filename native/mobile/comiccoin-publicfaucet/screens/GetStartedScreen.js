@@ -51,10 +51,10 @@ const GetStartedScreen = () => {
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       try {
-        const onboardingCompleted = false;
-        // const onboardingCompleted = await AsyncStorage.getItem(
-        //   "@onboarding_completed",
-        // );
+        // const onboardingCompleted = false; // DEVELOPERS NOTE: Uncomment this line and comment the code below if you want to force the wizard. This is for development purposes only.
+        const onboardingCompleted = await AsyncStorage.getItem(
+          "@onboarding_completed",
+        );
         setShowOnboarding(onboardingCompleted !== "true");
         setIsCheckingOnboarding(false);
       } catch (error) {
