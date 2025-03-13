@@ -142,6 +142,8 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 		port.getHealthCheckHTTPHandler.Execute(w, r)
 	case n == 2 && p[0] == ".well-known" && p[1] == "apple-app-site-association" && r.Method == http.MethodGet:
 		port.getAppleAppSiteAssociationHTTPHandler.Execute(w, r)
+	case n == 1 && p[0] == "apple-app-site-association" && r.Method == http.MethodGet:
+		port.getAppleAppSiteAssociationHTTPHandler.Execute(w, r) // Fallback location
 
 	case p[0] == "authority":
 		// Handle new API endpoints.
