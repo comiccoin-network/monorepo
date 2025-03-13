@@ -1,4 +1,4 @@
-// screens/RegisterScreen.js
+// screens/RegisterScreen.js with iOS improvements
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "expo-router";
 import {
@@ -16,19 +16,27 @@ import {
   FlatList,
   StatusBar,
   Alert,
+  Dimensions,
+  Keyboard,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 import { getTrackingPermissionsAsync } from "expo-tracking-transparency";
-
 import { useRegistration } from "../hooks/useRegistration";
 import registrationApi from "../api/endpoints/registrationApi";
 import Header from "../components/Header";
 import VerificationCodeModal from "../components/VerificationCodeModal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const { width, height } = Dimensions.get("window");
+const isSmallDevice = height < 700;
+const isLargeDevice = height > 800;
 
 const RegisterScreen = () => {
   const router = useRouter();
   const isIOS = Platform.OS === "ios";
+  const insets = useSafeAreaInsets();
+
   const {
     register,
     isLoading,
@@ -37,8 +45,12 @@ const RegisterScreen = () => {
     resetState,
   } = useRegistration();
 
-  // Scroll reference
+  // Scroll and field references
   const scrollViewRef = useRef(null);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const confirmPasswordRef = useRef(null);
+  const phoneRef = useRef(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -56,27 +68,36 @@ const RegisterScreen = () => {
     agree_to_tracking_across_third_party_apps_and_services: false,
   });
 
-  // Field errors from API
+  // UI state
   const [errors, setErrors] = useState({});
-
-  // Error summary for display in the error box
   const [errorSummary, setErrorSummary] = useState([]);
-
-  // Password visibility toggles
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // State for dropdowns
   const [countryModalVisible, setCountryModalVisible] = useState(false);
   const [timezoneModalVisible, setTimezoneModalVisible] = useState(false);
-
-  // State to track if form has been submitted to prevent duplicate submissions
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  // New state for verification modal
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState(null);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  // Keyboard listeners for iOS
+  useEffect(() => {
+    const keyboardWillShowListener = Keyboard.addListener(
+      isIOS ? "keyboardWillShow" : "keyboardDidShow",
+      () => setKeyboardVisible(true),
+    );
+
+    const keyboardWillHideListener = Keyboard.addListener(
+      isIOS ? "keyboardWillHide" : "keyboardDidHide",
+      () => setKeyboardVisible(false),
+    );
+
+    return () => {
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
+  }, []);
 
   // Check tracking permission status for iOS
   useEffect(() => {
@@ -84,7 +105,7 @@ const RegisterScreen = () => {
       const checkTrackingPermission = async () => {
         try {
           const { status } = await getTrackingPermissionsAsync();
-          // If the permission status is known (not undetermined), set the tracking value accordingly
+          // Set tracking permission value based on iOS system status
           if (status === "granted") {
             handleInputChange(
               "agree_to_tracking_across_third_party_apps_and_services",
@@ -96,7 +117,6 @@ const RegisterScreen = () => {
               false,
             );
           }
-          // For "undetermined" status, we don't set anything yet as the permission hasn't been requested
         } catch (error) {
           console.error("Error checking tracking permission:", error);
         }
@@ -106,38 +126,34 @@ const RegisterScreen = () => {
     }
   }, [isIOS]);
 
-  // Effect to handle API errors when they change
+  // Handle API errors when they change
   useEffect(() => {
     if (apiError) {
       mapApiErrorsToFormFields();
 
-      // Scroll to the top of the form when errors occur
+      // Scroll to top to show errors (with smooth animation)
       if (scrollViewRef.current) {
         scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
       }
 
-      // Reset submission flag when we get an error
       setIsSubmitted(false);
     }
   }, [apiError]);
 
-  // Effect to handle successful registration
+  // Handle successful registration
   useEffect(() => {
     if (apiSuccess) {
-      // Show the verification modal instead of navigating
       setShowVerificationModal(true);
     }
   }, [apiSuccess, router]);
 
   // Map API errors to form fields
   const mapApiErrorsToFormFields = () => {
-    // Check for errors in API response
     if (!apiError) return;
 
     const newErrors = {};
     const summary = [];
 
-    // Handle standard API error structure from our hook
     if (apiError.errors) {
       Object.entries(apiError.errors).forEach(([key, messages]) => {
         if (messages && messages.length > 0) {
@@ -145,19 +161,14 @@ const RegisterScreen = () => {
           summary.push(messages[0]);
         }
       });
-    }
-    // Handle the 400 error format returned directly from the backend
-    else if (apiError.message && typeof apiError.message === "object") {
-      // This handles the case where the error is in the format { field: "error message" }
+    } else if (apiError.message && typeof apiError.message === "object") {
       Object.entries(apiError.message).forEach(([key, message]) => {
         if (message && typeof message === "string") {
           newErrors[key] = message;
           summary.push(message);
         }
       });
-    }
-    // Handle generic error messages
-    else if (apiError.message && typeof apiError.message === "string") {
+    } else if (apiError.message && typeof apiError.message === "string") {
       summary.push(apiError.message);
     }
 
@@ -168,7 +179,7 @@ const RegisterScreen = () => {
   // Handle input changes
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear the error for this field when user starts typing
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -177,7 +188,7 @@ const RegisterScreen = () => {
   // Handle switch changes
   const handleSwitchChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear the error for this field when user checks it
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -201,10 +212,8 @@ const RegisterScreen = () => {
       setIsVerifying(true);
       setVerificationError(null);
 
-      // Now we can use the imported API directly
       await registrationApi.verifyEmail(code);
 
-      // Success! Navigate to login screen
       Alert.alert(
         "Verification Successful",
         "Your account has been verified. You can now login.",
@@ -227,19 +236,17 @@ const RegisterScreen = () => {
     }
   };
 
-  // Handle form submission
+  // Form validation and submission
   const handleSubmit = async () => {
-    // Prevent multiple submissions
     if (isLoading || isSubmitted) {
       return;
     }
 
-    // Reset submission states
     resetState();
     setErrors({});
     setErrorSummary([]);
 
-    // Perform local validation
+    // Perform comprehensive validation
     const validationErrors = {};
 
     if (!formData.first_name.trim()) {
@@ -285,12 +292,12 @@ const RegisterScreen = () => {
         "You must agree to the terms of service";
     }
 
-    // If there are validation errors, display them
+    // Display validation errors if any
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       setErrorSummary(Object.values(validationErrors));
 
-      // Scroll to the top to show errors
+      // Scroll to top to show errors
       if (scrollViewRef.current) {
         scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
       }
@@ -298,23 +305,18 @@ const RegisterScreen = () => {
       return;
     }
 
-    // Mark as submitted to prevent duplicate API calls
     setIsSubmitted(true);
 
     try {
-      // For iOS, we'll use the existing tracking status from the iOS system dialog
-      // rather than the switch toggle (which is hidden)
-
-      // Send registration request to API using our hook
       await register(formData);
-      // Success will be handled by the useEffect watching apiSuccess
+      // Success will be handled by useEffect watching apiSuccess
     } catch (error) {
-      // mapApiErrorsToFormFields() will be called by the useEffect when apiError changes
+      // Errors handled by the useEffect watching apiError
       console.log("Registration error:", error);
     }
   };
 
-  // List of countries for the dropdown
+  // Country and timezone data
   const countries = [
     { value: "", label: "Select Country..." },
     { value: "us", label: "United States" },
@@ -327,7 +329,6 @@ const RegisterScreen = () => {
     { value: "other", label: "Other (please specify)" },
   ];
 
-  // List of timezones for the dropdown (abbreviated for brevity)
   const timezones = [
     { value: "", label: "Select Timezone..." },
     { value: "UTC-12:00", label: "(UTC-12:00) International Date Line West" },
@@ -359,6 +360,9 @@ const RegisterScreen = () => {
     icon = null,
     rightIcon = null,
     onRightIconPress = null,
+    inputRef = null,
+    onSubmitEditing = null,
+    returnKeyType = "next",
   ) => {
     return (
       <View style={styles.inputContainer}>
@@ -368,6 +372,7 @@ const RegisterScreen = () => {
         <View style={styles.inputWrapper}>
           {icon && <View style={styles.inputIconLeft}>{icon}</View>}
           <TextInput
+            ref={inputRef}
             style={[
               styles.input,
               icon && styles.inputWithLeftIcon,
@@ -380,12 +385,16 @@ const RegisterScreen = () => {
             keyboardType={keyboardType}
             secureTextEntry={secureTextEntry}
             autoCapitalize={keyboardType === "email-address" ? "none" : "words"}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor="#9CA3AF"
+            returnKeyType={returnKeyType}
+            onSubmitEditing={onSubmitEditing}
+            blurOnSubmit={returnKeyType !== "next"}
           />
           {rightIcon && (
             <TouchableOpacity
               style={styles.inputIconRight}
               onPress={onRightIconPress}
+              activeOpacity={0.7}
             >
               {rightIcon}
             </TouchableOpacity>
@@ -408,17 +417,20 @@ const RegisterScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Use the improved Header with back button */}
       <Header showBackButton={true} />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={isIOS ? "padding" : "height"}
         style={styles.keyboardAvoidView}
+        keyboardVerticalOffset={isIOS ? 20 : 0}
       >
         <ScrollView
           ref={scrollViewRef}
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollViewContent}
+          contentContainerStyle={[
+            styles.scrollViewContent,
+            { paddingBottom: insets.bottom + 40 },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
@@ -430,11 +442,23 @@ const RegisterScreen = () => {
             colors={["#4f46e5", "#4338ca"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
-            style={styles.heroBanner}
+            style={[styles.heroBanner, { paddingTop: isSmallDevice ? 32 : 48 }]}
           >
             <View style={styles.heroContent}>
-              <Text style={styles.heroTitle}>Create Your Account</Text>
-              <Text style={styles.heroSubtitle}>
+              <Text
+                style={[
+                  styles.heroTitle,
+                  isSmallDevice && styles.heroTitleSmall,
+                ]}
+              >
+                Create Your Account
+              </Text>
+              <Text
+                style={[
+                  styles.heroSubtitle,
+                  isSmallDevice && styles.heroSubtitleSmall,
+                ]}
+              >
                 Join our community of comic collectors and creators today and
                 get free ComicCoins!
               </Text>
@@ -499,6 +523,13 @@ const RegisterScreen = () => {
                 "Enter your first name",
                 formData.first_name,
                 true,
+                "default",
+                false,
+                null,
+                null,
+                null,
+                null,
+                () => emailRef.current?.focus(),
               )}
 
               {/* Last Name */}
@@ -508,6 +539,13 @@ const RegisterScreen = () => {
                 "Enter your last name",
                 formData.last_name,
                 true,
+                "default",
+                false,
+                null,
+                null,
+                null,
+                null,
+                () => emailRef.current?.focus(),
               )}
 
               {/* Email */}
@@ -520,6 +558,10 @@ const RegisterScreen = () => {
                 "email-address",
                 false,
                 <Feather name="mail" size={20} color="#9ca3af" />,
+                null,
+                null,
+                emailRef,
+                () => passwordRef.current?.focus(),
               )}
 
               {/* Phone (Optional) */}
@@ -532,6 +574,58 @@ const RegisterScreen = () => {
                 "phone-pad",
                 false,
                 <Feather name="phone" size={20} color="#9ca3af" />,
+                null,
+                null,
+                phoneRef,
+              )}
+            </View>
+
+            {/* Account Security */}
+            <View style={styles.formSection}>
+              <View style={styles.sectionHeader}>
+                <Feather name="lock" size={20} color="#7e22ce" />
+                <Text style={styles.sectionTitle}>Account Security</Text>
+              </View>
+
+              {/* Password */}
+              {renderFormField(
+                "Password",
+                "password",
+                "Create a password (min 8 characters)",
+                formData.password,
+                true,
+                "default",
+                !showPassword,
+                null,
+                showPassword ? (
+                  <Feather name="eye-off" size={20} color="#6b7280" />
+                ) : (
+                  <Feather name="eye" size={20} color="#6b7280" />
+                ),
+                () => setShowPassword(!showPassword),
+                passwordRef,
+                () => confirmPasswordRef.current?.focus(),
+              )}
+
+              {/* Confirm Password */}
+              {renderFormField(
+                "Confirm Password",
+                "password_confirm",
+                "Confirm your password",
+                formData.password_confirm,
+                true,
+                "default",
+                !showConfirmPassword,
+                null,
+                showConfirmPassword ? (
+                  <Feather name="eye-off" size={20} color="#6b7280" />
+                ) : (
+                  <Feather name="eye" size={20} color="#6b7280" />
+                ),
+                () => setShowConfirmPassword(!showConfirmPassword),
+                confirmPasswordRef,
+                null,
+                "done",
               )}
             </View>
 
@@ -553,6 +647,7 @@ const RegisterScreen = () => {
                     errors.country ? styles.inputError : null,
                   ]}
                   onPress={() => setCountryModalVisible(true)}
+                  activeOpacity={0.7}
                 >
                   <Text
                     style={[
@@ -580,43 +675,6 @@ const RegisterScreen = () => {
                 )}
               </View>
 
-              {/* Country Modal */}
-              <Modal
-                visible={countryModalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setCountryModalVisible(false)}
-              >
-                <View style={styles.modalOverlay}>
-                  <View style={styles.modalContent}>
-                    <View style={styles.modalHeader}>
-                      <Text style={styles.modalTitle}>Select Country</Text>
-                      <TouchableOpacity
-                        style={styles.modalCloseButton}
-                        onPress={() => setCountryModalVisible(false)}
-                      >
-                        <Feather name="x" size={24} color="#6b7280" />
-                      </TouchableOpacity>
-                    </View>
-                    <FlatList
-                      data={countries.filter((c) => c.value !== "")}
-                      keyExtractor={(item) => item.value}
-                      renderItem={({ item }) => (
-                        <TouchableOpacity
-                          style={styles.modalItem}
-                          onPress={() => selectCountry(item)}
-                        >
-                          <Text style={styles.modalItemText}>{item.label}</Text>
-                          {formData.country === item.value && (
-                            <Feather name="check" size={20} color="#7e22ce" />
-                          )}
-                        </TouchableOpacity>
-                      )}
-                    />
-                  </View>
-                </View>
-              </Modal>
-
               {/* Other Country - only shows if "other" is selected */}
               {formData.country === "other" &&
                 renderFormField(
@@ -643,6 +701,7 @@ const RegisterScreen = () => {
                       errors.timezone ? styles.inputError : null,
                     ]}
                     onPress={() => setTimezoneModalVisible(true)}
+                    activeOpacity={0.7}
                   >
                     <Text
                       style={[
@@ -670,87 +729,6 @@ const RegisterScreen = () => {
                   </View>
                 )}
               </View>
-
-              {/* Timezone Modal */}
-              <Modal
-                visible={timezoneModalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setTimezoneModalVisible(false)}
-              >
-                <View style={styles.modalOverlay}>
-                  <View style={styles.modalContent}>
-                    <View style={styles.modalHeader}>
-                      <Text style={styles.modalTitle}>Select Timezone</Text>
-                      <TouchableOpacity
-                        style={styles.modalCloseButton}
-                        onPress={() => setTimezoneModalVisible(false)}
-                      >
-                        <Feather name="x" size={24} color="#6b7280" />
-                      </TouchableOpacity>
-                    </View>
-                    <FlatList
-                      data={timezones.filter((t) => t.value !== "")}
-                      keyExtractor={(item) => item.value}
-                      renderItem={({ item }) => (
-                        <TouchableOpacity
-                          style={styles.modalItem}
-                          onPress={() => selectTimezone(item)}
-                        >
-                          <Text style={styles.modalItemText}>{item.label}</Text>
-                          {formData.timezone === item.value && (
-                            <Feather name="check" size={20} color="#7e22ce" />
-                          )}
-                        </TouchableOpacity>
-                      )}
-                    />
-                  </View>
-                </View>
-              </Modal>
-            </View>
-
-            {/* Account Security */}
-            <View style={styles.formSection}>
-              <View style={styles.sectionHeader}>
-                <Feather name="lock" size={20} color="#7e22ce" />
-                <Text style={styles.sectionTitle}>Account Security</Text>
-              </View>
-
-              {/* Password */}
-              {renderFormField(
-                "Password",
-                "password",
-                "Create a password (min 8 characters)",
-                formData.password,
-                true,
-                "default",
-                !showPassword,
-                null,
-                showPassword ? (
-                  <Feather name="eye-off" size={20} color="#6b7280" />
-                ) : (
-                  <Feather name="eye" size={20} color="#6b7280" />
-                ),
-                () => setShowPassword(!showPassword),
-              )}
-
-              {/* Confirm Password */}
-              {renderFormField(
-                "Confirm Password",
-                "password_confirm",
-                "Confirm your password",
-                formData.password_confirm,
-                true,
-                "default",
-                !showConfirmPassword,
-                null,
-                showConfirmPassword ? (
-                  <Feather name="eye-off" size={20} color="#6b7280" />
-                ) : (
-                  <Feather name="eye" size={20} color="#6b7280" />
-                ),
-                () => setShowConfirmPassword(!showConfirmPassword),
-              )}
             </View>
 
             {/* Terms & Privacy */}
@@ -863,14 +841,19 @@ const RegisterScreen = () => {
                 style={styles.cancelButton}
                 onPress={() => router.back()}
                 disabled={isLoading}
+                activeOpacity={0.7}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.submitButton}
+                style={[
+                  styles.submitButton,
+                  (isLoading || isSubmitted) && styles.disabledButton,
+                ]}
                 onPress={handleSubmit}
                 disabled={isLoading || isSubmitted}
+                activeOpacity={0.7}
               >
                 {isLoading ? (
                   <View style={styles.loadingContainer}>
@@ -903,6 +886,112 @@ const RegisterScreen = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Country Modal - iOS-Optimized */}
+      <Modal
+        visible={countryModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setCountryModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { paddingBottom: insets.bottom }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Country</Text>
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={() => setCountryModalVisible(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Feather name="x" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={countries.filter((c) => c.value !== "")}
+              keyExtractor={(item) => item.value}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.modalItem,
+                    formData.country === item.value && styles.modalItemSelected,
+                  ]}
+                  onPress={() => selectCountry(item)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.modalItemText,
+                      formData.country === item.value &&
+                        styles.modalItemTextSelected,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                  {formData.country === item.value && (
+                    <Feather name="check" size={20} color="#7e22ce" />
+                  )}
+                </TouchableOpacity>
+              )}
+              style={styles.modalList}
+              showsVerticalScrollIndicator={false}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Timezone Modal - iOS-Optimized */}
+      <Modal
+        visible={timezoneModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setTimezoneModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { paddingBottom: insets.bottom }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Timezone</Text>
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={() => setTimezoneModalVisible(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Feather name="x" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={timezones.filter((t) => t.value !== "")}
+              keyExtractor={(item) => item.value}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.modalItem,
+                    formData.timezone === item.value &&
+                      styles.modalItemSelected,
+                  ]}
+                  onPress={() => selectTimezone(item)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.modalItemText,
+                      formData.timezone === item.value &&
+                        styles.modalItemTextSelected,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                  {formData.timezone === item.value && (
+                    <Feather name="check" size={20} color="#7e22ce" />
+                  )}
+                </TouchableOpacity>
+              )}
+              style={styles.modalList}
+              showsVerticalScrollIndicator={false}
+            />
+          </View>
+        </View>
+      </Modal>
 
       {/* Verification Modal */}
       <VerificationCodeModal
@@ -945,16 +1034,22 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 8,
   },
+  heroTitleSmall: {
+    fontSize: 24,
+  },
   heroSubtitle: {
     fontSize: 16,
     color: "#e0e7ff",
     textAlign: "center",
     paddingHorizontal: 20,
   },
+  heroSubtitleSmall: {
+    fontSize: 14,
+  },
   formContainer: {
     margin: 16,
     backgroundColor: "white",
-    borderRadius: 12,
+    borderRadius: 16, // More iOS-friendly corner radius
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -966,8 +1061,8 @@ const styles = StyleSheet.create({
   formHeader: {
     paddingVertical: 16,
     paddingHorizontal: 16,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   formHeaderContent: {
     flexDirection: "row",
@@ -987,7 +1082,7 @@ const styles = StyleSheet.create({
   },
   errorSummary: {
     margin: 16,
-    padding: 12,
+    padding: 16,
     backgroundColor: "#fee2e2",
     borderWidth: 1,
     borderColor: "#fecaca",
@@ -1042,7 +1137,7 @@ const styles = StyleSheet.create({
     height: 44,
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
+    borderRadius: 10, // More iOS-friendly corner radius
     paddingHorizontal: 12,
     fontSize: 16,
     color: "#1f2937",
@@ -1065,6 +1160,7 @@ const styles = StyleSheet.create({
     right: 12,
     top: 12,
     zIndex: 1,
+    padding: 2, // Increase touch target
   },
   inputError: {
     borderColor: "#ef4444",
@@ -1077,7 +1173,7 @@ const styles = StyleSheet.create({
     height: 44,
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
+    borderRadius: 10, // More iOS-friendly corner radius
     paddingHorizontal: 12,
     backgroundColor: "white",
   },
@@ -1093,14 +1189,15 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: "flex-end",
+    justifyContent: "flex-end", // Modal slides from bottom for iOS
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     backgroundColor: "white",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    maxHeight: "70%",
+    borderTopLeftRadius: 20, // iOS-style rounded modal corners
+    borderTopRightRadius: 20,
+    maxHeight: "80%",
+    paddingTop: 8, // Better iOS modal feel
   },
   modalHeader: {
     flexDirection: "row",
@@ -1118,6 +1215,9 @@ const styles = StyleSheet.create({
   modalCloseButton: {
     padding: 4,
   },
+  modalList: {
+    maxHeight: 400, // Limit height for better performance
+  },
   modalItem: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -1126,9 +1226,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#f3f4f6",
   },
+  modalItemSelected: {
+    backgroundColor: "#f3f4ff", // Subtle background for selected item
+  },
   modalItemText: {
     fontSize: 16,
     color: "#1f2937",
+  },
+  modalItemTextSelected: {
+    color: "#7e22ce",
+    fontWeight: "600",
   },
   errorContainer: {
     flexDirection: "row",
@@ -1179,8 +1286,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9fafb",
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 10, // More iOS-friendly corner radius
+    paddingVertical: 14,
     marginRight: 8,
     alignItems: "center",
     justifyContent: "center",
@@ -1193,10 +1300,13 @@ const styles = StyleSheet.create({
   submitButton: {
     flex: 2,
     backgroundColor: "#7e22ce",
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 10, // More iOS-friendly corner radius
+    paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   buttonContent: {
     flexDirection: "row",
@@ -1211,6 +1321,7 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
   },
   alreadyAccountContainer: {
     alignItems: "center",

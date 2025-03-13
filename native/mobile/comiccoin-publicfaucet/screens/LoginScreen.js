@@ -1,5 +1,5 @@
-// screens/LoginScreen.js
-import React, { useState, useEffect } from "react";
+// screens/LoginScreen.js - Targeted iOS improvements
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "expo-router";
 import {
   View,
@@ -11,14 +11,21 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
+  Keyboard,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../hooks/useAuth";
 import Header from "../components/Header";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const LoginScreen = () => {
   console.log("🚀 LoginScreen component initializing");
+
+  // Get safe area insets for proper layout with notches and home indicator
+  const insets = useSafeAreaInsets();
+  const isIOS = Platform.OS === "ios";
 
   const [formData, setFormData] = useState({
     email: "",
@@ -27,12 +34,35 @@ const LoginScreen = () => {
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const { login, isAuthenticated } = useAuth();
   console.log("🔐 Authentication state:", { isAuthenticated });
 
   const router = useRouter();
   console.log("🧭 Router available:", !!router);
+
+  // Ref for scrollView to allow scrolling to top on errors
+  const scrollViewRef = useRef(null);
+
+  // Add keyboard listeners for iOS
+  useEffect(() => {
+    const keyboardWillShowListener = Keyboard.addListener(
+      isIOS ? "keyboardWillShow" : "keyboardDidShow",
+      () => setKeyboardVisible(true),
+    );
+
+    const keyboardWillHideListener = Keyboard.addListener(
+      isIOS ? "keyboardWillHide" : "keyboardDidHide",
+      () => setKeyboardVisible(false),
+    );
+
+    return () => {
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
+  }, []);
 
   // Handle navigation if authenticated
   useEffect(() => {
@@ -54,9 +84,17 @@ const LoginScreen = () => {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+
+    // Clear general error when typing in any field
+    if (generalError) {
+      setGeneralError("");
+    }
   };
 
   const handleSubmit = async () => {
+    // Dismiss keyboard when submitting form
+    Keyboard.dismiss();
+
     console.log("📝 Login form submitted");
     setGeneralError("");
     setErrors({});
@@ -83,6 +121,11 @@ const LoginScreen = () => {
         if (fieldErrors.email || fieldErrors.password) {
           console.log("🔍 Field-specific errors detected:", fieldErrors);
           setErrors(fieldErrors);
+
+          // Scroll to top to show errors
+          if (scrollViewRef.current) {
+            scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
+          }
         }
         // If we have a message field, use that as a general error
         else if (fieldErrors.message) {
@@ -121,16 +164,23 @@ const LoginScreen = () => {
       <Header showBackButton={true} />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={isIOS ? "padding" : "height"}
         style={styles.keyboardAvoidView}
+        keyboardVerticalOffset={isIOS ? 20 : 0}
       >
         <ScrollView
+          ref={scrollViewRef}
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollViewContent}
+          contentContainerStyle={[
+            styles.scrollViewContent,
+            // Add bottom padding for safe area when keyboard is not visible
+            !keyboardVisible && {
+              paddingBottom: insets.bottom > 0 ? insets.bottom + 20 : 24,
+            },
+          ]}
           keyboardShouldPersistTaps="handled"
-          bounces={false}
-          overScrollMode="never"
-          contentInsetAdjustmentBehavior="never"
+          showsVerticalScrollIndicator={false}
+          bounces={true} // Enable bouncing for iOS native feel
         >
           {/* Hero Banner */}
           <LinearGradient
@@ -207,6 +257,9 @@ const LoginScreen = () => {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     placeholderTextColor="#9ca3af"
+                    returnKeyType="next"
+                    autoCorrect={false}
+                    textContentType="emailAddress" // iOS autofill hint
                   />
                 </View>
                 {errors.email && (
@@ -235,14 +288,31 @@ const LoginScreen = () => {
                     style={[
                       styles.input,
                       styles.inputWithLeftIcon,
+                      styles.inputWithRightIcon,
                       errors.password ? styles.inputError : null,
                     ]}
                     placeholder="Enter your password"
                     value={formData.password}
                     onChangeText={(text) => handleInputChange("password", text)}
-                    secureTextEntry={true}
+                    secureTextEntry={!showPassword}
                     placeholderTextColor="#9ca3af"
+                    returnKeyType="done"
+                    autoCorrect={false}
+                    textContentType="password" // iOS autofill hint
+                    onSubmitEditing={handleSubmit}
                   />
+                  {/* Add eye toggle for password visibility */}
+                  <TouchableOpacity
+                    style={styles.inputIconRight}
+                    onPress={() => setShowPassword(!showPassword)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Feather
+                      name={showPassword ? "eye-off" : "eye"}
+                      size={20}
+                      color="#9ca3af"
+                    />
+                  </TouchableOpacity>
                 </View>
                 {errors.password && (
                   <View style={styles.errorContainer}>
@@ -257,12 +327,24 @@ const LoginScreen = () => {
                 )}
               </View>
 
+              {/* Forgot Password Link */}
+              <TouchableOpacity
+                style={styles.forgotPasswordContainer}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Text style={styles.forgotPasswordText}>
+                  Forgot your password?
+                </Text>
+              </TouchableOpacity>
+
               {/* Action Buttons */}
               <View style={styles.actionButtonsContainer}>
                 <TouchableOpacity
                   style={styles.cancelButton}
                   onPress={handleCancel}
                   disabled={loading}
+                  activeOpacity={0.7}
                 >
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
@@ -271,6 +353,7 @@ const LoginScreen = () => {
                   style={styles.submitButton}
                   onPress={handleSubmit}
                   disabled={loading}
+                  activeOpacity={0.7}
                 >
                   {loading ? (
                     <View style={styles.loadingContainer}>
@@ -302,6 +385,7 @@ const LoginScreen = () => {
               <TouchableOpacity
                 style={styles.registerButton}
                 onPress={() => router.push("/register")}
+                activeOpacity={0.7}
               >
                 <Feather name="user-plus" size={20} color="#7e22ce" />
                 <Text style={styles.registerButtonText}>Register Now</Text>
@@ -416,7 +500,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   input: {
-    height: 44,
+    height: 48, // Slightly increased height for iOS
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderRadius: 8,
@@ -428,11 +512,21 @@ const styles = StyleSheet.create({
   inputWithLeftIcon: {
     paddingLeft: 40,
   },
+  inputWithRightIcon: {
+    paddingRight: 40,
+  },
   inputIconLeft: {
     position: "absolute",
     left: 12,
-    top: 12,
+    top: 14, // Adjusted for vertical centering
     zIndex: 1,
+  },
+  inputIconRight: {
+    position: "absolute",
+    right: 12,
+    top: 14, // Adjusted for vertical centering
+    zIndex: 1,
+    padding: 4, // Increased touch target
   },
   inputError: {
     borderColor: "#ef4444",
@@ -450,8 +544,17 @@ const styles = StyleSheet.create({
     color: "#ef4444",
     fontSize: 12,
   },
+  forgotPasswordContainer: {
+    alignItems: "flex-end",
+    marginBottom: 20,
+    marginTop: 4,
+  },
+  forgotPasswordText: {
+    color: "#7e22ce",
+    fontSize: 14,
+  },
   actionButtonsContainer: {
-    marginTop: 24,
+    marginTop: 4,
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -461,10 +564,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: 14,
     marginRight: 8,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 48, // Ensure minimum touch target on iOS
   },
   cancelButtonText: {
     color: "#4b5563",
@@ -475,9 +579,10 @@ const styles = StyleSheet.create({
     flex: 2,
     backgroundColor: "#7e22ce",
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 48, // Ensure minimum touch target on iOS
   },
   buttonContent: {
     flexDirection: "row",
@@ -492,6 +597,7 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
   },
   registrationCta: {
     margin: 16,
@@ -508,7 +614,6 @@ const styles = StyleSheet.create({
   },
   registrationCtaContent: {
     padding: 16,
-    flexDirection: "column",
   },
   registrationCtaTitle: {
     fontSize: 18,
@@ -529,6 +634,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
+    minHeight: 48, // Ensure minimum touch target on iOS
   },
   registerButtonText: {
     fontSize: 16,
