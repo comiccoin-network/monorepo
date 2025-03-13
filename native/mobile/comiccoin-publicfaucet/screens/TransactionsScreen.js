@@ -7,17 +7,16 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  SafeAreaView,
   StatusBar,
   FlatList,
   Modal,
   Animated,
+  Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import AppHeader from "../components/AppHeader";
 import { useTransactions } from "../api/endpoints/transactionsApi";
-import { LinearGradient } from "expo-linear-gradient";
 
 const TransactionsScreen = () => {
   const router = useRouter();
@@ -154,20 +153,20 @@ const TransactionsScreen = () => {
   // Render loading state
   if (isLoading && !transactions) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <AppHeader title="Transactions" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#8347FF" />
           <Text style={styles.loadingText}>Loading transactions...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // Render error state
   if (error && !transactions) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <AppHeader title="Transactions" />
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={56} color="#EF4444" />
@@ -180,7 +179,7 @@ const TransactionsScreen = () => {
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -298,160 +297,166 @@ const TransactionsScreen = () => {
         title={`Transactions${filter === "personal" ? " (Personal)" : ""}`}
       />
 
-      <View style={styles.controlsContainer}>
-        {/* Filter Button */}
-        <View style={styles.filterContainer}>
-          <TouchableOpacity
-            style={styles.filterButton}
-            onPress={() => setFilterMenuOpen(!filterMenuOpen)}
-          >
-            <Feather name="filter" size={16} color="#6B7280" />
-            <Text style={styles.filterText}>Filter</Text>
-          </TouchableOpacity>
-
-          {/* Filter Menu */}
-          <Modal
-            visible={filterMenuOpen}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setFilterMenuOpen(false)}
-          >
+      <View style={styles.mainContent}>
+        <View style={styles.controlsContainer}>
+          {/* Filter Button */}
+          <View style={styles.filterContainer}>
             <TouchableOpacity
-              style={styles.modalOverlay}
-              activeOpacity={1}
-              onPress={() => setFilterMenuOpen(false)}
+              style={styles.filterButton}
+              onPress={() => setFilterMenuOpen(!filterMenuOpen)}
             >
-              <View style={styles.filterMenu}>
-                <TouchableOpacity
-                  style={[
-                    styles.filterMenuItem,
-                    filter === null && styles.filterMenuItemActive,
-                  ]}
-                  onPress={() => applyFilter(null)}
-                >
-                  <Text style={styles.filterMenuItemText}>
-                    All Transactions
-                  </Text>
-                  {filter === null && (
-                    <Ionicons name="checkmark" size={16} color="#8347FF" />
-                  )}
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.filterMenuItem,
-                    filter === "personal" && styles.filterMenuItemActive,
-                  ]}
-                  onPress={() => applyFilter("personal")}
-                >
-                  <Text style={styles.filterMenuItemText}>Personal Only</Text>
-                  {filter === "personal" && (
-                    <Ionicons name="checkmark" size={16} color="#8347FF" />
-                  )}
-                </TouchableOpacity>
-              </View>
+              <Feather name="filter" size={16} color="#6B7280" />
+              <Text style={styles.filterText}>Filter</Text>
             </TouchableOpacity>
-          </Modal>
-        </View>
 
-        {/* Sort Controls */}
-        <View style={styles.sortContainer}>
-          <TouchableOpacity
-            style={[
-              styles.sortButton,
-              sortBy.field === "timestamp" && styles.sortButtonActive,
-            ]}
-            onPress={() => handleSort("timestamp")}
-          >
-            <Text
-              style={[
-                styles.sortText,
-                sortBy.field === "timestamp" && styles.sortTextActive,
-              ]}
+            {/* Filter Menu */}
+            <Modal
+              visible={filterMenuOpen}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={() => setFilterMenuOpen(false)}
             >
-              Date
-            </Text>
-            {sortBy.field === "timestamp" && (
-              <Ionicons
-                name={
-                  sortBy.direction === "asc" ? "chevron-up" : "chevron-down"
-                }
-                size={16}
-                color="#8347FF"
-                style={styles.sortIcon}
-              />
-            )}
-          </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalOverlay}
+                activeOpacity={1}
+                onPress={() => setFilterMenuOpen(false)}
+              >
+                <View style={styles.filterMenu}>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterMenuItem,
+                      filter === null && styles.filterMenuItemActive,
+                    ]}
+                    onPress={() => applyFilter(null)}
+                  >
+                    <Text style={styles.filterMenuItemText}>
+                      All Transactions
+                    </Text>
+                    {filter === null && (
+                      <Ionicons name="checkmark" size={16} color="#8347FF" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterMenuItem,
+                      filter === "personal" && styles.filterMenuItemActive,
+                    ]}
+                    onPress={() => applyFilter("personal")}
+                  >
+                    <Text style={styles.filterMenuItemText}>Personal Only</Text>
+                    {filter === "personal" && (
+                      <Ionicons name="checkmark" size={16} color="#8347FF" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </Modal>
+          </View>
 
-          <View style={styles.sortDivider} />
-
-          <TouchableOpacity
-            style={[
-              styles.sortButton,
-              sortBy.field === "amount" && styles.sortButtonActive,
-            ]}
-            onPress={() => handleSort("amount")}
-          >
-            <Text
+          {/* Sort Controls */}
+          <View style={styles.sortContainer}>
+            <TouchableOpacity
               style={[
-                styles.sortText,
-                sortBy.field === "amount" && styles.sortTextActive,
+                styles.sortButton,
+                sortBy.field === "timestamp" && styles.sortButtonActive,
               ]}
+              onPress={() => handleSort("timestamp")}
             >
-              Amount
-            </Text>
-            {sortBy.field === "amount" && (
-              <Ionicons
-                name={
-                  sortBy.direction === "asc" ? "chevron-up" : "chevron-down"
-                }
-                size={16}
-                color="#8347FF"
-                style={styles.sortIcon}
-              />
-            )}
-          </TouchableOpacity>
-        </View>
+              <Text
+                style={[
+                  styles.sortText,
+                  sortBy.field === "timestamp" && styles.sortTextActive,
+                ]}
+              >
+                Date
+              </Text>
+              {sortBy.field === "timestamp" && (
+                <Ionicons
+                  name={
+                    sortBy.direction === "asc" ? "chevron-up" : "chevron-down"
+                  }
+                  size={16}
+                  color="#8347FF"
+                  style={styles.sortIcon}
+                />
+              )}
+            </TouchableOpacity>
 
-        {/* Refresh Button */}
-        <TouchableOpacity
-          style={styles.refreshButton}
-          onPress={handleRefresh}
-          disabled={isRefreshing}
-        >
-          <Ionicons
-            name="refresh"
-            size={18}
-            color="#8347FF"
-            style={[isRefreshing && styles.rotating]}
-          />
-        </TouchableOpacity>
-      </View>
+            <View style={styles.sortDivider} />
 
-      {sortedTransactions.length > 0 ? (
-        <FlatList
-          data={sortedTransactions}
-          renderItem={renderTransactionItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-              colors={["#8347FF"]}
-              tintColor="#8347FF"
+            <TouchableOpacity
+              style={[
+                styles.sortButton,
+                sortBy.field === "amount" && styles.sortButtonActive,
+              ]}
+              onPress={() => handleSort("amount")}
+            >
+              <Text
+                style={[
+                  styles.sortText,
+                  sortBy.field === "amount" && styles.sortTextActive,
+                ]}
+              >
+                Amount
+              </Text>
+              {sortBy.field === "amount" && (
+                <Ionicons
+                  name={
+                    sortBy.direction === "asc" ? "chevron-up" : "chevron-down"
+                  }
+                  size={16}
+                  color="#8347FF"
+                  style={styles.sortIcon}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Refresh Button */}
+          <TouchableOpacity
+            style={styles.refreshButton}
+            onPress={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <Ionicons
+              name="refresh"
+              size={18}
+              color="#8347FF"
+              style={[isRefreshing && styles.rotating]}
             />
-          }
-        />
-      ) : (
-        renderEmptyState()
-      )}
+          </TouchableOpacity>
+        </View>
+
+        {sortedTransactions.length > 0 ? (
+          <FlatList
+            data={sortedTransactions}
+            renderItem={renderTransactionItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+                colors={["#8347FF"]}
+                tintColor="#8347FF"
+              />
+            }
+          />
+        ) : (
+          renderEmptyState()
+        )}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: "#F5F7FA",
+  },
+  mainContent: {
     flex: 1,
     backgroundColor: "#F5F7FA",
   },
