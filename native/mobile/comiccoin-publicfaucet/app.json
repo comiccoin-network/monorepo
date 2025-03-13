@@ -83,7 +83,7 @@
       },
       "associatedDomains": [
         "applinks:comiccoinfaucet.com",
-        "applinks:comiccoin.net",
+        "webcredentials:comiccoin.net",
         "applinks:comiccoinwallet.com",
         "applinks:comiccoinnetwork.com",
         "applinks:comiccoin.ca",

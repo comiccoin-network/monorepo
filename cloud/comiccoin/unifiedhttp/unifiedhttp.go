@@ -29,8 +29,9 @@ type unifiedHTTPServerImpl struct {
 	middleware mid.Middleware
 
 	// System
-	getVersionHTTPHandler     *GetVersionHTTPHandler
-	getHealthCheckHTTPHandler *GetHealthCheckHTTPHandler
+	getVersionHTTPHandler                 *GetVersionHTTPHandler
+	getHealthCheckHTTPHandler             *GetHealthCheckHTTPHandler
+	getAppleAppSiteAssociationHTTPHandler *GetAppleAppSiteAssociationHTTPHandler
 
 	// Modules
 	authorityHTTPServer    authority_http.HTTPServer
@@ -65,14 +66,15 @@ func NewUnifiedHTTPServer(
 	}
 
 	port := &unifiedHTTPServerImpl{
-		cfg:                       cfg,
-		logger:                    logger,
-		server:                    srv,
-		middleware:                mid,
-		getVersionHTTPHandler:     NewGetVersionHTTPHandler(logger),
-		getHealthCheckHTTPHandler: NewGetHealthCheckHTTPHandler(logger),
-		authorityHTTPServer:       authorityHTTPServer,
-		publicfaucetHTTPServer:    publicfaucetHTTPServer,
+		cfg:                                   cfg,
+		logger:                                logger,
+		server:                                srv,
+		middleware:                            mid,
+		getVersionHTTPHandler:                 NewGetVersionHTTPHandler(logger),
+		getHealthCheckHTTPHandler:             NewGetHealthCheckHTTPHandler(logger),
+		getAppleAppSiteAssociationHTTPHandler: NewGetAppleAppSiteAssociationHTTPHandler(logger),
+		authorityHTTPServer:                   authorityHTTPServer,
+		publicfaucetHTTPServer:                publicfaucetHTTPServer,
 	}
 
 	// Attach the unified request handler
@@ -138,6 +140,8 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 
 	case n == 1 && p[0] == "health-check" && r.Method == http.MethodGet:
 		port.getHealthCheckHTTPHandler.Execute(w, r)
+	case n == 2 && p[0] == ".well-known" && p[1] == "apple-app-site-association" && r.Method == http.MethodGet:
+		port.getAppleAppSiteAssociationHTTPHandler.Execute(w, r)
 
 	case p[0] == "authority":
 		// Handle new API endpoints.

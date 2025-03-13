@@ -5,7 +5,7 @@
     <key>com.apple.developer.associated-domains</key>
     <array>
       <string>applinks:comiccoinfaucet.com</string>
-      <string>applinks:comiccoin.net</string>
+      <string>webcredentials:comiccoin.net</string>
       <string>applinks:comiccoinwallet.com</string>
       <string>applinks:comiccoinnetwork.com</string>
       <string>applinks:comiccoin.ca</string>
