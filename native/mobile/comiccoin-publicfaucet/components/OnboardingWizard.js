@@ -33,108 +33,126 @@ const APP_LINKS = {
 };
 
 // Define the wizard screens
-const WIZARD_SCREENS_ALL = [
-  {
-    id: "1",
-    title: "Welcome to ComicCoin Public Faucet",
-    subtitle: "Claim Free ComicCoins Daily",
-    description:
-      "This app allows you to claim free ComicCoins every day simply by logging in and pressing a button.",
-    additionalContent: [
-      {
-        title: "What is ComicCoin?",
-        description:
-          "ComicCoin is an open-source blockchain project utilizing a Proof of Authority consensus mechanism. This ensures fast, efficient, and environmentally friendly transactions while maintaining security and transparency. Our code is public, auditable, and community-driven.",
-      },
-      {
-        title: "Learn More",
-        description:
-          "Visit our website to discover more about the ComicCoin ecosystem and how it benefits comic collectors and creators.",
-        websiteUrl: "https://comiccoinnetwork.com",
-      },
-    ],
-    icon: "🎁",
-  },
-  {
-    id: "2",
-    title: "Download ComicCoin Wallet",
-    subtitle: "Required Companion App",
-    description:
-      "To claim ComicCoins, you need a wallet app. Choose one option below:",
-    walletOptions: [
-      {
-        title: `Download for ${Platform.OS === "ios" ? "iOS" : "Android"}`,
-        description: "Get the app on your phone",
-        url: Platform.OS === "ios" ? APP_LINKS.ios : APP_LINKS.android,
-        icon: "📱",
-      },
-      {
-        title: "Use Web Wallet",
-        description: "No download needed",
-        url: APP_LINKS.web,
-        icon: "🌐",
-      },
-    ],
-    icon: "⬇️",
-  },
-  {
-    id: "3",
-    title: "About ComicCoin Public Faucet",
-    subtitle: "Your Gateway to Free ComicCoins",
-    description:
-      "ComicCoin Public Faucet is a free cloud service that distributes ComicCoins to registered users.",
-    websiteUrl: "http://comiccoinfaucet.com",
-    cloudDataInfo: {
-      title: "Data Stored in the Cloud",
+const WIZARD_SCREENS = (() => {
+  // Common screens for both platforms
+  const commonScreens = [
+    {
+      id: "1",
+      title: "Welcome to ComicCoin Public Faucet",
+      subtitle: "Claim Free ComicCoins Daily",
       description:
-        "This app communicates with our web service. The following information is stored securely in our cloud infrastructure:",
-      dataItems: [
-        { label: "Name", icon: "📝" },
-        { label: "Email", icon: "✉️" },
-        { label: "Phone Number", icon: "📱" },
-        { label: "Country", icon: "🌎" },
-        { label: "Timezone", icon: "🕒" },
-        { label: "Wallet Address", icon: "💼" },
+        "This app allows you to claim free ComicCoins every day simply by logging in and pressing a button.",
+      additionalContent: [
+        {
+          title: "What is ComicCoin?",
+          description:
+            "ComicCoin is an open-source blockchain project utilizing a Proof of Authority consensus mechanism. This ensures fast, efficient, and environmentally friendly transactions while maintaining security and transparency. Our code is public, auditable, and community-driven.",
+        },
+        {
+          title: "Learn More",
+          description:
+            "Visit our website to discover more about the ComicCoin ecosystem and how it benefits comic collectors and creators.",
+          websiteUrl: "https://comiccoinnetwork.com",
+        },
       ],
+      icon: "🎁",
     },
-    additionalInfo:
-      "We collect this information to prevent fraudulent activity and maintain the integrity of the ComicCoin distribution system. If you opt in to marketing communications, we may also use your data to share the latest ComicCoin developments with you.",
-    icon: "☁️",
-  },
-  {
-    id: "4",
-    title: "Turn on tracking allows us to provide features like:",
-    subtitle: "",
-    description: "",
-    trackingBenefits: [
-      {
-        title: "Secure account registration",
-        description: "Create and verify your ComicCoin account",
-        icon: "👤",
+    {
+      id: "2",
+      title: "Download ComicCoin Wallet",
+      subtitle: "Required Companion App",
+      description:
+        "To claim ComicCoins, you need a wallet app. Choose one option below:",
+      walletOptions: [
+        {
+          title: `Download for ${Platform.OS === "ios" ? "iOS" : "Android"}`,
+          description: "Get the app on your phone",
+          url: Platform.OS === "ios" ? APP_LINKS.ios : APP_LINKS.android,
+          icon: "📱",
+        },
+        {
+          title: "Use Web Wallet",
+          description: "No download needed",
+          url: APP_LINKS.web,
+          icon: "🌐",
+        },
+      ],
+      icon: "⬇️",
+    },
+    {
+      id: "3",
+      title: "About ComicCoin Public Faucet",
+      subtitle: "Your Gateway to Free ComicCoins",
+      description:
+        "ComicCoin Public Faucet is a free cloud service that distributes ComicCoins to registered users.",
+      websiteUrl: "http://comiccoinfaucet.com",
+      cloudDataInfo: {
+        title: "Data Stored in the Cloud",
+        description:
+          "This app communicates with our web service. The following information is stored securely in our cloud infrastructure:",
+        dataItems: [
+          { label: "Name", icon: "📝" },
+          { label: "Email", icon: "✉️" },
+          { label: "Phone Number", icon: "📱" },
+          { label: "Country", icon: "🌎" },
+          { label: "Timezone", icon: "🕒" },
+          { label: "Wallet Address", icon: "💼" },
+        ],
       },
+      additionalInfo:
+        "We collect this information to prevent fraudulent activity and maintain the integrity of the ComicCoin distribution system. If you opt in to marketing communications, we may also use your data to share the latest ComicCoin developments with you.",
+      icon: "☁️",
+    },
+  ];
+
+  // Platform-specific fourth screen
+  if (Platform.OS === "ios") {
+    // For iOS, use the real tracking screen
+    return [
+      ...commonScreens,
       {
-        title: "Personalized login experience",
-        description: "Access your account smoothly and securely",
-        icon: "🔑",
+        id: "4",
+        title: "Turn on tracking allows us to provide features like:",
+        subtitle: "",
+        description: "",
+        trackingBenefits: [
+          {
+            title: "Secure account registration",
+            description: "Create and verify your ComicCoin account",
+            icon: "👤",
+          },
+          {
+            title: "Personalized login experience",
+            description: "Access your account smoothly and securely",
+            icon: "🔑",
+          },
+          {
+            title: "Daily coin claiming",
+            description: "Ensure fair distribution of ComicCoins",
+            icon: "🎁",
+          },
+        ],
+        note: "You can change this option later in the Settings app.",
+        icon: "🛡️",
       },
+    ];
+  } else {
+    // For Android, add a completion screen
+    return [
+      ...commonScreens,
       {
-        title: "Daily coin claiming",
-        description: "Ensure fair distribution of ComicCoins",
-        icon: "🎁",
+        id: "4-android",
+        title: "Completing Setup",
+        subtitle: "Almost Ready!",
+        description: "Your ComicCoin Faucet is being prepared...",
+        isCompletionScreen: true, // Flag to identify this special screen
+        icon: "✓",
       },
-    ],
-    note: "You can change this option later in the Settings app.",
-    icon: "🛡️",
-  },
-];
+    ];
+  }
+})();
 
 const OnboardingWizard = ({ onComplete, navigation, router }) => {
-  // Filter screens based on platform - iOS gets all screens, Android skips tracking page
-  const WIZARD_SCREENS =
-    Platform.OS === "ios"
-      ? WIZARD_SCREENS_ALL
-      : WIZARD_SCREENS_ALL.filter((screen) => screen.id !== "4");
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const [linkModalVisible, setLinkModalVisible] = useState(false);
   const [pendingUrl, setPendingUrl] = useState("");
@@ -162,6 +180,42 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
   };
 
   const renderItem = ({ item, index }) => {
+    // For Android completion screen, render a simplified view
+    if (Platform.OS === "android" && item.isCompletionScreen) {
+      return (
+        <View style={styles.slide}>
+          <View style={[styles.slideContent, styles.completionSlide]}>
+            <View style={styles.stepIndicator}>
+              <Text style={styles.stepText}>
+                Step {index + 1} of {WIZARD_SCREENS.length}
+              </Text>
+              <View style={styles.progressBar}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      width: `${((index + 1) / WIZARD_SCREENS.length) * 100}%`,
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+            <View style={styles.iconContainer}>
+              <Text style={styles.iconText}>{item.icon}</Text>
+            </View>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.subtitle}>{item.subtitle}</Text>
+            <Text style={styles.description}>{item.description}</Text>
+
+            <View style={styles.loadingIndicator}>
+              <ActivityIndicator size="large" color="#7c3aed" />
+            </View>
+          </View>
+        </View>
+      );
+    }
+
+    // Normal rendering for all other screens
     return (
       <View style={styles.slide}>
         <View style={styles.slideContent}>
@@ -310,12 +364,33 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
 
   const goToNextSlide = () => {
     if (currentIndex < WIZARD_SCREENS.length - 1) {
-      flatListRef.current.scrollToIndex({
-        index: currentIndex + 1,
-        animated: true,
-      });
-      setCurrentIndex(currentIndex + 1);
+      // If we're on the second-to-last screen (index 2) on Android and the next screen is the completion screen
+      if (
+        Platform.OS === "android" &&
+        currentIndex === WIZARD_SCREENS.length - 2 &&
+        WIZARD_SCREENS[currentIndex + 1].isCompletionScreen
+      ) {
+        // Show the completion screen briefly for visual continuity
+        flatListRef.current.scrollToIndex({
+          index: currentIndex + 1,
+          animated: true,
+        });
+        setCurrentIndex(currentIndex + 1);
+
+        // Then complete the onboarding after a short delay
+        setTimeout(() => {
+          completeOnboarding();
+        }, 800);
+      } else {
+        // Normal navigation to next screen
+        flatListRef.current.scrollToIndex({
+          index: currentIndex + 1,
+          animated: true,
+        });
+        setCurrentIndex(currentIndex + 1);
+      }
     } else {
+      // We've reached the last screen, complete onboarding
       completeOnboarding();
     }
   };
@@ -411,6 +486,11 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
             setCurrentIndex(newIndex);
           }}
           scrollEnabled={false}
+          getItemLayout={(data, index) => ({
+            length: width,
+            offset: width * index,
+            index,
+          })}
         />
 
         {/* Navigation dots */}
@@ -426,14 +506,20 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
           ))}
         </View>
 
-        {/* Single Continue button */}
+        {/* Continue button - Hide on Android completion screen */}
         <View style={styles.navigationContainer}>
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={goToNextSlide}
-          >
-            <Text style={styles.continueButtonText}>Continue</Text>
-          </TouchableOpacity>
+          {!(
+            Platform.OS === "android" &&
+            currentIndex === WIZARD_SCREENS.length - 1 &&
+            WIZARD_SCREENS[currentIndex].isCompletionScreen
+          ) && (
+            <TouchableOpacity
+              style={styles.continueButton}
+              onPress={goToNextSlide}
+            >
+              <Text style={styles.continueButtonText}>Continue</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -588,6 +674,14 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  completionSlide: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  loadingIndicator: {
+    marginVertical: 20,
+  },
   stepIndicator: {
     marginBottom: 12,
     width: "100%",
@@ -714,7 +808,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 18,
   },
-  // Tracking benefits styling (Screen 3) - Updated to match design
+  // Tracking benefits styling (Screen 4) - Updated to match design
   trackingContainer: {
     marginTop: 24,
     marginBottom: 16,
@@ -750,7 +844,7 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     lineHeight: 22,
   },
-  // Personal Information styling (Screen 3)
+  // Personal Information styling
   personalInfoContainer: {
     marginTop: 16,
     marginBottom: 16,
