@@ -1,4 +1,4 @@
-// screens/GetStartedScreen.js
+// screens/GetStartedScreen.js with iOS improvements and no bounce effect
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import {
@@ -9,6 +9,7 @@ import {
   ScrollView,
   Platform,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useGetFaucet } from "../api/endpoints/faucetApi";
@@ -17,10 +18,15 @@ import LightFooter from "../components/LightFooter";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import OnboardingWizard from "../components/OnboardingWizard";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const { width, height } = Dimensions.get("window");
+const isSmallDevice = height < 700; // iPhone SE or similar
 
 const GetStartedScreen = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const insets = useSafeAreaInsets(); // Get safe area insets
 
   // Onboarding state
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -99,22 +105,39 @@ const GetStartedScreen = () => {
 
       <ScrollView
         style={styles.scrollView}
-        bounces={false}
+        contentContainerStyle={[
+          styles.scrollContent,
+          // Add bottom padding to account for safe area
+          { paddingBottom: Math.max(40, insets.bottom + 20) },
+        ]}
+        bounces={false} // Disable the rubber/bounce effect
         overScrollMode="never"
-        contentInsetAdjustmentBehavior="never"
+        contentInsetAdjustmentBehavior="never" // Prevents content adjustment that can cause bounce
+        showsVerticalScrollIndicator={false} // Cleaner iOS appearance
       >
         {/* Hero Banner */}
         <LinearGradient
           colors={["#4f46e5", "#4338ca"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
-          style={styles.heroBanner}
+          style={[
+            styles.heroBanner,
+            // Add extra top padding for devices with notches
+            { paddingTop: insets.top > 0 ? insets.top + 16 : 48 },
+          ]}
         >
           <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>
+            <Text
+              style={[styles.heroTitle, isSmallDevice && styles.heroTitleSmall]}
+            >
               Welcome to ComicCoin Public Faucet
             </Text>
-            <Text style={styles.heroSubtitle}>
+            <Text
+              style={[
+                styles.heroSubtitle,
+                isSmallDevice && styles.heroSubtitleSmall,
+              ]}
+            >
               Join our community of comic collectors and creators today and get
               free ComicCoins!
             </Text>
@@ -122,7 +145,14 @@ const GetStartedScreen = () => {
         </LinearGradient>
 
         <View style={styles.mainContent}>
-          <Text style={styles.sectionTitle}>Choose Your Path</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              isSmallDevice && styles.sectionTitleSmall,
+            ]}
+          >
+            Choose Your Path
+          </Text>
 
           <View style={styles.cardsContainer}>
             {/* Registration Card */}
@@ -130,12 +160,26 @@ const GetStartedScreen = () => {
               style={styles.card}
               onPress={handleRegisterPress}
               disabled={isLoading}
+              activeOpacity={0.7} // Better iOS touch feedback
             >
               <View style={styles.iconContainer}>
-                <Feather name="user-plus" size={28} color="#7c3aed" />
+                <Feather
+                  name="user-plus"
+                  size={isSmallDevice ? 24 : 28}
+                  color="#7c3aed"
+                />
               </View>
-              <Text style={styles.cardTitle}>New to ComicCoin?</Text>
-              <Text style={styles.cardText}>
+              <Text
+                style={[
+                  styles.cardTitle,
+                  isSmallDevice && styles.cardTitleSmall,
+                ]}
+              >
+                New to ComicCoin?
+              </Text>
+              <Text
+                style={[styles.cardText, isSmallDevice && styles.cardTextSmall]}
+              >
                 Create your ComicCoin Public Faucet account to join our
                 community of comic enthusiasts. Get access to exclusive features
                 and claim your daily ComicCoins.
@@ -151,12 +195,26 @@ const GetStartedScreen = () => {
               style={styles.card}
               onPress={handleLoginPress}
               disabled={isLoading}
+              activeOpacity={0.7} // Better iOS touch feedback
             >
               <View style={styles.iconContainer}>
-                <Feather name="log-in" size={28} color="#7c3aed" />
+                <Feather
+                  name="log-in"
+                  size={isSmallDevice ? 24 : 28}
+                  color="#7c3aed"
+                />
               </View>
-              <Text style={styles.cardTitle}>Already Have an Account?</Text>
-              <Text style={styles.cardText}>
+              <Text
+                style={[
+                  styles.cardTitle,
+                  isSmallDevice && styles.cardTitleSmall,
+                ]}
+              >
+                Already Have an Account?
+              </Text>
+              <Text
+                style={[styles.cardText, isSmallDevice && styles.cardTextSmall]}
+              >
                 Sign in with your existing credentials to continue your journey.
                 Access your collections and claim your daily rewards.
               </Text>
@@ -188,6 +246,9 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   heroBanner: {
     paddingVertical: 48,
     paddingHorizontal: 16,
@@ -197,6 +258,7 @@ const styles = StyleSheet.create({
   heroContent: {
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: isSmallDevice ? 10 : 20,
   },
   heroTitle: {
     fontSize: 28,
@@ -205,6 +267,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 16,
   },
+  heroTitleSmall: {
+    fontSize: 24,
+    marginBottom: 12,
+  },
   heroSubtitle: {
     fontSize: 16,
     color: "#e0e7ff",
@@ -212,8 +278,14 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingHorizontal: 20,
   },
+  heroSubtitleSmall: {
+    fontSize: 14,
+    marginBottom: 16,
+    paddingHorizontal: 10,
+  },
   mainContent: {
     padding: 24,
+    paddingHorizontal: isSmallDevice ? 16 : 24,
   },
   sectionTitle: {
     fontSize: 24,
@@ -222,13 +294,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 24,
   },
+  sectionTitleSmall: {
+    fontSize: 20,
+    marginBottom: 16,
+  },
   cardsContainer: {
     marginBottom: 24,
   },
   card: {
     backgroundColor: "white",
-    borderRadius: 12,
-    padding: 24,
+    borderRadius: 16, // More iOS-friendly rounded corners
+    padding: isSmallDevice ? 16 : 24,
     marginBottom: 16,
     ...Platform.select({
       ios: {
@@ -248,8 +324,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f5ff",
     alignSelf: "center",
     padding: 16,
-    borderRadius: 9999,
-    marginBottom: 24,
+    borderRadius: 50, // Perfect circle on all devices
+    marginBottom: isSmallDevice ? 16 : 24,
+    width: isSmallDevice ? 56 : 64,
+    height: isSmallDevice ? 56 : 64,
+    alignItems: "center",
+    justifyContent: "center",
   },
   cardTitle: {
     fontSize: 20,
@@ -258,11 +338,21 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 12,
   },
+  cardTitleSmall: {
+    fontSize: 18,
+    marginBottom: 8,
+  },
   cardText: {
     fontSize: 16,
     color: "#4b5563",
     textAlign: "center",
     marginBottom: 24,
+    lineHeight: 24,
+  },
+  cardTextSmall: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 16,
   },
   cardFooter: {
     flexDirection: "row",
