@@ -7,6 +7,9 @@ import {
   FlatList,
   Dimensions,
   ActivityIndicator,
+  SafeAreaView,
+  Platform,
+  StatusBar,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -21,16 +24,20 @@ import {
 } from "./commonScreens";
 import styles from "./styles";
 import ExternalLinkModal from "./ExternalLinkModal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 // Full list of screens for iOS
 const WIZARD_SCREENS = [...COMMON_SCREENS, IOS_TRACKING_SCREEN];
 
 /**
  * iOS-specific implementation of the onboarding wizard
+ * Enhanced with better safe area handling and responsive design
  */
 const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
+  // Get safe area insets to handle notch and home indicator
+  const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [linkModalVisible, setLinkModalVisible] = useState(false);
   const [pendingUrl, setPendingUrl] = useState("");
@@ -38,6 +45,15 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const flatListRef = useRef(null);
+
+  // Determine if we're on a smaller device (like iPhone SE)
+  const isSmallDevice = height < 700;
+
+  // Extra adjustment for very small devices
+  const isVerySmallDevice = height < 600;
+
+  // Calculate content scaling factor for smaller screens
+  const contentScaleFactor = isVerySmallDevice ? 0.8 : isSmallDevice ? 0.9 : 1;
 
   // Request tracking permission but don't block completion
   const requestTrackingPermission = async () => {
@@ -70,7 +86,7 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
     navigateAfterOnboarding(onComplete, navigation, router);
   }, [onComplete, navigation, router]);
 
-  // Handle next slide with improved reliability
+  // Handle next slide
   const goToNextSlide = useCallback(() => {
     if (currentIndex < WIZARD_SCREENS.length - 1) {
       // Calculate the next index
@@ -102,9 +118,22 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
 
   // Render a single screen of the wizard
   const renderItem = ({ item }) => {
+    const progressPercent = parseInt(item.id.replace(/\D/g, ""), 10) * 25;
+
     return (
       <View style={[styles.slide, { width }]}>
-        <View style={styles.slideContent}>
+        <View
+          style={[
+            styles.cardContainer,
+            {
+              paddingTop: isSmallDevice ? 16 : 20,
+              paddingBottom: isSmallDevice ? 90 : 100, // Extra padding for the button and dots
+              marginTop: insets.top > 0 ? insets.top * 0.5 : 0,
+              marginBottom: insets.bottom,
+              maxHeight: isVerySmallDevice ? height * 0.95 : undefined,
+            },
+          ]}
+        >
           {/* Step indicator */}
           <View style={styles.stepIndicator}>
             <Text style={styles.stepText}>
@@ -112,28 +141,43 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
             </Text>
             <View style={styles.progressBar}>
               <View
-                style={[
-                  styles.progressFill,
-                  {
-                    width: `${(parseInt(item.id.replace(/\D/g, ""), 10) / 4) * 100}%`,
-                  },
-                ]}
+                style={[styles.progressFill, { width: `${progressPercent}%` }]}
               />
             </View>
           </View>
 
           {/* Icon */}
-          <View style={styles.iconContainer}>
+          <View
+            style={[
+              styles.iconContainer,
+              isSmallDevice && styles.iconContainerSmall,
+            ]}
+          >
             <Text style={styles.iconText}>{item.icon}</Text>
           </View>
 
           {/* Title and subtitle */}
-          <Text style={styles.title}>{item.title}</Text>
+          <Text style={[styles.title, isSmallDevice && styles.titleSmall]}>
+            {item.title}
+          </Text>
+
           {item.subtitle && (
-            <Text style={styles.subtitle}>{item.subtitle}</Text>
+            <Text
+              style={[styles.subtitle, isSmallDevice && styles.subtitleSmall]}
+            >
+              {item.subtitle}
+            </Text>
           )}
+
           {item.description && (
-            <Text style={styles.description}>{item.description}</Text>
+            <Text
+              style={[
+                styles.description,
+                isSmallDevice && styles.descriptionSmall,
+              ]}
+            >
+              {item.description}
+            </Text>
           )}
 
           {/* Additional content for screen 1 */}
@@ -193,6 +237,7 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
               <Text style={styles.cloudDataTitle}>
                 {item.cloudDataInfo.title}
               </Text>
+
               <Text style={styles.cloudDataDescription}>
                 {item.cloudDataInfo.description}
               </Text>
@@ -249,6 +294,41 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
               {item.note && <Text style={styles.noteText}>{item.note}</Text>}
             </View>
           )}
+
+          {/* Continue button - fixed to bottom of card with pagination dots */}
+          <View style={styles.continueButtonContainer}>
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="white" />
+                <Text style={styles.loadingText}>Setting up...</Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.continueButton}
+                onPress={goToNextSlide}
+                disabled={isLoading}
+              >
+                <Text style={styles.continueButtonText}>
+                  {currentIndex === WIZARD_SCREENS.length - 1
+                    ? "Get Started"
+                    : "Continue"}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Pagination dots inside button container */}
+            <View style={styles.buttonPagination}>
+              {WIZARD_SCREENS.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.buttonPaginationDot,
+                    index === currentIndex && styles.buttonPaginationDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
         </View>
       </View>
     );
@@ -256,63 +336,30 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#4f46e5" />
       <LinearGradient
         colors={["#4f46e5", "#4338ca"]}
         style={styles.background}
       />
 
-      <View style={styles.contentContainer}>
-        <FlatList
-          ref={flatListRef}
-          data={WIZARD_SCREENS}
-          renderItem={renderItem}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
-          scrollEnabled={false} // Disable user scrolling entirely
-          getItemLayout={(data, index) => ({
-            length: width,
-            offset: width * index,
-            index,
-          })}
-        />
+      <FlatList
+        ref={flatListRef}
+        data={WIZARD_SCREENS}
+        renderItem={renderItem}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.id}
+        scrollEnabled={false} // Disable user scrolling entirely
+        bounces={false}
+        getItemLayout={(data, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
+      />
 
-        {/* Navigation dots */}
-        <View style={styles.pagination}>
-          {WIZARD_SCREENS.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.paginationDot,
-                index === currentIndex && styles.paginationDotActive,
-              ]}
-            />
-          ))}
-        </View>
-
-        {/* Continue button or loading indicator */}
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="white" />
-            <Text style={styles.loadingText}>Setting up...</Text>
-          </View>
-        ) : (
-          <View style={styles.navigationContainer}>
-            <TouchableOpacity
-              style={styles.continueButton}
-              onPress={goToNextSlide}
-              disabled={isLoading}
-            >
-              <Text style={styles.continueButtonText}>
-                {currentIndex === WIZARD_SCREENS.length - 1
-                  ? "Get Started"
-                  : "Continue"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+      {/* Removed external pagination dots since they're now inside the button container */}
 
       {/* External link warning modal */}
       <ExternalLinkModal

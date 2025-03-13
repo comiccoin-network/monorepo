@@ -13,20 +13,18 @@ export const APP_LINKS = {
 export const COMMON_SCREENS = [
   {
     id: "1",
-    title: "Welcome to ComicCoin Public Faucet",
-    subtitle: "Claim Free ComicCoins Daily",
-    description:
-      "This app allows you to claim free ComicCoins every day simply by logging in and pressing a button.",
+    title: "ComicCoin Faucet",
+    subtitle: "Claim Free Coins Daily",
+    description: "Log in daily. Press a button. Get free ComicCoins.",
     additionalContent: [
       {
         title: "What is ComicCoin?",
         description:
-          "ComicCoin is an open-source blockchain project utilizing a Proof of Authority consensus mechanism. This ensures fast, efficient, and environmentally friendly transactions while maintaining security and transparency. Our code is public, auditable, and community-driven.",
+          "A fast, secure blockchain for digital comics. Environmentally friendly with transparent, community-driven code.",
       },
       {
         title: "Learn More",
-        description:
-          "Visit our website to discover more about the ComicCoin ecosystem and how it benefits comic collectors and creators.",
+        description: "Explore how ComicCoin benefits collectors and creators.",
         websiteUrl: "https://comiccoinnetwork.com",
       },
     ],
@@ -34,37 +32,50 @@ export const COMMON_SCREENS = [
   },
   {
     id: "2",
-    title: "Download ComicCoin Wallet",
-    subtitle: "Required Companion App",
+    title: "Create Your ComicCoin Storage Spot",
+    subtitle: "A Simple Guide to Setting Up Your Digital Coin Box",
     description:
-      "To claim ComicCoins, you need a wallet app. Choose one option below:",
+      "Before you can receive any free ComicCoins, you'll need to create something called a 'wallet.' Don't worry - this isn't a physical wallet! It's just a special place on your phone or computer that safely stores your digital coins. Think of it like having a piggy bank that only you can open.",
     walletOptions: [
       {
-        title: `Download for ${Platform.OS === "ios" ? "iOS" : "Android"}`,
-        description: "Get the app on your phone",
+        title:
+          Platform.OS === "ios"
+            ? "Set Up on Your iPhone (Recommended for iPhone Users)"
+            : "Set Up on Your Android Phone (Recommended for Android Users)",
+        description:
+          Platform.OS === "ios"
+            ? "This option will help you install a special app on this iPhone. The app creates a secure place to keep your ComicCoins. Here's exactly what will happen when you tap this button:\n\n1. Your phone will open the App Store (the blue app with the 'A' symbol)\n\n2. You'll see the ComicCoin Wallet app page\n\n3. Tap the 'GET' button (it might say 'INSTALL' instead)\n\n4. You might need to use Face ID, Touch ID, or enter your Apple password\n\n5. A little circle will show the download progress\n\n6. When it's done, the button will change to 'OPEN'\n\n7. Tap 'OPEN' to start the app\n\nDon't worry if you get lost! You can always come back to this screen and try again. The app is completely free to download."
+            : "This option will help you install a special app on this Android phone. The app creates a secure place to keep your ComicCoins. Here's exactly what will happen when you tap this button:\n\n1. Your phone will open the Google Play Store (the colorful triangle symbol app)\n\n2. You'll see the ComicCoin Wallet app page\n\n3. Tap the 'INSTALL' button\n\n4. You might need to confirm with your fingerprint or password\n\n5. A circle will show the download progress\n\n6. When it's done, the button will change to 'OPEN'\n\n7. Tap 'OPEN' to start the app\n\nDon't worry if you get stuck! You can always come back to this screen and try again. The app is completely free to download.",
         url: Platform.OS === "ios" ? APP_LINKS.ios : APP_LINKS.android,
         icon: "📱",
       },
       {
-        title: "Use Web Wallet",
-        description: "No download needed",
+        title: "Set Up on a Website (No Download Required)",
+        description:
+          "If you prefer not to download an app, you can use this option instead. This creates your ComicCoin storage spot using a website. Here's what will happen when you tap this button:\n\n1. Your device will open a website in your internet browser (like Safari, Chrome, or whatever you use to look at websites)\n\n2. The ComicCoin Wallet website will appear\n\n3. The website will guide you through creating your wallet\n\n4. You'll need to create a password to protect your coins\n\n5. IMPORTANT: Write down your password and keep it somewhere safe! If you forget it, no one can help you recover it\n\nThis option works on phones, tablets, and computers. It's a good choice if you don't want to install anything new on your device.",
         url: APP_LINKS.web,
         icon: "🌐",
       },
     ],
+    warningText:
+      "IMPORTANT: Whichever option you choose, you will be asked to create a password or security phrase. Please write this down on paper and keep it somewhere safe! If you lose this information, you won't be able to access your ComicCoins, and unfortunately, no one will be able to recover them for you.",
+    afterWalletCreation:
+      "After you've set up your wallet using either method above, you'll need to do one more thing. Your new wallet will give you a special code called a 'wallet address.' It's a long string of letters and numbers that looks something like this: 0x8347FF1234567890abcdef. You'll need to copy this code and bring it back to this app. Think of this code as your digital mailbox address - it tells us exactly where to deliver your free ComicCoins!",
+    returnInstructions:
+      "To return to this app after setting up your wallet:\n\n1. If you're on a phone, press your home button (or swipe up from the bottom on newer phones)\n\n2. Find this app's icon on your screen and tap it\n\n3. This will bring you back here, where you can continue the setup process",
     icon: "⬇️",
+    helpText:
+      "If you get stuck at any point, don't worry! You can always close everything and start over. Nothing will be lost. Or you can ask someone you trust to help you with these steps. Setting up a digital wallet might seem complicated at first, but millions of people just like you have done it successfully!",
   },
   {
     id: "3",
-    title: "About ComicCoin Public Faucet",
-    subtitle: "Your Gateway to Free ComicCoins",
-    description:
-      "ComicCoin Public Faucet is a free cloud service that distributes ComicCoins to registered users.",
+    title: "ComicCoin Faucet",
+    subtitle: "Get Free ComicCoins",
+    description: "Claim daily ComicCoins after registering your account.",
     websiteUrl: "http://comiccoinfaucet.com",
     cloudDataInfo: {
-      title: "Data Stored in the Cloud",
-      description:
-        "This app communicates with our web service. The following information is stored securely in our cloud infrastructure:",
+      title: "Your Data",
+      description: "We securely store the following information:",
       dataItems: [
         { label: "Name", icon: "📝" },
         { label: "Email", icon: "✉️" },
@@ -75,7 +86,7 @@ export const COMMON_SCREENS = [
       ],
     },
     additionalInfo:
-      "We collect this information to prevent fraudulent activity and maintain the integrity of the ComicCoin distribution system. If you opt in to marketing communications, we may also use your data to share the latest ComicCoin developments with you.",
+      "This data prevents fraud and ensures system integrity. With your consent, we'll send you ComicCoin updates.",
     icon: "☁️",
   },
 ];
@@ -89,7 +100,7 @@ export const IOS_TRACKING_SCREEN = {
   trackingBenefits: [
     {
       title: "Special offers and promotions just for you",
-      description: "Receive tailored deals and exclusive content",
+      description: "Receive additional ComicCoin rewards and benefits",
       icon: "🎁",
     },
     {

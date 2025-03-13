@@ -2,12 +2,14 @@
 import { StyleSheet, Dimensions, Platform } from "react-native";
 
 const { width, height } = Dimensions.get("window");
+const isSmallDevice = height < 700; // iPhone SE or similar
+const isVerySmallDevice = height < 600; // Extra small devices
 
-// Shared styles used by both iOS and Android implementations
+// Shared styles that match the provided screenshot
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#4f46e5", // Purple/blue background from screenshot
   },
   background: {
     position: "absolute",
@@ -16,27 +18,25 @@ export default StyleSheet.create({
     top: 0,
     height: "100%",
   },
-  contentContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   slide: {
     width,
     justifyContent: "center",
     alignItems: "center",
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: isVerySmallDevice ? 10 : 0,
   },
-  slideContent: {
+  cardContainer: {
     backgroundColor: "white",
     borderRadius: 20,
-    padding: 20,
     width: "100%",
+    padding: 20,
+    paddingTop: 24,
+    paddingBottom: 100, // Extra space for the button and pagination dots
     ...Platform.select({
       ios: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.1,
         shadowRadius: 4,
       },
       android: {
@@ -44,75 +44,87 @@ export default StyleSheet.create({
       },
     }),
   },
-  completionSlide: {
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 40,
-  },
-  loadingIndicator: {
-    marginVertical: 20,
-  },
   stepIndicator: {
-    marginBottom: 12,
+    marginBottom: 16,
     width: "100%",
   },
   stepText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
-    color: "#6b21a8",
+    color: "#6b21a8", // Purple color
     marginBottom: 6,
     textAlign: "center",
   },
   progressBar: {
-    height: 6,
-    backgroundColor: "#f3e8ff",
-    borderRadius: 3,
+    height: 8,
+    backgroundColor: "#f3e8ff", // Light purple
+    borderRadius: 4,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#7c3aed",
-    borderRadius: 3,
+    backgroundColor: "#7c3aed", // Purple
+    borderRadius: 4,
   },
   iconContainer: {
-    backgroundColor: "#f9f5ff",
+    backgroundColor: "#f9f5ff", // Very light purple
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignSelf: "center",
+    marginBottom: 16,
+    marginTop: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  iconContainerSmall: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    alignSelf: "center",
-    marginBottom: 12,
-    justifyContent: "center",
-    alignItems: "center",
   },
   iconText: {
     fontSize: 36,
     textAlign: "center",
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
-    color: "#6b21a8",
+    color: "#6b21a8", // Purple
     textAlign: "center",
-    marginBottom: 6,
+    marginBottom: 8,
+  },
+  titleSmall: {
+    fontSize: 22,
   },
   subtitle: {
-    fontSize: 17,
+    fontSize: 20,
     fontWeight: "600",
-    color: "#7c3aed",
+    color: "#7c3aed", // Purple
     textAlign: "center",
+    marginBottom: 16,
+  },
+  subtitleSmall: {
+    fontSize: 18,
     marginBottom: 12,
   },
   description: {
-    fontSize: 15,
-    color: "#4b5563",
+    fontSize: 16,
+    color: "#4b5563", // Dark gray
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  descriptionSmall: {
+    fontSize: 15,
     lineHeight: 22,
+    marginBottom: 20,
   },
   pagination: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 10,
+    position: "absolute",
+    bottom: 20,
+    width: "100%",
   },
   paginationDot: {
     width: 8,
@@ -125,25 +137,62 @@ export default StyleSheet.create({
     backgroundColor: "white",
     width: 16,
   },
-  navigationContainer: {
+  continueButtonContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    padding: 20,
+    paddingBottom: isSmallDevice ? 12 : 20,
   },
   continueButton: {
-    backgroundColor: "#7c3aed",
+    backgroundColor: "#7c3aed", // Purple
     borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: isSmallDevice ? 14 : 16,
     paddingHorizontal: 32,
-    flexDirection: "row",
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    minWidth: 200,
+  },
+  buttonPagination: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+    alignSelf: "center",
+  },
+  buttonPaginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    marginHorizontal: 4,
+  },
+  buttonPaginationDotActive: {
+    backgroundColor: "white",
+    width: 8, // Same as inactive dots, per the screenshot
   },
   continueButtonText: {
     color: "white",
-    fontWeight: "bold",
-    fontSize: 16,
+    fontWeight: "600",
+    fontSize: 18,
+  },
+  loadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#7c3aed", // Purple
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    width: "100%",
+  },
+  loadingText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 18,
+    marginLeft: 12,
   },
   // Modal styles
   modalOverlay: {
@@ -214,7 +263,7 @@ export default StyleSheet.create({
   modalButton: {
     flex: 1,
     borderRadius: 10,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     justifyContent: "center",
     alignItems: "center",
@@ -236,42 +285,26 @@ export default StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-  loadingOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    zIndex: 1000,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: "#6b21a8",
-    fontWeight: "500",
-  },
+
   // Additional content styling for screen 1
   additionalContainer: {
     marginTop: 8,
     marginBottom: 16,
   },
   additionalItem: {
-    marginBottom: 16,
+    marginBottom: 24,
   },
   additionalTitle: {
-    fontSize: 16,
+    fontSize: isSmallDevice ? 16 : 18,
     fontWeight: "600",
-    color: "#6b21a8",
-    marginBottom: 4,
+    color: "#6b21a8", // Purple
+    marginBottom: isSmallDevice ? 6 : 8,
   },
   additionalDescription: {
-    fontSize: 14,
-    color: "#6b7280",
-    lineHeight: 20,
-    marginBottom: 8,
+    fontSize: isSmallDevice ? 14 : 16,
+    color: "#4b5563", // Dark gray
+    lineHeight: isSmallDevice ? 20 : 24,
+    marginBottom: isSmallDevice ? 6 : 8,
   },
   websiteLink: {
     flexDirection: "row",
@@ -279,11 +312,12 @@ export default StyleSheet.create({
     paddingVertical: 6,
   },
   websiteLinkText: {
-    fontSize: 14,
-    color: "#7c3aed",
+    fontSize: 16,
+    color: "#7c3aed", // Purple
     fontWeight: "500",
     textDecorationLine: "underline",
   },
+
   // Wallet options styling for screen 2
   optionsContainer: {
     alignItems: "center",
@@ -292,25 +326,15 @@ export default StyleSheet.create({
     gap: 16,
   },
   optionButton: {
-    backgroundColor: "#8b5cf6",
+    backgroundColor: "#8b5cf6", // Purple
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 24,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    minWidth: 240,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    width: "100%",
+    maxWidth: 280,
   },
   optionIcon: {
     fontSize: 20,
@@ -322,37 +346,38 @@ export default StyleSheet.create({
     fontWeight: "bold",
     fontSize: 18,
   },
+
   // Cloud data styling for screen 3
   cloudDataContainer: {
     marginTop: 8,
     marginBottom: 8,
   },
   cloudDataTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "600",
-    color: "#7c3aed",
-    marginBottom: 4,
+    color: "#7c3aed", // Purple
+    marginBottom: 8,
     textAlign: "center",
   },
   cloudDataDescription: {
-    fontSize: 14,
-    color: "#4b5563",
-    marginBottom: 12,
+    fontSize: 16,
+    color: "#4b5563", // Dark gray
+    marginBottom: 16,
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: 24,
   },
   dataItemsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 16,
   },
   dataItem: {
-    width: "48%", // This ensures two items per row with a small gap
+    width: "48%", // Two items per row
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f9f5ff",
-    padding: 8,
+    backgroundColor: "#f9f5ff", // Very light purple
+    padding: 10,
     borderRadius: 10,
     marginBottom: 8,
   },
@@ -362,46 +387,35 @@ export default StyleSheet.create({
   },
   dataItemLabel: {
     fontSize: 15,
-    color: "#6b21a8",
+    color: "#6b21a8", // Purple
     fontWeight: "500",
   },
   additionalInfoText: {
-    fontSize: 13,
+    fontSize: 14,
     fontStyle: "italic",
-    color: "#6b7280",
+    color: "#6b7280", // Gray
     textAlign: "center",
-    marginTop: 4,
-    marginBottom: 10,
-    lineHeight: 18,
+    marginTop: 8,
+    marginBottom: 16,
+    lineHeight: 20,
   },
   websiteBannerLink: {
-    backgroundColor: "#8b5cf6",
+    backgroundColor: "#8b5cf6", // Purple
     borderRadius: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     alignItems: "center",
-    marginTop: 4,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    marginTop: 8,
   },
   websiteBannerText: {
     color: "white",
     fontWeight: "bold",
     fontSize: 16,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   websiteBannerUrl: {
-    color: "#e0e7ff",
-    fontSize: 13,
+    color: "#e0e7ff", // Light purple/white
+    fontSize: 14,
   },
   websiteBannerIcon: {
     color: "white",
@@ -411,24 +425,25 @@ export default StyleSheet.create({
     top: "50%",
     marginTop: -8,
   },
+
   // Tracking benefits styling for iOS screen 4
   trackingContainer: {
-    marginTop: 24,
+    marginTop: 16,
     marginBottom: 16,
   },
   benefitItem: {
     flexDirection: "row",
-    marginBottom: 24,
+    marginBottom: isSmallDevice ? 16 : 20,
     alignItems: "center",
   },
   benefitIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#f9f5ff",
+    width: isSmallDevice ? 50 : 60,
+    height: isSmallDevice ? 50 : 60,
+    borderRadius: isSmallDevice ? 25 : 30,
+    backgroundColor: "#f9f5ff", // Very light purple
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 16,
+    marginRight: isSmallDevice ? 12 : 16,
   },
   benefitIcon: {
     fontSize: 28,
@@ -437,20 +452,20 @@ export default StyleSheet.create({
     flex: 1,
   },
   benefitTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "600",
-    color: "#7c3aed",
+    color: "#7c3aed", // Purple
     marginBottom: 4,
   },
   benefitDescription: {
-    fontSize: 16,
-    color: "#6b7280",
+    fontSize: 15,
+    color: "#6b7280", // Gray
     lineHeight: 22,
   },
   noteText: {
     fontSize: 14,
     fontStyle: "italic",
-    color: "#6b7280",
+    color: "#6b7280", // Gray
     textAlign: "center",
     marginTop: 16,
     marginBottom: 8,
