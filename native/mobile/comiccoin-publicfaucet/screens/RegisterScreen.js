@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
+import { getTrackingPermissionsAsync } from "expo-tracking-transparency";
 
 import { useRegistration } from "../hooks/useRegistration";
 import registrationApi from "../api/endpoints/registrationApi";
@@ -27,6 +28,7 @@ import VerificationCodeModal from "../components/VerificationCodeModal";
 
 const RegisterScreen = () => {
   const router = useRouter();
+  const isIOS = Platform.OS === "ios";
   const {
     register,
     isLoading,
@@ -51,6 +53,7 @@ const RegisterScreen = () => {
     timezone: "",
     agree_terms_of_service: false,
     agree_promotions: false,
+    agree_to_tracking_across_third_party_apps_and_services: false,
   });
 
   // Field errors from API
@@ -74,6 +77,34 @@ const RegisterScreen = () => {
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState(null);
+
+  // Check tracking permission status for iOS
+  useEffect(() => {
+    if (isIOS) {
+      const checkTrackingPermission = async () => {
+        try {
+          const { status } = await getTrackingPermissionsAsync();
+          // If the permission status is known (not undetermined), set the tracking value accordingly
+          if (status === "granted") {
+            handleInputChange(
+              "agree_to_tracking_across_third_party_apps_and_services",
+              true,
+            );
+          } else if (status === "denied") {
+            handleInputChange(
+              "agree_to_tracking_across_third_party_apps_and_services",
+              false,
+            );
+          }
+          // For "undetermined" status, we don't set anything yet as the permission hasn't been requested
+        } catch (error) {
+          console.error("Error checking tracking permission:", error);
+        }
+      };
+
+      checkTrackingPermission();
+    }
+  }, [isIOS]);
 
   // Effect to handle API errors when they change
   useEffect(() => {
@@ -271,6 +302,9 @@ const RegisterScreen = () => {
     setIsSubmitted(true);
 
     try {
+      // For iOS, we'll use the existing tracking status from the iOS system dialog
+      // rather than the switch toggle (which is hidden)
+
       // Send registration request to API using our hook
       await register(formData);
       // Success will be handled by the useEffect watching apiSuccess
@@ -791,6 +825,36 @@ const RegisterScreen = () => {
                   </Text>
                 </View>
               </View>
+
+              {/* Third Party Tracking - Only show on Android */}
+              {!isIOS && (
+                <View style={styles.switchContainer}>
+                  <Switch
+                    value={
+                      formData.agree_to_tracking_across_third_party_apps_and_services
+                    }
+                    onValueChange={(value) =>
+                      handleSwitchChange(
+                        "agree_to_tracking_across_third_party_apps_and_services",
+                        value,
+                      )
+                    }
+                    trackColor={{ false: "#e5e7eb", true: "#c4b5fd" }}
+                    thumbColor={
+                      formData.agree_to_tracking_across_third_party_apps_and_services
+                        ? "#7e22ce"
+                        : "#f4f3f4"
+                    }
+                    ios_backgroundColor="#e5e7eb"
+                  />
+                  <View style={styles.switchLabelContainer}>
+                    <Text style={styles.switchLabel}>
+                      I agree to the tracking of my activity across third-party
+                      apps and services.
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
 
             {/* Action Buttons */}

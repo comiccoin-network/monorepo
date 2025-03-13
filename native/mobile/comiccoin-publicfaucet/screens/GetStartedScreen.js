@@ -8,8 +8,6 @@ import {
   StyleSheet,
   ScrollView,
   Platform,
-  Modal,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,17 +17,9 @@ import LightFooter from "../components/LightFooter";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import OnboardingWizard from "../components/OnboardingWizard";
-import {
-  requestTrackingPermissionsAsync,
-  getTrackingPermissionsAsync,
-  isAvailable,
-} from "expo-tracking-transparency";
 
 const GetStartedScreen = () => {
   const router = useRouter();
-  const [isPermissionModalVisible, setPermissionModalVisible] = useState(false);
-  const [permissionStatus, setPermissionStatus] = useState(null);
-  const [isTrackingAvailable, setIsTrackingAvailable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   // Onboarding state
@@ -67,94 +57,18 @@ const GetStartedScreen = () => {
     checkOnboardingStatus();
   }, []);
 
-  // Check if tracking transparency is available on this device
-  useEffect(() => {
-    const checkAvailability = async () => {
-      const available = await isAvailable();
-      setIsTrackingAvailable(available);
-
-      if (available) {
-        // Check current permission status on mount
-        try {
-          const status = await getTrackingPermissionsAsync();
-          setPermissionStatus(status.status);
-        } catch (error) {
-          console.error("Error checking tracking permissions:", error);
-        }
-      }
-    };
-
-    checkAvailability();
-  }, []);
-
   // Function to handle onboarding completion
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
   };
 
-  // Function to request tracking permission
-  const requestTrackingPermission = async (destination) => {
-    try {
-      setIsLoading(true);
-
-      // iOS requires a delay after the component mounts
-      if (Platform.OS === "ios") {
-        await new Promise((resolve) => setTimeout(resolve, 200));
-      }
-
-      const { status } = await requestTrackingPermissionsAsync();
-      setPermissionStatus(status);
-      setIsLoading(false);
-
-      if (status === "granted") {
-        // Permission granted, navigate to destination
-        router.push(destination);
-      } else {
-        // Permission denied, show modal
-        setPermissionModalVisible(true);
-      }
-    } catch (error) {
-      setIsLoading(false);
-      console.error("Error requesting tracking permission:", error);
-      Alert.alert(
-        "Error",
-        "There was a problem requesting tracking permissions. Please try again.",
-      );
-    }
-  };
-
-  // Handle login button press
+  // Handle navigation functions
   const handleLoginPress = () => {
-    // If tracking isn't available on this device, just navigate directly
-    if (!isTrackingAvailable) {
-      router.push("/login");
-      return;
-    }
-
-    // If permission already granted, navigate directly
-    if (permissionStatus === "granted") {
-      router.push("/login");
-      return;
-    }
-
-    requestTrackingPermission("/login");
+    router.push("/login");
   };
 
-  // Handle register button press
   const handleRegisterPress = () => {
-    // If tracking isn't available on this device, just navigate directly
-    if (!isTrackingAvailable) {
-      router.push("/register");
-      return;
-    }
-
-    // If permission already granted, navigate directly
-    if (permissionStatus === "granted") {
-      router.push("/register");
-      return;
-    }
-
-    requestTrackingPermission("/register");
+    router.push("/register");
   };
 
   // Show loading indicator while checking onboarding status
@@ -171,7 +85,7 @@ const GetStartedScreen = () => {
     return <OnboardingWizard onComplete={handleOnboardingComplete} />;
   }
 
-  // The rest of your GetStartedScreen component remains unchanged
+  // The main GetStartedScreen component
   return (
     <View style={styles.container}>
       <Header currentRoute="/" />
@@ -179,7 +93,7 @@ const GetStartedScreen = () => {
       {isLoading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#7c3aed" />
-          <Text style={styles.loadingText}>Requesting permission...</Text>
+          <Text style={styles.loadingText}>Loading...</Text>
         </View>
       )}
 
@@ -189,7 +103,7 @@ const GetStartedScreen = () => {
         overScrollMode="never"
         contentInsetAdjustmentBehavior="never"
       >
-        {/* Your existing content here */}
+        {/* Hero Banner */}
         <LinearGradient
           colors={["#4f46e5", "#4338ca"]}
           start={{ x: 0, y: 0 }}
@@ -256,77 +170,11 @@ const GetStartedScreen = () => {
       </ScrollView>
 
       <LightFooter />
-
-      {/* Permission Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isPermissionModalVisible}
-        onRequestClose={() => setPermissionModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalIconContainer}>
-              <Feather name="alert-triangle" size={40} color="#7c3aed" />
-            </View>
-
-            <Text style={styles.modalTitle}>Permission Required</Text>
-
-            <Text style={styles.modalText}>
-              ComicCoin Public Faucet requires tracking permission to ensure
-              each user can claim coins only once per day and prevent duplicate
-              claims.
-            </Text>
-
-            <Text style={styles.modalText}>
-              Without this permission, we cannot verify your unique identity and
-              you won't be able to claim your daily ComicCoins.
-            </Text>
-
-            <View style={styles.modalButtonsContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.secondaryButton]}
-                onPress={() => setPermissionModalVisible(false)}
-              >
-                <Text style={styles.secondaryButtonText}>Close</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalButton, styles.primaryButton]}
-                onPress={() => {
-                  setPermissionModalVisible(false);
-                  // On iOS, we need to direct users to settings
-                  if (Platform.OS === "ios") {
-                    Alert.alert(
-                      "Permission Required",
-                      "Please enable tracking in your device settings to use ComicCoin Public Faucet.",
-                      [
-                        {
-                          text: "OK",
-                          onPress: () => console.log("OK Pressed"),
-                        },
-                      ],
-                    );
-                  } else {
-                    // On Android, we can request again
-                    if (permissionStatus === "denied") {
-                      requestTrackingPermission(router.pathname);
-                    }
-                  }
-                }}
-              >
-                <Text style={styles.primaryButtonText}>Try Again</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  // Keep all your existing styles
   container: {
     flex: 1,
     backgroundColor: "#f5f3ff",
@@ -426,84 +274,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#7c3aed",
     marginRight: 8,
-  },
-  // Modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 24,
-    width: "100%",
-    maxWidth: 400,
-    alignItems: "center",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
-  },
-  modalIconContainer: {
-    backgroundColor: "#f9f5ff",
-    padding: 16,
-    borderRadius: 9999,
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#6b21a8",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  modalText: {
-    fontSize: 16,
-    color: "#4b5563",
-    textAlign: "center",
-    marginBottom: 16,
-    lineHeight: 24,
-  },
-  modalButtonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginTop: 8,
-  },
-  modalButton: {
-    flex: 1,
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    margin: 8,
-  },
-  primaryButton: {
-    backgroundColor: "#7c3aed",
-  },
-  primaryButtonText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  secondaryButton: {
-    backgroundColor: "#f3e8ff",
-  },
-  secondaryButtonText: {
-    color: "#7c3aed",
-    fontWeight: "bold",
-    fontSize: 16,
   },
   loadingOverlay: {
     position: "absolute",

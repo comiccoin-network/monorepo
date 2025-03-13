@@ -83,24 +83,24 @@ export const COMMON_SCREENS = [
 // Platform-specific screens
 export const IOS_TRACKING_SCREEN = {
   id: "4",
-  title: "Turn on tracking allows us to provide features like:",
+  title: "Allow tracking on the next screen for:",
   subtitle: "",
   description: "",
   trackingBenefits: [
     {
-      title: "Secure account registration",
-      description: "Create and verify your ComicCoin account",
-      icon: "👤",
-    },
-    {
-      title: "Personalized login experience",
-      description: "Access your account smoothly and securely",
-      icon: "🔑",
-    },
-    {
-      title: "Daily coin claiming",
-      description: "Ensure fair distribution of ComicCoins",
+      title: "Special offers and promotions just for you",
+      description: "Receive tailored deals and exclusive content",
       icon: "🎁",
+    },
+    {
+      title: "Advertisements that match your interests",
+      description: "See more relevant and useful ads",
+      icon: "🎯",
+    },
+    {
+      title: "An improved personalized experience over time",
+      description: "Enjoy content and features adapted to your preferences",
+      icon: "✨",
     },
   ],
   note: "You can change this option later in the Settings app.",

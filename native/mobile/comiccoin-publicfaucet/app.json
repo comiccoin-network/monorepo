@@ -12,7 +12,7 @@
     "ios": {
       "infoPlist": {
         "CFBundleDisplayName": "Public Faucet",
-        "NSUserTrackingUsageDescription": "This identifier will be used to prevent fraudulent activities in app and deliver personalized ads to you from only us."
+        "NSUserTrackingUsageDescription": "This allows us to provide special offers and promotions just for you, advertisements that match your interests, and an improved personalized experience over time."
       },
       "appleTeamId": "LQQ8LQ952U",
       "bundleIdentifier": "com.theshootingstarpress.comiccoinpublicfaucet",
@@ -134,7 +134,7 @@
       [
         "expo-tracking-transparency",
         {
-          "userTrackingPermission": "This is essential for your ComicCoin account services, including daily rewards, balance tracking, and secure transactions. Without it, we cannot properly maintain your account or distribute your ComicCoins."
+          "userTrackingPermission": "This allows us to provide special offers and promotions just for you, advertisements that match your interests, and an improved personalized experience over time."
         }
       ],
       [

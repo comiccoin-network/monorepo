@@ -39,12 +39,8 @@ const AndroidOnboardingWizard = ({ onComplete, navigation, router }) => {
   const completeOnboarding = useCallback(async () => {
     const success = await markOnboardingComplete();
 
-    if (success) {
-      navigateAfterOnboarding(onComplete, navigation, router);
-    } else {
-      // Even if saving fails, try to proceed
-      navigateAfterOnboarding(onComplete, navigation, router);
-    }
+    // Navigate to app regardless of success
+    navigateAfterOnboarding(onComplete, navigation, router);
   }, [onComplete, navigation, router]);
 
   // Handle next slide with reliable behavior
@@ -309,7 +305,11 @@ const AndroidOnboardingWizard = ({ onComplete, navigation, router }) => {
               style={styles.continueButton}
               onPress={goToNextSlide}
             >
-              <Text style={styles.continueButtonText}>Continue</Text>
+              <Text style={styles.continueButtonText}>
+                {currentIndex === WIZARD_SCREENS.length - 2
+                  ? "Get Started"
+                  : "Continue"}
+              </Text>
             </TouchableOpacity>
           </View>
         )}

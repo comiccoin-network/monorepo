@@ -5,10 +5,8 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Modal,
-  Alert,
-  ActivityIndicator,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -38,12 +36,10 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
   const [pendingUrl, setPendingUrl] = useState("");
   const [pendingUrlTitle, setPendingUrlTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [permissionStatus, setPermissionStatus] = useState(null);
-  const [permissionModalVisible, setPermissionModalVisible] = useState(false);
 
   const flatListRef = useRef(null);
 
-  // Request tracking permission (iOS-specific)
+  // Request tracking permission but don't block completion
   const requestTrackingPermission = async () => {
     try {
       setIsLoading(true);
@@ -51,53 +47,28 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
       // iOS requires a delay after component mounts
       await new Promise((resolve) => setTimeout(resolve, 200));
 
-      const { status } = await requestTrackingPermissionsAsync();
-      setPermissionStatus(status);
-      setIsLoading(false);
+      // Request tracking permission - this will show the system dialog
+      await requestTrackingPermissionsAsync();
 
-      if (status === "granted") {
-        // Permission granted, navigate to main app
-        navigateAfterOnboarding(onComplete, navigation, router);
-      } else {
-        // Permission denied, show modal
-        setPermissionModalVisible(true);
-      }
+      // Whether permission was granted or not, complete onboarding
+      await completeOnboarding();
     } catch (error) {
-      setIsLoading(false);
       console.error("Error requesting tracking permission:", error);
-      Alert.alert(
-        "Error",
-        "There was a problem requesting permissions. Please try again.",
-      );
+      // If there's an error requesting permission, still complete onboarding
+      await completeOnboarding();
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Check tracking permission status on mount
-  useEffect(() => {
-    const checkPermission = async () => {
-      try {
-        const status = await getTrackingPermissionsAsync();
-        setPermissionStatus(status.status);
-      } catch (error) {
-        console.error("Error checking tracking permission:", error);
-      }
-    };
-
-    checkPermission();
-  }, []);
-
-  // Complete onboarding and request tracking permission
+  // Complete onboarding and navigate to the main app
   const completeOnboarding = useCallback(async () => {
+    // Mark onboarding as complete
     const success = await markOnboardingComplete();
 
-    if (success) {
-      // For iOS, request tracking permission
-      requestTrackingPermission();
-    } else {
-      // Even if saving fails, try to proceed
-      requestTrackingPermission();
-    }
-  }, []);
+    // Navigate to app regardless of permission status
+    navigateAfterOnboarding(onComplete, navigation, router);
+  }, [onComplete, navigation, router]);
 
   // Handle next slide with improved reliability
   const goToNextSlide = useCallback(() => {
@@ -117,10 +88,10 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
       // Update the state after initiating the scroll
       setCurrentIndex(nextIndex);
     } else {
-      // We're on the last screen, complete onboarding
-      completeOnboarding();
+      // We're on the last screen, request permission and then complete onboarding
+      requestTrackingPermission();
     }
-  }, [currentIndex, WIZARD_SCREENS.length, completeOnboarding]);
+  }, [currentIndex, WIZARD_SCREENS.length, requestTrackingPermission]);
 
   // Handle external link press with confirmation modal
   const handleOpenLink = (url, title = "") => {
@@ -320,15 +291,27 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
           ))}
         </View>
 
-        {/* Continue button */}
-        <View style={styles.navigationContainer}>
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={goToNextSlide}
-          >
-            <Text style={styles.continueButtonText}>Continue</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Continue button or loading indicator */}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="white" />
+            <Text style={styles.loadingText}>Setting up...</Text>
+          </View>
+        ) : (
+          <View style={styles.navigationContainer}>
+            <TouchableOpacity
+              style={styles.continueButton}
+              onPress={goToNextSlide}
+              disabled={isLoading}
+            >
+              <Text style={styles.continueButtonText}>
+                {currentIndex === WIZARD_SCREENS.length - 1
+                  ? "Get Started"
+                  : "Continue"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* External link warning modal */}
@@ -338,77 +321,6 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
         url={pendingUrl}
         title={pendingUrlTitle}
       />
-
-      {/* Permission Modal (iOS only) */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={permissionModalVisible}
-        onRequestClose={() => setPermissionModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalIconContainer}>
-              <Text style={styles.modalIcon}>🛡️</Text>
-            </View>
-
-            <Text style={styles.modalTitle}>Permission Required</Text>
-
-            <Text style={styles.modalText}>
-              ComicCoin Public Faucet requires tracking permission to ensure
-              each user can claim coins only once per day and prevent duplicate
-              claims.
-            </Text>
-
-            <Text style={styles.modalText}>
-              Without this permission, we cannot verify your unique identity and
-              you won't be able to claim your daily ComicCoins.
-            </Text>
-
-            <View style={styles.modalButtonsContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalSecondaryButton]}
-                onPress={() => setPermissionModalVisible(false)}
-              >
-                <Text style={styles.modalSecondaryButtonText}>Close</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalPrimaryButton]}
-                onPress={() => {
-                  setPermissionModalVisible(false);
-                  // On iOS, we need to direct users to settings
-                  Alert.alert(
-                    "Permission Required",
-                    "Please enable tracking in your device settings to use ComicCoin Public Faucet.",
-                    [
-                      {
-                        text: "OK",
-                        onPress: () =>
-                          navigateAfterOnboarding(
-                            onComplete,
-                            navigation,
-                            router,
-                          ),
-                      },
-                    ],
-                  );
-                }}
-              >
-                <Text style={styles.modalPrimaryButtonText}>Try Again</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Loading overlay */}
-      {isLoading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#7c3aed" />
-          <Text style={styles.loadingText}>Requesting permission...</Text>
-        </View>
-      )}
     </View>
   );
 };

@@ -58,17 +58,18 @@ func NewGatewayUserRegisterService(
 }
 
 type RegisterCustomerRequestIDO struct {
-	FirstName           string `json:"first_name"`
-	LastName            string `json:"last_name"`
-	Email               string `json:"email"`
-	Password            string `json:"password"`
-	PasswordConfirm     string `json:"password_confirm"`
-	Phone               string `json:"phone,omitempty"`
-	Country             string `json:"country,omitempty"`
-	CountryOther        string `json:"country_other,omitempty"`
-	Timezone            string `bson:"timezone" json:"timezone"`
-	AgreeTermsOfService bool   `json:"agree_terms_of_service,omitempty"`
-	AgreePromotions     bool   `json:"agree_promotions,omitempty"`
+	FirstName                                      string `json:"first_name"`
+	LastName                                       string `json:"last_name"`
+	Email                                          string `json:"email"`
+	Password                                       string `json:"password"`
+	PasswordConfirm                                string `json:"password_confirm"`
+	Phone                                          string `json:"phone,omitempty"`
+	Country                                        string `json:"country,omitempty"`
+	CountryOther                                   string `json:"country_other,omitempty"`
+	Timezone                                       string `bson:"timezone" json:"timezone"`
+	AgreeTermsOfService                            bool   `json:"agree_terms_of_service,omitempty"`
+	AgreePromotions                                bool   `json:"agree_promotions,omitempty"`
+	AgreeToTrackingAcrossThirdPartyAppsAndServices bool   `json:"agree_to_tracking_across_third_party_apps_and_services,omitempty"`
 }
 
 type RegisterCustomerResponseIDO struct {
@@ -242,25 +243,26 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 
 	userID := primitive.NewObjectID()
 	u := &domain.User{
-		ID:                         userID,
-		FirstName:                  req.FirstName,
-		LastName:                   req.LastName,
-		Name:                       fmt.Sprintf("%s %s", req.FirstName, req.LastName),
-		LexicalName:                fmt.Sprintf("%s, %s", req.LastName, req.FirstName),
-		Email:                      req.Email,
-		PasswordHash:               passwordHash,
-		PasswordHashAlgorithm:      s.passwordProvider.AlgorithmName(),
-		Role:                       domain.UserRoleCustomer,
-		Phone:                      req.Phone,
-		Country:                    req.Country,
-		Timezone:                   req.Timezone,
-		Region:                     "",
-		City:                       "",
-		PostalCode:                 "",
-		AddressLine1:               "",
-		AddressLine2:               "",
-		AgreeTermsOfService:        req.AgreeTermsOfService,
-		AgreePromotions:            req.AgreePromotions,
+		ID:                    userID,
+		FirstName:             req.FirstName,
+		LastName:              req.LastName,
+		Name:                  fmt.Sprintf("%s %s", req.FirstName, req.LastName),
+		LexicalName:           fmt.Sprintf("%s, %s", req.LastName, req.FirstName),
+		Email:                 req.Email,
+		PasswordHash:          passwordHash,
+		PasswordHashAlgorithm: s.passwordProvider.AlgorithmName(),
+		Role:                  domain.UserRoleCustomer,
+		Phone:                 req.Phone,
+		Country:               req.Country,
+		Timezone:              req.Timezone,
+		Region:                "",
+		City:                  "",
+		PostalCode:            "",
+		AddressLine1:          "",
+		AddressLine2:          "",
+		AgreeTermsOfService:   req.AgreeTermsOfService,
+		AgreePromotions:       req.AgreePromotions,
+		AgreeToTrackingAcrossThirdPartyAppsAndServices: req.AgreeToTrackingAcrossThirdPartyAppsAndServices,
 		CreatedByUserID:            userID,
 		CreatedAt:                  time.Now(),
 		CreatedByName:              fmt.Sprintf("%s %s", req.FirstName, req.LastName),

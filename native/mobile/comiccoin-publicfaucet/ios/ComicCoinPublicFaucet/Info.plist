@@ -60,7 +60,7 @@
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
 	</array>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>This is essential for your ComicCoin account services, including daily rewards, balance tracking, and secure transactions. Without it, we cannot properly maintain your account or distribute your ComicCoins.</string>
+	<string>This allows us to provide special offers and promotions just for you, advertisements that match your interests, and an improved personalized experience over time.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>SplashScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
