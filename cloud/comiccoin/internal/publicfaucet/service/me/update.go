@@ -18,14 +18,16 @@ import (
 )
 
 type UpdateMeRequestDTO struct {
-	ID            primitive.ObjectID `bson:"_id" json:"id"`
-	Email         string             `bson:"email" json:"email"`
-	FirstName     string             `bson:"first_name" json:"first_name"`
-	LastName      string             `bson:"last_name" json:"last_name"`
-	Phone         string             `bson:"phone" json:"phone,omitempty"`
-	Country       string             `bson:"country" json:"country,omitempty"`
-	Timezone      string             `bson:"timezone" json:"timezone"`
-	WalletAddress string             `bson:"wallet_address" json:"wallet_address"`
+	ID                                             primitive.ObjectID `bson:"_id" json:"id"`
+	Email                                          string             `bson:"email" json:"email"`
+	FirstName                                      string             `bson:"first_name" json:"first_name"`
+	LastName                                       string             `bson:"last_name" json:"last_name"`
+	Phone                                          string             `bson:"phone" json:"phone,omitempty"`
+	Country                                        string             `bson:"country" json:"country,omitempty"`
+	Timezone                                       string             `bson:"timezone" json:"timezone"`
+	AgreePromotions                                bool               `bson:"agree_promotions" json:"agree_promotions,omitempty"`
+	AgreeToTrackingAcrossThirdPartyAppsAndServices bool               `bson:"agree_to_tracking_across_third_party_apps_and_services" json:"agree_to_tracking_across_third_party_apps_and_services,omitempty"`
+	WalletAddress                                  string             `bson:"wallet_address" json:"wallet_address"`
 }
 
 type UpdateMeService interface {
@@ -157,6 +159,8 @@ func (svc *updateMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Updat
 	user.Phone = req.Phone
 	user.Country = req.Country
 	user.Timezone = req.Timezone
+	user.AgreePromotions = req.AgreePromotions
+	user.AgreeToTrackingAcrossThirdPartyAppsAndServices = req.AgreeToTrackingAcrossThirdPartyAppsAndServices
 
 	if err := svc.userUpdateUseCase.Execute(sessCtx, user); err != nil {
 		svc.logger.Debug("Failed updating user", slog.Any("error", err))
@@ -167,15 +171,17 @@ func (svc *updateMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Updat
 		slog.Any("user_id", user.ID))
 
 	return &MeResponseDTO{
-		ID:            user.ID,
-		Email:         user.Email,
-		FirstName:     user.FirstName,
-		LastName:      user.LastName,
-		Name:          user.Name,
-		LexicalName:   user.LexicalName,
-		Phone:         user.Phone,
-		Country:       user.Country,
-		Timezone:      user.Timezone,
+		ID:              user.ID,
+		Email:           user.Email,
+		FirstName:       user.FirstName,
+		LastName:        user.LastName,
+		Name:            user.Name,
+		LexicalName:     user.LexicalName,
+		Phone:           user.Phone,
+		Country:         user.Country,
+		Timezone:        user.Timezone,
+		AgreePromotions: user.AgreePromotions,
+		AgreeToTrackingAcrossThirdPartyAppsAndServices: user.AgreeToTrackingAcrossThirdPartyAppsAndServices,
 		WalletAddress: user.WalletAddress,
 	}, nil
 }

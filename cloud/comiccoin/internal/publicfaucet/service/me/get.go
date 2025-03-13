@@ -46,8 +46,9 @@ type MeResponseDTO struct {
 	// ShippingAddressLine2                            string             `bson:"shipping_address_line2" json:"shipping_address_line2,omitempty"`
 	// HowDidYouHearAboutUs                            int8               `bson:"how_did_you_hear_about_us" json:"how_did_you_hear_about_us,omitempty"`
 	// HowDidYouHearAboutUsOther                       string             `bson:"how_did_you_hear_about_us_other" json:"how_did_you_hear_about_us_other,omitempty"`
-	// AgreeTermsOfService                             bool               `bson:"agree_terms_of_service" json:"agree_terms_of_service,omitempty"`
-	// AgreePromotions                                 bool               `bson:"agree_promotions" json:"agree_promotions,omitempty"`
+	// AgreeTermsOfService                            bool               `bson:"agree_terms_of_service" json:"agree_terms_of_service,omitempty"`
+	AgreePromotions                                bool `bson:"agree_promotions" json:"agree_promotions,omitempty"`
+	AgreeToTrackingAcrossThirdPartyAppsAndServices bool `bson:"agree_to_tracking_across_third_party_apps_and_services" json:"agree_to_tracking_across_third_party_apps_and_services,omitempty"`
 	// CreatedFromIPAddress                            string             `bson:"created_from_ip_address" json:"created_from_ip_address"`
 	// CreatedByFederatedIdentityID                    primitive.ObjectID `bson:"created_by_federatedidentity_id" json:"created_by_federatedidentity_id"`
 	// CreatedAt                                       time.Time          `bson:"created_at" json:"created_at,omitempty"`
@@ -137,15 +138,17 @@ func (svc *getMeServiceImpl) Execute(sessCtx mongo.SessionContext) (*MeResponseD
 	}
 
 	return &MeResponseDTO{
-		ID:            user.ID,
-		Email:         user.Email,
-		FirstName:     user.FirstName,
-		LastName:      user.LastName,
-		Name:          user.Name,
-		LexicalName:   user.LexicalName,
-		Phone:         user.Phone,
-		Country:       user.Country,
-		Timezone:      user.Timezone,
+		ID:              user.ID,
+		Email:           user.Email,
+		FirstName:       user.FirstName,
+		LastName:        user.LastName,
+		Name:            user.Name,
+		LexicalName:     user.LexicalName,
+		Phone:           user.Phone,
+		Country:         user.Country,
+		Timezone:        user.Timezone,
+		AgreePromotions: user.AgreePromotions,
+		AgreeToTrackingAcrossThirdPartyAppsAndServices: user.AgreeToTrackingAcrossThirdPartyAppsAndServices,
 		WalletAddress: user.WalletAddress,
 	}, nil
 }

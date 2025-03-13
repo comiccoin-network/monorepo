@@ -11,10 +11,13 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Switch,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { getTrackingPermissionsAsync } from "expo-tracking-transparency";
+
 import { usePutUpdateMe } from "../hooks/usePutUpdateMe";
 import { useAuth } from "../hooks/useAuth";
 import { useGetMe } from "../hooks/useGetMe";
@@ -102,6 +105,8 @@ const SettingsScreen = () => {
     phone: null,
     country: null,
     timezone: "",
+    agree_promotions: false,
+    agree_to_tracking_across_third_party_apps_and_services: false,
     wallet_address: "",
   });
 
@@ -145,6 +150,10 @@ const SettingsScreen = () => {
         phone: latestUserData.phone || null,
         country: latestUserData.country || null,
         timezone: latestUserData.timezone || "",
+        agree_promotions: latestUserData.agree_promotions || "",
+        agree_to_tracking_across_third_party_apps_and_services:
+          latestUserData.agree_to_tracking_across_third_party_apps_and_services ||
+          "",
         wallet_address: latestUserData.wallet_address || "",
       });
     }
@@ -157,6 +166,9 @@ const SettingsScreen = () => {
         phone: user.phone || null,
         country: user.country || null,
         timezone: user.timezone || "",
+        agree_promotions: user.agree_promotions || "",
+        agree_to_tracking_across_third_party_apps_and_services:
+          user.agree_to_tracking_across_third_party_apps_and_services || "",
         wallet_address: user.walletAddress || "",
       });
     }
@@ -172,6 +184,29 @@ const SettingsScreen = () => {
       });
     }
   }, [userDataError]);
+
+  useEffect(() => {
+    if (Platform.OS === "ios") {
+      const checkTrackingPermission = async () => {
+        try {
+          const { status } = await getTrackingPermissionsAsync();
+          // If we have a permission status, update the form field
+          if (status === "granted" || status === "denied") {
+            setFormData({
+              ...formData,
+              agree_to_tracking_across_third_party_apps_and_services:
+                status === "granted",
+            });
+            console.log("Successfully set tracking permission");
+          }
+        } catch (error) {
+          console.error("Error checking tracking permission:", error);
+        }
+      };
+
+      checkTrackingPermission();
+    }
+  }, []);
 
   // Update status message based on API call results
   useEffect(() => {
@@ -240,6 +275,9 @@ const SettingsScreen = () => {
         timezone: formData.timezone,
         phone: formData.phone,
         country: formData.country,
+        agree_promotions: formData.agree_promotions,
+        agree_to_tracking_across_third_party_apps_and_services:
+          formData.agree_to_tracking_across_third_party_apps_and_services,
       };
 
       // Attempt to update user profile
@@ -560,6 +598,66 @@ const SettingsScreen = () => {
           </View>
         </View>
 
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Communication & Privacy</Text>
+            <Text style={styles.sectionSubtitle}>
+              Update your communication and privacy preferences
+            </Text>
+          </View>
+
+          <View style={styles.sectionContent}>
+            {/* Promotional Communications Preference */}
+            <View style={styles.switchContainer}>
+              <Switch
+                value={formData.agree_promotions}
+                onValueChange={(value) =>
+                  handleInputChange("agree_promotions", value)
+                }
+                trackColor={{ false: "#E5E7EB", true: "#C4B5FD" }}
+                thumbColor={formData.agree_promotions ? "#8347FF" : "#F4F3F4"}
+                ios_backgroundColor="#E5E7EB"
+              />
+              <View style={styles.switchLabelContainer}>
+                <Text style={styles.switchLabel}>
+                  I'd like to receive updates about new features, events, and
+                  other comic-related content
+                </Text>
+              </View>
+            </View>
+
+            {/* Tracking Preference - Show conditionally based on platform */}
+            {Platform.OS === "android" && (
+              <View style={styles.switchContainer}>
+                <Switch
+                  value={
+                    formData.agree_to_tracking_across_third_party_apps_and_services
+                  }
+                  onValueChange={(value) =>
+                    handleInputChange(
+                      "agree_to_tracking_across_third_party_apps_and_services",
+                      value,
+                    )
+                  }
+                  trackColor={{ false: "#E5E7EB", true: "#C4B5FD" }}
+                  thumbColor={
+                    formData.agree_to_tracking_across_third_party_apps_and_services
+                      ? "#8347FF"
+                      : "#F4F3F4"
+                  }
+                  ios_backgroundColor="#E5E7EB"
+                />
+                <View style={styles.switchLabelContainer}>
+                  <Text style={styles.switchLabel}>
+                    I agree to the tracking of my activity across third-party
+                    apps and services
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+
         {/* Wallet Information Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -842,6 +940,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+  },
+  switchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  switchLabelContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  switchLabel: {
+    fontSize: 14,
+    color: "#4B5563",
   },
 });
 

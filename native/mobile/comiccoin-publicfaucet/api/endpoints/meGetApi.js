@@ -37,6 +37,9 @@ export function transformUserData(userData) {
     phone: userData.phone || null,
     country: userData.country || null,
     timezone: userData.timezone || "",
+    agree_promotions: userData.agree_promotions || false,
+    agree_to_tracking_across_third_party_apps_and_services:
+      userData.agree_to_tracking_across_third_party_apps_and_services || false,
     wallet_address: userData.wallet_address || "",
     // Include these transformed properties for components using camelCase
     firstName: userData.first_name,
