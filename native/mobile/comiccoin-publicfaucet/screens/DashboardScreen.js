@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  StatusBar,
+  Dimensions,
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -16,6 +16,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
 import AppHeader from "../components/AppHeader";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// Get device dimensions for responsive layout
+const { width, height } = Dimensions.get("window");
+const isSmallDevice = height < 700; // iPhone SE or similar
+const isLargeDevice = height > 812; // iPhone Pro Max models
 
 // Transaction Item component
 const TransactionItem = ({ amount, date, status = "Completed" }) => (
@@ -116,6 +122,7 @@ const CountdownTimer = ({ nextClaimTime }) => {
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets(); // Get safe area insets for iOS
   const { user } = useAuth();
   const userName = user?.first_name || user?.name || "ComicCoin User";
 
@@ -124,17 +131,23 @@ export default function DashboardScreen() {
   // Use our dashboard hook
   const { dashboard, isLoading, error, refetch, canClaimNow } = useDashboard();
 
-  // Handle pull-to-refresh
-  const onRefresh = async () => {
+  // Memoize the refresh function to prevent unnecessary rerenders
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  };
+    try {
+      await refetch();
+    } finally {
+      // Add a slight delay for better UX
+      setTimeout(() => {
+        setRefreshing(false);
+      }, 600);
+    }
+  }, [refetch]);
 
   // Navigate to claim screen
-  const handleClaimPress = () => {
+  const handleClaimPress = useCallback(() => {
     router.push("/(tabs-dashboard)/claim");
-  };
+  }, [router]);
 
   // Loading state
   if (isLoading && !dashboard) {
@@ -158,7 +171,11 @@ export default function DashboardScreen() {
           <Ionicons name="alert-circle" size={56} color="#EF4444" />
           <Text style={styles.errorTitle}>Couldn't load dashboard</Text>
           <Text style={styles.errorMessage}>{error.message}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={refetch}>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={refetch}
+            activeOpacity={0.7}
+          >
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
@@ -187,13 +204,32 @@ export default function DashboardScreen() {
       <AppHeader title="Dashboard" />
 
       <ScrollView
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[
+          styles.contentContainer,
+          // Add bottom padding for safe area
+          {
+            paddingBottom: Math.max(
+              styles.contentContainer.paddingBottom,
+              insets.bottom + 20,
+            ),
+          },
+        ]}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#8347FF"]}
+            tintColor="#8347FF" // iOS refresh control color
+          />
         }
+        showsVerticalScrollIndicator={false}
+        bounces={true} // Enable natural iOS bounce behavior
+        contentInsetAdjustmentBehavior="automatic" // iOS-specific scroll behavior
       >
         {/* Hero section with welcome message and claim button */}
-        <View style={styles.heroSection}>
+        <View
+          style={[styles.heroSection, isSmallDevice && styles.heroSectionSmall]}
+        >
           <LinearGradient
             colors={["#8347FF", "#4338ca"]}
             start={{ x: 0, y: 0 }}
@@ -201,8 +237,20 @@ export default function DashboardScreen() {
             style={styles.heroGradient}
           >
             <View style={styles.welcomeSection}>
-              <Text style={styles.welcomeTitle}>Welcome back, {userName}!</Text>
-              <Text style={styles.welcomeSubtitle}>
+              <Text
+                style={[
+                  styles.welcomeTitle,
+                  isSmallDevice && styles.welcomeTitleSmall,
+                ]}
+              >
+                Welcome back, {userName}!
+              </Text>
+              <Text
+                style={[
+                  styles.welcomeSubtitle,
+                  isSmallDevice && styles.welcomeSubtitleSmall,
+                ]}
+              >
                 Track your coins and claim daily rewards
               </Text>
             </View>
@@ -212,7 +260,7 @@ export default function DashboardScreen() {
                 <TouchableOpacity
                   style={styles.claimButton}
                   onPress={handleClaimPress}
-                  activeOpacity={0.8}
+                  activeOpacity={0.7} // Better iOS touch feedback
                 >
                   <Text style={styles.claimButtonText}>
                     Claim Your Coins Now
@@ -259,6 +307,8 @@ export default function DashboardScreen() {
               <TouchableOpacity
                 style={styles.seeAllButton}
                 onPress={() => router.push("/(tabs)/transactions")}
+                activeOpacity={0.7} // Better iOS touch feedback
+                hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} // Increase touch target
               >
                 <Text style={styles.seeAllText}>See All</Text>
                 <Ionicons name="arrow-forward" size={16} color="white" />
@@ -296,7 +346,12 @@ export default function DashboardScreen() {
         </View>
 
         {/* Space at the bottom to prevent content from being hidden by tab bar */}
-        <View style={styles.bottomSpacer} />
+        <View
+          style={[
+            styles.bottomSpacer,
+            { height: Platform.OS === "ios" ? 20 + insets.bottom : 80 },
+          ]}
+        />
       </ScrollView>
     </View>
   );
@@ -309,6 +364,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flexGrow: 1,
+    paddingBottom: 80, // Base padding, will be adjusted for iOS safe area
   },
   loadingContainer: {
     flex: 1,
@@ -320,6 +376,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: "#6B7280",
     fontSize: 14,
+    fontWeight: Platform.OS === "ios" ? "500" : "400", // Slightly heavier font for iOS
   },
   errorContainer: {
     flex: 1,
@@ -344,6 +401,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
+    minHeight: 44, // iOS minimum touch target
   },
   retryButtonText: {
     color: "white",
@@ -356,11 +414,20 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderRadius: 16,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  heroSectionSmall: {
+    marginTop: 12,
   },
   heroGradient: {
     paddingVertical: 24,
@@ -377,10 +444,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: "center",
   },
+  welcomeTitleSmall: {
+    fontSize: 20,
+    marginBottom: 6,
+  },
   welcomeSubtitle: {
     fontSize: 16,
     color: "rgba(255, 255, 255, 0.9)",
     textAlign: "center",
+  },
+  welcomeSubtitleSmall: {
+    fontSize: 14,
   },
   claimButtonContainer: {
     alignItems: "center",
@@ -395,11 +469,18 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     width: "100%",
     maxWidth: 300,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
+    minHeight: 48, // iOS minimum touch target
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   claimButtonText: {
     color: "#8347FF",
@@ -423,7 +504,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     color: "white",
-    fontVariant: ["tabular-nums"],
+    fontVariant: ["tabular-nums"], // Monospaced numbers for countdown
   },
 
   // Balance cards styles
@@ -438,11 +519,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
   balanceTitle: {
     fontSize: 14,
@@ -474,11 +561,17 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 12,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
   transactionsHeader: {
     backgroundColor: "#8347FF",
@@ -501,6 +594,8 @@ const styles = StyleSheet.create({
   seeAllButton: {
     flexDirection: "row",
     alignItems: "center",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
   },
   seeAllText: {
     color: "white",
@@ -556,8 +651,9 @@ const styles = StyleSheet.create({
   emptyText: {
     color: "#6B7280",
     textAlign: "center",
+    fontSize: Platform.OS === "ios" ? 14 : 13, // Slightly larger text for iOS
   },
   bottomSpacer: {
-    height: 80, // Additional space to account for the tab bar
+    height: 80, // Will be adjusted for iOS devices with notches
   },
 });

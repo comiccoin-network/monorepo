@@ -149,6 +149,9 @@ export default function ClaimCoinsScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Set status bar to match gradient header */}
+      <StatusBar barStyle="light-content" />
+
       {/* Custom Header */}
       <Header showBackButton={true} title="Claim Coins" />
 
@@ -159,6 +162,7 @@ export default function ClaimCoinsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        bounces={false} // Disable bounce effect
       >
         {/* Hero Section */}
         <View style={styles.heroSection}>
@@ -294,6 +298,9 @@ export default function ClaimCoinsScreen() {
             </Text>
           </View>
         </View>
+
+        {/* Add extra padding at the bottom to prevent content from being cut off */}
+        <View style={styles.bottomPadding} />
       </ScrollView>
     </View>
   );
@@ -304,36 +311,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F7FA",
   },
-  // Header styles
-  headerContainer: {
-    width: "100%",
-    paddingTop: Platform.OS === "ios" ? 50 : StatusBar.currentHeight || 0,
-    paddingBottom: 15,
-  },
-  headerContent: {
-    flexDirection: "column",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backIcon: {
-    marginRight: 6,
-  },
-  backButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  headerTitle: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 8,
-  },
-  // Existing styles
   scrollView: {
     flex: 1,
   },
@@ -545,5 +522,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     lineHeight: 20,
+  },
+  bottomPadding: {
+    height: 60, // Additional bottom padding to ensure content isn't cut off
   },
 });
