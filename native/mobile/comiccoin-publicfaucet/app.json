@@ -98,7 +98,10 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.theshootingstarpress.comiccoinpublicfaucet",
-      "permissions": ["android.permission.INTERNET"],
+      "permissions": [
+        "android.permission.INTERNET",
+        "com.google.android.gms.permission.AD_ID"
+      ],
       "blockedPermissions": [
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.READ_MEDIA_VIDEO",
