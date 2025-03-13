@@ -2,8 +2,7 @@
   "applinks": {
       "details": [
            {
-             "appID": "LQQ8LQ952U.com.theshootingstarpress.comiccoinwallet",
-             "paths": ["/"]
+             "appIDs": [ "LQQ8LQ952U.com.theshootingstarpress.comiccoinwallet", "LQQ8LQ952U.com.theshootingstarpress.comiccoinwallet" ]
            }
        ]
    }
