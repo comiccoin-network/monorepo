@@ -252,6 +252,11 @@ const SettingsScreen = () => {
       errors.timezone = "Timezone is required";
     }
 
+    // Wallet address validation
+    if (!formData.wallet_address) {
+      errors.wallet_address = "Wallet address is required";
+    }
+
     // If there are validation errors, prevent submission
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
@@ -275,6 +280,7 @@ const SettingsScreen = () => {
         timezone: formData.timezone,
         phone: formData.phone,
         country: formData.country,
+        wallet_address: formData.wallet_address,
         agree_promotions: formData.agree_promotions,
         agree_to_tracking_across_third_party_apps_and_services:
           formData.agree_to_tracking_across_third_party_apps_and_services,
