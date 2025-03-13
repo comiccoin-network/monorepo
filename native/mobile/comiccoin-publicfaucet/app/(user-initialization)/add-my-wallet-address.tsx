@@ -1,5 +1,5 @@
 // app/(user-initialization)/add-my-wallet-address.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
-  Linking,
+  Keyboard,
+  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,9 +22,17 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../../hooks/useAuth";
 import { useWalletConnect } from "../../hooks/useWalletConnect";
 import UserInitializationHeader from "../../components/UserInitializationHeader";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// Get device dimensions for responsive layout
+const { width, height } = Dimensions.get("window");
+const isSmallDevice = height < 700; // iPhone SE or similar
+const isLargeDevice = height > 800; // iPhone Pro Max or similar
 
 // Confirmation Modal component
 const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
+  const insets = useSafeAreaInsets();
+
   if (!visible) return null;
 
   return (
@@ -34,8 +43,17 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
       onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <View
+          style={[
+            styles.modalContainer,
+            { paddingBottom: Math.max(20, insets.bottom) }, // Ensure safe area padding
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={onClose}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} // Increase hit area
+          >
             <Ionicons name="close" size={24} color="#9CA3AF" />
           </TouchableOpacity>
 
@@ -50,7 +68,14 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
           </View>
 
           <View style={styles.walletAddressContainer}>
-            <Text style={styles.walletAddressText}>{walletAddress}</Text>
+            <Text
+              style={styles.walletAddressText}
+              selectable={true} // Enable text selection on iOS
+              adjustsFontSizeToFit={isSmallDevice} // Adjust font for small screens
+              numberOfLines={2}
+            >
+              {walletAddress}
+            </Text>
           </View>
 
           <View style={styles.warningContainer}>
@@ -64,10 +89,18 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
           </View>
 
           <View style={styles.modalButtonsContainer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={onClose}
+              activeOpacity={0.7} // Better iOS touch feedback
+            >
               <Text style={styles.cancelButtonText}>Double-check</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={onConfirm}
+              activeOpacity={0.7} // Better iOS touch feedback
+            >
               <Text style={styles.confirmButtonText}>Confirm Address</Text>
             </TouchableOpacity>
           </View>
@@ -79,6 +112,8 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
 
 // External Link Confirmation Modal
 const ExternalLinkModal = ({ visible, onClose, onConfirm, url }) => {
+  const insets = useSafeAreaInsets();
+
   if (!visible) return null;
 
   return (
@@ -89,8 +124,17 @@ const ExternalLinkModal = ({ visible, onClose, onConfirm, url }) => {
       onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <View
+          style={[
+            styles.modalContainer,
+            { paddingBottom: Math.max(20, insets.bottom) }, // Ensure safe area padding
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={onClose}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} // Increase hit area
+          >
             <Ionicons name="close" size={24} color="#9CA3AF" />
           </TouchableOpacity>
 
@@ -119,10 +163,18 @@ const ExternalLinkModal = ({ visible, onClose, onConfirm, url }) => {
           </View>
 
           <View style={styles.modalButtonsContainer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={onClose}
+              activeOpacity={0.7} // Better iOS touch feedback
+            >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={onConfirm}
+              activeOpacity={0.7} // Better iOS touch feedback
+            >
               <Text style={styles.confirmButtonText}>Continue</Text>
             </TouchableOpacity>
           </View>
@@ -134,6 +186,7 @@ const ExternalLinkModal = ({ visible, onClose, onConfirm, url }) => {
 
 export default function AddMyWalletAddressScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, updateUser, logout } = useAuth();
   const {
     connectWallet,
@@ -147,7 +200,27 @@ export default function AddMyWalletAddressScreen() {
   const [localError, setLocalError] = useState(null);
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
   const [showExternalLinkModal, setShowExternalLinkModal] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const inputRef = useRef(null);
   const WALLET_WEBSITE_URL = "https://comiccoinwallet.com";
+
+  // Track keyboard visibility for iOS
+  useEffect(() => {
+    const keyboardWillShowListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      () => setKeyboardVisible(true),
+    );
+
+    const keyboardWillHideListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => setKeyboardVisible(false),
+    );
+
+    return () => {
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
+  }, []);
 
   // Handle initial authentication check
   useEffect(() => {
@@ -156,6 +229,25 @@ export default function AddMyWalletAddressScreen() {
       setIsInitializing(false);
     }
   }, [user]);
+
+  // Prefill wallet address if available
+  useEffect(() => {
+    if (user?.wallet_address || user?.walletAddress) {
+      setWalletAddress(user.wallet_address || user.walletAddress);
+    }
+  }, [user]);
+
+  // Focus input automatically on small devices to show keyboard
+  useEffect(() => {
+    if (!isInitializing && isSmallDevice && inputRef.current) {
+      // Slight delay to ensure component is fully rendered
+      const timer = setTimeout(() => {
+        inputRef.current.focus();
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isInitializing, isSmallDevice]);
 
   // Don't render the main content while checking user status
   if (isInitializing) {
@@ -168,6 +260,9 @@ export default function AddMyWalletAddressScreen() {
   }
 
   const handleSubmit = () => {
+    // Dismiss keyboard
+    Keyboard.dismiss();
+
     // Clear previous errors when opening confirmation modal
     setLocalError(null);
 
@@ -270,32 +365,58 @@ export default function AddMyWalletAddressScreen() {
   };
 
   return (
-    <View style={styles.mainContainer}>
+    <View
+      style={[
+        styles.mainContainer,
+        { paddingBottom: insets.bottom }, // Add bottom padding for home indicator
+      ]}
+    >
       {/* Use the UserInitializationHeader component instead of inline header */}
       <UserInitializationHeader title="Finish ComicCoin Faucet Setup" />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
       >
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollViewContent}
+          contentContainerStyle={[
+            styles.scrollViewContent,
+            // Add extra bottom padding when keyboard is not visible
+            !keyboardVisible && {
+              paddingBottom: Math.max(40, insets.bottom + 20),
+            },
+          ]}
           showsVerticalScrollIndicator={false}
-          bounces={false}
-          overScrollMode="never"
-          contentInsetAdjustmentBehavior="never"
+          keyboardShouldPersistTaps="handled" // Prevents keyboard dismissal when tapping scroll view
+          bounces={true} // Enable bouncing for iOS native feel
         >
           {/* Hero Banner */}
           <LinearGradient
             colors={["#4f46e5", "#4338ca"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
-            style={styles.heroBanner}
+            style={[
+              styles.heroBanner,
+              isSmallDevice && styles.heroBannerSmall, // Smaller on iPhone SE
+            ]}
           >
             <View style={styles.heroContent}>
-              <Text style={styles.heroTitle}>Connect Your Wallet</Text>
-              <Text style={styles.heroSubtitle}>
+              <Text
+                style={[
+                  styles.heroTitle,
+                  isSmallDevice && styles.heroTitleSmall,
+                ]}
+              >
+                Connect Your Wallet
+              </Text>
+              <Text
+                style={[
+                  styles.heroSubtitle,
+                  isSmallDevice && styles.heroSubtitleSmall,
+                ]}
+              >
                 Link your wallet to start receiving daily rewards
               </Text>
             </View>
@@ -386,16 +507,28 @@ export default function AddMyWalletAddressScreen() {
                 <Text style={styles.inputLabel}>
                   Your Wallet Address <Text style={styles.requiredStar}>*</Text>
                 </Text>
-                <TextInput
-                  style={styles.input}
-                  value={walletAddress}
-                  onChangeText={setWalletAddress}
-                  placeholder="0x..."
-                  placeholderTextColor="#9CA3AF"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  editable={!isConnecting}
-                />
+                <View style={styles.inputWithButtonContainer}>
+                  <TextInput
+                    ref={inputRef}
+                    style={styles.input}
+                    value={walletAddress}
+                    onChangeText={setWalletAddress}
+                    placeholder="0x..."
+                    placeholderTextColor="#9CA3AF"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    editable={!isConnecting}
+                    keyboardType={
+                      Platform.OS === "ios" ? "default" : "visible-password"
+                    }
+                    autoComplete="off"
+                    textContentType="none"
+                    returnKeyType="done"
+                    onSubmitEditing={handleSubmit}
+                    selectionColor="#8347FF"
+                    spellCheck={false}
+                  />
+                </View>
                 <Text style={styles.inputHelperText}>
                   Your wallet address should start with "0x" followed by 40
                   hexadecimal characters
@@ -413,6 +546,7 @@ export default function AddMyWalletAddressScreen() {
                 disabled={
                   isConnecting || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)
                 }
+                activeOpacity={0.7} // Better touch feedback for iOS
               >
                 {isConnecting ? (
                   <View style={styles.buttonContentLoading}>
@@ -434,6 +568,7 @@ export default function AddMyWalletAddressScreen() {
             <TouchableOpacity
               style={styles.accordionHeader}
               onPress={() => setIsAccordionOpen(!isAccordionOpen)}
+              activeOpacity={0.8} // Better touch feedback for iOS
             >
               <LinearGradient
                 colors={["#7e22ce", "#4338ca"]}
@@ -462,6 +597,7 @@ export default function AddMyWalletAddressScreen() {
                 <TouchableOpacity
                   style={styles.externalLinkButton}
                   onPress={handleExternalLinkPress}
+                  activeOpacity={0.7} // Better touch feedback for iOS
                 >
                   <Text style={styles.externalLinkText}>
                     Go to ComicCoin Wallet
@@ -497,51 +633,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F7FA",
   },
-  // Header styles
-  headerContainer: {
-    width: "100%",
-    paddingTop: Platform.OS === "ios" ? 50 : StatusBar.currentHeight || 0,
-    paddingBottom: 15,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "white",
-    textAlign: "center",
-    flex: 1,
-  },
-  backButton: {
-    padding: 8,
-    width: 44,
-    alignItems: "flex-start",
-  },
-  signOutButton: {
-    padding: 8,
-    width: 70,
-    alignItems: "flex-end",
-  },
-  signOutText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "500",
-  },
   container: {
     flex: 1,
   },
@@ -566,6 +657,9 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     paddingHorizontal: 24,
   },
+  heroBannerSmall: {
+    paddingVertical: 24,
+  },
   heroContent: {
     alignItems: "center",
   },
@@ -576,10 +670,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: "center",
   },
+  heroTitleSmall: {
+    fontSize: 22,
+  },
   heroSubtitle: {
     fontSize: 16,
     color: "#E0E7FF",
     textAlign: "center",
+  },
+  heroSubtitleSmall: {
+    fontSize: 14,
   },
   progressContainer: {
     backgroundColor: "white",
@@ -744,7 +844,12 @@ const styles = StyleSheet.create({
   requiredStar: {
     color: "#EF4444",
   },
+  inputWithButtonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   input: {
+    flex: 1,
     height: 48,
     borderWidth: 1,
     borderColor: "#D1D5DB",
@@ -752,6 +857,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 16,
     color: "#1F2937",
+    backgroundColor: "white",
+    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace", // Monospaced font for wallet address
+  },
+  pasteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F4FF",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginLeft: 8,
+  },
+  pasteButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#8347FF",
+    marginLeft: 4,
   },
   inputHelperText: {
     fontSize: 12,
@@ -764,6 +886,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 48, // Minimum height for iOS touch targets
   },
   submitButtonDisabled: {
     opacity: 0.5,
@@ -831,6 +954,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4FF",
     padding: 12,
     borderRadius: 8,
+    minHeight: 48, // Minimum height for iOS touch targets
   },
   externalLinkText: {
     fontSize: 15,
@@ -862,7 +986,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     backgroundColor: "white",
-    borderRadius: 12,
+    borderRadius: 16, // More rounded corners for iOS feel
     width: "100%",
     maxWidth: 400,
     padding: 20,
@@ -877,6 +1001,7 @@ const styles = StyleSheet.create({
     top: 12,
     right: 12,
     zIndex: 10,
+    padding: 5, // Increased touch target
   },
   modalHeader: {
     alignItems: "center",
@@ -912,6 +1037,7 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     fontSize: 14,
     color: "#4338CA",
+    textAlign: "center",
   },
   warningIconContainer: {
     marginRight: 8,
@@ -930,6 +1056,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: "center",
     marginRight: 8,
+    minHeight: 48, // Minimum height for iOS touch targets
   },
   cancelButtonText: {
     fontSize: 15,
@@ -943,6 +1070,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: "center",
     marginLeft: 8,
+    minHeight: 48, // Minimum height for iOS touch targets
   },
   confirmButtonText: {
     fontSize: 15,
