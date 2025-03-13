@@ -83,12 +83,7 @@
       },
       "associatedDomains": [
         "applinks:comiccoinfaucet.com",
-        "webcredentials:comiccoin.net",
-        "applinks:comiccoinwallet.com",
-        "applinks:comiccoinnetwork.com",
-        "applinks:comiccoin.ca",
-        "applinks:github.com/comiccoin-network/monorepo",
-        "applinks:theshootingstarpress.com"
+        "webcredentials:comiccoinfaucet.com",
       ]
     },
     "android": {

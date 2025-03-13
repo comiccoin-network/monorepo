@@ -49,13 +49,16 @@ func (h *GetAppleAppSiteAssociationHTTPHandler) Execute(w http.ResponseWriter, r
 		AppLinks: AppLinks{
 			Details: []AppDetail{
 				{
-					AppIDs: []string{},
+					AppIDs: []string{
+						"LQQ8LQ952U.com.theshootingstarpress.comiccoinpublicfaucet",
+						"LQQ8LQ952U.com.theshootingstarpress.comiccoinwallet",
+					},
 				},
 			},
 		},
 		WebCredentials: WebCredentials{
 			Apps: []string{
-				"LQQ8LQ952U.com.theshootingstarpress.comiccoinwallet",
+				"LQQ8LQ952U.com.theshootingstarpress.comiccoinpublicfaucet",
 				"LQQ8LQ952U.com.theshootingstarpress.comiccoinwallet",
 			},
 		},

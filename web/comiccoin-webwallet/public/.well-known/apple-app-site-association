@@ -1,9 +1,12 @@
 {
   "applinks": {
-      "details": [
-           {
-             "appIDs": [ "LQQ8LQ952U.com.theshootingstarpress.comiccoinpublicfaucet", "LQQ8LQ952U.com.theshootingstarpress.comiccoinwallet" ]
-           }
-       ]
-   }
+    "details": [
+      {
+        "appIDs": ["LQQ8LQ952U.com.theshootingstarpress.comiccoinwallet"]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["LQQ8LQ952U.com.theshootingstarpress.comiccoinwallet"]
+  }
 }
