@@ -26,7 +26,7 @@
         "com.apple.developer.default-data-protection": "NSFileProtectionComplete"
       },
       "version": "1.0.0",
-      "buildNumber": "7",
+      "buildNumber": "8",
       "privacyManifests": {
         "NSPrivacyTracking": true,
         "NSPrivacyTrackingDomains": [
@@ -147,7 +147,7 @@
             "kotlinVersion": "1.9.25"
           },
           "ios": {
-            "deploymentTarget": "18.0.0"
+            "deploymentTarget": "18.0"
           }
         }
       ]
