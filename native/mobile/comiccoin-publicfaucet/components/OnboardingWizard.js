@@ -1,5 +1,5 @@
 // components/OnboardingWizard.js
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -33,7 +33,7 @@ const APP_LINKS = {
 };
 
 // Define the wizard screens
-const WIZARD_SCREENS = [
+const WIZARD_SCREENS_ALL = [
   {
     id: "1",
     title: "Welcome to ComicCoin Public Faucet",
@@ -129,6 +129,12 @@ const WIZARD_SCREENS = [
 ];
 
 const OnboardingWizard = ({ onComplete, navigation, router }) => {
+  // Filter screens based on platform - iOS gets all screens, Android skips tracking page
+  const WIZARD_SCREENS =
+    Platform.OS === "ios"
+      ? WIZARD_SCREENS_ALL
+      : WIZARD_SCREENS_ALL.filter((screen) => screen.id !== "4");
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [linkModalVisible, setLinkModalVisible] = useState(false);
   const [pendingUrl, setPendingUrl] = useState("");
@@ -277,7 +283,7 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
             </View>
           )}
 
-          {/* Tracking benefits for screen 4 */}
+          {/* Tracking benefits for screen 4 (iOS only) */}
           {item.trackingBenefits && (
             <View style={styles.trackingContainer}>
               {item.trackingBenefits.map((benefit, benefitIndex) => (
@@ -314,7 +320,18 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
     }
   };
 
-  // Function to request tracking permission
+  // Function to navigate to the main app after onboarding
+  const navigateAfterOnboarding = () => {
+    if (typeof onComplete === "function") {
+      onComplete();
+    } else if (navigation) {
+      navigation.replace("index");
+    } else if (router) {
+      router.replace("/");
+    }
+  };
+
+  // Function to request tracking permission (iOS only)
   const requestTrackingPermission = async () => {
     try {
       setIsLoading(true);
@@ -322,31 +339,29 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
       // iOS requires a delay after the component mounts
       if (Platform.OS === "ios") {
         await new Promise((resolve) => setTimeout(resolve, 200));
-      }
 
-      const { status } = await requestTrackingPermissionsAsync();
-      setPermissionStatus(status);
-      setIsLoading(false);
+        const { status } = await requestTrackingPermissionsAsync();
+        setPermissionStatus(status);
+        setIsLoading(false);
 
-      if (status === "granted") {
-        // Permission granted, navigate to main app
-        if (typeof onComplete === "function") {
-          onComplete();
-        } else if (navigation) {
-          navigation.replace("index");
-        } else if (router) {
-          router.replace("/");
+        if (status === "granted") {
+          // Permission granted, navigate to main app
+          navigateAfterOnboarding();
+        } else {
+          // Permission denied, show modal
+          setPermissionModalVisible(true);
         }
       } else {
-        // Permission denied, show modal
-        setPermissionModalVisible(true);
+        // On Android, no tracking permission needed
+        setIsLoading(false);
+        navigateAfterOnboarding();
       }
     } catch (error) {
       setIsLoading(false);
       console.error("Error requesting tracking permission:", error);
       Alert.alert(
         "Error",
-        "There was a problem requesting tracking permissions. Please try again.",
+        "There was a problem requesting permissions. Please try again.",
       );
     }
   };
@@ -356,12 +371,20 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
       // Mark the onboarding as completed
       await AsyncStorage.setItem("@onboarding_completed", "true");
 
-      // Now request tracking permissions
-      requestTrackingPermission();
+      // For iOS, request tracking permission; for Android, navigate directly
+      if (Platform.OS === "ios") {
+        requestTrackingPermission();
+      } else {
+        navigateAfterOnboarding();
+      }
     } catch (error) {
       console.error("Error saving onboarding status:", error);
       // Even if there's an error saving the status, try to proceed
-      requestTrackingPermission();
+      if (Platform.OS === "ios") {
+        requestTrackingPermission();
+      } else {
+        navigateAfterOnboarding();
+      }
     }
   };
 
@@ -456,7 +479,7 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
         </View>
       </Modal>
 
-      {/* Permission Modal */}
+      {/* Permission Modal (iOS only) */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -495,21 +518,16 @@ const OnboardingWizard = ({ onComplete, navigation, router }) => {
                 onPress={() => {
                   setPermissionModalVisible(false);
                   // On iOS, we need to direct users to settings
-                  if (Platform.OS === "ios") {
-                    Alert.alert(
-                      "Permission Required",
-                      "Please enable tracking in your device settings to use ComicCoin Public Faucet.",
-                      [
-                        {
-                          text: "OK",
-                          onPress: () => console.log("OK Pressed"),
-                        },
-                      ],
-                    );
-                  } else {
-                    // On Android, we can request again
-                    requestTrackingPermission();
-                  }
+                  Alert.alert(
+                    "Permission Required",
+                    "Please enable tracking in your device settings to use ComicCoin Public Faucet.",
+                    [
+                      {
+                        text: "OK",
+                        onPress: () => console.log("OK Pressed"),
+                      },
+                    ],
+                  );
                 }}
               >
                 <Text style={styles.modalPrimaryButtonText}>Try Again</Text>
