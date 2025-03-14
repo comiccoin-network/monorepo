@@ -69,10 +69,10 @@ export const COMMON_SCREENS = [
   },
   {
     id: "3",
-    title: "ComicCoin Faucet",
-    subtitle: "Get Free ComicCoins",
-    description: "Claim daily ComicCoins after registering your account.",
-    websiteUrl: "http://comiccoinfaucet.com",
+    title: "Faucet Cloud Service",
+    subtitle: "",
+    description:
+      "To claim your daily ComicCoins, you'll need to register an account with our cloud service.",
     cloudDataInfo: {
       title: "Your Data",
       description: "We securely store the following information:",

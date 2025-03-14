@@ -5,13 +5,14 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  ActivityIndicator,
   Dimensions,
+  StatusBar,
+  BackHandler,
+  StyleSheet,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   COMMON_SCREENS,
-  ANDROID_COMPLETION_SCREEN,
   markOnboardingComplete,
   navigateAfterOnboarding,
 } from "./commonScreens";
@@ -20,11 +21,12 @@ import ExternalLinkModal from "./ExternalLinkModal";
 
 const { width } = Dimensions.get("window");
 
-// Full list of screens for Android
-const WIZARD_SCREENS = [...COMMON_SCREENS, ANDROID_COMPLETION_SCREEN];
+// For Android, we only use the first 3 common screens - no tracking page
+const WIZARD_SCREENS = COMMON_SCREENS.slice(0, 3);
 
 /**
  * Android-specific implementation of the onboarding wizard
+ * Simplified to only 3 pages (no tracking page)
  */
 const AndroidOnboardingWizard = ({ onComplete, navigation, router }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -33,30 +35,27 @@ const AndroidOnboardingWizard = ({ onComplete, navigation, router }) => {
   const [pendingUrlTitle, setPendingUrlTitle] = useState("");
 
   const flatListRef = useRef(null);
-  const completionTimeoutRef = useRef(null);
 
   // Complete onboarding and navigate to the main app
   const completeOnboarding = useCallback(async () => {
-    const success = await markOnboardingComplete();
+    try {
+      const success = await markOnboardingComplete();
+      console.log("Onboarding complete, success:", success);
+    } catch (error) {
+      console.error("Error completing onboarding:", error);
+    }
 
-    // Navigate to app regardless of success
+    // Navigate to app
     navigateAfterOnboarding(onComplete, navigation, router);
   }, [onComplete, navigation, router]);
 
   // Handle next slide with reliable behavior
   const goToNextSlide = useCallback(() => {
-    // Clear any existing timers to prevent multiple calls
-    if (completionTimeoutRef.current) {
-      clearTimeout(completionTimeoutRef.current);
-      completionTimeoutRef.current = null;
-    }
-
     if (currentIndex < WIZARD_SCREENS.length - 1) {
-      // Calculate the next index
+      // Not the last screen, move to next screen
       const nextIndex = currentIndex + 1;
-      const nextScreen = WIZARD_SCREENS[nextIndex];
 
-      // Use the flatListRef to directly scroll first
+      // Use the flatListRef to scroll
       if (flatListRef.current) {
         flatListRef.current.scrollToIndex({
           index: nextIndex,
@@ -65,20 +64,13 @@ const AndroidOnboardingWizard = ({ onComplete, navigation, router }) => {
         });
       }
 
-      // Update the state after initiating the scroll
+      // Update the current index
       setCurrentIndex(nextIndex);
-
-      // If next screen is completion screen, complete onboarding after a delay
-      if (nextScreen.isCompletionScreen) {
-        completionTimeoutRef.current = setTimeout(() => {
-          completeOnboarding();
-        }, 800);
-      }
     } else {
       // We're on the last screen, complete onboarding
       completeOnboarding();
     }
-  }, [currentIndex, WIZARD_SCREENS, completeOnboarding]);
+  }, [currentIndex, completeOnboarding]);
 
   // Handle external link press with confirmation modal
   const handleOpenLink = (url, title = "") => {
@@ -87,89 +79,77 @@ const AndroidOnboardingWizard = ({ onComplete, navigation, router }) => {
     setLinkModalVisible(true);
   };
 
+  // Handle hardware back button
+  React.useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        // Prevent going back during onboarding
+        return true;
+      },
+    );
+
+    return () => backHandler.remove();
+  }, []);
+
   // Render a screen in the wizard
   const renderItem = ({ item }) => {
-    // For Android completion screen, render a special view
-    if (item.isCompletionScreen) {
-      return (
-        <View style={[styles.slide, { width }]}>
-          <View style={[styles.slideContent, styles.completionSlide]}>
-            <View style={styles.stepIndicator}>
-              <Text style={styles.stepText}>Step 4 of 4</Text>
-              <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: "100%" }]} />
-              </View>
-            </View>
+    // Get progress percentage for the step indicator
+    const stepNumber = parseInt(item.id.replace(/\D/g, ""), 10);
+    const progressPercent = (stepNumber / 3) * 100; // Adjusted to 3 total steps
 
-            <View style={styles.iconContainer}>
-              <Text style={styles.iconText}>{item.icon}</Text>
-            </View>
-
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.subtitle}>{item.subtitle}</Text>
-            <Text style={styles.description}>{item.description}</Text>
-
-            <View style={styles.loadingIndicator}>
-              <ActivityIndicator size="large" color="#7c3aed" />
-            </View>
-          </View>
-        </View>
-      );
-    }
-
-    // For regular screens, render standard content
     return (
-      <View style={[styles.slide, { width }]}>
-        <View style={styles.slideContent}>
+      <View style={[androidStyles.slide, { width }]}>
+        <View style={androidStyles.card}>
           {/* Step indicator */}
-          <View style={styles.stepIndicator}>
-            <Text style={styles.stepText}>
-              Step {item.id.replace(/\D/g, "")} of 4
-            </Text>
-            <View style={styles.progressBar}>
+          <View style={androidStyles.stepContainer}>
+            <Text style={androidStyles.stepText}>Step {stepNumber} of 3</Text>
+            <View style={androidStyles.progressBar}>
               <View
                 style={[
-                  styles.progressFill,
-                  {
-                    width: `${(parseInt(item.id.replace(/\D/g, ""), 10) / 4) * 100}%`,
-                  },
+                  androidStyles.progressFill,
+                  { width: `${progressPercent}%` },
                 ]}
               />
             </View>
           </View>
 
           {/* Icon */}
-          <View style={styles.iconContainer}>
+          <View style={androidStyles.iconContainer}>
             <Text style={styles.iconText}>{item.icon}</Text>
           </View>
 
           {/* Title and subtitle */}
-          <Text style={styles.title}>{item.title}</Text>
+          <Text style={androidStyles.title}>{item.title}</Text>
+
           {item.subtitle && (
-            <Text style={styles.subtitle}>{item.subtitle}</Text>
+            <Text style={androidStyles.subtitle}>{item.subtitle}</Text>
           )}
+
           {item.description && (
-            <Text style={styles.description}>{item.description}</Text>
+            <Text style={androidStyles.description}>{item.description}</Text>
           )}
 
           {/* Additional content for screen 1 */}
           {item.additionalContent && (
-            <View style={styles.additionalContainer}>
+            <View style={androidStyles.additionalContainer}>
               {item.additionalContent.map((content, contentIndex) => (
-                <View key={contentIndex} style={styles.additionalItem}>
-                  <Text style={styles.additionalTitle}>{content.title}</Text>
-                  <Text style={styles.additionalDescription}>
+                <View key={contentIndex} style={androidStyles.additionalItem}>
+                  <Text style={androidStyles.additionalTitle}>
+                    {content.title}
+                  </Text>
+                  <Text style={androidStyles.additionalDescription}>
                     {content.description}
                   </Text>
 
                   {content.websiteUrl && (
                     <TouchableOpacity
-                      style={styles.websiteLink}
+                      style={androidStyles.websiteLink}
                       onPress={() =>
                         handleOpenLink(content.websiteUrl, "Website")
                       }
                     >
-                      <Text style={styles.websiteLinkText}>
+                      <Text style={androidStyles.websiteLinkText}>
                         {content.websiteUrl}
                       </Text>
                       <Text style={{ color: "#7c3aed", marginLeft: 5 }}>
@@ -184,11 +164,11 @@ const AndroidOnboardingWizard = ({ onComplete, navigation, router }) => {
 
           {/* Wallet options for screen 2 */}
           {item.walletOptions && (
-            <View style={styles.optionsContainer}>
+            <View style={androidStyles.optionsContainer}>
               {item.walletOptions.map((option, optionIndex) => (
                 <TouchableOpacity
                   key={optionIndex}
-                  style={styles.optionButton}
+                  style={androidStyles.optionButton}
                   onPress={() =>
                     handleOpenLink(
                       option.url,
@@ -197,7 +177,7 @@ const AndroidOnboardingWizard = ({ onComplete, navigation, router }) => {
                   }
                 >
                   <Text style={styles.optionIcon}>{option.icon}</Text>
-                  <Text style={styles.optionText}>{option.title}</Text>
+                  <Text style={androidStyles.optionText}>{option.title}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -205,115 +185,93 @@ const AndroidOnboardingWizard = ({ onComplete, navigation, router }) => {
 
           {/* Cloud data info for screen 3 */}
           {item.cloudDataInfo && (
-            <View style={styles.cloudDataContainer}>
-              <Text style={styles.cloudDataTitle}>
+            <View style={androidStyles.cloudDataContainer}>
+              <Text style={androidStyles.cloudDataTitle}>
                 {item.cloudDataInfo.title}
               </Text>
-              <Text style={styles.cloudDataDescription}>
+              <Text style={androidStyles.cloudDataDescription}>
                 {item.cloudDataInfo.description}
               </Text>
 
-              <View style={styles.dataItemsContainer}>
+              <View style={androidStyles.dataItemsContainer}>
                 {item.cloudDataInfo.dataItems.map((dataItem, index) => (
-                  <View key={index} style={styles.dataItem}>
+                  <View key={index} style={androidStyles.dataItem}>
                     <Text style={styles.dataItemIcon}>{dataItem.icon}</Text>
-                    <Text style={styles.dataItemLabel}>{dataItem.label}</Text>
+                    <Text style={androidStyles.dataItemLabel}>
+                      {dataItem.label}
+                    </Text>
                   </View>
                 ))}
               </View>
 
               {item.additionalInfo && (
-                <Text style={styles.additionalInfoText}>
+                <Text style={androidStyles.additionalInfoText}>
                   {item.additionalInfo}
                 </Text>
               )}
-
-              {item.websiteUrl && (
-                <TouchableOpacity
-                  style={styles.websiteBannerLink}
-                  onPress={() =>
-                    handleOpenLink(item.websiteUrl, "ComicCoin Faucet Website")
-                  }
-                >
-                  <Text style={styles.websiteBannerText}>
-                    Visit ComicCoin Faucet
-                  </Text>
-                  <Text style={styles.websiteBannerUrl}>{item.websiteUrl}</Text>
-                  <Text style={styles.websiteBannerIcon}>↗️</Text>
-                </TouchableOpacity>
-              )}
             </View>
           )}
+
+          {/* Continue button */}
+          <View style={androidStyles.buttonContainer}>
+            <TouchableOpacity
+              style={androidStyles.continueButton}
+              onPress={goToNextSlide}
+              activeOpacity={0.7}
+            >
+              <Text style={androidStyles.continueButtonText}>
+                {currentIndex === WIZARD_SCREENS.length - 1
+                  ? "Get Started"
+                  : "Continue"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Pagination dots */}
+            <View style={androidStyles.dotsContainer}>
+              {WIZARD_SCREENS.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    androidStyles.dot,
+                    index === currentIndex && androidStyles.activeDot,
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
         </View>
       </View>
     );
   };
 
-  // Clean up on unmount
-  React.useEffect(() => {
-    return () => {
-      if (completionTimeoutRef.current) {
-        clearTimeout(completionTimeoutRef.current);
-      }
-    };
-  }, []);
-
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={["#4f46e5", "#4338ca"]}
-        style={styles.background}
+    <View style={androidStyles.container}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="#4f46e5"
+        translucent={true}
       />
 
-      <View style={styles.contentContainer}>
-        <FlatList
-          ref={flatListRef}
-          data={WIZARD_SCREENS}
-          renderItem={renderItem}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
-          scrollEnabled={false} // Disable user scrolling entirely
-          getItemLayout={(data, index) => ({
-            length: width,
-            offset: width * index,
-            index,
-          })}
-        />
+      <LinearGradient
+        colors={["#4f46e5", "#4338ca"]}
+        style={androidStyles.background}
+      />
 
-        {/* Navigation dots */}
-        <View style={styles.pagination}>
-          {WIZARD_SCREENS.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.paginationDot,
-                index === currentIndex && styles.paginationDotActive,
-              ]}
-            />
-          ))}
-        </View>
-
-        {/* Continue button - Hide on completion screen */}
-        {!(
-          currentIndex === WIZARD_SCREENS.length - 1 &&
-          WIZARD_SCREENS[currentIndex].isCompletionScreen
-        ) && (
-          <View style={styles.navigationContainer}>
-            <TouchableOpacity
-              style={styles.continueButton}
-              onPress={goToNextSlide}
-            >
-              <Text style={styles.continueButtonText}>
-                {currentIndex === WIZARD_SCREENS.length - 2
-                  ? "Get Started"
-                  : "Continue"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+      <FlatList
+        ref={flatListRef}
+        data={WIZARD_SCREENS}
+        renderItem={renderItem}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.id}
+        scrollEnabled={false} // Disable user scrolling entirely
+        getItemLayout={(data, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
+      />
 
       {/* External link modal */}
       <ExternalLinkModal
@@ -325,5 +283,251 @@ const AndroidOnboardingWizard = ({ onComplete, navigation, router }) => {
     </View>
   );
 };
+
+// Android-specific styles that match iOS design
+const androidStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#4f46e5", // Purple background
+  },
+  background: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  slide: {
+    width: width,
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 16,
+  },
+  card: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 24,
+    width: "100%",
+    alignItems: "center",
+    maxWidth: 500,
+    elevation: 5, // Android shadow
+  },
+  // Step indicator and progress bar
+  stepContainer: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  stepText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#7c3aed", // Purple
+    textAlign: "center",
+    marginBottom: 6,
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: "#f3e8ff", // Light purple
+    borderRadius: 4,
+    overflow: "hidden",
+    width: "100%",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#7c3aed", // Purple
+    borderRadius: 4,
+  },
+  // Icon
+  iconContainer: {
+    backgroundColor: "#f3f4ff", // Very light blue/purple
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 24,
+    marginTop: 12,
+  },
+  // Text styles
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#7c3aed", // Purple
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  subtitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#7c3aed", // Purple
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  description: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#4b5563", // Dark gray
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  // Button styles
+  buttonContainer: {
+    width: "100%",
+    marginTop: 24,
+    alignItems: "center",
+  },
+  continueButton: {
+    backgroundColor: "#7c3aed", // Purple
+    borderRadius: 100, // Fully rounded
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    width: "100%",
+    alignItems: "center",
+    elevation: 2, // Android shadow
+    marginBottom: 20,
+  },
+  continueButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  // Pagination dots
+  dotsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#e5e7eb", // Light gray
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: "#7c3aed", // Purple
+  },
+  // Additional content styling
+  additionalContainer: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  additionalItem: {
+    marginBottom: 16,
+  },
+  additionalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#7c3aed", // Purple
+    marginBottom: 8,
+  },
+  additionalDescription: {
+    fontSize: 16,
+    color: "#4b5563", // Dark gray
+    marginBottom: 8,
+    lineHeight: 24,
+  },
+  websiteLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  websiteLinkText: {
+    fontSize: 16,
+    color: "#7c3aed", // Purple
+    textDecorationLine: "underline",
+  },
+  // Wallet options
+  optionsContainer: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  optionButton: {
+    backgroundColor: "#7c3aed", // Purple
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    elevation: 2, // Android shadow
+  },
+  optionText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 12,
+  },
+  // Cloud data section
+  cloudDataContainer: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  cloudDataTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#7c3aed", // Purple
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  cloudDataDescription: {
+    fontSize: 16,
+    color: "#4b5563", // Dark gray
+    marginBottom: 16,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  dataItemsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  dataItem: {
+    width: "48%",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f3f4ff", // Very light purple
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  dataItemLabel: {
+    fontSize: 14,
+    color: "#7c3aed", // Purple
+    marginLeft: 8,
+  },
+  additionalInfoText: {
+    fontSize: 14,
+    fontStyle: "italic",
+    color: "#6b7280", // Gray
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  websiteBannerLink: {
+    backgroundColor: "#7c3aed", // Purple
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+  },
+  websiteBannerText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  websiteBannerUrl: {
+    color: "#e0e7ff", // Very light purple
+    fontSize: 14,
+  },
+  websiteBannerIcon: {
+    position: "absolute",
+    right: 16,
+    top: "50%",
+    marginTop: -10,
+    color: "white",
+    fontSize: 16,
+  },
+});
 
 export default AndroidOnboardingWizard;

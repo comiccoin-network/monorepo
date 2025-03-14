@@ -256,21 +256,6 @@ const IOSOnboardingWizard = ({ onComplete, navigation, router }) => {
                   {item.additionalInfo}
                 </Text>
               )}
-
-              {item.websiteUrl && (
-                <TouchableOpacity
-                  style={styles.websiteBannerLink}
-                  onPress={() =>
-                    handleOpenLink(item.websiteUrl, "ComicCoin Faucet Website")
-                  }
-                >
-                  <Text style={styles.websiteBannerText}>
-                    Visit ComicCoin Faucet
-                  </Text>
-                  <Text style={styles.websiteBannerUrl}>{item.websiteUrl}</Text>
-                  <Text style={styles.websiteBannerIcon}>↗️</Text>
-                </TouchableOpacity>
-              )}
             </View>
           )}
 
