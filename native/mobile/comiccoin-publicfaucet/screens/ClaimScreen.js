@@ -1,310 +1,449 @@
-// screens/ClaimScreen.js
+// screens/ClaimScreen.js - With Android optimizations
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  TouchableNativeFeedback,
   ActivityIndicator,
   Alert,
-  StatusBar,
+  Animated,
+  Dimensions,
   Platform,
+  StatusBar,
+  LayoutAnimation,
+  UIManager,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import AppHeader from "../components/AppHeader";
 import { useClaimCoins } from "../api/endpoints/claimCoinsApi";
 import { useGetFaucet } from "../api/endpoints/faucetApi";
-import * as Animatable from "react-native-animatable";
-import Header from "../components/Header";
+import { useDashboard } from "../hooks/useDashboard";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 
-// Animated confetti component
-const ConfettiPiece = ({ index }) => {
-  const size = Math.random() * 10 + 5;
-  const left = Math.random() * 100;
-  const duration = Math.random() * 3000 + 2000;
-  const delay = Math.random() * 500;
+// Enable layout animation for Android
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
-  // Random color
-  const colors = ["#8347FF", "#4c1d95", "#e879f9", "#f0abfc", "#6366f1"];
-  const color = colors[Math.floor(Math.random() * colors.length)];
+// Device detection
+const { width, height } = Dimensions.get("window");
+const isSmallDevice = height < 667; // iPhone SE or similar
+const isLargeDevice = height > 844; // Pro Max models or larger
+const isIOS = Platform.OS === "ios";
+const isAndroid = Platform.OS === "android";
+
+// Create a platform-specific Touchable component
+const Touchable = ({
+  children,
+  style,
+  onPress,
+  disabled = false,
+  ...props
+}) => {
+  if (isAndroid) {
+    return (
+      <TouchableNativeFeedback
+        onPress={onPress}
+        background={TouchableNativeFeedback.Ripple("#d4c1ff", false)}
+        useForeground={true}
+        disabled={disabled}
+        {...props}
+      >
+        <View style={style}>{children}</View>
+      </TouchableNativeFeedback>
+    );
+  }
 
   return (
-    <Animatable.View
-      animation="fadeOutDown"
-      duration={duration}
-      delay={delay}
-      style={{
-        position: "absolute",
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: color,
-        left: `${left}%`,
-        top: -10,
-      }}
-    />
+    <TouchableOpacity
+      style={style}
+      onPress={onPress}
+      activeOpacity={0.7}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </TouchableOpacity>
   );
 };
 
-// Confetti animation for successful claims
-const ClaimConfetti = ({ visible }) => {
-  if (!visible) return null;
-
-  return (
-    <View style={styles.confettiContainer}>
-      {Array.from({ length: 30 }).map((_, i) => (
-        <ConfettiPiece key={i} index={i} />
-      ))}
-    </View>
-  );
-};
-
-// Loading spinner component
-const LoadingSpinner = () => <ActivityIndicator size="small" color="white" />;
-
-// Money icon component
-const MoneyIcon = ({ size = 40, color = "#8347FF" }) => (
-  <View style={styles.moneyIconContainer}>
-    <Ionicons name="cash-outline" size={size} color={color} />
-  </View>
-);
-
-export default function ClaimCoinsScreen() {
+const ClaimScreen = () => {
   const router = useRouter();
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [claimSuccess, setClaimSuccess] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
+  const insets = useSafeAreaInsets();
+  const { dashboard, refetch: refetchDashboard } = useDashboard();
+  const { claimCoins, isLoading, isSuccess, error, amount } = useClaimCoins();
+  const [claimState, setClaimState] = useState("ready"); // ready, claiming, success, failed
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [slideAnim] = useState(new Animated.Value(0));
+  const [scaleAnim] = useState(new Animated.Value(1));
+  const amountRef = useRef(0);
 
-  // Track if redirection is scheduled
-  const redirectionScheduledRef = useRef(false);
-
-  // Get faucet data to display daily reward amount
-  const { data: faucet, isLoading: isFaucetLoading } = useGetFaucet();
-
-  // Set up claim coins mutation
-  const {
-    mutateAsync: claimCoins,
-    isLoading: isClaimingCoins,
-    isError,
-    error,
-  } = useClaimCoins();
-
-  // Get the daily reward amount from faucet data
-  const dailyReward = faucet?.daily_coins_reward || 2; // Fallback to 2 if not available yet
-
-  // Effect to handle redirection after successful claim
+  // Set proper status bar for Android
   useEffect(() => {
-    if (claimSuccess && !redirectionScheduledRef.current) {
-      redirectionScheduledRef.current = true;
-
-      // Redirect to dashboard after a delay to show the success animation
-      const redirectTimer = setTimeout(() => {
-        router.push("/(tabs)/dashboard");
-      }, 2500); // Wait 2.5 seconds to show confetti animation
-
-      // Cleanup timer if component unmounts
-      return () => {
-        clearTimeout(redirectTimer);
-      };
+    if (isAndroid) {
+      StatusBar.setBackgroundColor("#7e22ce");
+      StatusBar.setBarStyle("light-content");
     }
-  }, [claimSuccess, router]);
+  }, []);
 
-  // Function to handle coin claiming
-  const handleClaimCoins = async () => {
-    // Clear any previous error
-    setErrorMessage(null);
+  // Save the amount on success for animations
+  useEffect(() => {
+    if (isSuccess && amount) {
+      amountRef.current = amount;
+      setClaimState("success");
 
-    try {
-      // Attempt to claim coins
-      await claimCoins();
+      // Trigger success animations
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ]).start();
 
-      // Show confetti animation
-      setShowConfetti(true);
-      setClaimSuccess(true);
-
-      // Show success alert
-      Alert.alert("Success!", `You've claimed ${dailyReward} ComicCoins!`, [
-        { text: "Great!", style: "default" },
-      ]);
-    } catch (err) {
-      console.error("Error claiming coins:", err);
-
-      // Extract detailed error message from response
-      let message = "Unable to claim coins";
-
-      if (err?.response?.data?.message) {
-        message = err.response.data.message;
-      } else if (err?.message) {
-        message = err.message;
+      // Trigger haptic feedback on success
+      if (isIOS) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
 
-      setErrorMessage(message);
+      // Configure smooth layout animation - different for iOS vs Android
+      if (isIOS) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      } else {
+        // Android-specific smoother animation
+        LayoutAnimation.configureNext({
+          duration: 500,
+          create: {
+            type: LayoutAnimation.Types.easeInEaseOut,
+            property: LayoutAnimation.Properties.opacity,
+          },
+          update: {
+            type: LayoutAnimation.Types.easeInEaseOut,
+          },
+        });
+      }
 
-      // Show error alert
-      Alert.alert("Claim Failed", message, [{ text: "OK", style: "cancel" }]);
+      // Refresh dashboard data after successful claim
+      refetchDashboard();
+    }
+  }, [isSuccess, amount, fadeAnim, slideAnim]);
+
+  // Show error alert if claim fails
+  useEffect(() => {
+    if (error) {
+      setClaimState("failed");
+
+      // Platform-specific error alert
+      if (isAndroid) {
+        Alert.alert(
+          "Claim Failed",
+          error.message ||
+            "Unable to claim coins at this time. Please try again later.",
+          [{ text: "OK" }],
+          { cancelable: true },
+        );
+      } else {
+        Alert.alert(
+          "Claim Failed",
+          error.message ||
+            "Unable to claim coins at this time. Please try again later.",
+        );
+      }
+    }
+  }, [error]);
+
+  // Handle the claim button press
+  const handleClaim = async () => {
+    if (isLoading || claimState === "success") return;
+
+    // Animation for button press
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Trigger haptic feedback
+    if (isIOS) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+
+    setClaimState("claiming");
+    try {
+      await claimCoins();
+    } catch (err) {
+      console.error("Error claiming coins:", err);
+      setClaimState("failed");
     }
   };
 
+  // Handle returning to dashboard after claim
+  const handleReturnToDashboard = () => {
+    router.back();
+  };
+
+  // Animation styles for the coins
+  const coinsContainerStyle = {
+    opacity: fadeAnim,
+    transform: [
+      {
+        translateY: slideAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [50, 0],
+        }),
+      },
+    ],
+  };
+
+  // Get faucet data to know how many coins the user will get
+  const { data: faucetData } = useGetFaucet();
+
+  // Render the claim button based on claim state
+  const renderClaimButton = () => {
+    if (claimState === "success") {
+      return (
+        <Touchable
+          style={styles.returnButton}
+          onPress={handleReturnToDashboard}
+        >
+          <View style={styles.buttonInnerContainer}>
+            <Text style={styles.returnButtonText}>
+              {isAndroid ? "RETURN TO DASHBOARD" : "Return to Dashboard"}
+            </Text>
+            <Ionicons
+              name="arrow-forward"
+              size={20}
+              color="white"
+              style={styles.buttonIcon}
+            />
+          </View>
+        </Touchable>
+      );
+    }
+
+    const buttonDisabled = isLoading || claimState === "claiming";
+    const buttonContent = buttonDisabled ? (
+      <View style={styles.buttonInnerContainer}>
+        <ActivityIndicator
+          size="small"
+          color="white"
+          style={isAndroid ? styles.androidLoader : undefined}
+        />
+        <Text style={styles.claimButtonText}>
+          {isAndroid ? "CLAIMING..." : "Claiming..."}
+        </Text>
+      </View>
+    ) : (
+      <View style={styles.buttonInnerContainer}>
+        <FontAwesome5
+          name="coins"
+          size={20}
+          color="white"
+          style={styles.buttonIcon}
+        />
+        <Text style={styles.claimButtonText}>
+          {isAndroid ? "CLAIM DAILY COINS" : "Claim Daily Coins"}
+        </Text>
+      </View>
+    );
+
+    if (isAndroid) {
+      return (
+        <View style={styles.androidButtonWrapper}>
+          <TouchableNativeFeedback
+            onPress={handleClaim}
+            disabled={buttonDisabled}
+            background={TouchableNativeFeedback.Ripple("#8347FF", false)}
+            useForeground={true}
+          >
+            <Animated.View
+              style={[
+                styles.claimButton,
+                buttonDisabled && styles.claimButtonDisabled,
+                { transform: [{ scale: scaleAnim }] },
+              ]}
+            >
+              {buttonContent}
+            </Animated.View>
+          </TouchableNativeFeedback>
+        </View>
+      );
+    }
+
+    return (
+      <Animated.View style={[{ transform: [{ scale: scaleAnim }] }]}>
+        <TouchableOpacity
+          style={[
+            styles.claimButton,
+            buttonDisabled && styles.claimButtonDisabled,
+          ]}
+          onPress={handleClaim}
+          disabled={buttonDisabled}
+          activeOpacity={0.9}
+        >
+          {buttonContent}
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
+  // Render loader when dashboard data is not available
+  if (!dashboard) {
+    return (
+      <View style={styles.container}>
+        <AppHeader title="Claim Coins" showBackButton={true} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator
+            size="large"
+            color="#8347FF"
+            style={isAndroid ? styles.androidLoader : undefined}
+          />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* Set status bar to match gradient header */}
-      <StatusBar barStyle="light-content" />
-
-      {/* Custom Header */}
-      <Header showBackButton={true} title="Claim Coins" />
-
-      {/* Confetti animation for successful claims */}
-      <ClaimConfetti visible={showConfetti} />
+      <AppHeader title="Claim Coins" showBackButton={true} />
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          // Add bottom padding for safe area on iOS
+          isIOS && { paddingBottom: Math.max(insets.bottom, 20) },
+          // Add specific padding for Android
+          isAndroid && { paddingBottom: 24 },
+        ]}
         showsVerticalScrollIndicator={false}
-        bounces={false} // Disable bounce effect
+        bounces={isIOS} // Enable bounce effect only on iOS
+        overScrollMode={isAndroid ? "never" : undefined} // Android specific
       >
-        {/* Hero Section */}
-        <View style={styles.heroSection}>
-          <MoneyIcon size={48} color="#8347FF" />
-          <Text style={styles.heroText}>
-            Your daily reward is ready to be collected. Claim now and start
-            exploring premium content!
-          </Text>
-        </View>
-
-        {/* Error message display */}
-        {errorMessage && (
-          <View style={styles.errorContainer}>
-            <Ionicons
-              name="alert-circle"
-              size={20}
-              color="#EF4444"
-              style={styles.errorIcon}
-            />
-            <View>
-              <Text style={styles.errorTitle}>Claim failed</Text>
-              <Text style={styles.errorMessage}>{errorMessage}</Text>
+        {/* Faucet Info Card */}
+        <View style={styles.faucetInfoCard}>
+          <View style={styles.faucetInfoHeader}>
+            <Text style={styles.faucetInfoTitle}>Faucet Balance</Text>
+            <View style={styles.faucetBalancePill}>
+              <FontAwesome5
+                name="coins"
+                size={14}
+                color="#7e22ce"
+                style={styles.coinIcon}
+              />
+              <Text style={styles.faucetBalanceText}>
+                {dashboard.faucetBalance.toLocaleString()} CC
+              </Text>
             </View>
           </View>
-        )}
 
-        {/* Claim Card */}
-        <View style={styles.claimCard}>
-          {/* Success state */}
-          {claimSuccess ? (
-            <View style={styles.successContainer}>
-              <View style={styles.successIconContainer}>
-                <Ionicons name="checkmark-circle" size={32} color="#10B981" />
-              </View>
-              <Text style={styles.successTitle}>Claim Successful!</Text>
-              <Text style={styles.successMessage}>
-                Congratulations! {dailyReward} ComicCoins have been added to
-                your wallet.
-              </Text>
-              <Text style={styles.redirectingText}>
-                Redirecting to dashboard...
-              </Text>
-            </View>
-          ) : (
-            <>
-              {/* Reward Header */}
-              <View style={styles.rewardHeader}>
-                <View style={styles.iconCirclePurple}>
-                  <Ionicons name="gift-outline" size={24} color="#8347FF" />
+          <View style={styles.divider} />
+
+          <View style={styles.faucetInfoContent}>
+            <Text style={styles.faucetInfoText}>
+              You can claim free ComicCoins once every 24 hours.
+            </Text>
+          </View>
+        </View>
+
+        {/* Main Content Box */}
+        <View style={styles.mainContentBox}>
+          <LinearGradient
+            colors={
+              claimState === "success"
+                ? ["#10B981", "#059669"]
+                : ["#8347FF", "#7e22ce"]
+            }
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientBackground}
+          >
+            {claimState === "success" ? (
+              <View style={styles.successContainer}>
+                <View style={styles.successIconContainer}>
+                  <Ionicons name="checkmark-circle" size={64} color="white" />
                 </View>
-                <View style={styles.rewardHeaderTextContainer}>
-                  <Text style={styles.rewardTitle}>Daily Reward Ready!</Text>
-                  <Text style={styles.rewardSubtitle}>
-                    Claim your {dailyReward} ComicCoins today
+                <Text style={styles.successTitle}>Claim Successful!</Text>
+                <Animated.View
+                  style={[styles.coinsContainer, coinsContainerStyle]}
+                >
+                  <Text style={styles.coinsAmount}>
+                    +{amountRef.current.toLocaleString()} CC
                   </Text>
+                  <Text style={styles.coinsLabel}>added to your balance</Text>
+                </Animated.View>
+              </View>
+            ) : (
+              <View style={styles.readyContainer}>
+                <FontAwesome5
+                  name="coins"
+                  size={48}
+                  color="white"
+                  style={styles.coinIconLarge}
+                />
+                <Text style={styles.readyTitle}>Ready to Claim</Text>
+                <Text style={styles.readySubtitle}>
+                  Claim your free ComicCoins now!
+                </Text>
+                <View style={styles.readyInfo}>
+                  <View style={styles.infoRow}>
+                    <Ionicons
+                      name="time-outline"
+                      size={20}
+                      color="white"
+                      style={styles.infoIcon}
+                    />
+                    <Text style={styles.infoText}>
+                      Available once every 24 hours
+                    </Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <Ionicons
+                      name="gift-outline"
+                      size={20}
+                      color="white"
+                      style={styles.infoIcon}
+                    />
+                    <Text style={styles.infoText}>
+                      {faucetData?.daily_coins_reward
+                        ? `${faucetData.daily_coins_reward} CC per claim`
+                        : "Claim your daily coins"}
+                    </Text>
+                  </View>
                 </View>
               </View>
-
-              {/* Reward Display */}
-              <View style={styles.rewardDisplay}>
-                <Text style={styles.rewardLabel}>Today's Reward</Text>
-                <View style={styles.rewardAmount}>
-                  <View style={styles.iconCirclePurpleSmall}>
-                    <Ionicons name="cash" size={20} color="#8347FF" />
-                  </View>
-                  <View>
-                    <Text style={styles.rewardValue}>
-                      {isFaucetLoading ? (
-                        <ActivityIndicator size="small" color="#8347FF" />
-                      ) : (
-                        `${dailyReward} CC`
-                      )}
-                    </Text>
-                    <Text style={styles.rewardUnit}>ComicCoins</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Claim Button */}
-              <TouchableOpacity
-                style={[
-                  styles.claimButton,
-                  (isClaimingCoins || isFaucetLoading) &&
-                    styles.claimButtonDisabled,
-                ]}
-                onPress={handleClaimCoins}
-                disabled={isClaimingCoins || isFaucetLoading}
-              >
-                {isClaimingCoins ? (
-                  <View style={styles.buttonContent}>
-                    <LoadingSpinner />
-                    <Text style={styles.claimButtonText}>
-                      Claiming your coins...
-                    </Text>
-                  </View>
-                ) : (
-                  <View style={styles.buttonContent}>
-                    <Ionicons name="cash" size={20} color="white" />
-                    <Text style={styles.claimButtonText}>
-                      Claim {dailyReward} ComicCoins
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </>
-          )}
+            )}
+          </LinearGradient>
         </View>
 
-        {/* Information Cards */}
-        <View style={styles.infoCardsContainer}>
-          {/* When can I claim again */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoCardHeader}>
-              <Ionicons name="time-outline" size={20} color="#8347FF" />
-              <Text style={styles.infoCardTitle}>When can I claim again?</Text>
-            </View>
-            <Text style={styles.infoCardText}>
-              You can claim ComicCoins once every 24 hours. After claiming,
-              you'll need to wait until tomorrow to claim again.
-            </Text>
-          </View>
-
-          {/* What are ComicCoins */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoCardHeader}>
-              <Ionicons name="cash-outline" size={20} color="#8347FF" />
-              <Text style={styles.infoCardTitle}>What are ComicCoins?</Text>
-            </View>
-            <Text style={styles.infoCardText}>
-              ComicCoins (CC) are our platform's digital currency. You can use
-              them to unlock premium comics, purchase special editions, or trade
-              with other collectors. Check your total balance on the dashboard.
-            </Text>
-          </View>
-        </View>
-
-        {/* Add extra padding at the bottom to prevent content from being cut off */}
-        <View style={styles.bottomPadding} />
+        {/* Claim Button Section */}
+        <View style={styles.buttonContainer}>{renderClaimButton()}</View>
       </ScrollView>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -315,215 +454,369 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 32,
   },
-  confettiContainer: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    zIndex: 10,
-    pointerEvents: "none",
-  },
-  heroSection: {
-    alignItems: "center",
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-  },
-  moneyIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#F3F4FF",
+  loadingContainer: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16,
   },
-  heroText: {
-    textAlign: "center",
-    color: "#4B5563",
+  androidLoader: {
+    transform: [{ scale: 1.2 }], // Slightly larger for Android
+  },
+  loadingText: {
+    marginTop: 12,
+    color: "#6B7280",
     fontSize: 16,
-    lineHeight: 24,
-    marginHorizontal: 16,
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+        fontWeight: "500",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
   },
-  errorContainer: {
-    backgroundColor: "#FEF2F2",
-    borderLeftWidth: 4,
-    borderLeftColor: "#EF4444",
-    borderRadius: 8,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 16,
-    marginHorizontal: 16,
-  },
-  errorIcon: {
-    marginRight: 8,
-    marginTop: 2,
-  },
-  errorTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#B91C1C",
-  },
-  errorMessage: {
-    fontSize: 12,
-    color: "#B91C1C",
-    marginTop: 4,
-  },
-  claimCard: {
+  faucetInfoCard: {
     backgroundColor: "white",
     borderRadius: 12,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-    marginHorizontal: 16,
     marginBottom: 16,
+    overflow: "hidden",
+    // Platform-specific styling
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2, // Android shadow
+      },
+    }),
+  },
+  faucetInfoHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+  },
+  faucetInfoTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1F2937",
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+        fontWeight: "600",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
+  },
+  faucetBalancePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F4FF",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 100,
+  },
+  coinIcon: {
+    marginRight: 4,
+  },
+  faucetBalanceText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#7e22ce",
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+        fontWeight: "500",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#F3F4F6",
+  },
+  faucetInfoContent: {
+    padding: 16,
+  },
+  faucetInfoText: {
+    fontSize: 14,
+    color: "#4B5563",
+    lineHeight: 20,
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
+        lineHeight: 22, // Better readability on Android
+      },
+    }),
+  },
+  mainContentBox: {
+    borderRadius: 12,
+    marginBottom: 24,
+    overflow: "hidden",
+    // Platform-specific styling
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 4, // Android shadow
+      },
+    }),
+  },
+  gradientBackground: {
+    borderRadius: 12,
+    padding: 24,
   },
   successContainer: {
     alignItems: "center",
-    paddingVertical: 24,
+    justifyContent: "center",
+    paddingVertical: 16,
   },
   successIconContainer: {
-    backgroundColor: "#D1FAE5",
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   successTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#10B981",
-    marginBottom: 8,
-  },
-  successMessage: {
-    color: "#6B7280",
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  redirectingText: {
-    color: "#9CA3AF",
-    fontSize: 12,
-  },
-  rewardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  rewardHeaderTextContainer: {
-    flex: 1,
-  },
-  iconCirclePurple: {
-    backgroundColor: "#F3F4FF",
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  iconCirclePurpleSmall: {
-    backgroundColor: "#F3F4FF",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  rewardTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1F2937",
-  },
-  rewardSubtitle: {
-    fontSize: 14,
-    color: "#6B7280",
-  },
-  rewardDisplay: {
-    backgroundColor: "#F3F4FF",
-    borderRadius: 8,
-    padding: 16,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  rewardLabel: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginBottom: 8,
-  },
-  rewardAmount: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  rewardValue: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#8347FF",
+    color: "white",
+    marginBottom: 16,
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+        fontWeight: "700",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
   },
-  rewardUnit: {
-    fontSize: 12,
-    color: "#9CA3AF",
+  coinsContainer: {
+    alignItems: "center",
+  },
+  coinsAmount: {
+    fontSize: 36,
+    fontWeight: "800",
+    color: "white",
+    marginBottom: 4,
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+        fontWeight: "800",
+      },
+      android: {
+        fontFamily: "sans-serif-black",
+        fontWeight: "normal", // Android handles font weight differently
+        letterSpacing: 1, // Better readability for large numbers on Android
+      },
+    }),
+  },
+  coinsLabel: {
+    fontSize: 16,
+    color: "rgba(255, 255, 255, 0.9)",
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
+  },
+  readyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  coinIconLarge: {
+    marginBottom: 16,
+  },
+  readyTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "white",
+    marginBottom: 8,
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+        fontWeight: "700",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
+  },
+  readySubtitle: {
+    fontSize: 16,
+    color: "rgba(255, 255, 255, 0.9)",
+    marginBottom: 24,
+    textAlign: "center",
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
+  },
+  readyInfo: {
+    width: "100%",
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  infoIcon: {
+    marginRight: 12,
+  },
+  infoText: {
+    fontSize: 14,
+    color: "white",
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
+  },
+  buttonContainer: {
+    marginBottom: 24,
+  },
+  androidButtonWrapper: {
+    borderRadius: 12,
+    overflow: "hidden",
   },
   claimButton: {
     backgroundColor: "#8347FF",
-    borderRadius: 8,
-    paddingVertical: 14,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    // Platform-specific styling
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4, // Android shadow
+        minHeight: 56, // Material Design recommend touch target size
+      },
+    }),
+  },
+  buttonInnerContainer: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
   claimButtonDisabled: {
-    opacity: 0.7,
+    backgroundColor: "#C4B5FD",
+    // Platform-specific styling
+    ...Platform.select({
+      android: {
+        elevation: 0, // No elevation when disabled
+      },
+    }),
   },
-  buttonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+  buttonIcon: {
+    marginRight: 8,
   },
   claimButtonText: {
+    fontSize: 18,
+    fontWeight: "600",
     color: "white",
-    fontWeight: "600",
-    fontSize: 16,
-    marginLeft: 8,
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+        fontWeight: "600",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+        textTransform: "uppercase", // Material Design style uppercase buttons
+        letterSpacing: 0.5, // Material Design letter spacing
+        fontSize: 16,
+      },
+    }),
   },
-  infoCardsContainer: {
-    paddingHorizontal: 16,
-  },
-  infoCard: {
-    backgroundColor: "white",
+  returnButton: {
+    backgroundColor: "#10B981",
     borderRadius: 12,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-    marginBottom: 16,
-  },
-  infoCardHeader: {
-    flexDirection: "row",
+    paddingVertical: 16,
     alignItems: "center",
-    marginBottom: 8,
+    justifyContent: "center",
+    // Platform-specific styling
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4, // Android shadow
+        minHeight: 56, // Material Design recommend touch target size
+      },
+    }),
   },
-  infoCardTitle: {
-    fontSize: 16,
+  returnButtonText: {
+    fontSize: 18,
     fontWeight: "600",
-    color: "#8347FF",
-    marginLeft: 8,
-  },
-  infoCardText: {
-    fontSize: 14,
-    color: "#6B7280",
-    lineHeight: 20,
-  },
-  bottomPadding: {
-    height: 60, // Additional bottom padding to ensure content isn't cut off
+    color: "white",
+    marginRight: 8,
+    // Platform-specific font styling
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+        fontWeight: "600",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+        textTransform: "uppercase", // Material Design style uppercase buttons
+        letterSpacing: 0.5, // Material Design letter spacing
+        fontSize: 16,
+      },
+    }),
   },
 });
+
+export default ClaimScreen;
