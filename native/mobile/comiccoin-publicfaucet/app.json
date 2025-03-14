@@ -87,7 +87,7 @@
       ]
     },
     "android": {
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -139,7 +139,10 @@
             "compileSdkVersion": 35,
             "targetSdkVersion": 34,
             "buildToolsVersion": "35.0.0",
-            "kotlinVersion": "1.9.25"
+            "kotlinVersion": "1.9.25",
+            "enableProguardInReleaseBuilds": true,
+            "extraProguardRules": "-keep public class com.horcrux.svg.** {*;}",
+            "allowBackup": false
           },
           "ios": {
             "deploymentTarget": "18.0"

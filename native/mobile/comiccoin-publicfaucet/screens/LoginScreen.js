@@ -434,6 +434,7 @@ const LoginScreen = () => {
               </View>
 
               {/* Forgot Password Link */}
+              {/*
               <Touchable
                 style={styles.forgotPasswordContainer}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -443,6 +444,7 @@ const LoginScreen = () => {
                   Forgot your password?
                 </Text>
               </Touchable>
+              */}
 
               {/* Action Buttons */}
               <View style={styles.actionButtonsContainer}>
