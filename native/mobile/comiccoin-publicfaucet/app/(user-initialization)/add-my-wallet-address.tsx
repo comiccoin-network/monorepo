@@ -6,6 +6,7 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  TouchableNativeFeedback,
   ScrollView,
   ActivityIndicator,
   Modal,
@@ -15,6 +16,8 @@ import {
   StatusBar,
   Keyboard,
   Dimensions,
+  Linking,
+  BackHandler,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,11 +26,49 @@ import { useAuth } from "../../hooks/useAuth";
 import { useWalletConnect } from "../../hooks/useWalletConnect";
 import UserInitializationHeader from "../../components/UserInitializationHeader";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 
 // Get device dimensions for responsive layout
 const { width, height } = Dimensions.get("window");
 const isSmallDevice = height < 700; // iPhone SE or similar
 const isLargeDevice = height > 800; // iPhone Pro Max or similar
+const isIOS = Platform.OS === "ios";
+const isAndroid = Platform.OS === "android";
+
+// Touchable component factory to handle platform differences
+const createTouchable = (isAndroid) => {
+  return ({ children, style, onPress, disabled = false, ...props }) => {
+    if (isAndroid) {
+      // For Android, use TouchableNativeFeedback with ripple effect
+      return (
+        <TouchableNativeFeedback
+          onPress={onPress}
+          background={TouchableNativeFeedback.Ripple("#d4c1ff", false)}
+          useForeground={true}
+          disabled={disabled}
+          {...props}
+        >
+          <View style={[style, { overflow: "hidden" }]}>{children}</View>
+        </TouchableNativeFeedback>
+      );
+    }
+    // For iOS, use TouchableOpacity
+    return (
+      <TouchableOpacity
+        style={style}
+        onPress={onPress}
+        activeOpacity={0.7}
+        disabled={disabled}
+        {...props}
+      >
+        {children}
+      </TouchableOpacity>
+    );
+  };
+};
+
+// Create platform-specific Touchable component
+const Touchable = createTouchable(isAndroid);
 
 // Confirmation Modal component
 const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
@@ -35,6 +76,129 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
 
   if (!visible) return null;
 
+  // Different modal content for different platforms
+  const modalContent = (
+    <View
+      style={[
+        styles.modalContainer,
+        { paddingBottom: Math.max(20, insets.bottom) }, // Ensure safe area padding
+        isAndroid && styles.androidModalContainer, // Android-specific styling
+      ]}
+    >
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={onClose}
+        hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+      >
+        <Ionicons name="close" size={24} color="#9CA3AF" />
+      </TouchableOpacity>
+
+      <View style={styles.modalHeader}>
+        <View style={styles.iconContainer}>
+          <Ionicons name="shield-checkmark" size={32} color="#8347FF" />
+        </View>
+        <Text
+          style={[styles.modalTitle, isAndroid && styles.androidModalTitle]}
+        >
+          Confirm Your Wallet
+        </Text>
+        <Text
+          style={[
+            styles.modalSubtitle,
+            isAndroid && styles.androidModalSubtitle,
+          ]}
+        >
+          Please verify that this is your correct wallet address:
+        </Text>
+      </View>
+
+      <View style={styles.walletAddressContainer}>
+        <Text
+          style={[
+            styles.walletAddressText,
+            isAndroid && styles.androidWalletAddressText,
+          ]}
+          selectable={true}
+          adjustsFontSizeToFit={isSmallDevice}
+          numberOfLines={2}
+        >
+          {walletAddress}
+        </Text>
+      </View>
+
+      <View style={styles.warningContainer}>
+        <View style={styles.warningIconContainer}>
+          <Ionicons name="warning" size={20} color="#F59E0B" />
+        </View>
+        <Text
+          style={[styles.warningText, isAndroid && styles.androidWarningText]}
+        >
+          Double-check your wallet address carefully. Coins sent to the wrong
+          address cannot be recovered!
+        </Text>
+      </View>
+
+      <View style={styles.modalButtonsContainer}>
+        {isAndroid ? (
+          // Android-specific button layout
+          <>
+            <View style={styles.androidButtonWrapper}>
+              <TouchableNativeFeedback
+                onPress={onClose}
+                background={TouchableNativeFeedback.Ripple("#E5E7EB", false)}
+                useForeground={true}
+              >
+                <View style={styles.cancelButton}>
+                  <Text
+                    style={[styles.cancelButtonText, styles.androidButtonText]}
+                  >
+                    DOUBLE-CHECK
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+
+            <View style={styles.androidButtonWrapper}>
+              <TouchableNativeFeedback
+                onPress={onConfirm}
+                background={TouchableNativeFeedback.Ripple("#6D28D9", false)}
+                useForeground={true}
+              >
+                <View style={styles.confirmButton}>
+                  <Text
+                    style={[styles.confirmButtonText, styles.androidButtonText]}
+                  >
+                    CONFIRM ADDRESS
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+          </>
+        ) : (
+          // iOS buttons
+          <>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.cancelButtonText}>Double-check</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={onConfirm}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.confirmButtonText}>Confirm Address</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    </View>
+  );
+
+  // Platform-specific modal container
   return (
     <Modal
       transparent={true}
@@ -42,70 +206,7 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, walletAddress }) => {
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <View
-          style={[
-            styles.modalContainer,
-            { paddingBottom: Math.max(20, insets.bottom) }, // Ensure safe area padding
-          ]}
-        >
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={onClose}
-            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} // Increase hit area
-          >
-            <Ionicons name="close" size={24} color="#9CA3AF" />
-          </TouchableOpacity>
-
-          <View style={styles.modalHeader}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="shield-checkmark" size={32} color="#8347FF" />
-            </View>
-            <Text style={styles.modalTitle}>Confirm Your Wallet</Text>
-            <Text style={styles.modalSubtitle}>
-              Please verify that this is your correct wallet address:
-            </Text>
-          </View>
-
-          <View style={styles.walletAddressContainer}>
-            <Text
-              style={styles.walletAddressText}
-              selectable={true} // Enable text selection on iOS
-              adjustsFontSizeToFit={isSmallDevice} // Adjust font for small screens
-              numberOfLines={2}
-            >
-              {walletAddress}
-            </Text>
-          </View>
-
-          <View style={styles.warningContainer}>
-            <View style={styles.warningIconContainer}>
-              <Ionicons name="warning" size={20} color="#F59E0B" />
-            </View>
-            <Text style={styles.warningText}>
-              Double-check your wallet address carefully. Coins sent to the
-              wrong address cannot be recovered!
-            </Text>
-          </View>
-
-          <View style={styles.modalButtonsContainer}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={onClose}
-              activeOpacity={0.7} // Better iOS touch feedback
-            >
-              <Text style={styles.cancelButtonText}>Double-check</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.confirmButton}
-              onPress={onConfirm}
-              activeOpacity={0.7} // Better iOS touch feedback
-            >
-              <Text style={styles.confirmButtonText}>Confirm Address</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      <View style={styles.modalOverlay}>{modalContent}</View>
     </Modal>
   );
 };
@@ -116,6 +217,121 @@ const ExternalLinkModal = ({ visible, onClose, onConfirm, url }) => {
 
   if (!visible) return null;
 
+  // Different modal content for different platforms
+  const modalContent = (
+    <View
+      style={[
+        styles.modalContainer,
+        { paddingBottom: Math.max(20, insets.bottom) }, // Ensure safe area padding
+        isAndroid && styles.androidModalContainer, // Android-specific styling
+      ]}
+    >
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={onClose}
+        hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+      >
+        <Ionicons name="close" size={24} color="#9CA3AF" />
+      </TouchableOpacity>
+
+      <View style={styles.modalHeader}>
+        <View style={styles.iconContainer}>
+          <Ionicons name="open-outline" size={32} color="#8347FF" />
+        </View>
+        <Text
+          style={[styles.modalTitle, isAndroid && styles.androidModalTitle]}
+        >
+          Leave App
+        </Text>
+        <Text
+          style={[
+            styles.modalSubtitle,
+            isAndroid && styles.androidModalSubtitle,
+          ]}
+        >
+          You're about to be redirected to:
+        </Text>
+      </View>
+
+      <View style={styles.urlContainer}>
+        <Text style={[styles.urlText, isAndroid && styles.androidUrlText]}>
+          {url}
+        </Text>
+      </View>
+
+      <View style={styles.warningContainer}>
+        <View style={styles.warningIconContainer}>
+          <Ionicons name="information-circle" size={20} color="#3B82F6" />
+        </View>
+        <Text
+          style={[styles.warningText, isAndroid && styles.androidWarningText]}
+        >
+          You will be redirected to an external website. Are you sure you want
+          to proceed?
+        </Text>
+      </View>
+
+      <View style={styles.modalButtonsContainer}>
+        {isAndroid ? (
+          // Android-specific button layout
+          <>
+            <View style={styles.androidButtonWrapper}>
+              <TouchableNativeFeedback
+                onPress={onClose}
+                background={TouchableNativeFeedback.Ripple("#E5E7EB", false)}
+                useForeground={true}
+              >
+                <View style={styles.cancelButton}>
+                  <Text
+                    style={[styles.cancelButtonText, styles.androidButtonText]}
+                  >
+                    CANCEL
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+
+            <View style={styles.androidButtonWrapper}>
+              <TouchableNativeFeedback
+                onPress={onConfirm}
+                background={TouchableNativeFeedback.Ripple("#6D28D9", false)}
+                useForeground={true}
+              >
+                <View style={styles.confirmButton}>
+                  <Text
+                    style={[styles.confirmButtonText, styles.androidButtonText]}
+                  >
+                    CONTINUE
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+          </>
+        ) : (
+          // iOS buttons
+          <>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={onConfirm}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.confirmButtonText}>Continue</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    </View>
+  );
+
+  // Platform-specific modal container
   return (
     <Modal
       transparent={true}
@@ -123,63 +339,7 @@ const ExternalLinkModal = ({ visible, onClose, onConfirm, url }) => {
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <View
-          style={[
-            styles.modalContainer,
-            { paddingBottom: Math.max(20, insets.bottom) }, // Ensure safe area padding
-          ]}
-        >
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={onClose}
-            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} // Increase hit area
-          >
-            <Ionicons name="close" size={24} color="#9CA3AF" />
-          </TouchableOpacity>
-
-          <View style={styles.modalHeader}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="open-outline" size={32} color="#8347FF" />
-            </View>
-            <Text style={styles.modalTitle}>Leave App</Text>
-            <Text style={styles.modalSubtitle}>
-              You're about to be redirected to:
-            </Text>
-          </View>
-
-          <View style={styles.urlContainer}>
-            <Text style={styles.urlText}>{url}</Text>
-          </View>
-
-          <View style={styles.warningContainer}>
-            <View style={styles.warningIconContainer}>
-              <Ionicons name="information-circle" size={20} color="#3B82F6" />
-            </View>
-            <Text style={styles.warningText}>
-              You will be redirected to an external website. Are you sure you
-              want to proceed?
-            </Text>
-          </View>
-
-          <View style={styles.modalButtonsContainer}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={onClose}
-              activeOpacity={0.7} // Better iOS touch feedback
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.confirmButton}
-              onPress={onConfirm}
-              activeOpacity={0.7} // Better iOS touch feedback
-            >
-              <Text style={styles.confirmButtonText}>Continue</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      <View style={styles.modalOverlay}>{modalContent}</View>
     </Modal>
   );
 };
@@ -204,15 +364,39 @@ export default function AddMyWalletAddressScreen() {
   const inputRef = useRef(null);
   const WALLET_WEBSITE_URL = "https://comiccoinwallet.com";
 
+  // Handle Android back button
+  useEffect(() => {
+    if (isAndroid) {
+      const backAction = () => {
+        if (showConfirmation) {
+          setShowConfirmation(false);
+          return true;
+        }
+        if (showExternalLinkModal) {
+          setShowExternalLinkModal(false);
+          return true;
+        }
+        return false;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction,
+      );
+
+      return () => backHandler.remove();
+    }
+  }, [showConfirmation, showExternalLinkModal]);
+
   // Track keyboard visibility for iOS
   useEffect(() => {
     const keyboardWillShowListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      isIOS ? "keyboardWillShow" : "keyboardDidShow",
       () => setKeyboardVisible(true),
     );
 
     const keyboardWillHideListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      isIOS ? "keyboardWillHide" : "keyboardDidHide",
       () => setKeyboardVisible(false),
     );
 
@@ -253,8 +437,16 @@ export default function AddMyWalletAddressScreen() {
   if (isInitializing) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#8347FF" />
-        <Text style={styles.loadingText}>Loading your account...</Text>
+        <ActivityIndicator
+          size="large"
+          color="#8347FF"
+          style={isAndroid ? { transform: [{ scale: 1.3 }] } : null}
+        />
+        <Text
+          style={[styles.loadingText, isAndroid && styles.androidLoadingText]}
+        >
+          Loading your account...
+        </Text>
       </View>
     );
   }
@@ -271,7 +463,18 @@ export default function AddMyWalletAddressScreen() {
       setLocalError(
         "Please enter a valid wallet address (0x followed by 40 hexadecimal characters)",
       );
+
+      // Add haptic feedback for Android
+      if (isAndroid) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+
       return;
+    }
+
+    // Add haptic feedback for Android
+    if (isAndroid) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
     setShowConfirmation(true);
@@ -298,6 +501,11 @@ export default function AddMyWalletAddressScreen() {
 
         console.log("👤 Updated user with wallet:", updatedUser);
         console.log("🔄 Redirecting to dashboard");
+
+        // Add haptic feedback for Android on success
+        if (isAndroid) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
 
         // Hide confirmation modal
         setShowConfirmation(false);
@@ -334,12 +542,22 @@ export default function AddMyWalletAddressScreen() {
         errorMessage = err.message || errorMessage;
       }
 
+      // Add haptic feedback for Android on error
+      if (isAndroid) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+
       setLocalError(errorMessage);
       setShowConfirmation(false);
     }
   };
 
   const handleExternalLinkPress = () => {
+    // Add haptic feedback for Android
+    if (isAndroid) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
     setShowExternalLinkModal(true);
   };
 
@@ -364,6 +582,120 @@ export default function AddMyWalletAddressScreen() {
     }
   };
 
+  // Render platform-specific input field with copy/paste button
+  const renderInputField = () => {
+    return (
+      <View style={styles.inputContainer}>
+        <Text
+          style={[styles.inputLabel, isAndroid && styles.androidInputLabel]}
+        >
+          Your Wallet Address <Text style={styles.requiredStar}>*</Text>
+        </Text>
+        <View style={styles.inputWithButtonContainer}>
+          <TextInput
+            ref={inputRef}
+            style={[styles.input, isAndroid && styles.androidInput]}
+            value={walletAddress}
+            onChangeText={setWalletAddress}
+            placeholder="0x..."
+            placeholderTextColor="#9CA3AF"
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!isConnecting}
+            keyboardType={isIOS ? "default" : "visible-password"}
+            autoComplete="off"
+            textContentType="none"
+            returnKeyType="done"
+            onSubmitEditing={handleSubmit}
+            selectionColor="#8347FF"
+            spellCheck={false}
+            underlineColorAndroid="transparent"
+          />
+        </View>
+        <Text
+          style={[
+            styles.inputHelperText,
+            isAndroid && styles.androidInputHelperText,
+          ]}
+        >
+          Your wallet address should start with "0x" followed by 40 hexadecimal
+          characters
+        </Text>
+      </View>
+    );
+  };
+
+  // Render platform-specific submit button
+  const renderSubmitButton = () => {
+    const buttonDisabled =
+      isConnecting || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/);
+
+    if (isAndroid) {
+      return (
+        <View style={styles.androidButtonWrapper}>
+          <TouchableNativeFeedback
+            onPress={handleSubmit}
+            disabled={buttonDisabled}
+            background={TouchableNativeFeedback.Ripple("#6D28D9", false)}
+            useForeground={true}
+          >
+            <View
+              style={[
+                styles.submitButton,
+                buttonDisabled && styles.submitButtonDisabled,
+                styles.androidSubmitButton,
+              ]}
+            >
+              {isConnecting ? (
+                <View style={styles.buttonContentLoading}>
+                  <ActivityIndicator size="small" color="white" />
+                  <Text
+                    style={[styles.submitButtonText, styles.androidButtonText]}
+                  >
+                    CONNECTING...
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.buttonContent}>
+                  <Text
+                    style={[styles.submitButtonText, styles.androidButtonText]}
+                  >
+                    CONNECT WALLET
+                  </Text>
+                  <Ionicons name="arrow-forward" size={20} color="white" />
+                </View>
+              )}
+            </View>
+          </TouchableNativeFeedback>
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.submitButton,
+          buttonDisabled && styles.submitButtonDisabled,
+        ]}
+        onPress={handleSubmit}
+        disabled={buttonDisabled}
+        activeOpacity={0.7}
+      >
+        {isConnecting ? (
+          <View style={styles.buttonContentLoading}>
+            <ActivityIndicator size="small" color="white" />
+            <Text style={styles.submitButtonText}>Connecting...</Text>
+          </View>
+        ) : (
+          <View style={styles.buttonContent}>
+            <Text style={styles.submitButtonText}>Connect Wallet</Text>
+            <Ionicons name="arrow-forward" size={20} color="white" />
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View
       style={[
@@ -371,11 +703,20 @@ export default function AddMyWalletAddressScreen() {
         { paddingBottom: insets.bottom }, // Add bottom padding for home indicator
       ]}
     >
+      {/* Set appropriate status bar for Android */}
+      {isAndroid && (
+        <StatusBar
+          backgroundColor="transparent"
+          translucent={true}
+          barStyle="light-content"
+        />
+      )}
+
       {/* Use the UserInitializationHeader component instead of inline header */}
       <UserInitializationHeader title="Finish ComicCoin Faucet Setup" />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={isIOS ? "padding" : "height"}
         style={styles.container}
         keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
       >
@@ -400,6 +741,7 @@ export default function AddMyWalletAddressScreen() {
             style={[
               styles.heroBanner,
               isSmallDevice && styles.heroBannerSmall, // Smaller on iPhone SE
+              isAndroid && styles.androidHeroBanner, // Android-specific adjustments
             ]}
           >
             <View style={styles.heroContent}>
@@ -407,6 +749,7 @@ export default function AddMyWalletAddressScreen() {
                 style={[
                   styles.heroTitle,
                   isSmallDevice && styles.heroTitleSmall,
+                  isAndroid && styles.androidHeroTitle,
                 ]}
               >
                 Connect Your Wallet
@@ -415,6 +758,7 @@ export default function AddMyWalletAddressScreen() {
                 style={[
                   styles.heroSubtitle,
                   isSmallDevice && styles.heroSubtitleSmall,
+                  isAndroid && styles.androidHeroSubtitle,
                 ]}
               >
                 Link your wallet to start receiving daily rewards
@@ -424,7 +768,14 @@ export default function AddMyWalletAddressScreen() {
 
           {/* Progress Indicator */}
           <View style={styles.progressContainer}>
-            <Text style={styles.progressTitle}>Account Setup Progress</Text>
+            <Text
+              style={[
+                styles.progressTitle,
+                isAndroid && styles.androidProgressTitle,
+              ]}
+            >
+              Account Setup Progress
+            </Text>
             <View style={styles.progressTrack}>
               <View style={styles.progressStepComplete}></View>
               <View style={styles.progressLineComplete}></View>
@@ -433,21 +784,45 @@ export default function AddMyWalletAddressScreen() {
               <View style={styles.progressStepIncomplete}></View>
             </View>
             <View style={styles.progressLabels}>
-              <Text style={styles.progressLabelComplete}>Register</Text>
-              <Text style={styles.progressLabelCurrent}>
+              <Text
+                style={[
+                  styles.progressLabelComplete,
+                  isAndroid && styles.androidProgressLabelComplete,
+                ]}
+              >
+                Register
+              </Text>
+              <Text
+                style={[
+                  styles.progressLabelCurrent,
+                  isAndroid && styles.androidProgressLabelCurrent,
+                ]}
+              >
                 &nbsp;&nbsp;&nbsp;&nbsp;Wallet
               </Text>
-              <Text style={styles.progressLabelIncomplete}>Dashboard</Text>
+              <Text
+                style={[
+                  styles.progressLabelIncomplete,
+                  isAndroid && styles.androidProgressLabelIncomplete,
+                ]}
+              >
+                Dashboard
+              </Text>
             </View>
           </View>
 
           {/* Wallet Form Card */}
-          <View style={styles.walletFormCard}>
+          <View
+            style={[
+              styles.walletFormCard,
+              isAndroid && styles.androidWalletFormCard,
+            ]}
+          >
             <LinearGradient
               colors={["#7e22ce", "#4338ca"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={styles.cardHeader}
+              style={[styles.cardHeader, isAndroid && styles.androidCardHeader]}
             >
               <Ionicons
                 name="wallet-outline"
@@ -456,16 +831,28 @@ export default function AddMyWalletAddressScreen() {
                 style={styles.cardHeaderIcon}
               />
               <View>
-                <Text style={styles.cardHeaderTitle}>
+                <Text
+                  style={[
+                    styles.cardHeaderTitle,
+                    isAndroid && styles.androidCardHeaderTitle,
+                  ]}
+                >
                   Enter Your Wallet Address
                 </Text>
-                <Text style={styles.cardHeaderSubtitle}>
+                <Text
+                  style={[
+                    styles.cardHeaderSubtitle,
+                    isAndroid && styles.androidCardHeaderSubtitle,
+                  ]}
+                >
                   This is where you'll receive your ComicCoins
                 </Text>
               </View>
             </LinearGradient>
 
-            <View style={styles.cardBody}>
+            <View
+              style={[styles.cardBody, isAndroid && styles.androidCardBody]}
+            >
               {/* Show API errors if they exist */}
               {(connectError || localError) && (
                 <View style={styles.errorContainer}>
@@ -475,7 +862,12 @@ export default function AddMyWalletAddressScreen() {
                     color="#EF4444"
                     style={styles.errorIcon}
                   />
-                  <Text style={styles.errorText}>
+                  <Text
+                    style={[
+                      styles.errorText,
+                      isAndroid && styles.androidErrorText,
+                    ]}
+                  >
                     {localError ||
                       (typeof connectError === "object" &&
                         connectError?.message) ||
@@ -494,8 +886,20 @@ export default function AddMyWalletAddressScreen() {
                   style={styles.warningIcon}
                 />
                 <View style={styles.warningTextContainer}>
-                  <Text style={styles.warningTitle}>Important</Text>
-                  <Text style={styles.warningText}>
+                  <Text
+                    style={[
+                      styles.warningTitle,
+                      isAndroid && styles.androidWarningTitle,
+                    ]}
+                  >
+                    Important
+                  </Text>
+                  <Text
+                    style={[
+                      styles.warningText,
+                      isAndroid && styles.androidWarningText,
+                    ]}
+                  >
                     Make sure to enter your wallet address correctly. If you
                     enter the wrong address, your ComicCoins will be sent to
                     someone else and cannot be recovered!
@@ -503,107 +907,131 @@ export default function AddMyWalletAddressScreen() {
                 </View>
               </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                  Your Wallet Address <Text style={styles.requiredStar}>*</Text>
-                </Text>
-                <View style={styles.inputWithButtonContainer}>
-                  <TextInput
-                    ref={inputRef}
-                    style={styles.input}
-                    value={walletAddress}
-                    onChangeText={setWalletAddress}
-                    placeholder="0x..."
-                    placeholderTextColor="#9CA3AF"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    editable={!isConnecting}
-                    keyboardType={
-                      Platform.OS === "ios" ? "default" : "visible-password"
-                    }
-                    autoComplete="off"
-                    textContentType="none"
-                    returnKeyType="done"
-                    onSubmitEditing={handleSubmit}
-                    selectionColor="#8347FF"
-                    spellCheck={false}
-                  />
-                </View>
-                <Text style={styles.inputHelperText}>
-                  Your wallet address should start with "0x" followed by 40
-                  hexadecimal characters
-                </Text>
-              </View>
+              {/* Input Field */}
+              {renderInputField()}
 
-              <TouchableOpacity
-                style={[
-                  styles.submitButton,
-                  (isConnecting ||
-                    !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) &&
-                    styles.submitButtonDisabled,
-                ]}
-                onPress={handleSubmit}
-                disabled={
-                  isConnecting || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)
-                }
-                activeOpacity={0.7} // Better touch feedback for iOS
-              >
-                {isConnecting ? (
-                  <View style={styles.buttonContentLoading}>
-                    <ActivityIndicator size="small" color="white" />
-                    <Text style={styles.submitButtonText}>Connecting...</Text>
-                  </View>
-                ) : (
-                  <View style={styles.buttonContent}>
-                    <Text style={styles.submitButtonText}>Connect Wallet</Text>
-                    <Ionicons name="arrow-forward" size={20} color="white" />
-                  </View>
-                )}
-              </TouchableOpacity>
+              {/* Submit Button */}
+              {renderSubmitButton()}
             </View>
           </View>
 
           {/* Need a Wallet - Simplified Accordion */}
-          <View style={styles.accordionCard}>
-            <TouchableOpacity
-              style={styles.accordionHeader}
-              onPress={() => setIsAccordionOpen(!isAccordionOpen)}
-              activeOpacity={0.8} // Better touch feedback for iOS
-            >
-              <LinearGradient
-                colors={["#7e22ce", "#4338ca"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.accordionGradient}
+          <View
+            style={[
+              styles.accordionCard,
+              isAndroid && styles.androidAccordionCard,
+            ]}
+          >
+            {isAndroid ? (
+              <TouchableNativeFeedback
+                onPress={() => setIsAccordionOpen(!isAccordionOpen)}
+                background={TouchableNativeFeedback.Ripple("#6D28D9", true)}
               >
-                <View style={styles.accordionHeaderContent}>
-                  <Text style={styles.accordionTitle}>Need a Wallet?</Text>
-                  <Ionicons
-                    name={isAccordionOpen ? "chevron-up" : "chevron-down"}
-                    size={24}
-                    color="white"
-                  />
+                <View style={styles.accordionHeader}>
+                  <LinearGradient
+                    colors={["#7e22ce", "#4338ca"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.accordionGradient}
+                  >
+                    <View style={styles.accordionHeaderContent}>
+                      <Text
+                        style={[
+                          styles.accordionTitle,
+                          styles.androidAccordionTitle,
+                        ]}
+                      >
+                        Need a Wallet?
+                      </Text>
+                      <Ionicons
+                        name={isAccordionOpen ? "chevron-up" : "chevron-down"}
+                        size={24}
+                        color="white"
+                      />
+                    </View>
+                  </LinearGradient>
                 </View>
-              </LinearGradient>
-            </TouchableOpacity>
+              </TouchableNativeFeedback>
+            ) : (
+              <TouchableOpacity
+                style={styles.accordionHeader}
+                onPress={() => setIsAccordionOpen(!isAccordionOpen)}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={["#7e22ce", "#4338ca"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.accordionGradient}
+                >
+                  <View style={styles.accordionHeaderContent}>
+                    <Text style={styles.accordionTitle}>Need a Wallet?</Text>
+                    <Ionicons
+                      name={isAccordionOpen ? "chevron-up" : "chevron-down"}
+                      size={24}
+                      color="white"
+                    />
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            )}
 
             {isAccordionOpen && (
               <View style={styles.accordionContent}>
-                <Text style={styles.accordionText}>
+                <Text
+                  style={[
+                    styles.accordionText,
+                    isAndroid && styles.androidAccordionText,
+                  ]}
+                >
                   You'll need a ComicCoin wallet to receive coins. Visit the
                   official ComicCoin wallet website to create one.
                 </Text>
 
-                <TouchableOpacity
-                  style={styles.externalLinkButton}
-                  onPress={handleExternalLinkPress}
-                  activeOpacity={0.7} // Better touch feedback for iOS
-                >
-                  <Text style={styles.externalLinkText}>
-                    Go to ComicCoin Wallet
-                  </Text>
-                  <Ionicons name="open-outline" size={18} color="#8347FF" />
-                </TouchableOpacity>
+                {isAndroid ? (
+                  <View style={styles.androidButtonWrapper}>
+                    <TouchableNativeFeedback
+                      onPress={handleExternalLinkPress}
+                      background={TouchableNativeFeedback.Ripple(
+                        "#E9D5FF",
+                        false,
+                      )}
+                      useForeground={true}
+                    >
+                      <View
+                        style={[
+                          styles.externalLinkButton,
+                          styles.androidExternalLinkButton,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.externalLinkText,
+                            styles.androidExternalLinkText,
+                          ]}
+                        >
+                          GO TO COMICCOIN WALLET
+                        </Text>
+                        <Ionicons
+                          name="open-outline"
+                          size={18}
+                          color="#8347FF"
+                        />
+                      </View>
+                    </TouchableNativeFeedback>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.externalLinkButton}
+                    onPress={handleExternalLinkPress}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.externalLinkText}>
+                      Go to ComicCoin Wallet
+                    </Text>
+                    <Ionicons name="open-outline" size={18} color="#8347FF" />
+                  </TouchableOpacity>
+                )}
               </View>
             )}
           </View>
@@ -652,10 +1080,20 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: "#6B7280",
     fontSize: 16,
+    fontFamily: "System",
+    fontWeight: "500",
+  },
+  androidLoadingText: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
   },
   heroBanner: {
     paddingVertical: 32,
     paddingHorizontal: 24,
+  },
+  androidHeroBanner: {
+    paddingTop: 24,
+    paddingBottom: 24,
   },
   heroBannerSmall: {
     paddingVertical: 24,
@@ -669,6 +1107,11 @@ const styles = StyleSheet.create({
     color: "white",
     marginBottom: 8,
     textAlign: "center",
+    fontFamily: "System",
+  },
+  androidHeroTitle: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
   },
   heroTitleSmall: {
     fontSize: 22,
@@ -677,6 +1120,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#E0E7FF",
     textAlign: "center",
+    fontFamily: "System",
+  },
+  androidHeroSubtitle: {
+    fontFamily: "sans-serif",
   },
   heroSubtitleSmall: {
     fontSize: 14,
@@ -700,6 +1147,11 @@ const styles = StyleSheet.create({
     color: "#8347FF",
     textAlign: "center",
     marginBottom: 16,
+    fontFamily: "System",
+  },
+  androidProgressTitle: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
   },
   progressTrack: {
     flexDirection: "row",
@@ -747,15 +1199,28 @@ const styles = StyleSheet.create({
   progressLabelComplete: {
     fontSize: 12,
     color: "#10B981",
+    fontFamily: "System",
+  },
+  androidProgressLabelComplete: {
+    fontFamily: "sans-serif",
   },
   progressLabelCurrent: {
     fontSize: 12,
     fontWeight: "600",
     color: "#8347FF",
+    fontFamily: "System",
+  },
+  androidProgressLabelCurrent: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
   },
   progressLabelIncomplete: {
     fontSize: 12,
     color: "#9CA3AF",
+    fontFamily: "System",
+  },
+  androidProgressLabelIncomplete: {
+    fontFamily: "sans-serif",
   },
   walletFormCard: {
     backgroundColor: "white",
@@ -769,10 +1234,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     overflow: "hidden",
   },
+  androidWalletFormCard: {
+    borderRadius: 8,
+    elevation: 3,
+  },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
+  },
+  androidCardHeader: {
+    padding: 18,
   },
   cardHeaderIcon: {
     marginRight: 12,
@@ -781,13 +1253,25 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "white",
+    fontFamily: "System",
+  },
+  androidCardHeaderTitle: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
   },
   cardHeaderSubtitle: {
     fontSize: 14,
     color: "#E0E7FF",
+    fontFamily: "System",
+  },
+  androidCardHeaderSubtitle: {
+    fontFamily: "sans-serif",
   },
   cardBody: {
     padding: 16,
+  },
+  androidCardBody: {
+    padding: 18,
   },
   errorContainer: {
     backgroundColor: "#FEF2F2",
@@ -805,6 +1289,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: "#B91C1C",
+    fontFamily: "System",
+  },
+  androidErrorText: {
+    fontFamily: "sans-serif",
   },
   warningContainer: {
     backgroundColor: "#FFFBEB",
@@ -826,11 +1314,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#92400E",
     marginBottom: 4,
+    fontFamily: "System",
+  },
+  androidWarningTitle: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
   },
   warningText: {
     fontSize: 14,
     color: "#92400E",
     flexWrap: "wrap", // Ensure text wraps properly
+    fontFamily: "System",
+  },
+  androidWarningText: {
+    fontFamily: "sans-serif",
+    lineHeight: 20,
   },
   inputContainer: {
     marginBottom: 24,
@@ -840,6 +1338,11 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#4B5563",
     marginBottom: 8,
+    fontFamily: "System",
+  },
+  androidInputLabel: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
   },
   requiredStar: {
     color: "#EF4444",
@@ -858,7 +1361,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#1F2937",
     backgroundColor: "white",
-    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace", // Monospaced font for wallet address
+    fontFamily: "Menlo", // Monospaced font for wallet address
+  },
+  androidInput: {
+    fontFamily: "monospace",
+    height: 52,
+    borderRadius: 4,
   },
   pasteButton: {
     flexDirection: "row",
@@ -874,11 +1382,16 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#8347FF",
     marginLeft: 4,
+    fontFamily: "System",
   },
   inputHelperText: {
     fontSize: 12,
     color: "#6B7280",
     marginTop: 4,
+    fontFamily: "System",
+  },
+  androidInputHelperText: {
+    fontFamily: "sans-serif",
   },
   submitButton: {
     backgroundColor: "#8347FF",
@@ -887,9 +1400,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     minHeight: 48, // Minimum height for iOS touch targets
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  androidSubmitButton: {
+    borderRadius: 4,
+    elevation: 4,
+    minHeight: 52,
+  },
+  androidButtonWrapper: {
+    borderRadius: 4,
+    overflow: "hidden",
   },
   submitButtonDisabled: {
     opacity: 0.5,
+    elevation: 0,
   },
   buttonContent: {
     flexDirection: "row",
@@ -904,8 +1431,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
     marginHorizontal: 8,
+    fontFamily: "System",
   },
-
+  androidButtonText: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
   // Accordion styles - simplified wallet section
   accordionCard: {
     marginHorizontal: 16,
@@ -918,6 +1451,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     overflow: "hidden",
     backgroundColor: "white",
+  },
+  androidAccordionCard: {
+    borderRadius: 8,
+    elevation: 3,
   },
   accordionHeader: {
     overflow: "hidden",
@@ -936,6 +1473,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "white",
+    fontFamily: "System",
+  },
+  androidAccordionTitle: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
   },
   accordionContent: {
     padding: 16,
@@ -946,6 +1488,11 @@ const styles = StyleSheet.create({
     color: "#4B5563",
     marginBottom: 16,
     lineHeight: 22,
+    fontFamily: "System",
+  },
+  androidAccordionText: {
+    fontFamily: "sans-serif",
+    lineHeight: 24,
   },
   externalLinkButton: {
     flexDirection: "row",
@@ -956,13 +1503,23 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     minHeight: 48, // Minimum height for iOS touch targets
   },
+  androidExternalLinkButton: {
+    borderRadius: 4,
+    minHeight: 52,
+  },
   externalLinkText: {
     fontSize: 15,
     fontWeight: "600",
     color: "#8347FF",
     marginRight: 8,
+    fontFamily: "System",
   },
-
+  androidExternalLinkText: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
   // URL container for external link modal
   urlContainer: {
     backgroundColor: "#F3F4FF",
@@ -974,8 +1531,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#4338CA",
     textAlign: "center",
+    fontFamily: "System",
   },
-
+  androidUrlText: {
+    fontFamily: "monospace",
+  },
   // Modal Styles
   modalOverlay: {
     flex: 1,
@@ -995,6 +1555,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  androidModalContainer: {
+    borderRadius: 8,
+    elevation: 24,
+    padding: 24,
   },
   closeButton: {
     position: "absolute",
@@ -1021,11 +1586,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1F2937",
     marginBottom: 8,
+    fontFamily: "System",
+  },
+  androidModalTitle: {
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
   },
   modalSubtitle: {
     fontSize: 14,
     color: "#6B7280",
     textAlign: "center",
+    fontFamily: "System",
+  },
+  androidModalSubtitle: {
+    fontFamily: "sans-serif",
   },
   walletAddressContainer: {
     backgroundColor: "#F3F4FF",
@@ -1034,10 +1608,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   walletAddressText: {
-    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+    fontFamily: "Menlo",
     fontSize: 14,
     color: "#4338CA",
     textAlign: "center",
+  },
+  androidWalletAddressText: {
+    fontFamily: "monospace",
   },
   warningIconContainer: {
     marginRight: 8,
@@ -1062,6 +1639,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
     color: "#4B5563",
+    fontFamily: "System",
   },
   confirmButton: {
     flex: 1,
@@ -1076,5 +1654,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
     color: "white",
+    fontFamily: "System",
   },
 });
