@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import CoinsIcon from "./CoinsIcon";
 
 /**
@@ -20,8 +20,14 @@ import CoinsIcon from "./CoinsIcon";
  * @param {string} title - The title of the current screen/tab to display
  * @param {boolean} isTabScreen - Whether this is a tab navigation screen (defaults to true)
  * @param {Object} rightElement - Optional component to display on the right side of the header
+ * @param {boolean} showBackButton - Whether to show a back button
  */
-const AppHeader = ({ title = "", isTabScreen = true, rightElement = null }) => {
+const AppHeader = ({
+  title = "",
+  isTabScreen = true,
+  rightElement = null,
+  showBackButton = false,
+}) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -30,6 +36,10 @@ const AppHeader = ({ title = "", isTabScreen = true, rightElement = null }) => {
     if (pathname !== "/(tabs)/dashboard") {
       router.push("/(tabs)/dashboard");
     }
+  };
+
+  const handleBack = () => {
+    router.back();
   };
 
   return (
@@ -43,8 +53,22 @@ const AppHeader = ({ title = "", isTabScreen = true, rightElement = null }) => {
       >
         {/* App Branding */}
         <View style={styles.headerContent}>
+          {showBackButton && (
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBack}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
-            style={styles.logoContainer}
+            style={[
+              styles.logoContainer,
+              showBackButton && styles.logoWithBackButton,
+            ]}
             onPress={navigateToDashboard}
             accessibilityRole="button"
             accessibilityLabel="ComicCoin Public Faucet, go to dashboard"
@@ -62,9 +86,11 @@ const AppHeader = ({ title = "", isTabScreen = true, rightElement = null }) => {
             </Text>
           </TouchableOpacity>
 
-          {rightElement && (
+          {rightElement ? (
             <View style={styles.rightElementContainer}>{rightElement}</View>
-          )}
+          ) : showBackButton ? (
+            <View style={styles.spacer} />
+          ) : null}
         </View>
 
         {/* Screen Title */}
@@ -97,15 +123,22 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
+  },
+  backButton: {
+    padding: 8,
+    marginLeft: -8,
   },
   logoContainer: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
+  },
+  logoWithBackButton: {
+    justifyContent: "flex-start",
   },
   logoIconContainer: {
     marginRight: 12,
@@ -121,11 +154,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     letterSpacing: 0.5,
-    maxWidth: "85%",
   },
   rightElementContainer: {
     position: "absolute",
     right: 16,
+  },
+  spacer: {
+    width: 40,
   },
   titleContainer: {
     marginTop: 8,
