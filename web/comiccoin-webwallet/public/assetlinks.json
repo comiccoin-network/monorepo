@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.theshootingstarpress.comiccoinwallet",
+      "sha256_cert_fingerprints": [
+        "65:D9:2D:3B:97:DD:22:73:44:FC:BE:B5:B0:B0:A9:50:98:4A:E0:2D:B9:EF:85:9F:01:2C:6A:5C:3E:D6:85:DD"
+      ]
+    }
+  }
+]
