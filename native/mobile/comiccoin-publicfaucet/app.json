@@ -141,6 +141,7 @@
             "buildToolsVersion": "35.0.0",
             "kotlinVersion": "1.9.25",
             "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
             "extraProguardRules": "-keep public class com.horcrux.svg.** {*;}",
             "allowBackup": false
           },
