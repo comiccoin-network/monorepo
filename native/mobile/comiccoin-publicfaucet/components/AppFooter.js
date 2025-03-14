@@ -1,66 +1,119 @@
+// components/AppFooter.js
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter, usePathname } from "expo-router";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TouchableNativeFeedback,
+  StyleSheet,
+  StatusBar,
+  Platform,
+  Dimensions,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const { width } = Dimensions.get("window");
+const isAndroid = Platform.OS === "android";
+const isIOS = Platform.OS === "ios";
 
 const FooterNav = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
 
   // Determine which screen is active
   const isActive = (path) => {
     return pathname === path;
   };
 
-  return (
-    <View style={styles.container}>
-      {/* Dashboard Tab */}
-      <TouchableOpacity
-        style={styles.tabButton}
-        onPress={() => router.push("/(tabs)/dashboard")}
-        accessibilityRole="button"
-        accessibilityLabel="Dashboard"
-        accessibilityState={{ selected: isActive("/(tabs)/dashboard") }}
-      >
+  // Render tab item with proper spacing for Android
+  const renderTabItem = (iconName, label, path, index) => {
+    const active = isActive(path);
+    const activeIconName = iconName.replace("-outline", "");
+
+    const tabContent = (
+      <>
         <Ionicons
-          name={isActive("/(tabs)/dashboard") ? "home" : "home-outline"}
+          name={active ? activeIconName : iconName}
           size={24}
-          color={isActive("/(tabs)/dashboard") ? "#8347FF" : "#9CA3AF"}
+          color={active ? "#8347FF" : "#9CA3AF"}
         />
         <Text
           style={[
             styles.tabLabel,
-            isActive("/(tabs)/dashboard") && styles.activeTabLabel,
+            active && styles.activeTabLabel,
+            isAndroid && styles.androidTabLabel,
+            isAndroid && active && styles.androidActiveTabLabel,
           ]}
         >
-          Home
+          {label}
         </Text>
-      </TouchableOpacity>
+      </>
+    );
 
-      {/* Transactions Tab */}
+    if (isAndroid) {
+      return (
+        <View style={styles.tabItemContainer} key={path}>
+          <TouchableNativeFeedback
+            onPress={() => router.push(path)}
+            background={TouchableNativeFeedback.Ripple(
+              active ? "#e9d5ff" : "#f3f4f6",
+              false,
+            )}
+            useForeground={true}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            accessibilityState={{ selected: active }}
+          >
+            <View style={[styles.tabButton, styles.androidTabButton]}>
+              {tabContent}
+            </View>
+          </TouchableNativeFeedback>
+        </View>
+      );
+    }
+
+    return (
       <TouchableOpacity
+        key={path}
         style={styles.tabButton}
-        onPress={() => router.push("/transactions")}
+        onPress={() => router.push(path)}
+        activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityLabel="Transactions"
-        accessibilityState={{ selected: isActive("/transactions") }}
+        accessibilityLabel={label}
+        accessibilityState={{ selected: active }}
       >
-        <Ionicons
-          name={isActive("/transactions") ? "list" : "list-outline"}
-          size={24}
-          color={isActive("/transactions") ? "#8347FF" : "#9CA3AF"}
-        />
-        <Text
-          style={[
-            styles.tabLabel,
-            isActive("/transactions") && styles.activeTabLabel,
-          ]}
-        >
-          History
-        </Text>
+        {tabContent}
       </TouchableOpacity>
+    );
+  };
 
-      {/* Claim Button (Center) */}
+  // Render center claim button
+  const renderClaimButton = () => {
+    if (isAndroid) {
+      return (
+        <View style={styles.claimButtonWrapper}>
+          <View style={styles.androidClaimOuterWrapper}>
+            <TouchableNativeFeedback
+              onPress={() => router.push("/claim")}
+              background={TouchableNativeFeedback.Ripple("#a78bfa", true)}
+              useForeground={true}
+              accessibilityRole="button"
+              accessibilityLabel="Claim Coins"
+            >
+              <View style={styles.claimButtonInner}>
+                <Ionicons name="cash" size={24} color="white" />
+              </View>
+            </TouchableNativeFeedback>
+          </View>
+          <Text style={styles.androidClaimLabel}>Claim</Text>
+        </View>
+      );
+    }
+
+    return (
       <TouchableOpacity
         style={styles.claimButton}
         onPress={() => router.push("/claim")}
@@ -72,52 +125,30 @@ const FooterNav = () => {
         </View>
         <Text style={styles.claimLabel}>Claim</Text>
       </TouchableOpacity>
+    );
+  };
 
-      {/* Wallet Tab */}
-      <TouchableOpacity
-        style={styles.tabButton}
-        onPress={() => router.push("/wallet")}
-        accessibilityRole="button"
-        accessibilityLabel="Wallet"
-        accessibilityState={{ selected: isActive("/wallet") }}
-      >
-        <Ionicons
-          name={isActive("/wallet") ? "wallet" : "wallet-outline"}
-          size={24}
-          color={isActive("/wallet") ? "#8347FF" : "#9CA3AF"}
-        />
-        <Text
-          style={[
-            styles.tabLabel,
-            isActive("/wallet") && styles.activeTabLabel,
-          ]}
-        >
-          Wallet
-        </Text>
-      </TouchableOpacity>
+  return (
+    <View
+      style={[
+        styles.container,
+        { paddingBottom: isAndroid ? 0 : insets.bottom },
+      ]}
+    >
+      {/* Left side tabs */}
+      <View style={styles.tabSection}>
+        {renderTabItem("home-outline", "Home", "/(tabs)/dashboard")}
+        {renderTabItem("list-outline", "History", "/transactions")}
+      </View>
 
-      {/* Settings Tab */}
-      <TouchableOpacity
-        style={styles.tabButton}
-        onPress={() => router.push("/settings")}
-        accessibilityRole="button"
-        accessibilityLabel="Settings"
-        accessibilityState={{ selected: isActive("/settings") }}
-      >
-        <Ionicons
-          name={isActive("/settings") ? "settings" : "settings-outline"}
-          size={24}
-          color={isActive("/settings") ? "#8347FF" : "#9CA3AF"}
-        />
-        <Text
-          style={[
-            styles.tabLabel,
-            isActive("/settings") && styles.activeTabLabel,
-          ]}
-        >
-          Settings
-        </Text>
-      </TouchableOpacity>
+      {/* Center claim button */}
+      {renderClaimButton()}
+
+      {/* Right side tabs */}
+      <View style={styles.tabSection}>
+        {renderTabItem("wallet-outline", "Wallet", "/wallet")}
+        {renderTabItem("settings-outline", "Settings", "/settings")}
+      </View>
     </View>
   );
 };
@@ -129,29 +160,84 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderTopWidth: 1,
     borderTopColor: "#F1F1F1",
-    paddingHorizontal: 8,
     justifyContent: "space-between",
     alignItems: "center",
+    ...Platform.select({
+      android: {
+        height: 56, // Material Design standard
+        elevation: 8,
+        borderTopWidth: 0, // Remove border on Android and use elevation instead
+      },
+    }),
+  },
+  tabSection: {
+    flexDirection: "row",
+    flex: 2,
+    justifyContent: "space-evenly",
+  },
+  tabItemContainer: {
+    flex: 1,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
   },
   tabButton: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    height: "100%",
+    justifyContent: "center",
+    paddingVertical: 8,
+    width: "100%",
+  },
+  androidTabButton: {
+    height: 56,
+    paddingTop: 6,
+    paddingBottom: 10,
+    width: "100%",
   },
   tabLabel: {
     fontSize: 10,
-    marginTop: 2,
+    marginTop: 4,
     color: "#9CA3AF",
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+      },
+    }),
+  },
+  androidTabLabel: {
+    fontFamily: "sans-serif",
+    fontSize: 12,
+    marginTop: 6,
   },
   activeTabLabel: {
     color: "#8347FF",
     fontWeight: "500",
   },
+  androidActiveTabLabel: {
+    color: "#8347FF",
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
+  },
   claimButton: {
     justifyContent: "center",
     alignItems: "center",
     paddingBottom: 15, // To account for the button extending upward
+    width: 72, // Fixed width to ensure proper spacing
+  },
+  claimButtonWrapper: {
+    flex: 1,
+    height: 56,
+    justifyContent: "center",
+    alignItems: "center",
+    maxWidth: width * 0.2, // Limit width for proper proportions
+  },
+  androidClaimOuterWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    overflow: "hidden",
+    marginTop: -20,
+    elevation: 8,
   },
   claimButtonInner: {
     width: 56,
@@ -160,11 +246,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#8347FF",
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#8347FF",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#8347FF",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
     marginTop: -20, // Push button up for half-circle effect
   },
   claimLabel: {
@@ -172,6 +264,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: "#8347FF",
     fontWeight: "500",
+  },
+  androidClaimLabel: {
+    fontSize: 11,
+    marginTop: 0,
+    color: "#8347FF",
+    fontFamily: "sans-serif-medium",
+    fontWeight: "normal",
   },
 });
 
