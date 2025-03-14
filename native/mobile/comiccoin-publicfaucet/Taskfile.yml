@@ -40,7 +40,7 @@ tasks:
       - npx expo run:android
 
   android-build:
-    desc: Build the Android app using latest expo app.json
+    desc: (Dangerous - will delete local keystore!) Build the Android app using latest expo app.json
     cmds:
       - npx expo prebuild --platform android --clean
 
