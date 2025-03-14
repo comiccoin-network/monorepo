@@ -5,6 +5,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  TouchableNativeFeedback,
   StyleSheet,
   StatusBar,
   Platform,
@@ -12,6 +13,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import CoinsIcon from "./CoinsIcon";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /**
  * AppHeader component designed specifically for tab navigation screens
@@ -30,6 +32,8 @@ const AppHeader = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
+  const isAndroid = Platform.OS === "android";
 
   const navigateToDashboard = () => {
     // Navigate to dashboard (first tab) if we're not already there
@@ -42,49 +46,120 @@ const AppHeader = ({
     router.back();
   };
 
+  // Platform-specific Touchable component
+  const Touchable = ({ children, style, onPress, ...props }) => {
+    if (isAndroid) {
+      return (
+        <TouchableNativeFeedback
+          onPress={onPress}
+          background={TouchableNativeFeedback.Ripple("rgba(255, 255, 255, 0.2)", true)}
+          useForeground={true}
+          {...props}
+        >
+          <View style={style}>{children}</View>
+        </TouchableNativeFeedback>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={style}
+        onPress={onPress}
+        activeOpacity={0.7}
+        {...props}
+      >
+        {children}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor="#7e22ce" />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={isAndroid ? "#7e22ce" : "transparent"}
+        translucent={isAndroid}
+      />
       <LinearGradient
         colors={["#7e22ce", "#4338ca"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={styles.headerContainer}
+        style={[
+          styles.headerContainer,
+          {
+            paddingTop: isAndroid
+              ? StatusBar.currentHeight + 8
+              : insets.top > 0 ? insets.top : 50
+          }
+        ]}
       >
         {/* App Branding */}
         <View style={styles.headerContent}>
           {showBackButton && (
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBack}
-              accessibilityRole="button"
-              accessibilityLabel="Go back"
-            >
-              <Ionicons name="arrow-back" size={24} color="white" />
-            </TouchableOpacity>
+            isAndroid ? (
+              <View style={styles.androidBackButtonWrapper}>
+                <TouchableNativeFeedback
+                  background={TouchableNativeFeedback.Ripple("rgba(255, 255, 255, 0.2)", true)}
+                  onPress={handleBack}
+                  useForeground={true}
+                  accessibilityRole="button"
+                  accessibilityLabel="Go back"
+                >
+                  <View style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="white" />
+                  </View>
+                </TouchableNativeFeedback>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={handleBack}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+              >
+                <Ionicons name="arrow-back" size={24} color="white" />
+              </TouchableOpacity>
+            )
           )}
 
-          <TouchableOpacity
-            style={[
+          {isAndroid ? (
+            <View style={[
               styles.logoContainer,
               showBackButton && styles.logoWithBackButton,
-            ]}
-            onPress={navigateToDashboard}
-            accessibilityRole="button"
-            accessibilityLabel="ComicCoin Public Faucet, go to dashboard"
-          >
-            <View style={styles.logoIconContainer}>
-              <CoinsIcon size={24} color="white" />
+            ]}>
+              <TouchableNativeFeedback
+                onPress={navigateToDashboard}
+                background={TouchableNativeFeedback.Ripple("rgba(255, 255, 255, 0.2)", true)}
+                useForeground={true}
+                accessibilityRole="button"
+                accessibilityLabel="ComicCoin Public Faucet, go to dashboard"
+              >
+                <View style={styles.androidLogoTouchable}>
+                  <View style={styles.logoIconContainer}>
+                    <CoinsIcon size={24} color="white" />
+                  </View>
+                  <Text style={styles.androidLogoText}>
+                    ComicCoin Public Faucet
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
             </View>
-            <Text
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.8}
-              style={styles.logoText}
+          ) : (
+            <TouchableOpacity
+              style={[
+                styles.logoContainer,
+                showBackButton && styles.logoWithBackButton,
+              ]}
+              onPress={navigateToDashboard}
+              accessibilityRole="button"
+              accessibilityLabel="ComicCoin Public Faucet, go to dashboard"
             >
-              ComicCoin Public Faucet
-            </Text>
-          </TouchableOpacity>
+              <View style={styles.logoIconContainer}>
+                <CoinsIcon size={24} color="white" />
+              </View>
+              <Text style={styles.logoText}>ComicCoin Public Faucet</Text>
+            </TouchableOpacity>
+          )}
 
           {rightElement ? (
             <View style={styles.rightElementContainer}>{rightElement}</View>
@@ -96,7 +171,9 @@ const AppHeader = ({
         {/* Screen Title */}
         {title ? (
           <View style={styles.titleContainer}>
-            <Text style={styles.titleText}>{title}</Text>
+            <Text style={isAndroid ? styles.androidTitleText : styles.titleText}>
+              {title}
+            </Text>
           </View>
         ) : null}
       </LinearGradient>
@@ -118,6 +195,7 @@ const styles = StyleSheet.create({
       },
       android: {
         elevation: 4,
+        paddingHorizontal: 4, // Slightly less horizontal padding for Android
       },
     }),
   },
@@ -131,11 +209,24 @@ const styles = StyleSheet.create({
     padding: 8,
     marginLeft: -8,
   },
+  androidBackButtonWrapper: {
+    borderRadius: 24, // Make it circular for Android
+    overflow: "hidden",
+    width: 40,
+    height: 40,
+  },
   logoContainer: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
+  },
+  androidLogoTouchable: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 4,
   },
   logoWithBackButton: {
     justifyContent: "flex-start",
@@ -154,6 +245,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     letterSpacing: 0.5,
+    fontFamily: "System",
+  },
+  androidLogoText: {
+    color: "white",
+    fontSize: 20, // Slightly smaller for Android
+    fontFamily: "sans-serif-medium",
+    letterSpacing: 0.25, // Material design spec
   },
   rightElementContainer: {
     position: "absolute",
@@ -171,6 +269,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "white",
+    fontFamily: "System",
+  },
+  androidTitleText: {
+    fontSize: 18,
+    color: "white",
+    fontFamily: "sans-serif-medium",
+    textAlign: "center",
+    letterSpacing: 0.15, // Material design spec
   },
 });
 

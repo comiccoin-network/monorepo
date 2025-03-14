@@ -47,6 +47,15 @@ const GetStartedScreen = () => {
     refetchInterval: 60000,
   });
 
+  // Set the status bar to match the header
+  useEffect(() => {
+    if (isAndroid) {
+      StatusBar.setBackgroundColor("#7e22ce");
+      StatusBar.setBarStyle("light-content");
+      StatusBar.setTranslucent(true); // Make status bar translucent on Android
+    }
+  }, [isAndroid]);
+
   // Handle Android back button
   useEffect(() => {
     if (isAndroid) {
@@ -121,15 +130,15 @@ const GetStartedScreen = () => {
   // The main GetStartedScreen component
   return (
     <View style={styles.container}>
-      {isAndroid && (
-        <StatusBar
-          backgroundColor="transparent"
-          translucent={true}
-          barStyle="light-content"
-        />
-      )}
+      {/* Set status bar with transparent background to allow the header gradient to show through */}
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent={true}
+      />
 
-      <Header currentRoute="/" />
+      {/* Use the Header component with showBackButton=false for the home screen */}
+      <Header showBackButton={false} />
 
       {isLoading && (
         <View style={styles.loadingOverlay}>
@@ -140,15 +149,7 @@ const GetStartedScreen = () => {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          // For Android, ensure proper padding for navigation bar
-          {
-            paddingBottom: isAndroid
-              ? 24 + insets.bottom
-              : Math.max(40, insets.bottom + 20),
-          },
-        ]}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={isAndroid} // Show scrollbar on Android
         overScrollMode={isAndroid ? "always" : "never"} // Enable Android-specific overscroll
       >
@@ -157,17 +158,7 @@ const GetStartedScreen = () => {
           colors={["#4f46e5", "#4338ca"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
-          style={[
-            styles.heroBanner,
-            // Add extra padding for status bar on Android
-            {
-              paddingTop: isAndroid
-                ? insets.top + 16
-                : insets.top > 0
-                  ? insets.top + 16
-                  : 48,
-            },
-          ]}
+          style={styles.heroBanner}
         >
           <View style={styles.heroContent}>
             <Text
@@ -295,6 +286,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: Platform.OS === "android" ? 24 : 40, // More padding for iOS
   },
   heroBanner: {
     paddingVertical: 32,
