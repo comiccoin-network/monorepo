@@ -39,6 +39,11 @@ tasks:
       - export PATH=$PATH:$ANDROID_HOME/platform-tools
       - npx expo run:android
 
+  android-build:
+    desc: Build the Android app using latest expo app.json
+    cmds:
+      - npx expo prebuild --platform android --clean
+
   android-v2:
     desc: Start the developer instance for Android
     cmds:
