@@ -1,4 +1,4 @@
-// screens/LoginScreen.js - Targeted iOS improvements
+// screens/LoginScreen.js
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "expo-router";
 import {
@@ -13,12 +13,17 @@ import {
   Platform,
   SafeAreaView,
   Keyboard,
+  TouchableNativeFeedback,
+  StatusBar,
+  ToastAndroid,
+  BackHandler,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../hooks/useAuth";
 import Header from "../components/Header";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 
 const LoginScreen = () => {
   console.log("🚀 LoginScreen component initializing");
@@ -26,6 +31,7 @@ const LoginScreen = () => {
   // Get safe area insets for proper layout with notches and home indicator
   const insets = useSafeAreaInsets();
   const isIOS = Platform.OS === "ios";
+  const isAndroid = Platform.OS === "android";
 
   const [formData, setFormData] = useState({
     email: "",
@@ -46,7 +52,24 @@ const LoginScreen = () => {
   // Ref for scrollView to allow scrolling to top on errors
   const scrollViewRef = useRef(null);
 
-  // Add keyboard listeners for iOS
+  // Handle Android back button
+  useEffect(() => {
+    if (isAndroid) {
+      const backAction = () => {
+        router.back();
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction,
+      );
+
+      return () => backHandler.remove();
+    }
+  }, [router]);
+
+  // Add keyboard listeners
   useEffect(() => {
     const keyboardWillShowListener = Keyboard.addListener(
       isIOS ? "keyboardWillShow" : "keyboardDidShow",
@@ -62,7 +85,7 @@ const LoginScreen = () => {
       keyboardWillShowListener.remove();
       keyboardWillHideListener.remove();
     };
-  }, []);
+  }, [isIOS]);
 
   // Handle navigation if authenticated
   useEffect(() => {
@@ -100,6 +123,11 @@ const LoginScreen = () => {
     setErrors({});
     setLoading(true);
 
+    // Android haptic feedback
+    if (isAndroid) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+
     try {
       console.log("🔑 Attempting login with email:", formData.email);
       const loginRequest = {
@@ -109,9 +137,24 @@ const LoginScreen = () => {
 
       await login(loginRequest);
       console.log("✅ Login successful");
+
+      // Android success feedback
+      if (isAndroid) {
+        ToastAndroid.showWithGravity(
+          "Login successful",
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+        );
+      }
+
       // The redirect will happen in the useEffect when isAuthenticated changes
     } catch (err) {
       console.log("❌ Login error:", err);
+
+      // Android error feedback
+      if (isAndroid) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
 
       // Handle field-specific errors from the backend
       if (err.response?.data && typeof err.response.data === "object") {
@@ -159,8 +202,64 @@ const LoginScreen = () => {
     general: !!generalError,
   });
 
+  // Wrapper component for Android TouchableNativeFeedback
+  const Touchable = ({
+    children,
+    style,
+    activeOpacity = 0.7,
+    onPress,
+    disabled = false,
+    rippleColor = "#e5e7eb",
+    ...props
+  }) => {
+    if (isIOS) {
+      return (
+        <TouchableOpacity
+          style={style}
+          activeOpacity={activeOpacity}
+          onPress={onPress}
+          disabled={disabled}
+          {...props}
+        >
+          {children}
+        </TouchableOpacity>
+      );
+    }
+
+    // For Android, determine if it should be a colored button
+    const isPurpleButton =
+      style &&
+      (Array.isArray(style)
+        ? style.some((s) => s && s.backgroundColor === "#7e22ce")
+        : style.backgroundColor === "#7e22ce");
+
+    const ripple = isPurpleButton
+      ? TouchableNativeFeedback.Ripple("#a78bfa", false)
+      : TouchableNativeFeedback.Ripple(rippleColor, false);
+
+    return (
+      <TouchableNativeFeedback
+        background={ripple}
+        useForeground={true}
+        onPress={onPress}
+        disabled={disabled}
+        {...props}
+      >
+        <View style={[style, { overflow: "hidden" }]}>{children}</View>
+      </TouchableNativeFeedback>
+    );
+  };
+
   return (
     <View style={styles.container}>
+      {isAndroid && (
+        <StatusBar
+          translucent={true}
+          backgroundColor="transparent"
+          barStyle="light-content"
+        />
+      )}
+
       <Header showBackButton={true} />
 
       <KeyboardAvoidingView
@@ -179,15 +278,21 @@ const LoginScreen = () => {
             },
           ]}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          bounces={true} // Enable bouncing for iOS native feel
+          showsVerticalScrollIndicator={isAndroid}
+          bounces={isIOS}
+          overScrollMode={isAndroid ? "always" : "never"}
         >
           {/* Hero Banner */}
           <LinearGradient
             colors={["#4f46e5", "#4338ca"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
-            style={styles.heroBanner}
+            style={[
+              styles.heroBanner,
+              isAndroid && {
+                paddingTop: insets.top > 0 ? insets.top + 20 : 40,
+              },
+            ]}
           >
             <View style={styles.heroContent}>
               <Text style={styles.heroTitle}>Welcome Back</Text>
@@ -302,9 +407,10 @@ const LoginScreen = () => {
                     onSubmitEditing={handleSubmit}
                   />
                   {/* Add eye toggle for password visibility */}
-                  <TouchableOpacity
+                  <Touchable
                     style={styles.inputIconRight}
                     onPress={() => setShowPassword(!showPassword)}
+                    rippleColor="transparent"
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     <Feather
@@ -312,7 +418,7 @@ const LoginScreen = () => {
                       size={20}
                       color="#9ca3af"
                     />
-                  </TouchableOpacity>
+                  </Touchable>
                 </View>
                 {errors.password && (
                   <View style={styles.errorContainer}>
@@ -328,32 +434,32 @@ const LoginScreen = () => {
               </View>
 
               {/* Forgot Password Link */}
-              <TouchableOpacity
+              <Touchable
                 style={styles.forgotPasswordContainer}
-                activeOpacity={0.7}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                rippleColor="transparent"
               >
                 <Text style={styles.forgotPasswordText}>
                   Forgot your password?
                 </Text>
-              </TouchableOpacity>
+              </Touchable>
 
               {/* Action Buttons */}
               <View style={styles.actionButtonsContainer}>
-                <TouchableOpacity
+                <Touchable
                   style={styles.cancelButton}
                   onPress={handleCancel}
                   disabled={loading}
-                  activeOpacity={0.7}
+                  rippleColor="#d1d5db"
                 >
                   <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
+                </Touchable>
 
-                <TouchableOpacity
+                <Touchable
                   style={styles.submitButton}
                   onPress={handleSubmit}
                   disabled={loading}
-                  activeOpacity={0.7}
+                  rippleColor="#a78bfa"
                 >
                   {loading ? (
                     <View style={styles.loadingContainer}>
@@ -366,7 +472,7 @@ const LoginScreen = () => {
                       <Feather name="log-in" size={20} color="white" />
                     </View>
                   )}
-                </TouchableOpacity>
+                </Touchable>
               </View>
             </View>
           </View>
@@ -382,14 +488,19 @@ const LoginScreen = () => {
                   Join our community and start collecting ComicCoins today
                 </Text>
               </View>
-              <TouchableOpacity
+              <Touchable
                 style={styles.registerButton}
-                onPress={() => router.push("/register")}
-                activeOpacity={0.7}
+                onPress={() => {
+                  if (isAndroid) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  router.push("/register");
+                }}
+                rippleColor="#f3e8ff"
               >
                 <Feather name="user-plus" size={20} color="#7e22ce" />
                 <Text style={styles.registerButtonText}>Register Now</Text>
-              </TouchableOpacity>
+              </Touchable>
             </View>
           </View>
         </ScrollView>
@@ -425,29 +536,45 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     marginBottom: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   heroSubtitle: {
     fontSize: 16,
     color: "#e0e7ff",
     textAlign: "center",
     paddingHorizontal: 20,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   formContainer: {
     margin: 16,
     backgroundColor: "white",
     borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        borderRadius: 8,
+        elevation: 4,
+      },
+    }),
   },
   formHeader: {
     paddingVertical: 16,
     paddingHorizontal: 16,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    borderTopLeftRadius: Platform.OS === "ios" ? 12 : 8,
+    borderTopRightRadius: Platform.OS === "ios" ? 12 : 8,
   },
   formHeaderContent: {
     flexDirection: "row",
@@ -460,10 +587,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "white",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   formHeaderSubtitle: {
     fontSize: 14,
     color: "#e0e7ff",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   formBody: {
     padding: 16,
@@ -486,6 +623,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     flex: 1,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   inputContainer: {
     marginBottom: 16,
@@ -495,19 +637,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: "#4b5563",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   inputWrapper: {
     position: "relative",
   },
   input: {
-    height: 48, // Slightly increased height for iOS
+    height: Platform.OS === "ios" ? 48 : 52, // Taller input fields on Android
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
+    borderRadius: Platform.OS === "ios" ? 8 : 4, // Smaller corner radius on Android
     paddingHorizontal: 12,
     fontSize: 16,
     color: "#1f2937",
     backgroundColor: "white",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   inputWithLeftIcon: {
     paddingLeft: 40,
@@ -518,13 +670,13 @@ const styles = StyleSheet.create({
   inputIconLeft: {
     position: "absolute",
     left: 12,
-    top: 14, // Adjusted for vertical centering
+    top: Platform.OS === "ios" ? 14 : 16, // Adjusted for taller Android inputs
     zIndex: 1,
   },
   inputIconRight: {
     position: "absolute",
     right: 12,
-    top: 14, // Adjusted for vertical centering
+    top: Platform.OS === "ios" ? 14 : 16, // Adjusted for taller Android inputs
     zIndex: 1,
     padding: 4, // Increased touch target
   },
@@ -543,6 +695,11 @@ const styles = StyleSheet.create({
   errorText: {
     color: "#ef4444",
     fontSize: 12,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   forgotPasswordContainer: {
     alignItems: "flex-end",
@@ -552,6 +709,11 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     color: "#7e22ce",
     fontSize: 14,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   actionButtonsContainer: {
     marginTop: 4,
@@ -563,26 +725,41 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9fafb",
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
+    borderRadius: Platform.OS === "ios" ? 8 : 4,
     paddingVertical: 14,
     marginRight: 8,
     alignItems: "center",
     justifyContent: "center",
     minHeight: 48, // Ensure minimum touch target on iOS
+    ...Platform.select({
+      android: {
+        overflow: "hidden",
+      },
+    }),
   },
   cancelButtonText: {
     color: "#4b5563",
     fontWeight: "500",
     fontSize: 16,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   submitButton: {
     flex: 2,
     backgroundColor: "#7e22ce",
-    borderRadius: 8,
+    borderRadius: Platform.OS === "ios" ? 8 : 4,
     paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
     minHeight: 48, // Ensure minimum touch target on iOS
+    ...Platform.select({
+      android: {
+        overflow: "hidden",
+      },
+    }),
   },
   buttonContent: {
     flexDirection: "row",
@@ -593,6 +770,11 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontSize: 16,
     marginRight: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   loadingContainer: {
     flexDirection: "row",
@@ -602,14 +784,20 @@ const styles = StyleSheet.create({
   registrationCta: {
     margin: 16,
     backgroundColor: "white",
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    borderRadius: Platform.OS === "ios" ? 12 : 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
     marginBottom: 24,
-    borderWidth: 1,
+    borderWidth: Platform.OS === "ios" ? 1 : 0,
     borderColor: "#f3e8ff",
   },
   registrationCtaContent: {
@@ -620,11 +808,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#4b5563",
     marginBottom: 4,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   registrationCtaText: {
     fontSize: 14,
     color: "#6b7280",
     marginBottom: 16,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   registerButton: {
     flexDirection: "row",
@@ -633,14 +831,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3e8ff",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: Platform.OS === "ios" ? 8 : 4,
     minHeight: 48, // Ensure minimum touch target on iOS
+    ...Platform.select({
+      android: {
+        overflow: "hidden",
+      },
+    }),
   },
   registerButtonText: {
     fontSize: 16,
     fontWeight: "500",
     color: "#7e22ce",
     marginLeft: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   requiredStar: {
     color: "#ef4444",

@@ -9,6 +9,8 @@ import {
   RefreshControl,
   Dimensions,
   Platform,
+  StatusBar,
+  TouchableNativeFeedback,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,6 +24,30 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { width, height } = Dimensions.get("window");
 const isSmallDevice = height < 700; // iPhone SE or similar
 const isLargeDevice = height > 812; // iPhone Pro Max models
+const isAndroid = Platform.OS === "android";
+const isIOS = Platform.OS === "ios";
+
+// Create platform-specific TouchableComponent
+const TouchableComponent = (props) => {
+  // On Android, use TouchableNativeFeedback with ripple effect
+  if (isAndroid) {
+    return (
+      <TouchableNativeFeedback
+        background={TouchableNativeFeedback.Ripple("#d4c1ff", false)}
+        useForeground={true}
+        {...props}
+      >
+        <View style={props.style}>{props.children}</View>
+      </TouchableNativeFeedback>
+    );
+  }
+  // On iOS, use TouchableOpacity
+  return (
+    <TouchableOpacity activeOpacity={0.7} {...props}>
+      {props.children}
+    </TouchableOpacity>
+  );
+};
 
 // Transaction Item component
 const TransactionItem = ({ amount, date, status = "Completed" }) => (
@@ -131,6 +157,14 @@ export default function DashboardScreen() {
   // Use our dashboard hook
   const { dashboard, isLoading, error, refetch, canClaimNow } = useDashboard();
 
+  // Set proper status bar height and color for Android
+  useEffect(() => {
+    if (isAndroid) {
+      StatusBar.setBackgroundColor("#7e22ce");
+      StatusBar.setBarStyle("light-content");
+    }
+  }, []);
+
   // Memoize the refresh function to prevent unnecessary rerenders
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -155,7 +189,12 @@ export default function DashboardScreen() {
       <View style={styles.container}>
         <AppHeader title="Dashboard" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8347FF" />
+          <ActivityIndicator
+            size="large"
+            color="#8347FF"
+            // Android uses different ActivityIndicator styling
+            style={isAndroid ? styles.androidLoader : null}
+          />
           <Text style={styles.loadingText}>Loading your dashboard...</Text>
         </View>
       </View>
@@ -171,13 +210,25 @@ export default function DashboardScreen() {
           <Ionicons name="alert-circle" size={56} color="#EF4444" />
           <Text style={styles.errorTitle}>Couldn't load dashboard</Text>
           <Text style={styles.errorMessage}>{error.message}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={refetch}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
+          {isAndroid ? (
+            <TouchableNativeFeedback
+              onPress={refetch}
+              background={TouchableNativeFeedback.Ripple("#d4c1ff", false)}
+              useForeground={true}
+            >
+              <View style={styles.retryButton}>
+                <Text style={styles.retryButtonText}>Try Again</Text>
+              </View>
+            </TouchableNativeFeedback>
+          ) : (
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={refetch}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.retryButtonText}>Try Again</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -206,25 +257,31 @@ export default function DashboardScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.contentContainer,
-          // Add bottom padding for safe area
-          {
+          // Add bottom padding for safe area when on iOS
+          isIOS && {
             paddingBottom: Math.max(
               styles.contentContainer.paddingBottom,
               insets.bottom + 20,
             ),
+          },
+          // For Android, use a simpler fixed padding
+          isAndroid && {
+            paddingBottom: 100, // Space for navigation bar on Android
           },
         ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={["#8347FF"]}
-            tintColor="#8347FF" // iOS refresh control color
+            colors={["#8347FF"]} // Android specific
+            progressBackgroundColor={isAndroid ? "#ffffff" : undefined} // Android specific
+            tintColor="#8347FF" // iOS specific
           />
         }
         showsVerticalScrollIndicator={false}
-        bounces={true} // Enable natural iOS bounce behavior
-        contentInsetAdjustmentBehavior="automatic" // iOS-specific scroll behavior
+        bounces={isIOS} // Enable bouncing for iOS only
+        overScrollMode={isAndroid ? "never" : undefined} // Android specific
+        contentInsetAdjustmentBehavior={isIOS ? "automatic" : undefined} // iOS-specific
       >
         {/* Hero section with welcome message and claim button */}
         <View
@@ -257,16 +314,35 @@ export default function DashboardScreen() {
 
             {canClaimNow ? (
               <View style={styles.claimButtonContainer}>
-                <TouchableOpacity
-                  style={styles.claimButton}
-                  onPress={handleClaimPress}
-                  activeOpacity={0.7} // Better iOS touch feedback
-                >
-                  <Text style={styles.claimButtonText}>
-                    Claim Your Coins Now
-                  </Text>
-                  <Ionicons name="arrow-forward" size={20} color="#8347FF" />
-                </TouchableOpacity>
+                {isAndroid ? (
+                  <TouchableNativeFeedback
+                    onPress={handleClaimPress}
+                    background={TouchableNativeFeedback.Ripple("#d4c1ff", true)}
+                    useForeground={true}
+                  >
+                    <View style={styles.claimButton}>
+                      <Text style={styles.claimButtonText}>
+                        Claim Your Coins Now
+                      </Text>
+                      <Ionicons
+                        name="arrow-forward"
+                        size={20}
+                        color="#8347FF"
+                      />
+                    </View>
+                  </TouchableNativeFeedback>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.claimButton}
+                    onPress={handleClaimPress}
+                    activeOpacity={0.7} // Better iOS touch feedback
+                  >
+                    <Text style={styles.claimButtonText}>
+                      Claim Your Coins Now
+                    </Text>
+                    <Ionicons name="arrow-forward" size={20} color="#8347FF" />
+                  </TouchableOpacity>
+                )}
               </View>
             ) : (
               <CountdownTimer nextClaimTime={dashboard?.nextClaimTime} />
@@ -303,17 +379,32 @@ export default function DashboardScreen() {
               <Text style={styles.transactionsTitle}>Recent Transactions</Text>
             </View>
 
-            {dashboard?.transactions?.length > 0 && (
-              <TouchableOpacity
-                style={styles.seeAllButton}
-                onPress={() => router.push("/(tabs)/transactions")}
-                activeOpacity={0.7} // Better iOS touch feedback
-                hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} // Increase touch target
-              >
-                <Text style={styles.seeAllText}>See All</Text>
-                <Ionicons name="arrow-forward" size={16} color="white" />
-              </TouchableOpacity>
-            )}
+            {dashboard?.transactions?.length > 0 &&
+              (isAndroid ? (
+                <TouchableNativeFeedback
+                  onPress={() => router.push("/(tabs)/transactions")}
+                  background={TouchableNativeFeedback.Ripple(
+                    "rgba(255,255,255,0.2)",
+                    true,
+                  )}
+                  useForeground={true}
+                >
+                  <View style={styles.seeAllButton}>
+                    <Text style={styles.seeAllText}>See All</Text>
+                    <Ionicons name="arrow-forward" size={16} color="white" />
+                  </View>
+                </TouchableNativeFeedback>
+              ) : (
+                <TouchableOpacity
+                  style={styles.seeAllButton}
+                  onPress={() => router.push("/(tabs)/transactions")}
+                  activeOpacity={0.7} // Better iOS touch feedback
+                  hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} // Increase touch target
+                >
+                  <Text style={styles.seeAllText}>See All</Text>
+                  <Ionicons name="arrow-forward" size={16} color="white" />
+                </TouchableOpacity>
+              ))}
           </View>
 
           <View style={styles.transactionsList}>
@@ -349,7 +440,7 @@ export default function DashboardScreen() {
         <View
           style={[
             styles.bottomSpacer,
-            { height: Platform.OS === "ios" ? 20 + insets.bottom : 80 },
+            isIOS ? { height: 20 + insets.bottom } : { height: 80 }, // Higher for Android navigation
           ]}
         />
       </ScrollView>
@@ -372,11 +463,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F5F7FA",
   },
+  androidLoader: {
+    // Android-specific loader styling
+    transform: [{ scale: 1.2 }], // Slightly larger for Android
+  },
   loadingText: {
     marginTop: 12,
     color: "#6B7280",
     fontSize: 14,
     fontWeight: Platform.OS === "ios" ? "500" : "400", // Slightly heavier font for iOS
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   errorContainer: {
     flex: 1,
@@ -389,12 +489,22 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1F2937",
     marginTop: 12,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   errorMessage: {
     color: "#6B7280",
     textAlign: "center",
     marginTop: 8,
     marginBottom: 20,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   retryButton: {
     backgroundColor: "#8347FF",
@@ -402,10 +512,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 8,
     minHeight: 44, // iOS minimum touch target
+    ...Platform.select({
+      android: {
+        elevation: 3, // Android shadow
+      },
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.3,
+        shadowRadius: 2,
+      },
+    }),
   },
   retryButtonText: {
     color: "white",
     fontWeight: "600",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        textTransform: "uppercase", // Material Design style
+        fontSize: 14,
+      },
+    }),
   },
 
   // Hero section styles
@@ -422,7 +550,7 @@ const styles = StyleSheet.create({
         shadowRadius: 3,
       },
       android: {
-        elevation: 3,
+        elevation: 4, // Android shadow
       },
     }),
   },
@@ -443,6 +571,12 @@ const styles = StyleSheet.create({
     color: "white",
     marginBottom: 8,
     textAlign: "center",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
   },
   welcomeTitleSmall: {
     fontSize: 20,
@@ -452,12 +586,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "rgba(255, 255, 255, 0.9)",
     textAlign: "center",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   welcomeSubtitleSmall: {
     fontSize: 14,
   },
   claimButtonContainer: {
     alignItems: "center",
+    // Wrapping container for TouchableNativeFeedback
+    ...Platform.select({
+      android: {
+        borderRadius: 100, // Needed for ripple effect containment
+        overflow: "hidden",
+        width: "100%",
+        maxWidth: 300,
+        alignSelf: "center",
+      },
+    }),
   },
   claimButton: {
     backgroundColor: "white",
@@ -478,7 +627,7 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
       },
       android: {
-        elevation: 2,
+        elevation: 4, // Android shadow
       },
     }),
   },
@@ -487,6 +636,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 18,
     marginRight: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
   },
   countdownContainer: {
     alignItems: "center",
@@ -499,12 +654,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "rgba(255, 255, 255, 0.9)",
     marginBottom: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   countdownValue: {
     fontSize: 28,
     fontWeight: "bold",
     color: "white",
     fontVariant: ["tabular-nums"], // Monospaced numbers for countdown
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+        letterSpacing: 1, // Better readability for countdown on Android
+      },
+    }),
   },
 
   // Balance cards styles
@@ -527,7 +694,7 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
       },
       android: {
-        elevation: 1,
+        elevation: 2, // Android shadow
       },
     }),
   },
@@ -535,15 +702,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     marginBottom: 4,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   balanceAmount: {
     fontSize: 16,
     color: "#1F2937",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   balanceValue: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#8347FF",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
   },
   iconContainer: {
     width: 48,
@@ -569,7 +752,7 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
       },
       android: {
-        elevation: 1,
+        elevation: 2, // Android shadow
       },
     }),
   },
@@ -590,17 +773,35 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
     marginLeft: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
   },
   seeAllButton: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 4,
     paddingHorizontal: 8,
+    // For Android, we need a wrapper for TouchableNativeFeedback
+    ...Platform.select({
+      android: {
+        borderRadius: 8,
+        overflow: "hidden",
+      },
+    }),
   },
   seeAllText: {
     color: "white",
     marginRight: 4,
     fontSize: 14,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   transactionsList: {
     padding: 16,
@@ -618,10 +819,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1F2937",
     marginBottom: 4,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
   },
   transactionDate: {
     fontSize: 12,
     color: "#6B7280",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   statusBadge: {
     backgroundColor: "#D1FAE5",
@@ -633,6 +845,12 @@ const styles = StyleSheet.create({
     color: "#065F46",
     fontSize: 12,
     fontWeight: "500",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
   },
   emptyTransactions: {
     alignItems: "center",
@@ -647,11 +865,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1F2937",
     marginBottom: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
   },
   emptyText: {
     color: "#6B7280",
     textAlign: "center",
     fontSize: Platform.OS === "ios" ? 14 : 13, // Slightly larger text for iOS
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+        lineHeight: 20, // Better line height on Android
+      },
+    }),
   },
   bottomSpacer: {
     height: 80, // Will be adjusted for iOS devices with notches

@@ -1,4 +1,4 @@
-// screens/SettingsScreen.js
+// screens/SettingsScreen.js - With Android optimizations
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
@@ -6,6 +6,7 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  TouchableNativeFeedback,
   ScrollView,
   ActivityIndicator,
   Alert,
@@ -14,6 +15,7 @@ import {
   Switch,
   Keyboard,
   Dimensions,
+  StatusBar,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -28,6 +30,8 @@ import { getTrackingPermissionsAsync } from "expo-tracking-transparency";
 const { width, height } = Dimensions.get("window");
 const isSmallDevice = height < 667; // iPhone SE or similar
 const isLargeDevice = height > 844; // iPhone Pro Max models
+const isAndroid = Platform.OS === "android";
+const isIOS = Platform.OS === "ios";
 
 // Define country and timezone options for dropdown selection
 const countries = [
@@ -60,6 +64,41 @@ const timezones = [
   { value: "UTC+10:00", label: "(UTC+10:00) Sydney, Melbourne" },
 ];
 
+// Custom touchable component that uses the appropriate component based on platform
+const Touchable = ({
+  children,
+  style,
+  onPress,
+  disabled = false,
+  ...props
+}) => {
+  if (isAndroid) {
+    return (
+      <TouchableNativeFeedback
+        onPress={onPress}
+        background={TouchableNativeFeedback.Ripple("#d4c1ff", false)}
+        useForeground={true}
+        disabled={disabled}
+        {...props}
+      >
+        <View style={style}>{children}</View>
+      </TouchableNativeFeedback>
+    );
+  }
+
+  return (
+    <TouchableOpacity
+      style={style}
+      onPress={onPress}
+      activeOpacity={0.7}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
+
 const SettingsScreen = () => {
   const router = useRouter();
   const insets = useSafeAreaInsets(); // Get safe area insets
@@ -71,6 +110,14 @@ const SettingsScreen = () => {
 
   // Reference for ScrollView to handle keyboard appearance
   const scrollViewRef = useRef(null);
+
+  // Set Android status bar colors
+  useEffect(() => {
+    if (isAndroid) {
+      StatusBar.setBackgroundColor("#7e22ce");
+      StatusBar.setBarStyle("light-content");
+    }
+  }, []);
 
   // Use the useAuth hook to get current user data
   const { user, updateUser } = useAuth();
@@ -113,6 +160,11 @@ const SettingsScreen = () => {
           // Delay scrolling slightly to ensure input has focus
           setTimeout(() => {
             scrollViewRef.current.scrollTo({ y: 150, animated: true });
+          }, 100);
+        } else if (isAndroid && scrollViewRef.current) {
+          // Android needs a bit more scroll
+          setTimeout(() => {
+            scrollViewRef.current.scrollTo({ y: 200, animated: true });
           }, 100);
         }
       },
@@ -306,8 +358,8 @@ const SettingsScreen = () => {
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
 
-      // Show error alert - iOS style
-      if (isIOS) {
+      // Show error alert - platform specific styling
+      if (isAndroid) {
         Alert.alert(
           "Validation Error",
           "Please correct the highlighted fields before saving.",
@@ -388,22 +440,24 @@ const SettingsScreen = () => {
       <View style={styles.container}>
         <Header showBackButton={true} title="Settings" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8347FF" />
+          <ActivityIndicator
+            size="large"
+            color="#8347FF"
+            style={isAndroid ? styles.androidLoader : undefined}
+          />
           <Text style={styles.loadingText}>Loading your settings...</Text>
 
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={handleRefreshUserData}
-            activeOpacity={0.7} // Better touch feedback for iOS
-          >
-            <Ionicons
-              name="refresh"
-              size={16}
-              color="white"
-              style={styles.buttonIcon}
-            />
-            <Text style={styles.retryButtonText}>Retry Loading</Text>
-          </TouchableOpacity>
+          <Touchable style={styles.retryButton} onPress={handleRefreshUserData}>
+            <View style={styles.buttonContentRow}>
+              <Ionicons
+                name="refresh"
+                size={16}
+                color="white"
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.retryButtonText}>Retry Loading</Text>
+            </View>
+          </Touchable>
         </View>
       </View>
     );
@@ -475,19 +529,183 @@ const SettingsScreen = () => {
     );
   };
 
+  // For Android, render a dropdown modal for country selection
+  const renderAndroidPicker = (
+    visible,
+    title,
+    options,
+    selectedValue,
+    onSelect,
+    onClose,
+  ) => {
+    if (!isAndroid || !visible) return null;
+
+    return (
+      <View style={styles.androidModalOverlay}>
+        <View style={styles.androidPickerContainer}>
+          <View style={styles.androidPickerHeader}>
+            <Text style={styles.androidPickerTitle}>{title}</Text>
+            <TouchableNativeFeedback
+              onPress={onClose}
+              background={TouchableNativeFeedback.Ripple(
+                "rgba(0, 0, 0, 0.1)",
+                true,
+              )}
+              useForeground={true}
+            >
+              <View style={styles.androidPickerCloseBtn}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </View>
+            </TouchableNativeFeedback>
+          </View>
+
+          <ScrollView style={styles.androidPickerOptions}>
+            {options.map((option) => (
+              <TouchableNativeFeedback
+                key={option.value}
+                onPress={() => {
+                  onSelect(option.value);
+                  onClose();
+                }}
+                background={TouchableNativeFeedback.Ripple("#f3f4ff", false)}
+                useForeground={true}
+              >
+                <View
+                  style={[
+                    styles.androidPickerOption,
+                    selectedValue === option.value &&
+                      styles.androidPickerOptionSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.androidPickerOptionText,
+                      selectedValue === option.value &&
+                        styles.androidPickerOptionTextSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {selectedValue === option.value && (
+                    <Ionicons name="checkmark" size={20} color="#8347FF" />
+                  )}
+                </View>
+              </TouchableNativeFeedback>
+            ))}
+          </ScrollView>
+
+          <View style={styles.androidPickerActions}>
+            <TouchableNativeFeedback
+              onPress={onClose}
+              background={TouchableNativeFeedback.Ripple(
+                "rgba(0, 0, 0, 0.1)",
+                true,
+              )}
+              useForeground={true}
+            >
+              <View style={styles.androidPickerCancelButton}>
+                <Text style={styles.androidPickerCancelText}>CANCEL</Text>
+              </View>
+            </TouchableNativeFeedback>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   // Render a form input field with label and error handling
   const renderField = (field) => {
     const hasError = !!formErrors[field.fieldKey];
     const isRequired = field.required;
 
-    return (
-      <View key={field.id} style={styles.inputContainer}>
-        <View style={styles.labelContainer}>
-          <Text style={styles.inputLabel}>{field.label}</Text>
-          {isRequired && <Text style={styles.requiredStar}>*</Text>}
-        </View>
+    // Platform specific implementation for select fields
+    if (field.type === "select") {
+      if (isAndroid) {
+        return (
+          <View key={field.id} style={styles.inputContainer}>
+            <View style={styles.labelContainer}>
+              <Text style={styles.inputLabel}>{field.label}</Text>
+              {isRequired && <Text style={styles.requiredStar}>*</Text>}
+            </View>
 
-        {field.type === "select" ? (
+            <View style={styles.androidSelectWrapper}>
+              <TouchableNativeFeedback
+                onPress={() => {
+                  if (field.fieldKey === "country") {
+                    setShowCountryPicker(true);
+                  } else {
+                    setShowTimezonePicker(true);
+                  }
+                }}
+                disabled={field.disabled}
+                background={TouchableNativeFeedback.Ripple("#e5e7eb", false)}
+                useForeground={true}
+              >
+                <View
+                  style={[
+                    styles.input,
+                    styles.androidInput,
+                    hasError && styles.inputError,
+                    field.disabled && styles.inputDisabled,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.inputText,
+                      !formData[field.fieldKey] && styles.placeholderText,
+                    ]}
+                  >
+                    {field.fieldKey === "country"
+                      ? formData.country
+                        ? countries.find((c) => c.value === formData.country)
+                            ?.label || formData.country
+                        : "Select your country"
+                      : formData.timezone
+                        ? timezones.find((t) => t.value === formData.timezone)
+                            ?.label || formData.timezone
+                        : "Select your timezone"}
+                  </Text>
+                  <Ionicons name="chevron-down" size={16} color="#9CA3AF" />
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+
+            {/* Error message or helper text */}
+            {hasError ? (
+              <View style={styles.errorContainer}>
+                <Ionicons
+                  name="alert-circle"
+                  size={14}
+                  color="#EF4444"
+                  style={styles.errorIcon}
+                />
+                <Text style={styles.errorText}>
+                  {formErrors[field.fieldKey]}
+                </Text>
+              </View>
+            ) : field.helperText ? (
+              <View style={styles.helperContainer}>
+                <Ionicons
+                  name="information-circle"
+                  size={14}
+                  color="#6B7280"
+                  style={styles.helperIcon}
+                />
+                <Text style={styles.helperText}>{field.helperText}</Text>
+              </View>
+            ) : null}
+          </View>
+        );
+      }
+
+      // iOS implementation (unchanged)
+      return (
+        <View key={field.id} style={styles.inputContainer}>
+          <View style={styles.labelContainer}>
+            <Text style={styles.inputLabel}>{field.label}</Text>
+            {isRequired && <Text style={styles.requiredStar}>*</Text>}
+          </View>
+
           <TouchableOpacity
             style={[
               styles.input,
@@ -522,17 +740,52 @@ const SettingsScreen = () => {
             </Text>
             <Ionicons name="chevron-down" size={16} color="#9CA3AF" />
           </TouchableOpacity>
-        ) : field.fieldKey === "wallet_address" ? (
+
+          {/* Error message or helper text */}
+          {hasError ? (
+            <View style={styles.errorContainer}>
+              <Ionicons
+                name="alert-circle"
+                size={14}
+                color="#EF4444"
+                style={styles.errorIcon}
+              />
+              <Text style={styles.errorText}>{formErrors[field.fieldKey]}</Text>
+            </View>
+          ) : field.helperText ? (
+            <View style={styles.helperContainer}>
+              <Ionicons
+                name="information-circle"
+                size={14}
+                color="#6B7280"
+                style={styles.helperIcon}
+              />
+              <Text style={styles.helperText}>{field.helperText}</Text>
+            </View>
+          ) : null}
+        </View>
+      );
+    } else if (field.fieldKey === "wallet_address") {
+      // Special case for wallet address with copy button
+      return (
+        <View key={field.id} style={styles.inputContainer}>
+          <View style={styles.labelContainer}>
+            <Text style={styles.inputLabel}>{field.label}</Text>
+            {isRequired && <Text style={styles.requiredStar}>*</Text>}
+          </View>
+
           <View style={styles.walletAddressContainer}>
             <TextInput
               style={[
                 styles.input,
                 styles.inputDisabled,
                 styles.walletAddressInput,
+                isAndroid && styles.androidInput,
               ]}
               value={formData[field.fieldKey]}
               editable={false}
               placeholder={field.placeholder}
+              underlineColorAndroid="transparent" // Remove default Android underline
             />
             <TouchableOpacity
               style={styles.copyButton}
@@ -552,12 +805,46 @@ const SettingsScreen = () => {
               <Ionicons name="copy-outline" size={20} color="#8347FF" />
             </TouchableOpacity>
           </View>
-        ) : (
+
+          {/* Error message or helper text */}
+          {hasError ? (
+            <View style={styles.errorContainer}>
+              <Ionicons
+                name="alert-circle"
+                size={14}
+                color="#EF4444"
+                style={styles.errorIcon}
+              />
+              <Text style={styles.errorText}>{formErrors[field.fieldKey]}</Text>
+            </View>
+          ) : field.helperText ? (
+            <View style={styles.helperContainer}>
+              <Ionicons
+                name="information-circle"
+                size={14}
+                color="#6B7280"
+                style={styles.helperIcon}
+              />
+              <Text style={styles.helperText}>{field.helperText}</Text>
+            </View>
+          ) : null}
+        </View>
+      );
+    } else {
+      // Default text input field
+      return (
+        <View key={field.id} style={styles.inputContainer}>
+          <View style={styles.labelContainer}>
+            <Text style={styles.inputLabel}>{field.label}</Text>
+            {isRequired && <Text style={styles.requiredStar}>*</Text>}
+          </View>
+
           <TextInput
             style={[
               styles.input,
               hasError && styles.inputError,
               field.disabled && styles.inputDisabled,
+              isAndroid && styles.androidInput,
             ]}
             value={
               field.fieldKey === "phone"
@@ -578,6 +865,7 @@ const SettingsScreen = () => {
             autoCorrect={false}
             returnKeyType="done"
             onSubmitEditing={Keyboard.dismiss}
+            underlineColorAndroid="transparent" // Remove default Android underline
             // iOS specific
             textContentType={
               field.type === "email"
@@ -587,40 +875,230 @@ const SettingsScreen = () => {
                   : "name"
             }
           />
-        )}
 
-        {/* Error message or helper text */}
-        {hasError ? (
-          <View style={styles.errorContainer}>
-            <Ionicons
-              name="alert-circle"
-              size={14}
-              color="#EF4444"
-              style={styles.errorIcon}
-            />
-            <Text style={styles.errorText}>{formErrors[field.fieldKey]}</Text>
+          {/* Error message or helper text */}
+          {hasError ? (
+            <View style={styles.errorContainer}>
+              <Ionicons
+                name="alert-circle"
+                size={14}
+                color="#EF4444"
+                style={styles.errorIcon}
+              />
+              <Text style={styles.errorText}>{formErrors[field.fieldKey]}</Text>
+            </View>
+          ) : field.helperText ? (
+            <View style={styles.helperContainer}>
+              <Ionicons
+                name="information-circle"
+                size={14}
+                color="#6B7280"
+                style={styles.helperIcon}
+              />
+              <Text style={styles.helperText}>{field.helperText}</Text>
+            </View>
+          ) : null}
+        </View>
+      );
+    }
+  };
+
+  // Render buttons with platform specifics
+  const renderActionButtons = () => {
+    if (isAndroid) {
+      return (
+        <View style={styles.formActions}>
+          <View style={styles.androidButtonWrapper}>
+            <TouchableNativeFeedback
+              onPress={handleBackToDashboard}
+              background={TouchableNativeFeedback.Ripple(
+                "rgba(75, 85, 99, 0.1)",
+                false,
+              )}
+              useForeground={true}
+            >
+              <View style={styles.cancelButton}>
+                <Text style={styles.cancelButtonText}>CANCEL</Text>
+              </View>
+            </TouchableNativeFeedback>
           </View>
-        ) : field.helperText ? (
-          <View style={styles.helperContainer}>
-            <Ionicons
-              name="information-circle"
-              size={14}
-              color="#6B7280"
-              style={styles.helperIcon}
-            />
-            <Text style={styles.helperText}>{field.helperText}</Text>
+
+          <View style={styles.androidButtonWrapper}>
+            <TouchableNativeFeedback
+              onPress={handleSubmit}
+              disabled={isUpdating}
+              background={TouchableNativeFeedback.Ripple(
+                "rgba(131, 71, 255, 0.2)",
+                false,
+              )}
+              useForeground={true}
+            >
+              <View
+                style={[
+                  styles.saveButton,
+                  isUpdating && styles.saveButtonDisabled,
+                ]}
+              >
+                {isUpdating ? (
+                  <View style={styles.buttonContent}>
+                    <ActivityIndicator size="small" color="white" />
+                    <Text style={styles.saveButtonText}>SAVING...</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.saveButtonText}>SAVE CHANGES</Text>
+                )}
+              </View>
+            </TouchableNativeFeedback>
           </View>
-        ) : null}
+        </View>
+      );
+    }
+
+    // iOS buttons (unchanged)
+    return (
+      <View style={styles.formActions}>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={handleBackToDashboard}
+          activeOpacity={0.7} // Better touch feedback for iOS
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.saveButton, isUpdating && styles.saveButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={isUpdating}
+          activeOpacity={0.7} // Better touch feedback for iOS
+        >
+          {isUpdating ? (
+            <View style={styles.buttonContent}>
+              <ActivityIndicator size="small" color="white" />
+              <Text style={styles.saveButtonText}>Saving...</Text>
+            </View>
+          ) : (
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // Render switch component with platform-specific styling
+  const renderSwitch = (fieldName, label) => {
+    return (
+      <View style={styles.switchContainer}>
+        <Switch
+          value={formData[fieldName]}
+          onValueChange={(value) => handleInputChange(fieldName, value)}
+          trackColor={{
+            false: isAndroid ? "#E5E7EB" : "#e5e7eb",
+            true: isAndroid ? "#8347FF50" : "#C4B5FD",
+          }}
+          thumbColor={
+            formData[fieldName]
+              ? isAndroid
+                ? "#8347FF"
+                : "#7e22ce"
+              : isAndroid
+                ? "#FFFFFF"
+                : "#f4f3f4"
+          }
+          ios_backgroundColor="#e5e7eb"
+        />
+        <View style={styles.switchLabelContainer}>
+          <Text style={styles.switchLabel}>{label}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  // Platform-specific status message renderer
+  const renderStatusMessage = () => {
+    if (!statusMessage.type) return null;
+
+    if (isAndroid) {
+      return (
+        <View
+          style={[
+            styles.statusMessage,
+            statusMessage.type === "success"
+              ? styles.successMessage
+              : styles.errorMessage,
+          ]}
+        >
+          <View style={styles.statusContentContainer}>
+            <Ionicons
+              name={
+                statusMessage.type === "success"
+                  ? "checkmark-circle"
+                  : "alert-circle"
+              }
+              size={20}
+              color={statusMessage.type === "success" ? "#10B981" : "#EF4444"}
+              style={styles.statusIcon}
+            />
+            <Text style={styles.androidStatusText}>
+              {statusMessage.message}
+            </Text>
+          </View>
+          <TouchableNativeFeedback
+            onPress={() => setStatusMessage({ type: null, message: "" })}
+            background={TouchableNativeFeedback.Ripple(
+              statusMessage.type === "success"
+                ? "rgba(16, 185, 129, 0.1)"
+                : "rgba(239, 68, 68, 0.1)",
+              true,
+            )}
+            useForeground={true}
+          >
+            <View style={styles.androidCloseButton}>
+              <Ionicons name="close" size={20} color="#6B7280" />
+            </View>
+          </TouchableNativeFeedback>
+        </View>
+      );
+    }
+
+    // iOS status message (unchanged)
+    return (
+      <View
+        style={[
+          styles.statusMessage,
+          statusMessage.type === "success"
+            ? styles.successMessage
+            : styles.errorMessage,
+        ]}
+      >
+        <View style={styles.statusContentContainer}>
+          <Ionicons
+            name={
+              statusMessage.type === "success"
+                ? "checkmark-circle"
+                : "alert-circle"
+            }
+            size={20}
+            color={statusMessage.type === "success" ? "#10B981" : "#EF4444"}
+            style={styles.statusIcon}
+          />
+          <Text style={styles.statusText}>{statusMessage.message}</Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => setStatusMessage({ type: null, message: "" })}
+          style={styles.closeButton}
+          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} // Larger touch area for iOS
+        >
+          <Ionicons name="close" size={20} color="#6B7280" />
+        </TouchableOpacity>
       </View>
     );
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <Header showBackButton={true} title="Settings" />
 
-      {/* Country Picker Modal for iOS */}
+      {/* iOS & Android Pickers */}
       {renderPicker(
         showCountryPicker,
         "Select Country",
@@ -630,8 +1108,26 @@ const SettingsScreen = () => {
         () => setShowCountryPicker(false),
       )}
 
-      {/* Timezone Picker Modal for iOS */}
       {renderPicker(
+        showTimezonePicker,
+        "Select Timezone",
+        timezones,
+        formData.timezone,
+        (value) => handleInputChange("timezone", value),
+        () => setShowTimezonePicker(false),
+      )}
+
+      {/* Android-specific pickers */}
+      {renderAndroidPicker(
+        showCountryPicker,
+        "Select Country",
+        countries,
+        formData.country,
+        (value) => handleInputChange("country", value),
+        () => setShowCountryPicker(false),
+      )}
+
+      {renderAndroidPicker(
         showTimezonePicker,
         "Select Timezone",
         timezones,
@@ -651,45 +1147,20 @@ const SettingsScreen = () => {
           contentContainerStyle={[
             styles.scrollContent,
             // Add bottom padding for home indicator area on iOS
-            { paddingBottom: isIOS ? Math.max(insets.bottom + 20, 30) : 40 },
+            isIOS && {
+              paddingBottom: Math.max(insets.bottom + 20, 30),
+            },
+            // Add specific padding for Android
+            isAndroid && {
+              paddingBottom: 24,
+            },
           ]}
           showsVerticalScrollIndicator={false}
-          bounces={true} // Enable bounce effect on iOS
+          bounces={isIOS} // Enable bounce effect only on iOS
+          overScrollMode={isAndroid ? "never" : undefined} // Android specific
         >
           {/* Status Message */}
-          {statusMessage.type && (
-            <View
-              style={[
-                styles.statusMessage,
-                statusMessage.type === "success"
-                  ? styles.successMessage
-                  : styles.errorMessage,
-              ]}
-            >
-              <View style={styles.statusContentContainer}>
-                <Ionicons
-                  name={
-                    statusMessage.type === "success"
-                      ? "checkmark-circle"
-                      : "alert-circle"
-                  }
-                  size={20}
-                  color={
-                    statusMessage.type === "success" ? "#10B981" : "#EF4444"
-                  }
-                  style={styles.statusIcon}
-                />
-                <Text style={styles.statusText}>{statusMessage.message}</Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => setStatusMessage({ type: null, message: "" })}
-                style={styles.closeButton}
-                hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} // Larger touch area for iOS
-              >
-                <Ionicons name="close" size={20} color="#6B7280" />
-              </TouchableOpacity>
-            </View>
-          )}
+          {renderStatusMessage()}
 
           {/* Personal Information Section */}
           <View style={styles.section}>
@@ -789,53 +1260,17 @@ const SettingsScreen = () => {
 
             <View style={styles.sectionContent}>
               {/* Promotional Communications Preference */}
-              <View style={styles.switchContainer}>
-                <Switch
-                  value={formData.agree_promotions}
-                  onValueChange={(value) =>
-                    handleInputChange("agree_promotions", value)
-                  }
-                  trackColor={{ false: "#E5E7EB", true: "#C4B5FD" }}
-                  thumbColor={formData.agree_promotions ? "#8347FF" : "#F4F3F4"}
-                  ios_backgroundColor="#E5E7EB"
-                />
-                <View style={styles.switchLabelContainer}>
-                  <Text style={styles.switchLabel}>
-                    I'd like to receive updates about new features, events, and
-                    other comic-related content
-                  </Text>
-                </View>
-              </View>
+              {renderSwitch(
+                "agree_promotions",
+                "I'd like to receive updates about new features, events, and other comic-related content",
+              )}
 
               {/* Tracking Preference - Show conditionally based on platform */}
-              {Platform.OS === "android" && (
-                <View style={styles.switchContainer}>
-                  <Switch
-                    value={
-                      formData.agree_to_tracking_across_third_party_apps_and_services
-                    }
-                    onValueChange={(value) =>
-                      handleInputChange(
-                        "agree_to_tracking_across_third_party_apps_and_services",
-                        value,
-                      )
-                    }
-                    trackColor={{ false: "#E5E7EB", true: "#C4B5FD" }}
-                    thumbColor={
-                      formData.agree_to_tracking_across_third_party_apps_and_services
-                        ? "#8347FF"
-                        : "#F4F3F4"
-                    }
-                    ios_backgroundColor="#E5E7EB"
-                  />
-                  <View style={styles.switchLabelContainer}>
-                    <Text style={styles.switchLabel}>
-                      I agree to the tracking of my activity across third-party
-                      apps and services
-                    </Text>
-                  </View>
-                </View>
-              )}
+              {Platform.OS === "android" &&
+                renderSwitch(
+                  "agree_to_tracking_across_third_party_apps_and_services",
+                  "I agree to the tracking of my activity across third-party apps and services",
+                )}
 
               {/* iOS tracking explanation */}
               {isIOS && (
@@ -880,34 +1315,7 @@ const SettingsScreen = () => {
           </View>
 
           {/* Form Actions */}
-          <View style={styles.formActions}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleBackToDashboard}
-              activeOpacity={0.7} // Better touch feedback for iOS
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.saveButton,
-                isUpdating && styles.saveButtonDisabled,
-              ]}
-              onPress={handleSubmit}
-              disabled={isUpdating}
-              activeOpacity={0.7} // Better touch feedback for iOS
-            >
-              {isUpdating ? (
-                <View style={styles.buttonContent}>
-                  <ActivityIndicator size="small" color="white" />
-                  <Text style={styles.saveButtonText}>Saving...</Text>
-                </View>
-              ) : (
-                <Text style={styles.saveButtonText}>Save Changes</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+          {renderActionButtons()}
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -935,15 +1343,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
+  androidLoader: {
+    transform: [{ scale: 1.2 }], // Slightly larger for Android
+  },
   loadingText: {
     marginTop: 12,
     marginBottom: 24,
     color: "#6B7280",
     fontSize: 16,
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
       },
     }),
   },
@@ -952,21 +1366,42 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
     minHeight: 44, // Standard iOS touch target height
+    // Platform-specific styling
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 3, // Android shadow
+      },
+    }),
   },
   retryButtonText: {
     color: "white",
     fontWeight: "600",
     marginLeft: 8,
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
         fontWeight: "600",
       },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+        textTransform: "uppercase", // Material Design style uppercase buttons
+        letterSpacing: 0.5, // Material Design letter spacing
+      },
     }),
+  },
+  buttonContentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonIcon: {
     marginRight: 4,
@@ -976,7 +1411,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
     overflow: "hidden",
-    // iOS-specific shadow
+    // Platform-specific styling
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -985,7 +1420,7 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
       },
       android: {
-        elevation: 2,
+        elevation: 2, // Android shadow
       },
     }),
   },
@@ -999,21 +1434,28 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#8347FF",
     marginBottom: 4,
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
         fontWeight: "600",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
       },
     }),
   },
   sectionSubtitle: {
     fontSize: 14,
     color: "#6B7280",
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
       },
     }),
   },
@@ -1031,11 +1473,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: "#4B5563",
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
         fontWeight: "500",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
       },
     }),
   },
@@ -1051,20 +1497,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#1F2937",
     backgroundColor: "white",
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
       },
     }),
   },
+  androidInput: {
+    fontFamily: "sans-serif",
+    height: 48, // Slightly taller inputs on Android
+    paddingVertical: 8, // Better vertical padding for Android
+  },
+  androidSelectWrapper: {
+    borderRadius: 8,
+    overflow: "hidden", // Important for ripple containment
+  },
   inputText: {
     fontSize: 16,
     color: "#1F2937",
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
       },
     }),
   },
@@ -1083,6 +1541,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   walletAddressInput: {
+    // Platform specific monospace font
     ...Platform.select({
       ios: {
         fontFamily: "Menlo", // Monospaced font for iOS
@@ -1111,10 +1570,13 @@ const styles = StyleSheet.create({
   errorText: {
     color: "#EF4444",
     fontSize: 12,
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
       },
     }),
   },
@@ -1129,10 +1591,13 @@ const styles = StyleSheet.create({
   helperText: {
     color: "#6B7280",
     fontSize: 12,
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
       },
     }),
   },
@@ -1166,16 +1631,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     flex: 1,
-    // Use system font for iOS
-    ...Platform.select({
-      ios: {
-        fontFamily: "System",
-        fontWeight: "500",
-      },
-    }),
+    // Platform-specific font styling for iOS
+    fontFamily: "System",
+    fontWeight: "500",
+  },
+  androidStatusText: {
+    fontSize: 14,
+    flex: 1,
+    // Android-specific font styling
+    fontFamily: "sans-serif",
   },
   closeButton: {
     padding: 4,
+  },
+  androidCloseButton: {
+    padding: 8,
+    borderRadius: 20,
+    height: 36,
+    width: 36,
+    justifyContent: "center",
+    alignItems: "center",
   },
   formActions: {
     backgroundColor: "#F9FAFB",
@@ -1185,7 +1660,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     flexDirection: "row",
     justifyContent: "space-between",
-    // iOS-specific shadow
+    // Platform-specific styling
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -1194,9 +1669,15 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
       },
       android: {
-        elevation: 1,
+        elevation: 1, // Android shadow
       },
     }),
+  },
+  androidButtonWrapper: {
+    flex: 1,
+    borderRadius: 8,
+    overflow: "hidden",
+    marginHorizontal: 4,
   },
   cancelButton: {
     flex: 1,
@@ -1209,16 +1690,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     minHeight: 44, // Standard iOS height
+    // Platform-specific styling
+    ...Platform.select({
+      android: {
+        height: 48, // Slightly taller for Android
+      },
+    }),
   },
   cancelButtonText: {
     color: "#4B5563",
     fontWeight: "500",
     fontSize: 16,
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
         fontWeight: "500",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+        textTransform: "uppercase", // Material Design style uppercase buttons
+        letterSpacing: 0.5, // Material Design letter spacing
       },
     }),
   },
@@ -1230,19 +1723,38 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     minHeight: 44, // Standard iOS height
+    // Platform-specific styling
+    ...Platform.select({
+      android: {
+        height: 48, // Slightly taller for Android
+        elevation: 2, // Android shadow for primary action button
+      },
+    }),
   },
   saveButtonDisabled: {
     backgroundColor: "#C4B5FD",
+    // Platform-specific styling
+    ...Platform.select({
+      android: {
+        elevation: 0, // No elevation when disabled
+      },
+    }),
   },
   saveButtonText: {
     color: "white",
     fontWeight: "600",
     fontSize: 16,
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
         fontWeight: "600",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+        textTransform: "uppercase", // Material Design style uppercase buttons
+        letterSpacing: 0.5, // Material Design letter spacing
       },
     }),
   },
@@ -1263,10 +1775,13 @@ const styles = StyleSheet.create({
   switchLabel: {
     fontSize: 14,
     color: "#4B5563",
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
       },
     }),
   },
@@ -1286,12 +1801,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     flex: 1,
     lineHeight: 20,
-    // Use system font for iOS
-    ...Platform.select({
-      ios: {
-        fontFamily: "System",
-      },
-    }),
+    // iOS-specific font styling
+    fontFamily: "System",
   },
   // iOS Picker Modal styles
   modalOverlay: {
@@ -1361,6 +1872,87 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#6B7280",
     fontFamily: "System",
+  },
+  // Android Picker Modal styles
+  androidModalOverlay: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 1000,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  androidPickerContainer: {
+    backgroundColor: "white",
+    borderRadius: 8,
+    width: "90%",
+    maxHeight: "80%",
+    elevation: 5,
+  },
+  androidPickerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  androidPickerTitle: {
+    fontSize: 18,
+    color: "#1F2937",
+    fontFamily: "sans-serif-medium",
+  },
+  androidPickerCloseBtn: {
+    padding: 8,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  androidPickerOptions: {
+    maxHeight: 400,
+  },
+  androidPickerOption: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
+  androidPickerOptionSelected: {
+    backgroundColor: "#F3F4FF",
+  },
+  androidPickerOptionText: {
+    fontSize: 16,
+    color: "#1F2937",
+    fontFamily: "sans-serif",
+  },
+  androidPickerOptionTextSelected: {
+    color: "#8347FF",
+    fontFamily: "sans-serif-medium",
+  },
+  androidPickerActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    padding: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+  },
+  androidPickerCancelButton: {
+    padding: 12,
+    borderRadius: 4,
+  },
+  androidPickerCancelText: {
+    color: "#8347FF",
+    fontFamily: "sans-serif-medium",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
 });
 

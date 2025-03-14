@@ -1,4 +1,4 @@
-// screens/RegisterScreen.js with iOS improvements
+// screens/RegisterScreen.js
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "expo-router";
 import {
@@ -18,6 +18,9 @@ import {
   Alert,
   Dimensions,
   Keyboard,
+  BackHandler,
+  ToastAndroid,
+  TouchableNativeFeedback,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
@@ -27,14 +30,16 @@ import registrationApi from "../api/endpoints/registrationApi";
 import Header from "../components/Header";
 import VerificationCodeModal from "../components/VerificationCodeModal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 
 const { width, height } = Dimensions.get("window");
 const isSmallDevice = height < 700;
 const isLargeDevice = height > 800;
+const isAndroid = Platform.OS === "android";
+const isIOS = Platform.OS === "ios";
 
 const RegisterScreen = () => {
   const router = useRouter();
-  const isIOS = Platform.OS === "ios";
   const insets = useSafeAreaInsets();
 
   const {
@@ -80,6 +85,33 @@ const RegisterScreen = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  // Handle Android back button
+  useEffect(() => {
+    if (isAndroid) {
+      const backAction = () => {
+        if (countryModalVisible) {
+          setCountryModalVisible(false);
+          return true;
+        }
+        if (timezoneModalVisible) {
+          setTimezoneModalVisible(false);
+          return true;
+        }
+        if (showVerificationModal) {
+          return true; // Block back button during verification
+        }
+        return false;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction,
+      );
+
+      return () => backHandler.remove();
+    }
+  }, [countryModalVisible, timezoneModalVisible, showVerificationModal]);
 
   // Keyboard listeners for iOS
   useEffect(() => {
@@ -136,6 +168,11 @@ const RegisterScreen = () => {
         scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
       }
 
+      // Android-specific feedback for errors
+      if (isAndroid) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+
       setIsSubmitted(false);
     }
   }, [apiError]);
@@ -144,6 +181,11 @@ const RegisterScreen = () => {
   useEffect(() => {
     if (apiSuccess) {
       setShowVerificationModal(true);
+
+      // Android-specific feedback for success
+      if (isAndroid) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
     }
   }, [apiSuccess, router]);
 
@@ -198,12 +240,22 @@ const RegisterScreen = () => {
   const selectCountry = (country) => {
     handleInputChange("country", country.value);
     setCountryModalVisible(false);
+
+    // Android haptic feedback
+    if (isAndroid) {
+      Haptics.selectionAsync();
+    }
   };
 
   // Select timezone
   const selectTimezone = (timezone) => {
     handleInputChange("timezone", timezone.value);
     setTimezoneModalVisible(false);
+
+    // Android haptic feedback
+    if (isAndroid) {
+      Haptics.selectionAsync();
+    }
   };
 
   // Handle verification code submission
@@ -214,16 +266,26 @@ const RegisterScreen = () => {
 
       await registrationApi.verifyEmail(code);
 
-      Alert.alert(
-        "Verification Successful",
-        "Your account has been verified. You can now login.",
-        [
-          {
-            text: "Go to Login",
-            onPress: () => router.replace("/login"),
-          },
-        ],
-      );
+      if (isAndroid) {
+        // Android toast notification
+        ToastAndroid.showWithGravity(
+          "Account verification successful!",
+          ToastAndroid.LONG,
+          ToastAndroid.BOTTOM,
+        );
+      } else {
+        // iOS Alert
+        Alert.alert(
+          "Verification Successful",
+          "Your account has been verified. You can now login.",
+          [
+            {
+              text: "Go to Login",
+              onPress: () => router.replace("/login"),
+            },
+          ],
+        );
+      }
 
       setShowVerificationModal(false);
     } catch (error) {
@@ -231,6 +293,10 @@ const RegisterScreen = () => {
       setVerificationError(
         error.message || "Failed to verify code. Please try again.",
       );
+
+      if (isAndroid) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
     } finally {
       setIsVerifying(false);
     }
@@ -302,7 +368,30 @@ const RegisterScreen = () => {
         scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
       }
 
+      // Android feedback and toast for validation errors
+      if (isAndroid) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+
+        ToastAndroid.showWithGravity(
+          "Please correct the form errors",
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+        );
+      } else {
+        // For iOS, use Alert for validation errors
+        Alert.alert(
+          "Validation Error",
+          "Please correct the highlighted fields before saving.",
+          [{ text: "OK", style: "default" }],
+        );
+      }
+
       return;
+    }
+
+    // Haptic feedback on form submission
+    if (isAndroid) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
     setIsSubmitted(true);
@@ -394,7 +483,7 @@ const RegisterScreen = () => {
             <TouchableOpacity
               style={styles.inputIconRight}
               onPress={onRightIconPress}
-              activeOpacity={0.7}
+              activeOpacity={isIOS ? 0.7 : 1}
             >
               {rightIcon}
             </TouchableOpacity>
@@ -415,8 +504,73 @@ const RegisterScreen = () => {
     );
   };
 
+  // Android-specific modal wrapper
+  const AndroidModalWrapper = ({ children, visible, onRequestClose }) => {
+    if (!isAndroid) return children;
+
+    return (
+      <Modal
+        visible={visible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={onRequestClose}
+      >
+        {children}
+      </Modal>
+    );
+  };
+
+  // Render Android touchable with correct props
+  const renderTouchable = (props) => {
+    if (!isAndroid) {
+      return (
+        <TouchableOpacity activeOpacity={0.7} {...props}>
+          {props.children}
+        </TouchableOpacity>
+      );
+    }
+
+    if (
+      props.style &&
+      (props.style.backgroundColor === "#8347FF" ||
+        props.style.backgroundColor === "#7e22ce")
+    ) {
+      return (
+        <TouchableNativeFeedback
+          background={TouchableNativeFeedback.Ripple("#a78bfa", false)}
+          useForeground={true}
+          {...props}
+        >
+          <View style={[props.style, { overflow: "hidden" }]}>
+            {props.children}
+          </View>
+        </TouchableNativeFeedback>
+      );
+    }
+
+    return (
+      <TouchableNativeFeedback
+        background={TouchableNativeFeedback.Ripple("#d1d5db", false)}
+        useForeground={true}
+        {...props}
+      >
+        <View style={[props.style, { overflow: "hidden" }]}>
+          {props.children}
+        </View>
+      </TouchableNativeFeedback>
+    );
+  };
+
   return (
     <View style={styles.container}>
+      {isAndroid && (
+        <StatusBar
+          translucent={true}
+          backgroundColor="transparent"
+          barStyle="light-content"
+        />
+      )}
+
       <Header showBackButton={true} />
 
       <KeyboardAvoidingView
@@ -432,17 +586,20 @@ const RegisterScreen = () => {
             { paddingBottom: insets.bottom + 40 },
           ]}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-          overScrollMode="never"
-          contentInsetAdjustmentBehavior="never"
+          showsVerticalScrollIndicator={isAndroid}
+          bounces={isIOS}
+          overScrollMode={isAndroid ? "always" : "never"}
+          contentInsetAdjustmentBehavior={isIOS ? "never" : undefined}
         >
           {/* Hero Banner */}
           <LinearGradient
             colors={["#4f46e5", "#4338ca"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
-            style={[styles.heroBanner, { paddingTop: isSmallDevice ? 32 : 48 }]}
+            style={[
+              styles.heroBanner,
+              isAndroid && { paddingTop: 20 + insets.top },
+            ]}
           >
             <View style={styles.heroContent}>
               <Text
@@ -641,27 +798,57 @@ const RegisterScreen = () => {
                 <Text style={styles.inputLabel}>
                   Country <Text style={styles.requiredStar}>*</Text>
                 </Text>
-                <TouchableOpacity
-                  style={[
-                    styles.dropdownButton,
-                    errors.country ? styles.inputError : null,
-                  ]}
-                  onPress={() => setCountryModalVisible(true)}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.dropdownButtonText,
-                      !formData.country && styles.dropdownPlaceholder,
-                    ]}
+                {isAndroid ? (
+                  <TouchableNativeFeedback
+                    onPress={() => setCountryModalVisible(true)}
+                    background={TouchableNativeFeedback.Ripple(
+                      "#e5e7eb",
+                      false,
+                    )}
                   >
-                    {formData.country
-                      ? countries.find((c) => c.value === formData.country)
-                          ?.label || formData.country
-                      : "Select Country..."}
-                  </Text>
-                  <Feather name="chevron-down" size={20} color="#9ca3af" />
-                </TouchableOpacity>
+                    <View
+                      style={[
+                        styles.dropdownButton,
+                        errors.country ? styles.inputError : null,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.dropdownButtonText,
+                          !formData.country && styles.dropdownPlaceholder,
+                        ]}
+                      >
+                        {formData.country
+                          ? countries.find((c) => c.value === formData.country)
+                              ?.label || formData.country
+                          : "Select Country..."}
+                      </Text>
+                      <Feather name="chevron-down" size={20} color="#9ca3af" />
+                    </View>
+                  </TouchableNativeFeedback>
+                ) : (
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownButton,
+                      errors.country ? styles.inputError : null,
+                    ]}
+                    onPress={() => setCountryModalVisible(true)}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.dropdownButtonText,
+                        !formData.country && styles.dropdownPlaceholder,
+                      ]}
+                    >
+                      {formData.country
+                        ? countries.find((c) => c.value === formData.country)
+                            ?.label || formData.country
+                        : "Select Country..."}
+                    </Text>
+                    <Feather name="chevron-down" size={20} color="#9ca3af" />
+                  </TouchableOpacity>
+                )}
                 {errors.country && (
                   <View style={styles.errorContainer}>
                     <Feather
@@ -694,28 +881,64 @@ const RegisterScreen = () => {
                   <View style={styles.inputIconLeft}>
                     <Feather name="clock" size={20} color="#9ca3af" />
                   </View>
-                  <TouchableOpacity
-                    style={[
-                      styles.dropdownButton,
-                      styles.dropdownButtonWithIcon,
-                      errors.timezone ? styles.inputError : null,
-                    ]}
-                    onPress={() => setTimezoneModalVisible(true)}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={[
-                        styles.dropdownButtonText,
-                        !formData.timezone && styles.dropdownPlaceholder,
-                      ]}
+                  {isAndroid ? (
+                    <TouchableNativeFeedback
+                      onPress={() => setTimezoneModalVisible(true)}
+                      background={TouchableNativeFeedback.Ripple(
+                        "#e5e7eb",
+                        false,
+                      )}
                     >
-                      {formData.timezone
-                        ? timezones.find((t) => t.value === formData.timezone)
-                            ?.label || formData.timezone
-                        : "Select Timezone..."}
-                    </Text>
-                    <Feather name="chevron-down" size={20} color="#9ca3af" />
-                  </TouchableOpacity>
+                      <View
+                        style={[
+                          styles.dropdownButton,
+                          styles.dropdownButtonWithIcon,
+                          errors.timezone ? styles.inputError : null,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.dropdownButtonText,
+                            !formData.timezone && styles.dropdownPlaceholder,
+                          ]}
+                        >
+                          {formData.timezone
+                            ? timezones.find(
+                                (t) => t.value === formData.timezone,
+                              )?.label || formData.timezone
+                            : "Select Timezone..."}
+                        </Text>
+                        <Feather
+                          name="chevron-down"
+                          size={20}
+                          color="#9ca3af"
+                        />
+                      </View>
+                    </TouchableNativeFeedback>
+                  ) : (
+                    <TouchableOpacity
+                      style={[
+                        styles.dropdownButton,
+                        styles.dropdownButtonWithIcon,
+                        errors.timezone ? styles.inputError : null,
+                      ]}
+                      onPress={() => setTimezoneModalVisible(true)}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.dropdownButtonText,
+                          !formData.timezone && styles.dropdownPlaceholder,
+                        ]}
+                      >
+                        {formData.timezone
+                          ? timezones.find((t) => t.value === formData.timezone)
+                              ?.label || formData.timezone
+                          : "Select Timezone..."}
+                      </Text>
+                      <Feather name="chevron-down" size={20} color="#9ca3af" />
+                    </TouchableOpacity>
+                  )}
                 </View>
                 {errors.timezone && (
                   <View style={styles.errorContainer}>
@@ -828,47 +1051,117 @@ const RegisterScreen = () => {
                   <View style={styles.switchLabelContainer}>
                     <Text style={styles.switchLabel}>
                       I agree to the tracking of my activity across third-party
-                      apps and services.
+                      apps and services
                     </Text>
                   </View>
+                </View>
+              )}
+
+              {/* iOS tracking explanation */}
+              {isIOS && (
+                <View style={styles.iosTrackingInfoContainer}>
+                  <Feather
+                    name="information-circle"
+                    size={20}
+                    color="#6B7280"
+                    style={styles.infoIcon}
+                  />
+                  <Text style={styles.iosTrackingInfoText}>
+                    On iOS, tracking preferences are managed in your device's
+                    Settings app. To change tracking settings, go to Settings →
+                    Privacy → Tracking.
+                  </Text>
                 </View>
               )}
             </View>
 
             {/* Action Buttons */}
             <View style={styles.actionButtonsContainer}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => router.back()}
-                disabled={isLoading}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
+              {isAndroid ? (
+                <>
+                  <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(
+                      "#e5e7eb",
+                      false,
+                    )}
+                    onPress={() => router.back()}
+                    disabled={isLoading}
+                  >
+                    <View style={styles.cancelButton}>
+                      <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </View>
+                  </TouchableNativeFeedback>
 
-              <TouchableOpacity
-                style={[
-                  styles.submitButton,
-                  (isLoading || isSubmitted) && styles.disabledButton,
-                ]}
-                onPress={handleSubmit}
-                disabled={isLoading || isSubmitted}
-                activeOpacity={0.7}
-              >
-                {isLoading ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color="white" />
-                    <Text style={styles.submitButtonText}>
-                      Creating Account...
-                    </Text>
-                  </View>
-                ) : (
-                  <View style={styles.buttonContent}>
-                    <Text style={styles.submitButtonText}>Create Account</Text>
-                    <Feather name="arrow-right" size={20} color="white" />
-                  </View>
-                )}
-              </TouchableOpacity>
+                  <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(
+                      "#a78bfa",
+                      false,
+                    )}
+                    onPress={handleSubmit}
+                    disabled={isLoading || isSubmitted}
+                  >
+                    <View
+                      style={[
+                        styles.submitButton,
+                        (isLoading || isSubmitted) && styles.disabledButton,
+                      ]}
+                    >
+                      {isLoading ? (
+                        <View style={styles.loadingContainer}>
+                          <ActivityIndicator size="small" color="white" />
+                          <Text style={styles.submitButtonText}>
+                            Creating Account...
+                          </Text>
+                        </View>
+                      ) : (
+                        <View style={styles.buttonContent}>
+                          <Text style={styles.submitButtonText}>
+                            Create Account
+                          </Text>
+                          <Feather name="arrow-right" size={20} color="white" />
+                        </View>
+                      )}
+                    </View>
+                  </TouchableNativeFeedback>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => router.back()}
+                    disabled={isLoading}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.submitButton,
+                      (isLoading || isSubmitted) && styles.disabledButton,
+                    ]}
+                    onPress={handleSubmit}
+                    disabled={isLoading || isSubmitted}
+                    activeOpacity={0.7}
+                  >
+                    {isLoading ? (
+                      <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="small" color="white" />
+                        <Text style={styles.submitButtonText}>
+                          Creating Account...
+                        </Text>
+                      </View>
+                    ) : (
+                      <View style={styles.buttonContent}>
+                        <Text style={styles.submitButtonText}>
+                          Create Account
+                        </Text>
+                        <Feather name="arrow-right" size={20} color="white" />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
 
             {/* Already have account */}
@@ -887,15 +1180,31 @@ const RegisterScreen = () => {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Country Modal - iOS-Optimized */}
+      {/* Country Modal */}
       <Modal
         visible={countryModalVisible}
         transparent={true}
-        animationType="slide"
+        animationType={isAndroid ? "fade" : "slide"}
         onRequestClose={() => setCountryModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { paddingBottom: insets.bottom }]}>
+        <View
+          style={[
+            styles.modalOverlay,
+            isAndroid && { backgroundColor: "rgba(0, 0, 0, 0.6)" },
+          ]}
+        >
+          <View
+            style={[
+              styles.modalContent,
+              { paddingBottom: insets.bottom },
+              isAndroid && {
+                width: "90%",
+                maxHeight: "80%",
+                borderRadius: 8,
+                elevation: 24,
+              },
+            ]}
+          >
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Select Country</Text>
               <TouchableOpacity
@@ -910,45 +1219,93 @@ const RegisterScreen = () => {
             <FlatList
               data={countries.filter((c) => c.value !== "")}
               keyExtractor={(item) => item.value}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.modalItem,
-                    formData.country === item.value && styles.modalItemSelected,
-                  ]}
-                  onPress={() => selectCountry(item)}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.modalItemText,
-                      formData.country === item.value &&
-                        styles.modalItemTextSelected,
-                    ]}
+              renderItem={({ item }) =>
+                isAndroid ? (
+                  <TouchableNativeFeedback
+                    onPress={() => selectCountry(item)}
+                    background={TouchableNativeFeedback.Ripple(
+                      "#f3f4ff",
+                      false,
+                    )}
                   >
-                    {item.label}
-                  </Text>
-                  {formData.country === item.value && (
-                    <Feather name="check" size={20} color="#7e22ce" />
-                  )}
-                </TouchableOpacity>
-              )}
+                    <View
+                      style={[
+                        styles.modalItem,
+                        formData.country === item.value &&
+                          styles.modalItemSelected,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.modalItemText,
+                          formData.country === item.value &&
+                            styles.modalItemTextSelected,
+                        ]}
+                      >
+                        {item.label}
+                      </Text>
+                      {formData.country === item.value && (
+                        <Feather name="check" size={20} color="#7e22ce" />
+                      )}
+                    </View>
+                  </TouchableNativeFeedback>
+                ) : (
+                  <TouchableOpacity
+                    style={[
+                      styles.modalItem,
+                      formData.country === item.value &&
+                        styles.modalItemSelected,
+                    ]}
+                    onPress={() => selectCountry(item)}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.modalItemText,
+                        formData.country === item.value &&
+                          styles.modalItemTextSelected,
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                    {formData.country === item.value && (
+                      <Feather name="check" size={20} color="#7e22ce" />
+                    )}
+                  </TouchableOpacity>
+                )
+              }
               style={styles.modalList}
-              showsVerticalScrollIndicator={false}
+              showsVerticalScrollIndicator={isAndroid}
             />
           </View>
         </View>
       </Modal>
 
-      {/* Timezone Modal - iOS-Optimized */}
+      {/* Timezone Modal */}
       <Modal
         visible={timezoneModalVisible}
         transparent={true}
-        animationType="slide"
+        animationType={isAndroid ? "fade" : "slide"}
         onRequestClose={() => setTimezoneModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { paddingBottom: insets.bottom }]}>
+        <View
+          style={[
+            styles.modalOverlay,
+            isAndroid && { backgroundColor: "rgba(0, 0, 0, 0.6)" },
+          ]}
+        >
+          <View
+            style={[
+              styles.modalContent,
+              { paddingBottom: insets.bottom },
+              isAndroid && {
+                width: "90%",
+                maxHeight: "80%",
+                borderRadius: 8,
+                elevation: 24,
+              },
+            ]}
+          >
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Select Timezone</Text>
               <TouchableOpacity
@@ -962,32 +1319,63 @@ const RegisterScreen = () => {
             <FlatList
               data={timezones.filter((t) => t.value !== "")}
               keyExtractor={(item) => item.value}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.modalItem,
-                    formData.timezone === item.value &&
-                      styles.modalItemSelected,
-                  ]}
-                  onPress={() => selectTimezone(item)}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.modalItemText,
-                      formData.timezone === item.value &&
-                        styles.modalItemTextSelected,
-                    ]}
+              renderItem={({ item }) =>
+                isAndroid ? (
+                  <TouchableNativeFeedback
+                    onPress={() => selectTimezone(item)}
+                    background={TouchableNativeFeedback.Ripple(
+                      "#f3f4ff",
+                      false,
+                    )}
                   >
-                    {item.label}
-                  </Text>
-                  {formData.timezone === item.value && (
-                    <Feather name="check" size={20} color="#7e22ce" />
-                  )}
-                </TouchableOpacity>
-              )}
+                    <View
+                      style={[
+                        styles.modalItem,
+                        formData.timezone === item.value &&
+                          styles.modalItemSelected,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.modalItemText,
+                          formData.timezone === item.value &&
+                            styles.modalItemTextSelected,
+                        ]}
+                      >
+                        {item.label}
+                      </Text>
+                      {formData.timezone === item.value && (
+                        <Feather name="check" size={20} color="#7e22ce" />
+                      )}
+                    </View>
+                  </TouchableNativeFeedback>
+                ) : (
+                  <TouchableOpacity
+                    style={[
+                      styles.modalItem,
+                      formData.timezone === item.value &&
+                        styles.modalItemSelected,
+                    ]}
+                    onPress={() => selectTimezone(item)}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.modalItemText,
+                        formData.timezone === item.value &&
+                          styles.modalItemTextSelected,
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                    {formData.timezone === item.value && (
+                      <Feather name="check" size={20} color="#7e22ce" />
+                    )}
+                  </TouchableOpacity>
+                )
+              }
               style={styles.modalList}
-              showsVerticalScrollIndicator={false}
+              showsVerticalScrollIndicator={isAndroid}
             />
           </View>
         </View>
@@ -1033,6 +1421,11 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     marginBottom: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   heroTitleSmall: {
     fontSize: 24,
@@ -1042,6 +1435,11 @@ const styles = StyleSheet.create({
     color: "#e0e7ff",
     textAlign: "center",
     paddingHorizontal: 20,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   heroSubtitleSmall: {
     fontSize: 14,
@@ -1050,19 +1448,26 @@ const styles = StyleSheet.create({
     margin: 16,
     backgroundColor: "white",
     borderRadius: 16, // More iOS-friendly corner radius
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        borderRadius: 8,
+        elevation: 4,
+      },
+    }),
     marginBottom: 24,
     overflow: "hidden",
   },
   formHeader: {
     paddingVertical: 16,
     paddingHorizontal: 16,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderTopLeftRadius: Platform.OS === "ios" ? 16 : 8,
+    borderTopRightRadius: Platform.OS === "ios" ? 16 : 8,
   },
   formHeaderContent: {
     flexDirection: "row",
@@ -1075,10 +1480,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "white",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   formHeaderSubtitle: {
     fontSize: 14,
     color: "#e0e7ff",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   errorSummary: {
     margin: 16,
@@ -1098,12 +1513,22 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#b91c1c",
     fontSize: 16,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   errorSummaryItem: {
     color: "#b91c1c",
     marginLeft: 10,
     marginBottom: 4,
     fontSize: 14,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   formSection: {
     padding: 16,
@@ -1120,6 +1545,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#4b5563",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   inputContainer: {
     marginBottom: 16,
@@ -1129,19 +1559,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: "#4b5563",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   inputWrapper: {
     position: "relative",
   },
   input: {
-    height: 44,
+    height: Platform.OS === "ios" ? 44 : 48,
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10, // More iOS-friendly corner radius
+    borderRadius: Platform.OS === "ios" ? 10 : 4, // Android uses smaller radii
     paddingHorizontal: 12,
     fontSize: 16,
     color: "#1f2937",
     backgroundColor: "white",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   inputWithLeftIcon: {
     paddingLeft: 40,
@@ -1152,13 +1592,13 @@ const styles = StyleSheet.create({
   inputIconLeft: {
     position: "absolute",
     left: 12,
-    top: 12,
+    top: Platform.OS === "ios" ? 12 : 14,
     zIndex: 1,
   },
   inputIconRight: {
     position: "absolute",
     right: 12,
-    top: 12,
+    top: Platform.OS === "ios" ? 12 : 14,
     zIndex: 1,
     padding: 2, // Increase touch target
   },
@@ -1170,10 +1610,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: 44,
+    height: Platform.OS === "ios" ? 44 : 48,
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10, // More iOS-friendly corner radius
+    borderRadius: Platform.OS === "ios" ? 10 : 4,
     paddingHorizontal: 12,
     backgroundColor: "white",
   },
@@ -1183,6 +1623,11 @@ const styles = StyleSheet.create({
   dropdownButtonText: {
     fontSize: 16,
     color: "#1f2937",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   dropdownPlaceholder: {
     color: "#9ca3af",
@@ -1194,10 +1639,10 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "white",
-    borderTopLeftRadius: 20, // iOS-style rounded modal corners
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: Platform.OS === "ios" ? 20 : 8, // Platform-specific radius
+    borderTopRightRadius: Platform.OS === "ios" ? 20 : 8,
     maxHeight: "80%",
-    paddingTop: 8, // Better iOS modal feel
+    paddingTop: Platform.OS === "ios" ? 8 : 0, // iOS-specific top padding
   },
   modalHeader: {
     flexDirection: "row",
@@ -1211,12 +1656,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#1f2937",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+      ios: {
+        fontFamily: "System",
+      },
+    }),
   },
   modalCloseButton: {
     padding: 4,
   },
   modalList: {
-    maxHeight: 400, // Limit height for better performance
+    maxHeight: Platform.OS === "ios" ? 400 : "auto", // Different height limits
   },
   modalItem: {
     flexDirection: "row",
@@ -1232,10 +1685,23 @@ const styles = StyleSheet.create({
   modalItemText: {
     fontSize: 16,
     color: "#1f2937",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+      ios: {
+        fontFamily: "System",
+      },
+    }),
   },
   modalItemTextSelected: {
     color: "#7e22ce",
     fontWeight: "600",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   errorContainer: {
     flexDirection: "row",
@@ -1248,6 +1714,11 @@ const styles = StyleSheet.create({
   errorText: {
     color: "#ef4444",
     fontSize: 12,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   switchContainer: {
     flexDirection: "row",
@@ -1261,6 +1732,11 @@ const styles = StyleSheet.create({
   switchLabel: {
     fontSize: 14,
     color: "#4b5563",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   switchErrorContainer: {
     flexDirection: "row",
@@ -1272,6 +1748,11 @@ const styles = StyleSheet.create({
   linkText: {
     color: "#7e22ce",
     fontWeight: "500",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   requiredStar: {
     color: "#ef4444",
@@ -1286,24 +1767,41 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9fafb",
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10, // More iOS-friendly corner radius
+    borderRadius: Platform.OS === "ios" ? 10 : 4,
     paddingVertical: 14,
     marginRight: 8,
     alignItems: "center",
     justifyContent: "center",
+    ...Platform.select({
+      android: {
+        borderRadius: 4,
+        overflow: "hidden",
+      },
+    }),
   },
   cancelButtonText: {
     color: "#4b5563",
     fontWeight: "500",
     fontSize: 16,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   submitButton: {
     flex: 2,
     backgroundColor: "#7e22ce",
-    borderRadius: 10, // More iOS-friendly corner radius
+    borderRadius: Platform.OS === "ios" ? 10 : 4,
     paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
+    ...Platform.select({
+      android: {
+        borderRadius: 4,
+        overflow: "hidden",
+      },
+    }),
   },
   disabledButton: {
     opacity: 0.7,
@@ -1317,6 +1815,11 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontSize: 16,
     marginRight: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   loadingContainer: {
     flexDirection: "row",
@@ -1330,6 +1833,28 @@ const styles = StyleSheet.create({
   alreadyAccountText: {
     color: "#6b7280",
     fontSize: 14,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
+  },
+  iosTrackingInfoContainer: {
+    flexDirection: "row",
+    backgroundColor: "#F3F4FF",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  },
+  infoIcon: {
+    marginRight: 8,
+    marginTop: 2,
+  },
+  iosTrackingInfoText: {
+    color: "#6B7280",
+    fontSize: 14,
+    flex: 1,
+    lineHeight: 20,
   },
 });
 

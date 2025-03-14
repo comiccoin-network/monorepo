@@ -1,4 +1,4 @@
-// screens/GetStartedScreen.js with iOS improvements and no bounce effect
+// screens/GetStartedScreen.js
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import {
@@ -10,6 +10,8 @@ import {
   Platform,
   ActivityIndicator,
   Dimensions,
+  StatusBar,
+  BackHandler,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useGetFaucet } from "../api/endpoints/faucetApi";
@@ -19,14 +21,16 @@ import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import OnboardingWizard from "../components/OnboardingWizard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 
 const { width, height } = Dimensions.get("window");
-const isSmallDevice = height < 700; // iPhone SE or similar
+const isSmallDevice = height < 700; // Small devices like older Android phones
 
 const GetStartedScreen = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const insets = useSafeAreaInsets(); // Get safe area insets
+  const insets = useSafeAreaInsets(); // Get safe area insets for both platforms
+  const isAndroid = Platform.OS === "android";
 
   // Onboarding state
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -42,6 +46,21 @@ const GetStartedScreen = () => {
     enabled: true,
     refetchInterval: 60000,
   });
+
+  // Handle Android back button
+  useEffect(() => {
+    if (isAndroid) {
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          // If in onboarding, prevent back navigation
+          return showOnboarding;
+        },
+      );
+
+      return () => backHandler.remove();
+    }
+  }, [showOnboarding]);
 
   // Check if the user has completed onboarding
   useEffect(() => {
@@ -70,10 +89,18 @@ const GetStartedScreen = () => {
 
   // Handle navigation functions
   const handleLoginPress = () => {
+    if (isAndroid) {
+      // Provide haptic feedback on Android
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     router.push("/login");
   };
 
   const handleRegisterPress = () => {
+    if (isAndroid) {
+      // Provide haptic feedback on Android
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     router.push("/register");
   };
 
@@ -94,6 +121,14 @@ const GetStartedScreen = () => {
   // The main GetStartedScreen component
   return (
     <View style={styles.container}>
+      {isAndroid && (
+        <StatusBar
+          backgroundColor="transparent"
+          translucent={true}
+          barStyle="light-content"
+        />
+      )}
+
       <Header currentRoute="/" />
 
       {isLoading && (
@@ -107,13 +142,15 @@ const GetStartedScreen = () => {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          // Add bottom padding to account for safe area
-          { paddingBottom: Math.max(40, insets.bottom + 20) },
+          // For Android, ensure proper padding for navigation bar
+          {
+            paddingBottom: isAndroid
+              ? 24 + insets.bottom
+              : Math.max(40, insets.bottom + 20),
+          },
         ]}
-        bounces={false} // Disable the rubber/bounce effect
-        overScrollMode="never"
-        contentInsetAdjustmentBehavior="never" // Prevents content adjustment that can cause bounce
-        showsVerticalScrollIndicator={false} // Cleaner iOS appearance
+        showsVerticalScrollIndicator={isAndroid} // Show scrollbar on Android
+        overScrollMode={isAndroid ? "always" : "never"} // Enable Android-specific overscroll
       >
         {/* Hero Banner */}
         <LinearGradient
@@ -122,8 +159,14 @@ const GetStartedScreen = () => {
           end={{ x: 0, y: 1 }}
           style={[
             styles.heroBanner,
-            // Add extra top padding for devices with notches
-            { paddingTop: insets.top > 0 ? insets.top + 16 : 48 },
+            // Add extra padding for status bar on Android
+            {
+              paddingTop: isAndroid
+                ? insets.top + 16
+                : insets.top > 0
+                  ? insets.top + 16
+                  : 48,
+            },
           ]}
         >
           <View style={styles.heroContent}>
@@ -160,7 +203,9 @@ const GetStartedScreen = () => {
               style={styles.card}
               onPress={handleRegisterPress}
               disabled={isLoading}
-              activeOpacity={0.7} // Better iOS touch feedback
+              android_ripple={
+                isAndroid ? { color: "#e9d5ff", borderless: false } : undefined
+              } // Android ripple effect
             >
               <View style={styles.iconContainer}>
                 <Feather
@@ -195,7 +240,9 @@ const GetStartedScreen = () => {
               style={styles.card}
               onPress={handleLoginPress}
               disabled={isLoading}
-              activeOpacity={0.7} // Better iOS touch feedback
+              android_ripple={
+                isAndroid ? { color: "#e9d5ff", borderless: false } : undefined
+              } // Android ripple effect
             >
               <View style={styles.iconContainer}>
                 <Feather
@@ -250,10 +297,10 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   heroBanner: {
-    paddingVertical: 48,
+    paddingVertical: 32,
     paddingHorizontal: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: Platform.OS === "android" ? 16 : 20,
+    borderBottomRightRadius: Platform.OS === "android" ? 16 : 20,
   },
   heroContent: {
     alignItems: "center",
@@ -266,6 +313,12 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     marginBottom: 16,
+    // Use Android-specific font family
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   heroTitleSmall: {
     fontSize: 24,
@@ -277,6 +330,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 24,
     paddingHorizontal: 20,
+    // Use Android-specific font family
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   heroSubtitleSmall: {
     fontSize: 14,
@@ -293,6 +352,12 @@ const styles = StyleSheet.create({
     color: "#6b21a8",
     textAlign: "center",
     marginBottom: 24,
+    // Use Android-specific font family
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   sectionTitleSmall: {
     fontSize: 20,
@@ -303,22 +368,23 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "white",
-    borderRadius: 16, // More iOS-friendly rounded corners
+    borderRadius: Platform.OS === "android" ? 8 : 16, // Android uses smaller corner radii
     padding: isSmallDevice ? 16 : 24,
     marginBottom: 16,
+    // Platform-specific styling
     ...Platform.select({
+      android: {
+        elevation: 3, // Android uses elevation for shadows
+      },
       ios: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
+        borderWidth: 2,
+        borderColor: "#f3e8ff",
       },
     }),
-    borderWidth: 2,
-    borderColor: "#f3e8ff",
   },
   iconContainer: {
     backgroundColor: "#f9f5ff",
@@ -337,6 +403,12 @@ const styles = StyleSheet.create({
     color: "#6b21a8",
     textAlign: "center",
     marginBottom: 12,
+    // Use Android-specific font family
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   cardTitleSmall: {
     fontSize: 18,
@@ -348,10 +420,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 24,
     lineHeight: 24,
+    // Use Android-specific font family
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+        lineHeight: 26, // Slightly larger line height for Android
+      },
+    }),
   },
   cardTextSmall: {
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: Platform.OS === "android" ? 22 : 20,
     marginBottom: 16,
   },
   cardFooter: {
@@ -364,6 +443,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#7c3aed",
     marginRight: 8,
+    // Use Android-specific font family
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   loadingOverlay: {
     position: "absolute",
@@ -381,6 +466,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#6b21a8",
     fontWeight: "500",
+    // Use Android-specific font family
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
 });
 

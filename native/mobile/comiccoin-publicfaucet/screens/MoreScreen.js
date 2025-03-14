@@ -1,14 +1,16 @@
-// screens/MoreScreen.js - Optimized for iOS
+// screens/MoreScreen.js
 import React from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  TouchableNativeFeedback,
   Alert,
   Dimensions,
   Platform,
   ScrollView,
+  StatusBar,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,12 +22,48 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { width, height } = Dimensions.get("window");
 const isSmallDevice = height < 667; // iPhone SE or similar sizes
 const isLargeDevice = height > 844; // iPhone Pro Max models
+const isAndroid = Platform.OS === "android";
+const isIOS = Platform.OS === "ios";
+
+// Custom touchable component that adapts to the platform
+const Touchable = ({ children, style, onPress, ...props }) => {
+  if (isAndroid) {
+    return (
+      <TouchableNativeFeedback
+        onPress={onPress}
+        background={TouchableNativeFeedback.Ripple("#d4c1ff", false)}
+        useForeground={true}
+        {...props}
+      >
+        <View style={style}>{children}</View>
+      </TouchableNativeFeedback>
+    );
+  }
+
+  return (
+    <TouchableOpacity
+      style={style}
+      onPress={onPress}
+      activeOpacity={0.7}
+      {...props}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
 
 const MoreScreen = () => {
   const router = useRouter();
   const { logout } = useAuth();
   const insets = useSafeAreaInsets(); // Get safe area insets for notch and home indicator
-  const isIOS = Platform.OS === "ios";
+
+  // Set proper status bar for Android
+  React.useEffect(() => {
+    if (isAndroid) {
+      StatusBar.setBackgroundColor("#7e22ce");
+      StatusBar.setBarStyle("light-content");
+    }
+  }, []);
 
   const confirmSignOut = () => {
     Alert.alert(
@@ -127,10 +165,61 @@ const MoreScreen = () => {
     },
   ];
 
-  // Calculate grid item width based on device size
-  const gridItemWidth = isSmallDevice
-    ? width - 32 // Full width on small devices
-    : (width - 48) / 2; // Two items per row on larger devices
+  // Calculate grid item width based on device size and platform
+  // On Android, we'll use full width on more screen sizes for better touch targets
+  const useFullWidth = isSmallDevice || (isAndroid && height < 720);
+  const gridItemWidth = useFullWidth ? width - 32 : (width - 48) / 2;
+
+  // Render grid item with platform-specific touchable feedback
+  const renderGridItem = (item) => {
+    const itemContent = (
+      <View>
+        <View style={[styles.iconContainer, { backgroundColor: item.bgColor }]}>
+          <Ionicons name={item.icon} size={28} color={item.color} />
+        </View>
+        <Text style={styles.itemTitle}>{item.title}</Text>
+        <Text style={styles.itemDescription}>{item.description}</Text>
+      </View>
+    );
+
+    if (isAndroid) {
+      return (
+        <View
+          key={item.id}
+          style={[
+            styles.gridItemWrapper,
+            {
+              width: useFullWidth ? "100%" : gridItemWidth,
+            },
+          ]}
+        >
+          <TouchableNativeFeedback
+            onPress={item.onPress}
+            background={TouchableNativeFeedback.Ripple(item.bgColor, false)}
+            useForeground={true}
+          >
+            <View style={styles.gridItem}>{itemContent}</View>
+          </TouchableNativeFeedback>
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        key={item.id}
+        style={[
+          styles.gridItem,
+          {
+            width: useFullWidth ? "100%" : gridItemWidth,
+          },
+        ]}
+        onPress={item.onPress}
+        activeOpacity={0.7}
+      >
+        {itemContent}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -140,10 +229,13 @@ const MoreScreen = () => {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          // Add bottom padding for home indicator on notched devices
-          { paddingBottom: isIOS ? insets.bottom + 20 : 20 },
+          // Add bottom padding for home indicator on notched devices (iOS)
+          isIOS && { paddingBottom: insets.bottom + 20 },
+          // Add specific padding for Android
+          isAndroid && { paddingBottom: 24 },
         ]}
         showsVerticalScrollIndicator={false}
+        overScrollMode={isAndroid ? "never" : undefined}
       >
         {menuSections.map((section, sectionIndex) => (
           <View key={`section-${sectionIndex}`} style={styles.sectionContainer}>
@@ -152,46 +244,11 @@ const MoreScreen = () => {
             <View
               style={[
                 styles.gridContainer,
-                // Single column on small devices
-                isSmallDevice && styles.gridContainerSmall,
+                // Single column on small devices or specific Android devices
+                useFullWidth && styles.gridContainerSmall,
               ]}
             >
-              {section.items.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.gridItem,
-                    {
-                      width: isSmallDevice ? "100%" : gridItemWidth,
-                      // Add depth with shadows on iOS
-                      ...Platform.select({
-                        ios: {
-                          shadowColor: "#000",
-                          shadowOffset: { width: 0, height: 1 },
-                          shadowOpacity: 0.1,
-                          shadowRadius: 2,
-                        },
-                        android: {
-                          elevation: 2,
-                        },
-                      }),
-                    },
-                  ]}
-                  onPress={item.onPress}
-                  activeOpacity={0.7} // Better touch feedback on iOS
-                >
-                  <View
-                    style={[
-                      styles.iconContainer,
-                      { backgroundColor: item.bgColor },
-                    ]}
-                  >
-                    <Ionicons name={item.icon} size={28} color={item.color} />
-                  </View>
-                  <Text style={styles.itemTitle}>{item.title}</Text>
-                  <Text style={styles.itemDescription}>{item.description}</Text>
-                </TouchableOpacity>
-              ))}
+              {section.items.map((item) => renderGridItem(item))}
             </View>
           </View>
         ))}
@@ -217,7 +274,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 16,
     paddingHorizontal: 16,
-    // Bottom padding will be added dynamically based on safe area insets
+    // Bottom padding will be added dynamically based on platform and safe area insets
   },
   sectionContainer: {
     marginBottom: 24,
@@ -228,11 +285,15 @@ const styles = StyleSheet.create({
     color: "#1F2937",
     marginBottom: 16,
     paddingLeft: 4,
-    // Use system font for iOS
+    // Use system font for iOS and appropriate font for Android
     ...Platform.select({
       ios: {
         fontFamily: "System",
         fontWeight: "600",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
       },
     }),
   },
@@ -244,6 +305,12 @@ const styles = StyleSheet.create({
   gridContainerSmall: {
     flexDirection: "column", // Stack vertically on small devices
   },
+  gridItemWrapper: {
+    // Wrapper specifically for Android's TouchableNativeFeedback
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 16,
+  },
   gridItem: {
     backgroundColor: "white",
     borderRadius: 16, // Slightly larger radius for iOS
@@ -251,9 +318,23 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     // Min height to ensure consistent card sizes
     minHeight: 160,
-    // Smooth border for iOS
-    borderWidth: Platform.OS === "ios" ? 1 : 0,
-    borderColor: "#F3F4F6",
+    // Platform-specific styling
+    ...Platform.select({
+      ios: {
+        // Smooth border and shadow for iOS
+        borderWidth: 1,
+        borderColor: "#F3F4F6",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        // Material Design elevation for Android
+        elevation: 2,
+        // No need for border on Android as elevation provides visual separation
+      },
+    }),
   },
   iconContainer: {
     width: 56,
@@ -268,11 +349,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1F2937",
     marginBottom: 8,
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
         fontWeight: "600",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
       },
     }),
   },
@@ -280,10 +365,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     lineHeight: 20,
-    // Better line height on iOS for readability
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         lineHeight: 18,
+        fontFamily: "System",
+      },
+      android: {
+        lineHeight: 20,
+        fontFamily: "sans-serif",
       },
     }),
   },
@@ -297,20 +387,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     marginBottom: 4,
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
       },
     }),
   },
   copyrightText: {
     fontSize: 12,
     color: "#9CA3AF",
-    // Use system font for iOS
+    // Platform-specific font styling
     ...Platform.select({
       ios: {
         fontFamily: "System",
+      },
+      android: {
+        fontFamily: "sans-serif",
       },
     }),
   },

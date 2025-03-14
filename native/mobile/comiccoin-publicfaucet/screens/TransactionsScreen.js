@@ -12,11 +12,43 @@ import {
   Modal,
   Animated,
   Platform,
+  TouchableNativeFeedback,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import AppHeader from "../components/AppHeader";
 import { useTransactions } from "../api/endpoints/transactionsApi";
+
+// Platform detection
+const isAndroid = Platform.OS === "android";
+const isIOS = Platform.OS === "ios";
+
+// Custom Touchable component that uses the appropriate component based on platform
+const Touchable = ({ children, style, onPress, ...props }) => {
+  if (isAndroid) {
+    return (
+      <TouchableNativeFeedback
+        onPress={onPress}
+        background={TouchableNativeFeedback.Ripple("#d4c1ff", false)}
+        useForeground={true}
+        {...props}
+      >
+        <View style={style}>{children}</View>
+      </TouchableNativeFeedback>
+    );
+  }
+
+  return (
+    <TouchableOpacity
+      style={style}
+      onPress={onPress}
+      activeOpacity={0.7}
+      {...props}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
 
 const TransactionsScreen = () => {
   const router = useRouter();
@@ -32,6 +64,14 @@ const TransactionsScreen = () => {
 
   // For animations
   const slideAnim = useRef(new Animated.Value(0)).current;
+
+  // Set appropriate status bar for Android
+  useEffect(() => {
+    if (isAndroid) {
+      StatusBar.setBackgroundColor("#7e22ce");
+      StatusBar.setBarStyle("light-content");
+    }
+  }, []);
 
   useEffect(() => {
     if (expandedTransaction) {
@@ -156,7 +196,11 @@ const TransactionsScreen = () => {
       <View style={styles.container}>
         <AppHeader title="Transactions" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8347FF" />
+          <ActivityIndicator
+            size="large"
+            color="#8347FF"
+            style={isAndroid ? styles.androidLoader : undefined}
+          />
           <Text style={styles.loadingText}>Loading transactions...</Text>
         </View>
       </View>
@@ -175,94 +219,119 @@ const TransactionsScreen = () => {
             {error.message ||
               "Failed to load transactions. Please check your connection and try again."}
           </Text>
-          <TouchableOpacity style={styles.retryButton} onPress={refetch}>
+          <Touchable style={styles.retryButton} onPress={refetch}>
             <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
+          </Touchable>
         </View>
       </View>
     );
   }
 
   // Render a transaction item
-  const renderTransactionItem = ({ item }) => (
-    <View style={styles.transactionCard}>
-      <TouchableOpacity
-        style={styles.transactionHeader}
-        onPress={() => toggleTransactionExpand(item.id)}
-        activeOpacity={0.7}
-      >
-        <View>
-          <Text style={styles.transactionAmount}>{item.amount} CC</Text>
-          <Text style={styles.transactionDate}>
-            {formatDate(item.timestamp)}
-          </Text>
-        </View>
-        <Ionicons
-          name={expandedTransaction === item.id ? "chevron-up" : "chevron-down"}
-          size={20}
-          color="#9CA3AF"
-        />
-      </TouchableOpacity>
+  const renderTransactionItem = ({ item }) => {
+    // Wrapper for transaction card touchable based on platform
+    const TransactionTouchable = ({ children, onPress }) => {
+      if (isAndroid) {
+        return (
+          <TouchableNativeFeedback
+            onPress={onPress}
+            background={TouchableNativeFeedback.Ripple("#f3f4ff", false)}
+            useForeground={true}
+          >
+            <View style={styles.transactionHeader}>{children}</View>
+          </TouchableNativeFeedback>
+        );
+      }
 
-      {expandedTransaction === item.id && (
-        <Animated.View
-          style={[
-            styles.expandedContent,
-            {
-              opacity: slideAnim,
-              transform: [
-                {
-                  translateY: slideAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [-10, 0],
-                  }),
-                },
-              ],
-            },
-          ]}
+      return (
+        <TouchableOpacity
+          style={styles.transactionHeader}
+          onPress={onPress}
+          activeOpacity={0.7}
         >
-          <View style={styles.divider} />
+          {children}
+        </TouchableOpacity>
+      );
+    };
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Transaction ID</Text>
-            <Text
-              style={styles.detailValue}
-              numberOfLines={1}
-              ellipsizeMode="middle"
-            >
-              {item.id}
+    return (
+      <View style={styles.transactionCard}>
+        <TransactionTouchable onPress={() => toggleTransactionExpand(item.id)}>
+          <View>
+            <Text style={styles.transactionAmount}>{item.amount} CC</Text>
+            <Text style={styles.transactionDate}>
+              {formatDate(item.timestamp)}
             </Text>
           </View>
+          <Ionicons
+            name={
+              expandedTransaction === item.id ? "chevron-up" : "chevron-down"
+            }
+            size={20}
+            color="#9CA3AF"
+          />
+        </TransactionTouchable>
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Date & Time</Text>
-            <Text style={styles.detailValue}>
-              {new Date(item.timestamp).toLocaleString()}
-            </Text>
-          </View>
+        {expandedTransaction === item.id && (
+          <Animated.View
+            style={[
+              styles.expandedContent,
+              {
+                opacity: slideAnim,
+                transform: [
+                  {
+                    translateY: slideAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [-10, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <View style={styles.divider} />
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount</Text>
-            <Text style={styles.detailValue}>{item.amount} CC</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Status</Text>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>Completed</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Transaction ID</Text>
+              <Text
+                style={styles.detailValue}
+                numberOfLines={1}
+                ellipsizeMode="middle"
+              >
+                {item.id}
+              </Text>
             </View>
-          </View>
 
-          <View style={styles.divider} />
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Date & Time</Text>
+              <Text style={styles.detailValue}>
+                {new Date(item.timestamp).toLocaleString()}
+              </Text>
+            </View>
 
-          <TouchableOpacity style={styles.viewInExplorerButton}>
-            <Text style={styles.viewInExplorerText}>View in Explorer</Text>
-            <Feather name="external-link" size={14} color="#8347FF" />
-          </TouchableOpacity>
-        </Animated.View>
-      )}
-    </View>
-  );
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Amount</Text>
+              <Text style={styles.detailValue}>{item.amount} CC</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Status</Text>
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusText}>Completed</Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Touchable style={styles.viewInExplorerButton}>
+              <Text style={styles.viewInExplorerText}>View in Explorer</Text>
+              <Feather name="external-link" size={14} color="#8347FF" />
+            </Touchable>
+          </Animated.View>
+        )}
+      </View>
+    );
+  };
 
   // Render the empty state
   const renderEmptyState = () => (
@@ -275,24 +344,107 @@ const TransactionsScreen = () => {
         Your transaction history will appear here after you claim your first
         ComicCoins.
       </Text>
-      <TouchableOpacity
+      <Touchable
         style={styles.backToDashboardButton}
         onPress={handleBackToDashboard}
       >
-        <Ionicons
-          name="arrow-back"
-          size={16}
-          color="white"
-          style={styles.backButtonIcon}
-        />
-        <Text style={styles.backToDashboardText}>Back to Dashboard</Text>
-      </TouchableOpacity>
+        <View style={styles.buttonInner}>
+          <Ionicons
+            name="arrow-back"
+            size={16}
+            color="white"
+            style={styles.backButtonIcon}
+          />
+          <Text style={styles.backToDashboardText}>Back to Dashboard</Text>
+        </View>
+      </Touchable>
     </View>
   );
 
+  // Create a wrapper for filter button touchable based on platform
+  const FilterButton = () => {
+    const content = (
+      <View style={styles.filterButton}>
+        <Feather name="filter" size={16} color="#6B7280" />
+        <Text style={styles.filterText}>Filter</Text>
+      </View>
+    );
+
+    if (isAndroid) {
+      return (
+        <View style={styles.androidButtonWrapper}>
+          <TouchableNativeFeedback
+            onPress={() => setFilterMenuOpen(!filterMenuOpen)}
+            background={TouchableNativeFeedback.Ripple("#e5e7eb", false)}
+            useForeground={true}
+          >
+            {content}
+          </TouchableNativeFeedback>
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={styles.filterButton}
+        onPress={() => setFilterMenuOpen(!filterMenuOpen)}
+      >
+        <Feather name="filter" size={16} color="#6B7280" />
+        <Text style={styles.filterText}>Filter</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  // Create wrapper for refresh button based on platform
+  const RefreshButton = () => {
+    const content = (
+      <View style={styles.refreshButton}>
+        <Ionicons
+          name="refresh"
+          size={18}
+          color="#8347FF"
+          style={[isRefreshing && styles.rotating]}
+        />
+      </View>
+    );
+
+    if (isAndroid) {
+      return (
+        <View style={styles.androidButtonWrapper}>
+          <TouchableNativeFeedback
+            onPress={handleRefresh}
+            disabled={isRefreshing}
+            background={TouchableNativeFeedback.Ripple("#e5e7eb", false)}
+            useForeground={true}
+          >
+            {content}
+          </TouchableNativeFeedback>
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={styles.refreshButton}
+        onPress={handleRefresh}
+        disabled={isRefreshing}
+      >
+        <Ionicons
+          name="refresh"
+          size={18}
+          color="#8347FF"
+          style={[isRefreshing && styles.rotating]}
+        />
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#7e22ce" />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={isAndroid ? "#7e22ce" : undefined}
+      />
       <AppHeader
         title={`Transactions${filter === "personal" ? " (Personal)" : ""}`}
       />
@@ -301,13 +453,7 @@ const TransactionsScreen = () => {
         <View style={styles.controlsContainer}>
           {/* Filter Button */}
           <View style={styles.filterContainer}>
-            <TouchableOpacity
-              style={styles.filterButton}
-              onPress={() => setFilterMenuOpen(!filterMenuOpen)}
-            >
-              <Feather name="filter" size={16} color="#6B7280" />
-              <Text style={styles.filterText}>Filter</Text>
-            </TouchableOpacity>
+            <FilterButton />
 
             {/* Filter Menu */}
             <Modal
@@ -322,32 +468,39 @@ const TransactionsScreen = () => {
                 onPress={() => setFilterMenuOpen(false)}
               >
                 <View style={styles.filterMenu}>
-                  <TouchableOpacity
+                  <Touchable
+                    onPress={() => applyFilter(null)}
                     style={[
                       styles.filterMenuItem,
                       filter === null && styles.filterMenuItemActive,
                     ]}
-                    onPress={() => applyFilter(null)}
                   >
-                    <Text style={styles.filterMenuItemText}>
-                      All Transactions
-                    </Text>
-                    {filter === null && (
-                      <Ionicons name="checkmark" size={16} color="#8347FF" />
-                    )}
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                    <View style={styles.filterMenuItemInner}>
+                      <Text style={styles.filterMenuItemText}>
+                        All Transactions
+                      </Text>
+                      {filter === null && (
+                        <Ionicons name="checkmark" size={16} color="#8347FF" />
+                      )}
+                    </View>
+                  </Touchable>
+
+                  <Touchable
+                    onPress={() => applyFilter("personal")}
                     style={[
                       styles.filterMenuItem,
                       filter === "personal" && styles.filterMenuItemActive,
                     ]}
-                    onPress={() => applyFilter("personal")}
                   >
-                    <Text style={styles.filterMenuItemText}>Personal Only</Text>
-                    {filter === "personal" && (
-                      <Ionicons name="checkmark" size={16} color="#8347FF" />
-                    )}
-                  </TouchableOpacity>
+                    <View style={styles.filterMenuItemInner}>
+                      <Text style={styles.filterMenuItemText}>
+                        Personal Only
+                      </Text>
+                      {filter === "personal" && (
+                        <Ionicons name="checkmark" size={16} color="#8347FF" />
+                      )}
+                    </View>
+                  </Touchable>
                 </View>
               </TouchableOpacity>
             </Modal>
@@ -355,76 +508,141 @@ const TransactionsScreen = () => {
 
           {/* Sort Controls */}
           <View style={styles.sortContainer}>
-            <TouchableOpacity
-              style={[
-                styles.sortButton,
-                sortBy.field === "timestamp" && styles.sortButtonActive,
-              ]}
-              onPress={() => handleSort("timestamp")}
-            >
-              <Text
+            {isAndroid ? (
+              <View style={styles.androidButtonWrapper}>
+                <TouchableNativeFeedback
+                  onPress={() => handleSort("timestamp")}
+                  background={TouchableNativeFeedback.Ripple("#e5e7eb", false)}
+                  useForeground={true}
+                >
+                  <View
+                    style={[
+                      styles.sortButton,
+                      sortBy.field === "timestamp" && styles.sortButtonActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.sortText,
+                        sortBy.field === "timestamp" && styles.sortTextActive,
+                      ]}
+                    >
+                      Date
+                    </Text>
+                    {sortBy.field === "timestamp" && (
+                      <Ionicons
+                        name={
+                          sortBy.direction === "asc"
+                            ? "chevron-up"
+                            : "chevron-down"
+                        }
+                        size={16}
+                        color="#8347FF"
+                        style={styles.sortIcon}
+                      />
+                    )}
+                  </View>
+                </TouchableNativeFeedback>
+              </View>
+            ) : (
+              <TouchableOpacity
                 style={[
-                  styles.sortText,
-                  sortBy.field === "timestamp" && styles.sortTextActive,
+                  styles.sortButton,
+                  sortBy.field === "timestamp" && styles.sortButtonActive,
                 ]}
+                onPress={() => handleSort("timestamp")}
               >
-                Date
-              </Text>
-              {sortBy.field === "timestamp" && (
-                <Ionicons
-                  name={
-                    sortBy.direction === "asc" ? "chevron-up" : "chevron-down"
-                  }
-                  size={16}
-                  color="#8347FF"
-                  style={styles.sortIcon}
-                />
-              )}
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.sortText,
+                    sortBy.field === "timestamp" && styles.sortTextActive,
+                  ]}
+                >
+                  Date
+                </Text>
+                {sortBy.field === "timestamp" && (
+                  <Ionicons
+                    name={
+                      sortBy.direction === "asc" ? "chevron-up" : "chevron-down"
+                    }
+                    size={16}
+                    color="#8347FF"
+                    style={styles.sortIcon}
+                  />
+                )}
+              </TouchableOpacity>
+            )}
 
             <View style={styles.sortDivider} />
 
-            <TouchableOpacity
-              style={[
-                styles.sortButton,
-                sortBy.field === "amount" && styles.sortButtonActive,
-              ]}
-              onPress={() => handleSort("amount")}
-            >
-              <Text
+            {isAndroid ? (
+              <View style={styles.androidButtonWrapper}>
+                <TouchableNativeFeedback
+                  onPress={() => handleSort("amount")}
+                  background={TouchableNativeFeedback.Ripple("#e5e7eb", false)}
+                  useForeground={true}
+                >
+                  <View
+                    style={[
+                      styles.sortButton,
+                      sortBy.field === "amount" && styles.sortButtonActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.sortText,
+                        sortBy.field === "amount" && styles.sortTextActive,
+                      ]}
+                    >
+                      Amount
+                    </Text>
+                    {sortBy.field === "amount" && (
+                      <Ionicons
+                        name={
+                          sortBy.direction === "asc"
+                            ? "chevron-up"
+                            : "chevron-down"
+                        }
+                        size={16}
+                        color="#8347FF"
+                        style={styles.sortIcon}
+                      />
+                    )}
+                  </View>
+                </TouchableNativeFeedback>
+              </View>
+            ) : (
+              <TouchableOpacity
                 style={[
-                  styles.sortText,
-                  sortBy.field === "amount" && styles.sortTextActive,
+                  styles.sortButton,
+                  sortBy.field === "amount" && styles.sortButtonActive,
                 ]}
+                onPress={() => handleSort("amount")}
               >
-                Amount
-              </Text>
-              {sortBy.field === "amount" && (
-                <Ionicons
-                  name={
-                    sortBy.direction === "asc" ? "chevron-up" : "chevron-down"
-                  }
-                  size={16}
-                  color="#8347FF"
-                  style={styles.sortIcon}
-                />
-              )}
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.sortText,
+                    sortBy.field === "amount" && styles.sortTextActive,
+                  ]}
+                >
+                  Amount
+                </Text>
+                {sortBy.field === "amount" && (
+                  <Ionicons
+                    name={
+                      sortBy.direction === "asc" ? "chevron-up" : "chevron-down"
+                    }
+                    size={16}
+                    color="#8347FF"
+                    style={styles.sortIcon}
+                  />
+                )}
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Refresh Button */}
-          <TouchableOpacity
-            style={styles.refreshButton}
-            onPress={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <Ionicons
-              name="refresh"
-              size={18}
-              color="#8347FF"
-              style={[isRefreshing && styles.rotating]}
-            />
-          </TouchableOpacity>
+          <RefreshButton />
         </View>
 
         {sortedTransactions.length > 0 ? (
@@ -439,9 +657,12 @@ const TransactionsScreen = () => {
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
                 colors={["#8347FF"]}
+                progressBackgroundColor={isAndroid ? "#ffffff" : undefined}
                 tintColor="#8347FF"
               />
             }
+            overScrollMode={isAndroid ? "never" : undefined} // Android-specific
+            bounces={isIOS} // iOS-specific
           />
         ) : (
           renderEmptyState()
@@ -466,10 +687,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
+  androidLoader: {
+    transform: [{ scale: 1.2 }], // Slightly larger for Android
+  },
   loadingText: {
     marginTop: 12,
     color: "#6B7280",
     fontSize: 14,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   errorContainer: {
     flex: 1,
@@ -483,23 +712,59 @@ const styles = StyleSheet.create({
     color: "#1F2937",
     marginTop: 12,
     marginBottom: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal", // Android handles font weight differently
+      },
+    }),
   },
   errorMessage: {
     color: "#6B7280",
     textAlign: "center",
     marginBottom: 24,
     maxWidth: 300,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   retryButton: {
     backgroundColor: "#8347FF",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
+    minHeight: 44, // iOS minimum touch target
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  buttonInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   retryButtonText: {
     color: "white",
     fontWeight: "600",
     fontSize: 16,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal",
+        textTransform: "uppercase",
+        fontSize: 14,
+      },
+    }),
   },
   controlsContainer: {
     flexDirection: "row",
@@ -515,6 +780,10 @@ const styles = StyleSheet.create({
   filterContainer: {
     position: "relative",
   },
+  androidButtonWrapper: {
+    borderRadius: 8,
+    overflow: "hidden",
+  },
   filterButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -529,6 +798,11 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     color: "#6B7280",
     fontSize: 14,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   modalOverlay: {
     flex: 1,
@@ -544,16 +818,35 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 4,
     minWidth: 180,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   filterMenuItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    ...Platform.select({
+      android: {
+        padding: 0,
+      },
+    }),
+  },
+  filterMenuItemInner: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
@@ -563,6 +856,11 @@ const styles = StyleSheet.create({
   filterMenuItemText: {
     fontSize: 14,
     color: "#4B5563",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   sortContainer: {
     flexDirection: "row",
@@ -585,10 +883,21 @@ const styles = StyleSheet.create({
   sortText: {
     fontSize: 14,
     color: "#6B7280",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   sortTextActive: {
     color: "#8347FF",
     fontWeight: "500",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal",
+      },
+    }),
   },
   sortIcon: {
     marginLeft: 2,
@@ -620,11 +929,17 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 12,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   transactionHeader: {
     flexDirection: "row",
@@ -637,15 +952,31 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1F2937",
     marginBottom: 4,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal",
+      },
+    }),
   },
   transactionDate: {
     fontSize: 12,
     color: "#6B7280",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   expandedContent: {
     paddingHorizontal: 16,
     paddingBottom: 16,
     backgroundColor: "#F9FAFB",
+    ...Platform.select({
+      android: {
+        backgroundColor: "#F3F4FF", // Slightly more colorful for Android
+      },
+    }),
   },
   divider: {
     height: 1,
@@ -662,12 +993,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#6B7280",
     flex: 1,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   detailValue: {
     fontSize: 13,
     color: "#1F2937",
     flex: 2,
     textAlign: "right",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   statusBadge: {
     backgroundColor: "#D1FAE5",
@@ -679,6 +1020,12 @@ const styles = StyleSheet.create({
     color: "#065F46",
     fontSize: 12,
     fontWeight: "500",
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal",
+      },
+    }),
   },
   viewInExplorerButton: {
     flexDirection: "row",
@@ -686,11 +1033,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 8,
     paddingVertical: 8,
+    borderRadius: 8,
   },
   viewInExplorerText: {
     color: "#8347FF",
     fontSize: 14,
     marginRight: 6,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        textTransform: "uppercase",
+        fontSize: 12,
+      },
+    }),
   },
   emptyContainer: {
     flex: 1,
@@ -712,12 +1067,23 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1F2937",
     marginBottom: 8,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal",
+      },
+    }),
   },
   emptyDescription: {
     color: "#6B7280",
     textAlign: "center",
     marginBottom: 24,
     lineHeight: 20,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif",
+      },
+    }),
   },
   backToDashboardButton: {
     backgroundColor: "#8347FF",
@@ -727,6 +1093,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   backButtonIcon: {
     marginRight: 8,
@@ -735,6 +1112,14 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "600",
     fontSize: 16,
+    ...Platform.select({
+      android: {
+        fontFamily: "sans-serif-medium",
+        fontWeight: "normal",
+        textTransform: "uppercase",
+        fontSize: 14,
+      },
+    }),
   },
 });
 
