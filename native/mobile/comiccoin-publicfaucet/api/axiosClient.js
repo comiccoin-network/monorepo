@@ -16,6 +16,7 @@ const axiosClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
+    "User-Agent": "ComicCoinApp/1.0", // Consistent across platforms
   },
 });
 
@@ -51,7 +52,16 @@ axiosClient.interceptors.request.use(
     try {
       const authData = (await loadData(AUTH_STORAGE_KEY)) || {};
 
-      if (authData.access_token) {
+      if (authData) {
+        if (authData.access_token) {
+          console.log("Auth header structure:", {
+            headerType: "JWT",
+            tokenLength: authData.access_token.length,
+            tokenStart: authData.access_token.substring(0, 10) + "...",
+            platform: Platform.OS,
+          });
+        }
+
         config.headers = {
           ...config.headers,
           Authorization: `JWT ${authData.access_token}`,
