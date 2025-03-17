@@ -1,33 +1,89 @@
-// api/endpoints/loginApi.js
-import axios from "axios";
-import axiosClient, { publicEndpoint } from "../axiosClient";
-import { handle524Error } from "../../utils/networkDiagnostics";
+/**
+ * api/endpoints/loginApi.js
+ *
+ * PURPOSE:
+ * This file manages the login API functionality for our application. It provides
+ * a method to authenticate users by sending their credentials to the server
+ * and handling the response or any errors that might occur during the process.
+ *
+ * OVERVIEW:
+ * - Imports necessary dependencies (axios, custom axios client)
+ * - Exports a loginUser function that handles the login API request
+ * - Implements comprehensive error handling for different error scenarios
+ * - Formats error messages to be user-friendly and informative
+ */
+
+import axios from "axios"; // Import the main axios library for identifying axios errors
+import axiosClient, { publicEndpoint } from "../axiosClient"; // Import our custom configured axios instance
+import { handle524Error } from "../../utils/networkDiagnostics"; // Import utility for diagnosing network issues
 
 /**
  * Login a user with email and password
- * @param {Object} credentials - Login credentials (email, password)
- * @returns {Promise} Promise with login result containing user data and tokens
+ *
+ * This function sends the user's credentials to the server's login endpoint,
+ * and processes the response to either:
+ * 1. Return the successful login data (user info, tokens, etc.)
+ * 2. Format any errors into a user-friendly structure
+ *
+ * @param {Object} credentials - The login information
+ * @param {string} credentials.email - User's email address
+ * @param {string} credentials.password - User's password
+ *
+ * @returns {Promise<Object>} - A promise that resolves to the user data and tokens
+ *                             or rejects with a structured error object
+ *
+ * The returned data structure typically contains:
+ * - user: User profile information
+ * - access_token: JWT for authenticating future requests
+ * - refresh_token: Token used to get a new access token when it expires
+ * - access_token_expiry_time: When the access token will expire
+ * - refresh_token_expiry_time: When the refresh token will expire
  */
 export const loginUser = async (credentials) => {
   try {
+    // STEP 1: MAKE THE LOGIN REQUEST
+    // ==============================
+
+    // We use our custom axiosClient to make a POST request to the /login endpoint
+    // - The first parameter ('/login') is the endpoint path
+    // - The second parameter (credentials) is the request body (email and password)
+    // - The third parameter calls publicEndpoint({}) which marks this as a public API
+    //   that doesn't require authentication tokens (since we're trying to log in)
     const response = await axiosClient.post(
       "/login",
       credentials,
-      publicEndpoint({}),
+      publicEndpoint({}), // This tells axiosClient not to add auth headers
     );
+
+    // If we get here, the request was successful (no error was thrown)
+    // Return just the data part of the response, which contains user info and tokens
     return response.data;
   } catch (error) {
+    // STEP 2: ERROR HANDLING
+    // ======================
+    // If we get here, something went wrong with the login request
+
+    // First, log detailed error information for debugging
+    // We use console.log instead of console.error to avoid red text in console
     console.log("🔒 Login error details:", {
-      error,
-      response: error.response?.data,
-      status: error.response?.status,
+      error, // The full error object
+      response: error.response?.data, // The response data, if any (using optional chaining)
+      status: error.response?.status, // The HTTP status code, if any
     });
 
-    // Handle 524 Cloudflare timeout errors specially
+    // STEP 3: HANDLE SPECIFIC ERROR CASES
+    // ===================================
+
+    // CASE 1: TIMEOUT ERROR (HTTP 524)
+    // --------------------------------
+    // 524 is a Cloudflare-specific status code for when the origin server
+    // takes too long to respond, causing Cloudflare to terminate the connection
     if (error.response?.status === 524) {
       // Run network diagnostics to help debug the issue
+      // This collects information about the network state for troubleshooting
       await handle524Error();
 
+      // Throw a user-friendly error message
       throw {
         message:
           "Server is taking too long to respond. This might happen when checking passwords. Please try again later.",
@@ -35,64 +91,83 @@ export const loginUser = async (credentials) => {
       };
     }
 
-    // Handle HTML error responses (which aren't proper JSON)
+    // CASE 2: HTML ERROR RESPONSE
+    // --------------------------
+    // Sometimes servers return HTML error pages instead of JSON
+    // This typically happens with proxy or gateway errors
     if (
       error.response?.data &&
       typeof error.response.data === "string" &&
       error.response.data.includes("<!DOCTYPE html>")
     ) {
+      // If we detect HTML in the response, it's not a proper API response
       throw {
         message:
           "Server returned an unexpected response format. Please try again later.",
-        status: error.response?.status || 500,
+        status: error.response?.status || 500, // Use 500 as default if no status available
       };
     }
 
-    // Handle axios errors
+    // CASE 3: NORMAL AXIOS ERRORS
+    // --------------------------
+    // Check if this is an error generated by axios
     if (axios.isAxiosError(error)) {
-      // If we have field-specific errors as an object
+      // SUBCASE 3A: FIELD VALIDATION ERRORS (400 Bad Request)
+      // Many APIs return field-specific errors in an object like:
+      // { email: "Invalid email format", password: "Password too short" }
       if (
-        error.response?.status === 400 &&
-        typeof error.response.data === "object" &&
-        !Array.isArray(error.response.data)
+        error.response?.status === 400 && // Bad request status code
+        typeof error.response.data === "object" && // Data is an object
+        !Array.isArray(error.response.data) // But not an array
       ) {
-        const fieldErrors = {};
-        let errorMessage = "Login failed. Please check your credentials.";
+        const fieldErrors = {}; // Will hold field-specific error messages
+        let errorMessage = "Login failed. Please check your credentials."; // Default message
 
-        // Extract field messages - ensuring they're all strings
+        // Loop through each field in the error response
+        // Object.entries converts {key: value} to array of [key, value] pairs
         Object.entries(error.response.data).forEach(([field, message]) => {
+          // Ensure error messages are always strings
           fieldErrors[field] =
             typeof message === "string" ? message : JSON.stringify(message);
 
-          // Use field error as general message if available
+          // Use field-specific error as the main message if it's for email or password
+          // This makes the error message more specific and helpful
           if (field === "email" || field === "password") {
             errorMessage = fieldErrors[field];
           }
         });
 
+        // Throw a structured error object with field-specific errors
         throw {
-          message: errorMessage,
-          fieldErrors: fieldErrors,
-          status: error.response.status,
+          message: errorMessage, // General error message
+          fieldErrors: fieldErrors, // Field-specific errors for highlighting form fields
+          status: error.response.status, // HTTP status code
         };
       }
-      // Network errors or other axios errors
+
+      // SUBCASE 3B: NETWORK ERRORS OR OTHER AXIOS ERRORS
+      // For network issues or any other axios errors not handled above
       throw {
         message:
-          error.response?.data?.message ||
-          "Connection error. Please check your internet and try again.",
-        status: error.response?.status || 0,
+          error.response?.data?.message || // Use server message if available
+          "Connection error. Please check your internet and try again.", // Or a default message
+        status: error.response?.status || 0, // Use 0 for network errors with no status
       };
     }
 
-    // For any other unexpected errors
+    // CASE 4: UNEXPECTED ERRORS
+    // ------------------------
+    // Catch any other types of errors that weren't handled above
+    // This is a fallback to ensure we always return something meaningful
     throw {
       message: "An unexpected error occurred during login.",
-      status: 500,
+      status: 500, // Use 500 Internal Server Error as a generic error code
     };
   }
 };
 
+// Export the loginUser function as the default export
+// This allows importing it like: import loginApi from './loginApi'
 export default {
   loginUser,
 };
