@@ -157,30 +157,42 @@ const LoginScreen = () => {
       }
 
       // Handle field-specific errors from the backend
-      if (err.response?.data && typeof err.response.data === "object") {
-        const fieldErrors = err.response.data;
-
-        // Check if the error is in the format we expect
-        if (fieldErrors.email || fieldErrors.password) {
-          console.log("🔍 Field-specific errors detected:", fieldErrors);
-          setErrors(fieldErrors);
-
-          // Scroll to top to show errors
-          if (scrollViewRef.current) {
-            scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
-          }
+      if (err.fieldErrors && typeof err.fieldErrors === "object") {
+        // Always set a general error message for the user
+        // This ensures we never try to render an object directly
+        if (typeof err.message === "string") {
+          setGeneralError(err.message);
+        } else {
+          setGeneralError("Login failed. Please try again later.");
         }
-        // If we have a message field, use that as a general error
-        else if (fieldErrors.message) {
-          setGeneralError(fieldErrors.message);
-        }
-        // If the response is some other format, show it as JSON
-        else {
-          setGeneralError(`Login failed: ${JSON.stringify(fieldErrors)}`);
+
+        // Scroll to top to show errors
+        if (scrollViewRef.current) {
+          scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
         }
       }
-      // Handle network errors or other non-response errors
-      else if (err.message) {
+      // Handle error message objects that might be nested
+      else if (err.message && typeof err.message === "object") {
+        // Extract error messages from the object
+        const fieldErrors = {};
+        let generalErrorMessage = "Login failed. Please check your details.";
+
+        Object.entries(err.message).forEach(([key, value]) => {
+          // If it's a field error, add it to fieldErrors
+          if (typeof value === "string") {
+            fieldErrors[key] = value;
+          }
+        });
+
+        if (Object.keys(fieldErrors).length > 0) {
+          setErrors(fieldErrors);
+        } else {
+          // If we couldn't extract specific field errors, use a generic message
+          setGeneralError(generalErrorMessage);
+        }
+      }
+      // Simple string error message
+      else if (typeof err.message === "string") {
         setGeneralError(err.message);
       }
       // Fallback for unknown error formats
@@ -336,7 +348,12 @@ const LoginScreen = () => {
                 <View style={styles.errorBanner}>
                   <View style={styles.errorBannerContent}>
                     <Feather name="alert-circle" size={20} color="#ef4444" />
-                    <Text style={styles.errorBannerText}>{generalError}</Text>
+                    {/* Ensure we're passing a string, not an object */}
+                    <Text style={styles.errorBannerText}>
+                      {typeof generalError === "object"
+                        ? JSON.stringify(generalError)
+                        : generalError}
+                    </Text>
                   </View>
                 </View>
               ) : null}

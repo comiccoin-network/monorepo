@@ -49,6 +49,10 @@ const productionConfig: Config = {
 
 // Here we determine which configuration to use based on the environment
 const getConfig = (): Config => {
+  // // Force production for testing
+  // console.log("🚀 Forcing Production Environment for testing");
+  // return productionConfig;
+
   if (__DEV__) {
     console.log("Loading development configuration");
     return developmentConfig;

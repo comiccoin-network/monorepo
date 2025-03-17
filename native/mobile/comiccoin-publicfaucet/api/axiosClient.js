@@ -7,6 +7,7 @@ import {
   saveData,
   removeData,
 } from "../utils/secureStorage";
+import { Platform } from "react-native";
 
 // Use the configuration from config/index.ts
 const API_BASE_URL = `${config.PUBLICFAUCET_URL}/publicfaucet/api/v1`;

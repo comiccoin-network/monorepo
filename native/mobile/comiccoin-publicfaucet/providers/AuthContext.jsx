@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import axiosClient from "../api/axiosClient";
 import { Platform, AppState } from "react-native";
 import { getTrackingPermissionsAsync } from "expo-tracking-transparency";
+import loginApi from "../api/endpoints/loginApi";
 
 import {
   AUTH_STORAGE_KEY,
@@ -229,11 +230,12 @@ export const AuthProvider = ({ children }) => {
   // Params: credentials - Object with email and password
   // Returns: User object on success, throws error on failure
   // ******************************************************
+  // Then replace the existing login function with:
   const login = async (credentials) => {
     setIsLoading(true);
     try {
-      // Attempt login with provided credentials
-      const { data } = await axiosClient.post("/login", credentials);
+      // Use the loginUser function from loginApi
+      const data = await loginApi.loginUser(credentials);
 
       // Log token information for debugging
       console.log("🔐 Login successful, token details:", {

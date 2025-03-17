@@ -8,7 +8,6 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "jsEngine": "hermes",
     "ios": {
       "infoPlist": {
         "CFBundleDisplayName": "Public Faucet",
