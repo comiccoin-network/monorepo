@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Base configuration for all domains -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Domain-specific configurations -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Allow cleartext traffic for development environment -->
+        <domain includeSubdomains="true">192.168.86.51</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+    </domain-config>
+
+    <!-- Production domain configuration -->
+    <domain-config>
+        <domain includeSubdomains="true">comiccoin.net</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <!-- If you need to pin specific certificates, add them here -->
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
