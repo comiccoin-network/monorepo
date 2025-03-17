@@ -220,6 +220,9 @@ static/keystore
 # Do not share our GeoLite database.
 GeoLite2-Country.mmdb
 
+# Do not save the `crev` text output
+crev-project.txt
+
 # Blacklist - Don't share items we banned from the server.
 static/blacklist/ips.json
 static/blacklist/urls.json

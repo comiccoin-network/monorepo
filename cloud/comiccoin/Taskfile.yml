@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 tasks:
   start:
@@ -19,7 +19,7 @@ tasks:
   dockerlogin:
     desc: (DevOps only) Command will log in your developer's machine with the private docker registry.
     cmds:
-      -  docker login registry.digitalocean.com
+      - docker login registry.digitalocean.com
 
   dockerlogout:
     desc: (DevOps only) Command will log out of the private docker registry. (Important step if you are using other private docker registries)
@@ -70,3 +70,8 @@ tasks:
     desc: "See what apps apps are running and listing to what ports. Aftwords use for example: kill -9 4097"
     cmds:
       - sudo lsof -nPi -sTCP:LISTEN
+
+  llmcat:
+    desc: "Concatinate our project into LLM friendly single text (dependent on third-party app called `crev`)"
+    cmds:
+      - crev bundle

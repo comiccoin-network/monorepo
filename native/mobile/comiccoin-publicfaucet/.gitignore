@@ -208,3 +208,6 @@ vendor/
 
 # ComicCoin Project Specific.
 my-upload-key.keystore
+
+# Do not save the `crev` text output
+crev-project.txt

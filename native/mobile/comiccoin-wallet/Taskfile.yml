@@ -45,3 +45,8 @@ tasks:
     desc: Reset the project to its initial state
     cmds:
       - npm run reset-project
+
+  llmcat:
+    desc: "Concatinate our project into LLM friendly single text (dependent on third-party app called `crev`)"
+    cmds:
+      - crev bundle

@@ -97,3 +97,6 @@ private_prod.md
 private.md
 private_*.md
 todo.txt
+
+# Do not save the `crev` text output
+crev-project.txt
