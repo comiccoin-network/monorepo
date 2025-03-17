@@ -43,6 +43,8 @@ func (h *GatewayLoginHTTPHandler) unmarshalLoginRequest(
 
 	defer r.Body.Close()
 
+	h.logger.Debug("beginning to decode json payload for api request ...", slog.String("api", "/publicfaucet/api/v1/login"))
+
 	var rawJSON bytes.Buffer
 	teeReader := io.TeeReader(r.Body, &rawJSON) // TeeReader allows you to read the JSON and capture it
 
@@ -60,6 +62,8 @@ func (h *GatewayLoginHTTPHandler) unmarshalLoginRequest(
 	// Defensive Code: For security purposes we need to remove all whitespaces from the email and lower the characters.
 	requestData.Email = strings.ToLower(requestData.Email)
 	requestData.Email = strings.ReplaceAll(requestData.Email, " ", "")
+
+	h.logger.Debug("successfully decoded json payload api request", slog.String("api", "/publicfaucet/api/v1/login"))
 
 	return &requestData, nil
 }
@@ -90,6 +94,9 @@ func (h *GatewayLoginHTTPHandler) Execute(w http.ResponseWriter, r *http.Request
 	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
 		resp, err := h.service.Execute(sessCtx, data)
 		if err != nil {
+			h.logger.Error("service error",
+				slog.Any("err", err),
+			)
 			return nil, err
 		}
 		return resp, nil

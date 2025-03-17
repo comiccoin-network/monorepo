@@ -102,6 +102,9 @@ func (s *gatewayLoginServiceImpl) Execute(sessCtx mongo.SessionContext, req *Gat
 		return nil, httperror.NewForBadRequestWithSingleField("email", "Email address does not exist")
 	}
 
+	s.logger.Debug("attempting to confirm correct password submission for the existing user...",
+		slog.Any("user_id", u.ID.Hex()))
+
 	securePassword, err := sstring.NewSecureString(req.Password)
 	if err != nil {
 		s.logger.Error("database error", slog.Any("err", err))
@@ -115,11 +118,17 @@ func (s *gatewayLoginServiceImpl) Execute(sessCtx mongo.SessionContext, req *Gat
 		return nil, httperror.NewForBadRequestWithSingleField("password", "Password does not match with record")
 	}
 
+	s.logger.Debug("attempting to confirm existing user has a verified email address...",
+		slog.Any("user_id", u.ID.Hex()))
+
 	// Enforce the verification code of the email.
 	if u.WasEmailVerified == false {
 		s.logger.Warn("email verification validation error", slog.Any("u", u))
 		return nil, httperror.NewForBadRequestWithSingleField("email", "Email address was not verified")
 	}
+
+	s.logger.Debug("login confirmed correct password and verified email for existing user...",
+		slog.Any("user_id", u.ID.Hex()))
 
 	// // Enforce 2FA if enabled.
 	if u.OTPEnabled {
