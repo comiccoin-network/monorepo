@@ -19,7 +19,8 @@
       "entitlements": {
         "com.apple.developer.default-data-protection": "NSFileProtectionComplete"
       },
-      "UIBackgroundModes": ["fetch"]
+      "UIBackgroundModes": ["fetch"],
+      "appStoreUrl": "https://apps.apple.com/ca/app/comiccoin-wallet/id6741118881"
     },
     "android": {
       "versionCode": 8,
@@ -33,7 +34,8 @@
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.READ_MEDIA_VIDEO",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "appStoreUrl": "https://play.google.com/store/apps/details?id=com.theshootingstarpress.comiccoinwallet"
     },
     "web": {
       "bundler": "metro",
