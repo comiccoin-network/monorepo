@@ -1,5 +1,5 @@
 // src/pages/ForgotPasswordPage.jsx
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router";
 import {
   AlertCircle,
@@ -13,48 +13,34 @@ import {
 } from "lucide-react";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
-
-//TODO: Add code for posting forgot password API
+import { useForgotPassword } from "../hooks/useForgotPassword";
 
 function ForgotPasswordPage() {
   console.log("🚀 ForgotPasswordPage component initializing");
 
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [expirationTime, setExpirationTime] = useState(null);
+  // Use the forgotPassword hook instead of local state management
+  const {
+    sendPasswordResetEmail,
+    isLoading,
+    error,
+    success,
+    emailSentTo,
+    resetState,
+  } = useForgotPassword();
 
   // Navigator for routing
   const navigate = useNavigate();
   console.log("🧭 Navigate function available:", !!navigate);
 
-  const handleInputChange = (e) => {
-    setEmail(e.target.value);
-    // Clear error when typing
-    if (error) {
-      setError("");
-    }
-  };
+  // Use email from the successful response
+  const email = emailSentTo || "";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("📝 Forgot password form submitted");
-    setError("");
-    setLoading(true);
+  // Calculate expiration time: current time + 5 minutes from time of success
+  const [expirationTime, setExpirationTime] = useState(null);
 
-    try {
-      console.log("📧 Attempting to send password reset email to:", email);
-
-      // This is a mock implementation - in a real app, this would call an API
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate API delay
-
-      // Check if email is valid (simple validation for demonstration)
-      if (!email.includes("@") || !email.includes(".")) {
-        throw new Error("Please enter a valid email address.");
-      }
-
-      // Calculate expiration time: current time + 5 minutes
+  // Set expiration time when request is successful
+  useEffect(() => {
+    if (success) {
       const expiration = new Date();
       expiration.setMinutes(expiration.getMinutes() + 5);
       setExpirationTime(expiration);
@@ -63,13 +49,32 @@ function ForgotPasswordPage() {
         "✅ Password reset email sent successfully, expires at:",
         expiration,
       );
-      setIsSubmitted(true);
-      // No automatic redirect - user will click Continue button when ready
+    }
+  }, [success]);
+
+  const handleInputChange = (e) => {
+    // When user starts typing again, reset the state
+    // This will clear any previous success/error messages
+    resetState();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("📝 Forgot password form submitted");
+
+    // Get the email value from the form
+    const emailInput = e.target.elements.email.value;
+
+    try {
+      console.log("📧 Attempting to send password reset email to:", emailInput);
+
+      // Use the hook's function to send the request
+      await sendPasswordResetEmail(emailInput);
+
+      // Success handling is done within the hook and reflected in the success state
     } catch (err) {
       console.error("❌ Password reset error:", err);
-      setError(err.message || "Failed to send reset email. Please try again.");
-    } finally {
-      setLoading(false);
+      // Error handling is done within the hook
     }
   };
 
@@ -199,14 +204,14 @@ function ForgotPasswordPage() {
             </div>
 
             {/* Form Body */}
-            {!isSubmitted ? (
+            {!success ? (
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Display error message if any */}
-                {error && (
+                {error && error.message && (
                   <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
                     <div className="flex items-center gap-2 font-medium">
                       <AlertCircle className="h-5 w-5" />
-                      <p>{error}</p>
+                      <p>{error.message}</p>
                     </div>
                   </div>
                 )}
@@ -227,7 +232,7 @@ function ForgotPasswordPage() {
                       id="email"
                       name="email"
                       type="email"
-                      value={email}
+                      defaultValue=""
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-3 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                         error ? "border-red-500 bg-red-50" : "border-gray-300"
@@ -246,10 +251,10 @@ function ForgotPasswordPage() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isLoading}
                     className="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {loading ? (
+                    {isLoading ? (
                       <>
                         <svg
                           className="animate-spin h-5 w-5 text-white"
@@ -285,7 +290,7 @@ function ForgotPasswordPage() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    disabled={loading}
+                    disabled={isLoading}
                     className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Back to Login

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
+import { useResetPassword } from "../hooks/useResetPassword";
 
 // Countdown Timer Component
 const CountdownTimer = ({ expirationTime }) => {
@@ -82,10 +83,17 @@ function ResetPasswordPage() {
   });
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Use our custom reset password hook
+  const {
+    resetUserPassword,
+    isLoading,
+    error: resetError,
+    success,
+    resetState,
+  } = useResetPassword();
 
   // For the expiration time
   const location = useLocation();
@@ -136,6 +144,27 @@ function ResetPasswordPage() {
     }
   }, [expirationTime, generalError, navigate]);
 
+  // Handle API error updates
+  useEffect(() => {
+    if (resetError) {
+      setGeneralError(
+        resetError.message || "Failed to reset password. Please try again.",
+      );
+    }
+  }, [resetError]);
+
+  // Redirect to login after successful reset
+  useEffect(() => {
+    if (success) {
+      // In a real implementation, navigate to login after successful password reset
+      const redirectTimer = setTimeout(() => {
+        navigate("/login");
+      }, 3000);
+
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [success, navigate]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -144,6 +173,14 @@ function ResetPasswordPage() {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+
+    // Reset any general errors
+    if (generalError) {
+      setGeneralError("");
+    }
+
+    // Reset state from the hook
+    resetState();
   };
 
   const validateForm = () => {
@@ -201,28 +238,25 @@ function ResetPasswordPage() {
       return;
     }
 
-    setLoading(true);
-
     try {
       console.log("🔄 Attempting to reset password");
 
-      // This is a mock implementation - in a real app, this would call an API
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate API delay
+      // Prepare the payload for the API
+      const resetData = {
+        code: formData.verificationCode,
+        password: formData.newPassword,
+        password_confirm: formData.confirmPassword,
+        // Include email if it was passed from the previous page
+        ...(emailFromPrevPage ? { email: emailFromPrevPage } : {}),
+      };
 
-      console.log("✅ Password reset successful");
-      setIsSubmitted(true);
+      // Call the hook's function to reset the password
+      await resetUserPassword(resetData);
 
-      // In a real implementation, we would navigate to login after successful password reset
-      setTimeout(() => {
-        navigate("/login");
-      }, 3000);
+      // Success handling is managed by the useEffect watching the success state
     } catch (err) {
       console.error("❌ Password reset error:", err);
-      setGeneralError(
-        err.message || "Failed to reset password. Please try again.",
-      );
-    } finally {
-      setLoading(false);
+      // Error handling is handled by the useEffect watching resetError
     }
   };
 
@@ -280,7 +314,7 @@ function ResetPasswordPage() {
             </div>
 
             {/* Expiration Timer */}
-            {expirationTime && !isSubmitted && (
+            {expirationTime && !success && (
               <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                 <p className="text-sm text-gray-700">
                   Verification code sent to{" "}
@@ -293,7 +327,7 @@ function ResetPasswordPage() {
             )}
 
             {/* Form Body */}
-            {!isSubmitted ? (
+            {!success ? (
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Display general error message if any */}
                 {generalError && (
@@ -467,10 +501,10 @@ function ResetPasswordPage() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={loading || isCodeExpired}
+                    disabled={isLoading || isCodeExpired}
                     className="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {loading ? (
+                    {isLoading ? (
                       <>
                         <svg
                           className="animate-spin h-5 w-5 text-white"
@@ -506,7 +540,7 @@ function ResetPasswordPage() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    disabled={loading}
+                    disabled={isLoading}
                     className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Back to Login
