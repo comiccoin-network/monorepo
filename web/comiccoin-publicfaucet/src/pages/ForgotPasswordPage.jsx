@@ -1,5 +1,5 @@
 // src/pages/ForgotPasswordPage.jsx
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import {
   AlertCircle,
@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Send,
   ArrowRight,
+  Clock,
 } from "lucide-react";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
@@ -22,6 +23,7 @@ function ForgotPasswordPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [expirationTime, setExpirationTime] = useState(null);
 
   // Navigator for routing
   const navigate = useNavigate();
@@ -52,7 +54,15 @@ function ForgotPasswordPage() {
         throw new Error("Please enter a valid email address.");
       }
 
-      console.log("✅ Password reset email sent successfully");
+      // Calculate expiration time: current time + 5 minutes
+      const expiration = new Date();
+      expiration.setMinutes(expiration.getMinutes() + 5);
+      setExpirationTime(expiration);
+
+      console.log(
+        "✅ Password reset email sent successfully, expires at:",
+        expiration,
+      );
       setIsSubmitted(true);
       // No automatic redirect - user will click Continue button when ready
     } catch (err) {
@@ -66,6 +76,81 @@ function ForgotPasswordPage() {
   // Handle cancel button click
   const handleCancel = () => {
     navigate("/login");
+  };
+
+  // Format the remaining time for display
+  const formatRemainingTime = () => {
+    if (!expirationTime) return "5:00";
+
+    const now = new Date();
+    const expiration = new Date(expirationTime);
+    const timeLeft = Math.max(0, Math.floor((expiration - now) / 1000));
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  // CountdownTimer Component with dynamic updates
+  const CountdownTimer = ({ expirationTime }) => {
+    const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 });
+    const [isExpired, setIsExpired] = useState(false);
+
+    // Function to calculate and update the time remaining
+    const updateTimeLeft = useCallback(() => {
+      const now = new Date();
+      const expiration = new Date(expirationTime);
+      const totalSecondsLeft = Math.max(
+        0,
+        Math.floor((expiration - now) / 1000),
+      );
+
+      if (totalSecondsLeft <= 0) {
+        setIsExpired(true);
+        setTimeLeft({ minutes: 0, seconds: 0 });
+        return;
+      }
+
+      const minutes = Math.floor(totalSecondsLeft / 60);
+      const seconds = totalSecondsLeft % 60;
+      setTimeLeft({ minutes, seconds });
+    }, [expirationTime]);
+
+    // Set up the timer effect
+    useEffect(() => {
+      // Initial calculation
+      updateTimeLeft();
+
+      // Update every second
+      const timerId = setInterval(updateTimeLeft, 1000);
+
+      // Clean up the interval on unmount
+      return () => clearInterval(timerId);
+    }, [updateTimeLeft]);
+
+    // Display the timer with appropriate styling
+    return (
+      <div
+        className={`inline-flex items-center rounded-full px-3 py-1.5 ${
+          isExpired
+            ? "bg-red-100 border border-red-200 text-red-800"
+            : timeLeft.minutes < 1
+              ? "bg-yellow-100 border border-yellow-200 text-yellow-800"
+              : "bg-blue-100 border border-blue-200 text-blue-800"
+        }`}
+      >
+        <Clock className="mr-2 h-4 w-4" aria-hidden="true" />
+        {isExpired ? (
+          <span className="text-sm font-medium">Code expired</span>
+        ) : (
+          <span className="text-sm font-medium tabular-nums">
+            {timeLeft.minutes > 0
+              ? `Expires in ${timeLeft.minutes} min ${String(timeLeft.seconds).padStart(2, "0")} sec`
+              : `Expires in ${timeLeft.seconds} seconds`}
+          </span>
+        )}
+      </div>
+    );
   };
 
   console.log("🎨 Rendering forgot password form, error:", !!error);
@@ -210,39 +295,81 @@ function ForgotPasswordPage() {
             ) : (
               /* Success Message */
               <div className="p-6">
-                <div className="mb-6 p-6 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                  <div className="flex items-start gap-4">
-                    <CheckCircle className="h-6 w-6 flex-shrink-0 mt-1" />
-                    <div>
-                      <h3 className="font-medium text-lg text-green-800 mb-2">
-                        Reset Instructions Sent!
-                      </h3>
-                      <p className="mb-4">
-                        We've sent password reset instructions to{" "}
-                        <strong>{email}</strong>. Please check your inbox and
-                        follow the instructions in the email.
-                      </p>
-                      <p className="mb-4">
-                        If you don't see the email in your inbox, please check
-                        your spam folder. The email should arrive within a few
-                        minutes.
-                      </p>
-                      <p className="text-sm text-green-600 mb-2">
-                        The email contains a verification code you'll need on
-                        the next screen.
-                      </p>
-                      <p className="text-sm text-green-600">
-                        Note: The verification code will expire after 5 minutes
-                        for security reasons.
-                      </p>
+                <div className="mb-6 bg-white border border-green-200 rounded-xl shadow-md overflow-hidden">
+                  {/* Success Header */}
+                  <div className="px-6 py-4 bg-green-50 border-b border-green-100 flex items-center">
+                    <CheckCircle className="h-6 w-6 text-green-600 mr-3" />
+                    <h3 className="font-medium text-lg text-green-800">
+                      Reset Instructions Sent!
+                    </h3>
+                  </div>
+
+                  {/* Timer Banner - Highly Visible */}
+                  <div className="bg-yellow-50 px-4 py-3 border-b border-yellow-100">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-yellow-800 font-medium">
+                        Verification code expires in:
+                      </div>
+                      <CountdownTimer expirationTime={expirationTime} />
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    <p className="mb-4">
+                      We've sent password reset instructions to{" "}
+                      <strong className="font-medium">{email}</strong>. Please
+                      check your inbox and follow the instructions in the email.
+                    </p>
+
+                    <div className="bg-blue-50 rounded-lg p-4 mb-4 flex items-start border border-blue-100">
+                      <Mail className="h-5 w-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-blue-800 font-medium mb-1">
+                          Important:
+                        </p>
+                        <p className="text-blue-700 text-sm">
+                          The email contains a{" "}
+                          <span className="font-semibold">
+                            verification code
+                          </span>{" "}
+                          that you'll need to enter on the next screen. Please
+                          complete the process before the timer expires.
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-gray-600 mb-1">
+                      If you don't see the email in your inbox, please check
+                      your spam folder. The email should arrive within a few
+                      minutes.
+                    </p>
+
+                    <div className="bg-gray-50 rounded-lg p-4 mt-5 text-sm border border-gray-200">
+                      <div className="flex items-start">
+                        <Clock className="h-5 w-5 text-gray-500 mr-3 mt-0.5 flex-shrink-0" />
+                        <p className="text-gray-700">
+                          For security reasons, the verification code will
+                          expire after 5 minutes. The timer started when the
+                          email was sent.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-center">
+                {/* Continue Button */}
+                <div className="flex justify-center mt-6">
                   <button
-                    onClick={() => navigate("/reset-password")}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                    onClick={() =>
+                      navigate("/reset-password", {
+                        state: {
+                          expirationTime: expirationTime.toISOString(),
+                          email: email,
+                        },
+                      })
+                    }
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-md"
                   >
                     Continue to Reset Password
                     <ArrowRight className="h-5 w-5" />

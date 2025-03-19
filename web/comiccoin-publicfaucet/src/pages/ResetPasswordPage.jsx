@@ -1,6 +1,6 @@
 // src/pages/ResetPasswordPage.jsx
-import { useState } from "react";
-import { useNavigate, Link } from "react-router";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation, Link } from "react-router";
 import {
   AlertCircle,
   Shield,
@@ -11,9 +11,68 @@ import {
   ArrowLeft,
   ArrowRight,
   Mail,
+  Clock,
 } from "lucide-react";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
+
+// Countdown Timer Component
+const CountdownTimer = ({ expirationTime }) => {
+  const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 });
+  const [isExpired, setIsExpired] = useState(false);
+
+  // Function to calculate and update the time remaining
+  const updateTimeLeft = useCallback(() => {
+    const now = new Date();
+    const expiration = new Date(expirationTime);
+    const totalSecondsLeft = Math.max(0, Math.floor((expiration - now) / 1000));
+
+    if (totalSecondsLeft <= 0) {
+      setIsExpired(true);
+      setTimeLeft({ minutes: 0, seconds: 0 });
+      return;
+    }
+
+    const minutes = Math.floor(totalSecondsLeft / 60);
+    const seconds = totalSecondsLeft % 60;
+    setTimeLeft({ minutes, seconds });
+  }, [expirationTime]);
+
+  // Set up the timer effect
+  useEffect(() => {
+    // Initial calculation
+    updateTimeLeft();
+
+    // Update every second
+    const timerId = setInterval(updateTimeLeft, 1000);
+
+    // Clean up the interval on unmount
+    return () => clearInterval(timerId);
+  }, [updateTimeLeft]);
+
+  // Display the timer with appropriate styling
+  return (
+    <div
+      className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
+        isExpired
+          ? "bg-red-100 text-red-800"
+          : timeLeft.minutes < 1
+            ? "bg-yellow-100 text-yellow-800"
+            : "bg-blue-100 text-blue-800"
+      }`}
+    >
+      <Clock className="mr-1 h-4 w-4" aria-hidden="true" />
+      {isExpired ? (
+        <span>Code expired</span>
+      ) : (
+        <span>
+          Expires in {String(timeLeft.minutes).padStart(1, "0")}:
+          {String(timeLeft.seconds).padStart(2, "0")}
+        </span>
+      )}
+    </div>
+  );
+};
 
 function ResetPasswordPage() {
   const [formData, setFormData] = useState({
@@ -28,8 +87,54 @@ function ResetPasswordPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // For the expiration time
+  const location = useLocation();
+  const expirationTime = location.state?.expirationTime;
+  const emailFromPrevPage = location.state?.email;
+  const [isCodeExpired, setIsCodeExpired] = useState(false);
+
   // Navigator for routing
   const navigate = useNavigate();
+
+  // Check for expiration on component mount and whenever expirationTime changes
+  useEffect(() => {
+    if (!expirationTime) return;
+
+    const checkExpiration = () => {
+      const now = new Date();
+      const expiration = new Date(expirationTime);
+      if (now > expiration) {
+        setIsCodeExpired(true);
+        setGeneralError(
+          "Your verification code has expired. Please request a new code.",
+        );
+      }
+    };
+
+    // Check immediately
+    checkExpiration();
+
+    // Set up recurring checks
+    const intervalId = setInterval(checkExpiration, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [expirationTime]);
+
+  // Redirect to forgot password page if no expiration time is available
+  useEffect(() => {
+    if (!expirationTime && !generalError) {
+      setGeneralError(
+        "Missing verification information. Please start the password reset process again.",
+      );
+
+      // Optional: Auto-redirect back to forgot password after a few seconds
+      const redirectTimer = setTimeout(() => {
+        navigate("/forgot-password");
+      }, 3000);
+
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [expirationTime, generalError, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -43,6 +148,14 @@ function ResetPasswordPage() {
 
   const validateForm = () => {
     const newErrors = {};
+
+    // First check if code has expired
+    if (isCodeExpired) {
+      newErrors.verificationCode =
+        "Your verification code has expired. Please request a new code.";
+      setErrors(newErrors);
+      return false;
+    }
 
     // Verify code validation
     if (!formData.verificationCode.trim()) {
@@ -74,6 +187,14 @@ function ResetPasswordPage() {
     e.preventDefault();
     console.log("📝 Reset password form submitted");
     setGeneralError("");
+
+    // Check for expired code first
+    if (isCodeExpired) {
+      setGeneralError(
+        "Your verification code has expired. Please request a new code.",
+      );
+      return;
+    }
 
     // Validate the form
     if (!validateForm()) {
@@ -108,6 +229,11 @@ function ResetPasswordPage() {
   // Handle cancel button click
   const handleCancel = () => {
     navigate("/login");
+  };
+
+  // Handle try again button (when code expires)
+  const handleTryAgain = () => {
+    navigate("/forgot-password");
   };
 
   return (
@@ -153,15 +279,39 @@ function ResetPasswordPage() {
               </div>
             </div>
 
+            {/* Expiration Timer */}
+            {expirationTime && !isSubmitted && (
+              <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                <p className="text-sm text-gray-700">
+                  Verification code sent to{" "}
+                  <span className="font-medium">
+                    {emailFromPrevPage || "your email"}
+                  </span>
+                </p>
+                <CountdownTimer expirationTime={expirationTime} />
+              </div>
+            )}
+
             {/* Form Body */}
             {!isSubmitted ? (
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Display general error message if any */}
                 {generalError && (
                   <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                    <div className="flex items-center gap-2 font-medium">
-                      <AlertCircle className="h-5 w-5" />
-                      <p>{generalError}</p>
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium">{generalError}</p>
+                        {isCodeExpired && (
+                          <button
+                            type="button"
+                            onClick={handleTryAgain}
+                            className="mt-2 text-sm text-red-700 font-medium hover:text-red-800 underline"
+                          >
+                            Request a new verification code
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -185,12 +335,13 @@ function ResetPasswordPage() {
                       value={formData.verificationCode}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-3 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                        errors.verificationCode
+                        errors.verificationCode || isCodeExpired
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300"
                       }`}
                       placeholder="Enter verification code from your email"
                       required
+                      disabled={isCodeExpired}
                     />
                   </div>
                   {errors.verificationCode && (
@@ -199,9 +350,11 @@ function ResetPasswordPage() {
                       {errors.verificationCode}
                     </p>
                   )}
-                  <p className="mt-2 text-sm text-gray-500">
-                    Check your email for the verification code we just sent
-                  </p>
+                  {!errors.verificationCode && !isCodeExpired && (
+                    <p className="mt-2 text-sm text-gray-500">
+                      Check your email for the verification code we sent
+                    </p>
+                  )}
                 </div>
 
                 {/* New Password */}
@@ -230,12 +383,14 @@ function ResetPasswordPage() {
                       placeholder="Create new password"
                       required
                       autoComplete="new-password"
+                      disabled={isCodeExpired}
                     />
                     <button
                       type="button"
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                       onClick={() => setShowNewPassword(!showNewPassword)}
                       tabIndex="-1"
+                      disabled={isCodeExpired}
                     >
                       {showNewPassword ? (
                         <EyeOff className="h-5 w-5" aria-hidden="true" />
@@ -281,6 +436,7 @@ function ResetPasswordPage() {
                       placeholder="Confirm your new password"
                       required
                       autoComplete="new-password"
+                      disabled={isCodeExpired}
                     />
                     <button
                       type="button"
@@ -289,6 +445,7 @@ function ResetPasswordPage() {
                         setShowConfirmPassword(!showConfirmPassword)
                       }
                       tabIndex="-1"
+                      disabled={isCodeExpired}
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="h-5 w-5" aria-hidden="true" />
@@ -310,7 +467,7 @@ function ResetPasswordPage() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || isCodeExpired}
                     className="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading ? (
