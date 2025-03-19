@@ -2,6 +2,7 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import axiosClient from "../api/axiosClient";
+import { loginUser } from "../api/endpoints/loginApi";
 
 export const AuthContext = createContext(null);
 
@@ -194,11 +195,11 @@ export const AuthProvider = ({ children }) => {
     return () => clearInterval(tokenCheckInterval);
   }, [user, updateTokens]);
 
-  // Login function
+  // Login function - Updated to use the loginUser API function
   const login = async (credentials) => {
     setIsLoading(true);
     try {
-      const { data } = await axiosClient.post("/login", credentials);
+      const data = await loginUser(credentials);
 
       // Log the expiry times
       console.log("🔐 Login successful, token details:", {
@@ -218,6 +219,18 @@ export const AuthProvider = ({ children }) => {
       return data.user;
     } catch (error) {
       console.error("Login failed:", error);
+
+      // Pass field errors through if they exist
+      if (error.fieldErrors) {
+        throw {
+          response: {
+            data: error.fieldErrors,
+            status: error.status,
+          },
+        };
+      }
+
+      // Otherwise pass the error as is
       throw error;
     } finally {
       setIsLoading(false);

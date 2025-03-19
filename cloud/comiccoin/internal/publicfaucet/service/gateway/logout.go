@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodbcache"
 )
 
@@ -26,7 +27,11 @@ func NewGatewayLogoutService(
 
 func (s *gatewayLogoutServiceImpl) Execute(ctx context.Context) error {
 	// Extract from our session the following data.
-	sessionID := ctx.Value(constants.SessionID).(string)
+	sessionID, ok := ctx.Value(constants.SessionID).(string)
+	if !ok {
+		s.logger.Warn("loggout could not happen - no session in mongo-cache")
+		return httperror.NewForBadRequestWithSingleField("session_id", "not logged in")
+	}
 
 	if err := s.cache.Delete(ctx, sessionID); err != nil {
 		s.logger.Error("cache delete error", slog.Any("err", err))

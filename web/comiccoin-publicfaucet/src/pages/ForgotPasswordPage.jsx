@@ -11,16 +11,16 @@ import {
 } from "lucide-react";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
-
-//TODO: Add code for posting forgot password API
+import { useForgotPassword } from "../hooks/useForgotPassword";
 
 function ForgotPasswordPage() {
   console.log("🚀 ForgotPasswordPage component initializing");
 
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Use our custom hook
+  const { sendPasswordResetEmail, isLoading, error, success, emailSentTo } =
+    useForgotPassword();
 
   // Navigator for routing
   const navigate = useNavigate();
@@ -28,36 +28,25 @@ function ForgotPasswordPage() {
 
   const handleInputChange = (e) => {
     setEmail(e.target.value);
-    // Clear error when typing
-    if (error) {
-      setError("");
-    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("📝 Forgot password form submitted");
-    setError("");
-    setLoading(true);
 
     try {
       console.log("📧 Attempting to send password reset email to:", email);
 
-      // This is a mock implementation - in a real app, this would call an API
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate API delay
-
-      // Check if email is valid (simple validation for demonstration)
-      if (!email.includes("@") || !email.includes(".")) {
-        throw new Error("Please enter a valid email address.");
-      }
+      // Use our hook to send the reset email
+      await sendPasswordResetEmail(email);
 
       console.log("✅ Password reset email sent successfully");
-      setIsSubmitted(true);
+
+      // Note: The success state is automatically set by the hook
+      // and will trigger the success view rendering
     } catch (err) {
       console.error("❌ Password reset error:", err);
-      setError(err.message || "Failed to send reset email. Please try again.");
-    } finally {
-      setLoading(false);
+      // Error handling is done by the hook
     }
   };
 
@@ -112,14 +101,14 @@ function ForgotPasswordPage() {
             </div>
 
             {/* Form Body */}
-            {!isSubmitted ? (
+            {!success ? (
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Display error message if any */}
                 {error && (
                   <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
                     <div className="flex items-center gap-2 font-medium">
                       <AlertCircle className="h-5 w-5" />
-                      <p>{error}</p>
+                      <p>{error.message}</p>
                     </div>
                   </div>
                 )}
@@ -143,12 +132,20 @@ function ForgotPasswordPage() {
                       value={email}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-3 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                        error ? "border-red-500 bg-red-50" : "border-gray-300"
+                        error && error.fieldErrors?.email
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="you@example.com"
                       required
                     />
                   </div>
+                  {error && error.fieldErrors?.email && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {error.fieldErrors.email}
+                    </p>
+                  )}
                   <p className="mt-2 text-sm text-gray-500">
                     Enter the email address associated with your account
                   </p>
@@ -159,10 +156,10 @@ function ForgotPasswordPage() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isLoading}
                     className="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {loading ? (
+                    {isLoading ? (
                       <>
                         <svg
                           className="animate-spin h-5 w-5 text-white"
@@ -198,7 +195,7 @@ function ForgotPasswordPage() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    disabled={loading}
+                    disabled={isLoading}
                     className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Back to Login
@@ -217,8 +214,8 @@ function ForgotPasswordPage() {
                       </h3>
                       <p className="mb-4">
                         We've sent password reset instructions to{" "}
-                        <strong>{email}</strong>. Please check your inbox and
-                        follow the instructions in the email.
+                        <strong>{emailSentTo}</strong>. Please check your inbox
+                        and follow the instructions in the email.
                       </p>
                       <p className="mb-4">
                         If you don't see the email in your inbox, please check
@@ -258,7 +255,7 @@ function ForgotPasswordPage() {
                 support team for assistance.
               </p>
               <Link
-                to="https://comiccoinnetwork.com/support/"
+                to="/help"
                 className="text-purple-600 hover:text-purple-800 font-medium inline-flex items-center"
               >
                 Contact Support
