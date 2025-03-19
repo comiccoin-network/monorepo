@@ -10,6 +10,7 @@ import {
   UserPlus,
   ArrowLeft,
   ArrowRight,
+  HelpCircle, // Added for forgot password icon
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import Header from "../components/IndexPage/Header";
@@ -242,6 +243,17 @@ function LoginPage() {
                     {errors.password}
                   </p>
                 )}
+
+                {/* Forgot Password Link - Added here */}
+                <div className="mt-2 text-right">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-purple-600 hover:text-purple-800 inline-flex items-center"
+                  >
+                    <HelpCircle className="h-4 w-4 mr-1" />
+                    Forgot your password?
+                  </Link>
+                </div>
               </div>
 
               {/* Form Actions - Matching the Register page pattern */}

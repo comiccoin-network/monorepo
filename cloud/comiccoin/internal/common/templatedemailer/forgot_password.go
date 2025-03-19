@@ -9,7 +9,7 @@ import (
 	"log/slog"
 )
 
-func (impl *templatedEmailer) SendForgotPasswordEmail(email, verificationCode, firstName string) error {
+func (impl *templatedEmailer) SendUserPasswordResetEmail(ctx context.Context, email, verificationCode, firstName string) error {
 	// FOR TESTING PURPOSES ONLY.
 	fp := path.Join("templates", "publicfaucet/forgot_password.html")
 	tmpl, err := template.ParseFiles(fp)
@@ -36,7 +36,7 @@ func (impl *templatedEmailer) SendForgotPasswordEmail(email, verificationCode, f
 	}
 	body := processed.String() // DEVELOPERS NOTE: Convert our long sequence of data into a string.
 
-	if err := impl.Emailer.Send(context.Background(), impl.Emailer.GetSenderEmail(), "Forgot Password", email, body); err != nil {
+	if err := impl.Emailer.Send(ctx, impl.Emailer.GetSenderEmail(), "Forgot Password", email, body); err != nil {
 		impl.Logger.Error("sending error", slog.Any("error", err))
 		return err
 	}

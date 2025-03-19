@@ -112,6 +112,11 @@ func NewModule(
 		logger,
 		templatedEmailer,
 	)
+	sendUserPasswordResetEmailUseCase := uc_emailer.NewSendUserPasswordResetEmailUseCase(
+		cfg,
+		logger,
+		templatedEmailer,
+	)
 
 	// --- Banned IP Addresses ---
 
@@ -352,6 +357,16 @@ func NewModule(
 		jwtp,
 		userGetByEmailUseCase,
 	)
+	gatewayForgotPasswordService := svc_gateway.NewGatewayForgotPasswordService(
+		logger,
+		passp,
+		mongodbCacheProvider,
+		jwtp,
+		userGetByEmailUseCase,
+		userUpdateUseCase,
+		sendUserPasswordResetEmailUseCase,
+	)
+	_ = gatewayForgotPasswordService
 
 	////
 	//// Interface
@@ -383,6 +398,11 @@ func NewModule(
 		logger,
 		dbClient,
 		gatewayRefreshTokenService,
+	)
+	gatewayForgotPasswordHTTPHandler := http_gateway.NewGatewayForgotPasswordHTTPHandler(
+		logger,
+		dbClient,
+		gatewayForgotPasswordService,
 	)
 
 	// --- Hello ---
@@ -487,6 +507,7 @@ func NewModule(
 		gatewayLoginHTTPHandler,
 		gatewayLogoutHTTPHandler,
 		gatewayRefreshTokenHTTPHandler,
+		gatewayForgotPasswordHTTPHandler,
 		getHelloHTTPHandler,
 		getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler,

@@ -49,11 +49,12 @@ type httpServerImpl struct {
 	getHealthCheckHTTPHandler *http_system.GetHealthCheckHTTPHandler
 
 	// Protect API Endpoints
-	gatewayUserRegisterHTTPHandler *http_gateway.GatewayUserRegisterHTTPHandler
-	gatewayVerifyEmailHTTPHandler  *http_gateway.GatewayVerifyEmailHTTPHandler
-	gatewayLoginHTTPHandler        *http_gateway.GatewayLoginHTTPHandler
-	gatewayLogoutHTTPHandler       *http_gateway.GatewayLogoutHTTPHandler
-	gatewayRefreshTokenHTTPHandler *http_gateway.GatewayRefreshTokenHTTPHandler
+	gatewayUserRegisterHTTPHandler   *http_gateway.GatewayUserRegisterHTTPHandler
+	gatewayVerifyEmailHTTPHandler    *http_gateway.GatewayVerifyEmailHTTPHandler
+	gatewayLoginHTTPHandler          *http_gateway.GatewayLoginHTTPHandler
+	gatewayLogoutHTTPHandler         *http_gateway.GatewayLogoutHTTPHandler
+	gatewayRefreshTokenHTTPHandler   *http_gateway.GatewayRefreshTokenHTTPHandler
+	gatewayForgotPasswordHTTPHandler *http_gateway.GatewayForgotPasswordHTTPHandler
 
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler
 
@@ -82,6 +83,7 @@ func NewHTTPServer(
 	gatewayLoginHTTPHandler *http_gateway.GatewayLoginHTTPHandler,
 	gatewayLogoutHTTPHandler *http_gateway.GatewayLogoutHTTPHandler,
 	gatewayRefreshTokenHTTPHandler *http_gateway.GatewayRefreshTokenHTTPHandler,
+	gatewayForgotPasswordHTTPHandler *http_gateway.GatewayForgotPasswordHTTPHandler,
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
@@ -104,6 +106,7 @@ func NewHTTPServer(
 		gatewayLoginHTTPHandler:           gatewayLoginHTTPHandler,
 		gatewayLogoutHTTPHandler:          gatewayLogoutHTTPHandler,
 		gatewayRefreshTokenHTTPHandler:    gatewayRefreshTokenHTTPHandler,
+		gatewayForgotPasswordHTTPHandler:  gatewayForgotPasswordHTTPHandler,
 		getHelloHTTPHandler:               getHelloHTTPHandler,
 		getMeHTTPHandler:                  getMeHTTPHandler,
 		deleteMeHTTPHandler:               deleteMeHTTPHandler,
@@ -160,6 +163,8 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 			port.gatewayLogoutHTTPHandler.Execute(w, r)
 		case n == 5 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "token" && p[4] == "refresh" && r.Method == http.MethodPost:
 			port.gatewayRefreshTokenHTTPHandler.Execute(w, r)
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "forgot-password" && r.Method == http.MethodPost:
+			port.gatewayLogoutHTTPHandler.Execute(w, r)
 
 		// --- Resource endpoints ---
 		// Hello

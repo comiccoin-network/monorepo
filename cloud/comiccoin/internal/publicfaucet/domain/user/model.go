@@ -34,6 +34,8 @@ type User struct {
 	WasEmailVerified                               bool               `bson:"was_email_verified" json:"was_email_verified,omitempty"`
 	EmailVerificationCode                          string             `bson:"email_verification_code,omitempty" json:"email_verification_code,omitempty"`
 	EmailVerificationExpiry                        time.Time          `bson:"email_verification_expiry,omitempty" json:"email_verification_expiry,omitempty"`
+	PasswordResetVerificationCode                  string             `bson:"password_reset_verification_code,omitempty" json:"password_reset_verification_code,omitempty"`
+	PasswordResetVerificationExpiry                time.Time          `bson:"password_reset_verification_expiry,omitempty" json:"password_reset_verification_expiry,omitempty"`
 	Phone                                          string             `bson:"phone" json:"phone,omitempty"`
 	Country                                        string             `bson:"country" json:"country,omitempty"`
 	Timezone                                       string             `bson:"timezone" json:"timezone"`

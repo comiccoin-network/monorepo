@@ -7,6 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import IndexPage from "./pages/IndexPage";
 import GetStartedPage from "./pages/GetStartedPage";
 import LoginPage from "./pages/LoginPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import RegisterPage from "./pages/RegisterPage";
 import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
@@ -50,11 +51,12 @@ function App() {
         <AuthProvider>
           <Routes>
             {/* Public Routes */}
-            <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<IndexPage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/get-started" element={<GetStartedPage />} />
             <Route path="/verify" element={<EmailVerificationPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
 
