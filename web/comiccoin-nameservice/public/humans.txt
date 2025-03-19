@@ -1,0 +1,9 @@
+/* TEAM */
+
+  Developer: Bartlomiej Mika
+  Site: https://github.com/bartmika
+  Location: London, Ontario, Canada
+
+  Analyst & QA: Rodolfo Martinez
+  Site: https://github.com/rodolfomartinez
+  Location: London, Ontario, Canada
