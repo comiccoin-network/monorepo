@@ -61,7 +61,7 @@ const IndexPage = () => {
         <div className="bg-gradient-to-b from-indigo-600 to-indigo-500 text-white py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8">
-              ComicCoin Faucet Balance
+              ComicCoin Name Service Balance
             </h1>
             <div className="relative inline-block mb-8">
               <div className="absolute inset-0 bg-white opacity-20 blur transform scale-110 rounded-full"></div>

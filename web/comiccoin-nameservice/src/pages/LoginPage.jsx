@@ -154,7 +154,7 @@ function LoginPage() {
               <Shield className="h-7 w-7 mr-3 flex-shrink-0" />
               <div>
                 <h2 className="text-xl font-semibold">
-                  Sign in to ComicCoin Faucet
+                  Sign in to ComicCoin Name Service
                 </h2>
                 <p className="text-purple-100 text-sm mt-1">
                   Access your account and daily rewards

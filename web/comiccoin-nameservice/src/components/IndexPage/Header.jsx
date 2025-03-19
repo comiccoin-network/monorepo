@@ -33,7 +33,7 @@ const Header = ({ showBackButton = false }) => {
                 <Coins className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-white" />
               </div>
               <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
-                ComicCoin Faucet
+                ComicCoin Name Service
               </span>
             </Link>
 

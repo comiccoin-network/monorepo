@@ -39,7 +39,7 @@ const AppTopNavigation = () => {
               aria-hidden="true"
             />
             <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
-              ComicCoin Faucet
+              ComicCoin Name Service
             </span>
           </Link>
 

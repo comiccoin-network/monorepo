@@ -258,7 +258,7 @@ const RegisterPage = () => {
               <Shield className="h-7 w-7 mr-3 flex-shrink-0" />
               <div>
                 <h2 className="text-xl font-semibold">
-                  Register for ComicCoin Faucet
+                  Register for ComicCoin Name Service
                 </h2>
                 <p className="text-purple-100 text-sm mt-1">
                   Get started with daily free coins
