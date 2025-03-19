@@ -367,6 +367,15 @@ func NewModule(
 		sendUserPasswordResetEmailUseCase,
 	)
 
+	gatewayResetPasswordService := svc_gateway.NewGatewayResetPasswordService(
+		logger,
+		passp,
+		mongodbCacheProvider,
+		jwtp,
+		userGetByEmailUseCase,
+		userUpdateUseCase,
+	)
+
 	////
 	//// Interface
 	////
@@ -402,6 +411,11 @@ func NewModule(
 		logger,
 		dbClient,
 		gatewayForgotPasswordService,
+	)
+	gatewayResetPasswordHTTPHandler := http_gateway.NewGatewayResetPasswordHTTPHandler(
+		logger,
+		dbClient,
+		gatewayResetPasswordService,
 	)
 
 	// --- Hello ---
@@ -507,6 +521,7 @@ func NewModule(
 		gatewayLogoutHTTPHandler,
 		gatewayRefreshTokenHTTPHandler,
 		gatewayForgotPasswordHTTPHandler,
+		gatewayResetPasswordHTTPHandler,
 		getHelloHTTPHandler,
 		getMeHTTPHandler,
 		postMeConnectWalletHTTPHandler,

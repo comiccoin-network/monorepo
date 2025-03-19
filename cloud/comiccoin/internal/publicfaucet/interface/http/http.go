@@ -55,6 +55,7 @@ type httpServerImpl struct {
 	gatewayLogoutHTTPHandler         *http_gateway.GatewayLogoutHTTPHandler
 	gatewayRefreshTokenHTTPHandler   *http_gateway.GatewayRefreshTokenHTTPHandler
 	gatewayForgotPasswordHTTPHandler *http_gateway.GatewayForgotPasswordHTTPHandler
+	gatewayResetPasswordHTTPHandler  *http_gateway.GatewayResetPasswordHTTPHandler
 
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler
 
@@ -84,6 +85,7 @@ func NewHTTPServer(
 	gatewayLogoutHTTPHandler *http_gateway.GatewayLogoutHTTPHandler,
 	gatewayRefreshTokenHTTPHandler *http_gateway.GatewayRefreshTokenHTTPHandler,
 	gatewayForgotPasswordHTTPHandler *http_gateway.GatewayForgotPasswordHTTPHandler,
+	gatewayResetPasswordHTTPHandler *http_gateway.GatewayResetPasswordHTTPHandler,
 	getHelloHTTPHandler *http_hello.GetHelloHTTPHandler,
 	getMeHTTPHandler *http_me.GetMeHTTPHandler,
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
@@ -107,6 +109,7 @@ func NewHTTPServer(
 		gatewayLogoutHTTPHandler:          gatewayLogoutHTTPHandler,
 		gatewayRefreshTokenHTTPHandler:    gatewayRefreshTokenHTTPHandler,
 		gatewayForgotPasswordHTTPHandler:  gatewayForgotPasswordHTTPHandler,
+		gatewayResetPasswordHTTPHandler:   gatewayResetPasswordHTTPHandler,
 		getHelloHTTPHandler:               getHelloHTTPHandler,
 		getMeHTTPHandler:                  getMeHTTPHandler,
 		deleteMeHTTPHandler:               deleteMeHTTPHandler,
@@ -165,6 +168,8 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 			port.gatewayRefreshTokenHTTPHandler.Execute(w, r)
 		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "forgot-password" && r.Method == http.MethodPost:
 			port.gatewayForgotPasswordHTTPHandler.Execute(w, r)
+		case n == 4 && p[0] == "publicfaucet" && p[1] == "api" && p[2] == "v1" && p[3] == "reset-password" && r.Method == http.MethodPost:
+			port.gatewayResetPasswordHTTPHandler.Execute(w, r)
 
 		// --- Resource endpoints ---
 		// Hello
