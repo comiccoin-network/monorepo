@@ -11,6 +11,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	authority_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/http"
+	nameservice_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/interface/http"
 	publicfaucet_http "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/interface/http"
 	mid "github.com/comiccoin-network/monorepo/cloud/comiccoin/unifiedhttp/middleware"
 )
@@ -36,6 +37,7 @@ type unifiedHTTPServerImpl struct {
 	// Modules
 	authorityHTTPServer    authority_http.HTTPServer
 	publicfaucetHTTPServer publicfaucet_http.HTTPServer
+	nameserviceHTTPServer  nameservice_http.HTTPServer
 }
 
 func NewUnifiedHTTPServer(
@@ -44,6 +46,7 @@ func NewUnifiedHTTPServer(
 	mid mid.Middleware,
 	authorityHTTPServer authority_http.HTTPServer,
 	publicfaucetHTTPServer publicfaucet_http.HTTPServer,
+	nameserviceHTTPServer nameservice_http.HTTPServer,
 ) UnifiedHTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.IP == "" {
@@ -75,6 +78,7 @@ func NewUnifiedHTTPServer(
 		getAppleAppSiteAssociationHTTPHandler: NewGetAppleAppSiteAssociationHTTPHandler(logger),
 		authorityHTTPServer:                   authorityHTTPServer,
 		publicfaucetHTTPServer:                publicfaucetHTTPServer,
+		nameserviceHTTPServer:                 nameserviceHTTPServer,
 	}
 
 	// Attach the unified request handler
@@ -155,6 +159,12 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 		// Handle new API endpoints.
 		port.logger.Debug("entering publicfaucet module...")
 		port.publicfaucetHTTPServer.HandleIncomingHTTPRequest(w, r)
+		return
+
+	case p[0] == "nameservice":
+		// Handle new API endpoints.
+		port.logger.Debug("entering nameservice module...")
+		port.nameserviceHTTPServer.HandleIncomingHTTPRequest(w, r)
 		return
 
 	// --- CATCH ALL: D.N.E. ---

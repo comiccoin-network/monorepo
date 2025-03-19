@@ -23,6 +23,7 @@ import (
 	unifiedmiddleware "github.com/comiccoin-network/monorepo/cloud/comiccoin/unifiedhttp/middleware"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet"
 )
 
@@ -108,6 +109,24 @@ func doRunDaemon() {
 	publicfaucetHTTPServer := publicfaucetModule.GetHTTPServerInstance()
 	publicfaucetTaskManager := publicfaucetModule.GetTaskManagerInstance()
 
+	// --- Name Service ---
+
+	nameserviceModule := nameservice.NewModule(
+		cfg,
+		logger,
+		dbClient,
+		keystore,
+		passp,
+		jwtp,
+		blackp,
+		redisCacheProvider,
+		dmutex,
+		ipcbp,
+	)
+
+	nameserviceHTTPServer := nameserviceModule.GetHTTPServerInstance()
+	nameserviceTaskManager := nameserviceModule.GetTaskManagerInstance()
+
 	//
 	// STEP 4:
 	// Initialize our unified http server and task manager
@@ -125,6 +144,7 @@ func doRunDaemon() {
 		httpMiddleware,
 		authorityHTTPServer,
 		publicfaucetHTTPServer,
+		nameserviceHTTPServer,
 	)
 
 	//
@@ -142,6 +162,8 @@ func doRunDaemon() {
 	go publicfaucetTaskManager.Run()
 	defer publicfaucetTaskManager.Shutdown()
 
+	go nameserviceTaskManager.Run()
+	defer nameserviceTaskManager.Shutdown()
 	logger.Info("ComicCoin Authority is running.")
 
 	<-done

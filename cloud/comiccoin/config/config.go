@@ -70,6 +70,7 @@ type DBConfig struct {
 	AuthorityName    string
 	GatewayName      string
 	PublicFaucetName string
+	NameServiceName  string
 }
 
 type NFTStorageConfig struct {
@@ -130,6 +131,7 @@ func NewProvider() *Configuration {
 	c.DB.AuthorityName = getEnv("COMICCOIN_DB_AUTHORITY_NAME", true)
 	c.DB.GatewayName = getEnv("COMICCOIN_DB_GATEWAY_NAME", true)
 	c.DB.PublicFaucetName = getEnv("COMICCOIN_DB_PUBLICFAUCET_NAME", true)
+	c.DB.NameServiceName = getEnv("COMICCOIN_DB_NAMESERVICE_NAME", true)
 
 	// --- Cache ---
 	c.Cache.URI = getEnv("COMICCOIN_CACHE_URI", true)
