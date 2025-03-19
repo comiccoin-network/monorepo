@@ -8,19 +8,20 @@ import {
   ArrowLeft,
   CheckCircle,
   Send,
+  ArrowRight,
 } from "lucide-react";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
-import { useForgotPassword } from "../hooks/useForgotPassword";
+
+//TODO: Add code for posting forgot password API
 
 function ForgotPasswordPage() {
   console.log("🚀 ForgotPasswordPage component initializing");
 
   const [email, setEmail] = useState("");
-
-  // Use our custom hook
-  const { sendPasswordResetEmail, isLoading, error, success, emailSentTo } =
-    useForgotPassword();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Navigator for routing
   const navigate = useNavigate();
@@ -28,25 +29,37 @@ function ForgotPasswordPage() {
 
   const handleInputChange = (e) => {
     setEmail(e.target.value);
+    // Clear error when typing
+    if (error) {
+      setError("");
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("📝 Forgot password form submitted");
+    setError("");
+    setLoading(true);
 
     try {
       console.log("📧 Attempting to send password reset email to:", email);
 
-      // Use our hook to send the reset email
-      await sendPasswordResetEmail(email);
+      // This is a mock implementation - in a real app, this would call an API
+      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate API delay
+
+      // Check if email is valid (simple validation for demonstration)
+      if (!email.includes("@") || !email.includes(".")) {
+        throw new Error("Please enter a valid email address.");
+      }
 
       console.log("✅ Password reset email sent successfully");
-
-      // Note: The success state is automatically set by the hook
-      // and will trigger the success view rendering
+      setIsSubmitted(true);
+      // No automatic redirect - user will click Continue button when ready
     } catch (err) {
       console.error("❌ Password reset error:", err);
-      // Error handling is done by the hook
+      setError(err.message || "Failed to send reset email. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -101,14 +114,14 @@ function ForgotPasswordPage() {
             </div>
 
             {/* Form Body */}
-            {!success ? (
+            {!isSubmitted ? (
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Display error message if any */}
                 {error && (
                   <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
                     <div className="flex items-center gap-2 font-medium">
                       <AlertCircle className="h-5 w-5" />
-                      <p>{error.message}</p>
+                      <p>{error}</p>
                     </div>
                   </div>
                 )}
@@ -132,20 +145,12 @@ function ForgotPasswordPage() {
                       value={email}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-3 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                        error && error.fieldErrors?.email
-                          ? "border-red-500 bg-red-50"
-                          : "border-gray-300"
+                        error ? "border-red-500 bg-red-50" : "border-gray-300"
                       }`}
                       placeholder="you@example.com"
                       required
                     />
                   </div>
-                  {error && error.fieldErrors?.email && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {error.fieldErrors.email}
-                    </p>
-                  )}
                   <p className="mt-2 text-sm text-gray-500">
                     Enter the email address associated with your account
                   </p>
@@ -156,10 +161,10 @@ function ForgotPasswordPage() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={loading}
                     className="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {isLoading ? (
+                    {loading ? (
                       <>
                         <svg
                           className="animate-spin h-5 w-5 text-white"
@@ -195,7 +200,7 @@ function ForgotPasswordPage() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    disabled={isLoading}
+                    disabled={loading}
                     className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Back to Login
@@ -214,30 +219,34 @@ function ForgotPasswordPage() {
                       </h3>
                       <p className="mb-4">
                         We've sent password reset instructions to{" "}
-                        <strong>{emailSentTo}</strong>. Please check your inbox
-                        and follow the instructions in the email.
+                        <strong>{email}</strong>. Please check your inbox and
+                        follow the instructions in the email.
                       </p>
                       <p className="mb-4">
                         If you don't see the email in your inbox, please check
                         your spam folder. The email should arrive within a few
                         minutes.
                       </p>
+                      <p className="text-sm text-green-600 mb-2">
+                        The email contains a verification code you'll need on
+                        the next screen.
+                      </p>
                       <p className="text-sm text-green-600">
-                        Note: The reset link in the email will expire after 24
-                        hours for security reasons.
+                        Note: The verification code will expire after 5 minutes
+                        for security reasons.
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex justify-center">
-                  <Link
-                    to="/login"
+                  <button
+                    onClick={() => navigate("/reset-password")}
                     className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                   >
-                    <ArrowLeft className="h-5 w-5" />
-                    Return to Login
-                  </Link>
+                    Continue to Reset Password
+                    <ArrowRight className="h-5 w-5" />
+                  </button>
                 </div>
               </div>
             )}
@@ -255,7 +264,7 @@ function ForgotPasswordPage() {
                 support team for assistance.
               </p>
               <Link
-                to="/help"
+                to="https://comiccoinnetwork.com/support/"
                 className="text-purple-600 hover:text-purple-800 font-medium inline-flex items-center"
               >
                 Contact Support

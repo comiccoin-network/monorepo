@@ -8,6 +8,7 @@ import IndexPage from "./pages/IndexPage";
 import GetStartedPage from "./pages/GetStartedPage";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import RegisterPage from "./pages/RegisterPage";
 import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
@@ -57,6 +58,7 @@ function App() {
             <Route path="/get-started" element={<GetStartedPage />} />
             <Route path="/verify" element={<EmailVerificationPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
 
