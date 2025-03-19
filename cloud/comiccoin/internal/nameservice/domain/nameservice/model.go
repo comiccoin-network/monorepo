@@ -1,5 +1,5 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/domain/faucet/model.go
-package faucet
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/domain/nameservice/model.go
+package nameservice
 
 import (
 	"time"

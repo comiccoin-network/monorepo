@@ -18,21 +18,21 @@ var (
 func init() {
 	// Exact matches
 	exactPaths = map[string]bool{
-		"/publicfaucet/api/v1/say-hello":         true,
-		"/publicfaucet/api/v1/token/introspect":  true,
-		"/publicfaucet/api/v1/profile":           true,
-		"/publicfaucet/api/v1/me":                true,
-		"/publicfaucet/api/v1/me/connect-wallet": true,
-		"/publicfaucet/api/v1/me/delete":         true,
-		"/publicfaucet/api/v1/dashboard":         true,
-		"/publicfaucet/api/v1/claim-coins":       true,
-		"/publicfaucet/api/v1/transactions":      true,
+		"/publicnameservice/api/v1/say-hello":         true,
+		"/publicnameservice/api/v1/token/introspect":  true,
+		"/publicnameservice/api/v1/profile":           true,
+		"/publicnameservice/api/v1/me":                true,
+		"/publicnameservice/api/v1/me/connect-wallet": true,
+		"/publicnameservice/api/v1/me/delete":         true,
+		"/publicnameservice/api/v1/dashboard":         true,
+		"/publicnameservice/api/v1/claim-coins":       true,
+		"/publicnameservice/api/v1/transactions":      true,
 	}
 
 	// Pattern matches
 	patterns := []string{
-		"^/publicfaucet/api/v1/user/[0-9]+$",
-		"^/publicfaucet/api/v1/wallet/[0-9a-f]+$",
+		"^/publicnameservice/api/v1/user/[0-9]+$",
+		"^/publicnameservice/api/v1/wallet/[0-9a-f]+$",
 	}
 
 	// Precompile patterns

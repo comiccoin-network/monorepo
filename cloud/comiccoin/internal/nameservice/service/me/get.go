@@ -12,7 +12,6 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
-	uc_faucet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/usecase/faucet"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/usecase/user"
 )
 
@@ -83,13 +82,11 @@ type GetMeService interface {
 }
 
 type getMeServiceImpl struct {
-	config                       *config.Configuration
-	logger                       *slog.Logger
-	userGetByIDUseCase           uc_user.UserGetByIDUseCase
-	userCreateUseCase            uc_user.UserCreateUseCase
-	userUpdateUseCase            uc_user.UserUpdateUseCase
-	getFaucetByChainIDUseCase    uc_faucet.GetFaucetByChainIDUseCase
-	faucetUpdateByChainIDUseCase uc_faucet.FaucetUpdateByChainIDUseCase
+	config             *config.Configuration
+	logger             *slog.Logger
+	userGetByIDUseCase uc_user.UserGetByIDUseCase
+	userCreateUseCase  uc_user.UserCreateUseCase
+	userUpdateUseCase  uc_user.UserUpdateUseCase
 }
 
 func NewGetMeService(
@@ -98,17 +95,13 @@ func NewGetMeService(
 	userGetByIDUseCase uc_user.UserGetByIDUseCase,
 	userCreateUseCase uc_user.UserCreateUseCase,
 	userUpdateUseCase uc_user.UserUpdateUseCase,
-	getFaucetByChainIDUseCase uc_faucet.GetFaucetByChainIDUseCase,
-	faucetUpdateByChainIDUseCase uc_faucet.FaucetUpdateByChainIDUseCase,
 ) GetMeService {
 	return &getMeServiceImpl{
-		config:                       config,
-		logger:                       logger,
-		userGetByIDUseCase:           userGetByIDUseCase,
-		userCreateUseCase:            userCreateUseCase,
-		userUpdateUseCase:            userUpdateUseCase,
-		getFaucetByChainIDUseCase:    getFaucetByChainIDUseCase,
-		faucetUpdateByChainIDUseCase: faucetUpdateByChainIDUseCase,
+		config:             config,
+		logger:             logger,
+		userGetByIDUseCase: userGetByIDUseCase,
+		userCreateUseCase:  userCreateUseCase,
+		userUpdateUseCase:  userUpdateUseCase,
 	}
 }
 

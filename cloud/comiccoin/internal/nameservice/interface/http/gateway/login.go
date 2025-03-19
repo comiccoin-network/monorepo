@@ -43,7 +43,7 @@ func (h *GatewayLoginHTTPHandler) unmarshalLoginRequest(
 
 	defer r.Body.Close()
 
-	h.logger.Debug("beginning to decode json payload for api request ...", slog.String("api", "/publicfaucet/api/v1/login"))
+	h.logger.Debug("beginning to decode json payload for api request ...", slog.String("api", "/publicnameservice/api/v1/login"))
 
 	var rawJSON bytes.Buffer
 	teeReader := io.TeeReader(r.Body, &rawJSON) // TeeReader allows you to read the JSON and capture it
@@ -63,7 +63,7 @@ func (h *GatewayLoginHTTPHandler) unmarshalLoginRequest(
 	requestData.Email = strings.ToLower(requestData.Email)
 	requestData.Email = strings.ReplaceAll(requestData.Email, " ", "")
 
-	h.logger.Debug("successfully decoded json payload api request", slog.String("api", "/publicfaucet/api/v1/login"))
+	h.logger.Debug("successfully decoded json payload api request", slog.String("api", "/publicnameservice/api/v1/login"))
 
 	return &requestData, nil
 }

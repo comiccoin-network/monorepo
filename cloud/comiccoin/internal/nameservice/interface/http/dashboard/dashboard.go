@@ -59,7 +59,7 @@ func (h *DashboardHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
 		// Call service
 		response, err := h.service.Execute(sessCtx)
 		if err != nil {
-			h.logger.Error("failed to get faucet by chain id",
+			h.logger.Error("failed to get nameservice by chain id",
 				slog.Any("error", err))
 			return nil, err
 		}

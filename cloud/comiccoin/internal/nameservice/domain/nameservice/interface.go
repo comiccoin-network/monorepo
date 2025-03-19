@@ -1,5 +1,5 @@
-// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/domain/faucet/interface.go
-package faucet
+// github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/domain/nameservice/interface.go
+package nameservice
 
 import (
 	"context"

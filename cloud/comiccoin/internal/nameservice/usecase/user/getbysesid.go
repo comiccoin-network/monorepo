@@ -47,7 +47,7 @@ func (uc *userGetBySessionIDUseCaseImpl) Execute(ctx context.Context, sessionID 
 	// STEP 2:
 	//
 
-	uc.logger.Debug("publicfaucet controller initialization started...")
+	uc.logger.Debug("publicnameservice controller initialization started...")
 
 	userBytes, err := uc.cache.Get(ctx, sessionID)
 	if err != nil {
@@ -64,7 +64,7 @@ func (uc *userGetBySessionIDUseCaseImpl) Execute(ctx context.Context, sessionID 
 		return nil, err
 	}
 
-	uc.logger.Debug("publicfaucet controller initialized")
+	uc.logger.Debug("publicnameservice controller initialized")
 
 	return &user, nil
 }
