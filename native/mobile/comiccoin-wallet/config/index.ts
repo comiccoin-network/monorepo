@@ -40,7 +40,7 @@ const developmentConfig: Config = {
 
 // Production configuration
 const productionConfig: Config = {
-  AUTHORITY_API_URL: "https://comiccoinauthority.com",
+  AUTHORITY_API_URL: "https://comiccoin.net",
   IPFS_GATEWAY_URL: "https://nftstorage.com",
 };
 

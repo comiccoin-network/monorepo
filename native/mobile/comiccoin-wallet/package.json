@@ -67,7 +67,8 @@
     "react-native-webview": "^13.13.2",
     "expo-camera": "~16.0.14",
     "expo-notifications": "~0.29.13",
-    "expo-background-fetch": "~13.0.5"
+    "expo-background-fetch": "~13.0.5",
+    "expo-build-properties": "~0.13.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

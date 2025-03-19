@@ -15,6 +15,11 @@ tasks:
     cmds:
       - npx expo run:ios
 
+  ios-build:
+    desc: (Dangerous - will delete previous xcode project!) Build the iOS app using latest expo app.json
+    cmds:
+      - npx expo prebuild --platform ios --clean
+
   ios_device:
     desc: Start the developer instance for iOS using physical device (please make sure your device is connected via cable and registered with Apple Developer program)
     cmds:
@@ -28,6 +33,11 @@ tasks:
       - export PATH=$PATH:$ANDROID_HOME/emulator
       - export PATH=$PATH:$ANDROID_HOME/platform-tools
       - npx expo run:android
+
+  android-build:
+    desc: (Dangerous - will delete local keystore!) Build the Android app using latest expo app.json
+    cmds:
+      - npx expo prebuild --platform android --clean
 
   doctor:
     desc: Perform a check on our expo codebase to discover an potential issue(s)
