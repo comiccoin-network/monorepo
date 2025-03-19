@@ -26,7 +26,7 @@ services:
         "--logpath",
         "/dev/null",
       ]
-    restart: always
+    restart: unless-stopped
     ports:
       - 27017:27017
     extra_hosts:
@@ -56,7 +56,7 @@ services:
         "--logpath",
         "/dev/null",
       ]
-    restart: always
+    restart: unless-stopped
     ports:
       - 27018:27018
     extra_hosts:
@@ -79,7 +79,7 @@ services:
         "--logpath",
         "/dev/null",
       ]
-    restart: always
+    restart: unless-stopped
     ports:
       - 27019:27019
     extra_hosts:
@@ -105,7 +105,7 @@ services:
       - db1
       - db2
       - db3
-    restart: always
+    restart: unless-stopped
 
   cache:
     # https://pimylifeup.com/redis-docker/
@@ -115,7 +115,7 @@ services:
     ports:
       - 6379:6379
     stdin_open: true
-    restart: always
+    restart: unless-stopped
     volumes:
       - "./data/redis:/data"
       # attach: false # Disable console logs here.
