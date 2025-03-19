@@ -22,13 +22,13 @@ type GatewayForgotPasswordService interface {
 }
 
 type gatewayForgotPasswordServiceImpl struct {
-	logger                           *slog.Logger
-	passwordProvider                 password.Provider
-	cache                            mongodbcache.Cacher
-	jwtProvider                      jwt.Provider
-	userGetByEmailUseCase            uc_user.UserGetByEmailUseCase
-	userUpdateUseCase                uc_user.UserUpdateUseCase
-	sendUserVerificationEmailUseCase uc_emailer.SendUserVerificationEmailUseCase
+	logger                            *slog.Logger
+	passwordProvider                  password.Provider
+	cache                             mongodbcache.Cacher
+	jwtProvider                       jwt.Provider
+	userGetByEmailUseCase             uc_user.UserGetByEmailUseCase
+	userUpdateUseCase                 uc_user.UserUpdateUseCase
+	sendUserPasswordResetEmailUseCase uc_emailer.SendUserPasswordResetEmailUseCase
 }
 
 func NewGatewayForgotPasswordService(
@@ -38,7 +38,7 @@ func NewGatewayForgotPasswordService(
 	jwtp jwt.Provider,
 	uc1 uc_user.UserGetByEmailUseCase,
 	uc2 uc_user.UserUpdateUseCase,
-	uc3 uc_emailer.SendUserVerificationEmailUseCase,
+	uc3 uc_emailer.SendUserPasswordResetEmailUseCase,
 ) GatewayForgotPasswordService {
 	return &gatewayForgotPasswordServiceImpl{logger, pp, cach, jwtp, uc1, uc2, uc3}
 }
@@ -96,14 +96,14 @@ func (s *gatewayForgotPasswordServiceImpl) Execute(sessCtx mongo.SessionContext,
 	// STEP 4:
 	//
 
-	emailVerificationCode, err := random.GenerateSixDigitCode()
+	passwordResetVerificationCode, err := random.GenerateSixDigitCode()
 	if err != nil {
 		s.logger.Error("generating email verification code error", slog.Any("error", err))
 		return nil, err
 	}
 
-	u.EmailVerificationCode = fmt.Sprintf("%s", emailVerificationCode)
-	u.EmailVerificationExpiry = time.Now().Add(5 * time.Minute)
+	u.PasswordResetVerificationCode = fmt.Sprintf("%s", passwordResetVerificationCode)
+	u.PasswordResetVerificationExpiry = time.Now().Add(5 * time.Minute)
 	u.ModifiedAt = time.Now()
 	u.ModifiedByName = u.Name
 	err = s.userUpdateUseCase.Execute(sessCtx, u)
@@ -116,7 +116,7 @@ func (s *gatewayForgotPasswordServiceImpl) Execute(sessCtx mongo.SessionContext,
 	// STEP 5: Send email
 	//
 
-	if err := s.sendUserVerificationEmailUseCase.Execute(sessCtx, u); err != nil {
+	if err := s.sendUserPasswordResetEmailUseCase.Execute(sessCtx, u); err != nil {
 		s.logger.Error("failed sending verification email with error", slog.Any("err", err))
 		// Skip any error handling...
 	}

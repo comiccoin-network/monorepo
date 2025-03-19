@@ -1,9 +1,10 @@
 // src/hooks/useForgotPassword.js
 import { useState } from "react";
+import { requestPasswordReset } from "../api/endpoints/forgotPasswordApi";
 
 /**
  * Custom hook for handling forgot password functionality
- * Provides a mock implementation for password reset
+ * Uses the dedicated API endpoint for password reset
  */
 export const useForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +14,6 @@ export const useForgotPassword = () => {
 
   /**
    * Request a password reset email for the provided email address
-   * This is a mock implementation that doesn't make actual API calls
    *
    * @param {string} email - Email address to send password reset to
    * @returns {Promise} Promise with the result
@@ -27,21 +27,20 @@ export const useForgotPassword = () => {
     try {
       console.log("📧 Attempting to send password reset email to:", email);
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Use the dedicated API function from forgotPasswordApi.js
+      const response = await requestPasswordReset({ email });
 
-      // Simple email validation
-      if (!email.includes("@") || !email.includes(".")) {
-        throw new Error("Please enter a valid email address.");
-      }
+      console.log("✅ Password reset email sent successfully");
 
       // Set success state and store email
       setEmailSentTo(email);
       setSuccess(true);
 
-      return { success: true, email };
+      return response;
     } catch (err) {
-      // Format and set the error state
+      console.error("❌ Password reset error:", err);
+
+      // Set the error state using the formatted error from the API
       setError({
         message: err.message || "Failed to send password reset email",
         fieldErrors: err.fieldErrors || {},

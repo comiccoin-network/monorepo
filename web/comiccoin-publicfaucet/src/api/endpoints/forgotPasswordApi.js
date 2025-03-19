@@ -34,19 +34,31 @@ export const requestPasswordReset = async (data) => {
         error.response?.status === 400 &&
         typeof error.response.data === "object"
       ) {
-        // Check if the error is in the format we expect (field-specific errors)
-        if (error.response.data.email) {
+        // Handle session_id error specifically (user not logged in)
+        if (error.response.data.session_id === "not logged in") {
+          throw {
+            message: "You need to be logged in to request a password reset.",
+            status: error.response.status,
+          };
+        }
+        // Handle email-specific errors
+        else if (error.response.data.email) {
           throw {
             fieldErrors: error.response.data,
             message: error.response.data.email || "Failed to send reset email",
             status: error.response.status,
           };
-        } else {
-          // Otherwise, use the whole object as the general error
+        }
+        // Other object-type errors - convert to user-friendly message
+        else {
+          // Extract first error message from the object, or use default
+          const firstErrorKey = Object.keys(error.response.data)[0];
+          const errorMessage = firstErrorKey
+            ? `${firstErrorKey}: ${error.response.data[firstErrorKey]}`
+            : "Failed to send reset email";
+
           throw {
-            message:
-              JSON.stringify(error.response.data) ||
-              "Failed to send reset email",
+            message: errorMessage,
             status: error.response.status,
           };
         }

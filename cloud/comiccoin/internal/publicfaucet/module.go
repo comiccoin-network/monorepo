@@ -366,7 +366,6 @@ func NewModule(
 		userUpdateUseCase,
 		sendUserPasswordResetEmailUseCase,
 	)
-	_ = gatewayForgotPasswordService
 
 	////
 	//// Interface
