@@ -15,7 +15,7 @@ func (impl *templatedEmailer) SendNewComicSubmissionEmailToStaff(staffEmails []s
 
 	for _, staffEmail := range staffEmails {
 		// FOR TESTING PURPOSES ONLY.
-		fp := path.Join("templates", "publicfaucet/staff_submission_created.html")
+		fp := path.Join("templates", "nameservice/staff_submission_created.html")
 		tmpl, err := template.ParseFiles(fp)
 		if err != nil {
 			impl.Logger.Error("parsing error",

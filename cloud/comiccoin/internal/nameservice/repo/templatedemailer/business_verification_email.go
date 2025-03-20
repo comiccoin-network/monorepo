@@ -13,7 +13,7 @@ func (impl *templatedEmailer) SendBusinessVerificationEmail(email, verificationC
 	impl.Logger.Debug("sending email verification email...")
 
 	// FOR TESTING PURPOSES ONLY.
-	fp := path.Join("templates", "publicfaucet/business_verification_email.html")
+	fp := path.Join("templates", "nameservice/business_verification_email.html")
 	tmpl, err := template.ParseFiles(fp)
 	if err != nil {
 		impl.Logger.Error("business verification parsing error", slog.Any("error", err))

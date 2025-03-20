@@ -17,7 +17,7 @@ func (impl *templatedEmailer) SendUserPasswordResetEmail(ctx context.Context, em
 	)
 
 	// FOR TESTING PURPOSES ONLY.
-	fp := path.Join("templates", "publicfaucet/forgot_password.html")
+	fp := path.Join("templates", "nameservice/forgot_password.html")
 	tmpl, err := template.ParseFiles(fp)
 	if err != nil {
 		impl.Logger.Error("user password reset parsing error", slog.Any("error", err))

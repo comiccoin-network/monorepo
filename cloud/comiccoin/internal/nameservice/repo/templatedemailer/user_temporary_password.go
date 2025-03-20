@@ -13,7 +13,7 @@ func (impl *templatedEmailer) SendNewUserTemporaryPasswordEmail(email, firstName
 	impl.Logger.Debug("sending new user temporary password email...")
 
 	// FOR TESTING PURPOSES ONLY.
-	fp := path.Join("templates", "publicfaucet/user_temporary_password.html")
+	fp := path.Join("templates", "nameservice/user_temporary_password.html")
 	tmpl, err := template.ParseFiles(fp)
 	if err != nil {
 		impl.Logger.Error("parsing error", slog.Any("error", err))

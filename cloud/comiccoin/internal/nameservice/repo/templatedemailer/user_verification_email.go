@@ -17,7 +17,7 @@ func (impl *templatedEmailer) SendUserVerificationEmail(ctx context.Context, ema
 	)
 
 	// FOR TESTING PURPOSES ONLY.
-	fp := path.Join("templates", "publicfaucet/user_verification_email.html")
+	fp := path.Join("templates", "nameservice/user_verification_email.html")
 	tmpl, err := template.ParseFiles(fp)
 	if err != nil {
 		impl.Logger.Error("user verification parsing error", slog.Any("error", err))

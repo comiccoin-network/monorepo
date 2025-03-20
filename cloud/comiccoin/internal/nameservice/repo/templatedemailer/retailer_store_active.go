@@ -15,7 +15,7 @@ func (impl *templatedEmailer) SendRetailerStoreActiveEmailToRetailers(retailerEm
 
 	for _, retailerEmail := range retailerEmails {
 		// FOR TESTING PURPOSES ONLY.
-		fp := path.Join("templates", "publicfaucet/retailer_store_active.html")
+		fp := path.Join("templates", "nameservice/retailer_store_active.html")
 		tmpl, err := template.ParseFiles(fp)
 		if err != nil {
 			impl.Logger.Error("parsing error", slog.Any("error", err))
