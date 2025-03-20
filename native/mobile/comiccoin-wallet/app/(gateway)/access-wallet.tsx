@@ -149,10 +149,7 @@ export default function AccessWallet() {
     }
   };
 
-  if (wallets.length === 0 && !serviceLoading) {
-    return <EmptyWalletState />;
-  }
-
+  // Consistently render the same container structure for both states
   return (
     <SafeAreaView style={styles.container}>
       {isLoading && (
@@ -172,130 +169,147 @@ export default function AccessWallet() {
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
           >
-            <View style={styles.header}>
-              <Text style={styles.title}>Access Your Wallet</Text>
-              <Text style={styles.subtitle}>Login to your existing wallet</Text>
-            </View>
-
-            {(error || serviceError) && (
-              <View style={styles.errorBox}>
-                <Ionicons name="alert-circle" size={20} color="#EF4444" />
-                <View style={styles.errorContent}>
-                  <Text style={styles.errorText}>{error || serviceError}</Text>
-                </View>
-              </View>
-            )}
-
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <View style={styles.cardHeaderIcon}>
-                  <Ionicons name="key" size={20} color="#7C3AED" />
-                </View>
-                <View style={styles.cardHeaderContent}>
-                  <Text style={styles.cardTitle}>Login to Wallet</Text>
-                  <Text style={styles.cardSubtitle}>
-                    Select your wallet and enter your password to continue.
+            {wallets.length === 0 && !serviceLoading ? (
+              <EmptyWalletState />
+            ) : (
+              <>
+                <View style={styles.header}>
+                  <Text style={styles.title}>Access Your Wallet</Text>
+                  <Text style={styles.subtitle}>
+                    Login to your existing wallet
                   </Text>
                 </View>
-              </View>
 
-              <View style={styles.formContainer}>
-                <SecurityNotice />
-
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Select Wallet</Text>
-                  <Text style={styles.inputHelper}>
-                    Choose the wallet you want to access
-                  </Text>
-                  <Dropdown
-                    style={[styles.dropdown, styles.select]}
-                    placeholderStyle={styles.placeholderStyle}
-                    selectedTextStyle={styles.selectedTextStyle}
-                    data={walletOptions}
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    placeholder="Select a wallet"
-                    value={selectedWalletId}
-                    onChange={(item) => setSelectedWalletId(item.value)}
-                    disable={isLoading || serviceLoading}
-                    renderLeftIcon={() => (
-                      <Ionicons
-                        name="wallet-outline"
-                        size={20}
-                        color="#9CA3AF"
-                        style={styles.dropdownIcon}
-                      />
-                    )}
-                  />
-                </View>
-
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Password</Text>
-                  <Text style={styles.inputHelper}>
-                    Enter your wallet password
-                  </Text>
-                  <View style={styles.inputWrapper}>
-                    <View style={styles.inputIconContainer}>
-                      <Ionicons name="key-outline" size={20} color="#9CA3AF" />
+                {(error || serviceError) && (
+                  <View style={styles.errorBox}>
+                    <Ionicons name="alert-circle" size={20} color="#EF4444" />
+                    <View style={styles.errorContent}>
+                      <Text style={styles.errorText}>
+                        {error || serviceError}
+                      </Text>
                     </View>
-                    <TextInput
-                      style={styles.input}
-                      value={password}
-                      onChangeText={setPassword}
-                      placeholder="Enter your wallet password"
-                      placeholderTextColor="#9CA3AF"
-                      secureTextEntry={!showPassword}
-                      editable={!isLoading && !serviceLoading}
-                    />
-                    <Pressable
-                      onPress={() => setShowPassword(!showPassword)}
-                      style={styles.eyeIcon}
-                      disabled={isLoading || serviceLoading}
-                    >
-                      <Ionicons
-                        name={showPassword ? "eye-off-outline" : "eye-outline"}
-                        size={20}
-                        color="#6B7280"
+                  </View>
+                )}
+
+                <View style={styles.card}>
+                  <View style={styles.cardHeader}>
+                    <View style={styles.cardHeaderIcon}>
+                      <Ionicons name="key" size={20} color="#7C3AED" />
+                    </View>
+                    <View style={styles.cardHeaderContent}>
+                      <Text style={styles.cardTitle}>Login to Wallet</Text>
+                      <Text style={styles.cardSubtitle}>
+                        Select your wallet and enter your password to continue.
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.formContainer}>
+                    <SecurityNotice />
+
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Select Wallet</Text>
+                      <Text style={styles.inputHelper}>
+                        Choose the wallet you want to access
+                      </Text>
+                      <Dropdown
+                        style={[styles.dropdown, styles.select]}
+                        placeholderStyle={styles.placeholderStyle}
+                        selectedTextStyle={styles.selectedTextStyle}
+                        data={walletOptions}
+                        maxHeight={300}
+                        labelField="label"
+                        valueField="value"
+                        placeholder="Select a wallet"
+                        value={selectedWalletId}
+                        onChange={(item) => setSelectedWalletId(item.value)}
+                        disable={isLoading || serviceLoading}
+                        renderLeftIcon={() => (
+                          <Ionicons
+                            name="wallet-outline"
+                            size={20}
+                            color="#9CA3AF"
+                            style={styles.dropdownIcon}
+                          />
+                        )}
                       />
-                    </Pressable>
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Password</Text>
+                      <Text style={styles.inputHelper}>
+                        Enter your wallet password
+                      </Text>
+                      <View style={styles.inputWrapper}>
+                        <View style={styles.inputIconContainer}>
+                          <Ionicons
+                            name="key-outline"
+                            size={20}
+                            color="#9CA3AF"
+                          />
+                        </View>
+                        <TextInput
+                          style={styles.input}
+                          value={password}
+                          onChangeText={setPassword}
+                          placeholder="Enter your wallet password"
+                          placeholderTextColor="#9CA3AF"
+                          secureTextEntry={!showPassword}
+                          editable={!isLoading && !serviceLoading}
+                        />
+                        <Pressable
+                          onPress={() => setShowPassword(!showPassword)}
+                          style={styles.eyeIcon}
+                          disabled={isLoading || serviceLoading}
+                        >
+                          <Ionicons
+                            name={
+                              showPassword ? "eye-off-outline" : "eye-outline"
+                            }
+                            size={20}
+                            color="#6B7280"
+                          />
+                        </Pressable>
+                      </View>
+                    </View>
+
+                    <View style={styles.actionButtons}>
+                      <Pressable
+                        onPress={() => router.back()}
+                        style={styles.cancelButton}
+                        disabled={isLoading || serviceLoading}
+                      >
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={handleLogin}
+                        style={[
+                          styles.accessButton,
+                          (isLoading || serviceLoading) &&
+                            styles.buttonDisabled,
+                        ]}
+                        disabled={isLoading || serviceLoading}
+                      >
+                        {isLoading || serviceLoading ? (
+                          <ActivityIndicator color="#FFFFFF" />
+                        ) : (
+                          <>
+                            <Ionicons
+                              name="log-in-outline"
+                              size={20}
+                              color="#FFFFFF"
+                            />
+                            <Text style={styles.accessButtonText}>
+                              Access Wallet
+                            </Text>
+                          </>
+                        )}
+                      </Pressable>
+                    </View>
                   </View>
                 </View>
-
-                <View style={styles.actionButtons}>
-                  <Pressable
-                    onPress={() => router.back()}
-                    style={styles.cancelButton}
-                    disabled={isLoading || serviceLoading}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={handleLogin}
-                    style={[
-                      styles.accessButton,
-                      (isLoading || serviceLoading) && styles.buttonDisabled,
-                    ]}
-                    disabled={isLoading || serviceLoading}
-                  >
-                    {isLoading || serviceLoading ? (
-                      <ActivityIndicator color="#FFFFFF" />
-                    ) : (
-                      <>
-                        <Ionicons
-                          name="log-in-outline"
-                          size={20}
-                          color="#FFFFFF"
-                        />
-                        <Text style={styles.accessButtonText}>
-                          Access Wallet
-                        </Text>
-                      </>
-                    )}
-                  </Pressable>
-                </View>
-              </View>
-            </View>
+              </>
+            )}
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
