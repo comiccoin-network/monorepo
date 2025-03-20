@@ -16,7 +16,9 @@ import EmailVerificationPage from "./pages/EmailVerificationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import AddWalletAddressPage from "./pages/AddWalletAddressPage"; //TODO: REMOVE
-import VerificationStartPage from "./pages/VerificationStartPage";
+import VerificationLaunchpadPage from "./pages/VerificationLaunchpadPage";
+import VerificationIndividualPage from "./pages/VerificationIndividualPage";
+import VerificationBusinessPage from "./pages/VerificationBusinessPage";
 import VerificationRejectedPage from "./pages/VerificationRejectedPage";
 import VerificationPendingPage from "./pages/VerificationPendingPage";
 import ClaimCoinsPage from "./pages/ClaimCoinsPage";
@@ -84,10 +86,28 @@ function App() {
 
             {/* User Verification Routes */}
             <Route
-              path="/verification/start"
+              path="/verification"
               element={
                 <ProtectedRoute>
-                  <VerificationStartPage />
+                  <VerificationLaunchpadPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/verification/individual"
+              element={
+                <ProtectedRoute>
+                  <VerificationIndividualPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/verification/business"
+              element={
+                <ProtectedRoute>
+                  <VerificationBusinessPage />
                 </ProtectedRoute>
               }
             />

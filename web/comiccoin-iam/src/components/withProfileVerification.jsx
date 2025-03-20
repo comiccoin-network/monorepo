@@ -1,8 +1,12 @@
-// monorepo/web/comiccoin-iam/src/components/withProfileVerification.jsx
+// src/components/withProfileVerification.jsx
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 
+/**
+ * Higher Order Component that checks profile verification status
+ * and redirects users based on their verification state
+ */
 function withProfileVerification(WrappedComponent) {
   function ProfileVerificationWrapper(props) {
     const navigate = useNavigate();
@@ -13,14 +17,10 @@ function withProfileVerification(WrappedComponent) {
 
     // Define verification status constants
     const VERIFICATION_STATUS = {
-      // User has not yet submitted their information for verification
-      UNVERIFIED: 1,
-      // User has submitted information and is awaiting review
-      SUBMITTED_FOR_REVIEW: 2,
-      // User's information has been approved
-      APPROVED: 3,
-      // User's information has been rejected
-      REJECTED: 4,
+      UNVERIFIED: 1, // The user's profile has not yet been submitted for verification
+      SUBMITTED_FOR_REVIEW: 2, // The user's profile has been submitted and is awaiting review
+      APPROVED: 3, // The user's profile has been approved
+      REJECTED: 4, // The user's profile has been rejected
     };
 
     // Check the user's verification status
@@ -66,7 +66,7 @@ function withProfileVerification(WrappedComponent) {
             console.log(
               "🔄 User is unverified, redirecting to verification start page",
             );
-            navigate("/verification/start");
+            navigate("/verification");
             break;
           case VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW:
             console.log(
@@ -89,7 +89,7 @@ function withProfileVerification(WrappedComponent) {
             console.log(
               "⚠️ Unknown verification status, defaulting to unverified flow",
             );
-            navigate("/verification/start");
+            navigate("/verification");
             break;
         }
       }
