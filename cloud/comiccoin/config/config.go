@@ -19,6 +19,7 @@ type Configuration struct {
 	DB                  DBConfig
 	NFTStore            NFTStorageConfig
 	PublicFaucetEmailer PublicFaucetMailgunConfig
+	NameServiceEmailer  NameServiceMailgunConfig
 }
 
 type CacheConf struct {
@@ -78,6 +79,16 @@ type NFTStorageConfig struct {
 }
 
 type PublicFaucetMailgunConfig struct {
+	APIKey           string
+	Domain           string
+	APIBase          string
+	SenderEmail      string
+	MaintenanceEmail string
+	FrontendDomain   string
+	BackendDomain    string
+}
+
+type NameServiceMailgunConfig struct {
 	APIKey           string
 	Domain           string
 	APIBase          string
@@ -151,6 +162,16 @@ func NewProvider() *Configuration {
 
 	// Claim Coins Reward
 	c.Blockchain.PublicFaucetClaimCoinsReward = getUint64Env("COMICCOIN_PUBLICFAUCET_CLAIM_COINS_REWARD", true)
+
+	// --- Name Service ---
+	// Mailgun section.
+	c.NameServiceEmailer.APIKey = getEnv("COMICCOIN_NAMESERVICE_MAILGUN_API_KEY", true)
+	c.NameServiceEmailer.Domain = getEnv("COMICCOIN_NAMESERVICE_MAILGUN_DOMAIN", true)
+	c.NameServiceEmailer.APIBase = getEnv("COMICCOIN_NAMESERVICE_MAILGUN_API_BASE", true)
+	c.NameServiceEmailer.SenderEmail = getEnv("COMICCOIN_NAMESERVICE_MAILGUN_SENDER_EMAIL", true)
+	c.NameServiceEmailer.MaintenanceEmail = getEnv("COMICCOIN_NAMESERVICE_MAILGUN_MAINTENANCE_EMAIL", true)
+	c.NameServiceEmailer.FrontendDomain = getEnv("COMICCOIN_NAMESERVICE_MAILGUN_FRONTEND_DOMAIN", true)
+	c.NameServiceEmailer.BackendDomain = getEnv("COMICCOIN_NAMESERVICE_MAILGUN_BACKEND_DOMAIN", true)
 
 	return &c
 }

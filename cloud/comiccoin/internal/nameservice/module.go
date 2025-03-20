@@ -69,7 +69,17 @@ func NewModule(
 
 	mongodbCacheConfigurationProvider := mongodb_cache.NewCacheConfigurationProvider(cfg.DB.NameServiceName)
 	mongodbCacheProvider := mongodb_cache.NewCache(mongodbCacheConfigurationProvider, logger, dbClient)
-	emailer := mailgun.NewEmailer(cfg, logger)
+
+	mailgunConfigurationProvider := mailgun.NewMailgunConfigurationProvider(
+		cfg.NameServiceEmailer.SenderEmail,
+		cfg.NameServiceEmailer.Domain,
+		cfg.NameServiceEmailer.APIBase,
+		cfg.NameServiceEmailer.MaintenanceEmail,
+		cfg.NameServiceEmailer.FrontendDomain,
+		cfg.NameServiceEmailer.BackendDomain,
+		cfg.NameServiceEmailer.APIKey,
+	)
+	emailer := mailgun.NewEmailer(mailgunConfigurationProvider, logger)
 	templatedEmailer := templatedemailer.NewTemplatedEmailer(logger, emailer)
 
 	////

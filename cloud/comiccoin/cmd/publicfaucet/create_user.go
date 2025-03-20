@@ -105,7 +105,17 @@ func doRunCreateUser() {
 	cfg := config.NewProvider()
 	dbClient := mongodb.NewProvider(cfg, logger)
 	passp := password.NewProvider()
-	emailer := mailgun.NewEmailer(cfg, logger)
+
+	mailgunConfigurationProvider := mailgun.NewMailgunConfigurationProvider(
+		cfg.PublicFaucetEmailer.SenderEmail,
+		cfg.PublicFaucetEmailer.Domain,
+		cfg.PublicFaucetEmailer.APIBase,
+		cfg.PublicFaucetEmailer.MaintenanceEmail,
+		cfg.PublicFaucetEmailer.FrontendDomain,
+		cfg.PublicFaucetEmailer.BackendDomain,
+		cfg.PublicFaucetEmailer.APIKey,
+	)
+	emailer := mailgun.NewEmailer(mailgunConfigurationProvider, logger)
 	templatedEmailer := templatedemailer.NewTemplatedEmailer(logger, emailer)
 
 	// Validate password confirmation

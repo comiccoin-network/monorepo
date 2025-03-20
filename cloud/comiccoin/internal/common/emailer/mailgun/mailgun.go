@@ -7,8 +7,6 @@ import (
 	"log/slog"
 
 	"github.com/mailgun/mailgun-go/v4"
-
-	c "github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 )
 
 type Emailer interface {
@@ -21,33 +19,23 @@ type Emailer interface {
 }
 
 type mailgunEmailer struct {
-	Mailgun          *mailgun.MailgunImpl
-	Logger           *slog.Logger
-	senderEmail      string
-	domain           string
-	apiBase          string
-	maintenanceEmail string
-	frontendDomain   string
-	backendDomain    string
+	config  MailgunConfigurationProvider
+	Mailgun *mailgun.MailgunImpl
+	Logger  *slog.Logger
 }
 
-func NewEmailer(cfg *c.Configuration, logger *slog.Logger) Emailer {
+func NewEmailer(config MailgunConfigurationProvider, logger *slog.Logger) Emailer {
 	// Defensive code: Make sure we have access to the file before proceeding any further with the code.
 	logger.Debug("mailgun emailer initializing...")
-	mg := mailgun.NewMailgun(cfg.PublicFaucetEmailer.Domain, cfg.PublicFaucetEmailer.APIKey)
+	mg := mailgun.NewMailgun(config.GetDomainName(), config.GetAPIKey())
 	logger.Debug("mailgun emailer was initialized.")
 
-	mg.SetAPIBase(cfg.PublicFaucetEmailer.APIBase) // Override to support our custom email requirements.
+	mg.SetAPIBase(config.GetAPIBase()) // Override to support our custom email requirements.
 
 	return &mailgunEmailer{
-		Mailgun:          mg,
-		Logger:           logger,
-		senderEmail:      cfg.PublicFaucetEmailer.SenderEmail,
-		domain:           cfg.PublicFaucetEmailer.Domain,
-		apiBase:          cfg.PublicFaucetEmailer.APIBase,
-		maintenanceEmail: cfg.PublicFaucetEmailer.MaintenanceEmail,
-		frontendDomain:   cfg.PublicFaucetEmailer.FrontendDomain,
-		backendDomain:    cfg.PublicFaucetEmailer.BackendDomain,
+		config:  config,
+		Mailgun: mg,
+		Logger:  logger,
 	}
 }
 
@@ -84,21 +72,21 @@ func (me *mailgunEmailer) Send(ctx context.Context, sender, subject, recipient, 
 }
 
 func (me *mailgunEmailer) GetDomainName() string {
-	return me.domain
+	return me.config.GetDomainName()
 }
 
 func (me *mailgunEmailer) GetSenderEmail() string {
-	return me.senderEmail
+	return me.config.GetSenderEmail()
 }
 
 func (me *mailgunEmailer) GetBackendDomainName() string {
-	return me.backendDomain
+	return me.config.GetBackendDomainName()
 }
 
 func (me *mailgunEmailer) GetFrontendDomainName() string {
-	return me.frontendDomain
+	return me.config.GetFrontendDomainName()
 }
 
 func (me *mailgunEmailer) GetMaintenanceEmail() string {
-	return me.maintenanceEmail
+	return me.config.GetMaintenanceEmail()
 }
