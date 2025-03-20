@@ -11,7 +11,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-const Header = ({ showBackButton = false }) => {
+const Header = ({ showButton = true, showBackButton = false }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -46,30 +46,32 @@ const Header = ({ showBackButton = false }) => {
             </Link>
 
             {/* Desktop Navigation Link */}
-            <div className="hidden md:flex items-center">
-              {showBackButton ? (
-                /* Back to Home Button */
-                <Link
-                  to="/"
-                  className="bg-white text-purple-700 px-5 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base active:bg-purple-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-700 focus:ring-white"
-                  aria-label="Go back to home page"
-                >
-                  <ArrowLeft className="w-5 h-5" aria-hidden="true" />
-                  <span>Back to Home</span>
-                </Link>
-              ) : (
-                /* Get Started Button */
-                <Link
-                  to="/get-started"
-                  className="bg-white text-purple-700 px-5 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base active:bg-purple-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-700 focus:ring-white"
-                  aria-label="Get started with ComicCoin Digital Identity"
-                >
-                  <PlayCircle className="w-5 h-5" aria-hidden="true" />
-                  <span>Get Started</span>
-                  <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
-                </Link>
-              )}
-            </div>
+            {showButton && (
+              <div className="hidden md:flex items-center">
+                {showBackButton ? (
+                  /* Back to Home Button */
+                  <Link
+                    to="/"
+                    className="bg-white text-purple-700 px-5 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base active:bg-purple-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-700 focus:ring-white"
+                    aria-label="Go back to home page"
+                  >
+                    <ArrowLeft className="w-5 h-5" aria-hidden="true" />
+                    <span>Back to Home</span>
+                  </Link>
+                ) : (
+                  /* Get Started Button */
+                  <Link
+                    to="/get-started"
+                    className="bg-white text-purple-700 px-5 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base active:bg-purple-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-700 focus:ring-white"
+                    aria-label="Get started with ComicCoin Digital Identity"
+                  >
+                    <PlayCircle className="w-5 h-5" aria-hidden="true" />
+                    <span>Get Started</span>
+                    <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
+                  </Link>
+                )}
+              </div>
+            )}
 
             {/* Mobile menu button with improved accessibility */}
             <div className="md:hidden flex items-center">

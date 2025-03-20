@@ -23,7 +23,7 @@ const VerificationStartPage = () => {
         Skip to main content
       </a>
 
-      <Header />
+      <Header showButton={false} showBackButton={false} />
 
       <h1>VERIFICATION STARTUP</h1>
       <Footer isLoading={isLoading} nameServiceStats={identityStats} />
