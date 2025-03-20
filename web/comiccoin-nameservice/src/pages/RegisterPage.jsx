@@ -240,8 +240,8 @@ const RegisterPage = () => {
                 Create Your Account
               </h1>
               <p className="text-base sm:text-lg lg:text-xl text-indigo-100 max-w-3xl mx-auto">
-                Join our community of comic collectors and creators today and
-                get free ComicCoins!
+                Secure your unique blockchain identity and start building on the
+                ComicCoin network.
               </p>
             </div>
           </div>

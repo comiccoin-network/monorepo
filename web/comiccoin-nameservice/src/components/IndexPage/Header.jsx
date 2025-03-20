@@ -1,7 +1,15 @@
 // src/components/IndexPage/Header.jsx
 import React, { useState } from "react";
 import { Link } from "react-router";
-import { Coins, Menu, X, ArrowLeft } from "lucide-react";
+import {
+  Globe,
+  Menu,
+  X,
+  ArrowLeft,
+  Search,
+  LogIn,
+  UserPlus,
+} from "lucide-react";
 
 const Header = ({ showBackButton = false }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,7 +38,7 @@ const Header = ({ showBackButton = false }) => {
             {/* Logo and Brand - Enhanced size and contrast */}
             <Link to="/" className="flex items-center space-x-3">
               <div className="flex-shrink-0" aria-hidden="true">
-                <Coins className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-white" />
+                <Globe className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-white" />
               </div>
               <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
                 ComicCoin Name Service
@@ -38,7 +46,27 @@ const Header = ({ showBackButton = false }) => {
             </Link>
 
             {/* Desktop Navigation Links with enhanced accessibility */}
-            <div className="hidden md:flex items-center space-x-6">
+            <div className="hidden md:flex items-center space-x-4">
+              {/* Register Button */}
+              <Link
+                to="/register"
+                className="text-white hover:text-indigo-200 px-3 py-2 rounded-md font-medium flex items-center gap-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700"
+                aria-label="Register on the name service"
+              >
+                <UserPlus className="w-5 h-5" aria-hidden="true" />
+                <span>Register</span>
+              </Link>
+
+              {/* Login Button */}
+              <Link
+                to="/login"
+                className="text-white hover:text-indigo-200 px-3 py-2 rounded-md font-medium flex items-center gap-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700"
+                aria-label="Login to your account"
+              >
+                <LogIn className="w-5 h-5" aria-hidden="true" />
+                <span>Login</span>
+              </Link>
+
               {/* Conditional button with improved accessibility */}
               {showBackButton ? (
                 <Link
@@ -51,12 +79,12 @@ const Header = ({ showBackButton = false }) => {
                 </Link>
               ) : (
                 <Link
-                  to="/get-started"
+                  to="/search"
                   className="bg-white text-purple-700 px-5 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base active:bg-purple-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-700 focus:ring-white"
-                  aria-label="Start claiming ComicCoins"
+                  aria-label="Search the name service"
                 >
-                  <Coins className="w-5 h-5" aria-hidden="true" />
-                  <span>Claim Coins</span>
+                  <Search className="w-5 h-5" aria-hidden="true" />
+                  <span>Verify Address</span>
                 </Link>
               )}
             </div>
@@ -91,6 +119,28 @@ const Header = ({ showBackButton = false }) => {
             aria-label="Mobile Navigation"
           >
             <div className="px-4 pt-2 pb-3 space-y-1">
+              {/* Register Button for Mobile */}
+              <Link
+                to="/register"
+                className="block py-2 px-3 text-white hover:bg-purple-700 rounded-md font-medium flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                onClick={() => setIsMenuOpen(false)}
+                aria-label="Register on the name service"
+              >
+                <UserPlus className="w-5 h-5" aria-hidden="true" />
+                <span>Register</span>
+              </Link>
+
+              {/* Login Button for Mobile */}
+              <Link
+                to="/login"
+                className="block py-2 px-3 text-white hover:bg-purple-700 rounded-md font-medium flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                onClick={() => setIsMenuOpen(false)}
+                aria-label="Login to your account"
+              >
+                <LogIn className="w-5 h-5" aria-hidden="true" />
+                <span>Login</span>
+              </Link>
+
               {/* Conditional mobile button with improved accessibility */}
               {showBackButton ? (
                 <Link
@@ -104,13 +154,13 @@ const Header = ({ showBackButton = false }) => {
                 </Link>
               ) : (
                 <Link
-                  to="/get-started"
+                  to="/search"
                   className="block mt-4 bg-white text-purple-700 px-4 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base w-full justify-center focus:outline-none focus:ring-2 focus:ring-purple-500"
                   onClick={() => setIsMenuOpen(false)}
-                  aria-label="Start claiming ComicCoins"
+                  aria-label="Search the name service"
                 >
-                  <Coins className="w-5 h-5" aria-hidden="true" />
-                  <span>Claim Coins</span>
+                  <Search className="w-5 h-5" aria-hidden="true" />
+                  <span>Verify Address</span>
                 </Link>
               )}
             </div>
