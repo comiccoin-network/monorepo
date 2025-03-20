@@ -112,7 +112,7 @@ class TransactionListService {
         ...(type && { type }),
       });
 
-      const url = `${this.BASE_URL}/api/v1/block-transactions?${queryParams.toString()}`;
+      const url = `${this.BASE_URL}/authority/api/v1/block-transactions?${queryParams.toString()}`;
 
       if (__DEV__) {
         console.log("🌐 Fetching from URL:", url);

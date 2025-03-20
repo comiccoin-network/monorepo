@@ -284,7 +284,7 @@ class LatestBlockTransactionSSEService {
 
   private buildUrl(): string {
     const cleanBaseUrl = this.baseUrl.replace(/\/+$/, "");
-    const url = `${cleanBaseUrl}/api/v1/latest-block-transaction/sse?address=${this.address}`;
+    const url = `${cleanBaseUrl}/authority/api/v1/latest-block-transaction/sse?address=${this.address}`;
 
     if (!this.validateUrl(url)) {
       console.log(`Invalid URL constructed: ${url}`);

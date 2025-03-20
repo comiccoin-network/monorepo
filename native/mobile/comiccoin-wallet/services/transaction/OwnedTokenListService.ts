@@ -113,7 +113,7 @@ class OwnedTokenListService {
       params.append("address", address);
       if (type) params.append("type", type);
 
-      const url = `${this.BASE_URL}/api/v1/block-transactions/owned-tokens`;
+      const url = `${this.BASE_URL}/authority/api/v1/block-transactions/owned-tokens`;
       const finalUrl = `${url}?${params.toString()}`;
 
       if (__DEV__) {

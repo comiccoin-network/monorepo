@@ -169,7 +169,7 @@ class CoinTransferService {
       console.log("Requesting template with payload:", requestPayload);
 
       const response = await fetch(
-        `${this.BASE_URL}/api/v1/transaction/prepare`,
+        `${this.BASE_URL}/authority/api/v1/transaction/prepare`,
         {
           method: "POST",
           headers: this.defaultHeaders,
@@ -400,7 +400,7 @@ class CoinTransferService {
       console.log("Request body:", requestBody);
 
       const response = await fetch(
-        `${this.BASE_URL}/api/v1/mempool-transactions`,
+        `${this.BASE_URL}/authority/api/v1/mempool-transactions`,
         {
           method: "POST",
           headers: this.defaultHeaders,

@@ -153,12 +153,12 @@ class NFTTransferService {
       console.log("Requesting template with payload:", requestPayload);
       console.log(
         "Request URL:",
-        `${this.BASE_URL}/api/v1/transaction/prepare`,
+        `${this.BASE_URL}/authority/api/v1/transaction/prepare`,
       );
       console.log("Request headers:", this.defaultHeaders);
 
       const response = await fetch(
-        `${this.BASE_URL}/api/v1/transaction/prepare`,
+        `${this.BASE_URL}/authority/api/v1/transaction/prepare`,
         {
           method: "POST",
           headers: this.defaultHeaders,
@@ -358,7 +358,7 @@ class NFTTransferService {
       });
 
       const response = await fetch(
-        `${this.BASE_URL}/api/v1/mempool-transactions`,
+        `${this.BASE_URL}/authority/api/v1/mempool-transactions`,
         {
           method: "POST",
           headers: this.defaultHeaders,

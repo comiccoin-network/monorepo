@@ -42,7 +42,7 @@ class BlockDataViaHeaderNumberService {
 
     try {
       const response = await fetch(
-        `${this.baseURL}/api/v1/blockdata-via-header-number/${headerNumber}`,
+        `${this.baseURL}/authority/api/v1/blockdata-via-header-number/${headerNumber}`,
         {
           method: "GET",
           headers: {

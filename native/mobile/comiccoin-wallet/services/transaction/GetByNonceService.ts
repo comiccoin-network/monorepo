@@ -69,7 +69,7 @@ class BlockTransactionByNonceService {
       throw new Error("Invalid transaction nonce");
     }
 
-    const endpoint = `${this.baseURL}/api/v1/block-transaction-by-nonce/${transactionNonce}`;
+    const endpoint = `${this.baseURL}/authority/api/v1/block-transaction-by-nonce/${transactionNonce}`;
     debugLog("🔗", "Endpoint constructed", {
       endpoint,
       method: "GET",
