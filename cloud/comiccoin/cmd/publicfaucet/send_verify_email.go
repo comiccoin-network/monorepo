@@ -12,7 +12,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/emailer/mailgun"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/logger"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodb"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/repo/templatedemailer"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/identity/repo/templatedemailer"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/repo/user"
 	svc_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/service/gateway"
 	uc_emailer "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/usecase/emailer"
