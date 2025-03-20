@@ -11,12 +11,15 @@ import {
   Globe,
   Building,
   User,
+  PlayCircle,
 } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
 
 const IndexPage = () => {
+  const navigate = useNavigate(); // Use navigate for programmatic navigation
+
   // Mock data state instead of using a hook
   const [nameServiceStats, setNameServiceStats] = useState({
     registered_entries: 8750,
@@ -42,8 +45,10 @@ const IndexPage = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // This would typically redirect to a search results page
-    console.log("Searching for:", searchQuery);
+    // Navigate to the search page with the query parameter
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
   };
 
   return (
@@ -126,14 +131,6 @@ const IndexPage = () => {
               </div>
             </form>
 
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-2 bg-white text-indigo-600 px-8 py-4 rounded-xl font-bold hover:bg-indigo-50 transition-colors text-lg shadow-lg hover:shadow-xl active:bg-indigo-100 active:shadow-md"
-              aria-label="Register on ComicCoin Name Service"
-            >
-              Register Your Name
-              <ArrowRight className="w-6 h-6" />
-            </Link>
             {!isLoading && !error && nameServiceStats && (
               <p className="mt-4 text-indigo-100 text-base sm:text-lg">
                 Verified Entries:{" "}
@@ -167,13 +164,13 @@ const IndexPage = () => {
                 Look up wallet addresses or search for organizations and
                 individuals on the ComicCoin network
               </p>
-              <Link
-                to="/search"
+              <button
+                onClick={() => navigate("/search")}
                 className="text-purple-600 font-bold flex items-center hover:text-purple-700 transition-colors"
               >
                 Try Searching
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+              </button>
             </div>
 
             {/* Custom Card 2: Verify */}
@@ -221,7 +218,7 @@ const IndexPage = () => {
                 Create a trusted presence on the blockchain.
               </p>
               <Link
-                to="/register"
+                to="/register-name"
                 className="text-purple-600 font-bold flex items-center hover:text-purple-700 transition-colors"
               >
                 Register Now
@@ -235,26 +232,26 @@ const IndexPage = () => {
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-              Ready to Join the ComicCoin Name Service?
+              Ready to Get Started with ComicCoin Name Service?
             </h2>
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
-              Join thousands of verified users and organizations on the
-              ComicCoin blockchain. Register your identity today!
+              Start exploring or join thousands of verified users and
+              organizations on the ComicCoin blockchain.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
-              <a
-                href="/search"
+              <Link
+                to="/get-started"
                 className="inline-flex items-center justify-center px-8 py-4 bg-white text-purple-700 rounded-xl font-bold hover:bg-purple-50 transition-colors shadow-lg group"
+              >
+                <PlayCircle className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
+                Get Started
+              </Link>
+              <Link
+                to="/search"
+                className="inline-flex items-center justify-center px-8 py-4 bg-purple-800 bg-opacity-50 text-white border border-purple-300 rounded-xl font-bold hover:bg-opacity-75 transition-colors shadow-lg group"
               >
                 <Search className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
                 Search Name Service
-              </a>
-              <Link
-                to="/register"
-                className="inline-flex items-center justify-center px-8 py-4 bg-purple-800 bg-opacity-50 text-white border border-purple-300 rounded-xl font-bold hover:bg-opacity-75 transition-colors shadow-lg group"
-              >
-                <UserCheck className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
-                Register Now
                 <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -340,63 +337,6 @@ const IndexPage = () => {
             </div>
           </div>
         </section>
-
-        {/* Stats Section */}
-        {/*
-        <section className="bg-white py-12 lg:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-16">
-              <div className="text-center">
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-purple-600 mb-2">
-                  {isLoading ? (
-                    <RefreshCw className="h-8 w-8 inline-block animate-spin text-purple-400" />
-                  ) : error ? (
-                    "—"
-                  ) : (
-                    <>
-                      {nameServiceStats?.registered_entries?.toLocaleString() ||
-                        "0"}
-                      +
-                    </>
-                  )}
-                </p>
-                <p className="text-gray-600 text-lg">Registered Entries</p>
-              </div>
-              <div className="text-center">
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-purple-600 mb-2">
-                  {isLoading ? (
-                    <RefreshCw className="h-8 w-8 inline-block animate-spin text-purple-400" />
-                  ) : error ? (
-                    "—"
-                  ) : (
-                    <>
-                      {nameServiceStats?.verified_entries?.toLocaleString() ||
-                        "0"}
-                      +
-                    </>
-                  )}
-                </p>
-                <p className="text-gray-600 text-lg">Verified Identities</p>
-              </div>
-              <div className="text-center">
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-purple-600 mb-2">
-                  {isLoading ? (
-                    <RefreshCw className="h-8 w-8 inline-block animate-spin text-purple-400" />
-                  ) : error ? (
-                    "—"
-                  ) : (
-                    <>
-                      {nameServiceStats?.daily_lookups?.toLocaleString() || "0"}
-                      /day
-                    </>
-                  )}
-                </p>
-                <p className="text-gray-600 text-lg">Daily Lookups</p>
-              </div>
-            </div>
-          </div>
-        </section>
-        */}
       </main>
 
       {/* Footer component */}

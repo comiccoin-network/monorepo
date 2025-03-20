@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthProvider } from "./contexts/AuthContext";
 import IndexPage from "./pages/IndexPage";
+import SearchPage from "./pages/SearchPage";
 import GetStartedPage from "./pages/GetStartedPage";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -53,6 +54,7 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<IndexPage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/get-started" element={<GetStartedPage />} />

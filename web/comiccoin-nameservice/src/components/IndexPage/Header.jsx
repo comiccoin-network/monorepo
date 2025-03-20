@@ -5,10 +5,9 @@ import {
   Globe,
   Menu,
   X,
+  ArrowRight,
+  PlayCircle,
   ArrowLeft,
-  Search,
-  LogIn,
-  UserPlus,
 } from "lucide-react";
 
 const Header = ({ showBackButton = false }) => {
@@ -45,30 +44,10 @@ const Header = ({ showBackButton = false }) => {
               </span>
             </Link>
 
-            {/* Desktop Navigation Links with enhanced accessibility */}
-            <div className="hidden md:flex items-center space-x-4">
-              {/* Register Button */}
-              <Link
-                to="/register"
-                className="text-white hover:text-indigo-200 px-3 py-2 rounded-md font-medium flex items-center gap-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700"
-                aria-label="Register on the name service"
-              >
-                <UserPlus className="w-5 h-5" aria-hidden="true" />
-                <span>Register</span>
-              </Link>
-
-              {/* Login Button */}
-              <Link
-                to="/login"
-                className="text-white hover:text-indigo-200 px-3 py-2 rounded-md font-medium flex items-center gap-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700"
-                aria-label="Login to your account"
-              >
-                <LogIn className="w-5 h-5" aria-hidden="true" />
-                <span>Login</span>
-              </Link>
-
-              {/* Conditional button with improved accessibility */}
+            {/* Desktop Navigation Link */}
+            <div className="hidden md:flex items-center">
               {showBackButton ? (
+                /* Back to Home Button */
                 <Link
                   to="/"
                   className="bg-white text-purple-700 px-5 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base active:bg-purple-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-700 focus:ring-white"
@@ -78,13 +57,15 @@ const Header = ({ showBackButton = false }) => {
                   <span>Back to Home</span>
                 </Link>
               ) : (
+                /* Get Started Button */
                 <Link
-                  to="/search"
+                  to="/get-started"
                   className="bg-white text-purple-700 px-5 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base active:bg-purple-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-700 focus:ring-white"
-                  aria-label="Search the name service"
+                  aria-label="Get started with ComicCoin Name Service"
                 >
-                  <Search className="w-5 h-5" aria-hidden="true" />
-                  <span>Verify Address</span>
+                  <PlayCircle className="w-5 h-5" aria-hidden="true" />
+                  <span>Get Started</span>
+                  <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
                 </Link>
               )}
             </div>
@@ -119,33 +100,11 @@ const Header = ({ showBackButton = false }) => {
             aria-label="Mobile Navigation"
           >
             <div className="px-4 pt-2 pb-3 space-y-1">
-              {/* Register Button for Mobile */}
-              <Link
-                to="/register"
-                className="block py-2 px-3 text-white hover:bg-purple-700 rounded-md font-medium flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-                onClick={() => setIsMenuOpen(false)}
-                aria-label="Register on the name service"
-              >
-                <UserPlus className="w-5 h-5" aria-hidden="true" />
-                <span>Register</span>
-              </Link>
-
-              {/* Login Button for Mobile */}
-              <Link
-                to="/login"
-                className="block py-2 px-3 text-white hover:bg-purple-700 rounded-md font-medium flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-                onClick={() => setIsMenuOpen(false)}
-                aria-label="Login to your account"
-              >
-                <LogIn className="w-5 h-5" aria-hidden="true" />
-                <span>Login</span>
-              </Link>
-
-              {/* Conditional mobile button with improved accessibility */}
               {showBackButton ? (
+                /* Back to Home Button for Mobile */
                 <Link
                   to="/"
-                  className="block mt-4 bg-white text-purple-700 px-4 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base w-full justify-center focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="block mt-2 bg-white text-purple-700 px-4 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base w-full justify-center focus:outline-none focus:ring-2 focus:ring-purple-500"
                   onClick={() => setIsMenuOpen(false)}
                   aria-label="Go back to home page"
                 >
@@ -153,14 +112,16 @@ const Header = ({ showBackButton = false }) => {
                   <span>Back to Home</span>
                 </Link>
               ) : (
+                /* Get Started Button for Mobile */
                 <Link
-                  to="/search"
-                  className="block mt-4 bg-white text-purple-700 px-4 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base w-full justify-center focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  to="/get-started"
+                  className="block mt-2 bg-white text-purple-700 px-4 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base w-full justify-center focus:outline-none focus:ring-2 focus:ring-purple-500"
                   onClick={() => setIsMenuOpen(false)}
-                  aria-label="Search the name service"
+                  aria-label="Get started with ComicCoin Name Service"
                 >
-                  <Search className="w-5 h-5" aria-hidden="true" />
-                  <span>Verify Address</span>
+                  <PlayCircle className="w-5 h-5" aria-hidden="true" />
+                  <span>Get Started</span>
+                  <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
                 </Link>
               )}
             </div>

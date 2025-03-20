@@ -261,7 +261,7 @@ const RegisterPage = () => {
                   Register for ComicCoin Name Service
                 </h2>
                 <p className="text-purple-100 text-sm mt-1">
-                  Get started with daily free coins
+                  Get started and secure your ComicCoin identity
                 </p>
               </div>
             </div>
