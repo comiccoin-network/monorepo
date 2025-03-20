@@ -9,16 +9,18 @@ import (
 )
 
 const (
-	UserStatusActive                                = 1
-	UserStatusLocked                                = 50
-	UserStatusArchived                              = 100
-	UserRoleRoot                                    = 1
-	UserRoleRetailer                                = 2
-	UserRoleCustomer                                = 3
-	UserProfileVerificationStatusUnverified         = 1
-	UserProfileVerificationStatusSubmittedForReview = 2
-	UserProfileVerificationStatusApproved           = 3
-	UserProfileVerificationStatusRejected           = 4
+	UserStatusActive   = 1   // User is active and can log in.
+	UserStatusLocked   = 50  // User account is locked, typically due to too many failed login attempts.
+	UserStatusArchived = 100 // User account is archived and cannot log in.
+
+	UserRoleRoot     = 1 // Root user, has all permissions
+	UserRoleRetailer = 2
+	UserRoleCustomer = 3
+
+	UserProfileVerificationStatusUnverified         = 1 // The user's profile has not yet been submitted for verification.
+	UserProfileVerificationStatusSubmittedForReview = 2 // The user's profile has been submitted and is awaiting review.
+	UserProfileVerificationStatusApproved           = 3 // The user's profile has been approved.
+	UserProfileVerificationStatusRejected           = 4 // The user's profile has been rejected.
 )
 
 type User struct {
@@ -53,8 +55,6 @@ type User struct {
 	ShippingPostalCode                             string             `bson:"shipping_postal_code" json:"shipping_postal_code,omitempty"`
 	ShippingAddressLine1                           string             `bson:"shipping_address_line1" json:"shipping_address_line1,omitempty"`
 	ShippingAddressLine2                           string             `bson:"shipping_address_line2" json:"shipping_address_line2,omitempty"`
-	HowDidYouHearAboutUs                           int8               `bson:"how_did_you_hear_about_us" json:"how_did_you_hear_about_us,omitempty"`
-	HowDidYouHearAboutUsOther                      string             `bson:"how_did_you_hear_about_us_other" json:"how_did_you_hear_about_us_other,omitempty"`
 	AgreeTermsOfService                            bool               `bson:"agree_terms_of_service" json:"agree_terms_of_service,omitempty"`
 	AgreePromotions                                bool               `bson:"agree_promotions" json:"agree_promotions,omitempty"`
 	AgreeToTrackingAcrossThirdPartyAppsAndServices bool               `bson:"agree_to_tracking_across_third_party_apps_and_services" json:"agree_to_tracking_across_third_party_apps_and_services,omitempty"`
@@ -98,14 +98,6 @@ type User struct {
 	// OTPBackupCodeHashAlgorithm tracks the hashing algorithm used.
 	OTPBackupCodeHashAlgorithm string `bson:"otp_backup_code_hash_algorithm" json:"-"`
 
-	HowLongCollectingComicBooksForGrading           int8 `bson:"how_long_collecting_comic_books_for_grading" json:"how_long_collecting_comic_books_for_grading"`
-	HasPreviouslySubmittedComicBookForGrading       int8 `bson:"has_previously_submitted_comic_book_for_grading" json:"has_previously_submitted_comic_book_for_grading"`
-	HasOwnedGradedComicBooks                        int8 `bson:"has_owned_graded_comic_books" json:"has_owned_graded_comic_books"`
-	HasRegularComicBookShop                         int8 `bson:"has_regular_comic_book_shop" json:"has_regular_comic_book_shop"`
-	HasPreviouslyPurchasedFromAuctionSite           int8 `bson:"has_previously_purchased_from_auction_site" json:"has_previously_purchased_from_auction_site"`
-	HasPreviouslyPurchasedFromFacebookMarketplace   int8 `bson:"has_previously_purchased_from_facebook_marketplace" json:"has_previously_purchased_from_facebook_marketplace"`
-	HasRegularlyAttendedComicConsOrCollectibleShows int8 `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
-
 	ChainID uint16 `bson:"chain_id" json:"chain_id"`
 
 	// WalletAddress variable holds the address of the user's wallet
@@ -115,16 +107,21 @@ type User struct {
 	// ProfileVerificationStatus indicates the profile verification status of this user account.
 	ProfileVerificationStatus int8 `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
 
-	// LastClaimTime indicates the last date/time they claimed ComicCoins
-	LastClaimTime time.Time `bson:"last_claim_time" json:"last_claim_time"`
+	HowDidYouHearAboutUs      int8   `bson:"how_did_you_hear_about_us" json:"how_did_you_hear_about_us,omitempty"`
+	HowDidYouHearAboutUsOther string `bson:"how_did_you_hear_about_us_other" json:"how_did_you_hear_about_us_other,omitempty"`
 
-	// NextClaimTime indicates the next available time the user is able to claim a bunch of coins immediatly
-	NextClaimTime time.Time `bson:"next_claim_time" json:"next_claim_time"`
+	StoreLogoS3Key         string    `bson:"store_logo_s3_key" json:"store_logo_s3_key,omitempty"`
+	StoreLogoTitle         string    `bson:"store_logo_title" json:"store_logo_title,omitempty"`
+	StoreLogoFileURL       string    `bson:"-" json:"store_logo_file_url,omitempty"` // (Optional, added by endpoint)
+	StoreLogoFileURLExpiry time.Time `bson:"-" json:"store_logo_file_url_expiry"`    // (Optional, added by endpoint)
 
-	// Keep track of all of the transactions that the user claimed.
-	ClaimedCoinTransactions []*UserClaimedCoinTransaction `bson:"claimed_coin_transactions" json:"claimed_coin_transactions"`
-
-	TotalCoinsClaimed uint64 `bson:"total_coins_claimed" json:"total_coins_claimed,omitempty"`
+	HowLongCollectingComicBooksForGrading           int8 `bson:"how_long_collecting_comic_books_for_grading" json:"how_long_collecting_comic_books_for_grading"`
+	HasPreviouslySubmittedComicBookForGrading       int8 `bson:"has_previously_submitted_comic_book_for_grading" json:"has_previously_submitted_comic_book_for_grading"`
+	HasOwnedGradedComicBooks                        int8 `bson:"has_owned_graded_comic_books" json:"has_owned_graded_comic_books"`
+	HasRegularComicBookShop                         int8 `bson:"has_regular_comic_book_shop" json:"has_regular_comic_book_shop"`
+	HasPreviouslyPurchasedFromAuctionSite           int8 `bson:"has_previously_purchased_from_auction_site" json:"has_previously_purchased_from_auction_site"`
+	HasPreviouslyPurchasedFromFacebookMarketplace   int8 `bson:"has_previously_purchased_from_facebook_marketplace" json:"has_previously_purchased_from_facebook_marketplace"`
+	HasRegularlyAttendedComicConsOrCollectibleShows int8 `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
 }
 
 type UserClaimedCoinTransaction struct {
