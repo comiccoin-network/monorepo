@@ -15,7 +15,10 @@ import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
-import AddWalletAddressPage from "./pages/AddWalletAddressPage";
+import AddWalletAddressPage from "./pages/AddWalletAddressPage"; //TODO: REMOVE
+import VerificationStartPage from "./pages/VerificationStartPage";
+import VerificationRejectedPage from "./pages/VerificationRejectedPage";
+import VerificationPendingPage from "./pages/VerificationPendingPage";
 import ClaimCoinsPage from "./pages/ClaimCoinsPage";
 import TransactionsPage from "./pages/TransactionsPage";
 import MorePage from "./pages/MorePage";
@@ -75,6 +78,32 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AddWalletAddressPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* User Verification Routes */}
+            <Route
+              path="/verification/start"
+              element={
+                <ProtectedRoute>
+                  <VerificationStartPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/verification/rejected"
+              element={
+                <ProtectedRoute>
+                  <VerificationRejectedPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/verification/pending"
+              element={
+                <ProtectedRoute>
+                  <VerificationPendingPage />
                 </ProtectedRoute>
               }
             />

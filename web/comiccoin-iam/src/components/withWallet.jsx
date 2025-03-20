@@ -1,4 +1,4 @@
-// src/components/withWallet.jsx
+// monorepo/web/comiccoin-iam/src/components/withWallet.jsx
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "../hooks/useAuth";

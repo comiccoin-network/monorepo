@@ -16,9 +16,9 @@ import { toast } from "react-toastify";
 
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
-import withWallet from "../components/withWallet";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../api/endpoints/dashboardApi";
+import withProfileVerification from "../components/withProfileVerification";
 
 // Integrated Hero and Countdown component
 // Improved HeroCountdown component with better visual contrast
@@ -618,4 +618,4 @@ function DashboardPage() {
   );
 }
 
-export default withWallet(DashboardPage);
+export default withProfileVerification(DashboardPage);
