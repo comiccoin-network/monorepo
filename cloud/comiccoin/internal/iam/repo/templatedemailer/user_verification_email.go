@@ -42,7 +42,7 @@ func (impl *templatedEmailer) SendUserVerificationEmail(ctx context.Context, ema
 	}
 	body := processed.String() // DEVELOPERS NOTE: Convert our long sequence of data into a string.
 
-	if err := impl.Emailer.Send(ctx, impl.Emailer.GetSenderEmail(), "Activate your ComicCoin Faucet Account", email, body); err != nil {
+	if err := impl.Emailer.Send(ctx, impl.Emailer.GetSenderEmail(), "Activate your ComicCoin Digital ID Account", email, body); err != nil {
 		impl.Logger.Error("sending user verification error", slog.Any("error", err))
 		return err
 	}
