@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/SearchPage.jsx
+// src/pages/SearchPage.jsx
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
@@ -298,7 +298,7 @@ const SearchPage = () => {
         <div className="bg-gradient-to-b from-indigo-600 to-indigo-500 text-white py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-center">
-              ComicCoin Name Service Directory
+              ComicCoin Digital Identity Directory
             </h1>
 
             {/* Search Form */}
