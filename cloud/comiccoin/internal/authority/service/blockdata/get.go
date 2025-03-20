@@ -6,10 +6,10 @@ import (
 	"log/slog"
 	"math/big"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/blockdata"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 )
 
 type GetBlockDataService interface {

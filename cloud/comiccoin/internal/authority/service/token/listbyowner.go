@@ -7,9 +7,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/token"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 )
 
 type TokenListByOwnerService interface {

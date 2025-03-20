@@ -6,9 +6,9 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodbcache"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/domain/user"
 )
 

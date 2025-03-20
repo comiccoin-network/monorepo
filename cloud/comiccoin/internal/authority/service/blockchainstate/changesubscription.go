@@ -5,10 +5,10 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/memory/redis"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/blockchainstate"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/memory/redis"
 )
 
 type BlockchainStateChangeSubscriptionService interface {

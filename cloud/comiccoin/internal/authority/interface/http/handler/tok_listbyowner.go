@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	sv_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/token"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/ethereum/go-ethereum/common"
 )
 

@@ -30,14 +30,14 @@ func NewOAuthSessionInfoHTTPHandler(
 }
 
 type sessionInfoResponseIDO struct {
-	Valid       bool   `json:"valid"`
-	FederatedIdentityID      string `json:"federatedidentity_id,omitempty"`
-	Email       string `json:"email,omitempty"`
-	FirstName   string `json:"first_name,omitempty"`
-	LastName    string `json:"last_name,omitempty"`
-	ExpiresAt   int64  `json:"expires_at,omitempty"`
-	LastUsedAt  int64  `json:"last_used_at,omitempty"`
-	RequiresOTP bool   `json:"requires_otp"`
+	Valid               bool   `json:"valid"`
+	FederatedIdentityID string `json:"federatedidentity_id,omitempty"`
+	Email               string `json:"email,omitempty"`
+	FirstName           string `json:"first_name,omitempty"`
+	LastName            string `json:"last_name,omitempty"`
+	ExpiresAt           int64  `json:"expires_at,omitempty"`
+	LastUsedAt          int64  `json:"last_used_at,omitempty"`
+	RequiresOTP         bool   `json:"requires_otp"`
 }
 
 func (h *OAuthSessionInfoHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {

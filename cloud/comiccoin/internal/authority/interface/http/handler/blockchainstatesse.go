@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	sv_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/blockchainstate"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 )
 
 type BlockchainStateServerSentEventsHTTPHandler struct {

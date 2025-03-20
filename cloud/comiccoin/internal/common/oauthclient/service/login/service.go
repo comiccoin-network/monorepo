@@ -8,9 +8,9 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/token"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/federatedidentity"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/token"
-	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/federatedidentity"
 )
 
 type LoginRequest struct {
@@ -36,12 +36,12 @@ type LoginService interface {
 }
 
 type loginServiceImpl struct {
-	config                *config.Configuration
-	logger                *slog.Logger
-	getAuthURLUseCase     uc_oauth.GetAuthorizationURLUseCase
-	exchangeCodeUseCase   uc_oauth.ExchangeCodeUseCase
+	config                             *config.Configuration
+	logger                             *slog.Logger
+	getAuthURLUseCase                  uc_oauth.GetAuthorizationURLUseCase
+	exchangeCodeUseCase                uc_oauth.ExchangeCodeUseCase
 	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase
-	tokenUpsertUseCase    uc_token.TokenUpsertByFederatedIdentityIDUseCase
+	tokenUpsertUseCase                 uc_token.TokenUpsertByFederatedIdentityIDUseCase
 }
 
 func NewLoginService(
@@ -53,12 +53,12 @@ func NewLoginService(
 	tokenUpsertUseCase uc_token.TokenUpsertByFederatedIdentityIDUseCase,
 ) LoginService {
 	return &loginServiceImpl{
-		config:                config,
-		logger:                logger,
-		getAuthURLUseCase:     getAuthURLUseCase,
-		exchangeCodeUseCase:   exchangeCodeUseCase,
+		config:                             config,
+		logger:                             logger,
+		getAuthURLUseCase:                  getAuthURLUseCase,
+		exchangeCodeUseCase:                exchangeCodeUseCase,
 		federatedidentityGetByEmailUseCase: federatedidentityGetByEmailUseCase,
-		tokenUpsertUseCase:    tokenUpsertUseCase,
+		tokenUpsertUseCase:                 tokenUpsertUseCase,
 	}
 }
 
@@ -103,10 +103,10 @@ func (s *loginServiceImpl) ProcessLogin(ctx context.Context, req *LoginRequest) 
 
 		// Store the tokens
 		token := &dom_token.Token{
-			FederatedIdentityID:       federatedidentity.ID,
-			AccessToken:  tokenResp.AccessToken,
-			RefreshToken: tokenResp.RefreshToken,
-			ExpiresAt:    tokenResp.ExpiresAt,
+			FederatedIdentityID: federatedidentity.ID,
+			AccessToken:         tokenResp.AccessToken,
+			RefreshToken:        tokenResp.RefreshToken,
+			ExpiresAt:           tokenResp.ExpiresAt,
 		}
 
 		err = s.tokenUpsertUseCase.Execute(ctx, token)

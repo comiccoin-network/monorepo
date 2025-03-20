@@ -8,9 +8,9 @@ import (
 	"log/slog"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
 	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/federatedidentity"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodbcache"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
 )
 
 type FederatedIdentityGetBySessionIDUseCase interface {

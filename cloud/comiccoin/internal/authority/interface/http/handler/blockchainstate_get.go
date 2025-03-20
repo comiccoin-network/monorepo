@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	sv_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/blockchainstate"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 )
 
 type GetBlockchainStateHTTPHandler struct {

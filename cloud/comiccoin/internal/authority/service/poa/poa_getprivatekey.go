@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/walletutil"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 )
 
 type GetProofOfAuthorityPrivateKeyService interface {

@@ -8,11 +8,11 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 	hdkeystore "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/securestring"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
 )
 
 type WalletDecryptKeyUseCase interface {

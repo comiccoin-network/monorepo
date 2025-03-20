@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	service_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/service/hello"
 )
 

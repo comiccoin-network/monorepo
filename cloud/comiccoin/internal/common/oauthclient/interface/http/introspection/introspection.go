@@ -32,16 +32,16 @@ func NewPostTokenIntrospectionHTTPHandler(
 }
 
 type tokenIntrospectionRequestIDO struct {
-	AccessToken string `json:"access_token"`
-	FederatedIdentityID      string `json:"federatedidentity_id"`
+	AccessToken         string `json:"access_token"`
+	FederatedIdentityID string `json:"federatedidentity_id"`
 }
 
 type tokenIntrospectionResponseIDO struct {
-	Active    bool               `json:"active"`
-	FederatedIdentityID    primitive.ObjectID `json:"federatedidentity_id,omitempty"`
-	Email     string             `json:"email,omitempty"`
-	FirstName string             `json:"first_name,omitempty"`
-	LastName  string             `json:"last_name,omitempty"`
+	Active              bool               `json:"active"`
+	FederatedIdentityID primitive.ObjectID `json:"federatedidentity_id,omitempty"`
+	Email               string             `json:"email,omitempty"`
+	FirstName           string             `json:"first_name,omitempty"`
+	LastName            string             `json:"last_name,omitempty"`
 }
 
 func (h *PostTokenIntrospectionHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +69,7 @@ func (h *PostTokenIntrospectionHTTPHandler) Execute(w http.ResponseWriter, r *ht
 
 	// Convert IDO to service request
 	request := &service_introspection.IntrospectionRequest{
-		Token:  requestIDO.AccessToken,
+		Token:               requestIDO.AccessToken,
 		FederatedIdentityID: requestIDO.FederatedIdentityID,
 	}
 
@@ -85,11 +85,11 @@ func (h *PostTokenIntrospectionHTTPHandler) Execute(w http.ResponseWriter, r *ht
 
 	// Convert service response to IDO
 	responseIDO := tokenIntrospectionResponseIDO{
-		Active:    response.Active,
-		FederatedIdentityID:    response.FederatedIdentityID,
-		Email:     response.Email,
-		FirstName: response.FirstName,
-		LastName:  response.LastName,
+		Active:              response.Active,
+		FederatedIdentityID: response.FederatedIdentityID,
+		Email:               response.Email,
+		FirstName:           response.FirstName,
+		LastName:            response.LastName,
 	}
 
 	// Encode response

@@ -32,7 +32,7 @@ func NewUserListAllUseCase(
 
 func (uc *userListAllUseCaseImpl) Execute(ctx context.Context) ([]*dom_user.User, error) {
 	uc.logger.Debug("executing list all users use case")
-	
+
 	users, err := uc.repo.ListAll(ctx)
 	if err != nil {
 		uc.logger.Error("failed to list all users", slog.Any("error", err))
@@ -40,4 +40,4 @@ func (uc *userListAllUseCaseImpl) Execute(ctx context.Context) ([]*dom_user.User
 	}
 
 	return users, nil
-} 
+}

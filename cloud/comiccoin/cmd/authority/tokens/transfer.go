@@ -10,10 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/hdkeystore"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/kmutexutil"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/logger"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodb"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/repo"
 	sv_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/token"
@@ -22,6 +18,10 @@ import (
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltx"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/token"
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/walletutil"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/hdkeystore"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/kmutexutil"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/logger"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/database/mongodb"
 )
 
 func TransferTokenCmd() *cobra.Command {

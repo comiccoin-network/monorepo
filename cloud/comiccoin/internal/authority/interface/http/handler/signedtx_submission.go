@@ -9,8 +9,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	sv_signedtx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/signedtx"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 )
 
 type SignedTransactionSubmissionHTTPHandler struct {

@@ -5,8 +5,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

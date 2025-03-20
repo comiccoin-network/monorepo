@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	sv_tx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/tx"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 )
 
 type PrepareTransactionHTTPHandler struct {

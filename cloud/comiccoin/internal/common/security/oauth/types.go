@@ -26,12 +26,12 @@ type PendingAuthorization struct {
 // AuthorizationCode represents a code issued after successful federatedidentity authentication
 // that can be exchanged for an access token.
 type AuthorizationCode struct {
-	Code        string    // The authorization code itself
-	ClientID    string    // The client this code was issued to
-	RedirectURI string    // The redirect URI used in the initial request
-	FederatedIdentityID      string    // The ID of the federatedidentity who authorized the request
-	Scope       string    // The authorized scope
-	ExpiresAt   time.Time // When this code expires
+	Code                string    // The authorization code itself
+	ClientID            string    // The client this code was issued to
+	RedirectURI         string    // The redirect URI used in the initial request
+	FederatedIdentityID string    // The ID of the federatedidentity who authorized the request
+	Scope               string    // The authorized scope
+	ExpiresAt           time.Time // When this code expires
 }
 
 // Client represents an OAuth client application registered with our service.
@@ -53,13 +53,13 @@ type TokenResponse struct {
 
 // Token represents a stored access or refresh token
 type Token struct {
-	TokenID   string    // The token itself
-	TokenType string    // "access" or "refresh"
-	FederatedIdentityID    string    // The federatedidentity this token belongs to
-	ClientID  string    // The client this token was issued to
-	Scope     string    // The token's authorized scope
-	ExpiresAt time.Time // When this token expires
-	IsRevoked bool      // Whether this token has been revoked
+	TokenID             string    // The token itself
+	TokenType           string    // "access" or "refresh"
+	FederatedIdentityID string    // The federatedidentity this token belongs to
+	ClientID            string    // The client this token was issued to
+	Scope               string    // The token's authorized scope
+	ExpiresAt           time.Time // When this token expires
+	IsRevoked           bool      // Whether this token has been revoked
 }
 
 // TokenStore manages access and refresh tokens

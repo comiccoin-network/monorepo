@@ -12,9 +12,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/signature"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/signature"
 )
 
 type TokenRepo struct {

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/jwt_utils"
 	sbytes "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/securebytes"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 )
 
 // Provider provides interface for abstracting JWT generation.

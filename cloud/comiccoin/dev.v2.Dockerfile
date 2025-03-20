@@ -52,6 +52,8 @@ RUN ["go", "install", "golang.org/x/tools/cmd/goimports@latest"]
 #    community recommendations (not just syntax errors, but stylistic issues)
 RUN ["go", "install", "golang.org/x/lint/golint@latest"]
 
+# 4. (go vet is included in Go's standard toolchain, so we don't need to install it)
+
 # ============================================================================
 # CREATE BUILD SCRIPT
 # ============================================================================
@@ -59,38 +61,47 @@ RUN ["go", "install", "golang.org/x/lint/golint@latest"]
 # This script will:
 #   1. Format code and manage imports using goimports
 #   2. Check for style issues using golint
-#   3. Build the application
+#   3. Verify correctness using go vet
+#   4. Build the application
 RUN echo '#!/bin/sh\n\
-    \n\
-    # Print a divider line for readability\n\
-    echo "============================================================"\n\
-    echo "BEGINNING CODE QUALITY CHECKS AND BUILD PROCESS"\n\
-    echo "============================================================"\n\
-    \n\
-    # Step 1: Run goimports to format code and manage imports\n\
-    echo "\n[1/3] Formatting code and updating imports..."\n\
-    goimports -w .\n\
-    if [ $? -ne 0 ]; then\n\
-    echo "Error during formatting. See above for details."\n\
-    exit 1\n\
-    fi\n\
-    \n\
-    # Step 2: Run golint to check for style issues\n\
-    echo "\n[2/3] Checking code style with golint..."\n\
-    golint ./...\n\
-    # Note: We dont exit on golint errors since they are suggestions\n\
-    # If you want to enforce these rules, add: if [ $? -ne 0 ]; then exit 1; fi\n\
-    \n\
-    # Step 3: Build the application\n\
-    echo "\n[3/3] Building application..."\n\
-    go build .\n\
-    if [ $? -ne 0 ]; then\n\
-    echo "Build failed. See above for details."\n\
-    exit 1\n\
-    fi\n\
-    \n\
-    echo "\nBuild completed successfully!"\n\
-    ' > /go/bin/quality-build.sh
+\n\
+# Print a divider line for readability\n\
+echo "============================================================"\n\
+echo "BEGINNING CODE QUALITY CHECKS AND BUILD PROCESS"\n\
+echo "============================================================"\n\
+\n\
+# Step 1: Run goimports to format code and manage imports\n\
+echo "\n[1/4] Formatting code and updating imports..."\n\
+goimports -w .\n\
+if [ $? -ne 0 ]; then\n\
+  echo "Error during formatting. See above for details."\n\
+  exit 1\n\
+fi\n\
+\n\
+# Step 2: Run golint to check for style issues\n\
+echo "\n[2/4] Checking code style with golint..."\n\
+golint ./...\n\
+# Note: We dont exit on golint errors since they are suggestions\n\
+# If you want to enforce these rules, add: if [ $? -ne 0 ]; then exit 1; fi\n\
+\n\
+# Step 3: Run go vet to check for suspicious code\n\
+echo "\n[3/4] Vetting code for potential issues..."\n\
+go vet ./...\n\
+if [ $? -ne 0 ]; then\n\
+  echo "Go vet found issues. Please fix them before continuing."\n\
+  exit 1\n\
+fi\n\
+\n\
+# Step 4: Build the application\n\
+echo "\n[4/4] Building application..."\n\
+go build .\n\
+if [ $? -ne 0 ]; then\n\
+  echo "Build failed. See above for details."\n\
+  exit 1\n\
+fi\n\
+\n\
+echo "\nBuild completed successfully!"\n\
+' > /go/bin/quality-build.sh
 
 # Make the script executable
 RUN chmod +x /go/bin/quality-build.sh

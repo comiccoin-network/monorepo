@@ -75,3 +75,41 @@ tasks:
     desc: "Concatinate our project into LLM friendly single text (dependent on third-party app called `crev`)"
     cmds:
       - crev bundle
+
+  vet:
+    desc: "Run Go's static code analysis tool to find potential issues"
+    cmds:
+      - echo "============================================================"
+      - echo "RUNNING GO VET CODE ANALYSIS"
+      - echo "============================================================"
+      - go vet ./...
+      - echo "Go vet completed successfully!"
+    silent: false
+
+  lint:
+    desc: "Run golint to check for style mistakes"
+    cmds:
+      - echo "============================================================"
+      - echo "CHECKING CODE STYLE WITH GOLINT"
+      - echo "============================================================"
+      - golint ./...
+      - echo "Golint completed!"
+    silent: false
+
+  format:
+    desc: "Format code and manage imports automatically"
+    cmds:
+      - echo "============================================================"
+      - echo "FORMATTING CODE AND UPDATING IMPORTS"
+      - echo "============================================================"
+      - goimports -w .
+      - echo "Code formatting completed!"
+    silent: false
+
+  check:
+    desc: "Run all code quality checks (format, lint, vet)"
+    cmds:
+      - task: format
+      - task: lint
+      - task: vet
+    silent: false

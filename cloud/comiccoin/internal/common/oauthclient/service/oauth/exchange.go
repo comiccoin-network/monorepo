@@ -10,11 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
-	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/token"
 	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/federatedidentity"
+	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/token"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/federatedidentity"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/oauth"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/token"
-	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/federatedidentity"
 )
 
 type ExchangeTokenRequest struct {
@@ -22,13 +22,13 @@ type ExchangeTokenRequest struct {
 }
 
 type ExchangeTokenResponse struct {
-	AccessToken  string
-	RefreshToken string
-	TokenType    string
-	ExpiresIn    int
-	FederatedIdentityEmail    string
-	FirstName    string
-	LastName     string
+	AccessToken            string
+	RefreshToken           string
+	TokenType              string
+	ExpiresIn              int
+	FederatedIdentityEmail string
+	FirstName              string
+	LastName               string
 }
 
 type ExchangeService interface {
@@ -36,13 +36,13 @@ type ExchangeService interface {
 }
 
 type exchangeServiceImpl struct {
-	config                 *config.Configuration
-	logger                 *slog.Logger
-	exchangeCodeUseCase    uc_oauth.ExchangeCodeUseCase
-	introspectTokenUseCase uc_oauth.IntrospectTokenUseCase
-	federatedidentityCreateUseCase      uc_federatedidentity.FederatedIdentityCreateUseCase
-	federatedidentityGetByEmailUseCase  uc_federatedidentity.FederatedIdentityGetByEmailUseCase
-	tokenUpsertUseCase     uc_token.TokenUpsertByFederatedIdentityIDUseCase
+	config                             *config.Configuration
+	logger                             *slog.Logger
+	exchangeCodeUseCase                uc_oauth.ExchangeCodeUseCase
+	introspectTokenUseCase             uc_oauth.IntrospectTokenUseCase
+	federatedidentityCreateUseCase     uc_federatedidentity.FederatedIdentityCreateUseCase
+	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase
+	tokenUpsertUseCase                 uc_token.TokenUpsertByFederatedIdentityIDUseCase
 }
 
 func NewExchangeService(
@@ -55,13 +55,13 @@ func NewExchangeService(
 	tokenUpsertUseCase uc_token.TokenUpsertByFederatedIdentityIDUseCase,
 ) ExchangeService {
 	return &exchangeServiceImpl{
-		config:                 config,
-		logger:                 logger,
-		exchangeCodeUseCase:    exchangeCodeUseCase,
-		introspectTokenUseCase: introspectTokenUseCase,
-		federatedidentityCreateUseCase:      federatedidentityCreateUseCase,
-		federatedidentityGetByEmailUseCase:  federatedidentityGetByEmailUseCase,
-		tokenUpsertUseCase:     tokenUpsertUseCase,
+		config:                             config,
+		logger:                             logger,
+		exchangeCodeUseCase:                exchangeCodeUseCase,
+		introspectTokenUseCase:             introspectTokenUseCase,
+		federatedidentityCreateUseCase:     federatedidentityCreateUseCase,
+		federatedidentityGetByEmailUseCase: federatedidentityGetByEmailUseCase,
+		tokenUpsertUseCase:                 tokenUpsertUseCase,
 	}
 }
 
@@ -115,11 +115,11 @@ func (s *exchangeServiceImpl) ExchangeToken(ctx context.Context, req *ExchangeTo
 
 	// Create and store token
 	token := &dom_token.Token{
-		ID:           primitive.NewObjectID(),
-		FederatedIdentityID:       finalFederatedIdentityID,
-		AccessToken:  tokenResp.AccessToken,
-		RefreshToken: tokenResp.RefreshToken,
-		ExpiresAt:    tokenResp.ExpiresAt,
+		ID:                  primitive.NewObjectID(),
+		FederatedIdentityID: finalFederatedIdentityID,
+		AccessToken:         tokenResp.AccessToken,
+		RefreshToken:        tokenResp.RefreshToken,
+		ExpiresAt:           tokenResp.ExpiresAt,
 	}
 
 	s.logger.Info("storing new access and refresh token",
@@ -136,12 +136,12 @@ func (s *exchangeServiceImpl) ExchangeToken(ctx context.Context, req *ExchangeTo
 		slog.String("token_id", token.ID.Hex()[:5]+"..."))
 
 	return &ExchangeTokenResponse{
-		AccessToken:  tokenResp.AccessToken,
-		RefreshToken: tokenResp.RefreshToken,
-		TokenType:    tokenResp.TokenType,
-		ExpiresIn:    tokenResp.ExpiresIn,
-		FederatedIdentityEmail:    federatedidentityInfo.Email,
-		FirstName:    federatedidentityInfo.FirstName,
-		LastName:     federatedidentityInfo.LastName,
+		AccessToken:            tokenResp.AccessToken,
+		RefreshToken:           tokenResp.RefreshToken,
+		TokenType:              tokenResp.TokenType,
+		ExpiresIn:              tokenResp.ExpiresIn,
+		FederatedIdentityEmail: federatedidentityInfo.Email,
+		FirstName:              federatedidentityInfo.FirstName,
+		LastName:               federatedidentityInfo.LastName,
 	}, nil
 }

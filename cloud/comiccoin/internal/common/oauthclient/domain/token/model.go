@@ -9,9 +9,9 @@ import (
 
 // Token represents an OAuth 2.0 token (access or refresh)
 type Token struct {
-	ID           primitive.ObjectID `bson:"_id" json:"id"`
-	FederatedIdentityID       primitive.ObjectID `bson:"federatedidentity_id" json:"federatedidentity_id"`
-	AccessToken  string             `bson:"access_token" json:"access_token"`
-	RefreshToken string             `bson:"refresh_token" json:"refresh_token"`
-	ExpiresAt    time.Time          `bson:"expires_at" json:"expires_at"`
+	ID                  primitive.ObjectID `bson:"_id" json:"id"`
+	FederatedIdentityID primitive.ObjectID `bson:"federatedidentity_id" json:"federatedidentity_id"`
+	AccessToken         string             `bson:"access_token" json:"access_token"`
+	RefreshToken        string             `bson:"refresh_token" json:"refresh_token"`
+	ExpiresAt           time.Time          `bson:"expires_at" json:"expires_at"`
 }

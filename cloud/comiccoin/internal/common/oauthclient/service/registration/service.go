@@ -10,13 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/federatedidentity"
 	dom_registration "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/registration"
 	dom_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/token"
-	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/federatedidentity"
+	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/federatedidentity"
 	uc_oauth "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/oauth"
 	uc_register "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/register"
 	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/token"
-	uc_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/usecase/federatedidentity"
 )
 
 type RegistrationService interface {
@@ -24,13 +24,13 @@ type RegistrationService interface {
 }
 
 type registrationServiceImpl struct {
-	config                *config.Configuration
-	logger                *slog.Logger
-	registerUseCase       uc_register.RegisterUseCase
-	exchangeUseCase       uc_oauth.ExchangeCodeUseCase
+	config                             *config.Configuration
+	logger                             *slog.Logger
+	registerUseCase                    uc_register.RegisterUseCase
+	exchangeUseCase                    uc_oauth.ExchangeCodeUseCase
 	federatedidentityCreateUseCase     uc_federatedidentity.FederatedIdentityCreateUseCase
 	federatedidentityGetByEmailUseCase uc_federatedidentity.FederatedIdentityGetByEmailUseCase
-	tokenUpsertUseCase    uc_token.TokenUpsertByFederatedIdentityIDUseCase
+	tokenUpsertUseCase                 uc_token.TokenUpsertByFederatedIdentityIDUseCase
 }
 
 func NewRegistrationService(
@@ -43,13 +43,13 @@ func NewRegistrationService(
 	tokenUpsertUseCase uc_token.TokenUpsertByFederatedIdentityIDUseCase,
 ) RegistrationService {
 	return &registrationServiceImpl{
-		config:                config,
-		logger:                logger,
-		registerUseCase:       registerUseCase,
-		exchangeUseCase:       exchangeUseCase,
+		config:                             config,
+		logger:                             logger,
+		registerUseCase:                    registerUseCase,
+		exchangeUseCase:                    exchangeUseCase,
 		federatedidentityCreateUseCase:     federatedidentityCreateUseCase,
 		federatedidentityGetByEmailUseCase: federatedidentityGetByEmailUseCase,
-		tokenUpsertUseCase:    tokenUpsertUseCase,
+		tokenUpsertUseCase:                 tokenUpsertUseCase,
 	}
 }
 
@@ -133,11 +133,11 @@ func (s *registrationServiceImpl) ProcessRegistration(ctx context.Context, req *
 
 		// Store the tokens
 		token := &dom_token.Token{
-			ID:           primitive.NewObjectID(),
-			FederatedIdentityID:       federatedidentity.ID,
-			AccessToken:  tokenResp.AccessToken,
-			RefreshToken: tokenResp.RefreshToken,
-			ExpiresAt:    tokenResp.ExpiresAt,
+			ID:                  primitive.NewObjectID(),
+			FederatedIdentityID: federatedidentity.ID,
+			AccessToken:         tokenResp.AccessToken,
+			RefreshToken:        tokenResp.RefreshToken,
+			ExpiresAt:           tokenResp.ExpiresAt,
 		}
 
 		s.logger.Info("storing new access and refresh token",

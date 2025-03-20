@@ -36,10 +36,10 @@ func (impl tokenStorerImpl) UpsertByFederatedIdentityID(ctx context.Context, tok
 	// Create update document WITHOUT including _id in the $set
 	update := bson.M{
 		"$set": bson.M{
-			"federatedidentity_id":       token.FederatedIdentityID,
-			"access_token":  token.AccessToken,
-			"refresh_token": token.RefreshToken,
-			"expires_at":    token.ExpiresAt,
+			"federatedidentity_id": token.FederatedIdentityID,
+			"access_token":         token.AccessToken,
+			"refresh_token":        token.RefreshToken,
+			"expires_at":           token.ExpiresAt,
 		},
 	}
 

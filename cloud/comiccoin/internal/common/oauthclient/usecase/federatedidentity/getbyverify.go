@@ -6,8 +6,8 @@ import (
 	"log/slog"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
-	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/federatedidentity"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/config"
+	dom_federatedidentity "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/oauthclient/domain/federatedidentity"
 )
 
 type FederatedIdentityGetByVerificationCodeUseCase interface {

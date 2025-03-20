@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	hdkeystore "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/securestring"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 )
 
 type PrivateKeyFromHDWalletUseCase interface {

@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"net/http"
 
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	sv_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/blockdata"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 )
 
 type GetBlockDataHTTPHandler struct {
