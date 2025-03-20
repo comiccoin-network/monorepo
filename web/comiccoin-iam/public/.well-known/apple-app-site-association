@@ -3,7 +3,7 @@
     "details": [
       {
         "appIDs": [
-          "LQQ8LQ952U.com.theshootingstarpress.comiccoinnameservice"
+          "LQQ8LQ952U.com.theshootingstarpress.comiccoiniam"
         ],
         "components": [
           {
@@ -81,7 +81,7 @@
   },
   "webcredentials": {
     "apps": [
-      "LQQ8LQ952U.com.theshootingstarpress.comiccoinnameservice"
+      "LQQ8LQ952U.com.theshootingstarpress.comiccoiniam"
     ]
   }
 }

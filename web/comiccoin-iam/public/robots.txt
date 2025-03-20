@@ -1,0 +1,5 @@
+# Welcome all web crawlers!
+User-agent: *
+Disallow:
+
+Sitemap: https://comiccoinid.com/sitemap.xml

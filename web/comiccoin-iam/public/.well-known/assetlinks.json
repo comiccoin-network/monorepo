@@ -6,7 +6,7 @@
     ],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.theshootingstarpress.comiccoinnameservice",
+      "package_name": "com.theshootingstarpress.comiccoiniam",
       "sha256_cert_fingerprints": [
         "E8:9F:23:0C:5E:60:E6:82:89:0C:99:9B:25:6B:9C:04:6F:43:F3:EA:9D:4F:E6:B2:3D:18:DF:3C:93:5C:B8:74"
       ]

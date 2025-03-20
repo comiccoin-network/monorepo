@@ -12,7 +12,7 @@ ignore-pre: [
     private_oauth2_flow.md,
     .env,
     .env.prod,
-    comiccoin-nameservice,
+    comiccoin-iam,
     Dockerfile,
     dev.Dockerfile,
     node_modules,
