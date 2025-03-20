@@ -1,4 +1,4 @@
-// src/pages/TermsPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/TermsPage.jsx
 import React from "react";
 import { Link, useLocation } from "react-router";
 import { ArrowLeft, FileText } from "lucide-react";

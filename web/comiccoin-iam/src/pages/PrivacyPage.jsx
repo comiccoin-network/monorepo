@@ -1,4 +1,4 @@
-// src/pages/PrivacyPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/PrivacyPage.jsx
 import React from "react";
 import { Link, useLocation } from "react-router";
 import { ArrowLeft, Shield } from "lucide-react";

@@ -1,4 +1,4 @@
-// src/pages/RegisterPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/RegisterPage.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import {

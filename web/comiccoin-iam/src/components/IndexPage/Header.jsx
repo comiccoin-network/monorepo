@@ -1,3 +1,4 @@
+// monorepo/web/comiccoin-iam/src/components/IndexPage/Header.jsx
 // src/components/IndexPage/Header.jsx
 import React, { useState } from "react";
 import { Link } from "react-router";
@@ -40,7 +41,7 @@ const Header = ({ showBackButton = false }) => {
                 <Globe className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-white" />
               </div>
               <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
-                ComicCoin Name Service
+                ComicCoin Digital Identity
               </span>
             </Link>
 
@@ -61,7 +62,7 @@ const Header = ({ showBackButton = false }) => {
                 <Link
                   to="/get-started"
                   className="bg-white text-purple-700 px-5 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base active:bg-purple-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-700 focus:ring-white"
-                  aria-label="Get started with ComicCoin Name Service"
+                  aria-label="Get started with ComicCoin Digital Identity"
                 >
                   <PlayCircle className="w-5 h-5" aria-hidden="true" />
                   <span>Get Started</span>
@@ -117,7 +118,7 @@ const Header = ({ showBackButton = false }) => {
                   to="/get-started"
                   className="block mt-2 bg-white text-purple-700 px-4 py-3 rounded-lg font-bold hover:bg-purple-50 transition-colors flex items-center gap-2 text-base w-full justify-center focus:outline-none focus:ring-2 focus:ring-purple-500"
                   onClick={() => setIsMenuOpen(false)}
-                  aria-label="Get started with ComicCoin Name Service"
+                  aria-label="Get started with ComicCoin Digital Identity"
                 >
                   <PlayCircle className="w-5 h-5" aria-hidden="true" />
                   <span>Get Started</span>

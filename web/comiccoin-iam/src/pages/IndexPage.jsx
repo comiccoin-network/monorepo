@@ -1,4 +1,4 @@
-// src/pages/IndexPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/IndexPage.jsx
 import { useState, useEffect } from "react";
 import {
   RefreshCw,
@@ -21,7 +21,7 @@ const IndexPage = () => {
   const navigate = useNavigate(); // Use navigate for programmatic navigation
 
   // Mock data state instead of using a hook
-  const [nameServiceStats, setNameServiceStats] = useState({
+  const [identityStats, setIdentityStats] = useState({
     registered_entries: 8750,
     verified_entries: 6423,
     daily_lookups: 4250,
@@ -34,7 +34,7 @@ const IndexPage = () => {
   const refetch = () => {
     setIsLoading(true);
     setTimeout(() => {
-      setNameServiceStats({
+      setIdentityStats({
         registered_entries: 8750,
         verified_entries: 6423,
         daily_lookups: 4250,
@@ -69,7 +69,7 @@ const IndexPage = () => {
         <div className="bg-gradient-to-b from-indigo-600 to-indigo-500 text-white py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8">
-              ComicCoin Name Service
+              ComicCoin Digital Identity
             </h1>
             <div className="relative inline-block mb-8">
               <div className="absolute inset-0 bg-white opacity-20 blur transform scale-110 rounded-full"></div>
@@ -131,11 +131,11 @@ const IndexPage = () => {
               </div>
             </form>
 
-            {!isLoading && !error && nameServiceStats && (
+            {!isLoading && !error && identityStats && (
               <p className="mt-4 text-indigo-100 text-base sm:text-lg">
                 Verified Entries:{" "}
                 <span className="font-bold">
-                  {nameServiceStats.verified_entries}
+                  {identityStats.verified_entries}
                 </span>
               </p>
             )}
@@ -145,7 +145,7 @@ const IndexPage = () => {
         {/* Features Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-purple-800 text-center mb-12">
-            How to Use the ComicCoin Name Service
+            How to Use ComicCoin Digital Identity
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
@@ -211,8 +211,8 @@ const IndexPage = () => {
                 Register
               </h3>
               <p className="text-gray-700 mb-6">
-                Register your own identity or organization on the ComicCoin Name
-                Service
+                Register your own identity or organization on the ComicCoin
+                Digital Identity system
               </p>
               <p className="text-sm text-gray-500 italic mb-6">
                 Create a trusted presence on the blockchain.
@@ -232,7 +232,7 @@ const IndexPage = () => {
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-              Ready to Get Started with ComicCoin Name Service?
+              Ready to Get Started with ComicCoin Digital Identity?
             </h2>
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
               Start exploring or join thousands of verified users and
@@ -251,7 +251,7 @@ const IndexPage = () => {
                 className="inline-flex items-center justify-center px-8 py-4 bg-purple-800 bg-opacity-50 text-white border border-purple-300 rounded-xl font-bold hover:bg-opacity-75 transition-colors shadow-lg group"
               >
                 <Search className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
-                Search Name Service
+                Search Identity Registry
                 <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -261,7 +261,7 @@ const IndexPage = () => {
         {/* Use Cases Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-purple-800 text-center mb-12">
-            Name Service Use Cases
+            Digital Identity Use Cases
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -319,16 +319,16 @@ const IndexPage = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
           <div className="bg-white rounded-xl p-6 sm:p-8 lg:p-10 shadow-lg">
             <h2 className="text-2xl lg:text-3xl font-bold mb-6 text-purple-800 text-center sm:text-left">
-              About ComicCoin Name Service
+              About ComicCoin Digital Identity
             </h2>
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
               <div className="mt-1 flex-shrink-0 bg-purple-100 p-3 rounded-full">
                 <Globe className="h-8 w-8 text-purple-600" aria-hidden="true" />
               </div>
               <p className="text-gray-700 sm:text-lg leading-relaxed max-w-5xl text-center sm:text-left">
-                The ComicCoin Name Service (CNS) creates a secure link between
-                blockchain wallet addresses and real-world identities. Our
-                system allows users to confidently identify who they're
+                The ComicCoin Digital Identity system creates a secure link
+                between blockchain wallet addresses and real-world identities.
+                Our system allows users to confidently identify who they're
                 transacting with, promoting trust and security in the ComicCoin
                 ecosystem. Every registered entry undergoes a verification
                 process, creating an authentic directory of individuals and
@@ -343,7 +343,7 @@ const IndexPage = () => {
       <Footer
         isLoading={isLoading}
         error={error}
-        nameServiceStats={nameServiceStats}
+        nameServiceStats={identityStats}
       />
     </div>
   );

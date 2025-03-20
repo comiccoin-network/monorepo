@@ -1,4 +1,4 @@
-// src/pages/SearchPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/SearchPage.jsx
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
