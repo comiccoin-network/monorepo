@@ -6,8 +6,8 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/templatedemailer"
 	domain "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/domain/user"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/nameservice/repo/templatedemailer"
 )
 
 type SendUserVerificationEmailUseCase interface {
