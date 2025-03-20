@@ -1,35 +1,11 @@
-// monorepo/web/comiccoin-iam/src/pages/GetStartedPage.jsx
+// src/pages/GetStartedPage.jsx
 import React from "react";
 import { Link } from "react-router";
-import { UserPlus, LogIn, ArrowRight } from "lucide-react";
-import { useGetFaucet } from "../hooks/useGetFaucet";
+import { UserPlus, LogIn, ArrowRight, Shield, Wallet } from "lucide-react";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
 
 const GetStartedPage = () => {
-  // Use the hook to fetch faucet data
-  const {
-    data: faucet,
-    isLoading,
-    error,
-  } = useGetFaucet({
-    chainId: 1,
-    enabled: true,
-    refreshInterval: 60000,
-  });
-
-  // Format balance for display
-  const formatBalance = (balanceStr) => {
-    if (!balanceStr) return "0";
-    try {
-      const balance = parseInt(balanceStr);
-      return balance.toLocaleString();
-    } catch (e) {
-      console.error("Error formatting balance:", e);
-      return "0";
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
       <a
@@ -49,8 +25,8 @@ const GetStartedPage = () => {
                 Welcome to ComicCoin Digital Identity
               </h1>
               <p className="text-base sm:text-lg lg:text-xl text-indigo-100 max-w-3xl mx-auto">
-                Join our community of comic collectors and secure your digital
-                identity today!
+                Join our community and securely link your blockchain wallet to
+                your verified digital identity
               </p>
               <Link
                 to="/"
@@ -76,9 +52,9 @@ const GetStartedPage = () => {
                   New to ComicCoin?
                 </h3>
                 <p className="text-gray-600 mb-6 text-base sm:text-lg flex-grow">
-                  Create your ComicCoin Network account to join our community of
-                  comic enthusiasts. Get access to exclusive features and claim
-                  your daily ComicCoins.
+                  Create your ComicCoin Network account to establish your
+                  digital identity. Connect your wallet and join our community
+                  of blockchain-verified users.
                 </p>
                 <span className="inline-flex items-center gap-2 text-purple-600 font-semibold text-lg">
                   Register Now
@@ -96,8 +72,9 @@ const GetStartedPage = () => {
                   Already Have an Account?
                 </h3>
                 <p className="text-gray-600 mb-6 text-base sm:text-lg flex-grow">
-                  Sign in with your existing credentials to continue your
-                  journey. Access your collections and claim your daily rewards.
+                  Sign in with your existing credentials to manage your digital
+                  identity. Access your verified profile and wallet connections
+                  securely.
                 </p>
                 <span className="inline-flex items-center gap-2 text-purple-600 font-semibold text-lg">
                   Sign In
@@ -107,14 +84,59 @@ const GetStartedPage = () => {
             </Link>
           </div>
         </div>
+
+        {/* Benefits Section */}
+        <div className="bg-indigo-50 py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-purple-800 text-center mb-10">
+              Benefits of Digital Identity
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                <div className="bg-purple-100 rounded-full p-3 inline-flex mb-4">
+                  <Shield className="h-6 w-6 text-purple-600" />
+                </div>
+                <h3 className="font-bold text-lg text-gray-900 mb-2">
+                  Trust & Security
+                </h3>
+                <p className="text-gray-600">
+                  Establish credibility with a verified digital identity that
+                  others can trust when conducting blockchain transactions.
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                <div className="bg-purple-100 rounded-full p-3 inline-flex mb-4">
+                  <Wallet className="h-6 w-6 text-purple-600" />
+                </div>
+                <h3 className="font-bold text-lg text-gray-900 mb-2">
+                  Simplified Transactions
+                </h3>
+                <p className="text-gray-600">
+                  Connect your name and profile to your wallet address, making
+                  it easier for others to send you payments.
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                <div className="bg-purple-100 rounded-full p-3 inline-flex mb-4">
+                  <UserPlus className="h-6 w-6 text-purple-600" />
+                </div>
+                <h3 className="font-bold text-lg text-gray-900 mb-2">
+                  Community Access
+                </h3>
+                <p className="text-gray-600">
+                  Join our growing community of verified users and organizations
+                  on the ComicCoin blockchain network.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
 
-      <Footer
-        isLoading={isLoading}
-        error={error}
-        faucet={faucet}
-        formatBalance={formatBalance}
-      />
+      <Footer />
     </div>
   );
 };

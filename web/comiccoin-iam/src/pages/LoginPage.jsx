@@ -141,7 +141,7 @@ function LoginPage() {
               </h1>
               <p className="text-base sm:text-lg lg:text-xl text-indigo-100 max-w-3xl mx-auto">
                 Sign in to access your account and securely manage your
-                ComicCoin Name Service (CCNS) names.
+                identity.
               </p>
             </div>
           </div>
