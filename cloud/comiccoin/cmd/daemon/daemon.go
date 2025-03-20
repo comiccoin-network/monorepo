@@ -23,7 +23,7 @@ import (
 	unifiedmiddleware "github.com/comiccoin-network/monorepo/cloud/comiccoin/unifiedhttp/middleware"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/identity"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet"
 )
 
@@ -109,9 +109,9 @@ func doRunDaemon() {
 	publicfaucetHTTPServer := publicfaucetModule.GetHTTPServerInstance()
 	publicfaucetTaskManager := publicfaucetModule.GetTaskManagerInstance()
 
-	// --- Identity ---
+	// --- IAM ---
 
-	identityModule := identity.NewModule(
+	iamModule := iam.NewModule(
 		cfg,
 		logger,
 		dbClient,
@@ -124,8 +124,8 @@ func doRunDaemon() {
 		ipcbp,
 	)
 
-	identityHTTPServer := identityModule.GetHTTPServerInstance()
-	identityTaskManager := identityModule.GetTaskManagerInstance()
+	iamHTTPServer := iamModule.GetHTTPServerInstance()
+	iamTaskManager := iamModule.GetTaskManagerInstance()
 
 	//
 	// STEP 4:
@@ -144,7 +144,7 @@ func doRunDaemon() {
 		httpMiddleware,
 		authorityHTTPServer,
 		publicfaucetHTTPServer,
-		identityHTTPServer,
+		iamHTTPServer,
 	)
 
 	//
@@ -162,8 +162,8 @@ func doRunDaemon() {
 	go publicfaucetTaskManager.Run()
 	defer publicfaucetTaskManager.Shutdown()
 
-	go identityTaskManager.Run()
-	defer identityTaskManager.Shutdown()
+	go iamTaskManager.Run()
+	defer iamTaskManager.Shutdown()
 	logger.Info("ComicCoin Authority is running.")
 
 	<-done

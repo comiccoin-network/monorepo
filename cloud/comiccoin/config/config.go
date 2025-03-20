@@ -19,7 +19,7 @@ type Configuration struct {
 	DB                  DBConfig
 	NFTStore            NFTStorageConfig
 	PublicFaucetEmailer PublicFaucetMailgunConfig
-	IdentityEmailer     IdentityMailgunConfig
+	IAMEmailer          IAMMailgunConfig
 }
 
 type CacheConf struct {
@@ -71,7 +71,7 @@ type DBConfig struct {
 	AuthorityName    string
 	GatewayName      string
 	PublicFaucetName string
-	IdentityName     string
+	IAMName          string
 }
 
 type NFTStorageConfig struct {
@@ -88,7 +88,7 @@ type PublicFaucetMailgunConfig struct {
 	BackendDomain    string
 }
 
-type IdentityMailgunConfig struct {
+type IAMMailgunConfig struct {
 	APIKey           string
 	Domain           string
 	APIBase          string
@@ -142,7 +142,7 @@ func NewProvider() *Configuration {
 	c.DB.AuthorityName = getEnv("COMICCOIN_DB_AUTHORITY_NAME", true)
 	c.DB.GatewayName = getEnv("COMICCOIN_DB_GATEWAY_NAME", true)
 	c.DB.PublicFaucetName = getEnv("COMICCOIN_DB_PUBLICFAUCET_NAME", true)
-	c.DB.IdentityName = getEnv("COMICCOIN_DB_IDENTITY_NAME", true)
+	c.DB.IAMName = getEnv("COMICCOIN_DB_IAM_NAME", true)
 
 	// --- Cache ---
 	c.Cache.URI = getEnv("COMICCOIN_CACHE_URI", true)
@@ -163,15 +163,15 @@ func NewProvider() *Configuration {
 	// Claim Coins Reward
 	c.Blockchain.PublicFaucetClaimCoinsReward = getUint64Env("COMICCOIN_PUBLICFAUCET_CLAIM_COINS_REWARD", true)
 
-	// --- Identity ---
+	// --- IAM ---
 	// Mailgun section.
-	c.IdentityEmailer.APIKey = getEnv("COMICCOIN_IDENTITY_MAILGUN_API_KEY", true)
-	c.IdentityEmailer.Domain = getEnv("COMICCOIN_IDENTITY_MAILGUN_DOMAIN", true)
-	c.IdentityEmailer.APIBase = getEnv("COMICCOIN_IDENTITY_MAILGUN_API_BASE", true)
-	c.IdentityEmailer.SenderEmail = getEnv("COMICCOIN_IDENTITY_MAILGUN_SENDER_EMAIL", true)
-	c.IdentityEmailer.MaintenanceEmail = getEnv("COMICCOIN_IDENTITY_MAILGUN_MAINTENANCE_EMAIL", true)
-	c.IdentityEmailer.FrontendDomain = getEnv("COMICCOIN_IDENTITY_MAILGUN_FRONTEND_DOMAIN", true)
-	c.IdentityEmailer.BackendDomain = getEnv("COMICCOIN_IDENTITY_MAILGUN_BACKEND_DOMAIN", true)
+	c.IAMEmailer.APIKey = getEnv("COMICCOIN_IAM_MAILGUN_API_KEY", true)
+	c.IAMEmailer.Domain = getEnv("COMICCOIN_IAM_MAILGUN_DOMAIN", true)
+	c.IAMEmailer.APIBase = getEnv("COMICCOIN_IAM_MAILGUN_API_BASE", true)
+	c.IAMEmailer.SenderEmail = getEnv("COMICCOIN_IAM_MAILGUN_SENDER_EMAIL", true)
+	c.IAMEmailer.MaintenanceEmail = getEnv("COMICCOIN_IAM_MAILGUN_MAINTENANCE_EMAIL", true)
+	c.IAMEmailer.FrontendDomain = getEnv("COMICCOIN_IAM_MAILGUN_FRONTEND_DOMAIN", true)
+	c.IAMEmailer.BackendDomain = getEnv("COMICCOIN_IAM_MAILGUN_BACKEND_DOMAIN", true)
 
 	return &c
 }
