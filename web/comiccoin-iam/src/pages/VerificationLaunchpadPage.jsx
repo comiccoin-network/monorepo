@@ -11,17 +11,26 @@ import {
   CheckCircle2,
   Info,
   User,
+  Loader,
 } from "lucide-react";
 
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
 import { useAuth } from "../hooks/useAuth";
+import { useGetMe } from "../hooks/useGetMe";
 import { useVerifyProfile } from "../hooks/useVerifyProfile";
 
 const VerificationLaunchpadPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { submitVerification, isSubmitting } = useVerifyProfile();
+
+  // Ensure we get the latest user data with the current verification status
+  const { user: userData, isLoading: isUserLoading } = useGetMe({
+    refetchOnMount: true,
+    cacheTime: 0, // Disable caching to always get fresh data
+  });
+
   const [verificationStatus, setVerificationStatus] = useState(null);
   const [userRole, setUserRole] = useState(null);
 
@@ -35,35 +44,53 @@ const VerificationLaunchpadPage = () => {
 
   // Define user role constants
   const USER_ROLE = {
-    CUSTOMER: 1,
+    CUSTOMER: 3,
     RETAILER: 2,
-    ADMIN: 3,
+    ADMIN: 1,
   };
 
-  // Get the user's verification status and role when component mounts
+  // Update verification status and role when user data changes
   useEffect(() => {
-    if (user) {
-      setVerificationStatus(
-        user.profile_verification_status || VERIFICATION_STATUS.UNVERIFIED,
-      );
-      setUserRole(user.role || USER_ROLE.CUSTOMER);
-    }
-  }, [user]);
+    if (userData) {
+      console.log("User data loaded:", userData);
+      console.log("Verification status:", userData.profile_verification_status);
 
-  // Redirect based on verification status
+      setVerificationStatus(
+        userData.profile_verification_status || VERIFICATION_STATUS.UNVERIFIED,
+      );
+      setUserRole(userData.role || USER_ROLE.CUSTOMER);
+    }
+  }, [userData]);
+
+  // Handle redirections based on verification status
   useEffect(() => {
-    // If status is already determined, handle redirects
-    if (verificationStatus) {
+    console.log(
+      "Checking verification status for redirection:",
+      verificationStatus,
+    );
+
+    // Only redirect if verification status is determined and not UNVERIFIED
+    if (
+      verificationStatus &&
+      verificationStatus !== VERIFICATION_STATUS.UNVERIFIED
+    ) {
+      console.log(
+        "Redirecting based on verification status:",
+        verificationStatus,
+      );
+
       if (verificationStatus === VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW) {
-        navigate("/verification/pending");
+        console.log("Redirecting to pending verification page");
+        navigate("/verification/pending", { replace: true });
       } else if (verificationStatus === VERIFICATION_STATUS.REJECTED) {
-        navigate("/verification/rejected");
+        console.log("Redirecting to rejected verification page");
+        navigate("/verification/rejected", { replace: true });
       } else if (verificationStatus === VERIFICATION_STATUS.APPROVED) {
-        // If already verified, redirect to dashboard
-        navigate("/dashboard");
+        console.log("Redirecting to dashboard - already approved");
+        navigate("/dashboard", { replace: true });
       }
     }
-  }, [verificationStatus, navigate]);
+  }, [verificationStatus, navigate, VERIFICATION_STATUS]);
 
   // Handle selection of verification path (individual or business)
   const handleVerificationSelection = async (selectedRole) => {
@@ -72,6 +99,8 @@ const VerificationLaunchpadPage = () => {
     // Check if we need to update user role in the profile
     if (user && user.role !== selectedRole) {
       try {
+        console.log("Updating user role:", selectedRole);
+
         // Send a basic verification with just the role selection
         // The actual verification details will be collected on the next screens
         await submitVerification({
@@ -97,6 +126,29 @@ const VerificationLaunchpadPage = () => {
       }
     }
   };
+
+  // Display loading state while fetching user data
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header showButton={false} showBackButton={true} />
+
+        <main className="flex-grow flex items-center justify-center bg-gray-50">
+          <div className="text-center p-8 bg-white rounded-xl shadow-md">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-700">Loading verification status...</p>
+          </div>
+        </main>
+
+        <Footer
+          isLoading={false}
+          error={null}
+          faucet={{}}
+          formatBalance={(val) => val || "0"}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
