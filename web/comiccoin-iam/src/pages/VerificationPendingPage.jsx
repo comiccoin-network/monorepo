@@ -94,7 +94,7 @@ const VerificationPendingPage = () => {
   useEffect(() => {
     if (!isLoading && user) {
       if (user.profile_verification_status === VERIFICATION_STATUS.APPROVED) {
-        navigate("/dashboard");
+        navigate("/verification/approved");
       } else if (
         user.profile_verification_status === VERIFICATION_STATUS.REJECTED
       ) {

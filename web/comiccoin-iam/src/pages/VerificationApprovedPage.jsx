@@ -1,18 +1,19 @@
-// monorepo/web/comiccoin-iam/src/pages/VerificationRejectedPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/VerificationApprovedPage.jsx
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
-  XCircle,
-  AlertTriangle,
-  HelpCircle,
+  CheckCircle,
+  Award,
+  Wallet,
   ArrowRight,
-  Mail,
-  RefreshCw,
-  LogOut,
-  Info,
-  ShieldX,
-  AlertOctagon,
-  FileQuestion,
+  User,
+  Calendar,
+  CheckSquare,
+  Shield,
+  Coins,
+  Gift,
+  FileText,
+  Sparkles,
 } from "lucide-react";
 
 import Header from "../components/IndexPage/Header";
@@ -20,9 +21,8 @@ import Footer from "../components/IndexPage/Footer";
 import { useAuth } from "../hooks/useAuth";
 import { useGetMe } from "../hooks/useGetMe";
 
-const VerificationRejectedPage = () => {
+const VerificationApprovedPage = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
   const { user } = useGetMe();
 
   // Define verification status constants
@@ -33,11 +33,11 @@ const VerificationRejectedPage = () => {
     REJECTED: 4,
   };
 
-  // Redirect if status is not rejected
+  // Redirect if status is not approved
   useEffect(() => {
     if (user) {
-      if (user.profile_verification_status === VERIFICATION_STATUS.APPROVED) {
-        navigate("/dashboard");
+      if (user.profile_verification_status === VERIFICATION_STATUS.REJECTED) {
+        navigate("/verification/rejected");
       } else if (
         user.profile_verification_status ===
         VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW
@@ -51,9 +51,9 @@ const VerificationRejectedPage = () => {
     }
   }, [user, navigate]);
 
-  // Get rejection time (use modified_at if available)
-  const rejectionTime = user?.modified_at || new Date().toISOString();
-  const rejectionDate = new Date(rejectionTime);
+  // Get approval time (use modified_at if available)
+  const approvalTime = user?.modified_at || new Date().toISOString();
+  const approvalDate = new Date(approvalTime);
 
   // Format dates in a user-friendly way
   const formatDate = (date) => {
@@ -67,18 +67,17 @@ const VerificationRejectedPage = () => {
     }).format(date);
   };
 
-  // Handle logout
-  const handleSignOff = () => {
-    logout();
+  // Navigate to dashboard
+  const goToDashboard = () => {
+    navigate("/dashboard");
   };
 
-  // Common reasons for rejection (for educational purposes)
-  const commonReasons = [
-    "Incomplete or inaccurate personal information",
-    "Address verification issues",
-    "Insufficient comic collecting history details",
-    "Business information could not be validated",
-    "Suspicious or unusual activity detected",
+  // Benefits of verification
+  const verificationBenefits = [
+    "Access to claim ComicCoins daily from the faucet",
+    "Ability to participate in exclusive comic drops and auctions",
+    "Verified profile badge on all ComicCoin interactions",
+    "Priority customer support for all your needs",
   ];
 
   return (
@@ -96,13 +95,13 @@ const VerificationRejectedPage = () => {
       <main id="main-content" className="flex-grow">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
           {/* Status Card */}
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-red-500">
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-green-500">
             {/* Card Header */}
-            <div className="px-6 py-8 sm:p-10 bg-gradient-to-r from-red-50 to-red-100 flex flex-col md:flex-row md:items-start gap-6">
+            <div className="px-6 py-8 sm:p-10 bg-gradient-to-r from-green-50 to-green-100 flex flex-col md:flex-row md:items-start gap-6">
               <div className="flex-shrink-0 mx-auto md:mx-0">
-                <div className="h-24 w-24 rounded-full bg-red-100 border-4 border-red-200 flex items-center justify-center">
-                  <ShieldX
-                    className="h-12 w-12 text-red-500"
+                <div className="h-24 w-24 rounded-full bg-green-100 border-4 border-green-200 flex items-center justify-center">
+                  <Sparkles
+                    className="h-12 w-12 text-green-500"
                     aria-hidden="true"
                   />
                 </div>
@@ -110,26 +109,25 @@ const VerificationRejectedPage = () => {
 
               <div className="text-center md:text-left">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  Verification Rejected
+                  Verification Approved
                 </h1>
                 <p className="mt-2 text-lg text-gray-700">
-                  We were unable to verify your profile with the information
-                  provided.
+                  Congratulations! Your profile has been successfully verified.
                 </p>
-                <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                  <AlertOctagon className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                  Verification Failed
+                <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                  <CheckCircle className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                  Fully Verified
                 </div>
               </div>
             </div>
 
             {/* Content */}
             <div className="p-6 sm:p-10">
-              {/* Rejection Info */}
+              {/* Approval Info */}
               <div className="mb-8">
                 <h2 className="text-lg font-medium text-gray-900 flex items-center mb-3">
-                  <XCircle
-                    className="mr-2 h-5 w-5 text-red-500"
+                  <CheckSquare
+                    className="mr-2 h-5 w-5 text-green-500"
                     aria-hidden="true"
                   />
                   Verification Status
@@ -146,13 +144,13 @@ const VerificationRejectedPage = () => {
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Rejected on</p>
+                      <p className="text-sm text-gray-500">Approved on</p>
                       <p className="text-md font-medium text-gray-800">
-                        {formatDate(rejectionDate)}
+                        {formatDate(approvalDate)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Verification type</p>
+                      <p className="text-sm text-gray-500">Account type</p>
                       <p className="text-md font-medium text-gray-800">
                         {user?.role === 2
                           ? "Business/Retailer"
@@ -161,71 +159,81 @@ const VerificationRejectedPage = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Status</p>
-                      <p className="text-md font-medium text-red-600">
-                        Verification Rejected
+                      <p className="text-md font-medium text-green-600 flex items-center">
+                        <CheckCircle
+                          className="mr-1.5 h-4 w-4"
+                          aria-hidden="true"
+                        />
+                        Verified
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Reasons Section */}
+              {/* Benefits Section */}
               <div className="mb-8">
                 <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                  <AlertTriangle
-                    className="mr-2 h-5 w-5 text-amber-500"
+                  <Award
+                    className="mr-2 h-5 w-5 text-purple-500"
                     aria-hidden="true"
                   />
-                  Common Reasons for Rejection
+                  Your Verification Benefits
                 </h2>
 
-                <div className="bg-amber-50 rounded-lg p-5 border border-amber-100">
+                <div className="bg-purple-50 rounded-lg p-5 border border-purple-100">
                   <p className="text-sm text-gray-700 mb-4">
-                    Verification may be rejected for various reasons, including
-                    but not limited to:
+                    As a verified member, you now have access to the following
+                    benefits:
                   </p>
-                  <ul className="list-disc ml-5 space-y-2 text-sm text-gray-700">
-                    {commonReasons.map((reason, index) => (
-                      <li key={index}>{reason}</li>
+                  <ul className="space-y-3">
+                    {verificationBenefits.map((benefit, index) => (
+                      <li key={index} className="flex items-start">
+                        <CheckCircle
+                          className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5"
+                          aria-hidden="true"
+                        />
+                        <span className="text-sm text-gray-700">{benefit}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
               </div>
 
-              {/* What to Do Next */}
+              {/* What's Next */}
               <div className="mb-8">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
-                  What to Do Next
+                  What's Next
                 </h2>
 
                 <div className="bg-blue-50 rounded-lg p-5 border border-blue-100">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <FileQuestion
+                      <Wallet
                         className="h-5 w-5 text-blue-600"
                         aria-hidden="true"
                       />
                     </div>
                     <div className="ml-3">
                       <h3 className="text-md font-medium text-blue-800">
-                        Options for Proceeding
+                        Start Using ComicCoin Network
                       </h3>
                       <div className="mt-2 text-sm text-blue-700 space-y-3">
                         <p>
-                          Unfortunately, your verification attempt was not
-                          successful. To proceed:
+                          You're now ready to fully engage with the ComicCoin
+                          Network ecosystem. Here's how to get started:
                         </p>
                         <p>
-                          1. You can log out and create a new account with
-                          complete and accurate information.
+                          1. Visit your dashboard to check your current coin
+                          balance and account status.
                         </p>
                         <p>
-                          2. Contact our support team for more specific details
-                          about why your verification was rejected.
+                          2. Claim your daily ComicCoins from the faucet to
+                          build your balance.
                         </p>
                         <p>
-                          3. Ensure all your information is accurate, complete,
-                          and verifiable if you try again.
+                          3. Explore the marketplace for valuable comic
+                          collectibles and exclusive drops.
                         </p>
                       </div>
                     </div>
@@ -233,35 +241,35 @@ const VerificationRejectedPage = () => {
                 </div>
               </div>
 
-              {/* Contact Support */}
-              <div className="bg-purple-50 rounded-lg p-5 border border-purple-100">
+              {/* Get Started Section */}
+              <div className="bg-green-50 rounded-lg p-5 border border-green-100">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <Mail
-                      className="h-5 w-5 text-purple-600"
+                    <Coins
+                      className="h-5 w-5 text-green-600"
                       aria-hidden="true"
                     />
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-md font-medium text-purple-800">
-                      Need Help?
+                    <h3 className="text-md font-medium text-green-800">
+                      Ready to Get Started
                     </h3>
-                    <p className="mt-2 text-sm text-purple-700">
-                      If you believe this rejection was made in error or you
-                      need more specific information about the rejection reason,
-                      please contact our support team.
+                    <p className="mt-2 text-sm text-green-700">
+                      Your account is now fully verified and ready to use. Head
+                      to your dashboard to start exploring all features of the
+                      ComicCoin Network.
                     </p>
                     <div className="mt-4">
-                      <a
-                        href="mailto:support@comiccoin.com"
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                      <button
+                        onClick={goToDashboard}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                       >
-                        Contact Support
+                        Go to Dashboard
                         <ArrowRight
                           className="ml-1.5 h-4 w-4"
                           aria-hidden="true"
                         />
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -269,15 +277,25 @@ const VerificationRejectedPage = () => {
             </div>
           </div>
 
-          {/* Sign Off Button */}
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSignOff}
-              className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+          {/* Additional Resources */}
+          <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+            <Link
+              to="/help"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
             >
-              <LogOut className="-ml-0.5 mr-2 h-4 w-4" aria-hidden="true" />
-              Sign Off
-            </button>
+              <FileText
+                className="mr-1.5 h-4 w-4 text-gray-500"
+                aria-hidden="true"
+              />
+              Help Center
+            </Link>
+            <Link
+              to="/claim-coins"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            >
+              <Gift className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              Claim Your Coins
+            </Link>
           </div>
         </div>
       </main>
@@ -292,4 +310,4 @@ const VerificationRejectedPage = () => {
   );
 };
 
-export default VerificationRejectedPage;
+export default VerificationApprovedPage;

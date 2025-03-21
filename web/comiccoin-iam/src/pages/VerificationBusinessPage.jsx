@@ -239,9 +239,39 @@ const VerificationBusinessPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Submit data to the API with explicit user role
-    // USER_ROLE.RETAILER = 2 in our backend (business/retailer user)
-    await await submitVerification(formData, USER_ROLE.RETAILER);
+    // Form validation code remains the same...
+    // [Existing validation code here]
+
+    // If there are errors, show them and don't proceed
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Scroll to the top to show errors
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    setIsLoading(true);
+    console.log("Submitting business verification data:", formData);
+
+    try {
+      // Submit data to the API with explicit user role
+      // USER_ROLE.RETAILER = 2 in our backend (business/retailer user)
+      const success = await submitVerification(formData, USER_ROLE.RETAILER);
+
+      if (success) {
+        // After successful submission, redirect to pending page
+        navigate("/verification/pending");
+      }
+    } catch (error) {
+      console.error("Error submitting business verification:", error);
+
+      // Update our local errors with any formErrors from the hook
+      if (formErrors && Object.keys(formErrors).length > 0) {
+        setErrors((prev) => ({ ...prev, ...formErrors }));
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // How did you hear about us options

@@ -236,9 +236,20 @@ const VerificationIndividualPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Submit the form data to the backend for validation with explicit user role
-    // USER_ROLE.CUSTOMER = 3 in our backend (individual user)
-    await submitVerification(formData, USER_ROLE.CUSTOMER);
+    try {
+      // Submit the form data to the backend with explicit user role
+      // USER_ROLE.CUSTOMER = 3 in our backend (individual user)
+      const success = await submitVerification(formData, USER_ROLE.CUSTOMER);
+
+      if (success) {
+        // If submission was successful, redirect to the pending page
+        // The API response should have updated the user's profile_verification_status to 2
+        navigate("/verification/pending");
+      }
+    } catch (error) {
+      console.error("Error submitting verification:", error);
+      // Error handling is managed by the useVerifyProfile hook
+    }
   };
 
   // How did you hear about us options

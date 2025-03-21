@@ -20,6 +20,7 @@ import VerificationLaunchpadPage from "./pages/VerificationLaunchpadPage";
 import VerificationIndividualPage from "./pages/VerificationIndividualPage";
 import VerificationBusinessPage from "./pages/VerificationBusinessPage";
 import VerificationRejectedPage from "./pages/VerificationRejectedPage";
+import VerificationApprovedPage from "./pages/VerificationApprovedPage";
 import VerificationPendingPage from "./pages/VerificationPendingPage";
 import ClaimCoinsPage from "./pages/ClaimCoinsPage";
 import TransactionsPage from "./pages/TransactionsPage";
@@ -119,6 +120,15 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/verification/approved"
+              element={
+                <ProtectedRoute>
+                  <VerificationApprovedPage />
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/verification/pending"
               element={
