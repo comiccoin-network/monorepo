@@ -1,6 +1,7 @@
 // src/pages/VerificationBusinessPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
+import countryRegionData from "country-region-data/dist/data-umd";
 import {
   ArrowLeft,
   ArrowRight,
@@ -47,6 +48,18 @@ const useLocalStorage = (key, initialValue) => {
 
 const VerificationBusinessPage = () => {
   const navigate = useNavigate();
+
+  // Inline styles for select elements to fix Safari
+  const selectStyles = {
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
+    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M6 9L12 15 18 9'%3e%3c/path%3e%3c/svg%3e")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 0.75rem center",
+    backgroundSize: "1em",
+    paddingRight: "2.5rem",
+  };
 
   // State for form data (with localStorage persistence)
   const [formData, setFormData] = useLocalStorage(
@@ -102,6 +115,93 @@ const VerificationBusinessPage = () => {
       }));
     }
   };
+
+  // Handle country dropdown change
+  const handleCountryChange = (e) => {
+    const countryCode = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      country: countryCode,
+      region: "", // Reset region when country changes
+    }));
+
+    // Clear country error if it exists
+    if (errors.country) {
+      setErrors((prev) => ({
+        ...prev,
+        country: undefined,
+      }));
+    }
+  };
+
+  // Handle region dropdown change
+  const handleRegionChange = (e) => {
+    const regionCode = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      region: regionCode,
+    }));
+
+    // Clear region error if it exists
+    if (errors.region) {
+      setErrors((prev) => ({
+        ...prev,
+        region: undefined,
+      }));
+    }
+  };
+
+  // Handle shipping country dropdown change
+  const handleShippingCountryChange = (e) => {
+    const countryCode = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      shippingCountry: countryCode,
+      shippingRegion: "", // Reset region when country changes
+    }));
+
+    // Clear country error if it exists
+    if (errors.shippingCountry) {
+      setErrors((prev) => ({
+        ...prev,
+        shippingCountry: undefined,
+      }));
+    }
+  };
+
+  // Handle shipping region dropdown change
+  const handleShippingRegionChange = (e) => {
+    const regionCode = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      shippingRegion: regionCode,
+    }));
+
+    // Clear region error if it exists
+    if (errors.shippingRegion) {
+      setErrors((prev) => ({
+        ...prev,
+        shippingRegion: undefined,
+      }));
+    }
+  };
+
+  // Helper function to get regions for a country
+  const getRegionsForCountry = (countryCode) => {
+    if (!countryCode) return [];
+
+    const country = countryRegionData.find(
+      (country) => country.countryShortCode === countryCode,
+    );
+
+    return country ? country.regions : [];
+  };
+
+  // Get available regions based on selected country
+  const availableRegions = getRegionsForCountry(formData.country);
+  const availableShippingRegions = getRegionsForCountry(
+    formData.shippingCountry,
+  );
 
   // Handle checkbox changes
   const handleCheckboxChange = (e) => {
@@ -194,74 +294,6 @@ const VerificationBusinessPage = () => {
       navigate("/verification/pending");
     }, 1500);
   };
-
-  // Countries for dropdown
-  const countries = [
-    { value: "", label: "Select Country..." },
-    { value: "us", label: "United States" },
-    { value: "ca", label: "Canada" },
-    { value: "uk", label: "United Kingdom" },
-    { value: "au", label: "Australia" },
-    { value: "de", label: "Germany" },
-    { value: "fr", label: "France" },
-    { value: "jp", label: "Japan" },
-    { value: "other", label: "Other" },
-  ];
-
-  // Regions/States for US
-  const usRegions = [
-    { value: "", label: "Select State..." },
-    { value: "AL", label: "Alabama" },
-    { value: "AK", label: "Alaska" },
-    { value: "AZ", label: "Arizona" },
-    { value: "AR", label: "Arkansas" },
-    { value: "CA", label: "California" },
-    { value: "CO", label: "Colorado" },
-    { value: "CT", label: "Connecticut" },
-    { value: "DE", label: "Delaware" },
-    { value: "FL", label: "Florida" },
-    { value: "GA", label: "Georgia" },
-    { value: "HI", label: "Hawaii" },
-    { value: "ID", label: "Idaho" },
-    { value: "IL", label: "Illinois" },
-    { value: "IN", label: "Indiana" },
-    { value: "IA", label: "Iowa" },
-    { value: "KS", label: "Kansas" },
-    { value: "KY", label: "Kentucky" },
-    { value: "LA", label: "Louisiana" },
-    { value: "ME", label: "Maine" },
-    { value: "MD", label: "Maryland" },
-    { value: "MA", label: "Massachusetts" },
-    { value: "MI", label: "Michigan" },
-    { value: "MN", label: "Minnesota" },
-    { value: "MS", label: "Mississippi" },
-    { value: "MO", label: "Missouri" },
-    { value: "MT", label: "Montana" },
-    { value: "NE", label: "Nebraska" },
-    { value: "NV", label: "Nevada" },
-    { value: "NH", label: "New Hampshire" },
-    { value: "NJ", label: "New Jersey" },
-    { value: "NM", label: "New Mexico" },
-    { value: "NY", label: "New York" },
-    { value: "NC", label: "North Carolina" },
-    { value: "ND", label: "North Dakota" },
-    { value: "OH", label: "Ohio" },
-    { value: "OK", label: "Oklahoma" },
-    { value: "OR", label: "Oregon" },
-    { value: "PA", label: "Pennsylvania" },
-    { value: "RI", label: "Rhode Island" },
-    { value: "SC", label: "South Carolina" },
-    { value: "SD", label: "South Dakota" },
-    { value: "TN", label: "Tennessee" },
-    { value: "TX", label: "Texas" },
-    { value: "UT", label: "Utah" },
-    { value: "VT", label: "Vermont" },
-    { value: "VA", label: "Virginia" },
-    { value: "WA", label: "Washington" },
-    { value: "WV", label: "West Virginia" },
-    { value: "WI", label: "Wisconsin" },
-    { value: "WY", label: "Wyoming" },
-  ];
 
   // How did you hear about us options
   const referralSources = [
@@ -478,127 +510,45 @@ const VerificationBusinessPage = () => {
                       />
                     </div>
 
-                    {/* City, State/Province, ZIP/Postal Code in a grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {/* City */}
-                      <div>
-                        <label
-                          htmlFor="city"
-                          className="block text-sm text-gray-700 mb-1"
+                    {/* City */}
+                    <div className="mb-3">
+                      <label
+                        htmlFor="city"
+                        className="block text-sm text-gray-700 mb-1"
+                      >
+                        City <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          errors.city
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="City/Town"
+                        aria-required="true"
+                        aria-invalid={errors.city ? "true" : "false"}
+                      />
+                      {errors.city && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
                         >
-                          City <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="city"
-                          name="city"
-                          value={formData.city}
-                          onChange={handleInputChange}
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                            errors.city
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
-                          placeholder="City/Town"
-                          aria-required="true"
-                          aria-invalid={errors.city ? "true" : "false"}
-                        />
-                        {errors.city && (
-                          <p
-                            className="mt-1 text-xs text-red-600 flex items-center"
-                            aria-live="polite"
-                          >
-                            <AlertCircle
-                              className="h-3 w-3 mr-1"
-                              aria-hidden="true"
-                            />
-                            {errors.city}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* State/Province */}
-                      <div>
-                        <label
-                          htmlFor="region"
-                          className="block text-sm text-gray-700 mb-1"
-                        >
-                          State/Province <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          id="region"
-                          name="region"
-                          value={formData.region}
-                          onChange={handleInputChange}
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                            errors.region
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
-                          aria-required="true"
-                          aria-invalid={errors.region ? "true" : "false"}
-                        >
-                          {usRegions.map((region) => (
-                            <option key={region.value} value={region.value}>
-                              {region.label}
-                            </option>
-                          ))}
-                        </select>
-                        {errors.region && (
-                          <p
-                            className="mt-1 text-xs text-red-600 flex items-center"
-                            aria-live="polite"
-                          >
-                            <AlertCircle
-                              className="h-3 w-3 mr-1"
-                              aria-hidden="true"
-                            />
-                            {errors.region}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* ZIP/Postal Code */}
-                      <div>
-                        <label
-                          htmlFor="postalCode"
-                          className="block text-sm text-gray-700 mb-1"
-                        >
-                          ZIP/Postal Code{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="postalCode"
-                          name="postalCode"
-                          value={formData.postalCode}
-                          onChange={handleInputChange}
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                            errors.postalCode
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
-                          placeholder="ZIP or Postal Code"
-                          aria-required="true"
-                          aria-invalid={errors.postalCode ? "true" : "false"}
-                        />
-                        {errors.postalCode && (
-                          <p
-                            className="mt-1 text-xs text-red-600 flex items-center"
-                            aria-live="polite"
-                          >
-                            <AlertCircle
-                              className="h-3 w-3 mr-1"
-                              aria-hidden="true"
-                            />
-                            {errors.postalCode}
-                          </p>
-                        )}
-                      </div>
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.city}
+                        </p>
+                      )}
                     </div>
 
-                    {/* Country */}
-                    <div className="mt-3">
+                    {/* Country Dropdown */}
+                    <div className="mb-3">
                       <label
                         htmlFor="country"
                         className="block text-sm text-gray-700 mb-1"
@@ -609,18 +559,23 @@ const VerificationBusinessPage = () => {
                         id="country"
                         name="country"
                         value={formData.country}
-                        onChange={handleInputChange}
+                        onChange={handleCountryChange}
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
                           errors.country
                             ? "border-red-300 bg-red-50"
                             : "border-gray-300"
                         }`}
+                        style={selectStyles}
                         aria-required="true"
                         aria-invalid={errors.country ? "true" : "false"}
                       >
-                        {countries.map((country) => (
-                          <option key={country.value} value={country.value}>
-                            {country.label}
+                        <option value="">Select Country...</option>
+                        {countryRegionData.map((country) => (
+                          <option
+                            key={country.countryShortCode}
+                            value={country.countryShortCode}
+                          >
+                            {country.countryName}
                           </option>
                         ))}
                       </select>
@@ -634,6 +589,94 @@ const VerificationBusinessPage = () => {
                             aria-hidden="true"
                           />
                           {errors.country}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* State/Province Dropdown */}
+                    <div className="mb-3">
+                      <label
+                        htmlFor="region"
+                        className="block text-sm text-gray-700 mb-1"
+                      >
+                        State/Province <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="region"
+                        name="region"
+                        value={formData.region}
+                        onChange={handleRegionChange}
+                        disabled={!formData.country}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          errors.region
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        } ${!formData.country ? "bg-gray-100" : ""}`}
+                        style={selectStyles}
+                        aria-required="true"
+                        aria-invalid={errors.region ? "true" : "false"}
+                      >
+                        <option value="">
+                          {formData.country
+                            ? "Select State/Province..."
+                            : "Select Country First"}
+                        </option>
+                        {availableRegions.map((region) => (
+                          <option
+                            key={region.shortCode}
+                            value={region.shortCode}
+                          >
+                            {region.name}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.region && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.region}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* ZIP/Postal Code */}
+                    <div className="mb-3">
+                      <label
+                        htmlFor="postalCode"
+                        className="block text-sm text-gray-700 mb-1"
+                      >
+                        ZIP/Postal Code <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="postalCode"
+                        name="postalCode"
+                        value={formData.postalCode}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          errors.postalCode
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="ZIP or Postal Code"
+                        aria-required="true"
+                        aria-invalid={errors.postalCode ? "true" : "false"}
+                      />
+                      {errors.postalCode && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.postalCode}
                         </p>
                       )}
                     </div>
@@ -694,6 +737,7 @@ const VerificationBusinessPage = () => {
                         value={formData.howLongStoreOperating}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        style={selectStyles}
                         aria-required="true"
                       >
                         {yearsInOperation.map((option) => (
@@ -763,6 +807,7 @@ const VerificationBusinessPage = () => {
                             ? "border-red-300 bg-red-50"
                             : "border-gray-300"
                         }`}
+                        style={selectStyles}
                         aria-required="true"
                         aria-invalid={
                           errors.estimatedSubmissionsPerMonth ? "true" : "false"
@@ -803,6 +848,7 @@ const VerificationBusinessPage = () => {
                         value={formData.hasOtherGradingService}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        style={selectStyles}
                         aria-required="true"
                       >
                         {yesNoOptions.map((option) => (
@@ -870,6 +916,7 @@ const VerificationBusinessPage = () => {
                         value={formData.requestWelcomePackage}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        style={selectStyles}
                         aria-required="true"
                       >
                         {yesNoOptions.map((option) => (
@@ -908,6 +955,7 @@ const VerificationBusinessPage = () => {
                         value={formData.howDidYouHearAboutUs}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        style={selectStyles}
                         aria-required="true"
                       >
                         {referralSources.map((source) => (
@@ -1186,130 +1234,43 @@ const VerificationBusinessPage = () => {
                           />
                         </div>
 
-                        {/* Shipping City, Region/State, ZIP/Postal Code in a grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          {/* Shipping City */}
-                          <div>
-                            <label
-                              htmlFor="shippingCity"
-                              className="block text-sm text-gray-700 mb-1"
+                        {/* Shipping City */}
+                        <div>
+                          <label
+                            htmlFor="shippingCity"
+                            className="block text-sm text-gray-700 mb-1"
+                          >
+                            City <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="shippingCity"
+                            name="shippingCity"
+                            value={formData.shippingCity}
+                            onChange={handleInputChange}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                              errors.shippingCity
+                                ? "border-red-300 bg-red-50"
+                                : "border-gray-300"
+                            }`}
+                            placeholder="City/Town"
+                            aria-required="true"
+                            aria-invalid={
+                              errors.shippingCity ? "true" : "false"
+                            }
+                          />
+                          {errors.shippingCity && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
                             >
-                              City <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              id="shippingCity"
-                              name="shippingCity"
-                              value={formData.shippingCity}
-                              onChange={handleInputChange}
-                              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                                errors.shippingCity
-                                  ? "border-red-300 bg-red-50"
-                                  : "border-gray-300"
-                              }`}
-                              placeholder="City/Town"
-                              aria-required="true"
-                              aria-invalid={
-                                errors.shippingCity ? "true" : "false"
-                              }
-                            />
-                            {errors.shippingCity && (
-                              <p
-                                className="mt-1 text-xs text-red-600 flex items-center"
-                                aria-live="polite"
-                              >
-                                <AlertCircle
-                                  className="h-3 w-3 mr-1"
-                                  aria-hidden="true"
-                                />
-                                {errors.shippingCity}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Shipping Region/State */}
-                          <div>
-                            <label
-                              htmlFor="shippingRegion"
-                              className="block text-sm text-gray-700 mb-1"
-                            >
-                              State/Province{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              id="shippingRegion"
-                              name="shippingRegion"
-                              value={formData.shippingRegion}
-                              onChange={handleInputChange}
-                              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                                errors.shippingRegion
-                                  ? "border-red-300 bg-red-50"
-                                  : "border-gray-300"
-                              }`}
-                              aria-required="true"
-                              aria-invalid={
-                                errors.shippingRegion ? "true" : "false"
-                              }
-                            >
-                              {usRegions.map((region) => (
-                                <option key={region.value} value={region.value}>
-                                  {region.label}
-                                </option>
-                              ))}
-                            </select>
-                            {errors.shippingRegion && (
-                              <p
-                                className="mt-1 text-xs text-red-600 flex items-center"
-                                aria-live="polite"
-                              >
-                                <AlertCircle
-                                  className="h-3 w-3 mr-1"
-                                  aria-hidden="true"
-                                />
-                                {errors.shippingRegion}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Shipping Postal Code */}
-                          <div>
-                            <label
-                              htmlFor="shippingPostalCode"
-                              className="block text-sm text-gray-700 mb-1"
-                            >
-                              ZIP/Postal Code{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              id="shippingPostalCode"
-                              name="shippingPostalCode"
-                              value={formData.shippingPostalCode}
-                              onChange={handleInputChange}
-                              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                                errors.shippingPostalCode
-                                  ? "border-red-300 bg-red-50"
-                                  : "border-gray-300"
-                              }`}
-                              placeholder="ZIP or Postal Code"
-                              aria-required="true"
-                              aria-invalid={
-                                errors.shippingPostalCode ? "true" : "false"
-                              }
-                            />
-                            {errors.shippingPostalCode && (
-                              <p
-                                className="mt-1 text-xs text-red-600 flex items-center"
-                                aria-live="polite"
-                              >
-                                <AlertCircle
-                                  className="h-3 w-3 mr-1"
-                                  aria-hidden="true"
-                                />
-                                {errors.shippingPostalCode}
-                              </p>
-                            )}
-                          </div>
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.shippingCity}
+                            </p>
+                          )}
                         </div>
 
                         {/* Shipping Country */}
@@ -1324,20 +1285,25 @@ const VerificationBusinessPage = () => {
                             id="shippingCountry"
                             name="shippingCountry"
                             value={formData.shippingCountry}
-                            onChange={handleInputChange}
+                            onChange={handleShippingCountryChange}
                             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
                               errors.shippingCountry
                                 ? "border-red-300 bg-red-50"
                                 : "border-gray-300"
                             }`}
+                            style={selectStyles}
                             aria-required="true"
                             aria-invalid={
                               errors.shippingCountry ? "true" : "false"
                             }
                           >
-                            {countries.map((country) => (
-                              <option key={country.value} value={country.value}>
-                                {country.label}
+                            <option value="">Select Country...</option>
+                            {countryRegionData.map((country) => (
+                              <option
+                                key={country.countryShortCode}
+                                value={country.countryShortCode}
+                              >
+                                {country.countryName}
                               </option>
                             ))}
                           </select>
@@ -1351,6 +1317,100 @@ const VerificationBusinessPage = () => {
                                 aria-hidden="true"
                               />
                               {errors.shippingCountry}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Shipping Region/State */}
+                        <div>
+                          <label
+                            htmlFor="shippingRegion"
+                            className="block text-sm text-gray-700 mb-1"
+                          >
+                            State/Province{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            id="shippingRegion"
+                            name="shippingRegion"
+                            value={formData.shippingRegion}
+                            onChange={handleShippingRegionChange}
+                            disabled={!formData.shippingCountry}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                              errors.shippingRegion
+                                ? "border-red-300 bg-red-50"
+                                : "border-gray-300"
+                            } ${!formData.shippingCountry ? "bg-gray-100" : ""}`}
+                            style={selectStyles}
+                            aria-required="true"
+                            aria-invalid={
+                              errors.shippingRegion ? "true" : "false"
+                            }
+                          >
+                            <option value="">
+                              {formData.shippingCountry
+                                ? "Select State/Province..."
+                                : "Select Country First"}
+                            </option>
+                            {availableShippingRegions.map((region) => (
+                              <option
+                                key={region.shortCode}
+                                value={region.shortCode}
+                              >
+                                {region.name}
+                              </option>
+                            ))}
+                          </select>
+                          {errors.shippingRegion && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.shippingRegion}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Shipping Postal Code */}
+                        <div>
+                          <label
+                            htmlFor="shippingPostalCode"
+                            className="block text-sm text-gray-700 mb-1"
+                          >
+                            ZIP/Postal Code{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="shippingPostalCode"
+                            name="shippingPostalCode"
+                            value={formData.shippingPostalCode}
+                            onChange={handleInputChange}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                              errors.shippingPostalCode
+                                ? "border-red-300 bg-red-50"
+                                : "border-gray-300"
+                            }`}
+                            placeholder="ZIP or Postal Code"
+                            aria-required="true"
+                            aria-invalid={
+                              errors.shippingPostalCode ? "true" : "false"
+                            }
+                          />
+                          {errors.shippingPostalCode && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.shippingPostalCode}
                             </p>
                           )}
                         </div>
