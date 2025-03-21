@@ -30,6 +30,7 @@ export function useVerifyProfile(options = {}) {
    * Submit profile verification data to the API
    *
    * @param {Object} data - Profile verification data
+   * @param {number} [userRole] - Optional explicit user role (3 for Customer, 2 for Retailer)
    * @returns {Promise<Object>} Promise resolving to the response data
    */
   const verifyProfile = useCallback(

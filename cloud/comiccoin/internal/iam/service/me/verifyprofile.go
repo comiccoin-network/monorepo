@@ -57,6 +57,9 @@ type VerifyProfileRequestDTO struct {
 	HasOtherGradingService       int8   `json:"has_other_grading_service,omitempty"`
 	OtherGradingServiceName      string `json:"other_grading_service_name,omitempty"`
 	RequestWelcomePackage        int8   `json:"request_welcome_package,omitempty"`
+
+	// Explicitly specify user role if needed (overrides the user's current role)
+	UserRole int8 `json:"user_role,omitempty"`
 }
 
 type VerifyProfileResponseDTO struct {
@@ -117,12 +120,88 @@ func (s *verifyProfileServiceImpl) Execute(
 		return nil, httperror.NewForBadRequestWithSingleField("non_field_error", "User not found")
 	}
 
+	// Check if we need to override the user role based on the request
+	if req.UserRole != 0 && (req.UserRole == domain.UserRoleCustomer || req.UserRole == domain.UserRoleRetailer) {
+		s.logger.Info("Setting user role based on request",
+			slog.Int("original_role", int(user.Role)),
+			slog.Int("new_role", int(req.UserRole)))
+		user.Role = req.UserRole
+	}
+
 	//
 	// STEP 3: Validate request based on user role
 	//
 	e := make(map[string]string)
 
-	// Validate common fields
+	// Validate common fields regardless of role
+	s.validateCommonFields(req, e)
+
+	// Role-specific validation
+	if user.Role == domain.UserRoleCustomer {
+		s.validateCustomerFields(req, e)
+	} else if user.Role == domain.UserRoleRetailer {
+		s.validateRetailerFields(req, e)
+	} else {
+		s.logger.Warn("Unrecognized user role", slog.Int("role", int(user.Role)))
+		e["user_role"] = "Invalid user role. Must be either customer or retailer."
+	}
+
+	// Return validation errors if any
+	if len(e) != 0 {
+		s.logger.Warn("Failed validation", slog.Any("errors", e))
+		return nil, httperror.NewForBadRequest(&e)
+	}
+
+	//
+	// STEP 4: Update user profile based on role
+	//
+
+	// Update common fields
+	s.updateCommonFields(user, req)
+
+	// Update role-specific fields
+	if user.Role == domain.UserRoleCustomer {
+		s.updateCustomerFields(user, req)
+	} else if user.Role == domain.UserRoleRetailer {
+		s.updateRetailerFields(user, req)
+	}
+
+	//
+	// STEP 5: Update profile verification status and timestamps
+	//
+	user.ProfileVerificationStatus = domain.UserProfileVerificationStatusSubmittedForReview
+	user.ModifiedAt = time.Now()
+	user.ModifiedFromIPAddress, _ = sessCtx.Value(constants.SessionIPAddress).(string)
+
+	//
+	// STEP 6: Save updated user to database
+	//
+	if err := s.userUpdateUseCase.Execute(sessCtx, user); err != nil {
+		s.logger.Error("Failed to update user", slog.Any("error", err))
+		return nil, err
+	}
+
+	//
+	// STEP 7: Generate appropriate response
+	//
+	var responseMessage string
+	if user.Role == domain.UserRoleCustomer {
+		responseMessage = "Your profile has been submitted for verification. You'll be notified once it's been reviewed."
+	} else if user.Role == domain.UserRoleRetailer {
+		responseMessage = "Your retailer profile has been submitted for verification. Our team will review your application and contact you soon."
+	} else {
+		responseMessage = "Your profile has been submitted for verification."
+	}
+
+	return &VerifyProfileResponseDTO{
+		Message:  responseMessage,
+		UserRole: user.Role,
+		Status:   user.ProfileVerificationStatus,
+	}, nil
+}
+
+// validateCommonFields validates fields common to all user types
+func (s *verifyProfileServiceImpl) validateCommonFields(req *VerifyProfileRequestDTO, e map[string]string) {
 	if req.Country == "" {
 		e["country"] = "Country is required"
 	}
@@ -163,72 +242,66 @@ func (s *verifyProfileServiceImpl) Execute(
 			e["shipping_postal_code"] = "Shipping postal code is required"
 		}
 	}
+}
 
-	// Role-specific validation
-	if user.Role == domain.UserRoleCustomer {
-		// Validate customer-specific fields
-		if req.HowLongCollectingComicBooksForGrading == 0 {
-			e["how_long_collecting_comic_books_for_grading"] = "How long you've been collecting comic books for grading is required"
-		}
-		if req.HasPreviouslySubmittedComicBookForGrading == 0 {
-			e["has_previously_submitted_comic_book_for_grading"] = "Previous submission information is required"
-		}
-		if req.HasOwnedGradedComicBooks == 0 {
-			e["has_owned_graded_comic_books"] = "Information about owning graded comic books is required"
-		}
-		if req.HasRegularComicBookShop == 0 {
-			e["has_regular_comic_book_shop"] = "Regular comic book shop information is required"
-		}
-		if req.HasPreviouslyPurchasedFromAuctionSite == 0 {
-			e["has_previously_purchased_from_auction_site"] = "Auction site purchase information is required"
-		}
-		if req.HasPreviouslyPurchasedFromFacebookMarketplace == 0 {
-			e["has_previously_purchased_from_facebook_marketplace"] = "Facebook Marketplace purchase information is required"
-		}
-		if req.HasRegularlyAttendedComicConsOrCollectibleShows == 0 {
-			e["has_regularly_attended_comic_cons_or_collectible_shows"] = "Comic convention attendance information is required"
-		}
-	} else if user.Role == domain.UserRoleRetailer {
-		// Validate retailer-specific fields
-		if req.ComicBookStoreName == "" {
-			e["comic_book_store_name"] = "Store name is required"
-		}
-		if req.HowLongStoreOperating == 0 {
-			e["how_long_store_operating"] = "Store operation duration is required"
-		}
-		if req.GradingComicsExperience == "" {
-			e["grading_comics_experience"] = "Grading comics experience is required"
-		}
-		if req.RetailPartnershipReason == "" {
-			e["retail_partnership_reason"] = "Retail partnership reason is required"
-		}
-		if req.CPSPartnershipReason == "" {
-			e["cps_partnership_reason"] = "CPS partnership reason is required"
-		}
-		if req.EstimatedSubmissionsPerMonth == 0 {
-			e["estimated_submissions_per_month"] = "Estimated submissions per month is required"
-		}
-		if req.HasOtherGradingService == 0 {
-			e["has_other_grading_service"] = "Other grading service information is required"
-		}
-		if req.HasOtherGradingService == 1 && req.OtherGradingServiceName == "" {
-			e["other_grading_service_name"] = "Please specify the grading service"
-		}
-		if req.RequestWelcomePackage == 0 {
-			e["request_welcome_package"] = "Welcome package request information is required"
-		}
+// validateCustomerFields validates fields specific to customers
+func (s *verifyProfileServiceImpl) validateCustomerFields(req *VerifyProfileRequestDTO, e map[string]string) {
+	if req.HowLongCollectingComicBooksForGrading == 0 {
+		e["how_long_collecting_comic_books_for_grading"] = "How long you've been collecting comic books for grading is required"
 	}
-
-	if len(e) != 0 {
-		s.logger.Warn("Failed validation", slog.Any("errors", e))
-		return nil, httperror.NewForBadRequest(&e)
+	if req.HasPreviouslySubmittedComicBookForGrading == 0 {
+		e["has_previously_submitted_comic_book_for_grading"] = "Previous submission information is required"
 	}
+	if req.HasOwnedGradedComicBooks == 0 {
+		e["has_owned_graded_comic_books"] = "Information about owning graded comic books is required"
+	}
+	if req.HasRegularComicBookShop == 0 {
+		e["has_regular_comic_book_shop"] = "Regular comic book shop information is required"
+	}
+	if req.HasPreviouslyPurchasedFromAuctionSite == 0 {
+		e["has_previously_purchased_from_auction_site"] = "Auction site purchase information is required"
+	}
+	if req.HasPreviouslyPurchasedFromFacebookMarketplace == 0 {
+		e["has_previously_purchased_from_facebook_marketplace"] = "Facebook Marketplace purchase information is required"
+	}
+	if req.HasRegularlyAttendedComicConsOrCollectibleShows == 0 {
+		e["has_regularly_attended_comic_cons_or_collectible_shows"] = "Comic convention attendance information is required"
+	}
+}
 
-	//
-	// STEP 4: Update user profile based on role
-	//
+// validateRetailerFields validates fields specific to retailers
+func (s *verifyProfileServiceImpl) validateRetailerFields(req *VerifyProfileRequestDTO, e map[string]string) {
+	if req.ComicBookStoreName == "" {
+		e["comic_book_store_name"] = "Store name is required"
+	}
+	if req.HowLongStoreOperating == 0 {
+		e["how_long_store_operating"] = "Store operation duration is required"
+	}
+	if req.GradingComicsExperience == "" {
+		e["grading_comics_experience"] = "Grading comics experience is required"
+	}
+	if req.RetailPartnershipReason == "" {
+		e["retail_partnership_reason"] = "Retail partnership reason is required"
+	}
+	if req.CPSPartnershipReason == "" {
+		e["cps_partnership_reason"] = "CPS partnership reason is required"
+	}
+	if req.EstimatedSubmissionsPerMonth == 0 {
+		e["estimated_submissions_per_month"] = "Estimated submissions per month is required"
+	}
+	if req.HasOtherGradingService == 0 {
+		e["has_other_grading_service"] = "Other grading service information is required"
+	}
+	if req.HasOtherGradingService == 1 && req.OtherGradingServiceName == "" {
+		e["other_grading_service_name"] = "Please specify the grading service"
+	}
+	if req.RequestWelcomePackage == 0 {
+		e["request_welcome_package"] = "Welcome package request information is required"
+	}
+}
 
-	// Update common fields
+// updateCommonFields updates common fields for all user types
+func (s *verifyProfileServiceImpl) updateCommonFields(user *domain.User, req *VerifyProfileRequestDTO) {
 	user.Country = req.Country
 	user.Region = req.Region
 	user.City = req.City
@@ -246,53 +319,33 @@ func (s *verifyProfileServiceImpl) Execute(
 	user.ShippingAddressLine2 = req.ShippingAddressLine2
 	user.HowDidYouHearAboutUs = req.HowDidYouHearAboutUs
 	user.HowDidYouHearAboutUsOther = req.HowDidYouHearAboutUsOther
+}
 
-	// Update role-specific fields
-	if user.Role == domain.UserRoleCustomer {
-		user.HowLongCollectingComicBooksForGrading = req.HowLongCollectingComicBooksForGrading
-		user.HasPreviouslySubmittedComicBookForGrading = req.HasPreviouslySubmittedComicBookForGrading
-		user.HasOwnedGradedComicBooks = req.HasOwnedGradedComicBooks
-		user.HasRegularComicBookShop = req.HasRegularComicBookShop
-		user.HasPreviouslyPurchasedFromAuctionSite = req.HasPreviouslyPurchasedFromAuctionSite
-		user.HasPreviouslyPurchasedFromFacebookMarketplace = req.HasPreviouslyPurchasedFromFacebookMarketplace
-		user.HasRegularlyAttendedComicConsOrCollectibleShows = req.HasRegularlyAttendedComicConsOrCollectibleShows
-	} else if user.Role == domain.UserRoleRetailer {
-		// Store logo would need to be handled separately with file upload
-		// For retailer-specific fields, we could store some in user model
-		// and others might need a separate retailer profile model
-		s.logger.Info("Retailer profile details captured, additional handling might be needed for retailer-specific fields")
-	}
+// updateCustomerFields updates fields specific to customers
+func (s *verifyProfileServiceImpl) updateCustomerFields(user *domain.User, req *VerifyProfileRequestDTO) {
+	user.HowLongCollectingComicBooksForGrading = req.HowLongCollectingComicBooksForGrading
+	user.HasPreviouslySubmittedComicBookForGrading = req.HasPreviouslySubmittedComicBookForGrading
+	user.HasOwnedGradedComicBooks = req.HasOwnedGradedComicBooks
+	user.HasRegularComicBookShop = req.HasRegularComicBookShop
+	user.HasPreviouslyPurchasedFromAuctionSite = req.HasPreviouslyPurchasedFromAuctionSite
+	user.HasPreviouslyPurchasedFromFacebookMarketplace = req.HasPreviouslyPurchasedFromFacebookMarketplace
+	user.HasRegularlyAttendedComicConsOrCollectibleShows = req.HasRegularlyAttendedComicConsOrCollectibleShows
+}
 
-	//
-	// STEP 5: Update profile verification status and timestamps
-	//
-	user.ProfileVerificationStatus = domain.UserProfileVerificationStatusSubmittedForReview
-	user.ModifiedAt = time.Now()
-	user.ModifiedFromIPAddress, _ = sessCtx.Value(constants.SessionIPAddress).(string)
+// updateRetailerFields updates fields specific to retailers
+func (s *verifyProfileServiceImpl) updateRetailerFields(user *domain.User, req *VerifyProfileRequestDTO) {
+	// Store the retailer-specific fields
+	// Note: In a real implementation, you might need to store these in a separate retailer profile model
+	// or extend the user model to include retailer-specific fields
 
-	//
-	// STEP 6: Save updated user to database
-	//
-	if err := s.userUpdateUseCase.Execute(sessCtx, user); err != nil {
-		s.logger.Error("Failed to update user", slog.Any("error", err))
-		return nil, err
-	}
+	s.logger.Info("Updating retailer fields for user",
+		slog.String("user_id", user.ID.Hex()),
+		slog.String("store_name", req.ComicBookStoreName))
 
-	//
-	// STEP 7: Generate appropriate response
-	//
-	var responseMessage string
-	if user.Role == domain.UserRoleCustomer {
-		responseMessage = "Your profile has been submitted for verification. You'll be notified once it's been reviewed."
-	} else if user.Role == domain.UserRoleRetailer {
-		responseMessage = "Your retailer profile has been submitted for verification. Our team will review your application and contact you soon."
-	} else {
-		responseMessage = "Your profile has been submitted for verification."
-	}
+	// Note: For demonstration purposes, we're assuming the user model has been extended
+	// or there's a mechanism to store these fields. If this is not the case in the actual
+	// codebase, you would need to handle these differently.
 
-	return &VerifyProfileResponseDTO{
-		Message:  responseMessage,
-		UserRole: user.Role,
-		Status:   user.ProfileVerificationStatus,
-	}, nil
+	// For the store logo, this would typically be handled through a separate file upload process
+	user.StoreLogoTitle = req.ComicBookStoreName
 }

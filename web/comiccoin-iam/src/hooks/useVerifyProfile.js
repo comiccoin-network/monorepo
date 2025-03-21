@@ -4,6 +4,13 @@ import { useNavigate } from "react-router";
 import { useVerifyProfile as useVerifyProfileAPI } from "../api/endpoints/verifyProfileApi";
 import { toast } from "react-toastify";
 
+// Define User Role constants to match backend Go code
+export const USER_ROLE = {
+  ROOT: 1, // Root user, has all permissions
+  RETAILER: 2, // Retailer
+  CUSTOMER: 3, // Customer/Individual
+};
+
 /**
  * Custom hook for handling profile verification
  * Wraps the API hook with navigation and user feedback handling
@@ -148,6 +155,7 @@ export function useVerifyProfile() {
       hasOtherGradingService: "has_other_grading_service",
       otherGradingServiceName: "other_grading_service_name",
       requestWelcomePackage: "request_welcome_package",
+      userRole: "user_role", // Add user_role mapping
     };
 
     // Transform each field
@@ -175,6 +183,7 @@ export function useVerifyProfile() {
           "how_long_store_operating",
           "has_other_grading_service",
           "request_welcome_package",
+          "user_role", // Include user_role in numeric fields
         ].includes(apiKey)
       ) {
         // Convert string to integer if it's numeric
@@ -189,6 +198,25 @@ export function useVerifyProfile() {
       }
     });
 
+    // Set default user role based on form data if not explicitly provided
+    if (!result.user_role) {
+      // If it has business-specific fields, it's a retailer
+      if (
+        result.comic_book_store_name ||
+        result.store_logo ||
+        result.retail_partnership_reason
+      ) {
+        result.user_role = USER_ROLE.RETAILER;
+      }
+      // If it has individual-specific fields, it's a customer
+      else if (
+        result.has_previously_submitted_comic_book_for_grading ||
+        result.has_owned_graded_comic_books
+      ) {
+        result.user_role = USER_ROLE.CUSTOMER;
+      }
+    }
+
     return result;
   };
 
@@ -196,15 +224,24 @@ export function useVerifyProfile() {
    * Handle form submission with backend validation
    *
    * @param {Object} formData - The form data to submit
+   * @param {number} [explicitUserRole] - Optional user role to override form-based detection
    * @returns {Promise<boolean>} Success status
    */
-  const submitVerification = async (formData) => {
+  const submitVerification = async (formData, explicitUserRole) => {
     try {
       setIsSubmitting(true);
       setFormErrors({});
 
+      // Create a copy of formData with the userRole if provided
+      const formDataWithRole = explicitUserRole
+        ? { ...formData, userRole: explicitUserRole }
+        : formData;
+
       // Transform data for API
-      const apiData = transformDataForApi(formData);
+      const apiData = transformDataForApi(formDataWithRole);
+
+      // Log the data being sent to the API for debugging
+      console.log("📤 Sending verification data:", apiData);
 
       // Submit data to API
       await verifyProfile(apiData);
@@ -243,6 +280,7 @@ export function useVerifyProfile() {
     apiError: error,
     success,
     reset,
+    USER_ROLE, // Export user role constants
   };
 }
 

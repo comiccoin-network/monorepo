@@ -16,7 +16,7 @@ import {
 
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
-import { useVerifyProfile } from "../hooks/useVerifyProfile";
+import { useVerifyProfile, USER_ROLE } from "../hooks/useVerifyProfile";
 
 // Hook to handle localStorage
 const useLocalStorage = (key, initialValue) => {
@@ -236,9 +236,9 @@ const VerificationIndividualPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Submit the form data to the backend for validation
-    // The backend will handle all validation and return errors if needed
-    await submitVerification(formData);
+    // Submit the form data to the backend for validation with explicit user role
+    // USER_ROLE.CUSTOMER = 3 in our backend (individual user)
+    await submitVerification(formData, USER_ROLE.CUSTOMER);
   };
 
   // How did you hear about us options
