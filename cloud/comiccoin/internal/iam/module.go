@@ -200,6 +200,12 @@ func NewModule(
 		userGetByIDUseCase,
 		userDeleteByIDUseCase,
 	)
+	verifyProfileService := svc_me.NewVerifyProfileService(
+		cfg,
+		logger,
+		userGetByIDUseCase,
+		userUpdateUseCase,
+	)
 
 	// --- Dashboard ---
 
@@ -254,7 +260,6 @@ func NewModule(
 		userUpdateUseCase,
 		sendUserPasswordResetEmailUseCase,
 	)
-
 	gatewayResetPasswordService := svc_gateway.NewGatewayResetPasswordService(
 		logger,
 		passp,
@@ -352,6 +357,12 @@ func NewModule(
 		dbClient,
 		getDasbhoardService,
 	)
+	postVerifyProfileHTTPHandler := http_me.NewPostVerifyProfileHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		verifyProfileService,
+	)
 
 	// --- HTTP Middleware ---
 
@@ -382,6 +393,7 @@ func NewModule(
 		postMeConnectWalletHTTPHandler,
 		putUpdateMeHTTPHandler,
 		deleteMeHTTPHandler,
+		postVerifyProfileHTTPHandler,
 		dashboardHTTPHandler,
 	)
 

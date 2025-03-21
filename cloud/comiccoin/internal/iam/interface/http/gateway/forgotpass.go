@@ -42,7 +42,7 @@ func (h *GatewayForgotPasswordHTTPHandler) unmarshalLoginRequest(
 
 	defer r.Body.Close()
 
-	h.logger.Debug("beginning to decode json payload for api request ...", slog.String("api", "/publiciam/api/v1/forgot-password"))
+	h.logger.Debug("beginning to decode json payload for api request ...", slog.String("api", "/iam/api/v1/forgot-password"))
 
 	var rawJSON bytes.Buffer
 	teeReader := io.TeeReader(r.Body, &rawJSON) // TeeReader allows you to read the JSON and capture it
@@ -58,7 +58,7 @@ func (h *GatewayForgotPasswordHTTPHandler) unmarshalLoginRequest(
 		return nil, httperror.NewForSingleField(http.StatusBadRequest, "non_field_error", "payload structure is wrong")
 	}
 
-	h.logger.Debug("successfully decoded json payload api request", slog.String("api", "/publiciam/api/v1/forgot-password"))
+	h.logger.Debug("successfully decoded json payload api request", slog.String("api", "/iam/api/v1/forgot-password"))
 
 	return &requestData, nil
 }

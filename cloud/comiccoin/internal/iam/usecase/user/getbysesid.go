@@ -47,7 +47,7 @@ func (uc *userGetBySessionIDUseCaseImpl) Execute(ctx context.Context, sessionID 
 	// STEP 2:
 	//
 
-	uc.logger.Debug("publiciam controller initialization started...")
+	uc.logger.Debug("iam controller initialization started...")
 
 	userBytes, err := uc.cache.Get(ctx, sessionID)
 	if err != nil {
@@ -64,7 +64,7 @@ func (uc *userGetBySessionIDUseCaseImpl) Execute(ctx context.Context, sessionID 
 		return nil, err
 	}
 
-	uc.logger.Debug("publiciam controller initialized")
+	uc.logger.Debug("iam controller initialized")
 
 	return &user, nil
 }

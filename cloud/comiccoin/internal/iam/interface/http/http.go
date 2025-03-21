@@ -60,6 +60,7 @@ type httpServerImpl struct {
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler
 	putUpdateMeHTTPHandler         *http_me.PutUpdateMeHTTPHandler
 	deleteMeHTTPHandler            *http_me.DeleteMeHTTPHandler
+	postVerifyProfileHTTPHandler   *http_me.PostVerifyProfileHTTPHandler
 
 	dashboard *http_dashboard.DashboardHTTPHandler
 }
@@ -81,6 +82,7 @@ func NewHTTPServer(
 	postMeConnectWalletHTTPHandler *http_me.PostMeConnectWalletHTTPHandler,
 	putUpdateMeHTTPHandler *http_me.PutUpdateMeHTTPHandler,
 	deleteMeHTTPHandler *http_me.DeleteMeHTTPHandler,
+	postVerifyProfileHTTPHandler *http_me.PostVerifyProfileHTTPHandler,
 	dashboard *http_dashboard.DashboardHTTPHandler,
 ) HTTPServer {
 
@@ -101,6 +103,7 @@ func NewHTTPServer(
 		deleteMeHTTPHandler:              deleteMeHTTPHandler,
 		postMeConnectWalletHTTPHandler:   postMeConnectWalletHTTPHandler,
 		putUpdateMeHTTPHandler:           putUpdateMeHTTPHandler,
+		postVerifyProfileHTTPHandler:     postVerifyProfileHTTPHandler,
 		dashboard:                        dashboard,
 	}
 
@@ -167,6 +170,8 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 			port.putUpdateMeHTTPHandler.Execute(w, r)
 		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "me" && p[4] == "delete" && r.Method == http.MethodPost:
 			port.deleteMeHTTPHandler.Execute(w, r)
+		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "me" && p[4] == "verify-profile" && r.Method == http.MethodPost:
+			port.postVerifyProfileHTTPHandler.Execute(w, r)
 
 		// Dashboard
 		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "dashboard" && r.Method == http.MethodGet:
