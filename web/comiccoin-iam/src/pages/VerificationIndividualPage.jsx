@@ -16,6 +16,7 @@ import {
 
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
+import { useVerifyProfile } from "../hooks/useVerifyProfile";
 
 // Hook to handle localStorage
 const useLocalStorage = (key, initialValue) => {
@@ -44,6 +45,7 @@ const useLocalStorage = (key, initialValue) => {
 
 const VerificationIndividualPage = () => {
   const navigate = useNavigate();
+  const { submitVerification, isSubmitting, formErrors } = useVerifyProfile();
 
   // Inline styles for select elements to fix Safari
   const selectStyles = {
@@ -89,9 +91,15 @@ const VerificationIndividualPage = () => {
     },
   );
 
-  // States for form handling
+  // Form errors state
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+
+  // Update our errors state with the formErrors from the hook
+  useEffect(() => {
+    if (formErrors && Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+    }
+  }, [formErrors]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -214,87 +222,23 @@ const VerificationIndividualPage = () => {
       ...prev,
       [name]: parseInt(value, 10),
     }));
+
+    // Clear error for this field if it exists
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: undefined,
+      }));
+    }
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form data
-    const newErrors = {};
-
-    // Required fields validation
-    if (!formData.addressLine1) newErrors.addressLine1 = "Address is required";
-    if (!formData.city) newErrors.city = "City is required";
-    if (!formData.country) newErrors.country = "Country is required";
-    if (!formData.region) newErrors.region = "State/Province is required";
-    if (!formData.postalCode)
-      newErrors.postalCode = "Postal/ZIP code is required";
-
-    // Validate shipping address if it's enabled
-    if (formData.hasShippingAddress) {
-      if (!formData.shippingName) newErrors.shippingName = "Name is required";
-      if (!formData.shippingAddressLine1)
-        newErrors.shippingAddressLine1 = "Address is required";
-      if (!formData.shippingCity) newErrors.shippingCity = "City is required";
-      if (!formData.shippingRegion)
-        newErrors.shippingRegion = "State/Province is required";
-      if (!formData.shippingCountry)
-        newErrors.shippingCountry = "Country is required";
-      if (!formData.shippingPostalCode)
-        newErrors.shippingPostalCode = "Postal/ZIP code is required";
-    }
-
-    // Validate "How did you hear about us" other field
-    if (
-      formData.howDidYouHearAboutUs === 6 &&
-      !formData.howDidYouHearAboutUsOther
-    ) {
-      newErrors.howDidYouHearAboutUsOther =
-        "Please specify how you heard about us";
-    }
-
-    // Validate Yes/No radio selections
-    if (formData.hasPreviouslySubmittedComicBookForGrading === 0) {
-      newErrors.hasPreviouslySubmittedComicBookForGrading =
-        "Please select an option";
-    }
-    if (formData.hasOwnedGradedComicBooks === 0) {
-      newErrors.hasOwnedGradedComicBooks = "Please select an option";
-    }
-    if (formData.hasRegularComicBookShop === 0) {
-      newErrors.hasRegularComicBookShop = "Please select an option";
-    }
-    if (formData.hasPreviouslyPurchasedFromAuctionSite === 0) {
-      newErrors.hasPreviouslyPurchasedFromAuctionSite =
-        "Please select an option";
-    }
-    if (formData.hasPreviouslyPurchasedFromFacebookMarketplace === 0) {
-      newErrors.hasPreviouslyPurchasedFromFacebookMarketplace =
-        "Please select an option";
-    }
-    if (formData.hasRegularlyAttendedComicConsOrCollectibleShows === 0) {
-      newErrors.hasRegularlyAttendedComicConsOrCollectibleShows =
-        "Please select an option";
-    }
-
-    // If there are errors, show them and don't proceed
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      // Scroll to the top to show errors
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
-    // Example submission flow
-    setIsLoading(true);
-    console.log("Submitting form data:", formData);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate("/verification/pending");
-    }, 1500);
+    // Submit the form data to the backend for validation
+    // The backend will handle all validation and return errors if needed
+    await submitVerification(formData);
   };
 
   // How did you hear about us options
@@ -360,7 +304,7 @@ const VerificationIndividualPage = () => {
 
             {/* Form Content */}
             <div className="p-5">
-              {isLoading ? (
+              {isSubmitting ? (
                 <div className="py-8 text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
                   <p className="text-gray-700">
@@ -659,9 +603,16 @@ const VerificationIndividualPage = () => {
                         name="howDidYouHearAboutUs"
                         value={formData.howDidYouHearAboutUs}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          errors.howDidYouHearAboutUs
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
                         style={selectStyles}
                         aria-required="true"
+                        aria-invalid={
+                          errors.howDidYouHearAboutUs ? "true" : "false"
+                        }
                       >
                         {referralSources.map((source) => (
                           <option key={source.value} value={source.value}>
@@ -669,6 +620,18 @@ const VerificationIndividualPage = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.howDidYouHearAboutUs && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.howDidYouHearAboutUs}
+                        </p>
+                      )}
 
                       {/* Show the "Other" text input if "Other" is selected */}
                       {formData.howDidYouHearAboutUs === 6 && (
@@ -742,9 +705,18 @@ const VerificationIndividualPage = () => {
                         name="howLongCollectingComicBooksForGrading"
                         value={formData.howLongCollectingComicBooksForGrading}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          errors.howLongCollectingComicBooksForGrading
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
                         style={selectStyles}
                         aria-required="true"
+                        aria-invalid={
+                          errors.howLongCollectingComicBooksForGrading
+                            ? "true"
+                            : "false"
+                        }
                       >
                         {experienceOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -752,6 +724,18 @@ const VerificationIndividualPage = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.howLongCollectingComicBooksForGrading && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.howLongCollectingComicBooksForGrading}
+                        </p>
+                      )}
                     </div>
 
                     {/* Yes/No Questions with radio buttons */}
@@ -1424,6 +1408,7 @@ const VerificationIndividualPage = () => {
                       type="submit"
                       className="flex items-center px-5 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                       aria-label="Submit your verification information"
+                      disabled={isSubmitting}
                     >
                       Submit Verification
                       <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />

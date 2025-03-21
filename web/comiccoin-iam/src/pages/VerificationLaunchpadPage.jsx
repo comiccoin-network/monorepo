@@ -1,25 +1,105 @@
 // src/pages/VerificationLaunchpadPage.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
+  UserRound,
+  Building2,
+  ShieldCheck,
+  Clock,
   ArrowRight,
-  ArrowLeft,
+  AlertCircle,
+  CheckCircle2,
+  Info,
   User,
-  Building,
-  Shield,
-  LogOut,
 } from "lucide-react";
 
-import { useAuth } from "../hooks/useAuth";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
+import { useAuth } from "../hooks/useAuth";
+import { useVerifyProfile } from "../hooks/useVerifyProfile";
 
 const VerificationLaunchpadPage = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user } = useAuth();
+  const { submitVerification, isSubmitting } = useVerifyProfile();
+  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+
+  // Define verification status constants
+  const VERIFICATION_STATUS = {
+    UNVERIFIED: 1, // The user's profile has not yet been submitted for verification
+    SUBMITTED_FOR_REVIEW: 2, // The user's profile has been submitted and is awaiting review
+    APPROVED: 3, // The user's profile has been approved
+    REJECTED: 4, // The user's profile has been rejected
+  };
+
+  // Define user role constants
+  const USER_ROLE = {
+    CUSTOMER: 1,
+    RETAILER: 2,
+    ADMIN: 3,
+  };
+
+  // Get the user's verification status and role when component mounts
+  useEffect(() => {
+    if (user) {
+      setVerificationStatus(
+        user.profile_verification_status || VERIFICATION_STATUS.UNVERIFIED,
+      );
+      setUserRole(user.role || USER_ROLE.CUSTOMER);
+    }
+  }, [user]);
+
+  // Redirect based on verification status
+  useEffect(() => {
+    // If status is already determined, handle redirects
+    if (verificationStatus) {
+      if (verificationStatus === VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW) {
+        navigate("/verification/pending");
+      } else if (verificationStatus === VERIFICATION_STATUS.REJECTED) {
+        navigate("/verification/rejected");
+      } else if (verificationStatus === VERIFICATION_STATUS.APPROVED) {
+        // If already verified, redirect to dashboard
+        navigate("/dashboard");
+      }
+    }
+  }, [verificationStatus, navigate]);
+
+  // Handle selection of verification path (individual or business)
+  const handleVerificationSelection = async (selectedRole) => {
+    if (isSubmitting) return; // Prevent multiple selections while processing
+
+    // Check if we need to update user role in the profile
+    if (user && user.role !== selectedRole) {
+      try {
+        // Send a basic verification with just the role selection
+        // The actual verification details will be collected on the next screens
+        await submitVerification({
+          user_role: selectedRole,
+        });
+
+        // Navigate to the appropriate verification form based on role
+        if (selectedRole === USER_ROLE.CUSTOMER) {
+          navigate("/verification/individual");
+        } else if (selectedRole === USER_ROLE.RETAILER) {
+          navigate("/verification/business");
+        }
+      } catch (error) {
+        console.error("Failed to select verification type:", error);
+        // Error will be handled by the hook
+      }
+    } else {
+      // No role update needed, just navigate to the appropriate verification form
+      if (selectedRole === USER_ROLE.CUSTOMER) {
+        navigate("/verification/individual");
+      } else if (selectedRole === USER_ROLE.RETAILER) {
+        navigate("/verification/business");
+      }
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Skip link for accessibility */}
       <a
         href="#main-content"
@@ -28,97 +108,233 @@ const VerificationLaunchpadPage = () => {
         Skip to main content
       </a>
 
-      <Header showButton={false} showBackButton={false} />
+      <Header showButton={false} showBackButton={true} />
 
       <main id="main-content" className="flex-grow">
-        {/* Hero section */}
-        <div className="bg-gradient-to-b from-indigo-600 to-indigo-500 text-white py-12 sm:py-16 lg:py-20 mb-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                Account Verification
-              </h1>
-              <p className="text-base sm:text-lg lg:text-xl text-indigo-100 max-w-3xl mx-auto">
-                Complete your account verification to access all ComicCoin
-                features
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Main Content */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="bg-white rounded-xl shadow-lg border border-purple-100 overflow-hidden mb-8">
-            {/* Content Header */}
-            <div className="px-6 py-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center">
-              <Shield className="h-7 w-7 mr-3 flex-shrink-0" />
-              <div>
-                <h2 className="text-xl font-semibold">
-                  Select Verification Type
-                </h2>
-                <p className="text-purple-100 text-sm mt-1">
-                  Choose the verification option that best applies to you
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            {/* Page Header */}
+            <div className="px-6 py-4 bg-purple-600 text-white">
+              <div className="flex items-center">
+                <ShieldCheck
+                  className="h-6 w-6 mr-3 flex-shrink-0"
+                  aria-hidden="true"
+                />
+                <div>
+                  <h1 className="text-xl font-medium">Profile Verification</h1>
+                  <p className="text-sm text-purple-100 mt-0.5">
+                    Verify your profile to access all features
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Loading State */}
+            {isSubmitting ? (
+              <div className="p-6 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                <p className="text-gray-700">
+                  Processing your verification selection...
                 </p>
               </div>
-            </div>
-
-            {/* Content Body */}
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Individual Verification Card */}
-                <Link
-                  to="/verification/individual"
-                  className="bg-white rounded-xl p-6 border border-purple-100 hover:border-purple-400 hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center"
-                >
-                  <div className="bg-purple-100 rounded-full p-4 mb-4">
-                    <User className="h-12 w-12 text-purple-600" />
+            ) : (
+              <div className="p-6">
+                {/* Information Box */}
+                <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="flex">
+                    <Info className="h-5 w-5 text-blue-500 mr-3 flex-shrink-0" />
+                    <div>
+                      <h2 className="text-md font-medium text-blue-700">
+                        Why verify your profile?
+                      </h2>
+                      <p className="mt-1 text-sm text-blue-600">
+                        Profile verification helps us ensure the security of the
+                        ComicCoin network and provides you with full access to
+                        all features. Your information is kept secure and only
+                        used for verification purposes.
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-purple-800 mb-2">
-                    Individual Verification
-                  </h3>
-                  <p className="text-gray-600 mb-6 flex-grow">
-                    Verify your personal identity to access all ComicCoin
-                    features
-                  </p>
-                  <span className="inline-flex items-center gap-2 text-purple-600 font-semibold text-lg">
-                    Start Individual Verification
-                    <ArrowRight className="w-5 h-5" />
-                  </span>
-                </Link>
+                </div>
 
-                {/* Business Verification Card */}
-                <Link
-                  to="/verification/business"
-                  className="bg-white rounded-xl p-6 border border-purple-100 hover:border-purple-400 hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center"
-                >
-                  <div className="bg-purple-100 rounded-full p-4 mb-4">
-                    <Building className="h-12 w-12 text-purple-600" />
+                {/* Choose Verification Type */}
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  Choose your verification type
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Individual Verification Card */}
+                  <div
+                    onClick={() =>
+                      handleVerificationSelection(USER_ROLE.CUSTOMER)
+                    }
+                    className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center">
+                        <UserRound
+                          className="h-6 w-6 text-purple-600"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      {user && user.role === USER_ROLE.CUSTOMER && (
+                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                          Current selection
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">
+                      Individual Collector
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      For comic book fans and individual collectors looking to
+                      grade and secure their collection.
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                        Personal verification
+                      </span>
+                      <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                        Individual accounts
+                      </span>
+                    </div>
+                    <button className="w-full mt-2 flex items-center justify-center px-4 py-2 border border-purple-300 text-sm text-purple-700 font-medium rounded-md hover:bg-purple-50">
+                      Continue as Individual
+                      <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                    </button>
                   </div>
-                  <h3 className="text-xl font-bold text-purple-800 mb-2">
-                    Business Verification
-                  </h3>
-                  <p className="text-gray-600 mb-6 flex-grow">
-                    Verify your business identity for enhanced commercial
-                    features
-                  </p>
-                  <span className="inline-flex items-center gap-2 text-purple-600 font-semibold text-lg">
-                    Start Business Verification
-                    <ArrowRight className="w-5 h-5" />
-                  </span>
-                </Link>
-              </div>
 
-              {/* Navigation Buttons */}
-              <div className="mt-8 flex justify-center">
-                <button
-                  onClick={() => logout()} // Call the logout function from useAuth hook
-                  className="px-6 py-3 bg-red-600 text-white border border-red-700 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center"
-                >
-                  <LogOut className="mr-2 h-5 w-5" />
-                  Sign Out
-                </button>
+                  {/* Business Verification Card */}
+                  <div
+                    onClick={() =>
+                      handleVerificationSelection(USER_ROLE.RETAILER)
+                    }
+                    className="border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center">
+                        <Building2
+                          className="h-6 w-6 text-purple-600"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      {user && user.role === USER_ROLE.RETAILER && (
+                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                          Current selection
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">
+                      Business / Retailer
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      For comic book shops, dealers, and businesses that handle
+                      comic grading professionally.
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                        Business verification
+                      </span>
+                      <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                        Retailer benefits
+                      </span>
+                    </div>
+                    <button className="w-full mt-2 flex items-center justify-center px-4 py-2 border border-purple-300 text-sm text-purple-700 font-medium rounded-md hover:bg-purple-50">
+                      Continue as Business
+                      <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Verification Steps */}
+                <div className="mt-8">
+                  <h3 className="text-md font-medium text-gray-900 mb-4">
+                    Verification Process
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-purple-100 text-purple-500 mr-3">
+                        1
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          Select your verification type
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          Choose either individual collector or
+                          business/retailer verification.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-purple-100 text-purple-500 mr-3">
+                        2
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          Complete verification form
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          Fill out your personal or business information for
+                          verification.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-purple-100 text-purple-500 mr-3">
+                        3
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          Wait for approval
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          Our team will review your submission within 1-2
+                          business days.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-purple-100 text-purple-500 mr-3">
+                        4
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          Access all features
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          Once approved, you'll have full access to all
+                          ComicCoin features.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Help Section */}
+                <div className="mt-8 border-t pt-6">
+                  <div className="flex items-center">
+                    <h3 className="text-md font-medium text-gray-900">
+                      Need help?
+                    </h3>
+                    <Link
+                      to="/help"
+                      className="ml-3 text-sm text-purple-600 hover:text-purple-700"
+                    >
+                      View Help Center
+                    </Link>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-600">
+                    If you have any questions about the verification process,
+                    please visit our Help Center or contact our support team.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>

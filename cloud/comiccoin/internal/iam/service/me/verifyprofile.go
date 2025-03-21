@@ -132,8 +132,11 @@ func (s *verifyProfileServiceImpl) Execute(
 	if req.AddressLine1 == "" {
 		e["address_line1"] = "Address is required"
 	}
+	if req.PostalCode == "" {
+		e["postal_code"] = "Postal code is required"
+	}
 	if req.HowDidYouHearAboutUs == 0 {
-		e["how_did_you_hear_about_us"] = "This field is required"
+		e["how_did_you_hear_about_us"] = "How did you hear about us is required"
 	}
 	if req.HowDidYouHearAboutUs == 7 && req.HowDidYouHearAboutUsOther == "" { // Assuming 7 is "Other"
 		e["how_did_you_hear_about_us_other"] = "Please specify how you heard about us"
@@ -156,31 +159,34 @@ func (s *verifyProfileServiceImpl) Execute(
 		if req.ShippingAddressLine1 == "" {
 			e["shipping_address_line1"] = "Shipping address is required"
 		}
+		if req.ShippingPostalCode == "" {
+			e["shipping_postal_code"] = "Shipping postal code is required"
+		}
 	}
 
 	// Role-specific validation
 	if user.Role == domain.UserRoleCustomer {
 		// Validate customer-specific fields
 		if req.HowLongCollectingComicBooksForGrading == 0 {
-			e["how_long_collecting_comic_books_for_grading"] = "This field is required"
+			e["how_long_collecting_comic_books_for_grading"] = "How long you've been collecting comic books for grading is required"
 		}
 		if req.HasPreviouslySubmittedComicBookForGrading == 0 {
-			e["has_previously_submitted_comic_book_for_grading"] = "This field is required"
+			e["has_previously_submitted_comic_book_for_grading"] = "Previous submission information is required"
 		}
 		if req.HasOwnedGradedComicBooks == 0 {
-			e["has_owned_graded_comic_books"] = "This field is required"
+			e["has_owned_graded_comic_books"] = "Information about owning graded comic books is required"
 		}
 		if req.HasRegularComicBookShop == 0 {
-			e["has_regular_comic_book_shop"] = "This field is required"
+			e["has_regular_comic_book_shop"] = "Regular comic book shop information is required"
 		}
 		if req.HasPreviouslyPurchasedFromAuctionSite == 0 {
-			e["has_previously_purchased_from_auction_site"] = "This field is required"
+			e["has_previously_purchased_from_auction_site"] = "Auction site purchase information is required"
 		}
 		if req.HasPreviouslyPurchasedFromFacebookMarketplace == 0 {
-			e["has_previously_purchased_from_facebook_marketplace"] = "This field is required"
+			e["has_previously_purchased_from_facebook_marketplace"] = "Facebook Marketplace purchase information is required"
 		}
 		if req.HasRegularlyAttendedComicConsOrCollectibleShows == 0 {
-			e["has_regularly_attended_comic_cons_or_collectible_shows"] = "This field is required"
+			e["has_regularly_attended_comic_cons_or_collectible_shows"] = "Comic convention attendance information is required"
 		}
 	} else if user.Role == domain.UserRoleRetailer {
 		// Validate retailer-specific fields
@@ -188,28 +194,28 @@ func (s *verifyProfileServiceImpl) Execute(
 			e["comic_book_store_name"] = "Store name is required"
 		}
 		if req.HowLongStoreOperating == 0 {
-			e["how_long_store_operating"] = "This field is required"
+			e["how_long_store_operating"] = "Store operation duration is required"
 		}
 		if req.GradingComicsExperience == "" {
-			e["grading_comics_experience"] = "This field is required"
+			e["grading_comics_experience"] = "Grading comics experience is required"
 		}
 		if req.RetailPartnershipReason == "" {
-			e["retail_partnership_reason"] = "This field is required"
+			e["retail_partnership_reason"] = "Retail partnership reason is required"
 		}
 		if req.CPSPartnershipReason == "" {
-			e["cps_partnership_reason"] = "This field is required"
+			e["cps_partnership_reason"] = "CPS partnership reason is required"
 		}
 		if req.EstimatedSubmissionsPerMonth == 0 {
-			e["estimated_submissions_per_month"] = "This field is required"
+			e["estimated_submissions_per_month"] = "Estimated submissions per month is required"
 		}
 		if req.HasOtherGradingService == 0 {
-			e["has_other_grading_service"] = "This field is required"
+			e["has_other_grading_service"] = "Other grading service information is required"
 		}
 		if req.HasOtherGradingService == 1 && req.OtherGradingServiceName == "" {
 			e["other_grading_service_name"] = "Please specify the grading service"
 		}
 		if req.RequestWelcomePackage == 0 {
-			e["request_welcome_package"] = "This field is required"
+			e["request_welcome_package"] = "Welcome package request information is required"
 		}
 	}
 

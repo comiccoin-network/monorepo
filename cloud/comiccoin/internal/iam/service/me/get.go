@@ -73,8 +73,8 @@ type MeResponseDTO struct {
 	// HasPreviouslyPurchasedFromAuctionSite           int8               `bson:"has_previously_purchased_from_auction_site" json:"has_previously_purchased_from_auction_site"`
 	// HasPreviouslyPurchasedFromFacebookMarketplace   int8               `bson:"has_previously_purchased_from_facebook_marketplace" json:"has_previously_purchased_from_facebook_marketplace"`
 	// HasRegularlyAttendedComicConsOrCollectibleShows int8               `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
-	WalletAddress *common.Address `bson:"wallet_address" json:"wallet_address"`
-	// ProfileVerificationStatus                       int8               `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
+	WalletAddress             *common.Address `bson:"wallet_address" json:"wallet_address"`
+	ProfileVerificationStatus int8            `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
 }
 
 type GetMeService interface {
@@ -142,6 +142,7 @@ func (svc *getMeServiceImpl) Execute(sessCtx mongo.SessionContext) (*MeResponseD
 		Timezone:        user.Timezone,
 		AgreePromotions: user.AgreePromotions,
 		AgreeToTrackingAcrossThirdPartyAppsAndServices: user.AgreeToTrackingAcrossThirdPartyAppsAndServices,
-		WalletAddress: user.WalletAddress,
+		WalletAddress:             user.WalletAddress,
+		ProfileVerificationStatus: user.ProfileVerificationStatus,
 	}, nil
 }
