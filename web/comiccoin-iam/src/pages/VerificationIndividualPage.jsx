@@ -1,6 +1,7 @@
 // src/pages/VerificationIndividualPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
+import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
 import {
   ArrowLeft,
   ArrowRight,
@@ -60,6 +61,7 @@ const VerificationIndividualPage = () => {
       city: "",
       region: "",
       country: "",
+      country_other: "",
       postalCode: "",
       howDidYouHearAboutUs: 0,
       howDidYouHearAboutUsOther: "",
@@ -89,6 +91,7 @@ const VerificationIndividualPage = () => {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -99,6 +102,38 @@ const VerificationIndividualPage = () => {
       setErrors((prev) => ({
         ...prev,
         [name]: undefined,
+      }));
+    }
+  };
+
+  // Special handlers for country and region dropdowns from the library
+  const selectCountry = (val) => {
+    setFormData((prev) => ({
+      ...prev,
+      country: val,
+      region: "", // Reset region when country changes
+    }));
+
+    // Clear country error if it exists
+    if (errors.country) {
+      setErrors((prev) => ({
+        ...prev,
+        country: undefined,
+      }));
+    }
+  };
+
+  const selectRegion = (val) => {
+    setFormData((prev) => ({
+      ...prev,
+      region: val,
+    }));
+
+    // Clear region error if it exists
+    if (errors.region) {
+      setErrors((prev) => ({
+        ...prev,
+        region: undefined,
       }));
     }
   };
@@ -131,8 +166,8 @@ const VerificationIndividualPage = () => {
     // Required fields validation
     if (!formData.addressLine1) newErrors.addressLine1 = "Address is required";
     if (!formData.city) newErrors.city = "City is required";
-    if (!formData.region) newErrors.region = "State/Province is required";
     if (!formData.country) newErrors.country = "Country is required";
+    if (!formData.region) newErrors.region = "State/Province is required";
     if (!formData.postalCode)
       newErrors.postalCode = "Postal/ZIP code is required";
 
@@ -159,6 +194,30 @@ const VerificationIndividualPage = () => {
         "Please specify how you heard about us";
     }
 
+    // Validate Yes/No radio selections
+    if (formData.hasPreviouslySubmittedComicBookForGrading === 0) {
+      newErrors.hasPreviouslySubmittedComicBookForGrading =
+        "Please select an option";
+    }
+    if (formData.hasOwnedGradedComicBooks === 0) {
+      newErrors.hasOwnedGradedComicBooks = "Please select an option";
+    }
+    if (formData.hasRegularComicBookShop === 0) {
+      newErrors.hasRegularComicBookShop = "Please select an option";
+    }
+    if (formData.hasPreviouslyPurchasedFromAuctionSite === 0) {
+      newErrors.hasPreviouslyPurchasedFromAuctionSite =
+        "Please select an option";
+    }
+    if (formData.hasPreviouslyPurchasedFromFacebookMarketplace === 0) {
+      newErrors.hasPreviouslyPurchasedFromFacebookMarketplace =
+        "Please select an option";
+    }
+    if (formData.hasRegularlyAttendedComicConsOrCollectibleShows === 0) {
+      newErrors.hasRegularlyAttendedComicConsOrCollectibleShows =
+        "Please select an option";
+    }
+
     // If there are errors, show them and don't proceed
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -178,73 +237,7 @@ const VerificationIndividualPage = () => {
     }, 1500);
   };
 
-  // Countries for dropdown
-  const countries = [
-    { value: "", label: "Select Country..." },
-    { value: "us", label: "United States" },
-    { value: "ca", label: "Canada" },
-    { value: "uk", label: "United Kingdom" },
-    { value: "au", label: "Australia" },
-    { value: "de", label: "Germany" },
-    { value: "fr", label: "France" },
-    { value: "jp", label: "Japan" },
-    { value: "other", label: "Other" },
-  ];
-
-  // Regions/States for US
-  const usRegions = [
-    { value: "", label: "Select State..." },
-    { value: "AL", label: "Alabama" },
-    { value: "AK", label: "Alaska" },
-    { value: "AZ", label: "Arizona" },
-    { value: "AR", label: "Arkansas" },
-    { value: "CA", label: "California" },
-    { value: "CO", label: "Colorado" },
-    { value: "CT", label: "Connecticut" },
-    { value: "DE", label: "Delaware" },
-    { value: "FL", label: "Florida" },
-    { value: "GA", label: "Georgia" },
-    { value: "HI", label: "Hawaii" },
-    { value: "ID", label: "Idaho" },
-    { value: "IL", label: "Illinois" },
-    { value: "IN", label: "Indiana" },
-    { value: "IA", label: "Iowa" },
-    { value: "KS", label: "Kansas" },
-    { value: "KY", label: "Kentucky" },
-    { value: "LA", label: "Louisiana" },
-    { value: "ME", label: "Maine" },
-    { value: "MD", label: "Maryland" },
-    { value: "MA", label: "Massachusetts" },
-    { value: "MI", label: "Michigan" },
-    { value: "MN", label: "Minnesota" },
-    { value: "MS", label: "Mississippi" },
-    { value: "MO", label: "Missouri" },
-    { value: "MT", label: "Montana" },
-    { value: "NE", label: "Nebraska" },
-    { value: "NV", label: "Nevada" },
-    { value: "NH", label: "New Hampshire" },
-    { value: "NJ", label: "New Jersey" },
-    { value: "NM", label: "New Mexico" },
-    { value: "NY", label: "New York" },
-    { value: "NC", label: "North Carolina" },
-    { value: "ND", label: "North Dakota" },
-    { value: "OH", label: "Ohio" },
-    { value: "OK", label: "Oklahoma" },
-    { value: "OR", label: "Oregon" },
-    { value: "PA", label: "Pennsylvania" },
-    { value: "RI", label: "Rhode Island" },
-    { value: "SC", label: "South Carolina" },
-    { value: "SD", label: "South Dakota" },
-    { value: "TN", label: "Tennessee" },
-    { value: "TX", label: "Texas" },
-    { value: "UT", label: "Utah" },
-    { value: "VT", label: "Vermont" },
-    { value: "VA", label: "Virginia" },
-    { value: "WA", label: "Washington" },
-    { value: "WV", label: "West Virginia" },
-    { value: "WI", label: "Wisconsin" },
-    { value: "WY", label: "Wyoming" },
-  ];
+  // The library handles countries and regions internally
 
   // How did you hear about us options
   const referralSources = [
@@ -267,9 +260,8 @@ const VerificationIndividualPage = () => {
     { value: 5, label: "More than 10 years" },
   ];
 
-  // Yes/No options
+  // Yes/No options for radio buttons
   const yesNoOptions = [
-    { value: 0, label: "Select an option..." },
     { value: 1, label: "Yes" },
     { value: 2, label: "No" },
   ];
@@ -411,152 +403,88 @@ const VerificationIndividualPage = () => {
                       />
                     </div>
 
-                    {/* City, State/Province, ZIP/Postal Code in a grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {/* City */}
-                      <div>
-                        <label
-                          htmlFor="city"
-                          className="block text-sm text-gray-700 mb-1"
+                    {/* City */}
+                    <div className="mb-3">
+                      <label
+                        htmlFor="city"
+                        className="block text-sm text-gray-700 mb-1"
+                      >
+                        City <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          errors.city
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="City/Town"
+                        aria-required="true"
+                        aria-invalid={errors.city ? "true" : "false"}
+                      />
+                      {errors.city && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
                         >
-                          City <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="city"
-                          name="city"
-                          value={formData.city}
-                          onChange={handleInputChange}
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                            errors.city
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
-                          placeholder="City/Town"
-                          aria-required="true"
-                          aria-invalid={errors.city ? "true" : "false"}
-                        />
-                        {errors.city && (
-                          <p
-                            className="mt-1 text-xs text-red-600 flex items-center"
-                            aria-live="polite"
-                          >
-                            <AlertCircle
-                              className="h-3 w-3 mr-1"
-                              aria-hidden="true"
-                            />
-                            {errors.city}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* State/Province */}
-                      <div>
-                        <label
-                          htmlFor="region"
-                          className="block text-sm text-gray-700 mb-1"
-                        >
-                          State/Province <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          id="region"
-                          name="region"
-                          value={formData.region}
-                          onChange={handleInputChange}
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                            errors.region
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
-                          aria-required="true"
-                          aria-invalid={errors.region ? "true" : "false"}
-                        >
-                          {usRegions.map((region) => (
-                            <option key={region.value} value={region.value}>
-                              {region.label}
-                            </option>
-                          ))}
-                        </select>
-                        {errors.region && (
-                          <p
-                            className="mt-1 text-xs text-red-600 flex items-center"
-                            aria-live="polite"
-                          >
-                            <AlertCircle
-                              className="h-3 w-3 mr-1"
-                              aria-hidden="true"
-                            />
-                            {errors.region}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* ZIP/Postal Code */}
-                      <div>
-                        <label
-                          htmlFor="postalCode"
-                          className="block text-sm text-gray-700 mb-1"
-                        >
-                          ZIP/Postal Code{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="postalCode"
-                          name="postalCode"
-                          value={formData.postalCode}
-                          onChange={handleInputChange}
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                            errors.postalCode
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
-                          placeholder="ZIP or Postal Code"
-                          aria-required="true"
-                          aria-invalid={errors.postalCode ? "true" : "false"}
-                        />
-                        {errors.postalCode && (
-                          <p
-                            className="mt-1 text-xs text-red-600 flex items-center"
-                            aria-live="polite"
-                          >
-                            <AlertCircle
-                              className="h-3 w-3 mr-1"
-                              aria-hidden="true"
-                            />
-                            {errors.postalCode}
-                          </p>
-                        )}
-                      </div>
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.city}
+                        </p>
+                      )}
                     </div>
 
-                    {/* Country */}
-                    <div className="mt-3">
+                    {/* Country - Fixing the dropdown styling */}
+                    <div className="mb-3">
                       <label
                         htmlFor="country"
                         className="block text-sm text-gray-700 mb-1"
                       >
                         Country <span className="text-red-500">*</span>
                       </label>
-                      <select
-                        id="country"
-                        name="country"
-                        value={formData.country}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          errors.country
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        aria-required="true"
-                        aria-invalid={errors.country ? "true" : "false"}
-                      >
-                        {countries.map((country) => (
-                          <option key={country.value} value={country.value}>
-                            {country.label}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <CountryDropdown
+                          id="country"
+                          name="country"
+                          value={formData.country}
+                          onChange={selectCountry}
+                          classes={`w-full px-3 py-2 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${
+                            errors.country ? "border-red-300 bg-red-50" : ""
+                          }`}
+                          valueType="short"
+                          aria-required="true"
+                          aria-invalid={errors.country ? "true" : "false"}
+                          priorityOptions={["US", "CA", "GB", "AU"]}
+                          defaultOptionLabel="Select Country..."
+                          style={{
+                            appearance: "none", // Critical for removing browser styling
+                            WebkitAppearance: "none",
+                            MozAppearance: "none",
+                          }}
+                        />
+                        {/* Custom dropdown arrow for visual consistency */}
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                          <svg
+                            className="h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
                       {errors.country && (
                         <p
                           className="mt-1 text-xs text-red-600 flex items-center"
@@ -567,6 +495,108 @@ const VerificationIndividualPage = () => {
                             aria-hidden="true"
                           />
                           {errors.country}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* State/Province - Fixing the dropdown styling */}
+                    <div className="mb-3">
+                      <label
+                        htmlFor="region"
+                        className="block text-sm text-gray-700 mb-1"
+                      >
+                        State/Province <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <RegionDropdown
+                          id="region"
+                          name="region"
+                          country={formData.country}
+                          value={formData.region}
+                          onChange={selectRegion}
+                          classes={`w-full px-3 py-2 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${
+                            errors.region ? "border-red-300 bg-red-50" : ""
+                          }`}
+                          countryValueType="short"
+                          valueType="short"
+                          disableWhenEmpty={true}
+                          aria-required="true"
+                          aria-invalid={errors.region ? "true" : "false"}
+                          defaultOptionLabel={
+                            formData.country
+                              ? "Select Region..."
+                              : "Select Country First"
+                          }
+                          style={{
+                            appearance: "none", // Critical for removing browser styling
+                            WebkitAppearance: "none",
+                            MozAppearance: "none",
+                          }}
+                        />
+                        {/* Custom dropdown arrow for visual consistency */}
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                          <svg
+                            className="h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      {errors.region && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.region}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* ZIP/Postal Code */}
+                    <div>
+                      <label
+                        htmlFor="postalCode"
+                        className="block text-sm text-gray-700 mb-1"
+                      >
+                        ZIP/Postal Code <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="postalCode"
+                        name="postalCode"
+                        value={formData.postalCode}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          errors.postalCode
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="ZIP or Postal Code"
+                        aria-required="true"
+                        aria-invalid={errors.postalCode ? "true" : "false"}
+                      />
+                      {errors.postalCode && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.postalCode}
                         </p>
                       )}
                     </div>
@@ -691,162 +721,310 @@ const VerificationIndividualPage = () => {
                       </select>
                     </div>
 
-                    {/* Yes/No Questions in grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Yes/No Questions with radio buttons */}
+                    <div className="space-y-4">
                       {/* Previously submitted for grading */}
                       <div>
-                        <label
-                          htmlFor="hasPreviouslySubmittedComicBookForGrading"
-                          className="block text-sm text-gray-700 mb-1"
-                        >
-                          Have you previously submitted comic books for grading?{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          id="hasPreviouslySubmittedComicBookForGrading"
-                          name="hasPreviouslySubmittedComicBookForGrading"
-                          value={
-                            formData.hasPreviouslySubmittedComicBookForGrading
-                          }
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
-                          aria-required="true"
-                        >
-                          {yesNoOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Have you previously submitted comic books for
+                            grading? <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasPreviouslySubmittedComicBookForGrading-${option.value}`}
+                                  name="hasPreviouslySubmittedComicBookForGrading"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasPreviouslySubmittedComicBookForGrading ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasPreviouslySubmittedComicBookForGrading-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasPreviouslySubmittedComicBookForGrading && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.hasPreviouslySubmittedComicBookForGrading}
+                            </p>
+                          )}
+                        </fieldset>
                       </div>
 
                       {/* Owned graded comics */}
                       <div>
-                        <label
-                          htmlFor="hasOwnedGradedComicBooks"
-                          className="block text-sm text-gray-700 mb-1"
-                        >
-                          Have you owned graded comic books?{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          id="hasOwnedGradedComicBooks"
-                          name="hasOwnedGradedComicBooks"
-                          value={formData.hasOwnedGradedComicBooks}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
-                          aria-required="true"
-                        >
-                          {yesNoOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Have you owned graded comic books?{" "}
+                            <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasOwnedGradedComicBooks-${option.value}`}
+                                  name="hasOwnedGradedComicBooks"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasOwnedGradedComicBooks ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasOwnedGradedComicBooks-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasOwnedGradedComicBooks && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.hasOwnedGradedComicBooks}
+                            </p>
+                          )}
+                        </fieldset>
                       </div>
 
                       {/* Regular comic book shop */}
                       <div>
-                        <label
-                          htmlFor="hasRegularComicBookShop"
-                          className="block text-sm text-gray-700 mb-1"
-                        >
-                          Do you have a regular comic book shop?{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          id="hasRegularComicBookShop"
-                          name="hasRegularComicBookShop"
-                          value={formData.hasRegularComicBookShop}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
-                          aria-required="true"
-                        >
-                          {yesNoOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Do you have a regular comic book shop?{" "}
+                            <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasRegularComicBookShop-${option.value}`}
+                                  name="hasRegularComicBookShop"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasRegularComicBookShop ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasRegularComicBookShop-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasRegularComicBookShop && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.hasRegularComicBookShop}
+                            </p>
+                          )}
+                        </fieldset>
                       </div>
 
                       {/* Purchased from auction sites */}
                       <div>
-                        <label
-                          htmlFor="hasPreviouslyPurchasedFromAuctionSite"
-                          className="block text-sm text-gray-700 mb-1"
-                        >
-                          Have you purchased from auction sites?{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          id="hasPreviouslyPurchasedFromAuctionSite"
-                          name="hasPreviouslyPurchasedFromAuctionSite"
-                          value={formData.hasPreviouslyPurchasedFromAuctionSite}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
-                          aria-required="true"
-                        >
-                          {yesNoOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Have you purchased from auction sites?{" "}
+                            <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasPreviouslyPurchasedFromAuctionSite-${option.value}`}
+                                  name="hasPreviouslyPurchasedFromAuctionSite"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasPreviouslyPurchasedFromAuctionSite ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasPreviouslyPurchasedFromAuctionSite-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasPreviouslyPurchasedFromAuctionSite && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.hasPreviouslyPurchasedFromAuctionSite}
+                            </p>
+                          )}
+                        </fieldset>
                       </div>
 
                       {/* Purchased from Facebook Marketplace */}
                       <div>
-                        <label
-                          htmlFor="hasPreviouslyPurchasedFromFacebookMarketplace"
-                          className="block text-sm text-gray-700 mb-1"
-                        >
-                          Have you purchased from Facebook Marketplace?{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          id="hasPreviouslyPurchasedFromFacebookMarketplace"
-                          name="hasPreviouslyPurchasedFromFacebookMarketplace"
-                          value={
-                            formData.hasPreviouslyPurchasedFromFacebookMarketplace
-                          }
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
-                          aria-required="true"
-                        >
-                          {yesNoOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Have you purchased from Facebook Marketplace?{" "}
+                            <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasPreviouslyPurchasedFromFacebookMarketplace-${option.value}`}
+                                  name="hasPreviouslyPurchasedFromFacebookMarketplace"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasPreviouslyPurchasedFromFacebookMarketplace ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasPreviouslyPurchasedFromFacebookMarketplace-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasPreviouslyPurchasedFromFacebookMarketplace && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {
+                                errors.hasPreviouslyPurchasedFromFacebookMarketplace
+                              }
+                            </p>
+                          )}
+                        </fieldset>
                       </div>
 
                       {/* Attended comic cons or collectible shows */}
                       <div>
-                        <label
-                          htmlFor="hasRegularlyAttendedComicConsOrCollectibleShows"
-                          className="block text-sm text-gray-700 mb-1"
-                        >
-                          Do you attend comic cons or collectible shows?{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          id="hasRegularlyAttendedComicConsOrCollectibleShows"
-                          name="hasRegularlyAttendedComicConsOrCollectibleShows"
-                          value={
-                            formData.hasRegularlyAttendedComicConsOrCollectibleShows
-                          }
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
-                          aria-required="true"
-                        >
-                          {yesNoOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Do you attend comic cons or collectible shows?{" "}
+                            <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasRegularlyAttendedComicConsOrCollectibleShows-${option.value}`}
+                                  name="hasRegularlyAttendedComicConsOrCollectibleShows"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasRegularlyAttendedComicConsOrCollectibleShows ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasRegularlyAttendedComicConsOrCollectibleShows-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasRegularlyAttendedComicConsOrCollectibleShows && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {
+                                errors.hasRegularlyAttendedComicConsOrCollectibleShows
+                              }
+                            </p>
+                          )}
+                        </fieldset>
                       </div>
                     </div>
                   </div>
@@ -1052,7 +1230,7 @@ const VerificationIndividualPage = () => {
                             )}
                           </div>
 
-                          {/* Shipping Region/State */}
+                          {/* Shipping Region/State - With fixed styling */}
                           <div>
                             <label
                               htmlFor="shippingRegion"
@@ -1061,27 +1239,65 @@ const VerificationIndividualPage = () => {
                               State/Province{" "}
                               <span className="text-red-500">*</span>
                             </label>
-                            <select
-                              id="shippingRegion"
-                              name="shippingRegion"
-                              value={formData.shippingRegion}
-                              onChange={handleInputChange}
-                              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                                errors.shippingRegion
-                                  ? "border-red-300 bg-red-50"
-                                  : "border-gray-300"
-                              }`}
-                              aria-required="true"
-                              aria-invalid={
-                                errors.shippingRegion ? "true" : "false"
-                              }
-                            >
-                              {usRegions.map((region) => (
-                                <option key={region.value} value={region.value}>
-                                  {region.label}
-                                </option>
-                              ))}
-                            </select>
+                            <div className="relative">
+                              <RegionDropdown
+                                id="shippingRegion"
+                                name="shippingRegion"
+                                country={formData.shippingCountry}
+                                value={formData.shippingRegion}
+                                onChange={(val) => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    shippingRegion: val,
+                                  }));
+                                  // Clear error if it exists
+                                  if (errors.shippingRegion) {
+                                    setErrors((prev) => ({
+                                      ...prev,
+                                      shippingRegion: undefined,
+                                    }));
+                                  }
+                                }}
+                                classes={`w-full px-3 py-2 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${
+                                  errors.shippingRegion
+                                    ? "border-red-300 bg-red-50"
+                                    : ""
+                                }`}
+                                countryValueType="short"
+                                valueType="short"
+                                disableWhenEmpty={true}
+                                aria-required="true"
+                                aria-invalid={
+                                  errors.shippingRegion ? "true" : "false"
+                                }
+                                defaultOptionLabel={
+                                  formData.shippingCountry
+                                    ? "Select Region..."
+                                    : "Select Country First"
+                                }
+                                style={{
+                                  appearance: "none",
+                                  WebkitAppearance: "none",
+                                  MozAppearance: "none",
+                                }}
+                              />
+                              {/* Custom dropdown arrow for visual consistency */}
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <svg
+                                  className="h-5 w-5"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              </div>
+                            </div>
                             {errors.shippingRegion && (
                               <p
                                 className="mt-1 text-xs text-red-600 flex items-center"
@@ -1137,7 +1353,7 @@ const VerificationIndividualPage = () => {
                           </div>
                         </div>
 
-                        {/* Shipping Country */}
+                        {/* Shipping Country - With fixed styling */}
                         <div>
                           <label
                             htmlFor="shippingCountry"
@@ -1145,27 +1361,60 @@ const VerificationIndividualPage = () => {
                           >
                             Country <span className="text-red-500">*</span>
                           </label>
-                          <select
-                            id="shippingCountry"
-                            name="shippingCountry"
-                            value={formData.shippingCountry}
-                            onChange={handleInputChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                              errors.shippingCountry
-                                ? "border-red-300 bg-red-50"
-                                : "border-gray-300"
-                            }`}
-                            aria-required="true"
-                            aria-invalid={
-                              errors.shippingCountry ? "true" : "false"
-                            }
-                          >
-                            {countries.map((country) => (
-                              <option key={country.value} value={country.value}>
-                                {country.label}
-                              </option>
-                            ))}
-                          </select>
+                          <div className="relative">
+                            <CountryDropdown
+                              id="shippingCountry"
+                              name="shippingCountry"
+                              value={formData.shippingCountry}
+                              onChange={(val) => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  shippingCountry: val,
+                                  shippingRegion: "", // Reset region when country changes
+                                }));
+                                // Clear error if it exists
+                                if (errors.shippingCountry) {
+                                  setErrors((prev) => ({
+                                    ...prev,
+                                    shippingCountry: undefined,
+                                  }));
+                                }
+                              }}
+                              classes={`w-full px-3 py-2 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${
+                                errors.shippingCountry
+                                  ? "border-red-300 bg-red-50"
+                                  : ""
+                              }`}
+                              valueType="short"
+                              aria-required="true"
+                              aria-invalid={
+                                errors.shippingCountry ? "true" : "false"
+                              }
+                              priorityOptions={["US", "CA", "GB", "AU"]}
+                              defaultOptionLabel="Select Country..."
+                              style={{
+                                appearance: "none",
+                                WebkitAppearance: "none",
+                                MozAppearance: "none",
+                              }}
+                            />
+                            {/* Custom dropdown arrow for visual consistency */}
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                              <svg
+                                className="h-5 w-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </div>
+                          </div>
                           {errors.shippingCountry && (
                             <p
                               className="mt-1 text-xs text-red-600 flex items-center"
