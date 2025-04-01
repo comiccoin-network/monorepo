@@ -1,6 +1,6 @@
 module github.com/comiccoin-network/monorepo/cloud/comiccoin
 
-go 1.23.0
+go 1.24.1
 
 require (
 	github.com/awnumar/memguard v0.22.5
