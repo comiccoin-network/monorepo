@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router";
 import {
-  Coins,
+  Globe,
   LogOut,
   Ellipsis,
   ClipboardList,
@@ -24,6 +24,8 @@ const AppTopNavigation = () => {
       return true;
     if (path === "/public-wallets" && location.pathname === "/public-wallets")
       return true;
+    if (path === "/transactions" && location.pathname === "/transactions")
+      return true;
     if (path === "/more" && location.pathname === "/more") return true;
     return location.pathname === path;
   };
@@ -39,12 +41,12 @@ const AppTopNavigation = () => {
         <div className="flex justify-between items-center py-4">
           {/* Logo and Brand */}
           <Link to="/dashboard" className="flex items-center space-x-3">
-            <Coins
+            <Globe
               className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white"
               aria-hidden="true"
             />
             <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
-              ComicCoin Name Service
+              ComicCoin Digital Identity
             </span>
           </Link>
 
