@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { UserPlus, LogIn, ArrowRight, Shield, Wallet } from "lucide-react";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
+import withRedirectAuthenticated from "../components/withRedirectAuthenticated";
 
 const GetStartedPage = () => {
   return (
@@ -141,4 +142,4 @@ const GetStartedPage = () => {
   );
 };
 
-export default GetStartedPage;
+export default withRedirectAuthenticated(GetStartedPage);

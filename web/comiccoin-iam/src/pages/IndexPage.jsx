@@ -16,6 +16,7 @@ import {
 import { Link, useNavigate } from "react-router";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
+import withRedirectAuthenticated from "../components/withRedirectAuthenticated";
 
 const IndexPage = () => {
   const navigate = useNavigate(); // Use navigate for programmatic navigation
@@ -349,4 +350,4 @@ const IndexPage = () => {
   );
 };
 
-export default IndexPage;
+export default withRedirectAuthenticated(IndexPage);

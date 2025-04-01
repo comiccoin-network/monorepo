@@ -15,6 +15,7 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
+import withRedirectAuthenticated from "../components/withRedirectAuthenticated";
 
 function LoginPage() {
   console.log("🚀 LoginPage component initializing");
@@ -344,4 +345,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default withRedirectAuthenticated(LoginPage);

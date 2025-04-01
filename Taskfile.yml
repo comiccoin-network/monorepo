@@ -1,14 +1,13 @@
-version: '3'
+version: "3"
 
 tasks:
-  start:
-    desc: Start the cloud backend in developer mode
+  comiccoin-dev:
+    desc: Start the cloud services backend in developer mode
     cmds:
-      - go work use ./cloud/comiccoin-gateway
-      - cd ./cloud/comiccoin-gateway
+      - go work use ./cloud/comiccoin
       - docker-compose -p comiccoin -f ./cloud/comiccoin/dev.docker-compose.yml up
 
-  gatewayconsole:
-    desc: Open console in (developer mode) running cloud backend
+  comiccoin-console:
+    desc: Open console in (developer mode) running cloud services backend
     cmds:
       - docker exec -it comiccoin bash

@@ -14,6 +14,7 @@ import {
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
 import { useForgotPassword } from "../hooks/useForgotPassword";
+import withRedirectAuthenticated from "../components/withRedirectAuthenticated";
 
 function ForgotPasswordPage() {
   console.log("🚀 ForgotPasswordPage component initializing");
@@ -418,4 +419,4 @@ function ForgotPasswordPage() {
   );
 }
 
-export default ForgotPasswordPage;
+export default withRedirectAuthenticated(ForgotPasswordPage);
