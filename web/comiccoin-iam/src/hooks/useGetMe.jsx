@@ -1,5 +1,5 @@
 // src/hooks/useGetMe.js
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useGetMe as useGetMeQuery } from "../api/endpoints/meGetApi";
 import { useAuth } from "./useAuth";
 
@@ -8,21 +8,21 @@ import { useAuth } from "./useAuth";
  * Provides error handling and refetch capabilities
  *
  * @param {Object} options - Hook options
- * @param {boolean} options.enabled - Whether to enable the query
- * @param {number} options.retry - Number of retries before giving up
  * @returns {Object} Object containing user data, loading state, error state, and refetch function
  */
 export function useGetMe(options = {}) {
   const [error, setError] = useState(null);
-  const { updateUser: updateAuthUser } = useAuth();
+  const { user: authUser, updateUser: updateAuthUser } = useAuth();
 
   // Use the private query hook with error handling
   const {
-    data: user,
+    data: userData,
     isLoading,
     error: queryError,
     refetch,
   } = useGetMeQuery({
+    // Prevent excessive refetching with longer stale time
+    staleTime: 60000, // 1 minute
     ...options,
     onError: (err) => {
       // Format error consistently
@@ -40,7 +40,15 @@ export function useGetMe(options = {}) {
       }
     },
     onSuccess: (data) => {
-      // Update the auth context with the fresh user data
+      // Log to debug
+      console.log("🔄 useGetMe onSuccess - Fresh API data:", {
+        apiProfile: data?.profile_verification_status,
+        authProfile: authUser?.profile_verification_status,
+        pathname: window.location.pathname,
+      });
+
+      // Important: Update the auth context with the fresh user data
+      // This will update localStorage as well
       if (data && updateAuthUser) {
         updateAuthUser(data);
       }
@@ -52,10 +60,48 @@ export function useGetMe(options = {}) {
     },
   });
 
+  // Manually synchronize localStorage when we get fresh data
+  useEffect(() => {
+    if (userData) {
+      try {
+        // Get the current auth data from localStorage
+        const AUTH_STORAGE_KEY = "auth_data";
+        const currentAuthData = JSON.parse(
+          localStorage.getItem(AUTH_STORAGE_KEY) || "{}",
+        );
+
+        // Check if the profile status has changed
+        if (
+          currentAuthData.user?.profile_verification_status !==
+          userData.profile_verification_status
+        ) {
+          console.log("🔄 Updating localStorage with new profile status:", {
+            old: currentAuthData.user?.profile_verification_status,
+            new: userData.profile_verification_status,
+          });
+
+          // Update the user object while preserving everything else
+          const updatedAuthData = {
+            ...currentAuthData,
+            user: userData,
+          };
+
+          // Save back to localStorage
+          localStorage.setItem(
+            AUTH_STORAGE_KEY,
+            JSON.stringify(updatedAuthData),
+          );
+        }
+      } catch (err) {
+        console.error("Error updating localStorage:", err);
+      }
+    }
+  }, [userData]);
+
   // Function to manually refresh user data
   const refreshUser = useCallback(async () => {
     try {
-      console.log("🔄 Refreshing user data");
+      console.log("🔄 Manually refreshing user data");
       const freshData = await refetch();
       return freshData.data;
     } catch (err) {
@@ -65,7 +111,7 @@ export function useGetMe(options = {}) {
   }, [refetch]);
 
   return {
-    user: user || null,
+    user: userData || authUser, // Use API data first, fall back to auth context
     isLoading,
     error: error || queryError,
     refetch: refreshUser,

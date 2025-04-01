@@ -33,6 +33,32 @@ const VerificationApprovedPage = () => {
     REJECTED: 4,
   };
 
+  useEffect(() => {
+    console.log("APPROVED PAGE MOUNTED", {
+      user,
+      verificationStatus: user?.profile_verification_status,
+      pathname: window.location.pathname,
+      time: new Date().toISOString(),
+    });
+
+    return () => {
+      console.log("APPROVED PAGE UNMOUNTED", {
+        time: new Date().toISOString(),
+      });
+    };
+  }, [user]);
+
+  const { refetch } = useGetMe();
+
+  // Add this effect for a one-time forced update
+  useEffect(() => {
+    // Force refresh user data when the approved page loads
+    console.log("🔄 Forcing user data refresh on VerificationApprovedPage");
+    refetch().catch((err) =>
+      console.error("Failed to refresh user data:", err),
+    );
+  }, [refetch]);
+
   // Redirect if status is not approved
   useEffect(() => {
     if (user) {

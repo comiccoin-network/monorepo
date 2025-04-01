@@ -21,6 +21,7 @@ function withProfileVerification(WrappedComponent) {
       SUBMITTED_FOR_REVIEW: 2, // The user's profile has been submitted and is awaiting review
       APPROVED: 3, // The user's profile has been approved
       REJECTED: 4, // The user's profile has been rejected
+      // Add any other potential states your system might have
     };
 
     // Check the user's verification status
@@ -29,23 +30,39 @@ function withProfileVerification(WrappedComponent) {
       console.log("🔍 Verification status check:", {
         status,
         statusName: getStatusName(status),
+        pathname: location.pathname,
       });
       return status;
-    }, [user?.profile_verification_status]);
+    }, [user?.profile_verification_status, location.pathname]);
 
     // Function to get status name for logging
-    function getStatusName(status) {
-      switch (status) {
+    function getStatusName(verificationStatus) {
+      switch (verificationStatus) {
         case VERIFICATION_STATUS.UNVERIFIED:
-          return "UNVERIFIED";
+          console.log(
+            "🔄 User is unverified, redirecting to verification start page",
+          );
+          navigate("/verification");
+          break;
         case VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW:
-          return "SUBMITTED_FOR_REVIEW";
+          console.log(
+            "🔄 User verification is pending, redirecting to verification pending page",
+          );
+          navigate("/verification/pending");
+          break;
+        case VERIFICATION_STATUS.REJECTED: // IMPORTANT: Stop redirecting status 4 users
+          console.log(
+            "✅ User with status 4 (REJECTED), allowing dashboard access",
+          );
+          // No redirect - allow access to all components
+          break;
         case VERIFICATION_STATUS.APPROVED:
-          return "APPROVED";
-        case VERIFICATION_STATUS.REJECTED:
-          return "REJECTED";
+          console.log("✅ User is verified, allowing access to component");
+          break;
         default:
-          return "UNKNOWN";
+          // Handle unknown status
+          console.log("⚠️ Unknown verification status:", verificationStatus);
+          break;
       }
     }
 
@@ -53,14 +70,29 @@ function withProfileVerification(WrappedComponent) {
     useEffect(() => {
       // Skip redirects for verification flow pages
       const isVerificationFlow = location.pathname.includes("/verification");
+      // Skip redirects for dashboard when status is APPROVED or REJECTED
+      const isDashboard = location.pathname === "/dashboard";
+      const canAccessDashboard =
+        verificationStatus === VERIFICATION_STATUS.APPROVED ||
+        verificationStatus === VERIFICATION_STATUS.REJECTED; // Assuming REJECTED (4) should also see dashboard
 
-      console.log("🔍 withProfileVerification check:", {
+      console.log("🔍 withProfileVerification navigation check:", {
         verificationStatus,
         isVerificationFlow,
+        isDashboard,
+        canAccessDashboard,
         pathname: location.pathname,
       });
 
+      // Only handle redirects if we have a user object and not already in verification flow
       if (!isVerificationFlow && user) {
+        // If trying to access dashboard with correct status, allow it
+        if (isDashboard && canAccessDashboard) {
+          console.log("✅ User has proper verification status for dashboard");
+          return; // Don't redirect
+        }
+
+        // Otherwise apply normal redirection rules
         switch (verificationStatus) {
           case VERIFICATION_STATUS.UNVERIFIED:
             console.log(
@@ -74,22 +106,22 @@ function withProfileVerification(WrappedComponent) {
             );
             navigate("/verification/pending");
             break;
-          case VERIFICATION_STATUS.REJECTED:
-            console.log(
-              "🔄 User verification was rejected, redirecting to verification rejected page",
-            );
-            navigate("/verification/rejected");
+          case VERIFICATION_STATUS.REJECTED: // Value is 4
+            // Allow access to dashboard, don't redirect to the rejected page
+            if (!isDashboard) {
+              console.log(
+                "🔄 User verification was rejected, redirecting to verification rejected page",
+              );
+              navigate("/verification/rejected");
+            }
             break;
           case VERIFICATION_STATUS.APPROVED:
             // No redirection needed for approved users, they can access the wrapped component
             console.log("✅ User is verified, allowing access to component");
             break;
           default:
-            // Handle edge case - if no status or unknown status
-            console.log(
-              "⚠️ Unknown verification status, defaulting to unverified flow",
-            );
-            navigate("/verification");
+            // If status is unknown, don't redirect
+            console.log("⚠️ Unknown verification status:", verificationStatus);
             break;
         }
       }

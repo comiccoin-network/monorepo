@@ -1,10 +1,29 @@
 // src/pages/DashboardPage.jsx
+import React, { useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
 import withProfileVerification from "../components/withProfileVerification";
+import { useGetMe } from "../hooks/useGetMe";
 
 function DashboardPage({ error, dashboardData, refetch }) {
+  const { user } = useGetMe();
+
+  useEffect(() => {
+    console.log("DASHBOARD MOUNTED", {
+      user,
+      verificationStatus: user?.profile_verification_status,
+      pathname: window.location.pathname,
+      time: new Date().toISOString(),
+    });
+
+    return () => {
+      console.log("DASHBOARD UNMOUNTED", {
+        time: new Date().toISOString(),
+      });
+    };
+  }, [user]);
+
   // Main dashboard UI
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
