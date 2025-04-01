@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
+import withProfileVerification from "../components/withProfileVerification";
 
 const PublicWalletsPage = () => {
   const navigate = useNavigate();
@@ -426,4 +427,4 @@ const PublicWalletsPage = () => {
   );
 };
 
-export default PublicWalletsPage;
+export default withProfileVerification(PublicWalletsPage);
