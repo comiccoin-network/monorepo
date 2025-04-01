@@ -24,8 +24,6 @@ const AppTopNavigation = () => {
       return true;
     if (path === "/public-wallets" && location.pathname === "/public-wallets")
       return true;
-    if (path === "/transactions" && location.pathname === "/transactions")
-      return true;
     if (path === "/more" && location.pathname === "/more") return true;
     return location.pathname === path;
   };
@@ -80,21 +78,6 @@ const AppTopNavigation = () => {
                 <span className="flex items-center gap-2">
                   <Wallet className="h-5 w-5" />
                   Public Wallets
-                </span>
-              </Link>
-
-              <Link
-                to="/transactions"
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive("/transactions")
-                    ? "bg-purple-800 text-white"
-                    : "text-purple-100 hover:bg-purple-600 hover:text-white"
-                }`}
-                aria-current={isActive("/transactions") ? "page" : undefined}
-              >
-                <span className="flex items-center gap-2">
-                  <ClipboardList className="h-5 w-5" />
-                  Transactions
                 </span>
               </Link>
 
@@ -182,21 +165,6 @@ const AppTopNavigation = () => {
               <span className="flex items-center gap-2">
                 <Wallet className="h-5 w-5" />
                 Public Wallets
-              </span>
-            </Link>
-
-            <Link
-              to="/transactions"
-              className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                isActive("/transactions")
-                  ? "bg-purple-700 text-white"
-                  : "text-purple-100 hover:bg-purple-700 hover:text-white"
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <span className="flex items-center gap-2">
-                <ClipboardList className="h-5 w-5" />
-                Transactions
               </span>
             </Link>
 
