@@ -24,6 +24,7 @@ import (
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/middleware"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/task"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/repo/bannedipaddress"
+	r_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/repo/publicwallet"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/repo/templatedemailer"
 	r_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/repo/user"
 	sv_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/dashboard"
@@ -88,6 +89,8 @@ func NewModule(
 
 	banIPAddrRepo := r_banip.NewRepository(cfg, logger, dbClient)
 	userRepo := r_user.NewRepository(cfg, logger, dbClient)
+	publicWalletRepo := r_publicwallet.NewRepository(cfg, logger, dbClient)
+	_ = publicWalletRepo //TODO: Utilize public wallet repository
 
 	////
 	//// Use-case
