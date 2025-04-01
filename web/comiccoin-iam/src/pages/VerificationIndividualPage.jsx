@@ -16,6 +16,7 @@ import {
 
 import Header from "../components/IndexPage/Header";
 import Footer from "../components/IndexPage/Footer";
+import { useAuth } from "../hooks/useAuth";
 import { useVerifyProfile, USER_ROLE } from "../hooks/useVerifyProfile";
 
 // Hook to handle localStorage
@@ -45,7 +46,15 @@ const useLocalStorage = (key, initialValue) => {
 
 const VerificationIndividualPage = () => {
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
   const { submitVerification, isSubmitting, formErrors } = useVerifyProfile();
+
+  const VERIFICATION_STATUS = {
+    UNVERIFIED: 1,
+    SUBMITTED_FOR_REVIEW: 2,
+    APPROVED: 3,
+    REJECTED: 4,
+  };
 
   // Inline styles for select elements to fix Safari
   const selectStyles = {
@@ -238,13 +247,20 @@ const VerificationIndividualPage = () => {
 
     try {
       // Submit the form data to the backend with explicit user role
-      // USER_ROLE.CUSTOMER = 3 in our backend (individual user)
       const success = await submitVerification(formData, USER_ROLE.CUSTOMER);
 
       if (success) {
-        // If submission was successful, redirect to the pending page
-        // The API response should have updated the user's profile_verification_status to 2
-        navigate("/verification/pending");
+        // Use the updateUser from the component scope, not from inside this function
+        if (user && updateUser) {
+          updateUser({
+            ...user,
+            profile_verification_status:
+              VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW,
+          });
+        }
+
+        // Use replace: true to prevent going back to the form
+        navigate("/verification/pending", { replace: true });
       }
     } catch (error) {
       console.error("Error submitting verification:", error);
