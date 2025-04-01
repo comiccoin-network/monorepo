@@ -15,6 +15,7 @@ import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
+import PublicWalletsPage from "./pages/PublicWalletsPage";
 import AddWalletAddressPage from "./pages/AddWalletAddressPage"; //TODO: REMOVE
 import VerificationLaunchpadPage from "./pages/VerificationLaunchpadPage";
 import VerificationIndividualPage from "./pages/VerificationIndividualPage";
@@ -149,10 +150,10 @@ function App() {
             />
 
             <Route
-              path="/claim-coins"
+              path="/public-wallets"
               element={
                 <ProtectedRoute>
-                  <ClaimCoinsPage />
+                  <PublicWalletsPage />
                 </ProtectedRoute>
               }
             />

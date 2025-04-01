@@ -9,6 +9,7 @@ import {
   Home,
   Menu,
   X,
+  Wallet,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
@@ -19,7 +20,13 @@ const AppTopNavigation = () => {
 
   // Determine active tab based on current path
   const isActive = (path) => {
-    if (path === "/" && location.pathname === "/dashboard") return true;
+    if (path === "/dashboard" && location.pathname === "/dashboard")
+      return true;
+    if (path === "/public-wallets" && location.pathname === "/public-wallets")
+      return true;
+    if (path === "/transactions" && location.pathname === "/transactions")
+      return true;
+    if (path === "/more" && location.pathname === "/more") return true;
     return location.pathname === path;
   };
 
@@ -49,17 +56,30 @@ const AppTopNavigation = () => {
               <Link
                 to="/dashboard"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive("/dashboard") || isActive("/")
+                  isActive("/dashboard")
                     ? "bg-purple-800 text-white"
                     : "text-purple-100 hover:bg-purple-600 hover:text-white"
                 }`}
-                aria-current={
-                  isActive("/dashboard") || isActive("/") ? "page" : undefined
-                }
+                aria-current={isActive("/dashboard") ? "page" : undefined}
               >
                 <span className="flex items-center gap-2">
                   <Home className="h-5 w-5" />
                   Dashboard
+                </span>
+              </Link>
+
+              <Link
+                to="/public-wallets"
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive("/public-wallets")
+                    ? "bg-purple-800 text-white"
+                    : "text-purple-100 hover:bg-purple-600 hover:text-white"
+                }`}
+                aria-current={isActive("/public-wallets") ? "page" : undefined}
+              >
+                <span className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5" />
+                  Public Wallets
                 </span>
               </Link>
 
@@ -138,7 +158,7 @@ const AppTopNavigation = () => {
             <Link
               to="/dashboard"
               className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                isActive("/dashboard") || isActive("/")
+                isActive("/dashboard")
                   ? "bg-purple-700 text-white"
                   : "text-purple-100 hover:bg-purple-700 hover:text-white"
               }`}
@@ -147,6 +167,21 @@ const AppTopNavigation = () => {
               <span className="flex items-center gap-2">
                 <Home className="h-5 w-5" />
                 Dashboard
+              </span>
+            </Link>
+
+            <Link
+              to="/public-wallets"
+              className={`block px-3 py-2 rounded-lg text-base font-medium ${
+                isActive("/public-wallets")
+                  ? "bg-purple-700 text-white"
+                  : "text-purple-100 hover:bg-purple-700 hover:text-white"
+              }`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <span className="flex items-center gap-2">
+                <Wallet className="h-5 w-5" />
+                Public Wallets
               </span>
             </Link>
 
