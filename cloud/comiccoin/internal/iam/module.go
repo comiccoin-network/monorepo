@@ -33,6 +33,7 @@ import (
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/me"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/bannedipaddress"
 	uc_emailer "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/emailer"
+	uc_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/user"
 )
 
@@ -90,7 +91,6 @@ func NewModule(
 	banIPAddrRepo := r_banip.NewRepository(cfg, logger, dbClient)
 	userRepo := r_user.NewRepository(cfg, logger, dbClient)
 	publicWalletRepo := r_publicwallet.NewRepository(cfg, logger, dbClient)
-	_ = publicWalletRepo //TODO: Utilize public wallet repository
 
 	////
 	//// Use-case
@@ -159,6 +159,64 @@ func NewModule(
 		logger,
 		userRepo,
 	)
+
+	// --- Public Wallets ---
+	publicWalletCreateUseCase := uc_publicwallet.NewPublicWalletCreateUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
+	publicWalletGetByIDUseCase := uc_publicwallet.NewPublicWalletGetByIDUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
+	publicWalletGetByAddressUseCase := uc_publicwallet.NewPublicWalletGetByAddressUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
+	publicWalletUpdateByIDUseCase := uc_publicwallet.NewPublicWalletUpdateByIDUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
+	publicWalletUpdateByAddressUseCase := uc_publicwallet.NewPublicWalletUpdateByAddressUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
+	publicWalletDeleteByIDUseCase := uc_publicwallet.NewPublicWalletDeleteByIDUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
+	publicWalletListByFilterUseCase := uc_publicwallet.NewPublicWalletListByFilterUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
+	publicWalletCountByFilterUseCase := uc_publicwallet.NewPublicWalletCountByFilterUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
+	publicWalletListAllAddressesUseCase := uc_publicwallet.NewPublicWalletListAllAddressesUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
+
+	_ = publicWalletCreateUseCase
+	_ = publicWalletGetByIDUseCase
+	_ = publicWalletGetByAddressUseCase
+	_ = publicWalletUpdateByAddressUseCase
+	_ = publicWalletUpdateByIDUseCase
+	_ = publicWalletUpdateByAddressUseCase
+	_ = publicWalletDeleteByIDUseCase
+	_ = publicWalletListByFilterUseCase
+	_ = publicWalletCountByFilterUseCase
+	_ = publicWalletListAllAddressesUseCase
 
 	////
 	//// Service
