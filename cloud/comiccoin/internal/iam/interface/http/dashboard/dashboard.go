@@ -13,7 +13,11 @@ import (
 	svc_dashboard "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/dashboard"
 )
 
-type DashboardHTTPHandler struct {
+type DashboardHTTPHandler interface {
+	Handle(w http.ResponseWriter, r *http.Request)
+}
+
+type dashboardHTTPHandlerImpl struct {
 	config   *config.Configuration
 	logger   *slog.Logger
 	dbClient *mongo.Client
@@ -25,8 +29,8 @@ func NewDashboardHTTPHandler(
 	logger *slog.Logger,
 	dbClient *mongo.Client,
 	service svc_dashboard.GetDashboardService,
-) *DashboardHTTPHandler {
-	return &DashboardHTTPHandler{
+) DashboardHTTPHandler {
+	return &dashboardHTTPHandlerImpl{
 		config:   config,
 		logger:   logger,
 		dbClient: dbClient,
@@ -34,7 +38,7 @@ func NewDashboardHTTPHandler(
 	}
 }
 
-func (h *DashboardHTTPHandler) Execute(w http.ResponseWriter, r *http.Request) {
+func (h *dashboardHTTPHandlerImpl) Handle(w http.ResponseWriter, r *http.Request) {
 	// Set response content type
 	w.Header().Set("Content-Type", "application/json")
 

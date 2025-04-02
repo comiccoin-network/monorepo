@@ -193,6 +193,11 @@ func NewModule(
 		logger,
 		publicWalletRepo,
 	)
+	publicWalletDeleteByAddressUseCase := uc_publicwallet.NewPublicWalletDeleteByAddressUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
 	publicWalletListByFilterUseCase := uc_publicwallet.NewPublicWalletListByFilterUseCase(
 		cfg,
 		logger,
@@ -352,6 +357,11 @@ func NewModule(
 		logger,
 		publicWalletDeleteByIDUseCase,
 	)
+	deletePublicWalletByAddressService := svc_publicwallet.NewDeletePublicWalletByAddressService(
+		cfg,
+		logger,
+		publicWalletDeleteByAddressUseCase,
+	)
 	listPublicWalletsByFilterService := svc_publicwallet.NewListPublicWalletsByFilterService(
 		cfg,
 		logger,
@@ -450,16 +460,6 @@ func NewModule(
 
 	// --- Public Wallet ---
 
-	_ = createPublicWalletService
-	_ = getPublicWalletByIDService
-	_ = getPublicWalletByAddressService
-	_ = updatePublicWalletByIDService
-	_ = updatePublicWalletByAddressService
-	_ = deletePublicWalletByIDService
-	_ = listPublicWalletsByFilterService
-	_ = countPublicWalletsByFilterService
-	_ = listAllPublicWalletAddressesService
-
 	createPublicWalletHTTPHandler := http_publicwallet.NewCreatePublicWalletHTTPHandler(
 		cfg,
 		logger,
@@ -496,6 +496,12 @@ func NewModule(
 		dbClient,
 		deletePublicWalletByIDService,
 	)
+	deletePublicWalletByAddressHTTPHandler := http_publicwallet.NewDeletePublicWalletByAddressHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		deletePublicWalletByAddressService,
+	)
 	listPublicWalletsByFilterHTTPHandler := http_publicwallet.NewListPublicWalletsByFilterHTTPHandler(
 		cfg,
 		logger,
@@ -514,15 +520,6 @@ func NewModule(
 		dbClient,
 		listAllPublicWalletAddressesService,
 	)
-	_ = createPublicWalletHTTPHandler
-	_ = getPublicWalletByIDHTTPHandler
-	_ = getPublicWalletByAddressHTTPHandler
-	_ = updatePublicWalletByIDHTTPHandler
-	_ = updatePublicWalletByAddressHTTPHandler
-	_ = deletePublicWalletByIDHTTPHandler
-	_ = listPublicWalletsByFilterHTTPHandler
-	_ = countPublicWalletsByFilterHTTPHandler
-	_ = listAllPublicWalletAddressesHTTPHandler
 
 	// --- Dashboard ---
 
@@ -575,6 +572,7 @@ func NewModule(
 		updatePublicWalletByIDHTTPHandler,
 		updatePublicWalletByAddressHTTPHandler,
 		deletePublicWalletByIDHTTPHandler,
+		deletePublicWalletByAddressHTTPHandler,
 		listPublicWalletsByFilterHTTPHandler,
 		countPublicWalletsByFilterHTTPHandler,
 		listAllPublicWalletAddressesHTTPHandler,

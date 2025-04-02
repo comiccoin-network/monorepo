@@ -63,17 +63,18 @@ type httpServerImpl struct {
 	deleteMeHTTPHandler            *http_me.DeleteMeHTTPHandler
 	postVerifyProfileHTTPHandler   *http_me.PostVerifyProfileHTTPHandler
 
-	createPublicWalletHTTPHandler           *http_publicwallet.CreatePublicWalletHTTPHandler
-	getPublicWalletByIDHTTPHandler          *http_publicwallet.GetPublicWalletByIDHTTPHandler
-	getPublicWalletByAddressHTTPHandler     *http_publicwallet.GetPublicWalletByAddressHTTPHandler
-	updatePublicWalletByIDHTTPHandler       *http_publicwallet.UpdatePublicWalletByIDHTTPHandler
-	updatePublicWalletByAddressHTTPHandler  *http_publicwallet.UpdatePublicWalletByAddressHTTPHandler
-	deletePublicWalletByIDHTTPHandler       *http_publicwallet.DeletePublicWalletByIDHTTPHandler
-	listPublicWalletsByFilterHTTPHandler    *http_publicwallet.ListPublicWalletsByFilterHTTPHandler
-	countPublicWalletsByFilterHTTPHandler   *http_publicwallet.CountPublicWalletsByFilterHTTPHandler
-	listAllPublicWalletAddressesHTTPHandler *http_publicwallet.ListAllPublicWalletAddressesHTTPHandler
+	createPublicWalletHTTPHandler           http_publicwallet.CreatePublicWalletHTTPHandler
+	getPublicWalletByIDHTTPHandler          http_publicwallet.GetPublicWalletByIDHTTPHandler
+	getPublicWalletByAddressHTTPHandler     http_publicwallet.GetPublicWalletByAddressHTTPHandler
+	updatePublicWalletByIDHTTPHandler       http_publicwallet.UpdatePublicWalletByIDHTTPHandler
+	updatePublicWalletByAddressHTTPHandler  http_publicwallet.UpdatePublicWalletByAddressHTTPHandler
+	deletePublicWalletByIDHTTPHandler       http_publicwallet.DeletePublicWalletByIDHTTPHandler
+	deletePublicWalletByAddressHTTPHandler  http_publicwallet.DeletePublicWalletByAddressHTTPHandler
+	listPublicWalletsByFilterHTTPHandler    http_publicwallet.ListPublicWalletsByFilterHTTPHandler
+	countPublicWalletsByFilterHTTPHandler   http_publicwallet.CountPublicWalletsByFilterHTTPHandler
+	listAllPublicWalletAddressesHTTPHandler http_publicwallet.ListAllPublicWalletAddressesHTTPHandler
 
-	dashboard *http_dashboard.DashboardHTTPHandler
+	dashboard http_dashboard.DashboardHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -94,37 +95,48 @@ func NewHTTPServer(
 	putUpdateMeHTTPHandler *http_me.PutUpdateMeHTTPHandler,
 	deleteMeHTTPHandler *http_me.DeleteMeHTTPHandler,
 	postVerifyProfileHTTPHandler *http_me.PostVerifyProfileHTTPHandler,
-	createPublicWalletHTTPHandler *http_publicwallet.CreatePublicWalletHTTPHandler,
-	getPublicWalletByIDHTTPHandler *http_publicwallet.GetPublicWalletByIDHTTPHandler,
-	getPublicWalletByAddressHTTPHandler *http_publicwallet.GetPublicWalletByAddressHTTPHandler,
-	updatePublicWalletByIDHTTPHandler *http_publicwallet.UpdatePublicWalletByIDHTTPHandler,
-	updatePublicWalletByAddressHTTPHandler *http_publicwallet.UpdatePublicWalletByAddressHTTPHandler,
-	deletePublicWalletByIDHTTPHandler *http_publicwallet.DeletePublicWalletByIDHTTPHandler,
-	listPublicWalletsByFilterHTTPHandler *http_publicwallet.ListPublicWalletsByFilterHTTPHandler,
-	countPublicWalletsByFilterHTTPHandler *http_publicwallet.CountPublicWalletsByFilterHTTPHandler,
-	listAllPublicWalletAddressesHTTPHandler *http_publicwallet.ListAllPublicWalletAddressesHTTPHandler,
-	dashboard *http_dashboard.DashboardHTTPHandler,
+	createPublicWalletHTTPHandler http_publicwallet.CreatePublicWalletHTTPHandler,
+	getPublicWalletByIDHTTPHandler http_publicwallet.GetPublicWalletByIDHTTPHandler,
+	getPublicWalletByAddressHTTPHandler http_publicwallet.GetPublicWalletByAddressHTTPHandler,
+	updatePublicWalletByIDHTTPHandler http_publicwallet.UpdatePublicWalletByIDHTTPHandler,
+	updatePublicWalletByAddressHTTPHandler http_publicwallet.UpdatePublicWalletByAddressHTTPHandler,
+	deletePublicWalletByIDHTTPHandler http_publicwallet.DeletePublicWalletByIDHTTPHandler,
+	deletePublicWalletByAddressHTTPHandler http_publicwallet.DeletePublicWalletByAddressHTTPHandler,
+	listPublicWalletsByFilterHTTPHandler http_publicwallet.ListPublicWalletsByFilterHTTPHandler,
+	countPublicWalletsByFilterHTTPHandler http_publicwallet.CountPublicWalletsByFilterHTTPHandler,
+	listAllPublicWalletAddressesHTTPHandler http_publicwallet.ListAllPublicWalletAddressesHTTPHandler,
+	dashboard http_dashboard.DashboardHTTPHandler,
 ) HTTPServer {
 
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
-		cfg:                              cfg,
-		logger:                           logger,
-		middleware:                       mid,
-		gatewayUserRegisterHTTPHandler:   gatewayUserRegisterHTTPHandler,
-		gatewayVerifyEmailHTTPHandler:    gatewayVerifyEmailHTTPHandler,
-		gatewayLoginHTTPHandler:          gatewayLoginHTTPHandler,
-		gatewayLogoutHTTPHandler:         gatewayLogoutHTTPHandler,
-		gatewayRefreshTokenHTTPHandler:   gatewayRefreshTokenHTTPHandler,
-		gatewayForgotPasswordHTTPHandler: gatewayForgotPasswordHTTPHandler,
-		gatewayResetPasswordHTTPHandler:  gatewayResetPasswordHTTPHandler,
-		getHelloHTTPHandler:              getHelloHTTPHandler,
-		getMeHTTPHandler:                 getMeHTTPHandler,
-		deleteMeHTTPHandler:              deleteMeHTTPHandler,
-		postMeConnectWalletHTTPHandler:   postMeConnectWalletHTTPHandler,
-		putUpdateMeHTTPHandler:           putUpdateMeHTTPHandler,
-		postVerifyProfileHTTPHandler:     postVerifyProfileHTTPHandler,
-		dashboard:                        dashboard,
+		cfg:                                     cfg,
+		logger:                                  logger,
+		middleware:                              mid,
+		gatewayUserRegisterHTTPHandler:          gatewayUserRegisterHTTPHandler,
+		gatewayVerifyEmailHTTPHandler:           gatewayVerifyEmailHTTPHandler,
+		gatewayLoginHTTPHandler:                 gatewayLoginHTTPHandler,
+		gatewayLogoutHTTPHandler:                gatewayLogoutHTTPHandler,
+		gatewayRefreshTokenHTTPHandler:          gatewayRefreshTokenHTTPHandler,
+		gatewayForgotPasswordHTTPHandler:        gatewayForgotPasswordHTTPHandler,
+		gatewayResetPasswordHTTPHandler:         gatewayResetPasswordHTTPHandler,
+		getHelloHTTPHandler:                     getHelloHTTPHandler,
+		getMeHTTPHandler:                        getMeHTTPHandler,
+		deleteMeHTTPHandler:                     deleteMeHTTPHandler,
+		postMeConnectWalletHTTPHandler:          postMeConnectWalletHTTPHandler,
+		putUpdateMeHTTPHandler:                  putUpdateMeHTTPHandler,
+		postVerifyProfileHTTPHandler:            postVerifyProfileHTTPHandler,
+		createPublicWalletHTTPHandler:           createPublicWalletHTTPHandler,
+		getPublicWalletByIDHTTPHandler:          getPublicWalletByIDHTTPHandler,
+		getPublicWalletByAddressHTTPHandler:     getPublicWalletByAddressHTTPHandler,
+		updatePublicWalletByIDHTTPHandler:       updatePublicWalletByIDHTTPHandler,
+		updatePublicWalletByAddressHTTPHandler:  updatePublicWalletByAddressHTTPHandler,
+		deletePublicWalletByIDHTTPHandler:       deletePublicWalletByIDHTTPHandler,
+		deletePublicWalletByAddressHTTPHandler:  deletePublicWalletByAddressHTTPHandler,
+		listPublicWalletsByFilterHTTPHandler:    listPublicWalletsByFilterHTTPHandler,
+		countPublicWalletsByFilterHTTPHandler:   countPublicWalletsByFilterHTTPHandler,
+		listAllPublicWalletAddressesHTTPHandler: listAllPublicWalletAddressesHTTPHandler,
+		dashboard:                               dashboard,
 	}
 
 	return port
@@ -193,9 +205,21 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "me" && p[4] == "verify-profile" && r.Method == http.MethodPost:
 			port.postVerifyProfileHTTPHandler.Execute(w, r)
 
+		// Public Wallet
+		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodGet:
+			port.listPublicWalletsByFilterHTTPHandler.Handle(w, r)
+		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodPost:
+			port.createPublicWalletHTTPHandler.Handle(w, r)
+		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodPost:
+			port.getPublicWalletByAddressHTTPHandler.Handle(w, r, p[4])
+		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodPut:
+			port.updatePublicWalletByAddressHTTPHandler.Handle(w, r, p[4])
+		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodDelete:
+			port.deletePublicWalletByAddressHTTPHandler.Handle(w, r, p[4])
+
 		// Dashboard
 		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "dashboard" && r.Method == http.MethodGet:
-			port.dashboard.Execute(w, r)
+			port.dashboard.Handle(w, r)
 
 			// --- CATCH ALL: D.N.E. ---
 		default:
