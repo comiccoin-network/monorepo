@@ -22,14 +22,8 @@ import { usePublicWallet } from "../../hooks/usePublicWallet";
 
 const PublicWalletAddPage = () => {
   const navigate = useNavigate();
-  const {
-    createPublicWallet,
-    isLoading,
-    error,
-    success,
-    reset,
-    WALLET_STATUS,
-  } = usePublicWallet();
+  const { createPublicWallet, isLoading, error, success, reset } =
+    usePublicWallet();
 
   // State for general error message
   const [generalError, setGeneralError] = useState("");
@@ -63,10 +57,38 @@ const PublicWalletAddPage = () => {
         "Failed to create wallet. Please check your input and try again.",
       );
 
-      // Check for specific error types
-      if (typeof error === "string") {
-        setGeneralError(error);
-      } else if (error.message && typeof error.message === "string") {
+      // Check for response data with field validation errors
+      if (error.response && error.response.data) {
+        console.log("Response data:", error.response.data);
+
+        // Handle object with field validation errors
+        if (
+          typeof error.response.data === "object" &&
+          !Array.isArray(error.response.data)
+        ) {
+          // Set field-specific errors
+          const fieldErrors = {};
+
+          // Extract field errors
+          Object.entries(error.response.data).forEach(([field, message]) => {
+            fieldErrors[field] = message;
+          });
+
+          if (Object.keys(fieldErrors).length > 0) {
+            setErrors(fieldErrors);
+          }
+        }
+        // Handle string error message
+        else if (typeof error.response.data === "string") {
+          setGeneralError(error.response.data);
+        }
+        // Handle error with message property
+        else if (error.response.data.message) {
+          setGeneralError(error.response.data.message);
+        }
+      }
+      // Handle error with message property
+      else if (error.message && typeof error.message === "string") {
         if (error.message.includes("hex string has length 0, want 40")) {
           setGeneralError(
             "Please enter a valid ComicCoin address (40 characters starting with 0x)",
@@ -78,15 +100,9 @@ const PublicWalletAddPage = () => {
         } else {
           setGeneralError(error.message);
         }
-      } else if (error.response && error.response.data) {
-        if (typeof error.response.data === "string") {
-          setGeneralError(error.response.data);
-        } else if (error.response.data.message) {
-          setGeneralError(error.response.data.message);
-        }
       }
 
-      // Set form field errors if available
+      // Set form field errors if available in the error object
       if (error.errors) {
         setErrors(error.errors);
       }
@@ -138,9 +154,30 @@ const PublicWalletAddPage = () => {
       // Try to extract error information
       if (err.response && err.response.data) {
         console.log("Response data:", err.response.data);
-        if (typeof err.response.data === "string") {
+
+        // Handle field validation errors
+        if (
+          typeof err.response.data === "object" &&
+          !Array.isArray(err.response.data)
+        ) {
+          // Set field-specific errors
+          const fieldErrors = {};
+
+          // Extract field errors
+          Object.entries(err.response.data).forEach(([field, message]) => {
+            fieldErrors[field] = message;
+          });
+
+          if (Object.keys(fieldErrors).length > 0) {
+            setErrors(fieldErrors);
+          }
+        }
+        // Handle string error
+        else if (typeof err.response.data === "string") {
           setGeneralError(err.response.data);
-        } else if (err.response.data.error) {
+        }
+        // Handle error object with message
+        else if (err.response.data.error) {
           setErrors({ address: err.response.data.error });
           setGeneralError(err.response.data.error);
         } else if (err.response.data.message) {

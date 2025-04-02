@@ -28,12 +28,14 @@ func init() {
 		"/iam/api/v1/claim-coins":       true,
 		"/iam/api/v1/transactions":      true,
 		"/iam/api/v1/me/verify-profile": true,
+		"/iam/api/v1/public-wallets":    true,
 	}
 
 	// Pattern matches
 	patterns := []string{
 		"^/iam/api/v1/user/[0-9]+$",
 		"^/iam/api/v1/wallet/[0-9a-f]+$",
+		"^/iam/api/v1/public-wallets/[0-9a-f]+$",
 	}
 
 	// Precompile patterns
