@@ -44,7 +44,6 @@ const PublicWalletAddPage = () => {
     name: "",
     description: "",
     thumbnailS3Key: "",
-    status: WALLET_STATUS.ACTIVE,
   });
 
   // Reset state when navigating away
@@ -368,42 +367,6 @@ const PublicWalletAddPage = () => {
             </div>
 
             {/* Thumbnail S3 Key field is hidden from users */}
-
-            {/* Wallet Status */}
-            <div>
-              <label
-                htmlFor="status"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Status <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Activity className="h-5 w-5 text-gray-400" />
-                </div>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className={`w-full pl-10 pr-3 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                    errors.status
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                >
-                  <option value={WALLET_STATUS.ACTIVE}>Active</option>
-                  <option value={WALLET_STATUS.ARCHIVED}>Archived</option>
-                  <option value={WALLET_STATUS.LOCKED}>Locked</option>
-                </select>
-              </div>
-              {errors.status && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.status}
-                </p>
-              )}
-            </div>
 
             {/* Form Actions */}
             <div className="pt-4 flex flex-col sm:flex-row-reverse gap-3">
