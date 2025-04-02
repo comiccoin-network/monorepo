@@ -1,4 +1,4 @@
-// src/pages/PublicWallet/ListPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/PublicWallet/ListPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -100,17 +100,17 @@ const PublicWalletListPage = () => {
 
   // Navigate to add wallet page
   const handleAddWallet = () => {
-    navigate("/add-wallet");
+    navigate("/public-wallets/add");
   };
 
   // Navigate to wallet detail page
   const handleViewWallet = (walletId) => {
-    navigate(`/wallet/${walletId}`);
+    navigate(`/public-wallet/${walletId}`);
   };
 
   // Handle edit wallet
   const handleEditWallet = (walletId) => {
-    navigate(`/edit-wallet/${walletId}`);
+    navigate(`/public-wallet/${walletId}/edit`);
   };
 
   // Show delete confirmation

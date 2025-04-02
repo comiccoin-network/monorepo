@@ -111,7 +111,7 @@ function DashboardPage({ error, dashboardData, refetch }) {
 
   // Navigate to add wallet page
   const handleAddWallet = () => {
-    navigate("/add-wallet");
+    navigate("/public-wallets/add");
   };
 
   // Navigate to wallet detail page
