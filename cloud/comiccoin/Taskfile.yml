@@ -1,7 +1,7 @@
 version: "3"
 
 tasks:
-  start:
+  dev:
     desc: Start the backend in developer mode
     cmds:
       - docker-compose -p comiccoin -f dev.docker-compose.yml up
