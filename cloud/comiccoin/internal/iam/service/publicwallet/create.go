@@ -20,16 +20,16 @@ import (
 
 type CreatePublicWalletRequestIDO struct {
 	// The public address of the account.
-	Address string `bson:"address" json:"address"`
+	Address string `json:"address"`
 
 	// The unique identifier for this blockchain that we are managing the state for.
-	ChainID uint16 `bson:"chain_id" json:"chain_id"`
+	ChainID uint16 `json:"chain_id"`
 
 	// The name of the public wallet's account.
-	Name string `bson:"name" json:"name"`
+	Name string `json:"name"`
 
 	// The description of the public wallet's account.
-	Description string `bson:"description" json:"description"`
+	Description string `json:"description"`
 }
 
 type CreatePublicWalletResponseIDO struct {
@@ -78,6 +78,12 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 	req.Address = strings.ReplaceAll(req.Address, " ", "")
 
 	e := make(map[string]string)
+	if req.Name == "" {
+		e["name"] = "Name is required"
+	}
+	if req.Description == "" {
+		e["description"] = "Description is required"
+	}
 	if req.Address == "" {
 		e["address"] = "Wallet address is required"
 	} else {

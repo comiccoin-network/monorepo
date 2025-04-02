@@ -40,7 +40,7 @@ const PublicWalletAddPage = () => {
   // Form state
   const [formData, setFormData] = useState({
     address: "",
-    chainId: "1", // Default to Ethereum Mainnet
+    chainId: 1, // Default to ComicCoin Mainnet
     name: "",
     description: "",
     thumbnailS3Key: "",
@@ -70,11 +70,11 @@ const PublicWalletAddPage = () => {
       } else if (error.message && typeof error.message === "string") {
         if (error.message.includes("hex string has length 0, want 40")) {
           setGeneralError(
-            "Please enter a valid Ethereum address (40 characters starting with 0x)",
+            "Please enter a valid ComicCoin address (40 characters starting with 0x)",
           );
           setErrors((prev) => ({
             ...prev,
-            address: "Invalid Ethereum address format",
+            address: "Invalid ComicCoin address format",
           }));
         } else {
           setGeneralError(error.message);
@@ -197,7 +197,7 @@ const PublicWalletAddPage = () => {
             <div>
               <h2 className="text-xl font-semibold">Wallet Information</h2>
               <p className="text-sm text-purple-100">
-                Create a public profile for your Ethereum wallet
+                Create a public profile for your ComicCoin wallet
               </p>
             </div>
           </div>
@@ -229,7 +229,7 @@ const PublicWalletAddPage = () => {
                 htmlFor="address"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Ethereum Address <span className="text-red-500">*</span>
+                ComicCoin Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -256,7 +256,7 @@ const PublicWalletAddPage = () => {
                 </p>
               )}
               <p className="mt-1 text-xs text-gray-500">
-                Enter your complete Ethereum wallet address, starting with 0x
+                Enter your complete ComicCoin wallet address, starting with 0x
               </p>
             </div>
 
@@ -289,7 +289,7 @@ const PublicWalletAddPage = () => {
                 </p>
               )}
               <p className="mt-1 text-xs text-gray-500">
-                Fixed to Ethereum Mainnet (Chain ID: 1)
+                Fixed to ComicCoin Mainnet (Chain ID: 1)
               </p>
             </div>
 
