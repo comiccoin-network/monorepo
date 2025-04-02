@@ -1,5 +1,5 @@
 // src/pages/PublicWalletsPage.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   Wallet,
@@ -11,101 +11,88 @@ import {
   SlidersHorizontal,
   Grid,
   List,
+  Loader,
+  Trash2,
+  Edit2,
 } from "lucide-react";
+import { toast } from "react-toastify";
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
 import withProfileVerification from "../components/withProfileVerification";
+import { usePublicWallet, usePublicWalletList } from "../hooks/usePublicWallet";
 
 const PublicWalletsPage = () => {
   const navigate = useNavigate();
 
-  // Sample wallet data - In a real application, this would come from an API
-  const [wallets, setWallets] = useState([
-    {
-      id: "1",
-      address: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
-      name: "Primary Collectibles Wallet",
-      description:
-        "My main wallet for comic book collectibles and special editions",
-      thumbnail: "/api/placeholder/80/80",
-      viewCount: 432,
-      createdAt: "2025-01-15",
-      status: "active",
-    },
-    {
-      id: "2",
-      address: "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
-      name: "Comic-Con Exclusive Drops",
-      description:
-        "Special wallet for limited edition Comic-Con exclusive items and partnerships",
-      thumbnail: "/api/placeholder/80/80",
-      viewCount: 278,
-      createdAt: "2025-02-10",
-      status: "active",
-    },
-    {
-      id: "3",
-      address: "0xdD870fA1b7C4700F2BD7f44238821C26f7392148",
-      name: "Vintage Collection",
-      description:
-        "Dedicated wallet for pre-1990s comic NFTs and digital memorabilia",
-      thumbnail: "/api/placeholder/80/80",
-      viewCount: 189,
-      createdAt: "2025-02-22",
-      status: "inactive",
-    },
-    {
-      id: "4",
-      address: "0x1aE0EA34a72D944a8C7603FfB3eC30a6669E454C",
-      name: "Trading Portfolio",
-      description:
-        "Active wallet for trading and short-term holdings in the ComicCoin ecosystem",
-      thumbnail: "/api/placeholder/80/80",
-      viewCount: 321,
-      createdAt: "2025-03-05",
-      status: "active",
-    },
-    {
-      id: "5",
-      address: "0x7EF2e0048f5bAeDe046f6BF797943daF4ED8CB47",
-      name: "Artist Collaborations",
-      description:
-        "Wallet for artist collaborations and supporting indie comic creators",
-      thumbnail: "/api/placeholder/80/80",
-      viewCount: 157,
-      createdAt: "2025-03-12",
-      status: "inactive",
-    },
-  ]);
-
-  // State for view mode (grid or list)
+  // State for view mode and filters
   const [viewMode, setViewMode] = useState("grid");
-  // State for search query
   const [searchQuery, setSearchQuery] = useState("");
-  // State for filter status
   const [statusFilter, setStatusFilter] = useState("all");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedWallet, setSelectedWallet] = useState(null);
 
-  // Filter wallets based on search query and status filter
-  const filteredWallets = wallets.filter((wallet) => {
-    const matchesSearch =
-      wallet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      wallet.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      wallet.address.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "all" || wallet.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+  // Setup filters for the API
+  const [filters, setFilters] = useState({
+    limit: 20,
+    value: "",
   });
+
+  // Use our custom hooks
+  const {
+    wallets,
+    pagination,
+    isLoading,
+    error,
+    refetch: refetchWallets,
+  } = usePublicWalletList(filters);
+
+  const {
+    deletePublicWallet,
+    isLoading: isOperationLoading,
+    error: operationError,
+    WALLET_STATUS,
+  } = usePublicWallet();
+
+  // Handle API errors
+  useEffect(() => {
+    if (error) {
+      toast.error(
+        `Error fetching wallets: ${error.message || "Unknown error"}`,
+      );
+    }
+    if (operationError) {
+      toast.error(
+        `Operation failed: ${operationError.message || "Unknown error"}`,
+      );
+    }
+  }, [error, operationError]);
 
   // Handle search input change
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
+  // Submit search
+  const handleSearch = () => {
+    setFilters((prev) => ({
+      ...prev,
+      value: searchQuery,
+      lastId: undefined,
+      lastCreatedAt: undefined,
+    }));
+  };
+
+  // Handle search on Enter key
+  const handleSearchKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
   // Handle status filter change
   const handleStatusFilterChange = (e) => {
     setStatusFilter(e.target.value);
+    // No direct status filter in the API, we'll filter client-side for now
   };
 
   // Navigate to add wallet page
@@ -116,6 +103,104 @@ const PublicWalletsPage = () => {
   // Navigate to wallet detail page
   const handleViewWallet = (walletId) => {
     navigate(`/wallet/${walletId}`);
+  };
+
+  // Handle edit wallet
+  const handleEditWallet = (walletId) => {
+    navigate(`/edit-wallet/${walletId}`);
+  };
+
+  // Show delete confirmation
+  const handleDeleteClick = (wallet) => {
+    setSelectedWallet(wallet);
+    setShowDeleteConfirm(true);
+  };
+
+  // Cancel delete
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setSelectedWallet(null);
+  };
+
+  // Confirm delete
+  const handleConfirmDelete = async () => {
+    if (!selectedWallet) return;
+
+    try {
+      await deletePublicWallet(selectedWallet.address);
+      toast.success("Wallet deleted successfully");
+      setShowDeleteConfirm(false);
+      setSelectedWallet(null);
+      refetchWallets();
+    } catch (err) {
+      // Error is already handled by the hook and shown in toast
+    }
+  };
+
+  // Filter wallets based on status filter (client-side filtering)
+  const filteredWallets = wallets
+    ? wallets.filter((wallet) => {
+        if (statusFilter === "all") return true;
+        if (statusFilter === "active")
+          return wallet.status === WALLET_STATUS.ACTIVE;
+        if (statusFilter === "inactive")
+          return wallet.status !== WALLET_STATUS.ACTIVE;
+        return true;
+      })
+    : [];
+
+  // Get the wallet status label
+  const getStatusLabel = (statusCode) => {
+    switch (statusCode) {
+      case WALLET_STATUS.ACTIVE:
+        return "Active";
+      case WALLET_STATUS.ARCHIVED:
+        return "Archived";
+      case WALLET_STATUS.LOCKED:
+        return "Locked";
+      default:
+        return "Unknown";
+    }
+  };
+
+  // Get the wallet status class
+  const getStatusClass = (statusCode) => {
+    switch (statusCode) {
+      case WALLET_STATUS.ACTIVE:
+        return "bg-green-100 text-green-800";
+      case WALLET_STATUS.ARCHIVED:
+        return "bg-gray-100 text-gray-600";
+      case WALLET_STATUS.LOCKED:
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
+
+  // Get the wallet status dot class
+  const getStatusDotClass = (statusCode) => {
+    switch (statusCode) {
+      case WALLET_STATUS.ACTIVE:
+        return "bg-green-500";
+      case WALLET_STATUS.ARCHIVED:
+        return "bg-gray-400";
+      case WALLET_STATUS.LOCKED:
+        return "bg-red-500";
+      default:
+        return "bg-gray-400";
+    }
+  };
+
+  // Format address for display
+  const formatAddress = (address) => {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -170,6 +255,7 @@ const PublicWalletsPage = () => {
                 placeholder="Search by name, description or address"
                 value={searchQuery}
                 onChange={handleSearchChange}
+                onKeyPress={handleSearchKeyPress}
                 aria-label="Search wallets"
               />
             </div>
@@ -217,11 +303,26 @@ const PublicWalletsPage = () => {
 
         {/* Results Counter */}
         <div className="mb-4 text-gray-600 text-sm">
-          Showing {filteredWallets.length} out of {wallets.length} wallets
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <Loader className="h-4 w-4 animate-spin" />
+              Loading wallets...
+            </div>
+          ) : (
+            <>Showing {filteredWallets.length} wallets</>
+          )}
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-12">
+            <Loader className="h-8 w-8 text-purple-600 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading your wallets...</p>
+          </div>
+        )}
+
         {/* Grid View */}
-        {viewMode === "grid" && (
+        {!isLoading && viewMode === "grid" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredWallets.map((wallet) => (
               <div
@@ -245,19 +346,18 @@ const PublicWalletsPage = () => {
                         {wallet.name}
                       </h2>
                       <p className="text-xs text-gray-500">
-                        {wallet.address.slice(0, 6)}...
-                        {wallet.address.slice(-4)}
+                        {formatAddress(wallet.address)}
                       </p>
                     </div>
                   </div>
                   <div className="flex justify-center items-center">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${wallet.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(wallet.status)}`}
                     >
                       <span
-                        className={`h-2 w-2 rounded-full mr-1.5 ${wallet.status === "active" ? "bg-green-500" : "bg-gray-400"}`}
+                        className={`h-2 w-2 rounded-full mr-1.5 ${getStatusDotClass(wallet.status)}`}
                       ></span>
-                      {wallet.status === "active" ? "Active" : "Inactive"}
+                      {getStatusLabel(wallet.status)}
                     </span>
                   </div>
                 </div>
@@ -274,35 +374,58 @@ const PublicWalletsPage = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center text-gray-500 text-sm">
                       <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
-                      <span>{wallet.viewCount} views</span>
+                      <span>{wallet.viewCount || 0} views</span>
                     </div>
                     <div className="text-gray-500 text-sm">
-                      Created {new Date(wallet.createdAt).toLocaleDateString()}
+                      Created {formatDate(wallet.createdAt)}
                     </div>
                   </div>
                 </div>
 
                 {/* Card Actions */}
                 <div className="px-4 py-3 bg-gray-50 flex justify-between items-center">
-                  <button
-                    onClick={() => handleViewWallet(wallet.id)}
-                    className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center"
-                    aria-label={`View details for ${wallet.name}`}
-                  >
-                    View Details
-                    <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleViewWallet(wallet.id)}
+                      className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center"
+                      aria-label={`View details for ${wallet.name}`}
+                    >
+                      View
+                      <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
+                    </button>
+                    <button
+                      onClick={() => handleEditWallet(wallet.id)}
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+                      aria-label={`Edit ${wallet.name}`}
+                    >
+                      <Edit2 className="mr-1 h-4 w-4" aria-hidden="true" />
+                      Edit
+                    </button>
+                  </div>
 
-                  <a
-                    href={`/public/${wallet.address}`}
-                    className="text-gray-600 hover:text-gray-800 text-sm font-medium flex items-center"
-                    aria-label={`View public page for ${wallet.name}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Public Link
-                    <ExternalLink className="ml-1 h-4 w-4" aria-hidden="true" />
-                  </a>
+                  <div className="flex gap-2">
+                    <a
+                      href={`/public/${wallet.address}`}
+                      className="text-gray-600 hover:text-gray-800 text-sm font-medium flex items-center"
+                      aria-label={`View public page for ${wallet.name}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Public
+                      <ExternalLink
+                        className="ml-1 h-4 w-4"
+                        aria-hidden="true"
+                      />
+                    </a>
+                    <button
+                      onClick={() => handleDeleteClick(wallet)}
+                      className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center"
+                      aria-label={`Delete ${wallet.name}`}
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" aria-hidden="true" />
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -310,7 +433,7 @@ const PublicWalletsPage = () => {
         )}
 
         {/* List View */}
-        {viewMode === "list" && (
+        {!isLoading && viewMode === "list" && (
           <div className="space-y-4">
             {filteredWallets.map((wallet) => (
               <div
@@ -336,23 +459,24 @@ const PublicWalletsPage = () => {
                       </h2>
                       <div className="flex items-center text-sm text-gray-500 mb-2">
                         <span className="font-mono">
-                          {wallet.address.slice(0, 10)}...
-                          {wallet.address.slice(-8)}
+                          {wallet.address
+                            ? `${wallet.address.slice(0, 10)}...${wallet.address.slice(-8)}`
+                            : ""}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${wallet.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(wallet.status)}`}
                       >
                         <span
-                          className={`h-2 w-2 rounded-full mr-1.5 ${wallet.status === "active" ? "bg-green-500" : "bg-gray-400"}`}
+                          className={`h-2 w-2 rounded-full mr-1.5 ${getStatusDotClass(wallet.status)}`}
                         ></span>
-                        {wallet.status === "active" ? "Active" : "Inactive"}
+                        {getStatusLabel(wallet.status)}
                       </span>
                       <div className="flex items-center text-gray-500 text-sm">
                         <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
-                        <span>{wallet.viewCount} views</span>
+                        <span>{wallet.viewCount || 0} views</span>
                       </div>
                     </div>
                   </div>
@@ -361,7 +485,7 @@ const PublicWalletsPage = () => {
 
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-2 pt-2 border-t border-gray-100">
                     <div className="text-gray-500 text-sm mb-2 sm:mb-0">
-                      Created {new Date(wallet.createdAt).toLocaleDateString()}
+                      Created {formatDate(wallet.createdAt)}
                     </div>
                     <div className="flex gap-4">
                       <button
@@ -375,7 +499,14 @@ const PublicWalletsPage = () => {
                           aria-hidden="true"
                         />
                       </button>
-
+                      <button
+                        onClick={() => handleEditWallet(wallet.id)}
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+                        aria-label={`Edit ${wallet.name}`}
+                      >
+                        <Edit2 className="mr-1 h-4 w-4" aria-hidden="true" />
+                        Edit
+                      </button>
                       <a
                         href={`/public/${wallet.address}`}
                         className="text-gray-600 hover:text-gray-800 text-sm font-medium flex items-center"
@@ -389,6 +520,14 @@ const PublicWalletsPage = () => {
                           aria-hidden="true"
                         />
                       </a>
+                      <button
+                        onClick={() => handleDeleteClick(wallet)}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center"
+                        aria-label={`Delete ${wallet.name}`}
+                      >
+                        <Trash2 className="mr-1 h-4 w-4" aria-hidden="true" />
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -398,7 +537,7 @@ const PublicWalletsPage = () => {
         )}
 
         {/* Empty State */}
-        {filteredWallets.length === 0 && (
+        {!isLoading && filteredWallets.length === 0 && (
           <div className="text-center py-12 bg-white rounded-xl shadow-sm">
             <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
               <Wallet className="h-8 w-8 text-purple-500" />
@@ -418,6 +557,48 @@ const PublicWalletsPage = () => {
               <Plus className="h-5 w-5 mr-2" />
               Add Your First Wallet
             </button>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">
+                Confirm Deletion
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete the wallet{" "}
+                <span className="font-semibold">{selectedWallet?.name}</span>?
+                This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={handleCancelDelete}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors"
+                  disabled={isOperationLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center"
+                  disabled={isOperationLoading}
+                >
+                  {isOperationLoading ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin mr-2" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Wallet
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </main>

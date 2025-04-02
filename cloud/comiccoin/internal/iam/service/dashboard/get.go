@@ -11,7 +11,10 @@ import (
 )
 
 type DashboardDTO struct {
-	ChainID uint16 `bson:"chain_id" json:"chain_id"`
+	ChainID               uint16 `bson:"chain_id" json:"chain_id"`
+	TotalWalletsCount     int64  `bson:"total_wallets_count" json:"total_wallets_count"`
+	ActiveWalletsCount    int64  `bson:"active_wallets_count" json:"active_wallets_count"`
+	TotalWalletViewsCount int64  `bson:"total_wallet_views_count" json:"total_wallet_views_count"`
 }
 
 type GetDashboardService interface {
