@@ -11,9 +11,7 @@ import {
   Info,
   Type,
   FileText,
-  Image,
   Activity,
-  Check,
   Loader,
 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -33,6 +31,12 @@ const PublicWalletAddPage = () => {
     WALLET_STATUS,
   } = usePublicWallet();
 
+  // State for general error message
+  const [generalError, setGeneralError] = useState("");
+
+  // Form validation errors
+  const [errors, setErrors] = useState({});
+
   // Form state
   const [formData, setFormData] = useState({
     address: "",
@@ -42,9 +46,6 @@ const PublicWalletAddPage = () => {
     thumbnailS3Key: "",
     status: WALLET_STATUS.ACTIVE,
   });
-
-  // Form validation errors
-  const [errors, setErrors] = useState({});
 
   // Reset state when navigating away
   useEffect(() => {
@@ -56,10 +57,43 @@ const PublicWalletAddPage = () => {
   // Handle API errors when they occur
   useEffect(() => {
     if (error) {
-      toast.error(`Error: ${error.message || "Failed to create wallet"}`);
+      console.log("Error detected:", error);
+
+      // Set a general error message for display in the UI
+      setGeneralError(
+        "Failed to create wallet. Please check your input and try again.",
+      );
+
+      // Check for specific error types
+      if (typeof error === "string") {
+        setGeneralError(error);
+      } else if (error.message && typeof error.message === "string") {
+        if (error.message.includes("hex string has length 0, want 40")) {
+          setGeneralError(
+            "Please enter a valid Ethereum address (40 characters starting with 0x)",
+          );
+          setErrors((prev) => ({
+            ...prev,
+            address: "Invalid Ethereum address format",
+          }));
+        } else {
+          setGeneralError(error.message);
+        }
+      } else if (error.response && error.response.data) {
+        if (typeof error.response.data === "string") {
+          setGeneralError(error.response.data);
+        } else if (error.response.data.message) {
+          setGeneralError(error.response.data.message);
+        }
+      }
+
+      // Set form field errors if available
       if (error.errors) {
         setErrors(error.errors);
       }
+    } else {
+      // Clear error when there's no error
+      setGeneralError("");
     }
   }, [error]);
 
@@ -86,11 +120,36 @@ const PublicWalletAddPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Clear any previous errors
+    setErrors({});
+    setGeneralError("");
+
     try {
       await createPublicWallet(formData);
       // Success is handled by the useEffect
     } catch (err) {
-      // Error is handled by the useEffect
+      // Log the error for debugging
+      console.error("Form submission error:", err);
+
+      // Set a fallback error message
+      setGeneralError(
+        "Failed to create wallet. Please check your input and try again.",
+      );
+
+      // Try to extract error information
+      if (err.response && err.response.data) {
+        console.log("Response data:", err.response.data);
+        if (typeof err.response.data === "string") {
+          setGeneralError(err.response.data);
+        } else if (err.response.data.error) {
+          setErrors({ address: err.response.data.error });
+          setGeneralError(err.response.data.error);
+        } else if (err.response.data.message) {
+          setGeneralError(err.response.data.message);
+        }
+      } else if (err.message) {
+        setGeneralError(err.message);
+      }
     }
   };
 
@@ -146,18 +205,21 @@ const PublicWalletAddPage = () => {
           {/* Form Content */}
           <form onSubmit={handleSubmit} className="p-6 space-y-6" noValidate>
             {/* Error Summary */}
-            {Object.keys(errors).length > 0 && (
+            {(Object.keys(errors).length > 0 || generalError) && (
               <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
                 <div className="flex items-center gap-2 font-medium mb-2">
                   <AlertCircle className="h-5 w-5" />
                   <h3>Please correct the following errors:</h3>
                 </div>
-                <ul className="list-disc ml-5 space-y-1 text-sm">
-                  {Object.entries(errors).map(
-                    ([field, message]) =>
-                      message && <li key={field}>{message}</li>,
-                  )}
-                </ul>
+                {generalError && <p className="text-sm mb-2">{generalError}</p>}
+                {Object.keys(errors).length > 0 && (
+                  <ul className="list-disc ml-5 space-y-1 text-sm">
+                    {Object.entries(errors).map(
+                      ([field, message]) =>
+                        message && <li key={field}>{message}</li>,
+                    )}
+                  </ul>
+                )}
               </div>
             )}
 
