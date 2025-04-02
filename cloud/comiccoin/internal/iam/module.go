@@ -22,6 +22,7 @@ import (
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/me"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/middleware"
+	http_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/publicwallet"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/task"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/repo/bannedipaddress"
 	r_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/repo/publicwallet"
@@ -31,6 +32,7 @@ import (
 	svc_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/gateway"
 	svc_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/hello"
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/me"
+	svc_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/publicwallet"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/bannedipaddress"
 	uc_emailer "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/emailer"
 	uc_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
@@ -207,17 +209,6 @@ func NewModule(
 		publicWalletRepo,
 	)
 
-	_ = publicWalletCreateUseCase
-	_ = publicWalletGetByIDUseCase
-	_ = publicWalletGetByAddressUseCase
-	_ = publicWalletUpdateByAddressUseCase
-	_ = publicWalletUpdateByIDUseCase
-	_ = publicWalletUpdateByAddressUseCase
-	_ = publicWalletDeleteByIDUseCase
-	_ = publicWalletListByFilterUseCase
-	_ = publicWalletCountByFilterUseCase
-	_ = publicWalletListAllAddressesUseCase
-
 	////
 	//// Service
 	////
@@ -330,6 +321,53 @@ func NewModule(
 		userUpdateUseCase,
 	)
 
+	// --- Public Wallet ---
+	createPublicWalletService := svc_publicwallet.NewCreatePublicWalletService(
+		cfg,
+		logger,
+		publicWalletCreateUseCase,
+	)
+	getPublicWalletByIDService := svc_publicwallet.NewGetPublicWalletByIDService(
+		cfg,
+		logger,
+		publicWalletGetByIDUseCase,
+	)
+	getPublicWalletByAddressService := svc_publicwallet.NewGetPublicWalletByAddressService(
+		cfg,
+		logger,
+		publicWalletGetByAddressUseCase,
+	)
+	updatePublicWalletByIDService := svc_publicwallet.NewUpdatePublicWalletByIDService(
+		cfg,
+		logger,
+		publicWalletUpdateByIDUseCase,
+	)
+	updatePublicWalletByAddressService := svc_publicwallet.NewUpdatePublicWalletByAddressService(
+		cfg,
+		logger,
+		publicWalletUpdateByAddressUseCase,
+	)
+	deletePublicWalletByIDService := svc_publicwallet.NewDeletePublicWalletByIDService(
+		cfg,
+		logger,
+		publicWalletDeleteByIDUseCase,
+	)
+	listPublicWalletsByFilterService := svc_publicwallet.NewListPublicWalletsByFilterService(
+		cfg,
+		logger,
+		publicWalletListByFilterUseCase,
+	)
+	countPublicWalletsByFilterService := svc_publicwallet.NewCountPublicWalletsByFilterService(
+		cfg,
+		logger,
+		publicWalletCountByFilterUseCase,
+	)
+	listAllPublicWalletAddressesService := svc_publicwallet.NewListAllPublicWalletAddressesService(
+		cfg,
+		logger,
+		publicWalletListAllAddressesUseCase,
+	)
+
 	////
 	//// Interface
 	////
@@ -410,6 +448,82 @@ func NewModule(
 		deleteMeService,
 	)
 
+	// --- Public Wallet ---
+
+	_ = createPublicWalletService
+	_ = getPublicWalletByIDService
+	_ = getPublicWalletByAddressService
+	_ = updatePublicWalletByIDService
+	_ = updatePublicWalletByAddressService
+	_ = deletePublicWalletByIDService
+	_ = listPublicWalletsByFilterService
+	_ = countPublicWalletsByFilterService
+	_ = listAllPublicWalletAddressesService
+
+	createPublicWalletHTTPHandler := http_publicwallet.NewCreatePublicWalletHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		createPublicWalletService,
+	)
+	getPublicWalletByIDHTTPHandler := http_publicwallet.NewGetPublicWalletByIDHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		getPublicWalletByIDService,
+	)
+	getPublicWalletByAddressHTTPHandler := http_publicwallet.NewGetPublicWalletByAddressHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		getPublicWalletByAddressService,
+	)
+	updatePublicWalletByIDHTTPHandler := http_publicwallet.NewUpdatePublicWalletByIDHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		updatePublicWalletByIDService,
+	)
+	updatePublicWalletByAddressHTTPHandler := http_publicwallet.NewUpdatePublicWalletByAddressHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		updatePublicWalletByAddressService,
+	)
+	deletePublicWalletByIDHTTPHandler := http_publicwallet.NewDeletePublicWalletByIDHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		deletePublicWalletByIDService,
+	)
+	listPublicWalletsByFilterHTTPHandler := http_publicwallet.NewListPublicWalletsByFilterHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		listPublicWalletsByFilterService,
+	)
+	countPublicWalletsByFilterHTTPHandler := http_publicwallet.NewCountPublicWalletsByFilterHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		countPublicWalletsByFilterService,
+	)
+	listAllPublicWalletAddressesHTTPHandler := http_publicwallet.NewListAllPublicWalletAddressesHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		listAllPublicWalletAddressesService,
+	)
+	_ = createPublicWalletHTTPHandler
+	_ = getPublicWalletByIDHTTPHandler
+	_ = getPublicWalletByAddressHTTPHandler
+	_ = updatePublicWalletByIDHTTPHandler
+	_ = updatePublicWalletByAddressHTTPHandler
+	_ = deletePublicWalletByIDHTTPHandler
+	_ = listPublicWalletsByFilterHTTPHandler
+	_ = countPublicWalletsByFilterHTTPHandler
+	_ = listAllPublicWalletAddressesHTTPHandler
+
 	// --- Dashboard ---
 
 	dashboardHTTPHandler := http_dashboard.NewDashboardHTTPHandler(
@@ -455,6 +569,15 @@ func NewModule(
 		putUpdateMeHTTPHandler,
 		deleteMeHTTPHandler,
 		postVerifyProfileHTTPHandler,
+		createPublicWalletHTTPHandler,
+		getPublicWalletByIDHTTPHandler,
+		getPublicWalletByAddressHTTPHandler,
+		updatePublicWalletByIDHTTPHandler,
+		updatePublicWalletByAddressHTTPHandler,
+		deletePublicWalletByIDHTTPHandler,
+		listPublicWalletsByFilterHTTPHandler,
+		countPublicWalletsByFilterHTTPHandler,
+		listAllPublicWalletAddressesHTTPHandler,
 		dashboardHTTPHandler,
 	)
 

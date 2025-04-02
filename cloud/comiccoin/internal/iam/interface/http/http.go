@@ -20,6 +20,7 @@ import (
 	http_gateway "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/gateway"
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/me"
+	http_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/publicwallet"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -62,6 +63,16 @@ type httpServerImpl struct {
 	deleteMeHTTPHandler            *http_me.DeleteMeHTTPHandler
 	postVerifyProfileHTTPHandler   *http_me.PostVerifyProfileHTTPHandler
 
+	createPublicWalletHTTPHandler           *http_publicwallet.CreatePublicWalletHTTPHandler
+	getPublicWalletByIDHTTPHandler          *http_publicwallet.GetPublicWalletByIDHTTPHandler
+	getPublicWalletByAddressHTTPHandler     *http_publicwallet.GetPublicWalletByAddressHTTPHandler
+	updatePublicWalletByIDHTTPHandler       *http_publicwallet.UpdatePublicWalletByIDHTTPHandler
+	updatePublicWalletByAddressHTTPHandler  *http_publicwallet.UpdatePublicWalletByAddressHTTPHandler
+	deletePublicWalletByIDHTTPHandler       *http_publicwallet.DeletePublicWalletByIDHTTPHandler
+	listPublicWalletsByFilterHTTPHandler    *http_publicwallet.ListPublicWalletsByFilterHTTPHandler
+	countPublicWalletsByFilterHTTPHandler   *http_publicwallet.CountPublicWalletsByFilterHTTPHandler
+	listAllPublicWalletAddressesHTTPHandler *http_publicwallet.ListAllPublicWalletAddressesHTTPHandler
+
 	dashboard *http_dashboard.DashboardHTTPHandler
 }
 
@@ -83,6 +94,15 @@ func NewHTTPServer(
 	putUpdateMeHTTPHandler *http_me.PutUpdateMeHTTPHandler,
 	deleteMeHTTPHandler *http_me.DeleteMeHTTPHandler,
 	postVerifyProfileHTTPHandler *http_me.PostVerifyProfileHTTPHandler,
+	createPublicWalletHTTPHandler *http_publicwallet.CreatePublicWalletHTTPHandler,
+	getPublicWalletByIDHTTPHandler *http_publicwallet.GetPublicWalletByIDHTTPHandler,
+	getPublicWalletByAddressHTTPHandler *http_publicwallet.GetPublicWalletByAddressHTTPHandler,
+	updatePublicWalletByIDHTTPHandler *http_publicwallet.UpdatePublicWalletByIDHTTPHandler,
+	updatePublicWalletByAddressHTTPHandler *http_publicwallet.UpdatePublicWalletByAddressHTTPHandler,
+	deletePublicWalletByIDHTTPHandler *http_publicwallet.DeletePublicWalletByIDHTTPHandler,
+	listPublicWalletsByFilterHTTPHandler *http_publicwallet.ListPublicWalletsByFilterHTTPHandler,
+	countPublicWalletsByFilterHTTPHandler *http_publicwallet.CountPublicWalletsByFilterHTTPHandler,
+	listAllPublicWalletAddressesHTTPHandler *http_publicwallet.ListAllPublicWalletAddressesHTTPHandler,
 	dashboard *http_dashboard.DashboardHTTPHandler,
 ) HTTPServer {
 
