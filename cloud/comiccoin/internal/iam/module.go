@@ -331,6 +331,7 @@ func NewModule(
 		cfg,
 		logger,
 		publicWalletCreateUseCase,
+		publicWalletGetByAddressUseCase,
 	)
 	getPublicWalletByIDService := svc_publicwallet.NewGetPublicWalletByIDService(
 		cfg,

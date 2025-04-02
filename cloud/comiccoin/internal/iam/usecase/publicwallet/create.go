@@ -36,9 +36,17 @@ func (uc *publicWalletCreateUseCaseImpl) Execute(ctx context.Context, publicWall
 	} else {
 		if publicWallet.Address == nil {
 			e["address"] = "Address is required"
+		} else {
+			if publicWallet.Address.Hex() == "0x0000000000000000000000000000000000000000" {
+				e["wallet_address"] = "Wallet address cannot be burn address"
+			}
 		}
 		if publicWallet.ChainID == 0 {
 			e["chain_id"] = "Chain ID is required"
+		} else {
+			if publicWallet.ChainID != uc.config.Blockchain.ChainID {
+				e["chain_id"] = "Chain ID must match the blockchain chain ID"
+			}
 		}
 		if publicWallet.Name == "" {
 			e["name"] = "Name is required"
