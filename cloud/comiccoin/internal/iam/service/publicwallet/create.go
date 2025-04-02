@@ -137,6 +137,7 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 		ModifiedAt:       time.Now(),
 		ModifiedByUserID: userID,
 		ModifiedByName:   userName,
+		Status:           dom.PublicWalletStatusActive,
 	}
 
 	err := svc.publicWalletCreateUseCase.Execute(sessCtx, pw)
