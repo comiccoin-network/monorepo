@@ -15,7 +15,7 @@ import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
-import PublicWalletsPage from "./pages/PublicWalletsPage";
+import PublicWalletListPage from "./pages/PublicWallet/ListPage";
 import AddWalletAddressPage from "./pages/AddWalletAddressPage"; //TODO: REMOVE
 import VerificationLaunchpadPage from "./pages/VerificationLaunchpadPage";
 import VerificationIndividualPage from "./pages/VerificationIndividualPage";
@@ -153,7 +153,7 @@ function App() {
               path="/public-wallets"
               element={
                 <ProtectedRoute>
-                  <PublicWalletsPage />
+                  <PublicWalletListPage />
                 </ProtectedRoute>
               }
             />

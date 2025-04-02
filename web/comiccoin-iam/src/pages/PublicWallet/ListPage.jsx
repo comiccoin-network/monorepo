@@ -1,4 +1,4 @@
-// src/pages/PublicWalletsPage.jsx
+// src/pages/PublicWallet/ListPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -16,12 +16,15 @@ import {
   Edit2,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import AppTopNavigation from "../components/AppTopNavigation";
-import AppFooter from "../components/AppFooter";
-import withProfileVerification from "../components/withProfileVerification";
-import { usePublicWallet, usePublicWalletList } from "../hooks/usePublicWallet";
+import AppTopNavigation from "../../components/AppTopNavigation";
+import AppFooter from "../../components/AppFooter";
+import withProfileVerification from "../../components/withProfileVerification";
+import {
+  usePublicWallet,
+  usePublicWalletList,
+} from "../../hooks/usePublicWallet";
 
-const PublicWalletsPage = () => {
+const PublicWalletListPage = () => {
   const navigate = useNavigate();
 
   // State for view mode and filters
@@ -608,4 +611,4 @@ const PublicWalletsPage = () => {
   );
 };
 
-export default withProfileVerification(PublicWalletsPage);
+export default withProfileVerification(PublicWalletListPage);
