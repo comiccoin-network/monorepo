@@ -100,3 +100,6 @@ todo.txt
 
 # Do not save the `crev` text output
 crev-project.txt
+
+# Do not save `dist` folder.
+dist/
