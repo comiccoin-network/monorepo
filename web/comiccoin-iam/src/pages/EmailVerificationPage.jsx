@@ -131,7 +131,7 @@ const EmailVerificationPage = () => {
               <div className="flex items-center space-x-2">
                 <Coins className="h-8 w-8" />
                 <span className="text-2xl font-bold">
-                  ComicCoin Name Service
+                  ComicCoin Digital Identity
                 </span>
               </div>
               <button
@@ -171,7 +171,7 @@ const EmailVerificationPage = () => {
                   <div className="text-center space-y-4">
                     <p className="text-gray-700">
                       Thank you for verifying your email address. You can now
-                      access all features of ComicCoin Name Service.
+                      access all features of ComicCoin Digital Identity.
                     </p>
                     <p className="text-gray-600">
                       Start exploring the platform and earn ComicCoins!
@@ -203,8 +203,8 @@ const EmailVerificationPage = () => {
           <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-8">
             <div className="max-w-7xl mx-auto px-4 text-center">
               <p className="mb-4">
-                © {new Date().getFullYear()} ComicCoin Name Service. All rights
-                reserved.
+                © {new Date().getFullYear()} ComicCoin Digital Identity. All
+                rights reserved.
               </p>
               <p>
                 <Link to="/terms" className="underline hover:text-purple-200">
@@ -228,7 +228,9 @@ const EmailVerificationPage = () => {
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <Coins className="h-8 w-8" />
-              <span className="text-2xl font-bold">ComicCoin Name Service</span>
+              <span className="text-2xl font-bold">
+                ComicCoin Digital Identity
+              </span>
             </div>
           </div>
         </nav>
@@ -276,7 +278,9 @@ const EmailVerificationPage = () => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <Coins className="h-8 w-8" />
-            <span className="text-2xl font-bold">ComicCoin Name Service</span>
+            <span className="text-2xl font-bold">
+              ComicCoin Digital Identity
+            </span>
           </div>
           <button
             onClick={() => navigate("/")}
@@ -396,7 +400,7 @@ const EmailVerificationPage = () => {
       <footer className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="mb-4">
-            © {new Date().getFullYear()} ComicCoin Name Service. All rights
+            © {new Date().getFullYear()} ComicCoin Digital Identity. All rights
             reserved.
           </p>
           <p>

@@ -61,12 +61,14 @@ function TermsPage() {
         <div className="bg-white rounded-xl p-8 shadow-md mb-8">
           <div className="flex items-center gap-3 mb-8 text-purple-700">
             <FileText className="h-8 w-8" />
-            <h2 className="text-2xl font-bold">ComicCoin Name Service Terms</h2>
+            <h2 className="text-2xl font-bold">
+              ComicCoin Digital Identity Terms
+            </h2>
           </div>
 
           <div className="prose prose-purple max-w-none">
             <h2 className="text-2xl font-bold text-purple-800 mt-8 mb-4">
-              For ComicCoin Name Service
+              For ComicCoin Digital Identity
             </h2>
             <p className="text-gray-700 mb-4">
               ComicCoin Network provides a faucet service that allows users to

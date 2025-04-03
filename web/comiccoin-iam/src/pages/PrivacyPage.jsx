@@ -71,7 +71,7 @@ function PrivacyPage() {
               Who we are
             </h2>
             <p className="text-gray-700 mb-6">
-              ComicCoin Network - ComicCoin Name Service
+              ComicCoin Network - ComicCoin Digital Identity
             </p>
 
             <h2 className="text-2xl font-bold text-purple-800 mt-8 mb-4">
