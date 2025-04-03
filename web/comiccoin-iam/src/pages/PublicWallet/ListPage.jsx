@@ -109,8 +109,8 @@ const PublicWalletListPage = () => {
   };
 
   // Handle edit wallet
-  const handleEditWallet = (walletId) => {
-    navigate(`/public-wallet/${walletId}/edit`);
+  const handleEditWallet = (address) => {
+    navigate(`/public-wallet/${address}/edit`);
   };
 
   // Show delete confirmation
@@ -329,7 +329,7 @@ const PublicWalletListPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredWallets.map((wallet) => (
               <div
-                key={wallet.id}
+                key={wallet.address}
                 className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100"
               >
                 {/* Card Header with Wallet Icon */}
@@ -389,7 +389,7 @@ const PublicWalletListPage = () => {
                 <div className="px-4 py-3 bg-gray-50 flex justify-between items-center">
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleViewWallet(wallet.id)}
+                      onClick={() => handleViewWallet(wallet.address)}
                       className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center"
                       aria-label={`View details for ${wallet.name}`}
                     >
@@ -397,7 +397,7 @@ const PublicWalletListPage = () => {
                       <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
                     </button>
                     <button
-                      onClick={() => handleEditWallet(wallet.id)}
+                      onClick={() => handleEditWallet(wallet.address)}
                       className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
                       aria-label={`Edit ${wallet.name}`}
                     >
@@ -440,7 +440,7 @@ const PublicWalletListPage = () => {
           <div className="space-y-4">
             {filteredWallets.map((wallet) => (
               <div
-                key={wallet.id}
+                key={wallet.address}
                 className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100 p-4 flex flex-col sm:flex-row gap-4"
               >
                 {/* Wallet Icon (Left Side for non-mobile) */}
@@ -492,7 +492,7 @@ const PublicWalletListPage = () => {
                     </div>
                     <div className="flex gap-4">
                       <button
-                        onClick={() => handleViewWallet(wallet.id)}
+                        onClick={() => handleViewWallet(wallet.address)}
                         className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center"
                         aria-label={`View details for ${wallet.name}`}
                       >
@@ -503,7 +503,7 @@ const PublicWalletListPage = () => {
                         />
                       </button>
                       <button
-                        onClick={() => handleEditWallet(wallet.id)}
+                        onClick={() => handleEditWallet(wallet.address)}
                         className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
                         aria-label={`Edit ${wallet.name}`}
                       >

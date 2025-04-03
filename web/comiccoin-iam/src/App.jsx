@@ -17,6 +17,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import PublicWalletListPage from "./pages/PublicWallet/ListPage";
 import PublicWalletAddPage from "./pages/PublicWallet/AddPage";
+import PublicWalletDetailsPage from "./pages/PublicWallet/DetailsPage";
 import AddWalletAddressPage from "./pages/AddWalletAddressPage"; //TODO: REMOVE
 import VerificationLaunchpadPage from "./pages/VerificationLaunchpadPage";
 import VerificationIndividualPage from "./pages/VerificationIndividualPage";
@@ -163,6 +164,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PublicWalletAddPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/public-wallet/:address"
+              element={
+                <ProtectedRoute>
+                  <PublicWalletDetailsPage />
                 </ProtectedRoute>
               }
             />
