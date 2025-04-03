@@ -102,7 +102,7 @@ const PublicWalletDetailsPage = () => {
 
   // Navigate to edit page
   const handleEdit = () => {
-    navigate(`/public-wallets/${address}/edit`);
+    navigate(`/public-wallet/${address}/edit`);
   };
 
   // Navigate back to list

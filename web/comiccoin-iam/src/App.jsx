@@ -18,6 +18,7 @@ import DashboardPage from "./pages/DashboardPage";
 import PublicWalletListPage from "./pages/PublicWallet/ListPage";
 import PublicWalletAddPage from "./pages/PublicWallet/AddPage";
 import PublicWalletDetailsPage from "./pages/PublicWallet/DetailsPage";
+import PublicWalletUpdatePage from "./pages/PublicWallet/UpdatePage";
 import AddWalletAddressPage from "./pages/AddWalletAddressPage"; //TODO: REMOVE
 import VerificationLaunchpadPage from "./pages/VerificationLaunchpadPage";
 import VerificationIndividualPage from "./pages/VerificationIndividualPage";
@@ -173,6 +174,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PublicWalletDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/public-wallet/:address/edit"
+              element={
+                <ProtectedRoute>
+                  <PublicWalletUpdatePage />
                 </ProtectedRoute>
               }
             />

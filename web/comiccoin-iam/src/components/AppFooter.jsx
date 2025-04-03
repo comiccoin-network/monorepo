@@ -66,14 +66,6 @@ const AppFooter = () => {
               </li>
               <li>
                 <Link
-                  to="/transactions"
-                  className="text-purple-200 hover:text-white text-sm transition-colors"
-                >
-                  Transactions
-                </Link>
-              </li>
-              <li>
-                <Link
                   to="/help"
                   className="text-purple-200 hover:text-white text-sm transition-colors"
                 >

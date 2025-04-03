@@ -35,7 +35,7 @@ func init() {
 	patterns := []string{
 		"^/iam/api/v1/user/[0-9]+$",
 		"^/iam/api/v1/wallet/[0-9a-f]+$",
-		"^/iam/api/v1/public-wallets/[0-9a-f]+$",
+		"^/iam/api/v1/public-wallets/0x[0-9a-fA-F]{40}$", // Regex designed for ethereum addresses
 	}
 
 	// Precompile patterns
@@ -60,6 +60,7 @@ func isProtectedPath(path string) bool {
 	// Check patterns
 	for _, route := range patternRoutes {
 		if route.regex.MatchString(path) {
+			// fmt.Println("isProtectedPath - ✅ found") // For debugging purposes only.
 			return true
 		}
 	}
