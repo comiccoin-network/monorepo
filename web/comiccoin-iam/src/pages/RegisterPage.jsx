@@ -16,6 +16,7 @@ import {
   Clock,
   ArrowDown,
   AlertTriangle,
+  KeyRound,
 } from "lucide-react";
 import { useRegistration } from "../hooks/useRegistration";
 import Header from "../components/IndexPage/Header";
@@ -46,6 +47,7 @@ const RegisterPage = () => {
     country: "",
     country_other: "",
     timezone: "",
+    beta_access_code: "", // Temporary
     agree_terms_of_service: false,
     agree_promotions: false,
   });
@@ -249,6 +251,31 @@ const RegisterPage = () => {
 
         {/* Form Content */}
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Beta Access Notice */}
+          <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 mb-6 rounded-md">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <Shield
+                  className="h-5 w-5 text-indigo-600"
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-indigo-800">
+                  Private Beta Access
+                </h3>
+                <div className="mt-2 text-sm text-indigo-700">
+                  <p>
+                    ComicCoin Digital ID is currently in private beta. You'll
+                    need an access code to register. If you don't have one,
+                    please contact our team to request access.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* end Beta Access Notice */}
+
           <div
             className="bg-white rounded-xl shadow-lg border border-purple-100 overflow-hidden mb-8"
             ref={formRef}
@@ -298,6 +325,53 @@ const RegisterPage = () => {
                     <p className="font-medium">{apiError.message}</p>
                   </div>
                 )}
+
+              {/* Beta Access Code - Added at the top of the form */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                  <KeyRound className="h-5 w-5 text-purple-500" />
+                  Beta Access
+                </h3>
+
+                <div>
+                  <label
+                    htmlFor="beta_access_code"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Beta Access Code <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <KeyRound className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      id="beta_access_code"
+                      name="beta_access_code"
+                      value={formData.beta_access_code}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-3 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                        errors.beta_access_code
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                      placeholder="Enter your beta access code"
+                      required
+                    />
+                  </div>
+                  {errors.beta_access_code && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.beta_access_code}
+                    </p>
+                  )}
+                  <p className="mt-2 text-xs text-gray-500">
+                    This code was provided to you in your invitation email. If
+                    you don't have a code, please request access through our
+                    website.
+                  </p>
+                </div>
+              </div>
 
               {/* Personal Information Section */}
               <div className="space-y-4">
