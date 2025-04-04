@@ -9,8 +9,10 @@ import {
   ChevronRight,
   Activity,
   Bookmark,
+  Users,
   Loader,
   AlertCircle,
+  UserCheck,
 } from "lucide-react";
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
@@ -205,24 +207,22 @@ function DashboardPage() {
             </div>
           </div>
 
-          {/* Featured Collections */}
+          {/* Unique Views - New Card */}
           <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 mb-1">
-                  Avg. Views Per Wallet
+                  Unique Profile Views
                 </p>
                 <p className="text-2xl font-bold text-amber-600">
-                  {dashboard && dashboard.totalWalletsCount > 0
-                    ? (
-                        dashboard.totalWalletViewsCount /
-                        dashboard.totalWalletsCount
-                      ).toFixed(1)
-                    : 0}
+                  {dashboard?.totalUniqueWalletViewsCount || 0}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {dashboard?.uniqueViewsPercentage}% of total views
                 </p>
               </div>
               <div className="h-12 w-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Bookmark className="h-6 w-6 text-amber-600" />
+                <UserCheck className="h-6 w-6 text-amber-600" />
               </div>
             </div>
           </div>
@@ -333,6 +333,84 @@ function DashboardPage() {
               </Link>
             </div>
           )}
+        </div>
+
+        {/* Analytics Section */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 mb-8">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <h2 className="text-lg font-medium text-gray-900">
+              View Analytics
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Total vs Unique Views*/}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-md font-medium text-gray-800 mb-2">
+                  Views Breakdown
+                </h3>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-600">Total Views</span>
+                  <span className="font-semibold">
+                    {dashboard?.totalWalletViewsCount || 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-gray-600">Unique Views</span>
+                  <span className="font-semibold">
+                    {dashboard?.totalUniqueWalletViewsCount || 0}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-blue-600 h-2.5 rounded-full"
+                    style={{
+                      width: `${dashboard?.uniqueViewsPercentage || 0}%`,
+                    }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2 text-right">
+                  {dashboard?.uniqueViewsPercentage || 0}% unique views rate
+                </p>
+              </div>
+
+              {/* Active Wallet Performance */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-md font-medium text-gray-800 mb-2">
+                  Wallet Statistics
+                </h3>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-600">Active Wallets</span>
+                  <span className="font-semibold">
+                    {dashboard?.activeWalletsCount || 0} of{" "}
+                    {dashboard?.totalWalletsCount || 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-600">Average Views</span>
+                  <span className="font-semibold">
+                    {dashboard?.averageViewsPerWallet || 0} per wallet
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-600">Most Viewed</span>
+                  <span className="font-semibold">
+                    {dashboard?.mostViewedWallet?.view_count || 0} views
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {dashboard?.activeWalletsCount && dashboard?.totalWalletsCount
+                    ? (
+                        (dashboard.activeWalletsCount /
+                          dashboard.totalWalletsCount) *
+                        100
+                      ).toFixed(1)
+                    : 0}
+                  % of your wallets are active
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Activity Feed - Just a placeholder for now */}

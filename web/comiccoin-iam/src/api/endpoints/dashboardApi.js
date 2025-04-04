@@ -1,19 +1,16 @@
 // monorepo/web/comiccoin-iam/src/api/endpoints/dashboardApi.js
 import axiosClient from "../axiosClient";
 
-// Define the exact API endpoint path as a string constant
-const DASHBOARD_ENDPOINT = "/dashboard";
-
 /**
  * Fetch dashboard data from API
  * @returns {Promise} API response with dashboard data
  */
 export const fetchDashboard = async () => {
   try {
-    // Ensure we're using a string URL and handle the request properly
+    // Using explicit path to avoid URL issues
     const response = await axiosClient({
       method: "get",
-      url: DASHBOARD_ENDPOINT,
+      url: "/dashboard",
     });
 
     // Log successful response
@@ -44,6 +41,7 @@ export const transformDashboardData = (data) => {
       totalWalletsCount: 0,
       activeWalletsCount: 0,
       totalWalletViewsCount: 0,
+      totalUniqueWalletViewsCount: 0,
       publicWallets: [],
       inactiveWalletsCount: 0,
       averageViewsPerWallet: 0,
@@ -56,6 +54,8 @@ export const transformDashboardData = (data) => {
   console.log("Transforming dashboard data:", {
     chainId: data.chain_id,
     walletsCount: data.total_wallets_count,
+    totalViews: data.total_wallet_views_count,
+    uniqueViews: data.total_unique_wallet_views_count,
     hasPublicWallets: !!data.public_wallets,
     walletsArrayLength: Array.isArray(data.public_wallets)
       ? data.public_wallets.length
@@ -78,6 +78,7 @@ export const transformDashboardData = (data) => {
     totalWalletsCount: data.total_wallets_count || 0,
     activeWalletsCount: data.active_wallets_count || 0,
     totalWalletViewsCount: data.total_wallet_views_count || 0,
+    totalUniqueWalletViewsCount: data.total_unique_wallet_views_count || 0,
     publicWallets: publicWallets,
 
     // Computed properties
@@ -89,6 +90,14 @@ export const transformDashboardData = (data) => {
             (data.total_wallet_views_count || 0) /
             (data.total_wallets_count || 0)
           ).toFixed(2)
+        : 0,
+    uniqueViewsPercentage:
+      (data.total_wallet_views_count || 0) > 0
+        ? (
+            ((data.total_unique_wallet_views_count || 0) /
+              (data.total_wallet_views_count || 0)) *
+            100
+          ).toFixed(1)
         : 0,
 
     // Pre-computed data

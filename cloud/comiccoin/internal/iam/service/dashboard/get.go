@@ -17,11 +17,12 @@ import (
 )
 
 type DashboardDTO struct {
-	ChainID               uint16                           `bson:"chain_id" json:"chain_id"`
-	TotalWalletsCount     uint64                           `bson:"total_wallets_count" json:"total_wallets_count"`
-	ActiveWalletsCount    uint64                           `bson:"active_wallets_count" json:"active_wallets_count"`
-	TotalWalletViewsCount uint64                           `bson:"total_wallet_views_count" json:"total_wallet_views_count"`
-	PublicWallets         []*dom_publicwallet.PublicWallet `bson:"public_wallets" json:"public_wallets"`
+	ChainID                     uint16                           `bson:"chain_id" json:"chain_id"`
+	TotalWalletsCount           uint64                           `bson:"total_wallets_count" json:"total_wallets_count"`
+	ActiveWalletsCount          uint64                           `bson:"active_wallets_count" json:"active_wallets_count"`
+	TotalWalletViewsCount       uint64                           `bson:"total_wallet_views_count" json:"total_wallet_views_count"`
+	TotalUniqueWalletViewsCount uint64                           `bson:"total_unique_wallet_views_count" json:"total_unique_wallet_views_count"`
+	PublicWallets               []*dom_publicwallet.PublicWallet `bson:"public_wallets" json:"public_wallets"`
 }
 
 type GetDashboardService interface {
@@ -29,12 +30,13 @@ type GetDashboardService interface {
 }
 
 type getDashboardServiceImpl struct {
-	config                                       *config.Configuration
-	logger                                       *slog.Logger
-	userGetByIDUseCase                           uc_user.UserGetByIDUseCase
-	publicWalletCountByFilterUseCase             uc_publicwallet.PublicWalletCountByFilterUseCase
-	publicWalletListByFilterUseCase              uc_publicwallet.PublicWalletListByFilterUseCase
-	publicWalletGetTotalViewCountByFilterUseCase uc_publicwallet.PublicWalletGetTotalViewCountByFilterUseCase
+	config                                             *config.Configuration
+	logger                                             *slog.Logger
+	userGetByIDUseCase                                 uc_user.UserGetByIDUseCase
+	publicWalletCountByFilterUseCase                   uc_publicwallet.PublicWalletCountByFilterUseCase
+	publicWalletListByFilterUseCase                    uc_publicwallet.PublicWalletListByFilterUseCase
+	publicWalletGetTotalViewCountByFilterUseCase       uc_publicwallet.PublicWalletGetTotalViewCountByFilterUseCase
+	publicWalletGetTotalUniqueViewCountByFilterUseCase uc_publicwallet.PublicWalletGetTotalUniqueViewCountByFilterUseCase
 }
 
 func NewGetDashboardService(
@@ -44,6 +46,7 @@ func NewGetDashboardService(
 	publicWalletCountByFilterUseCase uc_publicwallet.PublicWalletCountByFilterUseCase,
 	publicWalletListByFilterUseCase uc_publicwallet.PublicWalletListByFilterUseCase,
 	publicWalletGetTotalViewCountByFilterUseCase uc_publicwallet.PublicWalletGetTotalViewCountByFilterUseCase,
+	publicWalletGetTotalUniqueViewCountByFilterUseCase uc_publicwallet.PublicWalletGetTotalUniqueViewCountByFilterUseCase,
 ) GetDashboardService {
 	return &getDashboardServiceImpl{
 		config:                           config,
@@ -51,7 +54,8 @@ func NewGetDashboardService(
 		userGetByIDUseCase:               userGetByIDUseCase,
 		publicWalletCountByFilterUseCase: publicWalletCountByFilterUseCase,
 		publicWalletListByFilterUseCase:  publicWalletListByFilterUseCase,
-		publicWalletGetTotalViewCountByFilterUseCase: publicWalletGetTotalViewCountByFilterUseCase,
+		publicWalletGetTotalViewCountByFilterUseCase:       publicWalletGetTotalViewCountByFilterUseCase,
+		publicWalletGetTotalUniqueViewCountByFilterUseCase: publicWalletGetTotalUniqueViewCountByFilterUseCase,
 	}
 }
 
@@ -111,6 +115,14 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 		return nil, err
 	}
 
+	totalUniqueWalletViewsCount, err := svc.publicWalletGetTotalUniqueViewCountByFilterUseCase.Execute(sessCtx, &dom_publicwallet.PublicWalletFilter{
+		CreatedByUserID: userID,
+	})
+	if err != nil {
+		svc.logger.Error("failed getting public wallet total unique view count error", slog.Any("err", err))
+		return nil, err
+	}
+
 	//
 	// Get public wallet list.
 	//
@@ -134,10 +146,11 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 
 	// Return our dashboard response.
 	return &DashboardDTO{
-		ChainID:               user.ChainID,
-		TotalWalletsCount:     totalPublicWalletCount,
-		ActiveWalletsCount:    activeWalletsCount,
-		TotalWalletViewsCount: totalWalletViewsCount,
-		PublicWallets:         publicWalletList.PublicWallets,
+		ChainID:                     user.ChainID,
+		TotalWalletsCount:           totalPublicWalletCount,
+		ActiveWalletsCount:          activeWalletsCount,
+		TotalWalletViewsCount:       totalWalletViewsCount,
+		TotalUniqueWalletViewsCount: totalUniqueWalletViewsCount,
+		PublicWallets:               publicWalletList.PublicWallets,
 	}, nil
 }

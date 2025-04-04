@@ -50,6 +50,8 @@ export const useGetDashboardSummary = () => {
     totalWallets: data.totalWalletsCount,
     activeWallets: data.activeWalletsCount,
     totalViews: data.totalWalletViewsCount,
+    uniqueViews: data.totalUniqueWalletViewsCount,
+    uniqueViewsRate: data.uniqueViewsPercentage,
     walletUsagePercent:
       data.totalWalletsCount > 0
         ? ((data.activeWalletsCount / data.totalWalletsCount) * 100).toFixed(1)
