@@ -2,19 +2,26 @@
 package dashboard
 
 import (
+	"errors"
+	"fmt"
 	"log/slog"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
+	dom_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/publicwallet"
+	uc_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/user"
 )
 
 type DashboardDTO struct {
-	ChainID               uint16 `bson:"chain_id" json:"chain_id"`
-	TotalWalletsCount     int64  `bson:"total_wallets_count" json:"total_wallets_count"`
-	ActiveWalletsCount    int64  `bson:"active_wallets_count" json:"active_wallets_count"`
-	TotalWalletViewsCount int64  `bson:"total_wallet_views_count" json:"total_wallet_views_count"`
+	ChainID               uint16                           `bson:"chain_id" json:"chain_id"`
+	TotalWalletsCount     uint64                           `bson:"total_wallets_count" json:"total_wallets_count"`
+	ActiveWalletsCount    uint64                           `bson:"active_wallets_count" json:"active_wallets_count"`
+	TotalWalletViewsCount uint64                           `bson:"total_wallet_views_count" json:"total_wallet_views_count"`
+	PublicWallets         []*dom_publicwallet.PublicWallet `bson:"public_wallets" json:"public_wallets"`
 }
 
 type GetDashboardService interface {
@@ -22,116 +29,108 @@ type GetDashboardService interface {
 }
 
 type getDashboardServiceImpl struct {
-	config             *config.Configuration
-	logger             *slog.Logger
-	userGetByIDUseCase uc_user.UserGetByIDUseCase
+	config                                       *config.Configuration
+	logger                                       *slog.Logger
+	userGetByIDUseCase                           uc_user.UserGetByIDUseCase
+	publicWalletCountByFilterUseCase             uc_publicwallet.PublicWalletCountByFilterUseCase
+	publicWalletListByFilterUseCase              uc_publicwallet.PublicWalletListByFilterUseCase
+	publicWalletGetTotalViewCountByFilterUseCase uc_publicwallet.PublicWalletGetTotalViewCountByFilterUseCase
 }
 
 func NewGetDashboardService(
 	config *config.Configuration,
 	logger *slog.Logger,
 	userGetByIDUseCase uc_user.UserGetByIDUseCase,
+	publicWalletCountByFilterUseCase uc_publicwallet.PublicWalletCountByFilterUseCase,
+	publicWalletListByFilterUseCase uc_publicwallet.PublicWalletListByFilterUseCase,
+	publicWalletGetTotalViewCountByFilterUseCase uc_publicwallet.PublicWalletGetTotalViewCountByFilterUseCase,
 ) GetDashboardService {
 	return &getDashboardServiceImpl{
-		config:             config,
-		logger:             logger,
-		userGetByIDUseCase: userGetByIDUseCase,
+		config:                           config,
+		logger:                           logger,
+		userGetByIDUseCase:               userGetByIDUseCase,
+		publicWalletCountByFilterUseCase: publicWalletCountByFilterUseCase,
+		publicWalletListByFilterUseCase:  publicWalletListByFilterUseCase,
+		publicWalletGetTotalViewCountByFilterUseCase: publicWalletGetTotalViewCountByFilterUseCase,
 	}
 }
 
 func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*DashboardDTO, error) {
-	// //
-	// // Get required from context.
-	// //
 	//
-	// userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
-	// if !ok {
-	// 	svc.logger.Error("Failed getting local user id",
-	// 		slog.Any("error", "Not found in context: user_id"))
-	// 	return nil, errors.New("user id not found in context")
-	// }
-	// svc.logger.Debug("Extracted from local context",
-	// 	slog.Any("userID", userID))
+	// Get required from context.
 	//
-	// //
-	// // Get related records.
-	// //
+
+	userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	if !ok {
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return nil, errors.New("user id not found in context")
+	}
+	svc.logger.Debug("Extracted from local context",
+		slog.Any("userID", userID))
+
 	//
-	// iam, err := svc.getFaucetByChainIDUseCase.Execute(sessCtx, svc.config.Blockchain.ChainID)
-	// if err != nil {
-	// 	svc.logger.Error("failed getting iam by chain id error", slog.Any("err", err))
-	// 	return nil, err
-	// }
-	// if iam == nil {
-	// 	err := fmt.Errorf("iam d.n.e. for chain ID: %v", svc.config.Blockchain.ChainID)
-	// 	svc.logger.Error("failed getting iam by chain id error", slog.Any("err", err))
-	// 	return nil, err
-	// }
-	// user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
-	// if err != nil {
-	// 	svc.logger.Error("failed getting user error", slog.Any("err", err))
-	// 	return nil, err
-	// }
-	// if user == nil {
-	// 	err := fmt.Errorf("User does not exist for user id: %v", userID.Hex())
-	// 	svc.logger.Error("Failed getting user by user id", slog.Any("error", err))
-	// 	return nil, err
-	// }
+	// Get related records.
 	//
-	// //
-	// // Get remote records.
-	// //
+
+	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
+	if err != nil {
+		svc.logger.Error("failed getting user error", slog.Any("err", err))
+		return nil, err
+	}
+	if user == nil {
+		err := fmt.Errorf("User does not exist for user id: %v", userID.Hex())
+		svc.logger.Error("Failed getting user by user id", slog.Any("error", err))
+		return nil, err
+	}
+
 	//
-	// // Developers note: Remote server returns 404 error if account d.n.e. which is OK,
-	// // as a result, we will skip any errors here and only check if we get user
-	// // wallet balance response.
-	// var userWalletBalance uint64
-	// remoteAccount, _ := svc.fetchRemoteAccountBalanceFromAuthorityUseCase.Execute(sessCtx, user.WalletAddress)
-	// if remoteAccount != nil {
-	// 	userWalletBalance = remoteAccount.Balance
-	// }
+	// Get public wallet count.
 	//
-	// //
-	// // Return the results
-	// //
+
+	totalPublicWalletCount, err := svc.publicWalletCountByFilterUseCase.Execute(sessCtx, &dom_publicwallet.PublicWalletFilter{
+		UserID: userID,
+	})
+	if err != nil {
+		svc.logger.Error("failed getting public wallet count error", slog.Any("err", err))
+		return nil, err
+	}
+	activeWalletsCount, err := svc.publicWalletCountByFilterUseCase.Execute(sessCtx, &dom_publicwallet.PublicWalletFilter{
+		UserID: userID,
+		Status: dom_publicwallet.PublicWalletStatusActive,
+	})
+	if err != nil {
+		svc.logger.Error("failed getting public wallet count error", slog.Any("err", err))
+		return nil, err
+	}
+	totalWalletViewsCount, err := svc.publicWalletGetTotalViewCountByFilterUseCase.Execute(sessCtx, &dom_publicwallet.PublicWalletFilter{
+		UserID: userID,
+	})
+	if err != nil {
+		svc.logger.Error("failed getting public wallet total view count error", slog.Any("err", err))
+		return nil, err
+	}
+
 	//
-	// // Special circumstance #1
-	// var canClaim bool
-	// if user.LastClaimTime.IsZero() || user.NextClaimTime.IsZero() {
-	// 	canClaim = true
-	// } else {
-	// 	canClaim = time.Now().After(user.NextClaimTime)
-	// }
+	// Get public wallet list.
 	//
-	// // Special circumstance #2
-	// if user.ClaimedCoinTransactions == nil {
-	// 	user.ClaimedCoinTransactions = make([]*dom_user.UserClaimedCoinTransaction, 0)
-	// }
-	//
-	// // Apply sorting so most recent transactions will be at the top.
-	// sort.Slice(user.ClaimedCoinTransactions, func(i, j int) bool {
-	// 	return user.ClaimedCoinTransactions[i].Timestamp.After(user.ClaimedCoinTransactions[j].Timestamp)
-	// })
-	//
-	// // Limit transactions to maximum of 5
-	// var limitedTransactions []*dom_user.UserClaimedCoinTransaction
-	// if len(user.ClaimedCoinTransactions) <= 5 {
-	// 	limitedTransactions = user.ClaimedCoinTransactions
-	// } else {
-	// 	limitedTransactions = user.ClaimedCoinTransactions[:5]
-	// }
+
+	publicWalletList, err := svc.publicWalletListByFilterUseCase.Execute(sessCtx, &dom_publicwallet.PublicWalletFilter{
+		UserID: userID,
+		Status: dom_publicwallet.PublicWalletStatusActive,
+		Limit:  10,
+	})
+	if err != nil {
+		svc.logger.Error("failed getting public wallet list error", slog.Any("err", err))
+		return nil, err
+	}
 
 	// Return our dashboard response.
 	return &DashboardDTO{
-		// ChainID:                 iam.ChainID,
-		// FaucetBalance:           iam.Balance,
-		// UserBalance:             userWalletBalance,
-		// TotalCoinsClaimedByUser: user.TotalCoinsClaimed,
-		// Transactions:            limitedTransactions,
-		// LastModifiedAt:          iam.LastModifiedAt,
-		// LastClaimTime:           user.LastClaimTime,
-		// NextClaimTime:           user.NextClaimTime,
-		// CanClaim:                canClaim,
-		// WalletAddress:           user.WalletAddress,
+		ChainID:               user.ChainID,
+		TotalWalletsCount:     totalPublicWalletCount,
+		ActiveWalletsCount:    activeWalletsCount,
+		TotalWalletViewsCount: totalWalletViewsCount,
+		PublicWallets:         publicWalletList.PublicWallets,
 	}, nil
 }

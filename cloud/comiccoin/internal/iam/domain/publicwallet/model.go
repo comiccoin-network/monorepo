@@ -52,6 +52,7 @@ type PublicWalletFilter struct {
 	CreatedAtStart *time.Time         `json:"created_at_start,omitempty"`
 	CreatedAtEnd   *time.Time         `json:"created_at_end,omitempty"`
 	Value          *string            `bson:"value" json:"value"`
+	Status         int8               `bson:"status" json:"status"`
 
 	// Cursor-based pagination
 	LastID        *primitive.ObjectID `json:"last_id,omitempty"`

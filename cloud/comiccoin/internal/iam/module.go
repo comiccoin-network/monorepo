@@ -213,6 +213,11 @@ func NewModule(
 		logger,
 		publicWalletRepo,
 	)
+	publicWalletGetTotalViewCountByFilterUseCase := uc_publicwallet.NewPublicWalletGetTotalViewCountByFilterUseCase(
+		cfg,
+		logger,
+		publicWalletRepo,
+	)
 
 	////
 	//// Service
@@ -270,6 +275,9 @@ func NewModule(
 		cfg,
 		logger,
 		userGetByIDUseCase,
+		publicWalletCountByFilterUseCase,
+		publicWalletListByFilterUseCase,
+		publicWalletGetTotalViewCountByFilterUseCase,
 	)
 
 	// --- Gateway ---

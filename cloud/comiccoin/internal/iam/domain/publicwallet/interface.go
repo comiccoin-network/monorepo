@@ -19,6 +19,7 @@ type Repository interface {
 	CheckIfExistsByAddress(ctx context.Context, address *common.Address) (bool, error)
 	CountByFilter(ctx context.Context, filter *PublicWalletFilter) (uint64, error)
 	ListByFilter(ctx context.Context, filter *PublicWalletFilter) (*PublicWalletFilterResult, error)
+	GetTotalViewCountByFilter(ctx context.Context, filter *PublicWalletFilter) (uint64, error)
 	DeleteByID(ctx context.Context, id primitive.ObjectID) error
 	DeleteByAddress(ctx context.Context, address *common.Address) error
 	ListAllAddresses(ctx context.Context) ([]*common.Address, error)

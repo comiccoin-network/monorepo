@@ -38,6 +38,10 @@ func (impl publicWalletImpl) buildCountMatchStage(filter *dom.PublicWalletFilter
 		match["created_at"] = createdAtFilter
 	}
 
+	// Filter by the status.
+	if filter.Status != 0 {
+		match["status"] = filter.Status
+	}
 	return match
 }
 
@@ -119,6 +123,11 @@ func (impl publicWalletImpl) buildMatchStage(filter *dom.PublicWalletFilter) bso
 			createdAtFilter["$lte"] = filter.CreatedAtEnd
 		}
 		match["created_at"] = createdAtFilter
+	}
+
+	// Filter by the status.
+	if filter.Status != 0 {
+		match["status"] = filter.Status
 	}
 
 	// Text search for name
