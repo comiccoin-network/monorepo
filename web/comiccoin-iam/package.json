@@ -15,6 +15,7 @@
     "axios": "^1.8.1",
     "country-region-data": "^3.1.0",
     "lucide-react": "^0.477.0",
+    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-country-region-selector": "^4.0.2",
     "react-dom": "^19.0.0",

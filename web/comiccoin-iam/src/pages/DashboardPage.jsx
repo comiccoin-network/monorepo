@@ -6,19 +6,21 @@ import {
   Plus,
   Eye,
   ArrowRight,
-  ChevronRight,
+  Share2,
   Activity,
-  Bookmark,
-  Users,
+  UserCheck,
   Loader,
   AlertCircle,
-  UserCheck,
+  Copy,
+  ExternalLink,
+  Edit,
 } from "lucide-react";
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
 import withProfileVerification from "../components/withProfileVerification";
 import { useGetMe } from "../hooks/useGetMe";
 import { useGetDashboard } from "../hooks/useGetDashboard";
+import { QRCodeSVG } from "qrcode.react";
 
 function DashboardPage() {
   const { user } = useGetMe();
@@ -46,8 +48,14 @@ function DashboardPage() {
   };
 
   // Navigate to wallet detail page
-  const handleViewWallet = (walletId) => {
-    navigate(`/wallet/${walletId}`);
+  const handleViewWallet = (address) => {
+    navigate(`/public-wallet/${address}`);
+  };
+
+  // Copy wallet address to clipboard
+  const copyAddress = (address) => {
+    navigator.clipboard.writeText(address);
+    toast.success("Address copied to clipboard");
   };
 
   // Format wallet address for display
@@ -113,12 +121,8 @@ function DashboardPage() {
     );
   }
 
-  // Sort wallets by creation date (most recent first) and take top 5
-  const recentWallets = dashboard?.publicWallets
-    ? [...dashboard.publicWallets]
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 5)
-    : [];
+  // Get all wallets
+  const wallets = dashboard?.publicWallets || [];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
@@ -158,159 +162,234 @@ function DashboardPage() {
           </div>
         </div>
 
-        {/* Analytics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {/* Total Wallets Card */}
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Total Wallets</p>
-                <p className="text-2xl font-bold text-gray-800">
-                  {dashboard?.totalWalletsCount || 0}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Wallet className="h-6 w-6 text-purple-600" />
-              </div>
+        {/* Overview Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+            <div className="flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-purple-600" />
+              <p className="text-gray-600 text-sm">Total Wallets</p>
             </div>
+            <p className="text-2xl font-bold mt-2">
+              {dashboard?.totalWalletsCount || 0}
+            </p>
           </div>
 
-          {/* Active Wallets */}
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Active Wallets</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {dashboard?.activeWalletsCount || 0}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Activity className="h-6 w-6 text-green-600" />
-              </div>
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-green-600" />
+              <p className="text-gray-600 text-sm">Active Wallets</p>
             </div>
+            <p className="text-2xl font-bold mt-2 text-green-600">
+              {dashboard?.activeWalletsCount || 0}
+            </p>
           </div>
 
-          {/* Total Views */}
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">
-                  Total Profile Views
-                </p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {dashboard?.totalWalletViewsCount || 0}
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Eye className="h-6 w-6 text-blue-600" />
-              </div>
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+            <div className="flex items-center gap-2">
+              <Eye className="h-5 w-5 text-blue-600" />
+              <p className="text-gray-600 text-sm">Total Views</p>
             </div>
+            <p className="text-2xl font-bold mt-2 text-blue-600">
+              {dashboard?.totalWalletViewsCount || 0}
+            </p>
           </div>
 
-          {/* Unique Views - New Card */}
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">
-                  Unique Profile Views
-                </p>
-                <p className="text-2xl font-bold text-amber-600">
-                  {dashboard?.totalUniqueWalletViewsCount || 0}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {dashboard?.uniqueViewsPercentage}% of total views
-                </p>
-              </div>
-              <div className="h-12 w-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                <UserCheck className="h-6 w-6 text-amber-600" />
-              </div>
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+            <div className="flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-amber-600" />
+              <p className="text-gray-600 text-sm">Unique Views</p>
             </div>
+            <p className="text-2xl font-bold mt-2 text-amber-600">
+              {dashboard?.totalUniqueWalletViewsCount || 0}
+            </p>
           </div>
         </div>
 
-        {/* Recent Wallets Section */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 mb-8">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h2 className="text-lg font-medium text-gray-900">
-              Recent Public Wallets
+        {/* Main Content Section - Wallet Grid */}
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-bold text-gray-900">
+              Your Public Wallets
             </h2>
-            <Link
-              to="/public-wallets"
-              className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center"
-            >
-              View All
-              <ChevronRight className="ml-1 h-4 w-4" aria-hidden="true" />
-            </Link>
           </div>
 
-          {recentWallets.length > 0 ? (
-            <div className="divide-y divide-gray-100">
-              {recentWallets.map((wallet) => (
-                <div
-                  key={wallet.id}
-                  className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between"
-                >
-                  <div className="flex items-center">
-                    <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                      <Wallet
-                        className="h-5 w-5 text-purple-600"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">
-                        {wallet.name}
-                      </h3>
-                      <p className="text-sm text-gray-500 font-mono">
-                        {formatAddress(
-                          getAddressFromEthereumObject(wallet.address),
-                        )}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        wallet.status === 1
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
+          {wallets.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {wallets.map((wallet) => {
+                const walletAddress = getAddressFromEthereumObject(
+                  wallet.address,
+                );
+                return (
+                  <div
+                    key={wallet.id}
+                    className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 transition-all hover:shadow-lg"
+                  >
+                    {/* Card Header with Status */}
+                    <div className="p-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex justify-between items-center">
+                      <h3 className="font-bold truncate">{wallet.name}</h3>
                       <span
-                        className={`h-2 w-2 rounded-full mr-1.5 ${
-                          wallet.status === 1 ? "bg-green-500" : "bg-gray-400"
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          wallet.status === 1
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-600"
                         }`}
-                      ></span>
-                      {wallet.status === 1 ? "Active" : "Inactive"}
-                    </span>
-
-                    <div className="flex items-center text-gray-500 text-sm">
-                      <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
-                      <span>{wallet.view_count}</span>
+                      >
+                        <span
+                          className={`h-2 w-2 rounded-full mr-1.5 ${
+                            wallet.status === 1 ? "bg-green-500" : "bg-gray-400"
+                          }`}
+                        ></span>
+                        {wallet.status === 1 ? "Active" : "Inactive"}
+                      </span>
                     </div>
 
-                    <button
-                      onClick={() => handleViewWallet(wallet.id)}
-                      className="ml-2 text-purple-600 hover:text-purple-800"
-                      aria-label={`View details for ${wallet.name}`}
-                    >
-                      <ArrowRight className="h-5 w-5" aria-hidden="true" />
-                    </button>
+                    {/* Card Body with QR Code and Info */}
+                    <div className="p-5">
+                      <div className="flex flex-col sm:flex-row gap-6">
+                        {/* QR Code */}
+                        <div className="flex-shrink-0 flex flex-col items-center">
+                          <div className="p-2 bg-white rounded-lg shadow-sm border border-gray-200 mb-2">
+                            <QRCodeSVG
+                              value={walletAddress}
+                              size={120}
+                              level="H"
+                              renderAs="svg"
+                              imageSettings={{
+                                src: "/logo192.png",
+                                height: 24,
+                                width: 24,
+                                excavate: true,
+                              }}
+                            />
+                          </div>
+                          <div className="text-xs text-gray-500 text-center">
+                            Scan to view
+                          </div>
+                        </div>
+
+                        {/* Wallet Details */}
+                        <div className="flex-grow space-y-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Address
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <code className="text-sm bg-gray-100 px-2 py-1 rounded font-mono">
+                                {formatAddress(walletAddress)}
+                              </code>
+                              <button
+                                onClick={() => copyAddress(walletAddress)}
+                                className="p-1 text-gray-500 hover:text-purple-600"
+                                aria-label="Copy address"
+                              >
+                                <Copy className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {wallet.description && (
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">
+                                Description
+                              </p>
+                              <p className="text-sm text-gray-700 line-clamp-2 mt-1">
+                                {wallet.description}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="flex gap-4 mt-2">
+                            <div>
+                              <p className="text-xs text-gray-500">
+                                Total Views
+                              </p>
+                              <div className="flex items-center gap-1 text-blue-600">
+                                <Eye className="h-4 w-4" />
+                                <span className="font-bold">
+                                  {wallet.view_count}
+                                </span>
+                              </div>
+                            </div>
+
+                            {wallet.unique_view_count !== undefined && (
+                              <div>
+                                <p className="text-xs text-gray-500">
+                                  Unique Views
+                                </p>
+                                <div className="flex items-center gap-1 text-amber-600">
+                                  <UserCheck className="h-4 w-4" />
+                                  <span className="font-bold">
+                                    {wallet.unique_view_count}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex mt-5 pt-4 border-t border-gray-100 justify-between">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() =>
+                              navigate(`/public-wallet/${wallet.address}/edit`)
+                            }
+                            className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg"
+                            aria-label="Edit wallet"
+                          >
+                            <Edit className="h-5 w-5" />
+                          </button>
+                          <button
+                            className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg"
+                            aria-label="Share wallet"
+                          >
+                            <Share2 className="h-5 w-5" />
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => handleViewWallet(wallet.address)}
+                          className="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg transition-colors font-medium text-sm"
+                        >
+                          View Details
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
+                );
+              })}
+
+              {/* Add New Wallet Card */}
+              <div
+                className="bg-gray-50 rounded-xl border border-dashed border-gray-300 flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={handleAddWallet}
+              >
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                  <Plus className="h-8 w-8 text-purple-600" />
                 </div>
-              ))}
+                <h3 className="text-lg font-medium text-gray-700 mb-2">
+                  Add New Wallet
+                </h3>
+                <p className="text-gray-500 text-center mb-4">
+                  Connect a new wallet to your profile
+                </p>
+                <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+                  Get Started
+                </button>
+              </div>
             </div>
           ) : (
-            <div className="p-8 text-center">
-              <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                <Wallet className="h-8 w-8 text-purple-500" />
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 p-8 text-center">
+              <div className="mx-auto w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                <Wallet className="h-10 w-10 text-purple-500" />
               </div>
-              <h3 className="text-lg font-medium text-gray-700 mb-2">
+              <h3 className="text-xl font-medium text-gray-700 mb-2">
                 No wallets found
               </h3>
-              <p className="text-gray-500 mb-6">
-                You haven't created any public wallets yet.
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                You haven't created any public wallets yet. Add your first
+                wallet to start showcasing your digital assets.
               </p>
               <button
                 onClick={handleAddWallet}
@@ -319,18 +398,6 @@ function DashboardPage() {
                 <Plus className="h-5 w-5 mr-2" />
                 Add Your First Wallet
               </button>
-            </div>
-          )}
-
-          {recentWallets.length > 0 && (
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-              <Link
-                to="/public-wallets"
-                className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center justify-center sm:justify-start"
-              >
-                See all {dashboard?.totalWalletsCount || 0} wallets
-                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-              </Link>
             </div>
           )}
         </div>
