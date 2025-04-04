@@ -1,4 +1,4 @@
-// src/hooks/useWalletConnect.js
+// monorepo/web/comiccoin-iam/src/hooks/useWalletConnect.js
 import { useConnectWallet } from "../api/endpoints/walletApi";
 
 /**

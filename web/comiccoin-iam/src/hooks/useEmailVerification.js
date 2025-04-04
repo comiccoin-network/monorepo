@@ -1,4 +1,4 @@
-// src/hooks/useEmailVerification.js
+// monorepo/web/comiccoin-iam/src/hooks/useEmailVerification.js
 import { useState, useCallback } from "react";
 import { verifyEmail } from "../api/endpoints/emailVerificationApi";
 

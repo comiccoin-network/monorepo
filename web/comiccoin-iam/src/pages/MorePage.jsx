@@ -5,7 +5,7 @@ import { Settings, LogOut, Trash2, ArrowRight, Menu } from "lucide-react";
 
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
-import withWallet from "../components/withWallet";
+// import withWallet from "../components/withWallet";
 import { useAuth } from "../hooks/useAuth";
 
 function MorePageContent() {
@@ -136,6 +136,7 @@ function MorePageContent() {
   );
 }
 
-// Wrap the component with withWallet HOC to match pattern used in other pages
-const MorePage = withWallet(MorePageContent);
-export default MorePage;
+// // Wrap the component with withWallet HOC to match pattern used in other pages
+// const MorePage = withWallet(MorePageContent);
+// export default MorePage;
+export default MorePageContent;

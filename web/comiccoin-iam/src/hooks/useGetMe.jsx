@@ -1,4 +1,4 @@
-// src/hooks/useGetMe.js
+// monorepo/web/comiccoin-iam/src/hooks/useGetMe.js
 import { useState, useCallback, useEffect } from "react";
 import { useGetMe as useGetMeQuery } from "../api/endpoints/meGetApi";
 import { useAuth } from "./useAuth";

@@ -29,14 +29,20 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
+// Fix: Safely check if URL includes a string pattern
+const urlIncludes = (url, pattern) => {
+  return typeof url === "string" && url.includes(pattern);
+};
+
 // Request interceptor - adds authentication token to requests
 axiosClient.interceptors.request.use(
   (config) => {
+    // Fix: Safely check URLs to prevent "includes is not a function" error
     // Don't add token for auth endpoints or public endpoints
     if (
-      config.url.includes("/login") ||
-      config.url.includes("/token/refresh") ||
-      config.publicEndpoint
+      config.publicEndpoint ||
+      urlIncludes(config.url, "/login") ||
+      urlIncludes(config.url, "/token/refresh")
     ) {
       return config;
     }
@@ -77,7 +83,7 @@ axiosClient.interceptors.response.use(
     // or we've already tried to refresh once
     if (
       error.response?.status !== 401 ||
-      originalRequest.url?.includes("/token/refresh") ||
+      urlIncludes(originalRequest?.url, "/token/refresh") ||
       originalRequest._retry
     ) {
       return Promise.reject(error);

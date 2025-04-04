@@ -1,73 +1,99 @@
-// src/api/endpoints/dashboardApi.js
-import { usePrivateQuery } from "../../hooks/useApi";
+// monorepo/web/comiccoin-iam/src/api/endpoints/dashboardApi.js
+import axiosClient from "../axiosClient";
+
+// Define the exact API endpoint path as a string constant
+const DASHBOARD_ENDPOINT = "/dashboard";
 
 /**
- * Custom hook for fetching dashboard data
- * This is a private endpoint that requires authentication
+ * Fetch dashboard data from API
+ * @returns {Promise} API response with dashboard data
  */
-export const useDashboard = (options = {}) => {
-  return usePrivateQuery(["dashboard"], "/dashboard", {
-    // Simply pass through the raw data from the API
-    // We'll handle calculation in the component with stable functions
-    ...options,
-  });
+export const fetchDashboard = async () => {
+  try {
+    // Ensure we're using a string URL and handle the request properly
+    const response = await axiosClient({
+      method: "get",
+      url: DASHBOARD_ENDPOINT,
+    });
+
+    // Log successful response
+    console.log("Dashboard API response received:", !!response.data);
+
+    return response.data;
+  } catch (error) {
+    console.error("Dashboard API error:", error);
+    // Provide more context in the error
+    const enhancedError = new Error(
+      `Failed to fetch dashboard: ${error.message}`,
+    );
+    enhancedError.originalError = error;
+    throw enhancedError;
+  }
 };
 
 /**
- * Converts the raw API response into a Dashboard object with helper methods
+ * Transform the raw API response into a more usable dashboard object with helper methods
+ * @param {Object} data - Raw API response data
+ * @returns {Object} Transformed dashboard data with helper methods
  */
-export function fromDashboardDTO(dto) {
-  // Create a Dashboard object with the same shape as the class in the TS definition
-  const dashboard = {
-    chainId: dto.chain_id,
-    faucetBalance: dto.faucet_balance,
-    userBalance: dto.user_balance,
-    totalCoinsClaimedByUser: dto.total_coins_claimed,
-    lastModifiedAt: dto.last_modified_at || null,
-    lastClaimTime: dto.last_claim_time,
-    nextClaimTime: dto.next_claim_time,
-    canClaim: dto.can_claim,
-    walletAddress: dto.wallet_address,
-    transactions: dto.transactions.map((tx) => ({
-      id: tx.id,
-      timestamp: tx.timestamp,
-      amount: tx.amount,
-    })),
+export const transformDashboardData = (data) => {
+  if (!data) {
+    console.warn("Dashboard data is empty or null");
+    return {
+      chainId: 0,
+      totalWalletsCount: 0,
+      activeWalletsCount: 0,
+      totalWalletViewsCount: 0,
+      publicWallets: [],
+      inactiveWalletsCount: 0,
+      averageViewsPerWallet: 0,
+      walletsSortedByViews: [],
+      mostViewedWallet: null,
+    };
+  }
 
-    // Add the helper methods from the class
-    canClaimNow() {
-      return this.canClaim;
-    },
+  // Log the raw data to help debug
+  console.log("Transforming dashboard data:", {
+    chainId: data.chain_id,
+    walletsCount: data.total_wallets_count,
+    hasPublicWallets: !!data.public_wallets,
+    walletsArrayLength: Array.isArray(data.public_wallets)
+      ? data.public_wallets.length
+      : "not an array",
+  });
 
-    getTimeUntilNextClaim() {
-      const nextClaimTime = new Date(this.nextClaimTime).getTime();
-      const now = Date.now();
-      return Math.max(0, nextClaimTime - now);
-    },
+  // Safely get public wallets
+  const publicWallets = Array.isArray(data.public_wallets)
+    ? data.public_wallets
+    : [];
 
-    // Format the time until next claim in a human-readable way
-    getFormattedTimeUntilNextClaim() {
-      const milliseconds = this.getTimeUntilNextClaim();
-      if (milliseconds === 0) {
-        return "Ready to claim";
-      }
+  // Sort wallets by view count
+  const walletsSortedByViews = [...publicWallets].sort(
+    (a, b) => (b.view_count || 0) - (a.view_count || 0),
+  );
 
-      const seconds = Math.floor(milliseconds / 1000);
-      const minutes = Math.floor(seconds / 60);
-      const hours = Math.floor(minutes / 60);
-      const days = Math.floor(hours / 24);
+  return {
+    // Basic dashboard data
+    chainId: data.chain_id || 0,
+    totalWalletsCount: data.total_wallets_count || 0,
+    activeWalletsCount: data.active_wallets_count || 0,
+    totalWalletViewsCount: data.total_wallet_views_count || 0,
+    publicWallets: publicWallets,
 
-      if (days > 0) {
-        return `${days}d ${hours % 24}h`;
-      } else if (hours > 0) {
-        return `${hours}h ${minutes % 60}m`;
-      } else if (minutes > 0) {
-        return `${minutes}m ${seconds % 60}s`;
-      } else {
-        return `${seconds}s`;
-      }
-    },
+    // Computed properties
+    inactiveWalletsCount:
+      (data.total_wallets_count || 0) - (data.active_wallets_count || 0),
+    averageViewsPerWallet:
+      (data.total_wallets_count || 0) > 0
+        ? (
+            (data.total_wallet_views_count || 0) /
+            (data.total_wallets_count || 0)
+          ).toFixed(2)
+        : 0,
+
+    // Pre-computed data
+    walletsSortedByViews,
+    mostViewedWallet:
+      walletsSortedByViews.length > 0 ? walletsSortedByViews[0] : null,
   };
-
-  return dashboard;
-}
+};

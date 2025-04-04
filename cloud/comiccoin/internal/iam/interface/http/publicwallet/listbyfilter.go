@@ -49,14 +49,14 @@ func (h *listPublicWalletsByFilterHTTPHandlerImpl) Handle(w http.ResponseWriter,
 	filter := &dom.PublicWalletFilter{}
 
 	// Parse userID if provided
-	userIDStr := r.URL.Query().Get("user_id")
-	if userIDStr != "" {
-		userID, err := primitive.ObjectIDFromHex(userIDStr)
+	createdByUserIDStr := r.URL.Query().Get("created_by_user_id")
+	if createdByUserIDStr != "" {
+		createdByUserID, err := primitive.ObjectIDFromHex(createdByUserIDStr)
 		if err != nil {
 			httperror.ResponseError(w, err)
 			return
 		}
-		filter.UserID = userID
+		filter.CreatedByUserID = createdByUserID
 	}
 
 	// Parse created_at_start if provided

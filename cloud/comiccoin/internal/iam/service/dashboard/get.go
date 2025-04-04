@@ -89,22 +89,22 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 	//
 
 	totalPublicWalletCount, err := svc.publicWalletCountByFilterUseCase.Execute(sessCtx, &dom_publicwallet.PublicWalletFilter{
-		UserID: userID,
+		CreatedByUserID: userID,
 	})
 	if err != nil {
 		svc.logger.Error("failed getting public wallet count error", slog.Any("err", err))
 		return nil, err
 	}
 	activeWalletsCount, err := svc.publicWalletCountByFilterUseCase.Execute(sessCtx, &dom_publicwallet.PublicWalletFilter{
-		UserID: userID,
-		Status: dom_publicwallet.PublicWalletStatusActive,
+		CreatedByUserID: userID,
+		Status:          dom_publicwallet.PublicWalletStatusActive,
 	})
 	if err != nil {
 		svc.logger.Error("failed getting public wallet count error", slog.Any("err", err))
 		return nil, err
 	}
 	totalWalletViewsCount, err := svc.publicWalletGetTotalViewCountByFilterUseCase.Execute(sessCtx, &dom_publicwallet.PublicWalletFilter{
-		UserID: userID,
+		CreatedByUserID: userID,
 	})
 	if err != nil {
 		svc.logger.Error("failed getting public wallet total view count error", slog.Any("err", err))
@@ -116,14 +116,21 @@ func (svc *getDashboardServiceImpl) Execute(sessCtx mongo.SessionContext) (*Dash
 	//
 
 	publicWalletList, err := svc.publicWalletListByFilterUseCase.Execute(sessCtx, &dom_publicwallet.PublicWalletFilter{
-		UserID: userID,
-		Status: dom_publicwallet.PublicWalletStatusActive,
-		Limit:  10,
+		CreatedByUserID: userID,
+		Status:          dom_publicwallet.PublicWalletStatusActive,
+		Limit:           10,
 	})
 	if err != nil {
 		svc.logger.Error("failed getting public wallet list error", slog.Any("err", err))
 		return nil, err
 	}
+
+	svc.logger.Debug("Dashboard fetched",
+		slog.Any("createdByUserID", userID),
+		slog.Any("totalPublicWalletCount", totalPublicWalletCount),
+		slog.Any("activeWalletsCount", activeWalletsCount),
+		slog.Any("totalWalletViewsCount", totalWalletViewsCount),
+		slog.Any("publicWalletList", publicWalletList))
 
 	// Return our dashboard response.
 	return &DashboardDTO{

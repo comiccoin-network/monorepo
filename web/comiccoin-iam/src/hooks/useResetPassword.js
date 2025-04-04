@@ -1,4 +1,4 @@
-// src/hooks/useResetPassword.js
+// monorepo/web/comiccoin-iam/src/hooks/useResetPassword.js
 import { useState } from "react";
 import { resetPassword } from "../api/endpoints/resetPasswordApi";
 

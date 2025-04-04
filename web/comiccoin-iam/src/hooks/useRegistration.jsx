@@ -1,4 +1,4 @@
-// src/hooks/useRegistration.js
+// monorepo/web/comiccoin-iam/src/hooks/useRegistration.js
 import { useState } from "react";
 import registrationApi from "../api/endpoints/registrationApi";
 

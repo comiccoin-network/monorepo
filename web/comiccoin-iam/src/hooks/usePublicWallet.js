@@ -1,4 +1,4 @@
-// src/hooks/usePublicWallet.js
+// monorepo/web/comiccoin-iam/src/hooks/usePublicWallet.js
 import { useState, useCallback } from "react";
 import {
   getPublicWalletByAddress,

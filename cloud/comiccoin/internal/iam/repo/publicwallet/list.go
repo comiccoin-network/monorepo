@@ -13,7 +13,7 @@ import (
 
 // hasActiveFilters checks if any filters besides tenant_id are active
 func (impl publicWalletImpl) hasActiveFilters(filter *dom.PublicWalletFilter) bool {
-	return !filter.UserID.IsZero() ||
+	return !filter.CreatedByUserID.IsZero() ||
 		filter.CreatedAtStart != nil ||
 		filter.CreatedAtEnd != nil
 }
@@ -22,8 +22,8 @@ func (impl publicWalletImpl) hasActiveFilters(filter *dom.PublicWalletFilter) bo
 func (impl publicWalletImpl) buildCountMatchStage(filter *dom.PublicWalletFilter) bson.M {
 	match := bson.M{}
 
-	if !filter.UserID.IsZero() {
-		match["user_id"] = filter.UserID
+	if !filter.CreatedByUserID.IsZero() {
+		match["created_by_user_id"] = filter.CreatedByUserID
 	}
 
 	// Date range filtering
@@ -110,8 +110,8 @@ func (impl publicWalletImpl) buildMatchStage(filter *dom.PublicWalletFilter) bso
 
 	// Add other filters
 
-	if !filter.UserID.IsZero() {
-		match["user_id"] = filter.UserID
+	if !filter.CreatedByUserID.IsZero() {
+		match["created_by_user_id"] = filter.CreatedByUserID
 	}
 
 	if filter.CreatedAtStart != nil || filter.CreatedAtEnd != nil {

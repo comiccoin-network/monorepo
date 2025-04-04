@@ -34,7 +34,7 @@ func NewCountPublicWalletsByFilterService(
 
 func (s *countPublicWalletsByFilterServiceImpl) CountByFilter(ctx context.Context, filter *dom.PublicWalletFilter) (uint64, error) {
 	s.logger.Debug("counting public wallets by filter",
-		slog.Any("user_id", filter.UserID))
+		slog.Any("created_by_user_id", filter.CreatedByUserID))
 
 	return s.uc.Execute(ctx, filter)
 }

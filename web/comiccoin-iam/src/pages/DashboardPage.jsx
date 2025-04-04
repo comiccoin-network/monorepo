@@ -1,98 +1,27 @@
-// src/pages/DashboardPage.jsx
-import React, { useState, useEffect } from "react";
+// monorepo/web/comiccoin-iam/src/pages/DashboardPage.jsx
+import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   Wallet,
   Plus,
   Eye,
   ArrowRight,
-  ExternalLink,
   ChevronRight,
-  BarChart,
   Activity,
-  Users,
   Bookmark,
+  Loader,
+  AlertCircle,
 } from "lucide-react";
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
 import withProfileVerification from "../components/withProfileVerification";
 import { useGetMe } from "../hooks/useGetMe";
+import { useGetDashboard } from "../hooks/useGetDashboard";
 
-function DashboardPage({ error, dashboardData, refetch }) {
+function DashboardPage() {
   const { user } = useGetMe();
   const navigate = useNavigate();
-
-  // Sample wallet data - In a real application, this would come from an API
-  const [wallets, setWallets] = useState([
-    {
-      id: "1",
-      address: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
-      name: "Primary Collectibles Wallet",
-      description:
-        "My main wallet for comic book collectibles and special editions",
-      thumbnail: "/api/placeholder/80/80",
-      viewCount: 432,
-      createdAt: "2025-03-15",
-      status: "active",
-    },
-    {
-      id: "2",
-      address: "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
-      name: "Comic-Con Exclusive Drops",
-      description:
-        "Special wallet for limited edition Comic-Con exclusive items and partnerships",
-      thumbnail: "/api/placeholder/80/80",
-      viewCount: 278,
-      createdAt: "2025-03-10",
-      status: "active",
-    },
-    {
-      id: "3",
-      address: "0xdD870fA1b7C4700F2BD7f44238821C26f7392148",
-      name: "Vintage Collection",
-      description:
-        "Dedicated wallet for pre-1990s comic NFTs and digital memorabilia",
-      thumbnail: "/api/placeholder/80/80",
-      viewCount: 189,
-      createdAt: "2025-02-22",
-      status: "inactive",
-    },
-    {
-      id: "4",
-      address: "0x1aE0EA34a72D944a8C7603FfB3eC30a6669E454C",
-      name: "Trading Portfolio",
-      description:
-        "Active wallet for trading and short-term holdings in the ComicCoin ecosystem",
-      thumbnail: "/api/placeholder/80/80",
-      viewCount: 321,
-      createdAt: "2025-03-05",
-      status: "active",
-    },
-    {
-      id: "5",
-      address: "0x7EF2e0048f5bAeDe046f6BF797943daF4ED8CB47",
-      name: "Artist Collaborations",
-      description:
-        "Wallet for artist collaborations and supporting indie comic creators",
-      thumbnail: "/api/placeholder/80/80",
-      viewCount: 157,
-      createdAt: "2025-03-12",
-      status: "inactive",
-    },
-  ]);
-
-  // Sort wallets by creation date (most recent first) and take top 5
-  const recentWallets = [...wallets]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 5);
-
-  // Analytics data (sample data - would come from API in real app)
-  const analyticsData = {
-    totalWallets: wallets.length,
-    totalViews: wallets.reduce((sum, wallet) => sum + wallet.viewCount, 0),
-    activeWallets: wallets.filter((wallet) => wallet.status === "active")
-      .length,
-  };
+  const { data: dashboard, isLoading, error, refetch } = useGetDashboard();
 
   useEffect(() => {
     console.log("DASHBOARD MOUNTED", {
@@ -118,6 +47,76 @@ function DashboardPage({ error, dashboardData, refetch }) {
   const handleViewWallet = (walletId) => {
     navigate(`/wallet/${walletId}`);
   };
+
+  // Format wallet address for display
+  const formatAddress = (address) => {
+    if (!address || typeof address !== "string") return "Invalid Address";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  // Extract wallet address from common.Address object
+  const getAddressFromEthereumObject = (addressObj) => {
+    if (!addressObj) return null;
+    // Extract the address string assuming it's in the Ethereum address object
+    return addressObj.Hex
+      ? addressObj.Hex
+      : addressObj.hex
+        ? addressObj.hex
+        : addressObj.toString();
+  };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+        <AppTopNavigation />
+        <main className="flex-grow container mx-auto px-4 py-8 max-w-6xl flex items-center justify-center">
+          <div className="text-center">
+            <Loader className="h-12 w-12 animate-spin text-purple-600 mx-auto mb-4" />
+            <h2 className="text-xl font-medium text-gray-700">
+              Loading dashboard data...
+            </h2>
+          </div>
+        </main>
+        <AppFooter />
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
+        <AppTopNavigation />
+        <main className="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-medium text-red-700 mb-2">
+              Error Loading Dashboard
+            </h2>
+            <p className="text-red-600 mb-4">
+              {error.message ||
+                "We couldn't load your dashboard data. Please try again."}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg font-medium"
+            >
+              Try Again
+            </button>
+          </div>
+        </main>
+        <AppFooter />
+      </div>
+    );
+  }
+
+  // Sort wallets by creation date (most recent first) and take top 5
+  const recentWallets = dashboard?.publicWallets
+    ? [...dashboard.publicWallets]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5)
+    : [];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
@@ -165,7 +164,7 @@ function DashboardPage({ error, dashboardData, refetch }) {
               <div>
                 <p className="text-sm text-gray-500 mb-1">Total Wallets</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {analyticsData.totalWallets}
+                  {dashboard?.totalWalletsCount || 0}
                 </p>
               </div>
               <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -180,7 +179,7 @@ function DashboardPage({ error, dashboardData, refetch }) {
               <div>
                 <p className="text-sm text-gray-500 mb-1">Active Wallets</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {analyticsData.activeWallets}
+                  {dashboard?.activeWalletsCount || 0}
                 </p>
               </div>
               <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -197,7 +196,7 @@ function DashboardPage({ error, dashboardData, refetch }) {
                   Total Profile Views
                 </p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {analyticsData.totalViews}
+                  {dashboard?.totalWalletViewsCount || 0}
                 </p>
               </div>
               <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -211,9 +210,16 @@ function DashboardPage({ error, dashboardData, refetch }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 mb-1">
-                  Featured Collections
+                  Avg. Views Per Wallet
                 </p>
-                <p className="text-2xl font-bold text-amber-600">2</p>
+                <p className="text-2xl font-bold text-amber-600">
+                  {dashboard && dashboard.totalWalletsCount > 0
+                    ? (
+                        dashboard.totalWalletViewsCount /
+                        dashboard.totalWalletsCount
+                      ).toFixed(1)
+                    : 0}
+                </p>
               </div>
               <div className="h-12 w-12 bg-amber-100 rounded-lg flex items-center justify-center">
                 <Bookmark className="h-6 w-6 text-amber-600" />
@@ -256,25 +262,32 @@ function DashboardPage({ error, dashboardData, refetch }) {
                         {wallet.name}
                       </h3>
                       <p className="text-sm text-gray-500 font-mono">
-                        {wallet.address.slice(0, 6)}...
-                        {wallet.address.slice(-4)}
+                        {formatAddress(
+                          getAddressFromEthereumObject(wallet.address),
+                        )}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${wallet.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        wallet.status === 1
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
                     >
                       <span
-                        className={`h-2 w-2 rounded-full mr-1.5 ${wallet.status === "active" ? "bg-green-500" : "bg-gray-400"}`}
+                        className={`h-2 w-2 rounded-full mr-1.5 ${
+                          wallet.status === 1 ? "bg-green-500" : "bg-gray-400"
+                        }`}
                       ></span>
-                      {wallet.status === "active" ? "Active" : "Inactive"}
+                      {wallet.status === 1 ? "Active" : "Inactive"}
                     </span>
 
                     <div className="flex items-center text-gray-500 text-sm">
                       <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
-                      <span>{wallet.viewCount}</span>
+                      <span>{wallet.view_count}</span>
                     </div>
 
                     <button
@@ -315,7 +328,7 @@ function DashboardPage({ error, dashboardData, refetch }) {
                 to="/public-wallets"
                 className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center justify-center sm:justify-start"
               >
-                See all {wallets.length} wallets
+                See all {dashboard?.totalWalletsCount || 0} wallets
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
             </div>

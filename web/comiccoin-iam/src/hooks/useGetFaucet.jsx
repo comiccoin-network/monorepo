@@ -1,4 +1,4 @@
-// src/hooks/useGetFaucet.js
+// monorepo/web/comiccoin-iam/src/hooks/useGetFaucet.js
 import { usePublicQuery } from "./useApi";
 
 /**

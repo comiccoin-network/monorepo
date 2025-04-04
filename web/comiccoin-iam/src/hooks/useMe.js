@@ -1,4 +1,4 @@
-// src/hooks/useMe.js
+// monorepo/web/comiccoin-iam/src/hooks/useMe.js
 import { useAuth } from "./useAuth";
 
 export function useMe() {

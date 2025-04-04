@@ -1,4 +1,4 @@
-// src/hooks/useVerifyProfile.js
+// monorepo/web/comiccoin-iam/src/hooks/useVerifyProfile.js
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { useVerifyProfile as useVerifyProfileAPI } from "../api/endpoints/verifyProfileApi";

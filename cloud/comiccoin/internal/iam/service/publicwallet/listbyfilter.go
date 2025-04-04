@@ -34,7 +34,7 @@ func NewListPublicWalletsByFilterService(
 
 func (s *listPublicWalletsByFilterServiceImpl) ListByFilter(ctx context.Context, filter *dom.PublicWalletFilter) (*dom.PublicWalletFilterResult, error) {
 	s.logger.Debug("listing public wallets by filter",
-		slog.Any("user_id", filter.UserID),
+		slog.Any("created_by_user_id", filter.CreatedByUserID),
 		slog.Any("limit", filter.Limit))
 
 	return s.uc.Execute(ctx, filter)
