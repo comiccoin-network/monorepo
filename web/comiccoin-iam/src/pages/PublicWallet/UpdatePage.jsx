@@ -1,5 +1,5 @@
 // src/pages/PublicWallet/UpdatePage.jsx - Fixed API call
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
   Wallet,
@@ -31,6 +31,9 @@ const PublicWalletUpdatePage = () => {
     reset,
     WALLET_STATUS,
   } = usePublicWallet();
+
+  // Create ref for form card to scroll to on error
+  const formCardRef = useRef(null);
 
   // Use the hook directly with the address parameter
   const {
@@ -166,6 +169,21 @@ const PublicWalletUpdatePage = () => {
     }
   }, [error]);
 
+  useEffect(() => {
+    if (
+      (Object.keys(errors).length > 0 || generalError) &&
+      formCardRef.current
+    ) {
+      // Small timeout to ensure DOM has updated
+      setTimeout(() => {
+        formCardRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+  }, [errors, generalError]);
+
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -297,7 +315,10 @@ const PublicWalletUpdatePage = () => {
 
         {/* Main Form Card */}
         {!isLoadingWallet && (
-          <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+          <div
+            ref={formCardRef}
+            className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
+          >
             {/* Card Header */}
             <div className="p-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center">
               <Wallet className="h-6 w-6 mr-3" aria-hidden="true" />
