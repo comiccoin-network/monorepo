@@ -1,4 +1,4 @@
-// src/pages/RegistrationSuccessPage.jsx
+// src/pages/Gatway/RegistrationSuccessPage.jsx
 import { useState, useRef } from "react";
 import {
   Mail,
@@ -10,9 +10,9 @@ import {
   Send,
 } from "lucide-react";
 import { Link, Navigate } from "react-router";
-import Header from "../components/IndexPage/Header";
-import Footer from "../components/IndexPage/Footer";
-import { useEmailVerification } from "../hooks/useEmailVerification";
+import Header from "../../components/IndexPage/Header";
+import Footer from "../../components/IndexPage/Footer";
+import { useEmailVerification } from "../../hooks/useEmailVerification";
 
 const RegistrationSuccessPage = () => {
   // State for redirecting

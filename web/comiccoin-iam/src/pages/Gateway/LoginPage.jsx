@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/LoginPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Gateway/LoginPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import {
@@ -12,10 +12,10 @@ import {
   ArrowRight,
   HelpCircle, // Added for forgot password icon
 } from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
-import Header from "../components/IndexPage/Header";
-import Footer from "../components/IndexPage/Footer";
-import withRedirectAuthenticated from "../components/withRedirectAuthenticated";
+import { useAuth } from "../../hooks/useAuth";
+import Header from "../../components/IndexPage/Header";
+import Footer from "../../components/IndexPage/Footer";
+import withRedirectAuthenticated from "../../components/withRedirectAuthenticated";
 
 function LoginPage() {
   console.log("🚀 LoginPage component initializing");

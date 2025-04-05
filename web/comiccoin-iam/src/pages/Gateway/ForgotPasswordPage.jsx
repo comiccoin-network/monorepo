@@ -1,4 +1,4 @@
-// src/pages/ForgotPasswordPage.jsx
+// src/pages/Gateway/ForgotPasswordPage.jsx
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router";
 import {
@@ -11,10 +11,10 @@ import {
   ArrowRight,
   Clock,
 } from "lucide-react";
-import Header from "../components/IndexPage/Header";
-import Footer from "../components/IndexPage/Footer";
-import { useForgotPassword } from "../hooks/useForgotPassword";
-import withRedirectAuthenticated from "../components/withRedirectAuthenticated";
+import Header from "../../components/IndexPage/Header";
+import Footer from "../../components/IndexPage/Footer";
+import { useForgotPassword } from "../../hooks/useForgotPassword";
+import withRedirectAuthenticated from "../../components/withRedirectAuthenticated";
 
 function ForgotPasswordPage() {
   console.log("🚀 ForgotPasswordPage component initializing");

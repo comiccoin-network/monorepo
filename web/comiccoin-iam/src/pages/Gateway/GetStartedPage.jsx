@@ -1,10 +1,10 @@
-// src/pages/GetStartedPage.jsx
+// src/pages/Gateway/GetStartedPage.jsx
 import React from "react";
 import { Link } from "react-router";
 import { UserPlus, LogIn, ArrowRight, Shield, Wallet } from "lucide-react";
-import Header from "../components/IndexPage/Header";
-import Footer from "../components/IndexPage/Footer";
-import withRedirectAuthenticated from "../components/withRedirectAuthenticated";
+import Header from "../../components/IndexPage/Header";
+import Footer from "../../components/IndexPage/Footer";
+import withRedirectAuthenticated from "../../components/withRedirectAuthenticated";
 
 const GetStartedPage = () => {
   return (
