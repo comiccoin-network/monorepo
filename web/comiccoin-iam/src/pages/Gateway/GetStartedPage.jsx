@@ -26,15 +26,9 @@ const GetStartedPage = () => {
                 Welcome to ComicCoin Digital Identity
               </h1>
               <p className="text-base sm:text-lg lg:text-xl text-indigo-100 max-w-3xl mx-auto">
-                Join our community and securely link your blockchain wallet to
-                your verified digital identity
+                Join our community & link your blockchain wallet to your
+                verified digital identity
               </p>
-              <Link
-                to="/"
-                className="mt-8 inline-flex items-center gap-2 bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors text-base sm:text-lg shadow-lg hover:shadow-xl active:bg-indigo-100 active:shadow-md"
-              >
-                Back to Home
-              </Link>
             </div>
           </div>
         </div>
