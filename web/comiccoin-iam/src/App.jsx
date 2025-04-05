@@ -26,7 +26,6 @@ import VerificationBusinessPage from "./pages/VerificationBusinessPage";
 import VerificationRejectedPage from "./pages/VerificationRejectedPage";
 import VerificationApprovedPage from "./pages/VerificationApprovedPage";
 import VerificationPendingPage from "./pages/VerificationPendingPage";
-import TransactionsPage from "./pages/TransactionsPage";
 import MorePage from "./pages/MorePage";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -183,15 +182,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PublicWalletUpdatePage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/transactions"
-              element={
-                <ProtectedRoute>
-                  <TransactionsPage />
                 </ProtectedRoute>
               }
             />
