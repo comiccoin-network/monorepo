@@ -303,7 +303,8 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 		// HasPreviouslyPurchasedFromAuctionSite:           "",
 		// HasPreviouslyPurchasedFromFacebookMarketplace:   "",
 		// HasRegularlyAttendedComicConsOrCollectibleShows: "",
-		ChainID: s.config.Blockchain.ChainID,
+		ChainID:                   s.config.Blockchain.ChainID,
+		ProfileVerificationStatus: domain.UserProfileVerificationStatusUnverified,
 	}
 	if req.CountryOther != "" {
 		u.Country = req.CountryOther
