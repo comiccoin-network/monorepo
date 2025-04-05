@@ -14,7 +14,6 @@ import {
 
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
-import withWallet from "../components/withWallet";
 import { useDeleteAccount } from "../api/endpoints/deleteMeApi";
 
 function DeleteAccountPageContent() {
@@ -311,6 +310,6 @@ function DeleteAccountPageContent() {
   );
 }
 
-// Wrap the component with the withWallet HOC
-const DeleteAccountPage = withWallet(DeleteAccountPageContent);
+// Wrap the component with the XXX HOC
+const DeleteAccountPage = DeleteAccountPageContent;
 export default DeleteAccountPage;

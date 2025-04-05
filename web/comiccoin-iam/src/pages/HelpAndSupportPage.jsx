@@ -15,7 +15,6 @@ import {
 
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
-import withWallet from "../components/withWallet";
 
 // FAQ item component with HTML rendering support
 const FAQItem = ({ question, answer }) => {
@@ -246,6 +245,6 @@ function HelpAndSupportPageContent() {
   );
 }
 
-// Wrap the component with withWallet HOC
-const HelpAndSupportPage = withWallet(HelpAndSupportPageContent);
+// Wrap the component with XXX HOC
+const HelpAndSupportPage = HelpAndSupportPageContent;
 export default HelpAndSupportPage;

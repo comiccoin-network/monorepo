@@ -19,7 +19,6 @@ import PublicWalletListPage from "./pages/PublicWallet/ListPage";
 import PublicWalletAddPage from "./pages/PublicWallet/AddPage";
 import PublicWalletDetailsPage from "./pages/PublicWallet/DetailsPage";
 import PublicWalletUpdatePage from "./pages/PublicWallet/UpdatePage";
-import AddWalletAddressPage from "./pages/AddWalletAddressPage"; //TODO: REMOVE
 import VerificationLaunchpadPage from "./pages/Verification/LaunchpadPage";
 import VerificationIndividualPage from "./pages/Verification/IndividualPage";
 import VerificationBusinessPage from "./pages/Verification/BusinessPage";
@@ -75,16 +74,6 @@ function App() {
             <Route
               path="/register-success"
               element={<RegistrationSuccessPage />}
-            />
-
-            {/* User Initialization Routes */}
-            <Route
-              path="/user-initialization/add-my-wallet-address"
-              element={
-                <ProtectedRoute>
-                  <AddWalletAddressPage />
-                </ProtectedRoute>
-              }
             />
 
             {/* User Verification Routes */}

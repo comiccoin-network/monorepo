@@ -12,7 +12,6 @@ import {
 
 import AppTopNavigation from "../components/AppTopNavigation";
 import AppFooter from "../components/AppFooter";
-import withWallet from "../components/withWallet";
 import { usePutUpdateMe } from "../hooks/usePutUpdateMe";
 import { useAuth } from "../hooks/useAuth";
 import { useGetMe } from "../hooks/useGetMe";
@@ -850,6 +849,6 @@ const SettingsPageContent = () => {
   );
 };
 
-// Wrap the component with authentication and wallet HOCs
-const SettingsPage = withWallet(SettingsPageContent);
+// Wrap the component with HOCs
+const SettingsPage = SettingsPageContent;
 export default SettingsPage;
