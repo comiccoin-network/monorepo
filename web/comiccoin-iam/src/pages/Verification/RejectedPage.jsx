@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/VerificationRejectedPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Verification/RejectedPage.jsx
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
@@ -15,10 +15,10 @@ import {
   FileQuestion,
 } from "lucide-react";
 
-import Header from "../components/IndexPage/Header";
-import Footer from "../components/IndexPage/Footer";
-import { useAuth } from "../hooks/useAuth";
-import { useGetMe } from "../hooks/useGetMe";
+import Header from "../../components/IndexPage/Header";
+import Footer from "../../components/IndexPage/Footer";
+import { useAuth } from "../../hooks/useAuth";
+import { useGetMe } from "../../hooks/useGetMe";
 
 const VerificationRejectedPage = () => {
   const navigate = useNavigate();

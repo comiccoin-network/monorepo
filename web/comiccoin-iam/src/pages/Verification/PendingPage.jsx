@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/VerificationPendingPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Verification/PendingPage.jsx
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import {
@@ -16,10 +16,10 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-import Header from "../components/IndexPage/Header";
-import Footer from "../components/IndexPage/Footer";
-import { useGetMe } from "../hooks/useGetMe";
-import { useAuth } from "../hooks/useAuth";
+import Header from "../../components/IndexPage/Header";
+import Footer from "../../components/IndexPage/Footer";
+import { useGetMe } from "../../hooks/useGetMe";
+import { useAuth } from "../../hooks/useAuth";
 
 const VerificationPendingPage = () => {
   const navigate = useNavigate();

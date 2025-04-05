@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/DashboardPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Dashboard/Page.jsx
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
@@ -15,11 +15,11 @@ import {
   ExternalLink,
   Edit,
 } from "lucide-react";
-import AppTopNavigation from "../components/AppTopNavigation";
-import AppFooter from "../components/AppFooter";
-import withProfileVerification from "../components/withProfileVerification";
-import { useGetMe } from "../hooks/useGetMe";
-import { useGetDashboard } from "../hooks/useGetDashboard";
+import AppTopNavigation from "../../components/AppTopNavigation";
+import AppFooter from "../../components/AppFooter";
+import withProfileVerification from "../../components/withProfileVerification";
+import { useGetMe } from "../../hooks/useGetMe";
+import { useGetDashboard } from "../../hooks/useGetDashboard";
 import { QRCodeSVG } from "qrcode.react";
 
 function DashboardPage() {
