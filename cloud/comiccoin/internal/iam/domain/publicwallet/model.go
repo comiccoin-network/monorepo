@@ -21,11 +21,31 @@ type PublicWallet struct {
 	// The unique identifier for this blockchain that we are managing the state for.
 	ChainID uint16 `bson:"chain_id" json:"chain_id"`
 
-	// The name of the public wallet's account.
+	// The name of the public wallet's account. Typically this would either be the name of individual or the name of the company.
 	Name string `bson:"name" json:"name"`
 
-	// The description of the public wallet's account.
+	// The description of the public wallet's account. Typically this would either be the terse description of individual or the terse description of the company.
 	Description string `bson:"description" json:"description"`
+
+	// Website URL of the individualuser's website/blog/etc or user's company website.
+	WebsiteURL string `bson:"website_url" json:"website_url"`
+
+	// The following fields are taken from the user's profile.
+
+	Phone        string `bson:"phone" json:"phone,omitempty"`
+	Country      string `bson:"country" json:"country,omitempty"`
+	Timezone     string `bson:"timezone" json:"timezone"`
+	Region       string `bson:"region" json:"region,omitempty"`
+	City         string `bson:"city" json:"city,omitempty"`
+	PostalCode   string `bson:"postal_code" json:"postal_code,omitempty"`
+	AddressLine1 string `bson:"address_line1" json:"address_line1,omitempty"`
+	AddressLine2 string `bson:"address_line2" json:"address_line2,omitempty"`
+
+	// Status indicates that the someone from the ComicCoin Authority verified this user profile.
+	IsVerified bool `bson:"is_verified" json:"is_verified"`
+
+	// VerifiedOn indicates the time when the user profile was verified by the ComicCoin Authority.
+	VerifiedOn time.Time `bson:"verified_on" json:"verified_on"`
 
 	// The S3 key of the thumbnail image for the public wallet.
 	ThumbnailS3Key string `bson:"thumbnail_s3_key" json:"thumbnail_s3_key,omitempty"`

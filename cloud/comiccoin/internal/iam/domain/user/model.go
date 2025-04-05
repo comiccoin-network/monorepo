@@ -122,6 +122,12 @@ type User struct {
 	HasPreviouslyPurchasedFromAuctionSite           int8 `bson:"has_previously_purchased_from_auction_site" json:"has_previously_purchased_from_auction_site"`
 	HasPreviouslyPurchasedFromFacebookMarketplace   int8 `bson:"has_previously_purchased_from_facebook_marketplace" json:"has_previously_purchased_from_facebook_marketplace"`
 	HasRegularlyAttendedComicConsOrCollectibleShows int8 `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
+
+	// Website URL of the individualuser's website/blog/etc or user's company website.
+	WebsiteURL string `bson:"website_url" json:"website_url"`
+
+	// Description of the individual user or user's company to be used in their profile.
+	Description string `bson:"description" json:"description"`
 }
 
 type UserClaimedCoinTransaction struct {

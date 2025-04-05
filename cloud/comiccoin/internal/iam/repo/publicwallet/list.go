@@ -3,8 +3,10 @@ package publicwallet
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	dom "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/publicwallet"
@@ -132,7 +134,18 @@ func (impl publicWalletImpl) buildMatchStage(filter *dom.PublicWalletFilter) bso
 
 	// Text search for name
 	if filter.Value != nil && *filter.Value != "" {
-		match["$text"] = bson.M{"$search": *filter.Value}
+		searchValue := strings.TrimSpace(*filter.Value)
+		if searchValue != "" {
+			// For partial matches and case insensitivity, we use regex
+			regexPattern := primitive.Regex{Pattern: searchValue, Options: "i"} // "i" for case insensitive
+
+			// Search in name, description, and address
+			match["$or"] = []bson.M{
+				{"name": bson.M{"$regex": regexPattern}},
+				{"description": bson.M{"$regex": regexPattern}},
+				{"address": bson.M{"$regex": regexPattern}},
+			}
+		}
 	}
 
 	return match

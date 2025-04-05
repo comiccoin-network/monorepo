@@ -23,13 +23,12 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 	// ctx := context.Background()
 	uc := client.Database(appCfg.DB.IAMName).Collection("public_wallets")
 
-	// // For debugging purposes only or if you are going to recreate new indexes.
-	// if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
-	// 	loggerp.Warn("failed deleting all indexes",
-	// 		slog.Any("err", err))
-
-	// 	// Do not crash app, just continue.
-	// }
+	// For debugging purposes only or if you are going to recreate new indexes.
+	if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
+		loggerp.Warn("failed deleting all indexes",
+			slog.Any("err", err))
+		// Do not crash app, just continue.
+	}
 
 	// Note:
 	// * 1 for ascending
@@ -44,10 +43,10 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 			Keys:    bson.D{{Key: "address", Value: -1}},
 			Options: options.Index().SetUnique(true),
 		},
-		{Keys: bson.D{
-			{Key: "name", Value: "text"},
-			{Key: "description", Value: "text"},
-		}},
+		// Individual field indexes for efficient regex searches
+		{Keys: bson.D{{Key: "name", Value: 1}}},
+		{Keys: bson.D{{Key: "description", Value: 1}}},
+		// We don't need another index for address since we already have a unique index
 	})
 
 	if err != nil {
