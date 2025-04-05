@@ -46,7 +46,9 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 		// Individual field indexes for efficient regex searches
 		{Keys: bson.D{{Key: "name", Value: 1}}},
 		{Keys: bson.D{{Key: "description", Value: 1}}},
-		// We don't need another index for address since we already have a unique index
+		// To improve performance of queries
+		{Keys: bson.D{{Key: "is_verified", Value: -1}}},
+		{Keys: bson.D{{Key: "type", Value: -1}}},
 	})
 
 	if err != nil {

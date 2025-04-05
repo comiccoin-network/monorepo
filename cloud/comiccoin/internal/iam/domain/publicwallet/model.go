@@ -12,6 +12,9 @@ const (
 	PublicWalletStatusActive   = 1
 	PublicWalletStatusArchived = 2
 	PublicWalletStatusLocked   = 3
+
+	PublicWalletTypeIndividual = 2 // Matches `UserRoleRetailer` in user/model.go
+	PublicWalletTypeCompany    = 3 // Matches `UserRoleCompany` in user/model.go
 )
 
 type PublicWallet struct {
@@ -46,6 +49,8 @@ type PublicWallet struct {
 
 	// VerifiedOn indicates the time when the user profile was verified by the ComicCoin Authority.
 	VerifiedOn time.Time `bson:"verified_on" json:"verified_on"`
+
+	Type int8 `bson:"type" json:"type"`
 
 	// The S3 key of the thumbnail image for the public wallet.
 	ThumbnailS3Key string `bson:"thumbnail_s3_key" json:"thumbnail_s3_key,omitempty"`
