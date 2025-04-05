@@ -11,6 +11,7 @@ import {
   Building,
   Truck,
   InfoIcon,
+  LinkIcon,
   BookOpen,
 } from "lucide-react";
 
@@ -97,6 +98,8 @@ const VerificationIndividualPage = () => {
       hasPreviouslyPurchasedFromAuctionSite: 0,
       hasPreviouslyPurchasedFromFacebookMarketplace: 0,
       hasRegularlyAttendedComicConsOrCollectibleShows: 0,
+      websiteURL: "",
+      description: "",
     },
   );
 
@@ -617,7 +620,7 @@ const VerificationIndividualPage = () => {
                     </div>
 
                     {/* How did you hear about ComicCoin */}
-                    <div>
+                    <div className="mb-3">
                       <label
                         htmlFor="howDidYouHearAboutUs"
                         className="block text-sm text-gray-700 mb-1"
@@ -702,6 +705,99 @@ const VerificationIndividualPage = () => {
                             </p>
                           )}
                         </div>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    <div className="mb-3">
+                      <label
+                        htmlFor="description"
+                        className="block text-sm text-gray-700 mb-1"
+                      >
+                        Please write a brief description of yourself{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          errors.description
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        placeholder={
+                          "For example `Rare comic book collector and trader` or `Comic artist and collector` or `Journalist and comic book enthusiast`, etc."
+                        }
+                        aria-required="true"
+                        aria-invalid={errors.description ? "true" : "false"}
+                      ></textarea>
+                      {errors.description && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Website URL */}
+                    <div className="mt-3">
+                      <label
+                        htmlFor="websiteURL"
+                        className="block text-sm text-gray-700 mb-1"
+                      >
+                        Online Presence Link{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex rounded-md shadow-sm">
+                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                          <LinkIcon className="h-4 w-4" aria-hidden="true" />
+                        </span>
+                        <input
+                          type="url"
+                          id="websiteURL"
+                          name="websiteURL"
+                          value={formData.websiteURL}
+                          onChange={handleInputChange}
+                          className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                            errors.websiteURL
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="e.g., https://linkedin.com/in/yourprofile"
+                          aria-required="true"
+                          aria-invalid={errors.websiteURL ? "true" : "false"}
+                          aria-describedby="websiteURL-help"
+                        />
+                      </div>
+                      <p
+                        id="websiteURL-help"
+                        className="mt-1 text-xs text-gray-500"
+                      >
+                        Please provide a link to your personal website,
+                        portfolio, or a public social media profile (like
+                        LinkedIn, Twitter, or Facebook). This helps us verify
+                        your identity and connection to the comic community.
+                      </p>
+                      {errors.websiteURL && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.websiteURL}
+                        </p>
                       )}
                     </div>
                   </div>

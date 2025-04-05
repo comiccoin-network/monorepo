@@ -35,6 +35,8 @@ type VerifyProfileRequestDTO struct {
 	ShippingAddressLine2      string `json:"shipping_address_line2,omitempty"`
 	HowDidYouHearAboutUs      int8   `json:"how_did_you_hear_about_us,omitempty"`
 	HowDidYouHearAboutUsOther string `json:"how_did_you_hear_about_us_other,omitempty"`
+	WebsiteURL                string `json:"website_url,omitempty"`
+	Description               string `bson:"description" json:"description"`
 
 	// Customer specific fields
 	HowLongCollectingComicBooksForGrading           int8 `json:"how_long_collecting_comic_books_for_grading,omitempty"`
@@ -46,13 +48,13 @@ type VerifyProfileRequestDTO struct {
 	HasRegularlyAttendedComicConsOrCollectibleShows int8 `json:"has_regularly_attended_comic_cons_or_collectible_shows,omitempty"`
 
 	// Retailer specific fields
-	ComicBookStoreName           string `json:"comic_book_store_name,omitempty"`
-	StoreLogo                    string `json:"store_logo,omitempty"`
-	HowLongStoreOperating        int8   `json:"how_long_store_operating,omitempty"`
-	GradingComicsExperience      string `json:"grading_comics_experience,omitempty"`
-	RetailPartnershipReason      string `json:"retail_partnership_reason,omitempty"`
-	CPSPartnershipReason         string `json:"cps_partnership_reason,omitempty"`
-	WebsiteURL                   string `json:"website_url,omitempty"`
+	ComicBookStoreName      string `json:"comic_book_store_name,omitempty"`
+	StoreLogo               string `json:"store_logo,omitempty"`
+	HowLongStoreOperating   int8   `json:"how_long_store_operating,omitempty"`
+	GradingComicsExperience string `json:"grading_comics_experience,omitempty"`
+	RetailPartnershipReason string `json:"retail_partnership_reason,omitempty"`
+	CPSPartnershipReason    string `json:"cps_partnership_reason,omitempty"`
+
 	EstimatedSubmissionsPerMonth int8   `json:"estimated_submissions_per_month,omitempty"`
 	HasOtherGradingService       int8   `json:"has_other_grading_service,omitempty"`
 	OtherGradingServiceName      string `json:"other_grading_service_name,omitempty"`
@@ -242,6 +244,14 @@ func (s *verifyProfileServiceImpl) validateCommonFields(req *VerifyProfileReques
 			e["shipping_postal_code"] = "Shipping postal code is required"
 		}
 	}
+
+	// More common fields...
+	if req.WebsiteURL == "" {
+		e["website_url"] = "Website URL is required"
+	}
+	if req.Description == "" {
+		e["description"] = "Description is required"
+	}
 }
 
 // validateCustomerFields validates fields specific to customers
@@ -319,6 +329,8 @@ func (s *verifyProfileServiceImpl) updateCommonFields(user *domain.User, req *Ve
 	user.ShippingAddressLine2 = req.ShippingAddressLine2
 	user.HowDidYouHearAboutUs = req.HowDidYouHearAboutUs
 	user.HowDidYouHearAboutUsOther = req.HowDidYouHearAboutUsOther
+	user.WebsiteURL = req.WebsiteURL
+	user.Description = req.Description
 }
 
 // updateCustomerFields updates fields specific to customers
