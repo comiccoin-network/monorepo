@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthProvider } from "./contexts/AuthContext";
-import IndexPage from "./pages/IndexPage";
+import IndexPage from "./pages/Index/Page";
 import RegistrySearchPage from "./pages/Registry/SearchPage";
 import GetStartedPage from "./pages/Gateway/GetStartedPage";
 import LoginPage from "./pages/Gateway/LoginPage";
