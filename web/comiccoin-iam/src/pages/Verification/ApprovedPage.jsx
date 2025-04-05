@@ -23,7 +23,8 @@ import { useGetMe } from "../../hooks/useGetMe";
 
 const VerificationApprovedPage = () => {
   const navigate = useNavigate();
-  const { user } = useGetMe();
+  const { user: authUser, updateUser } = useAuth();
+  const { user, refetch } = useGetMe();
 
   // Define verification status constants
   const VERIFICATION_STATUS = {
@@ -48,8 +49,6 @@ const VerificationApprovedPage = () => {
     };
   }, [user]);
 
-  const { refetch } = useGetMe();
-
   // Add this effect for a one-time forced update
   useEffect(() => {
     // Force refresh user data when the approved page loads
@@ -57,7 +56,23 @@ const VerificationApprovedPage = () => {
     refetch().catch((err) =>
       console.error("Failed to refresh user data:", err),
     );
-  }, [refetch]);
+
+    // Also ensure localStorage is updated with verified status
+    if (
+      authUser &&
+      updateUser &&
+      authUser.profile_verification_status !== VERIFICATION_STATUS.APPROVED
+    ) {
+      console.log(
+        "🔄 Explicitly updating user verification status in auth context",
+      );
+      const updatedUser = {
+        ...authUser,
+        profile_verification_status: VERIFICATION_STATUS.APPROVED,
+      };
+      updateUser(updatedUser);
+    }
+  }, [refetch, authUser, updateUser]);
 
   // Redirect if status is not approved
   useEffect(() => {
@@ -93,9 +108,37 @@ const VerificationApprovedPage = () => {
     }).format(date);
   };
 
-  // Navigate to dashboard
-  const goToDashboard = () => {
-    navigate("/dashboard");
+  // Modified navigate to dashboard function with proper state synchronization
+  const goToDashboard = async () => {
+    try {
+      // First ensure we have the latest user data
+      console.log("🔄 Refreshing user data before navigating to dashboard");
+      const freshData = await refetch();
+
+      // Explicitly update auth context with approved status to ensure HOC sees correct status
+      if (updateUser) {
+        const updatedUser = {
+          ...(freshData || user || authUser),
+          profile_verification_status: VERIFICATION_STATUS.APPROVED,
+        };
+        console.log(
+          "📌 Updating auth context before navigation:",
+          updatedUser.profile_verification_status,
+        );
+        updateUser(updatedUser);
+      }
+
+      // Add a small delay to ensure state propagation
+      setTimeout(() => {
+        // Use replace instead of push to avoid history issues
+        console.log("🚀 Navigating to dashboard");
+        navigate("/dashboard", { replace: true });
+      }, 50);
+    } catch (err) {
+      console.error("Failed to refresh user data before navigation:", err);
+      // Navigate anyway as fallback
+      navigate("/dashboard", { replace: true });
+    }
   };
 
   // Benefits of verification
