@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,18 +23,18 @@ type MeResponseDTO struct {
 	LastName    string             `bson:"last_name" json:"last_name"`
 	Name        string             `bson:"name" json:"name"`
 	LexicalName string             `bson:"lexical_name" json:"lexical_name"`
-	// Role                    int8               `bson:"role" json:"role"`
+	Role        int8               `bson:"role" json:"role"`
 	// WasEmailVerified        bool               `bson:"was_email_verified" json:"was_email_verified,omitempty"`
 	// EmailVerificationCode   string             `bson:"email_verification_code,omitempty" json:"email_verification_code,omitempty"`
 	// EmailVerificationExpiry time.Time          `bson:"email_verification_expiry,omitempty" json:"email_verification_expiry,omitempty"`
-	Phone    string `bson:"phone" json:"phone,omitempty"`
-	Country  string `bson:"country" json:"country,omitempty"`
-	Timezone string `bson:"timezone" json:"timezone"`
-	// Region                  string             `bson:"region" json:"region,omitempty"`
-	// City                    string             `bson:"city" json:"city,omitempty"`
-	// PostalCode                                      string             `bson:"postal_code" json:"postal_code,omitempty"`
-	// AddressLine1                                    string             `bson:"address_line1" json:"address_line1,omitempty"`
-	// AddressLine2                                    string             `bson:"address_line2" json:"address_line2,omitempty"`
+	Phone        string `bson:"phone" json:"phone,omitempty"`
+	Country      string `bson:"country" json:"country,omitempty"`
+	Timezone     string `bson:"timezone" json:"timezone"`
+	Region       string `bson:"region" json:"region,omitempty"`
+	City         string `bson:"city" json:"city,omitempty"`
+	PostalCode   string `bson:"postal_code" json:"postal_code,omitempty"`
+	AddressLine1 string `bson:"address_line1" json:"address_line1,omitempty"`
+	AddressLine2 string `bson:"address_line2" json:"address_line2,omitempty"`
 	// HasShippingAddress                              bool               `bson:"has_shipping_address" json:"has_shipping_address,omitempty"`
 	// ShippingName                                    string             `bson:"shipping_name" json:"shipping_name,omitempty"`
 	// ShippingPhone                                   string             `bson:"shipping_phone" json:"shipping_phone,omitempty"`
@@ -50,13 +51,13 @@ type MeResponseDTO struct {
 	AgreeToTrackingAcrossThirdPartyAppsAndServices bool `bson:"agree_to_tracking_across_third_party_apps_and_services" json:"agree_to_tracking_across_third_party_apps_and_services,omitempty"`
 	// CreatedFromIPAddress                            string             `bson:"created_from_ip_address" json:"created_from_ip_address"`
 	// CreatedByFederatedIdentityID                    primitive.ObjectID `bson:"created_by_federatedidentity_id" json:"created_by_federatedidentity_id"`
-	// CreatedAt                                       time.Time          `bson:"created_at" json:"created_at,omitempty"`
+	CreatedAt time.Time `bson:"created_at" json:"created_at,omitempty"`
 	// CreatedByName                                   string             `bson:"created_by_name" json:"created_by_name"`
 	// ModifiedFromIPAddress                           string             `bson:"modified_from_ip_address" json:"modified_from_ip_address"`
 	// ModifiedByFederatedIdentityID                   primitive.ObjectID `bson:"modified_by_federatedidentity_id" json:"modified_by_federatedidentity_id"`
 	// ModifiedAt                                      time.Time          `bson:"modified_at" json:"modified_at,omitempty"`
 	// ModifiedByName                                  string             `bson:"modified_by_name" json:"modified_by_name"`
-	// Status                                          int8               `bson:"status" json:"status"`
+	Status int8 `bson:"status" json:"status"`
 	// PaymentProcessorName                            string             `bson:"payment_processor_name" json:"payment_processor_name"`
 	// PaymentProcessorCustomerID                      string             `bson:"payment_processor_customer_id" json:"payment_processor_customer_id"`
 	// OTPEnabled                                      bool               `bson:"otp_enabled" json:"otp_enabled"`
@@ -73,8 +74,11 @@ type MeResponseDTO struct {
 	// HasPreviouslyPurchasedFromAuctionSite           int8               `bson:"has_previously_purchased_from_auction_site" json:"has_previously_purchased_from_auction_site"`
 	// HasPreviouslyPurchasedFromFacebookMarketplace   int8               `bson:"has_previously_purchased_from_facebook_marketplace" json:"has_previously_purchased_from_facebook_marketplace"`
 	// HasRegularlyAttendedComicConsOrCollectibleShows int8               `bson:"has_regularly_attended_comic_cons_or_collectible_shows" json:"has_regularly_attended_comic_cons_or_collectible_shows"`
+	ChainID                   uint16          `bson:"chain_id" json:"chain_id"`
 	WalletAddress             *common.Address `bson:"wallet_address" json:"wallet_address"`
 	ProfileVerificationStatus int8            `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
+	WebsiteURL                string          `bson:"website_url" json:"website_url"`
+	Description               string          `bson:"description" json:"description"`
 }
 
 type GetMeService interface {
@@ -137,12 +141,23 @@ func (svc *getMeServiceImpl) Execute(sessCtx mongo.SessionContext) (*MeResponseD
 		LastName:        user.LastName,
 		Name:            user.Name,
 		LexicalName:     user.LexicalName,
+		Role:            user.Role,
 		Phone:           user.Phone,
 		Country:         user.Country,
 		Timezone:        user.Timezone,
+		Region:          user.Region,
+		City:            user.City,
+		PostalCode:      user.PostalCode,
+		AddressLine1:    user.AddressLine1,
+		AddressLine2:    user.AddressLine2,
 		AgreePromotions: user.AgreePromotions,
 		AgreeToTrackingAcrossThirdPartyAppsAndServices: user.AgreeToTrackingAcrossThirdPartyAppsAndServices,
+		CreatedAt:                 user.CreatedAt,
+		Status:                    user.Status,
+		ChainID:                   user.ChainID,
 		WalletAddress:             user.WalletAddress,
 		ProfileVerificationStatus: user.ProfileVerificationStatus,
+		WebsiteURL:                user.WebsiteURL,
+		Description:               user.Description,
 	}, nil
 }
