@@ -1,4 +1,4 @@
-// src/pages/SettingsPage.jsx
+// src/pages/More/SettingsPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -10,11 +10,11 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-import AppTopNavigation from "../components/AppTopNavigation";
-import AppFooter from "../components/AppFooter";
-import { usePutUpdateMe } from "../hooks/usePutUpdateMe";
-import { useAuth } from "../hooks/useAuth";
-import { useGetMe } from "../hooks/useGetMe";
+import AppTopNavigation from "../../components/AppTopNavigation";
+import AppFooter from "../../components/AppFooter";
+import { usePutUpdateMe } from "../../hooks/usePutUpdateMe";
+import { useAuth } from "../../hooks/useAuth";
+import { useGetMe } from "../../hooks/useGetMe";
 
 // Define country and timezone options for dropdown selection
 const countries = [

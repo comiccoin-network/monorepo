@@ -27,7 +27,7 @@ import VerificationApprovedPage from "./pages/Verification/ApprovedPage";
 import VerificationPendingPage from "./pages/Verification/PendingPage";
 import MorePage from "./pages/More/Page";
 import DeleteAccountPage from "./pages/More/DeleteAccountPage";
-import SettingsPage from "./pages/SettingsPage";
+import SettingsPage from "./pages/More/SettingsPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import HelpAndSupportPage from "./pages/HelpAndSupportPage";
