@@ -1,4 +1,4 @@
-// src/pages/SearchPage.jsx
+// src/pages/Registry/SearchPage.jsx
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
@@ -28,10 +28,10 @@ import {
   SlidersHorizontal,
   Users,
 } from "lucide-react";
-import Header from "../components/IndexPage/Header";
-import Footer from "../components/IndexPage/Footer";
+import Header from "../../components/IndexPage/Header";
+import Footer from "../../components/IndexPage/Footer";
 
-const SearchPage = () => {
+const RegistrySearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -948,4 +948,4 @@ const SearchPage = () => {
   );
 };
 
-export default SearchPage;
+export default RegistrySearchPage;
