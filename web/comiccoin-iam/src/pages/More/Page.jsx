@@ -1,11 +1,11 @@
-// src/pages/MorePage.jsx
+// src/pages/More/Page.jsx
 import React from "react";
 import { useNavigate } from "react-router";
 import { Settings, LogOut, Trash2, ArrowRight, Menu } from "lucide-react";
 
-import AppTopNavigation from "../components/AppTopNavigation";
-import AppFooter from "../components/AppFooter";
-import { useAuth } from "../hooks/useAuth";
+import AppTopNavigation from "../../components/AppTopNavigation";
+import AppFooter from "../../components/AppFooter";
+import { useAuth } from "../../hooks/useAuth";
 
 function MorePageContent() {
   const navigate = useNavigate();

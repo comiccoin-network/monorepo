@@ -1,4 +1,4 @@
-// src/pages/DeleteAccountPage.jsx
+// src/pages/More/DeleteAccountPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -12,9 +12,9 @@ import {
   Loader,
 } from "lucide-react";
 
-import AppTopNavigation from "../components/AppTopNavigation";
-import AppFooter from "../components/AppFooter";
-import { useDeleteAccount } from "../api/endpoints/deleteMeApi";
+import AppTopNavigation from "../../components/AppTopNavigation";
+import AppFooter from "../../components/AppFooter";
+import { useDeleteAccount } from "../../api/endpoints/deleteMeApi";
 
 function DeleteAccountPageContent() {
   const navigate = useNavigate();
