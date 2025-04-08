@@ -1,4 +1,4 @@
-// src/pages/Verification/IndividualPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Verification/IndividualPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import countryRegionData from "country-region-data/dist/data-umd";
