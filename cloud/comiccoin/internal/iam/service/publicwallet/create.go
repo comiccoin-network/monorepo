@@ -2,6 +2,7 @@
 package publicwallet
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	dom "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/publicwallet"
 	uc "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/user"
 )
 
 type CreatePublicWalletRequestIDO struct {
@@ -45,6 +47,8 @@ type createPublicWalletServiceImpl struct {
 	logger                          *slog.Logger
 	publicWalletCreateUseCase       uc.PublicWalletCreateUseCase
 	publicWalletGetByAddressUseCase uc.PublicWalletGetByAddressUseCase
+	userGetByIDUseCase              uc_user.UserGetByIDUseCase
+	userUpdateUseCase               uc_user.UserUpdateUseCase
 }
 
 func NewCreatePublicWalletService(
@@ -52,12 +56,16 @@ func NewCreatePublicWalletService(
 	logger *slog.Logger,
 	uc1 uc.PublicWalletCreateUseCase,
 	uc2 uc.PublicWalletGetByAddressUseCase,
+	uc3 uc_user.UserGetByIDUseCase,
+	uc4 uc_user.UserUpdateUseCase,
 ) CreatePublicWalletService {
 	return &createPublicWalletServiceImpl{
 		config:                          config,
 		logger:                          logger,
 		publicWalletCreateUseCase:       uc1,
 		publicWalletGetByAddressUseCase: uc2,
+		userGetByIDUseCase:              uc3,
+		userUpdateUseCase:               uc4,
 	}
 }
 
@@ -66,8 +74,14 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 	// Extract authenticated user information from context.
 	//
 
-	userID, _ := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	if !ok {
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return nil, errors.New("user id not found in context")
+	}
 	userName, _ := sessCtx.Value(constants.SessionUserName).(string)
+	userIPAddress := sessCtx.Value(constants.SessionIPAddress).(string)
 
 	//
 	// Santize and validate input fields.
@@ -118,30 +132,57 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 	walletAddress := common.HexToAddress(strings.ToLower(req.Address))
 
 	//
+	// Retrieve related user information.
+	//
+
+	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
+	if err != nil {
+		svc.logger.Error("Failed retrieving user", slog.Any("error", err))
+		return nil, err
+	}
+	if user == nil {
+		svc.logger.Error("User not found", slog.Any("userID", userID))
+		return nil, httperror.NewForBadRequestWithSingleField("non_field_error", "User not found")
+	}
+
+	//
 	// Create public wallet address in our database.
 	//
 
 	id := primitive.NewObjectID()
 
 	pw := &dom.PublicWallet{
-		Address:          &walletAddress,
-		ChainID:          req.ChainID,
-		Name:             req.Name,
-		Description:      req.Description,
-		ThumbnailS3Key:   "",
-		ViewCount:        0,
-		ID:               id,
-		CreatedAt:        time.Now(),
-		CreatedByUserID:  userID,
-		CreatedByName:    userName,
-		ModifiedAt:       time.Now(),
-		ModifiedByUserID: userID,
-		ModifiedByName:   userName,
-		Status:           dom.PublicWalletStatusActive,
+		Type:                  user.Role, // Not an error - this is correct!
+		Address:               &walletAddress,
+		ChainID:               req.ChainID,
+		Name:                  req.Name,
+		Description:           req.Description,
+		WebsiteURL:            user.WebsiteURL,
+		Phone:                 user.Phone,
+		Country:               user.Country,
+		Region:                user.Region,
+		City:                  user.City,
+		PostalCode:            user.PostalCode,
+		AddressLine1:          user.AddressLine1,
+		AddressLine2:          user.AddressLine2,
+		IsVerified:            false,
+		ThumbnailS3Key:        "",
+		ViewCount:             0,
+		UniqueViewCount:       0,
+		UniqueIPAddresses:     make([]string, 0),
+		ID:                    id,
+		CreatedAt:             time.Now(),
+		CreatedFromIPAddress:  userIPAddress,
+		CreatedByUserID:       userID,
+		CreatedByName:         userName,
+		ModifiedAt:            time.Now(),
+		ModifiedFromIPAddress: userIPAddress,
+		ModifiedByUserID:      userID,
+		ModifiedByName:        userName,
+		Status:                dom.PublicWalletStatusActive,
 	}
 
-	err := svc.publicWalletCreateUseCase.Execute(sessCtx, pw)
-	if err != nil {
+	if err := svc.publicWalletCreateUseCase.Execute(sessCtx, pw); err != nil {
 		svc.logger.Error("failed to create public wallet",
 			slog.Any("error", err))
 		return nil, err
