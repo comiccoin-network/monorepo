@@ -1,4 +1,4 @@
-// src/pages/PublicWallet/UpdatePage.jsx - Fixed API call
+// monorepo/web/comiccoin-iam/src/pages/PublicWallet/UpdatePage.jsx - Fixed API call
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
