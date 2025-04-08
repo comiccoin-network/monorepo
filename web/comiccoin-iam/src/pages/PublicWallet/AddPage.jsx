@@ -56,18 +56,37 @@ const PublicWalletAddPage = () => {
   // Auto-fill form fields when user data is loaded
   useEffect(() => {
     if (user) {
-      setFormData((prevData) => ({
-        ...prevData,
-        // Auto-fill name with user's full name if available
-        name:
-          user.first_name && user.last_name
-            ? `${user.first_name} ${user.last_name}'s Wallet`
-            : user.email
-              ? `${user.email}'s Wallet`
-              : prevData.name,
-        // Auto-fill description with user's description if available
-        description: user.description || prevData.description,
-      }));
+      setFormData((prevData) => {
+        let walletName = prevData.name;
+
+        // For retailers, use the Comic Book Store name
+        if (user.role === 2) {
+          // UserRoleRetailer = 2
+          walletName =
+            user.comicBookStoreName || user.comic_book_store_name
+              ? `${user.comicBookStoreName || user.comic_book_store_name}`
+              : user.email
+                ? `${user.email}'s Business Wallet`
+                : prevData.name;
+        } else {
+          // For individuals, use first/last name
+          walletName =
+            user.first_name && user.last_name
+              ? `${user.first_name} ${user.last_name}'s Wallet`
+              : user.email
+                ? `${user.email}'s Wallet`
+                : prevData.name;
+        }
+
+        return {
+          ...prevData,
+          name: walletName,
+          // Auto-fill description with user's description if available
+          description: user.description || prevData.description,
+          // For Type field - set Public Wallet Type based on user role
+          type: user.role === 2 ? 2 : 3, // PublicWalletTypeCompany (2) or PublicWalletTypeIndividual (3)
+        };
+      });
     }
   }, [user]);
 
@@ -253,6 +272,8 @@ const PublicWalletAddPage = () => {
       minute: "2-digit",
     }).format(date);
   };
+
+  console.log("--->", user);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
@@ -657,7 +678,7 @@ const PublicWalletAddPage = () => {
                   <div className="flex items-center bg-gray-50 border border-gray-200 rounded p-2">
                     <LinkIcon className="h-4 w-4 text-gray-400 mr-2" />
                     <span className="text-sm text-gray-700 overflow-hidden text-ellipsis">
-                      {user?.websiteURL || "Not available"}
+                      {user?.website_url || "Not available"}
                     </span>
                   </div>
                 </div>
