@@ -16,9 +16,13 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	uc "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/user"
 )
 
 type UpdatePublicWalletRequestIDO struct {
+	// The unique identifier for the public wallet.
+	ID primitive.ObjectID `json:"id"`
+
 	// The public address of the account.
 	Address string `json:"address"`
 
@@ -44,19 +48,25 @@ type updatePublicWalletByAddressServiceImpl struct {
 	logger                             *slog.Logger
 	publicWalletGetByAddressUseCase    uc.PublicWalletGetByAddressUseCase
 	publicWalletUpdateByAddressUseCase uc.PublicWalletUpdateByAddressUseCase
+	userGetByIDUseCase                 uc_user.UserGetByIDUseCase
+	userUpdateUseCase                  uc_user.UserUpdateUseCase
 }
 
 func NewUpdatePublicWalletByAddressService(
 	config *config.Configuration,
 	logger *slog.Logger,
-	uc1 uc.PublicWalletGetByAddressUseCase,
-	uc2 uc.PublicWalletUpdateByAddressUseCase,
+	publicWalletGetByAddressUseCase uc.PublicWalletGetByAddressUseCase,
+	publicWalletUpdateByAddressUseCase uc.PublicWalletUpdateByAddressUseCase,
+	userGetByIDUseCase uc_user.UserGetByIDUseCase,
+	userUpdateUseCase uc_user.UserUpdateUseCase,
 ) UpdatePublicWalletByAddressService {
 	return &updatePublicWalletByAddressServiceImpl{
 		config:                             config,
 		logger:                             logger,
-		publicWalletGetByAddressUseCase:    uc1,
-		publicWalletUpdateByAddressUseCase: uc2,
+		publicWalletGetByAddressUseCase:    publicWalletGetByAddressUseCase,
+		publicWalletUpdateByAddressUseCase: publicWalletUpdateByAddressUseCase,
+		userGetByIDUseCase:                 userGetByIDUseCase,
+		userUpdateUseCase:                  userUpdateUseCase,
 	}
 }
 
@@ -67,9 +77,12 @@ func (svc *updatePublicWalletByAddressServiceImpl) UpdateByAddress(sessCtx mongo
 
 	userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
 	if !ok {
-		return errors.New("user ID not found in session context")
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return errors.New("user id not found in context")
 	}
 	userName, _ := sessCtx.Value(constants.SessionUserName).(string)
+	userIPAddress := sessCtx.Value(constants.SessionIPAddress).(string)
 
 	//
 	// Santize and validate input fields.
@@ -149,19 +162,38 @@ func (svc *updatePublicWalletByAddressServiceImpl) UpdateByAddress(sessCtx mongo
 		return httperror.NewForBadRequest(&e)
 	}
 
+	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
+	if err != nil {
+		svc.logger.Error("Failed retrieving user", slog.Any("error", err))
+		return err
+	}
+	if user == nil {
+		svc.logger.Error("User not found", slog.Any("userID", userID))
+		return httperror.NewForBadRequestWithSingleField("non_field_error", "User not found")
+	}
+
 	//
 	// Update our record.
 	//
 
+	existingPublicWallet.ModifiedFromIPAddress = userIPAddress
 	existingPublicWallet.ModifiedAt = time.Now().UTC()
 	existingPublicWallet.ModifiedByName = userName
 	existingPublicWallet.ModifiedByUserID = userID
 	existingPublicWallet.Name = req.Name
 	existingPublicWallet.Description = req.Description
 	existingPublicWallet.Status = req.Status
+	existingPublicWallet.WebsiteURL = user.WebsiteURL
+	existingPublicWallet.Phone = user.Phone
+	existingPublicWallet.Country = user.Country
+	existingPublicWallet.Region = user.Region
+	existingPublicWallet.City = user.City
+	existingPublicWallet.PostalCode = user.PostalCode
+	existingPublicWallet.AddressLine1 = user.AddressLine1
+	existingPublicWallet.AddressLine2 = user.AddressLine2
 
 	if err := svc.publicWalletUpdateByAddressUseCase.Execute(sessCtx, existingPublicWallet); err != nil {
-		svc.logger.Error("failed to create public wallet",
+		svc.logger.Error("failed to update public wallet",
 			slog.Any("error", err))
 		return err
 	}

@@ -362,13 +362,18 @@ func NewModule(
 	updatePublicWalletByIDService := svc_publicwallet.NewUpdatePublicWalletByIDService(
 		cfg,
 		logger,
+		publicWalletGetByIDUseCase,
 		publicWalletUpdateByIDUseCase,
+		userGetByIDUseCase,
+		userUpdateUseCase,
 	)
 	updatePublicWalletByAddressService := svc_publicwallet.NewUpdatePublicWalletByAddressService(
 		cfg,
 		logger,
 		publicWalletGetByAddressUseCase,
 		publicWalletUpdateByAddressUseCase,
+		userGetByIDUseCase,
+		userUpdateUseCase,
 	)
 	deletePublicWalletByIDService := svc_publicwallet.NewDeletePublicWalletByIDService(
 		cfg,
