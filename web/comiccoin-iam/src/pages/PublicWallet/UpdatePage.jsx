@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/PublicWallet/UpdatePage.jsx - Fixed API call
+// monorepo/web/comiccoin-iam/src/pages/PublicWallet/UpdatePage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
@@ -12,20 +12,23 @@ import {
   FileText,
   Loader,
   Info,
+  Building,
+  User,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import AppTopNavigation from "../../components/AppTopNavigation";
 import AppFooter from "../../components/AppFooter";
 import withProfileVerification from "../../components/withProfileVerification";
 import { usePublicWallet } from "../../hooks/usePublicWallet";
-import { useUpdatePublicWalletByAddress } from "../../api/endpoints/publicWalletApi";
-import { prepareWalletForApi } from "../../api/endpoints/publicWalletApi";
+import { useGetMe } from "../../hooks/useGetMe";
 
 const PublicWalletUpdatePage = () => {
   const { address } = useParams();
   const navigate = useNavigate();
+  const { user } = useGetMe();
   const {
     fetchWalletByAddress,
+    updatePublicWallet,
     isLoading: isLoadingOperation,
     error: operationError,
     reset,
@@ -35,25 +38,15 @@ const PublicWalletUpdatePage = () => {
   // Create ref for form card to scroll to on error
   const formCardRef = useRef(null);
 
-  // Use the hook directly with the address parameter
-  const {
-    mutateAsync: updateWallet,
-    isLoading: isUpdating,
-    error: updateError,
-  } = useUpdatePublicWalletByAddress(address);
-
-  // Combine errors and loading states
-  const isLoading = isLoadingOperation || isUpdating;
-  const error = operationError || updateError;
-
   // State for tracking whether we've submitted the form
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
   // State for general error message
   const [generalError, setGeneralError] = useState("");
 
-  // State for wallet loading
+  // State for wallet loading and updating
   const [isLoadingWallet, setIsLoadingWallet] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Form validation errors
   const [errors, setErrors] = useState({});
@@ -66,7 +59,13 @@ const PublicWalletUpdatePage = () => {
     description: "",
     thumbnailS3Key: "",
     status: 1, // Default to active
+    type: 3, // Default to individual
+    websiteURL: "", // Added website URL
   });
+
+  // Combine loading states
+  const isLoading = isLoadingOperation || isUpdating;
+  const error = operationError;
 
   // Reset state on component mount
   useEffect(() => {
@@ -74,6 +73,18 @@ const PublicWalletUpdatePage = () => {
     reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Get wallet type label
+  const getWalletTypeLabel = (typeCode) => {
+    switch (typeCode) {
+      case 2:
+        return "Business/Retailer";
+      case 3:
+        return "Individual";
+      default:
+        return "Unknown";
+    }
+  };
 
   // Fetch wallet data on component mount
   useEffect(() => {
@@ -97,6 +108,8 @@ const PublicWalletUpdatePage = () => {
             description: walletData.description || "",
             thumbnailS3Key: walletData.thumbnailS3Key || "",
             status: walletData.status || 1,
+            type: walletData.type || 3,
+            websiteURL: walletData.websiteURL || "",
           });
         } else {
           console.warn("No wallet data found");
@@ -206,17 +219,14 @@ const PublicWalletUpdatePage = () => {
 
     // Set flag to indicate we've submitted the form
     setHasSubmitted(true);
+    setIsUpdating(true);
 
     try {
       console.log("Updating wallet:", address);
       console.log("Form data:", formData);
 
-      // Prepare data for API
-      const apiData = prepareWalletForApi(formData);
-      console.log("Prepared API data:", apiData);
-
-      // Call the update mutation directly
-      const response = await updateWallet(apiData);
+      // Use the updatePublicWallet function from the usePublicWallet hook
+      const response = await updatePublicWallet(address, formData);
       console.log("Update response:", response);
 
       toast.success("Wallet updated successfully");
@@ -266,6 +276,8 @@ const PublicWalletUpdatePage = () => {
       } else if (err.message) {
         setGeneralError(err.message);
       }
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -313,6 +325,30 @@ const PublicWalletUpdatePage = () => {
           </div>
         )}
 
+        {/* Wallet Type Indicator */}
+        {!isLoadingWallet && formData.type && (
+          <div className="mb-6 p-4 rounded-lg bg-purple-50 border border-purple-200">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium text-purple-800 mb-1 flex items-center">
+                  {formData.type === 2 ? (
+                    <Building className="h-4 w-4 mr-1" />
+                  ) : (
+                    <User className="h-4 w-4 mr-1" />
+                  )}
+                  {getWalletTypeLabel(formData.type)} Wallet
+                </h3>
+                <p className="text-sm text-purple-700">
+                  {formData.type === 2
+                    ? "This is a business wallet associated with your Comic Book Store. Updates will be visible to other users on the ComicCoin network."
+                    : "This is a personal wallet associated with your individual profile. Updates will be visible to other users on the ComicCoin network."}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main Form Card */}
         {!isLoadingWallet && (
           <div
@@ -321,7 +357,11 @@ const PublicWalletUpdatePage = () => {
           >
             {/* Card Header */}
             <div className="p-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center">
-              <Wallet className="h-6 w-6 mr-3" aria-hidden="true" />
+              {formData.type === 2 ? (
+                <Building className="h-6 w-6 mr-3" aria-hidden="true" />
+              ) : (
+                <Wallet className="h-6 w-6 mr-3" aria-hidden="true" />
+              )}
               <div>
                 <h2 className="text-xl font-semibold">
                   Edit Wallet Information
@@ -414,6 +454,36 @@ const PublicWalletUpdatePage = () => {
                 </p>
               </div>
 
+              {/* Wallet Type (read-only) */}
+              <div>
+                <label
+                  htmlFor="type"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Wallet Type
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    {formData.type === 2 ? (
+                      <Building className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <User className="h-5 w-5 text-gray-400" />
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    id="type"
+                    name="type"
+                    value={getWalletTypeLabel(formData.type)}
+                    readOnly
+                    className="w-full pl-10 pr-3 py-2 h-10 border border-gray-300 rounded-lg shadow-sm bg-gray-100 cursor-not-allowed"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Wallet type cannot be changed
+                </p>
+              </div>
+
               {/* Wallet Name */}
               <div>
                 <label
@@ -437,7 +507,11 @@ const PublicWalletUpdatePage = () => {
                         ? "border-red-500 bg-red-50"
                         : "border-gray-300"
                     }`}
-                    placeholder="My Primary Wallet"
+                    placeholder={
+                      formData.type === 2
+                        ? "Business Wallet Name"
+                        : "My Personal Wallet"
+                    }
                     maxLength={100}
                   />
                 </div>
@@ -449,6 +523,45 @@ const PublicWalletUpdatePage = () => {
                 )}
                 <p className="mt-1 text-xs text-gray-500">
                   A friendly name to identify this wallet (max 100 characters)
+                </p>
+              </div>
+
+              {/* Website URL */}
+              <div>
+                <label
+                  htmlFor="websiteURL"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Website URL
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <LinkIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="url"
+                    id="websiteURL"
+                    name="websiteURL"
+                    value={formData.websiteURL || ""}
+                    onChange={handleInputChange}
+                    className={`w-full pl-10 pr-3 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                      errors.websiteURL
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-300"
+                    }`}
+                    placeholder="https://example.com"
+                  />
+                </div>
+                {errors.websiteURL && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.websiteURL}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-gray-500">
+                  {formData.type === 2
+                    ? "Your business website URL"
+                    : "Your personal website or online profile URL"}
                 </p>
               </div>
 
