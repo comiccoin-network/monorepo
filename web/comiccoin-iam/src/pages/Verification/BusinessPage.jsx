@@ -18,7 +18,15 @@ import {
 
 import Header from "../../components/IndexPage/Header";
 import Footer from "../../components/IndexPage/Footer";
+import { useAuth } from "../../hooks/useAuth";
 import { useVerifyProfile, USER_ROLE } from "../../hooks/useVerifyProfile";
+
+const VERIFICATION_STATUS = {
+  UNVERIFIED: 1,
+  SUBMITTED_FOR_REVIEW: 2,
+  APPROVED: 3,
+  REJECTED: 4,
+};
 
 // Hook to handle localStorage
 const useLocalStorage = (key, initialValue) => {
@@ -47,6 +55,7 @@ const useLocalStorage = (key, initialValue) => {
 
 const VerificationBusinessPage = () => {
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
   const { submitVerification, isSubmitting, formErrors } = useVerifyProfile();
 
   // Inline styles for select elements to fix Safari
@@ -239,8 +248,77 @@ const VerificationBusinessPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Form validation code remains the same...
-    // [Existing validation code here]
+    // Client-side validation
+    const newErrors = {};
+
+    // Required fields validation
+    const requiredFields = [
+      { field: "comicBookStoreName", label: "Comic Book Store Name" },
+      { field: "addressLine1", label: "Address Line 1" },
+      { field: "city", label: "City" },
+      { field: "country", label: "Country" },
+      { field: "region", label: "State/Province" },
+      { field: "postalCode", label: "ZIP/Postal Code" },
+      { field: "howDidYouHearAboutUs", label: "How did you hear about us" },
+      { field: "howLongStoreOperating", label: "Store operation duration" },
+      { field: "gradingComicsExperience", label: "Grading comics experience" },
+      { field: "retailPartnershipReason", label: "Retail partnership reason" },
+      {
+        field: "estimatedSubmissionsPerMonth",
+        label: "Estimated submissions per month",
+      },
+      {
+        field: "hasOtherGradingService",
+        label: "Other grading service information",
+      },
+      { field: "requestWelcomePackage", label: "Welcome package request" },
+      { field: "websiteURL", label: "Website URL" },
+      { field: "description", label: "Description" },
+    ];
+
+    requiredFields.forEach(({ field, label }) => {
+      if (
+        !formData[field] ||
+        (typeof formData[field] === "number" && formData[field] === 0)
+      ) {
+        newErrors[field] = `${label} is required`;
+      }
+    });
+
+    // Validate "Other" field if "Other" is selected in the dropdown
+    if (
+      formData.howDidYouHearAboutUs === 6 &&
+      !formData.howDidYouHearAboutUsOther
+    ) {
+      newErrors.howDidYouHearAboutUsOther =
+        "Please specify how you heard about us";
+    }
+
+    // Validate grading service name if "Yes" is selected
+    if (
+      formData.hasOtherGradingService === 1 &&
+      !formData.otherGradingServiceName
+    ) {
+      newErrors.otherGradingServiceName = "Please specify the grading service";
+    }
+
+    // Validate shipping address fields if shipping address is enabled
+    if (formData.hasShippingAddress) {
+      const requiredShippingFields = [
+        { field: "shippingName", label: "Shipping name" },
+        { field: "shippingCountry", label: "Shipping country" },
+        { field: "shippingRegion", label: "Shipping state/province" },
+        { field: "shippingCity", label: "Shipping city" },
+        { field: "shippingAddressLine1", label: "Shipping address" },
+        { field: "shippingPostalCode", label: "Shipping postal code" },
+      ];
+
+      requiredShippingFields.forEach(({ field, label }) => {
+        if (!formData[field]) {
+          newErrors[field] = `${label} is required`;
+        }
+      });
+    }
 
     // If there are errors, show them and don't proceed
     if (Object.keys(newErrors).length > 0) {
@@ -250,17 +328,24 @@ const VerificationBusinessPage = () => {
       return;
     }
 
-    setIsLoading(true);
-    console.log("Submitting business verification data:", formData);
-
     try {
       // Submit data to the API with explicit user role
       // USER_ROLE.RETAILER = 2 in our backend (business/retailer user)
       const success = await submitVerification(formData, USER_ROLE.RETAILER);
 
       if (success) {
+        // Update user verification status if available
+        if (user && updateUser) {
+          updateUser({
+            ...user,
+            profile_verification_status:
+              VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW,
+          });
+        }
+
         // After successful submission, redirect to pending page
-        navigate("/verification/pending");
+        // Use replace: true to prevent going back to the form
+        navigate("/verification/pending", { replace: true });
       }
     } catch (error) {
       console.error("Error submitting business verification:", error);
@@ -269,8 +354,9 @@ const VerificationBusinessPage = () => {
       if (formErrors && Object.keys(formErrors).length > 0) {
         setErrors((prev) => ({ ...prev, ...formErrors }));
       }
-    } finally {
-      setIsLoading(false);
+
+      // Scroll to the top to show errors
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
