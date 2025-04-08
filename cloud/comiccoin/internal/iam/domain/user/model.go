@@ -21,6 +21,26 @@ const (
 	UserProfileVerificationStatusSubmittedForReview = 2 // The user's profile has been submitted and is awaiting review.
 	UserProfileVerificationStatusApproved           = 3 // The user's profile has been approved.
 	UserProfileVerificationStatusRejected           = 4 // The user's profile has been rejected.
+
+	// StorePendingStatus indicates this store needs to be reviewed by CPS and approved / rejected.
+	StorePendingStatus  = 1
+	StoreActiveStatus   = 2
+	StoreRejectedStatus = 3
+	StoreErrorStatus    = 4
+	StoreArchivedStatus = 5
+
+	EstimatedSubmissionsPerMonth1To10   = 1
+	EstimatedSubmissionsPerMonth10To25  = 2
+	EstimatedSubmissionsPerMonth25To50  = 3
+	EstimatedSubmissionsPerMonth50To10  = 4
+	EstimatedSubmissionsPerMonth100Plus = 5
+
+	HasOtherGradingServiceYes = 1
+	HasOtherGradingServiceNo  = 2
+	RequestWelcomePackageYes  = 1
+	RequestWelcomePackageNo   = 2
+
+	SpecialCollection040001 = 1
 )
 
 type User struct {
@@ -115,8 +135,8 @@ type User struct {
 	StoreLogoFileURL       string    `bson:"-" json:"store_logo_file_url,omitempty"` // (Optional, added by endpoint)
 	StoreLogoFileURLExpiry time.Time `bson:"-" json:"store_logo_file_url_expiry"`    // (Optional, added by endpoint)
 
-	ComicBookStoreName           string `json:"comic_book_store_name,omitempty"`
-	HowLongStoreOperating        int8   `json:"how_long_store_operating,omitempty"`
+	ComicBookStoreName           string `bson:"comic_book_store_name" json:"comic_book_store_name,omitempty"`
+	HowLongStoreOperating        int8   `bson:"how_long_store_operating" json:"how_long_store_operating,omitempty"`
 	RetailPartnershipReason      string `bson:"retail_partnership_reason" json:"retail_partnership_reason,omitempty"`         // "Please describe how you could become a good retail partner for the ComicCoin Blockchain"
 	ComicCoinPartnershipReason   string `bson:"comic_coin_partnership_reason" json:"comic_coin_partnership_reason,omitempty"` // "Please describe how the ComicCoin Blockchain could help you grow your business"
 	EstimatedSubmissionsPerMonth int8   `bson:"estimated_submissions_per_month" json:"estimated_submissions_per_month"`

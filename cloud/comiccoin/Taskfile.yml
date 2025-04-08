@@ -4,7 +4,7 @@ tasks:
   dev:
     desc: Start the backend in developer mode
     cmds:
-      - docker-compose -p comiccoin -f dev.docker-compose.yml up
+      - docker-compose -p comiccoin -f dev.docker-compose.yml up --watch
 
   end:
     desc: Stop the backend in developer mode

@@ -117,9 +117,27 @@ const VerificationBusinessPage = () => {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let processedValue = value; // Default to string value
+
+    // These specific select fields use numeric values in their options
+    // and should be stored as numbers in the state.
+    const numericSelects = [
+      "howDidYouHearAboutUs",
+      "howLongStoreOperating",
+      "hasOtherGradingService",
+      "requestWelcomePackage",
+      "estimatedSubmissionsPerMonth",
+    ];
+
+    if (numericSelects.includes(name)) {
+      const parsedValue = parseInt(value, 10);
+      // Use the parsed number if valid, otherwise default (assuming 0 for empty/invalid selection)
+      processedValue = isNaN(parsedValue) ? 0 : parsedValue;
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: processedValue, // Use the original or parsed value
     }));
 
     // Clear error when typing
@@ -389,13 +407,13 @@ const VerificationBusinessPage = () => {
   ];
 
   // Estimated submissions per month options
-  const submissionRanges = [
-    { value: "", label: "Select an option..." },
-    { value: "1-10", label: "1-10 submissions per month" },
-    { value: "11-25", label: "11-25 submissions per month" },
-    { value: "26-50", label: "26-50 submissions per month" },
-    { value: "51-100", label: "51-100 submissions per month" },
-    { value: "100+", label: "More than 100 submissions per month" },
+  const estimatedSubmissionsPerMonthOptions = [
+    { value: 0, label: "Select an option..." },
+    { value: 1, label: "1-10 submissions per month" },
+    { value: 2, label: "11-25 submissions per month" },
+    { value: 3, label: "26-50 submissions per month" },
+    { value: 4, label: "51-100 submissions per month" },
+    { value: 5, label: "More than 100 submissions per month" },
   ];
 
   return (
@@ -511,6 +529,46 @@ const VerificationBusinessPage = () => {
                             aria-hidden="true"
                           />
                           {errors.comicBookStoreName}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    <div className="mb-3">
+                      <label
+                        htmlFor="description"
+                        className="block text-sm text-gray-700 mb-1"
+                      >
+                        Please write a brief description of the comic book store{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          errors.description
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        placeholder={
+                          "For example `Rare comic book shop for collectors and traders`, etc."
+                        }
+                        aria-required="true"
+                        aria-invalid={errors.description ? "true" : "false"}
+                      ></textarea>
+                      {errors.description && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.description}
                         </p>
                       )}
                     </div>
@@ -752,10 +810,8 @@ const VerificationBusinessPage = () => {
                         htmlFor="websiteURL"
                         className="block text-sm text-gray-700 mb-1"
                       >
-                        Website URL{" "}
-                        <span className="text-gray-400 text-xs">
-                          (Optional)
-                        </span>
+                        Online Presence Link{" "}
+                        <span className="text-red-500">*</span>
                       </label>
                       <div className="flex rounded-md shadow-sm">
                         <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
@@ -767,11 +823,39 @@ const VerificationBusinessPage = () => {
                           name="websiteURL"
                           value={formData.websiteURL}
                           onChange={handleInputChange}
-                          className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                          placeholder="https://yourbusiness.com"
-                          aria-required="false"
+                          className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                            errors.websiteURL
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="e.g., https://linkedin.com/in/yourprofile"
+                          aria-required="true"
+                          aria-invalid={errors.websiteURL ? "true" : "false"}
+                          aria-describedby="websiteURL-help"
                         />
                       </div>
+                      <p
+                        id="websiteURL-help"
+                        className="mt-1 text-xs text-gray-500"
+                      >
+                        Please provide a link to your company website, parent
+                        company HQ website, or a public social media profile
+                        (like LinkedIn, Twitter, or Facebook). This helps us
+                        verify your identity and connection to the comic
+                        community.
+                      </p>
+                      {errors.websiteURL && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.websiteURL}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -878,7 +962,7 @@ const VerificationBusinessPage = () => {
                         htmlFor="estimatedSubmissionsPerMonth"
                         className="block text-sm text-gray-700 mb-1"
                       >
-                        Estimated submissions per month{" "}
+                        Estimated submissions per month of Comics for grading{" "}
                         <span className="text-red-500">*</span>
                       </label>
                       <select
@@ -897,7 +981,7 @@ const VerificationBusinessPage = () => {
                           errors.estimatedSubmissionsPerMonth ? "true" : "false"
                         }
                       >
-                        {submissionRanges.map((range) => (
+                        {estimatedSubmissionsPerMonthOptions.map((range) => (
                           <option key={range.value} value={range.value}>
                             {range.label}
                           </option>

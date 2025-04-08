@@ -7,7 +7,7 @@
 # This is docker-compose is used for developers only.
 #
 # ------------------------------------------------------------------------------
-# $ docker-compose -p comiccoin -f dev.docker-compose.yml up   #
+# $ docker-compose -p comiccoin -f dev.docker-compose.yml up --watch  #
 # ------------------------------------------------------------------------------
 #
 
