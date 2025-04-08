@@ -48,7 +48,7 @@ const IndexPage = () => {
     e.preventDefault();
     // Navigate to the search page with the query parameter
     if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      navigate(`/directory?q=${encodeURIComponent(searchQuery)}`);
     }
   };
 

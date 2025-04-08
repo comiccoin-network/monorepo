@@ -169,7 +169,7 @@ const RegistrySearchPage = () => {
   // Handle search
   const handleSearch = (e) => {
     e.preventDefault();
-    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    navigate(`/directory?q=${encodeURIComponent(searchQuery)}`);
   };
 
   // Handle filter change

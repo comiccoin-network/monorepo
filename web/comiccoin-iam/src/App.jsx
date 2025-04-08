@@ -61,7 +61,7 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<IndexPage />} />
-            <Route path="/search" element={<RegistrySearchPage />} />
+            <Route path="/directory" element={<RegistrySearchPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/get-started" element={<GetStartedPage />} />
