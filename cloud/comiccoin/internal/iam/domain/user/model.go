@@ -115,6 +115,15 @@ type User struct {
 	StoreLogoFileURL       string    `bson:"-" json:"store_logo_file_url,omitempty"` // (Optional, added by endpoint)
 	StoreLogoFileURLExpiry time.Time `bson:"-" json:"store_logo_file_url_expiry"`    // (Optional, added by endpoint)
 
+	ComicBookStoreName           string `json:"comic_book_store_name,omitempty"`
+	HowLongStoreOperating        int8   `json:"how_long_store_operating,omitempty"`
+	RetailPartnershipReason      string `bson:"retail_partnership_reason" json:"retail_partnership_reason,omitempty"`         // "Please describe how you could become a good retail partner for the ComicCoin Blockchain"
+	ComicCoinPartnershipReason   string `bson:"comic_coin_partnership_reason" json:"comic_coin_partnership_reason,omitempty"` // "Please describe how the ComicCoin Blockchain could help you grow your business"
+	EstimatedSubmissionsPerMonth int8   `bson:"estimated_submissions_per_month" json:"estimated_submissions_per_month"`
+	HasOtherGradingService       int8   `bson:"has_other_grading_service" json:"has_other_grading_service"`
+	OtherGradingServiceName      string `bson:"other_grading_service_name" json:"other_grading_service_name"`
+	RequestWelcomePackage        int8   `bson:"request_welcome_package" json:"request_welcome_package"`
+
 	HowLongCollectingComicBooksForGrading           int8 `bson:"how_long_collecting_comic_books_for_grading" json:"how_long_collecting_comic_books_for_grading"`
 	HasPreviouslySubmittedComicBookForGrading       int8 `bson:"has_previously_submitted_comic_book_for_grading" json:"has_previously_submitted_comic_book_for_grading"`
 	HasOwnedGradedComicBooks                        int8 `bson:"has_owned_graded_comic_books" json:"has_owned_graded_comic_books"`

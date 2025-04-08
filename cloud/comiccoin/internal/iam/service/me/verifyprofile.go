@@ -48,12 +48,12 @@ type VerifyProfileRequestDTO struct {
 	HasRegularlyAttendedComicConsOrCollectibleShows int8 `json:"has_regularly_attended_comic_cons_or_collectible_shows,omitempty"`
 
 	// Retailer specific fields
-	ComicBookStoreName      string `json:"comic_book_store_name,omitempty"`
-	StoreLogo               string `json:"store_logo,omitempty"`
-	HowLongStoreOperating   int8   `json:"how_long_store_operating,omitempty"`
-	GradingComicsExperience string `json:"grading_comics_experience,omitempty"`
-	RetailPartnershipReason string `json:"retail_partnership_reason,omitempty"`
-	CPSPartnershipReason    string `json:"cps_partnership_reason,omitempty"`
+	ComicBookStoreName         string `json:"comic_book_store_name,omitempty"`
+	StoreLogo                  string `json:"store_logo,omitempty"`
+	HowLongStoreOperating      int8   `json:"how_long_store_operating,omitempty"`
+	GradingComicsExperience    string `json:"grading_comics_experience,omitempty"`
+	RetailPartnershipReason    string `json:"retail_partnership_reason,omitempty"`
+	ComicCoinPartnershipReason string `json:"comic_coin_partnership_reason,omitempty"`
 
 	EstimatedSubmissionsPerMonth int8   `json:"estimated_submissions_per_month,omitempty"`
 	HasOtherGradingService       int8   `json:"has_other_grading_service,omitempty"`
@@ -166,6 +166,10 @@ func (s *verifyProfileServiceImpl) Execute(
 		s.updateCustomerFields(user, req)
 	} else if user.Role == domain.UserRoleRetailer {
 		s.updateRetailerFields(user, req)
+	} else {
+		// Developers Note: No you cannot update a user with an unrecognized role nor the administrative role!
+		s.logger.Error("Unrecognized user role", slog.Int("role", int(user.Role)))
+		e["user_role"] = "Invalid user role. Must be either customer or retailer."
 	}
 
 	//
@@ -293,8 +297,8 @@ func (s *verifyProfileServiceImpl) validateRetailerFields(req *VerifyProfileRequ
 	if req.RetailPartnershipReason == "" {
 		e["retail_partnership_reason"] = "Retail partnership reason is required"
 	}
-	if req.CPSPartnershipReason == "" {
-		e["cps_partnership_reason"] = "CPS partnership reason is required"
+	if req.ComicBookStoreName == "" {
+		e["comic_book_store_name"] = "Comic book store name is required"
 	}
 	if req.EstimatedSubmissionsPerMonth == 0 {
 		e["estimated_submissions_per_month"] = "Estimated submissions per month is required"
@@ -346,18 +350,12 @@ func (s *verifyProfileServiceImpl) updateCustomerFields(user *domain.User, req *
 
 // updateRetailerFields updates fields specific to retailers
 func (s *verifyProfileServiceImpl) updateRetailerFields(user *domain.User, req *VerifyProfileRequestDTO) {
-	// Store the retailer-specific fields
-	// Note: In a real implementation, you might need to store these in a separate retailer profile model
-	// or extend the user model to include retailer-specific fields
-
-	s.logger.Info("Updating retailer fields for user",
-		slog.String("user_id", user.ID.Hex()),
-		slog.String("store_name", req.ComicBookStoreName))
-
-	// Note: For demonstration purposes, we're assuming the user model has been extended
-	// or there's a mechanism to store these fields. If this is not the case in the actual
-	// codebase, you would need to handle these differently.
-
-	// For the store logo, this would typically be handled through a separate file upload process
-	user.StoreLogoTitle = req.ComicBookStoreName
+	user.ComicBookStoreName = req.ComicBookStoreName
+	user.HowLongStoreOperating = req.HowLongStoreOperating
+	user.RetailPartnershipReason = req.RetailPartnershipReason
+	user.ComicCoinPartnershipReason = req.ComicCoinPartnershipReason
+	user.EstimatedSubmissionsPerMonth = req.EstimatedSubmissionsPerMonth
+	user.HasOtherGradingService = req.HasOtherGradingService
+	user.OtherGradingServiceName = req.OtherGradingServiceName
+	user.RequestWelcomePackage = req.RequestWelcomePackage
 }
