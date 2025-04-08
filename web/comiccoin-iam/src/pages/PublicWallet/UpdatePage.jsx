@@ -64,7 +64,7 @@ const PublicWalletUpdatePage = () => {
   });
 
   // Combine loading states
-  const isLoading = isLoadingOperation || isUpdating;
+  const isLoading = isLoadingOperation || isUpdating || isLoadingWallet;
   const error = operationError;
 
   // Reset state on component mount
@@ -110,6 +110,7 @@ const PublicWalletUpdatePage = () => {
             status: walletData.status || 1,
             type: walletData.type || 3,
             websiteURL: walletData.websiteURL || "",
+            viewCount: walletData.viewCount || 0,
           });
         } else {
           console.warn("No wallet data found");
@@ -222,11 +223,17 @@ const PublicWalletUpdatePage = () => {
     setIsUpdating(true);
 
     try {
-      console.log("Updating wallet:", address);
+      console.log("Updating wallet with address:", address);
       console.log("Form data:", formData);
 
+      // Make sure the address is included in the data we're sending
+      const dataToUpdate = {
+        ...formData,
+        address: address, // Ensure address is explicitly included
+      };
+
       // Use the updatePublicWallet function from the usePublicWallet hook
-      const response = await updatePublicWallet(address, formData);
+      const response = await updatePublicWallet(address, dataToUpdate);
       console.log("Update response:", response);
 
       toast.success("Wallet updated successfully");

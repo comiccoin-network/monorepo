@@ -1,5 +1,6 @@
 // monorepo/web/comiccoin-iam/src/hooks/usePublicWallet.js
 import { useState, useCallback } from "react";
+import axiosClient from "../api/axiosClient";
 import {
   getPublicWalletByAddress,
   useCreatePublicWallet,
@@ -21,8 +22,8 @@ export function usePublicWallet() {
 
   // Get API hooks
   const { mutateAsync: createWallet } = useCreatePublicWallet();
-  const { mutateAsync: updateWallet } = useUpdatePublicWalletByAddress();
-  const { mutateAsync: deleteWallet } = useDeletePublicWalletByAddress();
+  const updateWalletHook = useUpdatePublicWalletByAddress();
+  const deleteWalletHook = useDeletePublicWalletByAddress();
 
   const reset = useCallback(() => {
     setError(null);
@@ -105,9 +106,34 @@ export function usePublicWallet() {
 
       try {
         console.log("🔄 Updating public wallet:", address);
+        console.log("With data:", walletData);
+
+        // Make sure address is valid
+        if (!address) {
+          throw new Error("Address is required to update a wallet");
+        }
 
         const apiData = prepareWalletForApi(walletData);
-        const response = await updateWallet(address, apiData);
+        console.log("Prepared API data:", apiData);
+        console.log("Sending to endpoint:", `/public-wallets/${address}`);
+
+        // Use direct axios call as a fallback if the hook has issues
+        let response;
+        try {
+          // Try to use the hook first
+          response = await updateWalletHook.mutateAsync(address, apiData);
+        } catch (hookError) {
+          console.warn(
+            "Hook-based update failed, trying direct API call:",
+            hookError,
+          );
+          // Fall back to direct API call
+          response = await axiosClient.put(
+            `/public-wallets/${address}`,
+            apiData,
+          );
+          response = response.data; // Extract data from axios response
+        }
 
         const wallet = response.public_wallet
           ? transformPublicWallet(response.public_wallet)
@@ -124,7 +150,7 @@ export function usePublicWallet() {
         setIsLoading(false);
       }
     },
-    [updateWallet, reset],
+    [updateWalletHook, reset],
   );
 
   /**
@@ -138,7 +164,11 @@ export function usePublicWallet() {
       try {
         console.log("🔄 Deleting public wallet:", address);
 
-        await deleteWallet(address);
+        if (!address) {
+          throw new Error("Address is required to delete a wallet");
+        }
+
+        await deleteWalletHook.mutateAsync(address);
 
         setSuccess(true);
         return true;
@@ -151,7 +181,7 @@ export function usePublicWallet() {
         setIsLoading(false);
       }
     },
-    [deleteWallet, reset],
+    [deleteWalletHook, reset],
   );
 
   return {

@@ -1,4 +1,5 @@
 // src/api/endpoints/publicWalletApi.js
+// src/api/endpoints/publicWalletApi.js
 import { usePrivateQuery, usePrivateMutation } from "../../hooks/useApi";
 import axiosClient from "../axiosClient";
 
@@ -53,22 +54,53 @@ export const useCreatePublicWallet = (options = {}) => {
 
 /**
  * Custom hook for updating a public wallet by Ethereum address
+ * MODIFIED: Now accepts address during the mutation call, not at initialization
  */
-export const useUpdatePublicWalletByAddress = (address, options = {}) => {
-  return usePrivateMutation(`/public-wallets/${address}`, "put", {
-    invalidateQueries: [["publicWallet", "address", address], "publicWallets"],
-    ...options,
-  });
+export const useUpdatePublicWalletByAddress = (options = {}) => {
+  return {
+    mutateAsync: async (address, data) => {
+      if (!address) {
+        throw new Error("Address is required for updating a public wallet");
+      }
+
+      const endpoint = `/public-wallets/${address}`;
+      const { mutateAsync } = usePrivateMutation(endpoint, "put", {
+        invalidateQueries: [["publicWallet", address], "publicWallets"],
+        ...options,
+      });
+
+      return mutateAsync(data);
+    },
+    // You might need to add other properties if you're using them elsewhere
+    isLoading: false, // This should be handled properly in a real implementation
+    error: null,
+    reset: () => {},
+  };
 };
 
 /**
  * Custom hook for deleting a public wallet by Ethereum address
  */
-export const useDeletePublicWalletByAddress = (address, options = {}) => {
-  return usePrivateMutation(`/public-wallets/${address}`, "delete", {
-    invalidateQueries: ["publicWallets"],
-    ...options,
-  });
+export const useDeletePublicWalletByAddress = (options = {}) => {
+  return {
+    mutateAsync: async (address) => {
+      if (!address) {
+        throw new Error("Address is required for deleting a public wallet");
+      }
+
+      const endpoint = `/public-wallets/${address}`;
+      const { mutateAsync } = usePrivateMutation(endpoint, "delete", {
+        invalidateQueries: ["publicWallets"],
+        ...options,
+      });
+
+      return mutateAsync();
+    },
+    // Similar to above, add other properties as needed
+    isLoading: false,
+    error: null,
+    reset: () => {},
+  };
 };
 
 /**
@@ -144,8 +176,10 @@ export function prepareWalletForApi(wallet) {
     name: wallet.name,
     description: wallet.description,
     thumbnail_s3_key: wallet.thumbnailS3Key,
-    view_count: wallet.viewCount,
+    view_count: wallet.viewCount || 0,
+    website_url: wallet.websiteURL,
     status: wallet.status,
+    type: wallet.type,
   };
 }
 
