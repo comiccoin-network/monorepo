@@ -42,5 +42,6 @@ export function transformUserData(userData) {
     firstName: userData.first_name,
     lastName: userData.last_name,
     walletAddress: userData.wallet_address,
+    comicBookStoreName: userData.comic_book_store_name,
   };
 }

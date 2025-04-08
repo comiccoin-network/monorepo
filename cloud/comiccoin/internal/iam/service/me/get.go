@@ -79,6 +79,7 @@ type MeResponseDTO struct {
 	ProfileVerificationStatus int8            `bson:"profile_verification_status" json:"profile_verification_status,omitempty"`
 	WebsiteURL                string          `bson:"website_url" json:"website_url"`
 	Description               string          `bson:"description" json:"description"`
+	ComicBookStoreName        string          `bson:"comic_book_store_name" json:"comic_book_store_name,omitempty"`
 }
 
 type GetMeService interface {
@@ -159,5 +160,6 @@ func (svc *getMeServiceImpl) Execute(sessCtx mongo.SessionContext) (*MeResponseD
 		ProfileVerificationStatus: user.ProfileVerificationStatus,
 		WebsiteURL:                user.WebsiteURL,
 		Description:               user.Description,
+		ComicBookStoreName:        user.ComicBookStoreName,
 	}, nil
 }

@@ -78,14 +78,30 @@ export function transformPublicWallet(wallet) {
   if (!wallet) return null;
 
   return {
+    // Core fields from Go struct
     id: wallet.id,
     address: wallet.address,
     chainId: wallet.chain_id,
     name: wallet.name,
     description: wallet.description,
+    websiteURL: wallet.website_url,
+    phone: wallet.phone,
+    country: wallet.country,
+    timezone: wallet.timezone,
+    region: wallet.region,
+    city: wallet.city,
+    postalCode: wallet.postal_code,
+    addressLine1: wallet.address_line1,
+    addressLine2: wallet.address_line2,
+    isVerified: wallet.is_verified,
+    verifiedOn: wallet.verified_on,
+    type: wallet.type,
     thumbnailS3Key: wallet.thumbnail_s3_key,
     viewCount: wallet.view_count,
+    uniqueViewCount: wallet.unique_view_count, // Added
     status: wallet.status,
+
+    // Audit fields from Go struct
     createdAt: wallet.created_at,
     createdByUserId: wallet.created_by_user_id,
     createdByName: wallet.created_by_name,
@@ -98,7 +114,10 @@ export function transformPublicWallet(wallet) {
     // Helper methods
     get formattedAddress() {
       if (!this.address) return "";
-      return `${this.address.slice(0, 6)}...${this.address.slice(-4)}`;
+      // Ensure address is a string before slicing
+      const addrStr = String(this.address);
+      if (addrStr.length <= 10) return addrStr; // Avoid slicing if too short
+      return `${addrStr.slice(0, 6)}...${addrStr.slice(-4)}`;
     },
 
     get isActive() {
