@@ -121,6 +121,24 @@ const PublicWalletListPage = () => {
     toast.success("Address copied to clipboard");
   };
 
+  // Share wallet functionality
+  const handleShareWallet = (address) => {
+    // Get the full URL for the public wallet
+    const publicUrl = `${window.location.origin}/public/${address}`;
+
+    // Copy the URL to clipboard
+    navigator.clipboard
+      .writeText(publicUrl)
+      .then(() => {
+        // Show success message
+        toast.success("Public wallet link copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy link: ", err);
+        toast.error("Could not copy link to clipboard");
+      });
+  };
+
   // Get the wallet status label
   const getStatusLabel = (statusCode) => {
     switch (statusCode) {
@@ -410,6 +428,7 @@ const PublicWalletListPage = () => {
                           <Edit className="h-5 w-5" />
                         </button>
                         <button
+                          onClick={() => handleShareWallet(wallet.address)}
                           className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg"
                           aria-label="Share wallet"
                         >
@@ -568,7 +587,10 @@ const PublicWalletListPage = () => {
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
                           </button>
-                          <button className="inline-flex items-center px-3 py-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded text-sm font-medium">
+                          <button
+                            onClick={() => handleShareWallet(wallet.address)}
+                            className="inline-flex items-center px-3 py-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded text-sm font-medium"
+                          >
                             <Share2 className="h-4 w-4 mr-1" />
                             Share
                           </button>
