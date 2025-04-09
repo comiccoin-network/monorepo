@@ -39,6 +39,19 @@ const PublicWalletListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
 
+  // Simple notification function UI State
+  const [notification, setNotification] = useState(null);
+
+  // Simple notification function
+  const showNotification = (message) => {
+    setNotification(message);
+
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
+
   // Setup API request
   const [filters, setFilters] = useState({
     limit: 100, // We'll handle pagination client-side for better UX
@@ -115,27 +128,28 @@ const PublicWalletListPage = () => {
     }
   };
 
-  // Copy wallet address to clipboard
+  // Copy wallet address to clipboard with simple notification.
   const copyAddress = (address) => {
-    navigator.clipboard.writeText(address);
-    toast.success("Address copied to clipboard");
+    navigator.clipboard
+      .writeText(address)
+      .then(() => {
+        showNotification("Address copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy address:", err);
+      });
   };
 
-  // Share wallet functionality
+  // Share wallet functionality with simple notification.
   const handleShareWallet = (address) => {
-    // Get the full URL for the public wallet
     const publicUrl = `${window.location.origin}/public/${address}`;
-
-    // Copy the URL to clipboard
     navigator.clipboard
       .writeText(publicUrl)
       .then(() => {
-        // Show success message
-        toast.success("Public wallet link copied to clipboard!");
+        showNotification("Public wallet link copied to clipboard!");
       })
       .catch((err) => {
-        console.error("Failed to copy link: ", err);
-        toast.error("Could not copy link to clipboard");
+        console.error("Failed to copy link:", err);
       });
   };
 
@@ -218,6 +232,13 @@ const PublicWalletListPage = () => {
       </a>
 
       <AppTopNavigation />
+
+      {/* Simple Notification */}
+      {notification && (
+        <div className="fixed bottom-4 right-4 bg-black bg-opacity-80 text-white px-4 py-2 rounded-md shadow-lg z-50">
+          {notification}
+        </div>
+      )}
 
       <main
         id="main-content"
@@ -346,7 +367,6 @@ const PublicWalletListPage = () => {
                             value={wallet.address}
                             size={120}
                             level="H"
-                            renderAs="svg"
                             imageSettings={{
                               src: "/logo192.png",
                               height: 24,
@@ -523,7 +543,6 @@ const PublicWalletListPage = () => {
                               value={wallet.address}
                               size={100}
                               level="H"
-                              renderAs="svg"
                               imageSettings={{
                                 src: "/logo192.png",
                                 height: 20,
