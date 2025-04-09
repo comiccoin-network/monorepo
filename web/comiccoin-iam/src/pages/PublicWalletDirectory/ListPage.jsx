@@ -35,6 +35,7 @@ import Footer from "../../components/IndexPage/Footer";
 import {
   usePublicWalletDirectoryList,
   usePublicWalletDirectory,
+  WALLET_TYPE,
 } from "../../hooks/usePublicWalletDirectory";
 
 const PublicWalletDirectoryListPage = () => {
@@ -71,9 +72,9 @@ const PublicWalletDirectoryListPage = () => {
   }
 
   if (activeTab === "retailers") {
-    apiFilters.type = "business";
+    apiFilters.type = WALLET_TYPE.COMPANY;
   } else if (activeTab === "individuals") {
-    apiFilters.type = "individual";
+    apiFilters.type = WALLET_TYPE.INDIVIDUAL;
   }
 
   // Use our hook for listing
@@ -455,8 +456,7 @@ const PublicWalletDirectoryListPage = () => {
               }`}
             >
               {results.map((wallet) => {
-                const isRetailer =
-                  wallet.type === "business" || wallet.type === "retailer";
+                const isRetailer = wallet.type === WALLET_TYPE.COMPANY;
 
                 // Grid Card
                 if (displayMode === "grid") {

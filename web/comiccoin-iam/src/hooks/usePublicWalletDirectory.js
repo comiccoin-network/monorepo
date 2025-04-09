@@ -6,11 +6,10 @@ import {
   useListPublicWalletsFromDirectory,
   searchPublicWalletsFromDirectory,
   trackWalletViewInDirectory,
-} from "../api/endpoints/publicWalletDirectoryApi";
-import {
-  transformPublicWallet,
+  WALLET_TYPE,
   WALLET_STATUS,
-} from "../api/endpoints/publicWalletApi";
+} from "../api/endpoints/publicWalletDirectoryApi";
+import { transformPublicWallet } from "../api/endpoints/publicWalletApi";
 
 /**
  * Custom hook for accessing public wallet directory data without authentication
@@ -118,6 +117,7 @@ export function usePublicWalletDirectory() {
     success,
     reset,
     WALLET_STATUS,
+    WALLET_TYPE,
   };
 }
 
@@ -176,4 +176,5 @@ export default {
   usePublicWalletDirectoryList,
   useSinglePublicWalletFromDirectory,
   WALLET_STATUS,
+  WALLET_TYPE,
 };

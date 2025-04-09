@@ -10,6 +10,7 @@ import {
   transformPublicWallet,
   prepareWalletForApi,
   WALLET_STATUS,
+  WALLET_TYPE,
 } from "../api/endpoints/publicWalletApi";
 
 /**
@@ -194,6 +195,7 @@ export function usePublicWallet() {
     success,
     reset,
     WALLET_STATUS,
+    WALLET_TYPE,
   };
 }
 
@@ -231,4 +233,5 @@ export default {
   usePublicWallet,
   usePublicWalletList,
   WALLET_STATUS,
+  WALLET_TYPE,
 };

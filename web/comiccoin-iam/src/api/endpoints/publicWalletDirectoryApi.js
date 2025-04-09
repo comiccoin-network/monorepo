@@ -1,7 +1,20 @@
 // src/api/endpoints/publicWalletDirectoryApi.js
 import { usePublicQuery } from "../../hooks/useApi";
 import axiosClient, { publicEndpoint } from "../axiosClient";
-import { transformPublicWallet, WALLET_STATUS } from "./publicWalletApi";
+import { transformPublicWallet } from "./publicWalletApi";
+
+// STATUS CONSTANTS
+export const WALLET_STATUS = {
+  ACTIVE: 1,
+  ARCHIVED: 2,
+  LOCKED: 3,
+};
+
+// Add wallet type constants to match Go backend
+export const WALLET_TYPE = {
+  INDIVIDUAL: 2,
+  COMPANY: 3,
+};
 
 /**
  * Fetch a public wallet from directory by its Ethereum address without authentication
@@ -83,4 +96,5 @@ export default {
   searchPublicWalletsFromDirectory,
   trackWalletViewInDirectory,
   WALLET_STATUS,
+  WALLET_TYPE,
 };

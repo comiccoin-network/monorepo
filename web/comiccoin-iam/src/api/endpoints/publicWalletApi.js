@@ -10,6 +10,12 @@ export const WALLET_STATUS = {
   LOCKED: 3,
 };
 
+// Add wallet type constants to match Go backend
+export const WALLET_TYPE = {
+  INDIVIDUAL: 2,
+  COMPANY: 3,
+};
+
 /**
  * Fetch a public wallet by its Ethereum address
  * Note: The backend uses POST for this operation
@@ -192,4 +198,5 @@ export default {
   transformPublicWallet,
   prepareWalletForApi,
   WALLET_STATUS,
+  WALLET_TYPE,
 };

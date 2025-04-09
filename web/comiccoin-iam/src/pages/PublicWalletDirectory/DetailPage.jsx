@@ -25,9 +25,11 @@ import {
   AlertTriangle,
   Shield,
 } from "lucide-react";
+
 import {
   useSinglePublicWalletFromDirectory,
   usePublicWalletDirectory,
+  WALLET_TYPE,
 } from "../../hooks/usePublicWalletDirectory";
 import Header from "../../components/IndexPage/Header";
 import Footer from "../../components/IndexPage/Footer";
@@ -81,7 +83,7 @@ const PublicWalletDirectoryDetailPage = () => {
 
   // Function to determine if the entity is a retailer or individual
   const isRetailer = (wallet) => {
-    return wallet?.type === "business" || wallet?.type === "retailer";
+    return wallet?.type === WALLET_TYPE.COMPANY;
   };
 
   if (isLoading) {
