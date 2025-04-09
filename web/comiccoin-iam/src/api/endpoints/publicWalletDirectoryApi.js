@@ -12,8 +12,8 @@ export const WALLET_STATUS = {
 
 // Add wallet type constants to match Go backend
 export const WALLET_TYPE = {
-  INDIVIDUAL: 2,
-  COMPANY: 3,
+  INDIVIDUAL: 3,
+  COMPANY: 2,
 };
 
 /**
@@ -78,8 +78,8 @@ export const searchPublicWalletsFromDirectory = async (
  */
 export const trackWalletViewInDirectory = async (address) => {
   try {
-    await axiosClient.post(
-      `/public-wallets-directory/${address}/view`,
+    await axiosClient.get(
+      `/public-wallets-directory/${address}`,
       {},
       publicEndpoint({}),
     );

@@ -13,9 +13,9 @@ const (
 	UserStatusLocked   = 50  // User account is locked, typically due to too many failed login attempts.
 	UserStatusArchived = 100 // User account is archived and cannot log in.
 
-	UserRoleRoot     = 1 // Root user, has all permissions
-	UserRoleRetailer = 2
-	UserRoleCustomer = 3
+	UserRoleRoot       = 1 // Root user, has all permissions
+	UserRoleCompany    = 2 // Company user, has permissions for company-related operations
+	UserRoleIndividual = 3 // Individual user, has permissions for individual-related operations
 
 	UserProfileVerificationStatusUnverified         = 1 // The user's profile has not yet been submitted for verification.
 	UserProfileVerificationStatusSubmittedForReview = 2 // The user's profile has been submitted and is awaiting review.
@@ -23,22 +23,22 @@ const (
 	UserProfileVerificationStatusRejected           = 4 // The user's profile has been rejected.
 
 	// StorePendingStatus indicates this store needs to be reviewed by CPS and approved / rejected.
-	StorePendingStatus  = 1
-	StoreActiveStatus   = 2
-	StoreRejectedStatus = 3
-	StoreErrorStatus    = 4
-	StoreArchivedStatus = 5
+	StorePendingStatus  = 1 // Store is pending review.
+	StoreActiveStatus   = 2 // Store is active and can be used.
+	StoreRejectedStatus = 3 // Store has been rejected.
+	StoreErrorStatus    = 4 // Store has encountered an error.
+	StoreArchivedStatus = 5 // Store has been archived.
 
-	EstimatedSubmissionsPerMonth1To10   = 1
-	EstimatedSubmissionsPerMonth10To25  = 2
-	EstimatedSubmissionsPerMonth25To50  = 3
-	EstimatedSubmissionsPerMonth50To10  = 4
-	EstimatedSubmissionsPerMonth100Plus = 5
+	EstimatedSubmissionsPerMonth1To10   = 1 // Estimated submissions per month: 1 to 10
+	EstimatedSubmissionsPerMonth10To25  = 2 // Estimated submissions per month: 10 to 25
+	EstimatedSubmissionsPerMonth25To50  = 3 // Estimated submissions per month: 25 to 50
+	EstimatedSubmissionsPerMonth50To10  = 4 // Estimated submissions per month: 50 to 100
+	EstimatedSubmissionsPerMonth100Plus = 5 // Estimated submissions per month: 100+
 
-	HasOtherGradingServiceYes = 1
-	HasOtherGradingServiceNo  = 2
-	RequestWelcomePackageYes  = 1
-	RequestWelcomePackageNo   = 2
+	HasOtherGradingServiceYes = 1 // Has other grading service: Yes
+	HasOtherGradingServiceNo  = 2 // Has other grading service: No
+	RequestWelcomePackageYes  = 1 // Request welcome package: Yes
+	RequestWelcomePackageNo   = 2 // Request welcome package: No
 
 	SpecialCollection040001 = 1
 )
@@ -118,6 +118,7 @@ type User struct {
 	// OTPBackupCodeHashAlgorithm tracks the hashing algorithm used.
 	OTPBackupCodeHashAlgorithm string `bson:"otp_backup_code_hash_algorithm" json:"-"`
 
+	// ChainID is the specific blockchain that this user's wallet belongs to.
 	ChainID uint16 `bson:"chain_id" json:"chain_id"`
 
 	// WalletAddress variable holds the address of the user's wallet

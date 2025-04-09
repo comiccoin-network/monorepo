@@ -171,10 +171,12 @@ export function useSinglePublicWalletFromDirectory(address, options = {}) {
   });
 }
 
+// Export constants
+export { WALLET_STATUS, WALLET_TYPE };
+
+// Export hooks
 export default {
   usePublicWalletDirectory,
   usePublicWalletDirectoryList,
   useSinglePublicWalletFromDirectory,
-  WALLET_STATUS,
-  WALLET_TYPE,
 };

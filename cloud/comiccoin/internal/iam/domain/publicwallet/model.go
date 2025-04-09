@@ -13,15 +13,15 @@ const (
 	PublicWalletStatusArchived = 2
 	PublicWalletStatusLocked   = 3
 
-	PublicWalletTypeIndividual = 2 // Matches `UserRoleRetailer` in user/model.go
-	PublicWalletTypeCompany    = 3 // Matches `UserRoleCompany` in user/model.go
+	PublicWalletTypeIndividual = 3 // Matches `UserRoleIndividual` in user/model.go
+	PublicWalletTypeCompany    = 2 // Matches `UserRoleRetailer` in user/model.go
 )
 
 type PublicWallet struct {
 	// The public address of the account.
 	Address *common.Address `bson:"address" json:"address"`
 
-	// The unique identifier for this blockchain that we are managing the state for.
+	// ChainID is the specific blockchain that this public wallet belongs to.
 	ChainID uint16 `bson:"chain_id" json:"chain_id"`
 
 	// The name of the public wallet's account. Typically this would either be the name of individual or the name of the company.

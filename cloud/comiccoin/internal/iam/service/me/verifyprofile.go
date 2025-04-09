@@ -123,7 +123,7 @@ func (s *verifyProfileServiceImpl) Execute(
 	}
 
 	// Check if we need to override the user role based on the request
-	if req.UserRole != 0 && (req.UserRole == domain.UserRoleCustomer || req.UserRole == domain.UserRoleRetailer) {
+	if req.UserRole != 0 && (req.UserRole == domain.UserRoleIndividual || req.UserRole == domain.UserRoleCompany) {
 		s.logger.Info("Setting user role based on request",
 			slog.Int("original_role", int(user.Role)),
 			slog.Int("new_role", int(req.UserRole)))
@@ -139,9 +139,9 @@ func (s *verifyProfileServiceImpl) Execute(
 	s.validateCommonFields(req, e)
 
 	// Role-specific validation
-	if user.Role == domain.UserRoleCustomer {
+	if user.Role == domain.UserRoleIndividual {
 		s.validateCustomerFields(req, e)
-	} else if user.Role == domain.UserRoleRetailer {
+	} else if user.Role == domain.UserRoleCompany {
 		s.validateRetailerFields(req, e)
 	} else {
 		s.logger.Warn("Unrecognized user role", slog.Int("role", int(user.Role)))
@@ -162,9 +162,9 @@ func (s *verifyProfileServiceImpl) Execute(
 	s.updateCommonFields(user, req)
 
 	// Update role-specific fields
-	if user.Role == domain.UserRoleCustomer {
+	if user.Role == domain.UserRoleIndividual {
 		s.updateCustomerFields(user, req)
-	} else if user.Role == domain.UserRoleRetailer {
+	} else if user.Role == domain.UserRoleCompany {
 		s.updateRetailerFields(user, req)
 	} else {
 		// Developers Note: No you cannot update a user with an unrecognized role nor the administrative role!
@@ -191,9 +191,9 @@ func (s *verifyProfileServiceImpl) Execute(
 	// STEP 7: Generate appropriate response
 	//
 	var responseMessage string
-	if user.Role == domain.UserRoleCustomer {
+	if user.Role == domain.UserRoleIndividual {
 		responseMessage = "Your profile has been submitted for verification. You'll be notified once it's been reviewed."
-	} else if user.Role == domain.UserRoleRetailer {
+	} else if user.Role == domain.UserRoleCompany {
 		responseMessage = "Your retailer profile has been submitted for verification. Our team will review your application and contact you soon."
 	} else {
 		responseMessage = "Your profile has been submitted for verification."

@@ -229,9 +229,11 @@ export function usePublicWalletList(filters = {}, options = {}) {
   };
 }
 
+// Export constants
+export { WALLET_STATUS, WALLET_TYPE };
+
+// Export hooks
 export default {
   usePublicWallet,
   usePublicWalletList,
-  WALLET_STATUS,
-  WALLET_TYPE,
 };

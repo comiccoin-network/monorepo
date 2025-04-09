@@ -78,7 +78,7 @@ func (s *gatewayVerifyEmailServiceImpl) Execute(sessCtx mongo.SessionContext, re
 	//
 
 	switch u.Role {
-	case domain.UserRoleCustomer:
+	case domain.UserRoleIndividual:
 		{
 			res.Message = "Thank you for verifying. You may log in now to get started!"
 			s.logger.Debug("customer user verified")

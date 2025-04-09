@@ -259,7 +259,7 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 		Email:                 req.Email,
 		PasswordHash:          passwordHash,
 		PasswordHashAlgorithm: s.passwordProvider.AlgorithmName(),
-		Role:                  domain.UserRoleCustomer,
+		Role:                  domain.UserRoleIndividual,
 		Phone:                 req.Phone,
 		Country:               req.Country,
 		Timezone:              req.Timezone,

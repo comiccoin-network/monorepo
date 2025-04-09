@@ -12,8 +12,8 @@ export const WALLET_STATUS = {
 
 // Add wallet type constants to match Go backend
 export const WALLET_TYPE = {
-  INDIVIDUAL: 2,
-  COMPANY: 3,
+  INDIVIDUAL: 3,
+  COMPANY: 2,
 };
 
 /**
