@@ -3,6 +3,7 @@ package publicwallet
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	dom "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/publicwallet"
 	svc "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/publicwallet"
@@ -48,16 +50,13 @@ func (h *listPublicWalletsByFilterHTTPHandlerImpl) Handle(w http.ResponseWriter,
 	// Build filter from query parameters
 	filter := &dom.PublicWalletFilter{}
 
-	// Parse userID if provided
-	createdByUserIDStr := r.URL.Query().Get("created_by_user_id")
-	if createdByUserIDStr != "" {
-		createdByUserID, err := primitive.ObjectIDFromHex(createdByUserIDStr)
-		if err != nil {
-			httperror.ResponseError(w, err)
-			return
-		}
-		filter.CreatedByUserID = createdByUserID
+	// Developers Note: Only list wallets created by the current authenticated user.
+	userID, ok := ctx.Value(constants.SessionUserID).(primitive.ObjectID)
+	if !ok {
+		httperror.ResponseError(w, errors.New("test"))
+		return
 	}
+	filter.CreatedByUserID = userID
 
 	// Parse created_at_start if provided
 	createdAtStartStr := r.URL.Query().Get("created_at_start")
