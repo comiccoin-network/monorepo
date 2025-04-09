@@ -1,5 +1,5 @@
 // monorepo/web/comiccoin-iam/src/pages/Dashboard/Page.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   Wallet,
@@ -27,6 +27,19 @@ function DashboardPage() {
   const navigate = useNavigate();
   const { data: dashboard, isLoading, error, refetch } = useGetDashboard();
 
+  //  Simple notification function UI State
+  const [notification, setNotification] = useState(null);
+
+  // Simple notification function
+  const showNotification = (message) => {
+    setNotification(message);
+
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
+
   useEffect(() => {
     console.log("DASHBOARD MOUNTED", {
       user,
@@ -52,10 +65,29 @@ function DashboardPage() {
     navigate(`/public-wallet/${address}`);
   };
 
-  // Copy wallet address to clipboard
+  // Copy wallet address to clipboard with simple notification.
   const copyAddress = (address) => {
-    navigator.clipboard.writeText(address);
-    toast.success("Address copied to clipboard");
+    navigator.clipboard
+      .writeText(address)
+      .then(() => {
+        showNotification("Address copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy address:", err);
+      });
+  };
+
+  // Share wallet functionality with simple notification.
+  const handleShareWallet = (address) => {
+    const publicUrl = `${window.location.origin}/public/${address}`;
+    navigator.clipboard
+      .writeText(publicUrl)
+      .then(() => {
+        showNotification("Public wallet link copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy link:", err);
+      });
   };
 
   // Format wallet address for display
@@ -135,6 +167,13 @@ function DashboardPage() {
       </a>
 
       <AppTopNavigation />
+
+      {/* Simple Notification */}
+      {notification && (
+        <div className="fixed bottom-4 right-4 bg-black bg-opacity-80 text-white px-4 py-2 rounded-md shadow-lg z-50">
+          {notification}
+        </div>
+      )}
 
       <main
         id="main-content"
@@ -253,7 +292,6 @@ function DashboardPage() {
                               value={walletAddress}
                               size={120}
                               level="H"
-                              renderAs="svg"
                               imageSettings={{
                                 src: "/logo192.png",
                                 height: 24,
@@ -341,6 +379,7 @@ function DashboardPage() {
                             <Edit className="h-5 w-5" />
                           </button>
                           <button
+                            onClick={() => handleShareWallet(walletAddress)}
                             className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg"
                             aria-label="Share wallet"
                           >
