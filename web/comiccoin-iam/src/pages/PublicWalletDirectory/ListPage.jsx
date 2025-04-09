@@ -31,7 +31,7 @@ import {
 import Header from "../../components/IndexPage/Header";
 import Footer from "../../components/IndexPage/Footer";
 
-const PublicWalletDirectoryPage = () => {
+const PublicWalletDirectoryListPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -948,4 +948,4 @@ const PublicWalletDirectoryPage = () => {
   );
 };
 
-export default PublicWalletDirectoryPage;
+export default PublicWalletDirectoryListPage;
