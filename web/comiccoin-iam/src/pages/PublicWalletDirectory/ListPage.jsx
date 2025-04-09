@@ -1,6 +1,6 @@
 // src/pages/PublicWalletDirectory/ListPage.jsx
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate, Link } from "react-router";
 import {
   Search,
   Filter,
@@ -27,9 +27,15 @@ import {
   BadgeCheck,
   SlidersHorizontal,
   Users,
+  AlertTriangle,
+  Loader,
 } from "lucide-react";
 import Header from "../../components/IndexPage/Header";
 import Footer from "../../components/IndexPage/Footer";
+import {
+  usePublicWalletDirectoryList,
+  usePublicWalletDirectory,
+} from "../../hooks/usePublicWalletDirectory";
 
 const PublicWalletDirectoryListPage = () => {
   const location = useLocation();
@@ -48,128 +54,50 @@ const PublicWalletDirectoryListPage = () => {
   const [filters, setFilters] = useState({
     verified: false,
     location: "",
-    established: "",
+    type: "", // "business" or "individual"
+    status: 1, // Active by default
   });
 
-  // Mock data for retailers
-  const mockRetailers = [
-    {
-      id: 1,
-      name: "Comic Universe",
-      address: "123 Hero Street, Gotham City",
-      verified: true,
-      description:
-        "Largest collection of superhero comics in the tristate area",
-      walletAddress: "0x1234...5678",
-      established: "2012",
-      website: "comicuniverse.com",
-      contact: "info@comicuniverse.com",
-      phone: "(555) 123-4567",
-      paymentMethods: ["ComicCoin", "Credit Card", "PayPal"],
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: 2,
-      name: "Fantastic Comics",
-      address: "456 Villain Lane, Metropolis",
-      verified: true,
-      description: "Specializing in rare comic book editions and collectibles",
-      walletAddress: "0x2345...6789",
-      established: "2005",
-      website: "fantasticcomics.com",
-      contact: "contact@fantasticcomics.com",
-      phone: "(555) 234-5678",
-      paymentMethods: ["ComicCoin", "Credit Card"],
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: 3,
-      name: "Mighty Comics Shop",
-      address: "789 Avenger Ave, Star City",
-      verified: false,
-      description: "Family-owned comic book store with vintage collections",
-      walletAddress: "0x3456...7890",
-      established: "2018",
-      website: "mightycomics.com",
-      contact: "sales@mightycomics.com",
-      phone: "(555) 345-6789",
-      paymentMethods: ["ComicCoin"],
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: 4,
-      name: "Galactic Comics",
-      address: "101 Space Way, Central City",
-      verified: true,
-      description: "Sci-fi and fantasy comics specialists",
-      walletAddress: "0x4567...8901",
-      established: "2010",
-      website: "galacticcomics.com",
-      contact: "help@galacticcomics.com",
-      phone: "(555) 456-7890",
-      paymentMethods: ["ComicCoin", "Credit Card", "Crypto"],
-      image: "/api/placeholder/80/80",
-    },
-  ];
+  // Prepare API filters
+  const apiFilters = {
+    value: searchQuery || undefined,
+    limit: resultsPerPage,
+    activeOnly: true, // Only active wallets
+    status: filters.status,
+  };
 
-  // Mock data for individuals
-  const mockIndividuals = [
-    {
-      id: 1,
-      name: "Jane Parker",
-      location: "Gotham City",
-      verified: true,
-      description: "Comic artist and collector",
-      walletAddress: "0x5678...9012",
-      memberSince: "2019",
-      website: "janeparker.com",
-      contact: "jane@email.com",
-      specialties: ["Superhero Comics", "Vintage Editions"],
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: 2,
-      name: "Bruce Wayne",
-      location: "Metropolis",
-      verified: false,
-      description: "Rare comic book collector and trader",
-      walletAddress: "0x6789...0123",
-      memberSince: "2020",
-      contact: "bruce@email.com",
-      specialties: ["Rare Editions", "First Editions"],
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: 3,
-      name: "Clark Kent",
-      location: "Star City",
-      verified: true,
-      description: "Journalist and comic book enthusiast",
-      walletAddress: "0x7890...1234",
-      memberSince: "2017",
-      website: "dailyplanet.com/clark",
-      contact: "clark@email.com",
-      specialties: ["Journalism Comics", "Action Comics"],
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: 4,
-      name: "Diana Prince",
-      location: "Themyscira",
-      verified: true,
-      description: "Vintage comic collector with focus on female superheroes",
-      walletAddress: "0x8901...2345",
-      memberSince: "2016",
-      contact: "diana@email.com",
-      specialties: ["Female Superheroes", "Warrior Comics"],
-      image: "/api/placeholder/80/80",
-    },
-  ];
+  if (filters.verified) {
+    apiFilters.isVerified = true;
+  }
+
+  if (activeTab === "retailers") {
+    apiFilters.type = "business";
+  } else if (activeTab === "individuals") {
+    apiFilters.type = "individual";
+  }
+
+  // Use our hook for listing
+  const { wallets, pagination, isLoading, error, refetch } =
+    usePublicWalletDirectoryList(apiFilters);
+
+  // Use search hook
+  const { searchWallets, isLoading: isSearchLoading } =
+    usePublicWalletDirectory();
 
   // Handle search
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    navigate(`/directory?q=${encodeURIComponent(searchQuery)}`);
+
+    // Update URL query parameter
+    navigate(`/directory?q=${encodeURIComponent(searchQuery)}`, {
+      replace: true,
+    });
+
+    // Reset to first page when searching
+    setCurrentPage(1);
+
+    // Trigger refetch with new search query
+    refetch();
   };
 
   // Handle filter change
@@ -181,10 +109,10 @@ const PublicWalletDirectoryListPage = () => {
     setCurrentPage(1); // Reset to first page on filter change
   };
 
-  // Handle page change
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo(0, 0); // Scroll to top when page changes
+  // Handle tab change
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setCurrentPage(1); // Reset to first page
   };
 
   // Toggle display mode
@@ -192,92 +120,39 @@ const PublicWalletDirectoryListPage = () => {
     setDisplayMode((prev) => (prev === "grid" ? "list" : "grid"));
   };
 
-  // Get filtered results
-  const getFilteredResults = () => {
-    let retailerResults = [...mockRetailers];
-    let individualResults = [...mockIndividuals];
-
-    // Apply search query filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      retailerResults = retailerResults.filter(
-        (item) =>
-          item.name.toLowerCase().includes(query) ||
-          item.address.toLowerCase().includes(query) ||
-          item.walletAddress.toLowerCase().includes(query),
-      );
-      individualResults = individualResults.filter(
-        (item) =>
-          item.name.toLowerCase().includes(query) ||
-          item.location.toLowerCase().includes(query) ||
-          item.walletAddress.toLowerCase().includes(query),
-      );
-    }
-
-    // Apply verification filter
-    if (filters.verified) {
-      retailerResults = retailerResults.filter((item) => item.verified);
-      individualResults = individualResults.filter((item) => item.verified);
-    }
-
-    // Apply location filter
-    if (filters.location) {
-      const locationQuery = filters.location.toLowerCase();
-      retailerResults = retailerResults.filter((item) =>
-        item.address.toLowerCase().includes(locationQuery),
-      );
-      individualResults = individualResults.filter((item) =>
-        item.location.toLowerCase().includes(locationQuery),
-      );
-    }
-
-    return {
-      retailers: retailerResults,
-      individuals: individualResults,
-    };
-  };
-
-  // Get current page results
+  // Get current page slice of results
   const getCurrentPageResults = () => {
-    const { retailers, individuals } = getFilteredResults();
-
-    let results = [];
-    if (activeTab === "all") {
-      results = [...retailers, ...individuals];
-    } else if (activeTab === "retailers") {
-      results = retailers;
-    } else {
-      results = individuals;
-    }
-
-    // Get total pages
-    const totalPages = Math.ceil(results.length / resultsPerPage);
-
-    // Get current page slice
+    // This is for pagination
     const startIndex = (currentPage - 1) * resultsPerPage;
     const endIndex = startIndex + resultsPerPage;
-    const currentResults = results.slice(startIndex, endIndex);
+    const pageResults = wallets.slice(startIndex, endIndex);
 
     return {
-      results: currentResults,
-      totalPages,
-      totalResults: results.length,
+      results: pageResults,
+      totalPages: Math.ceil(wallets.length / resultsPerPage),
+      totalResults: wallets.length,
     };
   };
 
-  // Compute current results and pagination info
+  // Calculate total pages and current page results
   const { results, totalPages, totalResults } = getCurrentPageResults();
-  const { retailers, individuals } = getFilteredResults();
 
   // Clear all filters
   const clearFilters = () => {
     setFilters({
       verified: false,
       location: "",
-      established: "",
+      type: "",
+      status: 1,
     });
     setActiveTab("all");
     setCurrentPage(1);
+  };
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo(0, 0); // Scroll to top when page changes
   };
 
   return (
@@ -317,10 +192,20 @@ const PublicWalletDirectoryListPage = () => {
                 </div>
                 <button
                   type="submit"
-                  className="bg-white text-indigo-600 px-8 py-4 rounded-xl font-bold hover:bg-indigo-50 transition-colors shadow-lg active:bg-indigo-100 flex items-center justify-center sm:w-auto w-full"
+                  disabled={isSearchLoading}
+                  className="bg-white text-indigo-600 px-8 py-4 rounded-xl font-bold hover:bg-indigo-50 transition-colors shadow-lg active:bg-indigo-100 flex items-center justify-center sm:w-auto w-full disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  Search
-                  <Search className="ml-2 w-5 h-5" />
+                  {isSearchLoading ? (
+                    <>
+                      <Loader className="animate-spin mr-2 h-5 w-5" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      Search
+                      <Search className="ml-2 w-5 h-5" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -332,7 +217,7 @@ const PublicWalletDirectoryListPage = () => {
               {/* Category Tabs */}
               <div className="flex bg-indigo-700 bg-opacity-30 rounded-lg p-1">
                 <button
-                  onClick={() => setActiveTab("all")}
+                  onClick={() => handleTabChange("all")}
                   className={`px-4 py-2 rounded-md text-sm font-medium ${
                     activeTab === "all"
                       ? "bg-white text-indigo-600"
@@ -340,10 +225,10 @@ const PublicWalletDirectoryListPage = () => {
                   } transition-colors focus:outline-none focus:ring-2 focus:ring-white`}
                   aria-pressed={activeTab === "all"}
                 >
-                  All ({retailers.length + individuals.length})
+                  All
                 </button>
                 <button
-                  onClick={() => setActiveTab("retailers")}
+                  onClick={() => handleTabChange("retailers")}
                   className={`px-4 py-2 rounded-md text-sm font-medium ${
                     activeTab === "retailers"
                       ? "bg-white text-indigo-600"
@@ -352,10 +237,10 @@ const PublicWalletDirectoryListPage = () => {
                   aria-pressed={activeTab === "retailers"}
                 >
                   <Building className="w-4 h-4 mr-1" />
-                  Retailers ({retailers.length})
+                  Businesses
                 </button>
                 <button
-                  onClick={() => setActiveTab("individuals")}
+                  onClick={() => handleTabChange("individuals")}
                   className={`px-4 py-2 rounded-md text-sm font-medium ${
                     activeTab === "individuals"
                       ? "bg-white text-indigo-600"
@@ -364,7 +249,7 @@ const PublicWalletDirectoryListPage = () => {
                   aria-pressed={activeTab === "individuals"}
                 >
                   <User className="w-4 h-4 mr-1" />
-                  Individuals ({individuals.length})
+                  Individuals
                 </button>
               </div>
 
@@ -454,21 +339,33 @@ const PublicWalletDirectoryListPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Results Header */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 sm:mb-0">
-              {totalResults === 0 ? (
-                "No results found"
-              ) : (
-                <>
-                  Showing{" "}
-                  {Math.min(
-                    (currentPage - 1) * resultsPerPage + 1,
-                    totalResults,
-                  )}{" "}
-                  - {Math.min(currentPage * resultsPerPage, totalResults)} of{" "}
-                  {totalResults} results
-                </>
-              )}
-            </h2>
+            {isLoading ? (
+              <h2 className="text-xl font-bold text-gray-800 mb-4 sm:mb-0 flex items-center">
+                <Loader className="animate-spin mr-2 h-5 w-5" />
+                Loading directory...
+              </h2>
+            ) : error ? (
+              <h2 className="text-xl font-bold text-red-600 mb-4 sm:mb-0 flex items-center">
+                <AlertTriangle className="mr-2 h-5 w-5" />
+                Error loading directory
+              </h2>
+            ) : (
+              <h2 className="text-xl font-bold text-gray-800 mb-4 sm:mb-0">
+                {totalResults === 0 ? (
+                  "No results found"
+                ) : (
+                  <>
+                    Showing{" "}
+                    {Math.min(
+                      (currentPage - 1) * resultsPerPage + 1,
+                      totalResults,
+                    )}{" "}
+                    - {Math.min(currentPage * resultsPerPage, totalResults)} of{" "}
+                    {totalResults} results
+                  </>
+                )}
+              </h2>
+            )}
 
             {/* Sort and Results Per Page Controls */}
             <div className="flex items-center gap-4">
@@ -498,8 +395,38 @@ const PublicWalletDirectoryListPage = () => {
             </div>
           </div>
 
+          {/* Loading State */}
+          {isLoading && (
+            <div className="text-center py-12">
+              <Loader className="h-12 w-12 text-indigo-600 animate-spin mx-auto mb-4" />
+              <p className="text-lg text-gray-700">
+                Loading directory entries...
+              </p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && !isLoading && (
+            <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+              <AlertTriangle className="mx-auto h-16 w-16 text-red-500 mb-4" />
+              <h3 className="text-xl font-bold text-gray-700 mb-2">
+                Error Loading Directory
+              </h3>
+              <p className="text-gray-500 max-w-md mx-auto mb-6">
+                {error.message ||
+                  "Failed to load directory entries. Please try again later."}
+              </p>
+              <button
+                onClick={() => refetch()}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
           {/* No Results Message */}
-          {totalResults === 0 && (
+          {!isLoading && !error && totalResults === 0 && (
             <div className="text-center py-12 bg-white rounded-xl shadow-sm">
               <Search className="mx-auto h-16 w-16 text-gray-300 mb-4" />
               <h3 className="text-xl font-bold text-gray-700 mb-2">
@@ -519,7 +446,7 @@ const PublicWalletDirectoryListPage = () => {
           )}
 
           {/* Results Grid/List */}
-          {totalResults > 0 && (
+          {!isLoading && !error && totalResults > 0 && (
             <div
               className={`grid gap-6 ${
                 displayMode === "grid"
@@ -527,14 +454,15 @@ const PublicWalletDirectoryListPage = () => {
                   : "grid-cols-1"
               }`}
             >
-              {results.map((item) => {
-                const isRetailer = "address" in item;
+              {results.map((wallet) => {
+                const isRetailer =
+                  wallet.type === "business" || wallet.type === "retailer";
 
                 // Grid Card
                 if (displayMode === "grid") {
                   return (
                     <div
-                      key={`${isRetailer ? "r" : "i"}-${item.id}`}
+                      key={wallet.id}
                       className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
                     >
                       {/* Card Header */}
@@ -551,24 +479,25 @@ const PublicWalletDirectoryListPage = () => {
                             </div>
                             <div>
                               <h3 className="font-bold text-gray-800">
-                                {item.name}
+                                {wallet.name}
                               </h3>
                               <p className="text-sm text-gray-500">
-                                {isRetailer ? (
+                                {wallet.city && (
                                   <span className="flex items-center">
                                     <MapPin className="h-3.5 w-3.5 mr-1" />
-                                    {item.address}
-                                  </span>
-                                ) : (
-                                  <span className="flex items-center">
-                                    <MapPin className="h-3.5 w-3.5 mr-1" />
-                                    {item.location}
+                                    {[
+                                      wallet.city,
+                                      wallet.region,
+                                      wallet.country,
+                                    ]
+                                      .filter(Boolean)
+                                      .join(", ")}
                                   </span>
                                 )}
                               </p>
                             </div>
                           </div>
-                          {item.verified && (
+                          {wallet.isVerified && (
                             <div className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium flex items-center">
                               <BadgeCheck className="h-3.5 w-3.5 mr-1" />
                               Verified
@@ -580,7 +509,7 @@ const PublicWalletDirectoryListPage = () => {
                       {/* Card Body */}
                       <div className="p-4 pt-2">
                         <p className="text-sm text-gray-600 mb-4">
-                          {item.description}
+                          {wallet.description || "No description provided."}
                         </p>
 
                         {/* Entity-specific Info */}
@@ -589,91 +518,66 @@ const PublicWalletDirectoryListPage = () => {
                             <div className="flex items-center text-sm text-gray-600">
                               <Wallet className="h-4 w-4 text-gray-400 mr-2" />
                               <span className="font-mono">
-                                {item.walletAddress}
+                                {wallet.formattedAddress}
                               </span>
                             </div>
 
-                            {/* Retailer-specific Info */}
-                            {isRetailer && (
-                              <>
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                                  Est. {item.established}
-                                </div>
-                                {item.website && (
-                                  <div className="flex items-center text-sm text-gray-600">
-                                    <Globe className="h-4 w-4 text-gray-400 mr-2" />
-                                    <a
-                                      href={`https://${item.website}`}
-                                      className="text-indigo-600 hover:underline"
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    >
-                                      {item.website}
-                                    </a>
-                                  </div>
-                                )}
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                                  {item.phone}
-                                </div>
-                              </>
+                            {wallet.createdAt && (
+                              <div className="flex items-center text-sm text-gray-600">
+                                <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                                Registered{" "}
+                                {new Date(
+                                  wallet.createdAt,
+                                ).toLocaleDateString()}
+                              </div>
                             )}
 
-                            {/* Individual-specific Info */}
-                            {!isRetailer && (
-                              <>
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                                  Member since {item.memberSince}
-                                </div>
-                                {item.website && (
-                                  <div className="flex items-center text-sm text-gray-600">
-                                    <Globe className="h-4 w-4 text-gray-400 mr-2" />
-                                    <a
-                                      href={`https://${item.website}`}
-                                      className="text-indigo-600 hover:underline"
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    >
-                                      {item.website}
-                                    </a>
-                                  </div>
-                                )}
-                                {item.specialties && (
-                                  <div className="flex items-start text-sm text-gray-600">
-                                    <Tag className="h-4 w-4 text-gray-400 mr-2 mt-0.5" />
-                                    <div className="flex flex-wrap gap-1">
-                                      {item.specialties.map(
-                                        (specialty, index) => (
-                                          <span
-                                            key={index}
-                                            className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs"
-                                          >
-                                            {specialty}
-                                          </span>
-                                        ),
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                              </>
+                            {wallet.websiteURL && (
+                              <div className="flex items-center text-sm text-gray-600">
+                                <Globe className="h-4 w-4 text-gray-400 mr-2" />
+                                <a
+                                  href={`https://${wallet.websiteURL}`}
+                                  className="text-indigo-600 hover:underline"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {wallet.websiteURL}
+                                </a>
+                              </div>
+                            )}
+
+                            {wallet.phone && (
+                              <div className="flex items-center text-sm text-gray-600">
+                                <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                                {wallet.phone}
+                              </div>
                             )}
                           </div>
                         </div>
 
                         {/* Card Actions */}
                         <div className="flex justify-between items-center mt-2">
-                          <button
+                          <Link
+                            to={`/directory/${wallet.address}`}
                             className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center"
-                            aria-label={`View profile of ${item.name}`}
+                            aria-label={`View profile of ${wallet.name}`}
                           >
                             <EyeIcon className="h-4 w-4 mr-1" />
                             View Profile
-                          </button>
+                          </Link>
                           <button
+                            onClick={() => {
+                              navigator.clipboard
+                                .writeText(wallet.address)
+                                .then(() =>
+                                  alert(`Address copied: ${wallet.address}`),
+                                )
+                                .catch((err) =>
+                                  console.error("Failed to copy:", err),
+                                );
+                            }}
                             className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors px-3 py-1 rounded-lg text-sm font-medium"
-                            aria-label={`Copy wallet address of ${item.name}`}
+                            aria-label={`Copy wallet address of ${wallet.name}`}
                           >
                             Copy Address
                           </button>
@@ -686,7 +590,7 @@ const PublicWalletDirectoryListPage = () => {
                 else {
                   return (
                     <div
-                      key={`${isRetailer ? "r" : "i"}-${item.id}`}
+                      key={wallet.id}
                       className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
                     >
                       <div className="p-6 flex flex-col md:flex-row gap-4">
@@ -707,131 +611,92 @@ const PublicWalletDirectoryListPage = () => {
                             <div>
                               <div className="flex items-center">
                                 <h3 className="font-bold text-lg text-gray-800">
-                                  {item.name}
+                                  {wallet.name}
                                 </h3>
-                                {item.verified && (
+                                {wallet.isVerified && (
                                   <div className="ml-2 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium flex items-center">
                                     <BadgeCheck className="h-3.5 w-3.5 mr-1" />
                                     Verified
                                   </div>
                                 )}
                               </div>
-                              <p className="text-sm text-gray-500">
-                                {isRetailer ? (
+                              {wallet.city && (
+                                <p className="text-sm text-gray-500">
                                   <span className="flex items-center">
                                     <MapPin className="h-3.5 w-3.5 mr-1" />
-                                    {item.address}
+                                    {[
+                                      wallet.city,
+                                      wallet.region,
+                                      wallet.country,
+                                    ]
+                                      .filter(Boolean)
+                                      .join(", ")}
                                   </span>
-                                ) : (
-                                  <span className="flex items-center">
-                                    <MapPin className="h-3.5 w-3.5 mr-1" />
-                                    {item.location}
-                                  </span>
-                                )}
-                              </p>
+                                </p>
+                              )}
                             </div>
 
                             <div className="mt-2 sm:mt-0 sm:text-right">
                               <div className="flex items-center text-sm text-gray-600 justify-start sm:justify-end">
                                 <Wallet className="h-4 w-4 text-gray-400 mr-2" />
                                 <span className="font-mono">
-                                  {item.walletAddress}
+                                  {wallet.formattedAddress}
                                 </span>
                               </div>
-                              <div className="text-sm text-gray-500 mt-1">
-                                {isRetailer ? (
+                              {wallet.createdAt && (
+                                <div className="text-sm text-gray-500 mt-1">
                                   <span className="flex items-center justify-start sm:justify-end">
                                     <Calendar className="h-3.5 w-3.5 mr-1" />
-                                    Established {item.established}
+                                    Registered{" "}
+                                    {new Date(
+                                      wallet.createdAt,
+                                    ).toLocaleDateString()}
                                   </span>
-                                ) : (
-                                  <span className="flex items-center justify-start sm:justify-end">
-                                    <Clock className="h-3.5 w-3.5 mr-1" />
-                                    Member since {item.memberSince}
-                                  </span>
-                                )}
-                              </div>
+                                </div>
+                              )}
                             </div>
                           </div>
 
                           <p className="text-gray-600 mb-4">
-                            {item.description}
+                            {wallet.description || "No description provided."}
                           </p>
 
                           {/* Additional Details */}
                           <div className="border-t border-gray-100 pt-3 grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
                             {/* Contact Information */}
                             <div>
-                              {item.contact && (
+                              {wallet.email && (
                                 <div className="flex items-center text-sm text-gray-600">
                                   <Mail className="h-4 w-4 text-gray-400 mr-2" />
                                   <a
-                                    href={`mailto:${item.contact}`}
+                                    href={`mailto:${wallet.email}`}
                                     className="text-indigo-600 hover:underline"
                                   >
-                                    {item.contact}
+                                    {wallet.email}
                                   </a>
                                 </div>
                               )}
-                              {isRetailer && item.phone && (
+                              {wallet.phone && (
                                 <div className="flex items-center text-sm text-gray-600 mt-1">
                                   <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                                  {item.phone}
+                                  {wallet.phone}
                                 </div>
                               )}
                             </div>
 
                             {/* Website */}
                             <div>
-                              {item.website && (
+                              {wallet.websiteURL && (
                                 <div className="flex items-center text-sm text-gray-600">
                                   <Globe className="h-4 w-4 text-gray-400 mr-2" />
                                   <a
-                                    href={`https://${item.website}`}
+                                    href={`https://${wallet.websiteURL}`}
                                     className="text-indigo-600 hover:underline"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
-                                    {item.website}
+                                    {wallet.websiteURL}
                                   </a>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Specialties or Payment Methods */}
-                            <div>
-                              {isRetailer && item.paymentMethods && (
-                                <div className="flex items-start text-sm text-gray-600">
-                                  <CreditCard className="h-4 w-4 text-gray-400 mr-2 mt-0.5" />
-                                  <div className="flex flex-wrap gap-1">
-                                    {item.paymentMethods.map(
-                                      (method, index) => (
-                                        <span
-                                          key={index}
-                                          className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs"
-                                        >
-                                          {method}
-                                        </span>
-                                      ),
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                              {!isRetailer && item.specialties && (
-                                <div className="flex items-start text-sm text-gray-600">
-                                  <Tag className="h-4 w-4 text-gray-400 mr-2 mt-0.5" />
-                                  <div className="flex flex-wrap gap-1">
-                                    {item.specialties.map(
-                                      (specialty, index) => (
-                                        <span
-                                          key={index}
-                                          className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs"
-                                        >
-                                          {specialty}
-                                        </span>
-                                      ),
-                                    )}
-                                  </div>
                                 </div>
                               )}
                             </div>
@@ -839,16 +704,27 @@ const PublicWalletDirectoryListPage = () => {
 
                           {/* Card Actions */}
                           <div className="flex justify-end items-center mt-2">
-                            <button
+                            <Link
+                              to={`/directory/${wallet.address}`}
                               className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center mr-4"
-                              aria-label={`View profile of ${item.name}`}
+                              aria-label={`View profile of ${wallet.name}`}
                             >
                               <EyeIcon className="h-4 w-4 mr-1" />
                               View Profile
-                            </button>
+                            </Link>
                             <button
+                              onClick={() => {
+                                navigator.clipboard
+                                  .writeText(wallet.address)
+                                  .then(() =>
+                                    alert(`Address copied: ${wallet.address}`),
+                                  )
+                                  .catch((err) =>
+                                    console.error("Failed to copy:", err),
+                                  );
+                              }}
                               className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors px-3 py-1 rounded-lg text-sm font-medium"
-                              aria-label={`Copy wallet address of ${item.name}`}
+                              aria-label={`Copy wallet address of ${wallet.name}`}
                             >
                               Copy Address
                             </button>
@@ -863,7 +739,7 @@ const PublicWalletDirectoryListPage = () => {
           )}
 
           {/* Pagination */}
-          {totalPages > 0 && (
+          {!isLoading && !error && totalPages > 0 && (
             <div className="mt-8 flex justify-center">
               <nav
                 className="flex items-center bg-white px-4 py-3 rounded-lg shadow-sm"

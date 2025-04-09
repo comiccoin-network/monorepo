@@ -2,7 +2,7 @@
 
 **Project still under active development - use at your own risk**
 
-The purpose of this GUI application is provide the ComicCoin authority the ability to create NFT metadata (along with the digital assets associated with the NFT) and submit it to the IPFS network to be shared; in addition, submit the NFT metadata/assets to [`comiccoin-nftminter`](../comiccoin-nftminter) server to provide exclusive hosting of the said assets.
+The purpose of this GUI application is provide the ComicCoin authority the ability to create NFT metadata (along with the digital assets associated with the NFT) and submit it to the IPFS network to be shared; in addition, submit the NFT metadata/assets to [`comiccoin-nftstorage`](../comiccoin-nftstorage) server to provide exclusive hosting of the said assets.
 
 ## 👐 Installation
 
