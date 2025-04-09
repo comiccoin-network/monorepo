@@ -111,7 +111,6 @@ func (impl publicWalletImpl) buildMatchStage(filter *dom.PublicWalletFilter) bso
 	}
 
 	// Add other filters
-
 	if !filter.CreatedByUserID.IsZero() {
 		match["created_by_user_id"] = filter.CreatedByUserID
 	}
@@ -127,25 +126,71 @@ func (impl publicWalletImpl) buildMatchStage(filter *dom.PublicWalletFilter) bso
 		match["created_at"] = createdAtFilter
 	}
 
-	// Filter by the status.
+	// Filter by status
 	if filter.Status != 0 {
 		match["status"] = filter.Status
 	}
 
-	// Text search for name
+	// Filter by type (individual or company)
+	if filter.Type != nil {
+		match["type"] = *filter.Type
+	}
+
+	// Filter by verification status
+	if filter.IsVerified != nil {
+		match["is_verified"] = *filter.IsVerified
+	}
+
+	// Handle text search and location filters
+	orConditions := []bson.M{}
+	locationOrConditions := []bson.M{}
+
+	// Text search for name, description, and address
 	if filter.Value != nil && *filter.Value != "" {
 		searchValue := strings.TrimSpace(*filter.Value)
 		if searchValue != "" {
 			// For partial matches and case insensitivity, we use regex
 			regexPattern := primitive.Regex{Pattern: searchValue, Options: "i"} // "i" for case insensitive
 
-			// Search in name, description, and address
-			match["$or"] = []bson.M{
-				{"name": bson.M{"$regex": regexPattern}},
-				{"description": bson.M{"$regex": regexPattern}},
-				{"address": bson.M{"$regex": regexPattern}},
-			}
+			// Add search conditions
+			orConditions = append(orConditions,
+				bson.M{"name": bson.M{"$regex": regexPattern}},
+				bson.M{"description": bson.M{"$regex": regexPattern}},
+				bson.M{"address": bson.M{"$regex": regexPattern}},
+			)
 		}
+	}
+
+	// Location search in city, region, country
+	if filter.Location != nil && *filter.Location != "" {
+		locationValue := strings.TrimSpace(*filter.Location)
+		if locationValue != "" {
+			regexPattern := primitive.Regex{Pattern: locationValue, Options: "i"}
+
+			// Add location search conditions
+			locationOrConditions = append(locationOrConditions,
+				bson.M{"city": bson.M{"$regex": regexPattern}},
+				bson.M{"region": bson.M{"$regex": regexPattern}},
+				bson.M{"country": bson.M{"$regex": regexPattern}},
+			)
+		}
+	}
+
+	// Combine the search conditions appropriately
+	if len(orConditions) > 0 {
+		if len(locationOrConditions) > 0 {
+			// If we have both text search and location filters, we need to use $and to combine them
+			match["$and"] = []bson.M{
+				{"$or": orConditions},
+				{"$or": locationOrConditions},
+			}
+		} else {
+			// If we only have text search, just use $or
+			match["$or"] = orConditions
+		}
+	} else if len(locationOrConditions) > 0 {
+		// If we only have location filters, just use $or
+		match["$or"] = locationOrConditions
 	}
 
 	return match

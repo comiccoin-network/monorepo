@@ -77,6 +77,11 @@ const PublicWalletDirectoryListPage = () => {
     apiFilters.type = WALLET_TYPE.INDIVIDUAL;
   }
 
+  // Add location filter (NEW)
+  if (filters.location) {
+    apiFilters.location = filters.location;
+  }
+
   // Use our hook for listing
   const { wallets, pagination, isLoading, error, refetch } =
     usePublicWalletDirectoryList(apiFilters);

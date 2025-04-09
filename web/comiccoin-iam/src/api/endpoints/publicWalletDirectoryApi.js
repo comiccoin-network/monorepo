@@ -27,9 +27,6 @@ export const getPublicWalletFromDirectoryByAddress = async (address) => {
   return response.data;
 };
 
-/**
- * Custom hook for listing public wallets from directory without authentication
- */
 export const useListPublicWalletsFromDirectory = (
   filters = {},
   options = {},
@@ -49,6 +46,12 @@ export const useListPublicWalletsFromDirectory = (
     queryParams.append("last_created_at", filters.lastCreatedAt);
   if (filters.limit) queryParams.append("limit", filters.limit);
 
+  // New filters
+  if (filters.type !== undefined) queryParams.append("type", filters.type);
+  if (filters.isVerified !== undefined)
+    queryParams.append("is_verified", filters.isVerified);
+  if (filters.location) queryParams.append("location", filters.location);
+
   // For public endpoints, we may want to filter out non-active wallets by default
   if (filters.activeOnly && !filters.status)
     queryParams.append("status", WALLET_STATUS.ACTIVE);
@@ -57,20 +60,6 @@ export const useListPublicWalletsFromDirectory = (
   const endpoint = `/public-wallets-directory${queryString ? `?${queryString}` : ""}`;
 
   return usePublicQuery(["publicWalletsDirectory", filters], endpoint, options);
-};
-
-/**
- * Search public wallets in directory without authentication
- */
-export const searchPublicWalletsFromDirectory = async (
-  searchTerm,
-  limit = 20,
-) => {
-  const response = await axiosClient.get(
-    `/public-wallets-directory/search?value=${encodeURIComponent(searchTerm)}&limit=${limit}`,
-    publicEndpoint({}),
-  );
-  return response.data;
 };
 
 /**
@@ -87,6 +76,31 @@ export const trackWalletViewInDirectory = async (address) => {
   } catch (err) {
     console.error("❌ Error tracking wallet view:", err);
     return false;
+  }
+};
+
+/**
+ * Search public wallets in directory without authentication
+ * Note: This uses the same endpoint as listing but with a search value
+ */
+export const searchPublicWalletsFromDirectory = async (
+  searchTerm,
+  limit = 20,
+) => {
+  try {
+    const params = new URLSearchParams();
+    if (searchTerm) params.append("value", searchTerm);
+    if (limit) params.append("limit", limit);
+    params.append("status", WALLET_STATUS.ACTIVE);
+
+    const response = await axiosClient.get(
+      `/public-wallets-directory?${params.toString()}`,
+      publicEndpoint({}),
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Error searching public wallets:", err);
+    throw err;
   }
 };
 

@@ -87,6 +87,35 @@ func (h *listPublicWalletsFromDirectoryByFilterHTTPHandlerImpl) Handle(w http.Re
 		filter.Value = &value
 	}
 
+	// Parse type if provided (NEW)
+	typeStr := r.URL.Query().Get("type")
+	if typeStr != "" {
+		typeInt, err := strconv.ParseInt(typeStr, 10, 8)
+		if err != nil {
+			httperror.ResponseError(w, err)
+			return
+		}
+		typeInt8 := int8(typeInt)
+		filter.Type = &typeInt8
+	}
+
+	// Parse is_verified if provided (NEW)
+	isVerifiedStr := r.URL.Query().Get("is_verified")
+	if isVerifiedStr != "" {
+		isVerified, err := strconv.ParseBool(isVerifiedStr)
+		if err != nil {
+			httperror.ResponseError(w, err)
+			return
+		}
+		filter.IsVerified = &isVerified
+	}
+
+	// Parse location if provided (NEW)
+	location := r.URL.Query().Get("location")
+	if location != "" {
+		filter.Location = &location
+	}
+
 	// Parse cursor pagination parameters
 	lastIDStr := r.URL.Query().Get("last_id")
 	if lastIDStr != "" {
@@ -106,6 +135,17 @@ func (h *listPublicWalletsFromDirectoryByFilterHTTPHandlerImpl) Handle(w http.Re
 			return
 		}
 		filter.LastCreatedAt = &lastCreatedAt
+	}
+
+	// Parse status if provided
+	statusStr := r.URL.Query().Get("status")
+	if statusStr != "" {
+		status, err := strconv.ParseInt(statusStr, 10, 8)
+		if err != nil {
+			httperror.ResponseError(w, err)
+			return
+		}
+		filter.Status = int8(status)
 	}
 
 	// Parse limit
