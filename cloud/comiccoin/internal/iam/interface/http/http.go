@@ -21,6 +21,7 @@ import (
 	http_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/hello"
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/me"
 	http_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/publicwallet"
+	http_publicwalletdirectory "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/publicwalletdirectory"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -74,6 +75,9 @@ type httpServerImpl struct {
 	countPublicWalletsByFilterHTTPHandler   http_publicwallet.CountPublicWalletsByFilterHTTPHandler
 	listAllPublicWalletAddressesHTTPHandler http_publicwallet.ListAllPublicWalletAddressesHTTPHandler
 
+	listPublicWalletsFromDirectoryByFilterHTTPHandler http_publicwalletdirectory.ListPublicWalletsFromDirectoryByFilterHTTPHandler
+	getPublicWalletsFromDirectoryByAddressHTTPHandler http_publicwalletdirectory.GetPublicWalletsFromDirectoryByAddressHTTPHandler
+
 	dashboard http_dashboard.DashboardHTTPHandler
 }
 
@@ -105,38 +109,42 @@ func NewHTTPServer(
 	listPublicWalletsByFilterHTTPHandler http_publicwallet.ListPublicWalletsByFilterHTTPHandler,
 	countPublicWalletsByFilterHTTPHandler http_publicwallet.CountPublicWalletsByFilterHTTPHandler,
 	listAllPublicWalletAddressesHTTPHandler http_publicwallet.ListAllPublicWalletAddressesHTTPHandler,
+	listPublicWalletsFromDirectoryByFilterHTTPHandler http_publicwalletdirectory.ListPublicWalletsFromDirectoryByFilterHTTPHandler,
+	getPublicWalletsFromDirectoryByAddressHTTPHandler http_publicwalletdirectory.GetPublicWalletsFromDirectoryByAddressHTTPHandler,
 	dashboard http_dashboard.DashboardHTTPHandler,
 ) HTTPServer {
 
 	// Create a new HTTP server instance.
 	port := &httpServerImpl{
-		cfg:                                     cfg,
-		logger:                                  logger,
-		middleware:                              mid,
-		gatewayUserRegisterHTTPHandler:          gatewayUserRegisterHTTPHandler,
-		gatewayVerifyEmailHTTPHandler:           gatewayVerifyEmailHTTPHandler,
-		gatewayLoginHTTPHandler:                 gatewayLoginHTTPHandler,
-		gatewayLogoutHTTPHandler:                gatewayLogoutHTTPHandler,
-		gatewayRefreshTokenHTTPHandler:          gatewayRefreshTokenHTTPHandler,
-		gatewayForgotPasswordHTTPHandler:        gatewayForgotPasswordHTTPHandler,
-		gatewayResetPasswordHTTPHandler:         gatewayResetPasswordHTTPHandler,
-		getHelloHTTPHandler:                     getHelloHTTPHandler,
-		getMeHTTPHandler:                        getMeHTTPHandler,
-		deleteMeHTTPHandler:                     deleteMeHTTPHandler,
-		postMeConnectWalletHTTPHandler:          postMeConnectWalletHTTPHandler,
-		putUpdateMeHTTPHandler:                  putUpdateMeHTTPHandler,
-		postVerifyProfileHTTPHandler:            postVerifyProfileHTTPHandler,
-		createPublicWalletHTTPHandler:           createPublicWalletHTTPHandler,
-		getPublicWalletByIDHTTPHandler:          getPublicWalletByIDHTTPHandler,
-		getPublicWalletByAddressHTTPHandler:     getPublicWalletByAddressHTTPHandler,
-		updatePublicWalletByIDHTTPHandler:       updatePublicWalletByIDHTTPHandler,
-		updatePublicWalletByAddressHTTPHandler:  updatePublicWalletByAddressHTTPHandler,
-		deletePublicWalletByIDHTTPHandler:       deletePublicWalletByIDHTTPHandler,
-		deletePublicWalletByAddressHTTPHandler:  deletePublicWalletByAddressHTTPHandler,
-		listPublicWalletsByFilterHTTPHandler:    listPublicWalletsByFilterHTTPHandler,
-		countPublicWalletsByFilterHTTPHandler:   countPublicWalletsByFilterHTTPHandler,
-		listAllPublicWalletAddressesHTTPHandler: listAllPublicWalletAddressesHTTPHandler,
-		dashboard:                               dashboard,
+		cfg:                                               cfg,
+		logger:                                            logger,
+		middleware:                                        mid,
+		gatewayUserRegisterHTTPHandler:                    gatewayUserRegisterHTTPHandler,
+		gatewayVerifyEmailHTTPHandler:                     gatewayVerifyEmailHTTPHandler,
+		gatewayLoginHTTPHandler:                           gatewayLoginHTTPHandler,
+		gatewayLogoutHTTPHandler:                          gatewayLogoutHTTPHandler,
+		gatewayRefreshTokenHTTPHandler:                    gatewayRefreshTokenHTTPHandler,
+		gatewayForgotPasswordHTTPHandler:                  gatewayForgotPasswordHTTPHandler,
+		gatewayResetPasswordHTTPHandler:                   gatewayResetPasswordHTTPHandler,
+		getHelloHTTPHandler:                               getHelloHTTPHandler,
+		getMeHTTPHandler:                                  getMeHTTPHandler,
+		deleteMeHTTPHandler:                               deleteMeHTTPHandler,
+		postMeConnectWalletHTTPHandler:                    postMeConnectWalletHTTPHandler,
+		putUpdateMeHTTPHandler:                            putUpdateMeHTTPHandler,
+		postVerifyProfileHTTPHandler:                      postVerifyProfileHTTPHandler,
+		createPublicWalletHTTPHandler:                     createPublicWalletHTTPHandler,
+		getPublicWalletByIDHTTPHandler:                    getPublicWalletByIDHTTPHandler,
+		getPublicWalletByAddressHTTPHandler:               getPublicWalletByAddressHTTPHandler,
+		updatePublicWalletByIDHTTPHandler:                 updatePublicWalletByIDHTTPHandler,
+		updatePublicWalletByAddressHTTPHandler:            updatePublicWalletByAddressHTTPHandler,
+		deletePublicWalletByIDHTTPHandler:                 deletePublicWalletByIDHTTPHandler,
+		deletePublicWalletByAddressHTTPHandler:            deletePublicWalletByAddressHTTPHandler,
+		listPublicWalletsByFilterHTTPHandler:              listPublicWalletsByFilterHTTPHandler,
+		countPublicWalletsByFilterHTTPHandler:             countPublicWalletsByFilterHTTPHandler,
+		listAllPublicWalletAddressesHTTPHandler:           listAllPublicWalletAddressesHTTPHandler,
+		listPublicWalletsFromDirectoryByFilterHTTPHandler: listPublicWalletsFromDirectoryByFilterHTTPHandler,
+		getPublicWalletsFromDirectoryByAddressHTTPHandler: getPublicWalletsFromDirectoryByAddressHTTPHandler,
+		dashboard: dashboard,
 	}
 
 	return port
@@ -210,12 +218,18 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 			port.listPublicWalletsByFilterHTTPHandler.Handle(w, r)
 		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodPost:
 			port.createPublicWalletHTTPHandler.Handle(w, r)
-		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodPost:
+		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodGet:
 			port.getPublicWalletByAddressHTTPHandler.Handle(w, r, p[4])
 		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodPut:
 			port.updatePublicWalletByAddressHTTPHandler.Handle(w, r, p[4])
 		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodDelete:
 			port.deletePublicWalletByAddressHTTPHandler.Handle(w, r, p[4])
+
+		// Public Wallet Directory
+		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets-directory" && r.Method == http.MethodGet:
+			port.listPublicWalletsFromDirectoryByFilterHTTPHandler.Handle(w, r)
+		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets-directory" && r.Method == http.MethodGet:
+			port.getPublicWalletsFromDirectoryByAddressHTTPHandler.Handle(w, r, p[4])
 
 		// Dashboard
 		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "dashboard" && r.Method == http.MethodGet:

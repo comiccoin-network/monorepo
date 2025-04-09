@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthProvider } from "./contexts/AuthContext";
 import IndexPage from "./pages/Index/Page";
 import PublicWalletDirectoryListPage from "./pages/PublicWalletDirectory/ListPage";
+import PublicWalletDirectoryDetailPage from "./pages/PublicWalletDirectory/DetailPage";
 import GetStartedPage from "./pages/Gateway/GetStartedPage";
 import LoginPage from "./pages/Gateway/LoginPage";
 import ForgotPasswordPage from "./pages/Gateway/ForgotPasswordPage";
@@ -79,6 +80,18 @@ function App() {
               element={<RegistrationSuccessPage />}
             />
 
+            <Route
+              path="/directory"
+              element={<PublicWalletDirectoryListPage />}
+            />
+
+            <Route
+              path="/directory/:address"
+              element={<PublicWalletDirectoryDetailPage />}
+            />
+
+            {/* Protected Routes */}
+
             {/* User Verification Routes */}
             <Route
               path="/verification"
@@ -132,7 +145,7 @@ function App() {
               }
             />
 
-            {/* Protected Routes */}
+            {/* Application Routes */}
             <Route
               path="/dashboard"
               element={

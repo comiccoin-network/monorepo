@@ -23,6 +23,7 @@ import (
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/me"
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/middleware"
 	http_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/publicwallet"
+	http_publicwalletdirectory "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/publicwalletdirectory"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/task"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/repo/bannedipaddress"
 	r_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/repo/publicwallet"
@@ -33,6 +34,7 @@ import (
 	svc_hello "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/hello"
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/me"
 	svc_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/publicwallet"
+	svc_publicwalletdirectory "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/publicwalletdirectory"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/bannedipaddress"
 	uc_emailer "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/emailer"
 	uc_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
@@ -401,6 +403,19 @@ func NewModule(
 		publicWalletListAllAddressesUseCase,
 	)
 
+	// --- Public Wallet Directory ---
+
+	listPublicWalletsFromDirectoryByFilterService := svc_publicwalletdirectory.NewListPublicWalletsFromDirectoryByFilterService(
+		cfg,
+		logger,
+		publicWalletListByFilterUseCase,
+	)
+	getPublicWalletsFromDirectoryByAddressService := svc_publicwalletdirectory.NewGetPublicWalletsFromDirectoryByAddressService(
+		cfg,
+		logger,
+		publicWalletGetByAddressUseCase,
+	)
+
 	////
 	//// Interface
 	////
@@ -559,6 +574,24 @@ func NewModule(
 		verifyProfileService,
 	)
 
+	// --- Public Wallet Directory ---
+
+	listPublicWalletsFromDirectoryByFilterHTTPHandler := http_publicwalletdirectory.NewListPublicWalletsFromDirectoryByFilterHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		listPublicWalletsFromDirectoryByFilterService,
+	)
+	_ = listPublicWalletsFromDirectoryByFilterHTTPHandler
+
+	getPublicWalletsFromDirectoryByAddressHTTPHandler := http_publicwalletdirectory.NewGetPublicWalletsFromDirectoryByAddressHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		getPublicWalletsFromDirectoryByAddressService,
+	)
+	_ = getPublicWalletsFromDirectoryByAddressHTTPHandler
+
 	// --- HTTP Middleware ---
 
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -599,6 +632,8 @@ func NewModule(
 		listPublicWalletsByFilterHTTPHandler,
 		countPublicWalletsByFilterHTTPHandler,
 		listAllPublicWalletAddressesHTTPHandler,
+		listPublicWalletsFromDirectoryByFilterHTTPHandler,
+		getPublicWalletsFromDirectoryByAddressHTTPHandler,
 		dashboardHTTPHandler,
 	)
 

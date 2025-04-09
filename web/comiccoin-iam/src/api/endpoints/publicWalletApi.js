@@ -15,7 +15,7 @@ export const WALLET_STATUS = {
  * Note: The backend uses POST for this operation
  */
 export const getPublicWalletByAddress = async (address) => {
-  const response = await axiosClient.post(`/public-wallets/${address}`);
+  const response = await axiosClient.get(`/public-wallets/${address}`);
   return response.data;
 };
 
