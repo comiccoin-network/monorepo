@@ -1,4 +1,4 @@
-// src/pages/Registry/SearchPage.jsx
+// src/pages/PublicWalletDirectory/ListPage.jsx
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
@@ -31,7 +31,7 @@ import {
 import Header from "../../components/IndexPage/Header";
 import Footer from "../../components/IndexPage/Footer";
 
-const RegistrySearchPage = () => {
+const PublicWalletDirectoryPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -948,4 +948,4 @@ const RegistrySearchPage = () => {
   );
 };
 
-export default RegistrySearchPage;
+export default PublicWalletDirectoryPage;
