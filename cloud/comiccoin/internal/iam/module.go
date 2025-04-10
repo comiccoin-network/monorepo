@@ -35,6 +35,7 @@ import (
 	svc_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/me"
 	svc_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/publicwallet"
 	svc_publicwalletdirectory "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/publicwalletdirectory"
+	svc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/user"
 	uc_bannedipaddress "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/bannedipaddress"
 	uc_emailer "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/emailer"
 	uc_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
@@ -236,6 +237,49 @@ func NewModule(
 		cfg,
 		logger,
 	)
+
+	// --- User ---
+
+	createUserService := svc_user.NewCreateUserService(
+		cfg,
+		logger,
+		passp,
+		userGetByEmailUseCase,
+		userCreateUseCase,
+	)
+	getUserService := svc_user.NewGetUserService(
+		cfg,
+		logger,
+		userGetByIDUseCase,
+		userGetByEmailUseCase,
+	)
+
+	updateUserService := svc_user.NewUpdateUserService(
+		cfg,
+		logger,
+		passp,
+		userGetByIDUseCase,
+		userUpdateUseCase,
+	)
+
+	deleteUserService := svc_user.NewDeleteUserService(
+		cfg,
+		logger,
+		userGetByIDUseCase,
+		userDeleteByIDUseCase,
+	)
+
+	listUsersService := svc_user.NewListUsersService(
+		cfg,
+		logger,
+		dbClient,
+	)
+
+	_ = createUserService
+	_ = getUserService
+	_ = updateUserService
+	_ = deleteUserService
+	_ = listUsersService
 
 	// --- Me ---
 
