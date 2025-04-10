@@ -32,12 +32,12 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import AppTopNavigation from "../../components/AppTopNavigation";
-import AppFooter from "../../components/AppFooter";
-import withProfileVerification from "../../components/withProfileVerification";
-import { usePublicWallet } from "../../hooks/usePublicWallet";
+import AppTopNavigation from "../../../components/AppTopNavigation";
+import AppFooter from "../../../components/AppFooter";
+import withProfileVerification from "../../../components/withProfileVerification";
+import { usePublicWallet } from "../../../hooks/usePublicWallet";
 
-const PublicWalletDetailsPage = () => {
+const UserPublicWalletDetailsPage = () => {
   const { address } = useParams();
   const navigate = useNavigate();
 
@@ -673,4 +673,4 @@ const PublicWalletDetailsPage = () => {
   );
 };
 
-export default withProfileVerification(PublicWalletDetailsPage);
+export default withProfileVerification(UserPublicWalletDetailsPage);

@@ -12,9 +12,9 @@ import {
   Loader,
 } from "lucide-react";
 
-import AppTopNavigation from "../../components/AppTopNavigation";
-import AppFooter from "../../components/AppFooter";
-import { useDeleteAccount } from "../../api/endpoints/deleteMeApi";
+import AppTopNavigation from "../../../components/AppTopNavigation";
+import AppFooter from "../../../components/AppFooter";
+import { useDeleteAccount } from "../../../api/endpoints/deleteMeApi";
 
 function DeleteAccountPageContent() {
   const navigate = useNavigate();
@@ -311,5 +311,5 @@ function DeleteAccountPageContent() {
 }
 
 // Wrap the component with the XXX HOC
-const DeleteAccountPage = DeleteAccountPageContent;
-export default DeleteAccountPage;
+const UserDeleteAccountPage = DeleteAccountPageContent;
+export default UserDeleteAccountPage;

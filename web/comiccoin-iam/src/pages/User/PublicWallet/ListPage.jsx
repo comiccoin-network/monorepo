@@ -20,16 +20,16 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import AppTopNavigation from "../../components/AppTopNavigation";
-import AppFooter from "../../components/AppFooter";
-import withProfileVerification from "../../components/withProfileVerification";
+import AppTopNavigation from "../../../components/AppTopNavigation";
+import AppFooter from "../../../components/AppFooter";
+import withProfileVerification from "../../../components/withProfileVerification";
 import {
   usePublicWallet,
   usePublicWalletList,
-} from "../../hooks/usePublicWallet";
+} from "../../../hooks/usePublicWallet";
 import { QRCodeSVG } from "qrcode.react";
 
-const PublicWalletListPage = () => {
+const UserPublicWalletListPage = () => {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState("grid");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -809,4 +809,4 @@ const PublicWalletListPage = () => {
   );
 };
 
-export default withProfileVerification(PublicWalletListPage);
+export default withProfileVerification(UserPublicWalletListPage);

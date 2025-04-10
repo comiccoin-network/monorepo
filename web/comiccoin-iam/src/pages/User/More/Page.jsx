@@ -3,9 +3,9 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { Settings, LogOut, Trash2, ArrowRight, Menu } from "lucide-react";
 
-import AppTopNavigation from "../../components/AppTopNavigation";
-import AppFooter from "../../components/AppFooter";
-import { useAuth } from "../../hooks/useAuth";
+import AppTopNavigation from "../../../components/AppTopNavigation";
+import AppFooter from "../../../components/AppFooter";
+import { useAuth } from "../../../hooks/useAuth";
 
 function MorePageContent() {
   const navigate = useNavigate();
@@ -136,6 +136,6 @@ function MorePageContent() {
 }
 
 // // Wrap the component with HOC to match pattern used in other pages
-// const MorePage = withWallet(MorePageContent);
+const UserMorePage = MorePageContent;
 // export default MorePage;
-export default MorePageContent;
+export default UserMorePage;

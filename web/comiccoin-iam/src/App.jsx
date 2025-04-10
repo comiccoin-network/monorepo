@@ -15,27 +15,30 @@ import RegisterPage from "./pages/Gateway/RegisterPage";
 import RegistrationSuccessPage from "./pages/Gateway/RegistrationSuccessPage";
 import EmailVerificationPage from "./pages/Gateway/EmailVerificationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import UserDashboardPage from "./pages/User/Dashboard/Page";
-import PublicWalletListPage from "./pages/PublicWallet/ListPage";
-import PublicWalletAddPage from "./pages/PublicWallet/AddPage";
-import PublicWalletDetailsPage from "./pages/PublicWallet/DetailsPage";
-import PublicWalletUpdatePage from "./pages/PublicWallet/UpdatePage";
 import VerificationLaunchpadPage from "./pages/Verification/LaunchpadPage";
 import VerificationIndividualPage from "./pages/Verification/IndividualPage";
 import VerificationBusinessPage from "./pages/Verification/BusinessPage";
 import VerificationRejectedPage from "./pages/Verification/RejectedPage";
 import VerificationApprovedPage from "./pages/Verification/ApprovedPage";
 import VerificationPendingPage from "./pages/Verification/PendingPage";
-import MorePage from "./pages/More/Page";
-import DeleteAccountPage from "./pages/More/DeleteAccountPage";
-import SettingsPage from "./pages/More/SettingsPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import HelpAndSupportPage from "./pages/HelpAndSupportPage";
 
-// (Admin) Dashboard
+// User
+import UserDashboardPage from "./pages/User/Dashboard/Page";
+import UserMorePage from "./pages/User/More/Page";
+import UserDeleteAccountPage from "./pages/User/More/DeleteAccountPage";
+import UserSettingsPage from "./pages/User/More/SettingsPage";
+import PublicWalletListPage from "./pages/User/PublicWallet/ListPage";
+import PublicWalletAddPage from "./pages/User/PublicWallet/AddPage";
+import PublicWalletDetailsPage from "./pages/User/PublicWallet/DetailsPage";
+import PublicWalletUpdatePage from "./pages/User/PublicWallet/UpdatePage";
+
+// Admin
+// Dashboard
 import AdminDashboardPage from "./pages/Admin/Dashboard/Page";
-// (Admin) User Management Pages
+// User Management Pages
 import UserListPage from "./pages/Admin/UserManagement/ListPage";
 import UserDetailsPage from "./pages/Admin/UserManagement/DetailsPage";
 import UserAddPage from "./pages/Admin/UserManagement/AddPage";
@@ -203,7 +206,7 @@ function App() {
               path="/more"
               element={
                 <ProtectedRoute>
-                  <MorePage />
+                  <UserMorePage />
                 </ProtectedRoute>
               }
             />
@@ -212,7 +215,7 @@ function App() {
               path="/settings"
               element={
                 <ProtectedRoute>
-                  <SettingsPage />
+                  <UserSettingsPage />
                 </ProtectedRoute>
               }
             />
@@ -221,7 +224,7 @@ function App() {
               path="/delete-account"
               element={
                 <ProtectedRoute>
-                  <DeleteAccountPage />
+                  <UserDeleteAccountPage />
                 </ProtectedRoute>
               }
             />

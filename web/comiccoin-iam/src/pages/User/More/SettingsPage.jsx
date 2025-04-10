@@ -10,11 +10,11 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-import AppTopNavigation from "../../components/AppTopNavigation";
-import AppFooter from "../../components/AppFooter";
-import { usePutUpdateMe } from "../../hooks/usePutUpdateMe";
-import { useAuth } from "../../hooks/useAuth";
-import { useGetMe } from "../../hooks/useGetMe";
+import AppTopNavigation from "../../../components/AppTopNavigation";
+import AppFooter from "../../../components/AppFooter";
+import { usePutUpdateMe } from "../../../hooks/usePutUpdateMe";
+import { useAuth } from "../../../hooks/useAuth";
+import { useGetMe } from "../../../hooks/useGetMe";
 
 // Define country and timezone options for dropdown selection
 const countries = [
@@ -850,5 +850,5 @@ const SettingsPageContent = () => {
 };
 
 // Wrap the component with HOCs
-const SettingsPage = SettingsPageContent;
-export default SettingsPage;
+const UserSettingsPage = SettingsPageContent;
+export default UserSettingsPage;

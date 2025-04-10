@@ -23,13 +23,13 @@ import {
   Navigation,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import AppTopNavigation from "../../components/AppTopNavigation";
-import AppFooter from "../../components/AppFooter";
-import withProfileVerification from "../../components/withProfileVerification";
-import { usePublicWallet } from "../../hooks/usePublicWallet";
-import { useGetMe } from "../../hooks/useGetMe";
+import AppTopNavigation from "../../../components/AppTopNavigation";
+import AppFooter from "../../../components/AppFooter";
+import withProfileVerification from "../../../components/withProfileVerification";
+import { usePublicWallet } from "../../../hooks/usePublicWallet";
+import { useGetMe } from "../../../hooks/useGetMe";
 
-const PublicWalletAddPage = () => {
+const UserPublicWalletAddPage = () => {
   const navigate = useNavigate();
   const { createPublicWallet, isLoading, error, success, reset } =
     usePublicWallet();
@@ -712,4 +712,4 @@ const PublicWalletAddPage = () => {
   );
 };
 
-export default withProfileVerification(PublicWalletAddPage);
+export default withProfileVerification(UserPublicWalletAddPage);
