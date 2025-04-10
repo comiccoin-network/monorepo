@@ -196,6 +196,7 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		// Handle the request based on the URL path tokens.
 		switch {
 		// --- Unprotected API endpoints ---
+
 		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "register" && r.Method == http.MethodPost:
 			port.gatewayUserRegisterHTTPHandler.Execute(w, r)
 		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "verify-email-code" && r.Method == http.MethodPost:
@@ -213,7 +214,8 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "reset-password" && r.Method == http.MethodPost:
 			port.gatewayResetPasswordHTTPHandler.Execute(w, r)
 
-		// --- Resource endpoints ---
+		// --- Protected endpoints ---
+
 		// Hello
 		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "say-hello" && r.Method == http.MethodPost:
 			port.getHelloHTTPHandler.Execute(w, r)
@@ -264,7 +266,7 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "users" && r.Method == http.MethodDelete:
 			port.deleteUserHTTPHandler.Handle(w, r, p[4])
 
-			// --- CATCH ALL: D.N.E. ---
+		// --- CATCH ALL: D.N.E. ---
 		default:
 			// Log a message to indicate that the request is not found.
 			port.logger.Debug("404 request",
