@@ -24,6 +24,7 @@ import (
 	httpmiddle "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/middleware"
 	http_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/publicwallet"
 	http_publicwalletdirectory "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/publicwalletdirectory"
+	http_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/user"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/task"
 	r_banip "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/repo/bannedipaddress"
 	r_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/repo/publicwallet"
@@ -636,6 +637,43 @@ func NewModule(
 	)
 	_ = getPublicWalletsFromDirectoryByAddressHTTPHandler
 
+	// --- User Management HTTP Handlers ---
+
+	createUserHTTPHandler := http_user.NewCreateUserHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		createUserService,
+	)
+
+	getUserHTTPHandler := http_user.NewGetUserHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		getUserService,
+	)
+
+	updateUserHTTPHandler := http_user.NewUpdateUserHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		updateUserService,
+	)
+
+	deleteUserHTTPHandler := http_user.NewDeleteUserHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		deleteUserService,
+	)
+
+	listUsersHTTPHandler := http_user.NewListUsersHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		listUsersService,
+	)
+
 	// --- HTTP Middleware ---
 
 	httpMiddleware := httpmiddle.NewMiddleware(
@@ -679,6 +717,11 @@ func NewModule(
 		listPublicWalletsFromDirectoryByFilterHTTPHandler,
 		getPublicWalletsFromDirectoryByAddressHTTPHandler,
 		dashboardHTTPHandler,
+		createUserHTTPHandler,
+		getUserHTTPHandler,
+		updateUserHTTPHandler,
+		deleteUserHTTPHandler,
+		listUsersHTTPHandler,
 	)
 
 	// --- Tasks ---

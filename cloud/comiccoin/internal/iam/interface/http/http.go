@@ -22,6 +22,7 @@ import (
 	http_me "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/me"
 	http_publicwallet "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/publicwallet"
 	http_publicwalletdirectory "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/publicwalletdirectory"
+	http_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/interface/http/user"
 )
 
 // HTTPServer represents an HTTP server that handles incoming requests.
@@ -79,6 +80,12 @@ type httpServerImpl struct {
 	getPublicWalletsFromDirectoryByAddressHTTPHandler http_publicwalletdirectory.GetPublicWalletsFromDirectoryByAddressHTTPHandler
 
 	dashboard http_dashboard.DashboardHTTPHandler
+
+	createUserHTTPHandler http_user.CreateUserHTTPHandler
+	getUserHTTPHandler    http_user.GetUserHTTPHandler
+	updateUserHTTPHandler http_user.UpdateUserHTTPHandler
+	deleteUserHTTPHandler http_user.DeleteUserHTTPHandler
+	listUsersHTTPHandler  http_user.ListUsersHTTPHandler
 }
 
 // NewHTTPServer creates a new HTTP server instance.
@@ -112,6 +119,11 @@ func NewHTTPServer(
 	listPublicWalletsFromDirectoryByFilterHTTPHandler http_publicwalletdirectory.ListPublicWalletsFromDirectoryByFilterHTTPHandler,
 	getPublicWalletsFromDirectoryByAddressHTTPHandler http_publicwalletdirectory.GetPublicWalletsFromDirectoryByAddressHTTPHandler,
 	dashboard http_dashboard.DashboardHTTPHandler,
+	createUserHTTPHandler http_user.CreateUserHTTPHandler,
+	getUserHTTPHandler http_user.GetUserHTTPHandler,
+	updateUserHTTPHandler http_user.UpdateUserHTTPHandler,
+	deleteUserHTTPHandler http_user.DeleteUserHTTPHandler,
+	listUsersHTTPHandler http_user.ListUsersHTTPHandler,
 ) HTTPServer {
 
 	// Create a new HTTP server instance.
@@ -144,7 +156,12 @@ func NewHTTPServer(
 		listAllPublicWalletAddressesHTTPHandler:           listAllPublicWalletAddressesHTTPHandler,
 		listPublicWalletsFromDirectoryByFilterHTTPHandler: listPublicWalletsFromDirectoryByFilterHTTPHandler,
 		getPublicWalletsFromDirectoryByAddressHTTPHandler: getPublicWalletsFromDirectoryByAddressHTTPHandler,
-		dashboard: dashboard,
+		dashboard:             dashboard,
+		createUserHTTPHandler: createUserHTTPHandler,
+		getUserHTTPHandler:    getUserHTTPHandler,
+		updateUserHTTPHandler: updateUserHTTPHandler,
+		deleteUserHTTPHandler: deleteUserHTTPHandler,
+		listUsersHTTPHandler:  listUsersHTTPHandler,
 	}
 
 	return port
@@ -234,6 +251,18 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 		// Dashboard
 		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "dashboard" && r.Method == http.MethodGet:
 			port.dashboard.Handle(w, r)
+
+		// User management
+		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "users" && r.Method == http.MethodGet:
+			port.listUsersHTTPHandler.Handle(w, r)
+		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "users" && r.Method == http.MethodPost:
+			port.createUserHTTPHandler.Handle(w, r)
+		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "users" && r.Method == http.MethodGet:
+			port.getUserHTTPHandler.Handle(w, r, p[4])
+		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "users" && r.Method == http.MethodPut:
+			port.updateUserHTTPHandler.Handle(w, r, p[4])
+		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "users" && r.Method == http.MethodDelete:
+			port.deleteUserHTTPHandler.Handle(w, r, p[4])
 
 			// --- CATCH ALL: D.N.E. ---
 		default:
