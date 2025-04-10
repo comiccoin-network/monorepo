@@ -33,6 +33,8 @@ import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import HelpAndSupportPage from "./pages/HelpAndSupportPage";
 
+// (Admin) Dashboard
+import AdminDashboardPage from "./pages/Admin/Dashboard/Page";
 // (Admin) User Management Pages
 import UserListPage from "./pages/Admin/UserManagement/ListPage";
 import UserDetailsPage from "./pages/Admin/UserManagement/DetailsPage";
@@ -234,6 +236,15 @@ function App() {
             />
 
             {/* Admin */}
+
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminDashboardPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin/users"
               element={
