@@ -16,6 +16,8 @@ func IAMCmd() *cobra.Command {
 
 	// Add IAM-related commands
 	cmd.AddCommand(GetCreateAdminUserCmd())
+	cmd.AddCommand(GetListUsersCmd())
+	cmd.AddCommand(GetUserCmd())
 
 	return cmd
 }
