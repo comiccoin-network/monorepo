@@ -29,7 +29,7 @@ import {
   USER_ROLE,
   PROFILE_VERIFICATION_STATUS,
 } from "../../../hooks/useUser";
-import UserTopNavigation from "../../../components/UserTopNavigation";
+import AdminTopNavigation from "../../../components/AdminTopNavigation";
 import UserFooter from "../../../components/UserFooter";
 
 const AdminDashboardPage = () => {
@@ -198,7 +198,7 @@ const AdminDashboardPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      <UserTopNavigation />
+      <AdminTopNavigation />
 
       <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
         {/* Dashboard Header */}
