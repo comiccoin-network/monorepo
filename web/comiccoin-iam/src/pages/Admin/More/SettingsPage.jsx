@@ -562,7 +562,7 @@ const SettingsPageContent = () => {
 
   // Navigate back to `More` page.
   const handleBackToDashboard = () => {
-    navigate("/more");
+    navigate("/admin/more");
   };
 
   // Render loading state if user data is not yet available

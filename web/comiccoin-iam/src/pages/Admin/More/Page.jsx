@@ -12,8 +12,8 @@ function MorePageContent() {
   const { logout } = useAuth();
 
   // Navigation handlers
-  const handleNavigateToSettings = () => navigate("/settings");
-  const handleNavigateToDeleteAccount = () => navigate("/delete-account");
+  const handleNavigateToSettings = () => navigate("/admin/settings");
+  const handleNavigateToDeleteAccount = () => navigate("/admin/delete-account");
   const handleLogout = () => logout();
 
   return (

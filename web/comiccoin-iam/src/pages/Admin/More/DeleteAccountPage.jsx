@@ -45,7 +45,7 @@ function DeleteAccountPageContent() {
 
   // Navigate back to `More page.
   const handleBackToDashboard = () => {
-    navigate("/more");
+    navigate("/admin/more");
   };
 
   // Handle showing the confirmation dialog
