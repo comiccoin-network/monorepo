@@ -29,6 +29,7 @@ func init() {
 		"/iam/api/v1/transactions":      true,
 		"/iam/api/v1/me/verify-profile": true,
 		"/iam/api/v1/public-wallets":    true,
+		"/iam/api/v1/users":             true,
 	}
 
 	// Pattern matches
@@ -36,6 +37,7 @@ func init() {
 		"^/iam/api/v1/user/[0-9]+$",
 		"^/iam/api/v1/wallet/[0-9a-f]+$",
 		"^/iam/api/v1/public-wallets/0x[0-9a-fA-F]{40}$", // Regex designed for ethereum addresses
+		"^/iam/api/v1/user/[0-9a-f]+$",
 	}
 
 	// Precompile patterns

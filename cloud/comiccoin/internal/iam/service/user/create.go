@@ -2,8 +2,10 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -51,8 +53,35 @@ func NewCreateUserService(
 }
 
 // Execute processes the request to create a new user
-func (s *createUserServiceImpl) Execute(sessCtx mongo.SessionContext, req *CreateUserRequestDTO) (*UserResponseDTO, error) {
-	// Validate request
+func (svc *createUserServiceImpl) Execute(sessCtx mongo.SessionContext, req *CreateUserRequestDTO) (*UserResponseDTO, error) {
+	//
+	// Extract authenticated user information from context.
+	//
+
+	userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	if !ok {
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return nil, errors.New("user id not found in context")
+	}
+	userName, _ := sessCtx.Value(constants.SessionUserName).(string)
+	userRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
+	if userRole != user.UserRoleRoot {
+		svc.logger.Error("Wrong user permission",
+			slog.Any("error", "User is not root"))
+		return nil, errors.New("user is not administration")
+	}
+
+	userIPAddress := sessCtx.Value(constants.SessionIPAddress).(string)
+
+	//
+	// Santize and validate input fields.
+	//
+
+	// Defensive Code: For security purposes we need to remove all whitespaces from the email and lower the characters.
+	req.Email = strings.ToLower(req.Email)
+	req.Email = strings.ReplaceAll(req.Email, " ", "")
+
 	e := make(map[string]string)
 
 	if req.Email == "" {
@@ -84,14 +113,14 @@ func (s *createUserServiceImpl) Execute(sessCtx mongo.SessionContext, req *Creat
 	}
 
 	if len(e) != 0 {
-		s.logger.Warn("User creation validation failed", slog.Any("errors", e))
+		svc.logger.Warn("User creation validation failed", slog.Any("errors", e))
 		return nil, httperror.NewForBadRequest(&e)
 	}
 
 	// Check if user with this email already exists
-	existingUser, err := s.userGetByEmailUseCase.Execute(sessCtx, req.Email)
+	existingUser, err := svc.userGetByEmailUseCase.Execute(sessCtx, req.Email)
 	if err != nil {
-		s.logger.Error("Error checking for existing user", slog.Any("error", err))
+		svc.logger.Error("Error checking for existing user", slog.Any("error", err))
 		return nil, err
 	}
 
@@ -99,23 +128,16 @@ func (s *createUserServiceImpl) Execute(sessCtx mongo.SessionContext, req *Creat
 		return nil, httperror.NewForBadRequestWithSingleField("email", "A user with this email already exists")
 	}
 
-	// Get admin user info from context for auditing
-	adminUser, ok := sessCtx.Value(constants.SessionUser).(*user.User)
-	if !ok || adminUser == nil {
-		s.logger.Error("Admin user not found in context")
-		return nil, httperror.NewForForbiddenWithSingleField("message", "Admin user not found")
-	}
-
 	// Create secure password and hash it
 	securePassword, err := sstring.NewSecureString(req.Password)
 	if err != nil {
-		s.logger.Error("Failed to create secure password", slog.Any("error", err))
+		svc.logger.Error("Failed to create secure password", slog.Any("error", err))
 		return nil, err
 	}
 
-	passwordHash, err := s.passwordProvider.GenerateHashFromPassword(securePassword)
+	passwordHash, err := svc.passwordProvider.GenerateHashFromPassword(securePassword)
 	if err != nil {
-		s.logger.Error("Failed to hash password", slog.Any("error", err))
+		svc.logger.Error("Failed to hash password", slog.Any("error", err))
 		return nil, err
 	}
 
@@ -127,18 +149,18 @@ func (s *createUserServiceImpl) Execute(sessCtx mongo.SessionContext, req *Creat
 	}
 
 	// Create new user ID
-	userID := primitive.NewObjectID()
+	newUserID := primitive.NewObjectID()
 
 	// Prepare user domain object
 	newUser := &user.User{
-		ID:                    userID,
+		ID:                    newUserID,
 		Email:                 req.Email,
 		FirstName:             req.FirstName,
 		LastName:              req.LastName,
 		Name:                  fmt.Sprintf("%s %s", req.FirstName, req.LastName),
 		LexicalName:           fmt.Sprintf("%s, %s", req.LastName, req.FirstName),
 		PasswordHash:          passwordHash,
-		PasswordHashAlgorithm: s.passwordProvider.AlgorithmName(),
+		PasswordHashAlgorithm: svc.passwordProvider.AlgorithmName(),
 		Role:                  req.Role,
 		Phone:                 req.Phone,
 		Country:               req.Country,
@@ -151,17 +173,17 @@ func (s *createUserServiceImpl) Execute(sessCtx mongo.SessionContext, req *Creat
 		AgreeTermsOfService:   req.AgreeTermsOfService,
 		AgreePromotions:       req.AgreePromotions,
 		AgreeToTrackingAcrossThirdPartyAppsAndServices: req.AgreeToTrackingAcrossThirdPartyAppsAndServices,
-		CreatedByUserID:           adminUser.ID,
+		CreatedByUserID:           userID,
 		CreatedAt:                 time.Now(),
-		CreatedByName:             adminUser.Name,
-		CreatedFromIPAddress:      "API", // Using API as the source
-		ModifiedByUserID:          adminUser.ID,
+		CreatedByName:             userName,
+		CreatedFromIPAddress:      userIPAddress,
+		ModifiedByUserID:          userID,
 		ModifiedAt:                time.Now(),
-		ModifiedByName:            adminUser.Name,
-		ModifiedFromIPAddress:     "API",
+		ModifiedByName:            userName,
+		ModifiedFromIPAddress:     userIPAddress,
 		WasEmailVerified:          req.IsEmailVerified,
 		Status:                    user.UserStatusActive, // Default to active status
-		ChainID:                   s.config.Blockchain.ChainID,
+		ChainID:                   svc.config.Blockchain.ChainID,
 		WalletAddress:             walletAddress,
 		ProfileVerificationStatus: req.ProfileVerificationStatus,
 		WebsiteURL:                req.WebsiteURL,
@@ -170,14 +192,14 @@ func (s *createUserServiceImpl) Execute(sessCtx mongo.SessionContext, req *Creat
 	}
 
 	// Save to database
-	err = s.userCreateUseCase.Execute(sessCtx, newUser)
+	err = svc.userCreateUseCase.Execute(sessCtx, newUser)
 	if err != nil {
-		s.logger.Error("Failed to create user", slog.Any("error", err))
+		svc.logger.Error("Failed to create user", slog.Any("error", err))
 		return nil, err
 	}
 
-	s.logger.Info("Admin created new user",
-		slog.String("admin_id", adminUser.ID.Hex()),
+	svc.logger.Info("Admin created new user",
+		slog.String("admin_id", userID.Hex()),
 		slog.String("created_user_id", newUser.ID.Hex()),
 		slog.String("email", newUser.Email),
 		slog.Int("role", int(newUser.Role)))
