@@ -29,8 +29,8 @@ import {
   USER_ROLE,
   PROFILE_VERIFICATION_STATUS,
 } from "../../../hooks/useUser";
-import AppTopNavigation from "../../../components/AppTopNavigation";
-import AppFooter from "../../../components/AppFooter";
+import UserTopNavigation from "../../../components/UserTopNavigation";
+import UserFooter from "../../../components/UserFooter";
 
 const AdminDashboardPage = () => {
   const navigate = useNavigate();
@@ -198,7 +198,7 @@ const AdminDashboardPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-      <AppTopNavigation />
+      <UserTopNavigation />
 
       <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
         {/* Dashboard Header */}
@@ -901,7 +901,7 @@ const AdminDashboardPage = () => {
         )}
       </main>
 
-      <AppFooter />
+      <UserFooter />
     </div>
   );
 };

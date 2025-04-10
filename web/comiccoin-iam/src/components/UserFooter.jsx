@@ -1,4 +1,4 @@
-// src/components/AppFooter.jsx
+// src/components/UserFooter.jsx
 import React from "react";
 import { Link, useLocation } from "react-router";
 import {
@@ -12,7 +12,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-const AppFooter = () => {
+const UserFooter = () => {
   const currentYear = new Date().getFullYear();
   const location = useLocation();
 
@@ -156,4 +156,4 @@ const AppFooter = () => {
   );
 };
 
-export default AppFooter;
+export default UserFooter;

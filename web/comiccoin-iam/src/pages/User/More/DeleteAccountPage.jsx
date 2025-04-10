@@ -12,8 +12,8 @@ import {
   Loader,
 } from "lucide-react";
 
-import AppTopNavigation from "../../../components/AppTopNavigation";
-import AppFooter from "../../../components/AppFooter";
+import UserTopNavigation from "../../../components/UserTopNavigation";
+import UserFooter from "../../../components/UserFooter";
 import { useDeleteAccount } from "../../../api/endpoints/deleteMeApi";
 
 function DeleteAccountPageContent() {
@@ -85,7 +85,7 @@ function DeleteAccountPageContent() {
         Skip to main content
       </a>
 
-      <AppTopNavigation />
+      <UserTopNavigation />
 
       <main
         id="main-content"
@@ -251,7 +251,7 @@ function DeleteAccountPageContent() {
         </div>
       </main>
 
-      <AppFooter />
+      <UserFooter />
 
       {/* Confirmation Modal */}
       {showConfirmation && (

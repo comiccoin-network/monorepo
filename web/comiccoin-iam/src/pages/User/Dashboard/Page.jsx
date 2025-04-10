@@ -15,8 +15,8 @@ import {
   ExternalLink,
   Edit,
 } from "lucide-react";
-import AppTopNavigation from "../../../components/AppTopNavigation";
-import AppFooter from "../../../components/AppFooter";
+import UserTopNavigation from "../../../components/UserTopNavigation";
+import UserFooter from "../../../components/UserFooter";
 import withProfileVerification from "../../../components/withProfileVerification";
 import { useGetMe } from "../../../hooks/useGetMe";
 import { useGetDashboard } from "../../../hooks/useGetDashboard";
@@ -111,7 +111,7 @@ function UserDashboardPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-        <AppTopNavigation />
+        <UserTopNavigation />
         <main className="flex-grow container mx-auto px-4 py-8 max-w-6xl flex items-center justify-center">
           <div className="text-center">
             <Loader className="h-12 w-12 animate-spin text-purple-600 mx-auto mb-4" />
@@ -120,7 +120,7 @@ function UserDashboardPage() {
             </h2>
           </div>
         </main>
-        <AppFooter />
+        <UserFooter />
       </div>
     );
   }
@@ -129,7 +129,7 @@ function UserDashboardPage() {
   if (error) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
-        <AppTopNavigation />
+        <UserTopNavigation />
         <main className="flex-grow container mx-auto px-4 py-8 max-w-6xl">
           <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -148,7 +148,7 @@ function UserDashboardPage() {
             </button>
           </div>
         </main>
-        <AppFooter />
+        <UserFooter />
       </div>
     );
   }
@@ -166,7 +166,7 @@ function UserDashboardPage() {
         Skip to main content
       </a>
 
-      <AppTopNavigation />
+      <UserTopNavigation />
 
       {/* Simple Notification */}
       {notification && (
@@ -442,7 +442,7 @@ function UserDashboardPage() {
         </div>
       </main>
 
-      <AppFooter />
+      <UserFooter />
     </div>
   );
 }

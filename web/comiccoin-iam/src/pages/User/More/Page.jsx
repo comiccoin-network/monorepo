@@ -3,8 +3,8 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { Settings, LogOut, Trash2, ArrowRight, Menu } from "lucide-react";
 
-import AppTopNavigation from "../../../components/AppTopNavigation";
-import AppFooter from "../../../components/AppFooter";
+import UserTopNavigation from "../../../components/UserTopNavigation";
+import UserFooter from "../../../components/UserFooter";
 import { useAuth } from "../../../hooks/useAuth";
 
 function MorePageContent() {
@@ -26,7 +26,7 @@ function MorePageContent() {
         Skip to main content
       </a>
 
-      <AppTopNavigation />
+      <UserTopNavigation />
 
       <main
         id="main-content"
@@ -130,7 +130,7 @@ function MorePageContent() {
         </div>
       </main>
 
-      <AppFooter />
+      <UserFooter />
     </div>
   );
 }

@@ -20,8 +20,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import AppTopNavigation from "../../../components/AppTopNavigation";
-import AppFooter from "../../../components/AppFooter";
+import UserTopNavigation from "../../../components/UserTopNavigation";
+import UserFooter from "../../../components/UserFooter";
 import withProfileVerification from "../../../components/withProfileVerification";
 import {
   usePublicWallet,
@@ -231,7 +231,7 @@ const UserPublicWalletListPage = () => {
         Skip to main content
       </a>
 
-      <AppTopNavigation />
+      <UserTopNavigation />
 
       {/* Simple Notification */}
       {notification && (
@@ -776,7 +776,7 @@ const UserPublicWalletListPage = () => {
         )}
       </main>
 
-      <AppFooter />
+      <UserFooter />
 
       {/* Animations for modal */}
       <style jsx="true">{`

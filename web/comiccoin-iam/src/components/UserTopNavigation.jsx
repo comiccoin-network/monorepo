@@ -1,4 +1,4 @@
-// src/components/AppTopNavigation.jsx
+// src/components/UserTopNavigation.jsx
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router";
 import {
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
-const AppTopNavigation = () => {
+const UserTopNavigation = () => {
   const location = useLocation();
   const { logout, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -204,4 +204,4 @@ const AppTopNavigation = () => {
   );
 };
 
-export default AppTopNavigation;
+export default UserTopNavigation;

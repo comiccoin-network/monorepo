@@ -26,8 +26,8 @@ import {
   BookOpen,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import AppTopNavigation from "../../../components/AppTopNavigation";
-import AppFooter from "../../../components/AppFooter";
+import UserTopNavigation from "../../../components/UserTopNavigation";
+import UserFooter from "../../../components/UserFooter";
 import {
   useUser,
   USER_ROLE,
@@ -228,7 +228,7 @@ const UserAddPage = () => {
         Skip to main content
       </a>
 
-      <AppTopNavigation />
+      <UserTopNavigation />
 
       <main
         id="main-content"
@@ -1168,7 +1168,7 @@ const UserAddPage = () => {
         </div>
       </main>
 
-      <AppFooter />
+      <UserFooter />
     </div>
   );
 };

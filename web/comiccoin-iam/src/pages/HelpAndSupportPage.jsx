@@ -13,8 +13,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-import AppTopNavigation from "../components/AppTopNavigation";
-import AppFooter from "../components/AppFooter";
+import UserTopNavigation from "../components/UserTopNavigation";
+import UserFooter from "../components/UserFooter";
 
 // FAQ item component with HTML rendering support
 const FAQItem = ({ question, answer }) => {
@@ -108,7 +108,7 @@ function HelpAndSupportPageContent() {
         Skip to main content
       </a>
 
-      <AppTopNavigation />
+      <UserTopNavigation />
 
       <main
         id="main-content"
@@ -240,7 +240,7 @@ function HelpAndSupportPageContent() {
         `}</style>
       </main>
 
-      <AppFooter />
+      <UserFooter />
     </div>
   );
 }

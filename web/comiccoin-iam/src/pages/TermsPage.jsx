@@ -2,8 +2,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router";
 import { ArrowLeft, FileText } from "lucide-react";
-import AppFooter from "../components/AppFooter";
-import AppTopNavigation from "../components/AppTopNavigation";
+import UserFooter from "../components/UserFooter";
+import UserTopNavigation from "../components/UserTopNavigation";
 
 function TermsPage() {
   const currentYear = new Date().getFullYear();
@@ -32,7 +32,7 @@ function TermsPage() {
       </a>
 
       {/* Only show TopNavigation if coming from a protected route */}
-      {isFromProtectedRoute && <AppTopNavigation />}
+      {isFromProtectedRoute && <UserTopNavigation />}
 
       <main
         id="main-content"
@@ -281,7 +281,7 @@ function TermsPage() {
         </div>
       </main>
 
-      <AppFooter />
+      <UserFooter />
     </div>
   );
 }

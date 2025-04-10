@@ -24,8 +24,8 @@ import {
   MapPin,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import AppTopNavigation from "../../../components/AppTopNavigation";
-import AppFooter from "../../../components/AppFooter";
+import UserTopNavigation from "../../../components/UserTopNavigation";
+import UserFooter from "../../../components/UserFooter";
 import {
   useUserList,
   useUser,
@@ -218,7 +218,7 @@ const UserListPage = () => {
         Skip to main content
       </a>
 
-      <AppTopNavigation />
+      <UserTopNavigation />
 
       <main
         id="main-content"
@@ -753,7 +753,7 @@ const UserListPage = () => {
         )}
       </main>
 
-      <AppFooter />
+      <UserFooter />
 
       {/* Animation styles */}
       <style jsx="true">{`

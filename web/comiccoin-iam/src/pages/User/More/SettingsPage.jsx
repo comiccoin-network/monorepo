@@ -10,8 +10,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-import AppTopNavigation from "../../../components/AppTopNavigation";
-import AppFooter from "../../../components/AppFooter";
+import UserTopNavigation from "../../../components/UserTopNavigation";
+import UserFooter from "../../../components/UserFooter";
 import { usePutUpdateMe } from "../../../hooks/usePutUpdateMe";
 import { useAuth } from "../../../hooks/useAuth";
 import { useGetMe } from "../../../hooks/useGetMe";
@@ -569,7 +569,7 @@ const SettingsPageContent = () => {
   if (isLoadingUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <AppTopNavigation />
+        <UserTopNavigation />
         <div
           className="flex-grow flex flex-col items-center justify-center bg-gradient-to-b from-purple-50 to-white py-8"
           role="status"
@@ -592,7 +592,7 @@ const SettingsPageContent = () => {
             </div>
           </div>
         </div>
-        <AppFooter />
+        <UserFooter />
       </div>
     );
   }
@@ -606,7 +606,7 @@ const SettingsPageContent = () => {
         Skip to main content
       </a>
 
-      <AppTopNavigation />
+      <UserTopNavigation />
 
       <main
         id="main-content"
@@ -844,7 +844,7 @@ const SettingsPageContent = () => {
         `}</style>
       </main>
 
-      <AppFooter />
+      <UserFooter />
     </div>
   );
 };

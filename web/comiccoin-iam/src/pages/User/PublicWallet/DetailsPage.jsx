@@ -32,8 +32,8 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import AppTopNavigation from "../../../components/AppTopNavigation";
-import AppFooter from "../../../components/AppFooter";
+import UserTopNavigation from "../../../components/UserTopNavigation";
+import UserFooter from "../../../components/UserFooter";
 import withProfileVerification from "../../../components/withProfileVerification";
 import { usePublicWallet } from "../../../hooks/usePublicWallet";
 
@@ -199,7 +199,7 @@ const UserPublicWalletDetailsPage = () => {
         Skip to main content
       </a>
 
-      <AppTopNavigation />
+      <UserTopNavigation />
 
       <main
         id="main-content"
@@ -668,7 +668,7 @@ const UserPublicWalletDetailsPage = () => {
         )}
       </main>
 
-      <AppFooter />
+      <UserFooter />
     </div>
   );
 };
