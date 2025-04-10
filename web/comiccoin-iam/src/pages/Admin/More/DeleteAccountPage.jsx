@@ -1,4 +1,4 @@
-// src/pages/User/More/DeleteAccountPage.jsx
+// src/pages/Admin/More/DeleteAccountPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -12,8 +12,8 @@ import {
   Loader,
 } from "lucide-react";
 
-import UserTopNavigation from "../../../components/UserTopNavigation";
-import UserFooter from "../../../components/UserFooter";
+import AdminTopNavigation from "../../../components/AdminTopNavigation";
+import AdminFooter from "../../../components/AdminFooter";
 import { useDeleteAccount } from "../../../api/endpoints/deleteMeApi";
 
 function DeleteAccountPageContent() {
@@ -85,7 +85,7 @@ function DeleteAccountPageContent() {
         Skip to main content
       </a>
 
-      <UserTopNavigation />
+      <AdminTopNavigation />
 
       <main
         id="main-content"
@@ -251,7 +251,7 @@ function DeleteAccountPageContent() {
         </div>
       </main>
 
-      <UserFooter />
+      <AdminFooter />
 
       {/* Confirmation Modal */}
       {showConfirmation && (
@@ -311,5 +311,5 @@ function DeleteAccountPageContent() {
 }
 
 // Wrap the component with the XXX HOC
-const UserDeleteAccountPage = DeleteAccountPageContent;
-export default UserDeleteAccountPage;
+const AdminDeleteAccountPage = DeleteAccountPageContent;
+export default AdminDeleteAccountPage;

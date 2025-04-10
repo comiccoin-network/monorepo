@@ -1,10 +1,10 @@
-// src/pages/User/More/Page.jsx
+// src/pages/Admin/More/Page.jsx
 import React from "react";
 import { useNavigate } from "react-router";
 import { Settings, LogOut, Trash2, ArrowRight, Menu } from "lucide-react";
 
-import UserTopNavigation from "../../../components/UserTopNavigation";
-import UserFooter from "../../../components/UserFooter";
+import AdminTopNavigation from "../../../components/AdminTopNavigation";
+import AdminFooter from "../../../components/AdminFooter";
 import { useAuth } from "../../../hooks/useAuth";
 
 function MorePageContent() {
@@ -26,7 +26,7 @@ function MorePageContent() {
         Skip to main content
       </a>
 
-      <UserTopNavigation />
+      <AdminTopNavigation />
 
       <main
         id="main-content"
@@ -130,12 +130,12 @@ function MorePageContent() {
         </div>
       </main>
 
-      <UserFooter />
+      <AdminFooter />
     </div>
   );
 }
 
-// // Wrap the component with HOC to match pattern used in other pages
-const UserMorePage = MorePageContent;
+// Wrap the component with HOC to match pattern used in other pages
+const AdminMorePage = MorePageContent;
 // export default MorePage;
-export default UserMorePage;
+export default AdminMorePage;

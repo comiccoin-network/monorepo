@@ -1,4 +1,4 @@
-// src/pages/User/More/SettingsPage.jsx
+// src/pages/Admin/More/SettingsPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -10,8 +10,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-import UserTopNavigation from "../../../components/UserTopNavigation";
-import UserFooter from "../../../components/UserFooter";
+import AdminTopNavigation from "../../../components/AdminTopNavigation";
+import AdminFooter from "../../../components/AdminFooter";
 import { usePutUpdateMe } from "../../../hooks/usePutUpdateMe";
 import { useAuth } from "../../../hooks/useAuth";
 import { useGetMe } from "../../../hooks/useGetMe";
@@ -569,7 +569,7 @@ const SettingsPageContent = () => {
   if (isLoadingUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <UserTopNavigation />
+        <AdminTopNavigation />
         <div
           className="flex-grow flex flex-col items-center justify-center bg-gradient-to-b from-purple-50 to-white py-8"
           role="status"
@@ -592,7 +592,7 @@ const SettingsPageContent = () => {
             </div>
           </div>
         </div>
-        <UserFooter />
+        <AdminFooter />
       </div>
     );
   }
@@ -606,7 +606,7 @@ const SettingsPageContent = () => {
         Skip to main content
       </a>
 
-      <UserTopNavigation />
+      <AdminTopNavigation />
 
       <main
         id="main-content"
@@ -844,11 +844,11 @@ const SettingsPageContent = () => {
         `}</style>
       </main>
 
-      <UserFooter />
+      <AdminFooter />
     </div>
   );
 };
 
 // Wrap the component with HOCs
-const UserSettingsPage = SettingsPageContent;
-export default UserSettingsPage;
+const AdminSettingsPage = SettingsPageContent;
+export default AdminSettingsPage;

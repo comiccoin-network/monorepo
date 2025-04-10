@@ -43,6 +43,10 @@ import UserListPage from "./pages/Admin/UserManagement/ListPage";
 import UserDetailsPage from "./pages/Admin/UserManagement/DetailsPage";
 import UserAddPage from "./pages/Admin/UserManagement/AddPage";
 import UserEditPage from "./pages/Admin/UserManagement/EditPage";
+// More
+import AdminMorePage from "./pages/Admin/More/Page";
+import AdminDeleteAccountPage from "./pages/Admin/More/DeleteAccountPage";
+import AdminSettingsPage from "./pages/Admin/More/SettingsPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -278,6 +282,33 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <UserEditPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/more"
+              element={
+                <ProtectedRoute>
+                  <AdminMorePage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/settings"
+              element={
+                <ProtectedRoute>
+                  <AdminSettingsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/delete-account"
+              element={
+                <ProtectedRoute>
+                  <AdminDeleteAccountPage />
                 </ProtectedRoute>
               }
             />
