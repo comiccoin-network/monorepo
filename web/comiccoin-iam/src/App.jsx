@@ -15,7 +15,7 @@ import RegisterPage from "./pages/Gateway/RegisterPage";
 import RegistrationSuccessPage from "./pages/Gateway/RegistrationSuccessPage";
 import EmailVerificationPage from "./pages/Gateway/EmailVerificationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import DashboardPage from "./pages/Dashboard/Page";
+import UserDashboardPage from "./pages/User/Dashboard/Page";
 import PublicWalletListPage from "./pages/PublicWallet/ListPage";
 import PublicWalletAddPage from "./pages/PublicWallet/AddPage";
 import PublicWalletDetailsPage from "./pages/PublicWallet/DetailsPage";
@@ -158,7 +158,7 @@ function App() {
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <DashboardPage />
+                  <UserDashboardPage />
                 </ProtectedRoute>
               }
             />

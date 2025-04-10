@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/Dashboard/Page.jsx
+// monorepo/web/comiccoin-iam/src/pages/User/Dashboard/Page.jsx
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import {
@@ -15,14 +15,14 @@ import {
   ExternalLink,
   Edit,
 } from "lucide-react";
-import AppTopNavigation from "../../components/AppTopNavigation";
-import AppFooter from "../../components/AppFooter";
-import withProfileVerification from "../../components/withProfileVerification";
-import { useGetMe } from "../../hooks/useGetMe";
-import { useGetDashboard } from "../../hooks/useGetDashboard";
+import AppTopNavigation from "../../../components/AppTopNavigation";
+import AppFooter from "../../../components/AppFooter";
+import withProfileVerification from "../../../components/withProfileVerification";
+import { useGetMe } from "../../../hooks/useGetMe";
+import { useGetDashboard } from "../../../hooks/useGetDashboard";
 import { QRCodeSVG } from "qrcode.react";
 
-function DashboardPage() {
+function UserDashboardPage() {
   const { user } = useGetMe();
   const navigate = useNavigate();
   const { data: dashboard, isLoading, error, refetch } = useGetDashboard();
@@ -447,4 +447,4 @@ function DashboardPage() {
   );
 }
 
-export default withProfileVerification(DashboardPage);
+export default withProfileVerification(UserDashboardPage);
