@@ -1,4 +1,4 @@
-// src/api/endpoints/userApi.js
+// src/api/endpoints/mePutApi.js
 import { usePrivateQuery, usePrivateMutation } from "../../hooks/useApi";
 
 /**
