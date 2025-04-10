@@ -156,7 +156,8 @@ function App() {
               }
             />
 
-            {/* Application Routes */}
+            {/* ------ User ------ */}
+
             <Route
               path="/dashboard"
               element={
@@ -238,7 +239,7 @@ function App() {
               }
             />
 
-            {/* Admin */}
+            {/* ------ Admin ------ */}
 
             <Route
               path="/admin/dashboard"

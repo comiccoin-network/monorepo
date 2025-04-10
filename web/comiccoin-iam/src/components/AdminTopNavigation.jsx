@@ -20,13 +20,20 @@ const AdminTopNavigation = () => {
 
   // Determine active tab based on current path
   const isActive = (path) => {
-    if (path === "/dashboard" && location.pathname === "/dashboard")
+    if (path === "/admin/dashboard" && location.pathname === "/admin/dashboard")
       return true;
-    if (path === "/public-wallets" && location.pathname === "/public-wallets")
+    if (
+      path === "/admin/public-wallets" &&
+      location.pathname === "/admin/public-wallets"
+    )
       return true;
-    if (path === "/transactions" && location.pathname === "/transactions")
+    if (
+      path === "/admin/transactions" &&
+      location.pathname === "/admin/transactions"
+    )
       return true;
-    if (path === "/more" && location.pathname === "/more") return true;
+    if (path === "/admin/more" && location.pathname === "/admin/more")
+      return true;
     return location.pathname === path;
   };
 
@@ -54,13 +61,13 @@ const AdminTopNavigation = () => {
           <div className="hidden md:flex items-center space-x-1">
             <nav className="flex items-center space-x-2">
               <Link
-                to="/dashboard"
+                to="/admin/dashboard"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive("/dashboard")
+                  isActive("/admin/dashboard")
                     ? "bg-purple-800 text-white"
                     : "text-purple-100 hover:bg-purple-600 hover:text-white"
                 }`}
-                aria-current={isActive("/dashboard") ? "page" : undefined}
+                aria-current={isActive("/admin/dashboard") ? "page" : undefined}
               >
                 <span className="flex items-center gap-2">
                   <Home className="h-5 w-5" />
@@ -69,13 +76,15 @@ const AdminTopNavigation = () => {
               </Link>
 
               <Link
-                to="/public-wallets"
+                to="/admin/public-wallets"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive("/public-wallets")
+                  isActive("/admin/public-wallets")
                     ? "bg-purple-800 text-white"
                     : "text-purple-100 hover:bg-purple-600 hover:text-white"
                 }`}
-                aria-current={isActive("/public-wallets") ? "page" : undefined}
+                aria-current={
+                  isActive("/admin/public-wallets") ? "page" : undefined
+                }
               >
                 <span className="flex items-center gap-2">
                   <Wallet className="h-5 w-5" />
@@ -84,13 +93,13 @@ const AdminTopNavigation = () => {
               </Link>
 
               <Link
-                to="/more"
+                to="/admin/more"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive("/more")
+                  isActive("/admin/more")
                     ? "bg-purple-800 text-white"
                     : "text-purple-100 hover:bg-purple-600 hover:text-white"
                 }`}
-                aria-current={isActive("/more") ? "page" : undefined}
+                aria-current={isActive("/admin/more") ? "page" : undefined}
               >
                 <span className="flex items-center gap-2">
                   <Ellipsis className="h-5 w-5" />
@@ -141,9 +150,9 @@ const AdminTopNavigation = () => {
         >
           <div className="py-2 space-y-1 px-4">
             <Link
-              to="/dashboard"
+              to="/admin/dashboard"
               className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                isActive("/dashboard")
+                isActive("/admin/dashboard")
                   ? "bg-purple-700 text-white"
                   : "text-purple-100 hover:bg-purple-700 hover:text-white"
               }`}
@@ -156,9 +165,9 @@ const AdminTopNavigation = () => {
             </Link>
 
             <Link
-              to="/public-wallets"
+              to="/admin/public-wallets"
               className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                isActive("/public-wallets")
+                isActive("/admin/public-wallets")
                   ? "bg-purple-700 text-white"
                   : "text-purple-100 hover:bg-purple-700 hover:text-white"
               }`}
@@ -171,9 +180,9 @@ const AdminTopNavigation = () => {
             </Link>
 
             <Link
-              to="/more"
+              to="/admin/more"
               className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                isActive("/more")
+                isActive("/admin/more")
                   ? "bg-purple-700 text-white"
                   : "text-purple-100 hover:bg-purple-700 hover:text-white"
               }`}
