@@ -33,6 +33,12 @@ import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import HelpAndSupportPage from "./pages/HelpAndSupportPage";
 
+// (Admin) User Management Pages
+import UserListPage from "./pages/Admin/UserManagement/ListPage";
+import UserDetailsPage from "./pages/Admin/UserManagement/DetailsPage";
+import UserAddPage from "./pages/Admin/UserManagement/AddPage";
+import UserEditPage from "./pages/Admin/UserManagement/EditPage";
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -223,6 +229,40 @@ function App() {
               element={
                 <ProtectedRoute>
                   <HelpAndSupportPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin */}
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <UserListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users/:id"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <UserDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users/add"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <UserAddPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users/:id/edit"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <UserEditPage />
                 </ProtectedRoute>
               }
             />
