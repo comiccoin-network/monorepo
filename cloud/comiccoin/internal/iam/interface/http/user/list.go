@@ -70,6 +70,10 @@ func (h *listUsersHTTPHandlerImpl) Handle(w http.ResponseWriter, r *http.Request
 		roleInt, err := strconv.ParseInt(roleStr, 10, 8)
 		if err == nil {
 			role = int8(roleInt)
+		} else {
+			h.logger.Warn("Invalid role parameter",
+				slog.String("value", roleStr),
+				slog.Any("error", err))
 		}
 	}
 
@@ -80,6 +84,24 @@ func (h *listUsersHTTPHandlerImpl) Handle(w http.ResponseWriter, r *http.Request
 		statusInt, err := strconv.ParseInt(statusStr, 10, 8)
 		if err == nil {
 			status = int8(statusInt)
+		} else {
+			h.logger.Warn("Invalid status parameter",
+				slog.String("value", statusStr),
+				slog.Any("error", err))
+		}
+	}
+
+	// Parse profile verification status if provided
+	var profileVerificationStatus int8
+	profileVerificationStatusStr := r.URL.Query().Get("profile_verification_status")
+	if profileVerificationStatusStr != "" {
+		profileVerificationStatusInt, err := strconv.ParseInt(profileVerificationStatusStr, 10, 8)
+		if err == nil {
+			profileVerificationStatus = int8(profileVerificationStatusInt)
+		} else {
+			h.logger.Warn("Invalid profile verification status parameter",
+				slog.String("value", profileVerificationStatusStr),
+				slog.Any("error", err))
 		}
 	}
 
@@ -89,13 +111,14 @@ func (h *listUsersHTTPHandlerImpl) Handle(w http.ResponseWriter, r *http.Request
 
 	// Prepare request for service
 	request := &svc_user.ListUsersRequestDTO{
-		Page:       page,
-		PageSize:   pageSize,
-		SearchTerm: searchTerm,
-		Role:       role,
-		Status:     status,
-		SortBy:     sortBy,
-		SortOrder:  sortOrder,
+		Page:                      page,
+		PageSize:                  pageSize,
+		SearchTerm:                searchTerm,
+		Role:                      role,
+		Status:                    status,
+		ProfileVerificationStatus: profileVerificationStatus,
+		SortBy:                    sortBy,
+		SortOrder:                 sortOrder,
 	}
 
 	// Start a MongoDB session for transaction

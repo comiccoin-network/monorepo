@@ -20,7 +20,6 @@ type Repository interface {
 	GetByWalletAddress(ctx context.Context, walletAddress *common.Address) (*User, error)
 	UpdateByID(ctx context.Context, m *User) error
 	ListAll(ctx context.Context) ([]*User, error)
-	// CountByFilter(ctx context.Context, filter *UserFilter) (uint64, error)
-	// ListByFilter(ctx context.Context, filter *UserFilter) (*UserFilterResult, error)
-	// // //TODO: Add more...
+	CountByFilter(ctx context.Context, filter *UserFilter) (uint64, error)
+	ListByFilter(ctx context.Context, filter *UserFilter) (*UserFilterResult, error)
 }

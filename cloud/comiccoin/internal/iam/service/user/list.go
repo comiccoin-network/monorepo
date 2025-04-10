@@ -4,15 +4,13 @@ package user
 import (
 	"errors"
 	"log/slog"
-	"strings"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
-	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/user"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/user"
+	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/user"
 )
 
 // ListUsersService defines the interface for listing users with pagination
@@ -22,21 +20,24 @@ type ListUsersService interface {
 
 // listUsersServiceImpl implements the ListUsersService interface
 type listUsersServiceImpl struct {
-	config   *config.Configuration
-	logger   *slog.Logger
-	dbClient *mongo.Client
+	config                   *config.Configuration
+	logger                   *slog.Logger
+	userCountByFilterUseCase uc_user.UserCountByFilterUseCase
+	userListByFilterUseCase  uc_user.UserListByFilterUseCase
 }
 
 // NewListUsersService creates a new instance of ListUsersService
 func NewListUsersService(
 	config *config.Configuration,
 	logger *slog.Logger,
-	dbClient *mongo.Client,
+	userCountByFilterUseCase uc_user.UserCountByFilterUseCase,
+	userListByFilterUseCase uc_user.UserListByFilterUseCase,
 ) ListUsersService {
 	return &listUsersServiceImpl{
-		config:   config,
-		logger:   logger,
-		dbClient: dbClient,
+		config:                   config,
+		logger:                   logger,
+		userCountByFilterUseCase: userCountByFilterUseCase,
+		userListByFilterUseCase:  userListByFilterUseCase,
 	}
 }
 
@@ -47,7 +48,7 @@ func (svc *listUsersServiceImpl) Execute(sessCtx mongo.SessionContext, req *List
 	//
 
 	sessionUserRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
-	if sessionUserRole != user.UserRoleRoot {
+	if sessionUserRole != dom_user.UserRoleRoot {
 		svc.logger.Error("Wrong user permission",
 			slog.Any("error", "User is not root"))
 		return nil, errors.New("user is not administration")
@@ -66,104 +67,152 @@ func (svc *listUsersServiceImpl) Execute(sessCtx mongo.SessionContext, req *List
 		req.PageSize = 20 // Default page size
 	}
 
-	// Get user collection
-	collection := svc.dbClient.Database(svc.config.DB.IAMName).Collection("users")
+	//
+	// Prepare filter from request
+	//
 
-	// Build filter
-	filter := bson.M{}
-
-	// Add role filter if specified
-	if req.Role != 0 {
-		filter["role"] = req.Role
-	}
-
-	// Add status filter if specified
-	if req.Status != 0 {
-		filter["status"] = req.Status
-	}
-
-	// Add search filter if specified
+	// Create a search term if provided
+	var searchTerm *string
 	if req.SearchTerm != "" {
-		// Create a text search filter
-		searchRegex := bson.M{"$regex": req.SearchTerm, "$options": "i"} // case-insensitive
-
-		// Search in multiple fields
-		filter["$or"] = []bson.M{
-			{"name": searchRegex},
-			{"email": searchRegex},
-			{"phone": searchRegex},
-		}
+		searchTerm = &req.SearchTerm
 	}
 
-	// Calculate pagination
-	skip := (req.Page - 1) * req.PageSize
-	limit := int64(req.PageSize)
-
-	// Determine sort field and direction
-	sortField := "created_at"
-	if req.SortBy != "" {
-		// Validate the sort field
-		validFields := map[string]bool{
-			"created_at": true,
-			"name":       true,
-			"email":      true,
-			"role":       true,
-			"status":     true,
-		}
-
-		if validFields[req.SortBy] {
-			sortField = req.SortBy
-		}
+	// Create user filter
+	filter := &dom_user.UserFilter{
+		Role:                      req.Role,
+		Status:                    req.Status,
+		ProfileVerificationStatus: req.ProfileVerificationStatus,
+		SearchTerm:                searchTerm,
+		Limit:                     int64(req.PageSize),
 	}
 
-	// Determine sort order
-	sortDir := -1 // Default to descending
-	if strings.ToLower(req.SortOrder) == "asc" {
-		sortDir = 1
-	}
-
-	//
-	// Get users list from database
-	//
-
-	//TODO: REPLACE THE CODE BELOW WITH THE USE-CASE.
-
-	// Set up options
-	findOptions := options.Find().
-		SetSkip(int64(skip)).
-		SetLimit(limit).
-		SetSort(bson.D{{Key: sortField, Value: sortDir}})
-
-	// Count total matching users
-	totalCount, err := collection.CountDocuments(sessCtx, filter)
+	// Get total count first
+	totalCount, err := svc.userCountByFilterUseCase.Execute(sessCtx, filter)
 	if err != nil {
 		svc.logger.Error("Failed to count users", slog.Any("error", err))
 		return nil, err
 	}
 
-	// Execute the query
-	cursor, err := collection.Find(sessCtx, filter, findOptions)
-	if err != nil {
-		svc.logger.Error("Failed to query users", slog.Any("error", err))
-		return nil, err
-	}
-	defer cursor.Close(sessCtx)
-
-	// Decode the results
-	var users []*user.User
-	if err = cursor.All(sessCtx, &users); err != nil {
-		svc.logger.Error("Failed to decode users", slog.Any("error", err))
-		return nil, err
-	}
-
 	// Calculate pagination info
-	totalPages := (totalCount + int64(req.PageSize) - 1) / int64(req.PageSize) // Ceiling division
-	hasNextPage := int64(req.Page) < totalPages
+	totalPages := (totalCount + uint64(req.PageSize) - 1) / uint64(req.PageSize) // Ceiling division
+	hasNextPage := uint64(req.Page) < totalPages
 	hasPrevPage := req.Page > 1
 
+	// Apply pagination to filter
+	// For cursor-based pagination we'd use LastID and LastCreatedAt,
+	// but for traditional pagination we'll skip records
+	if req.Page > 1 {
+		// For simplicity, we'll implement offset pagination
+		// In a production environment, you might want to implement cursor-based pagination
+		// for better performance with large datasets
+		skip := (req.Page - 1) * req.PageSize
+
+		// Let's use our list by filter use case with skip logic
+		// This is a simplification - in a real implementation you might need to
+		// adjust the repository to support both cursor-based and offset pagination
+
+		// For now, we'll just get all records and skip manually
+		fullFilter := &dom_user.UserFilter{
+			Role:       req.Role,
+			Status:     req.Status,
+			SearchTerm: searchTerm,
+			Limit:      int64(totalCount), // Get all records
+		}
+
+		// Get all records (not efficient for large datasets)
+		allUsers, err := svc.userListByFilterUseCase.Execute(sessCtx, fullFilter)
+		if err != nil {
+			svc.logger.Error("Failed to list users", slog.Any("error", err))
+			return nil, err
+		}
+
+		// Apply manual pagination (this is inefficient but simpler than modifying repository)
+		var users []*dom_user.User
+
+		if skip < len(allUsers.Users) {
+			end := skip + req.PageSize
+			if end > len(allUsers.Users) {
+				end = len(allUsers.Users)
+			}
+			users = allUsers.Users[skip:end]
+		} else {
+			users = []*dom_user.User{}
+		}
+
+		// Create response DTOs
+		userResponses := make([]*UserResponseDTO, len(users))
+		for i, u := range users {
+			userResponses[i] = &UserResponseDTO{
+				ID:                        u.ID,
+				Email:                     u.Email,
+				FirstName:                 u.FirstName,
+				LastName:                  u.LastName,
+				Name:                      u.Name,
+				LexicalName:               u.LexicalName,
+				Role:                      u.Role,
+				Phone:                     u.Phone,
+				Country:                   u.Country,
+				Timezone:                  u.Timezone,
+				Region:                    u.Region,
+				City:                      u.City,
+				PostalCode:                u.PostalCode,
+				AddressLine1:              u.AddressLine1,
+				AddressLine2:              u.AddressLine2,
+				WalletAddress:             u.WalletAddress,
+				WasEmailVerified:          u.WasEmailVerified,
+				ProfileVerificationStatus: u.ProfileVerificationStatus,
+				WebsiteURL:                u.WebsiteURL,
+				Description:               u.Description,
+				ComicBookStoreName:        u.ComicBookStoreName,
+				CreatedAt:                 u.CreatedAt,
+				ModifiedAt:                u.ModifiedAt,
+				Status:                    u.Status,
+				ChainID:                   u.ChainID,
+				AgreeTermsOfService:       u.AgreeTermsOfService,
+				AgreePromotions:           u.AgreePromotions,
+				AgreeToTrackingAcrossThirdPartyAppsAndServices: u.AgreeToTrackingAcrossThirdPartyAppsAndServices,
+			}
+		}
+
+		// Build response
+		response := &ListUsersResponseDTO{
+			Users:       userResponses,
+			TotalCount:  int64(totalCount),
+			TotalPages:  int(totalPages),
+			CurrentPage: req.Page,
+			HasNextPage: hasNextPage,
+			HasPrevPage: hasPrevPage,
+		}
+
+		// Add next/prev page numbers if they exist
+		if hasNextPage {
+			response.NextPage = req.Page + 1
+		}
+
+		if hasPrevPage {
+			response.PreviousPage = req.Page - 1
+		}
+
+		return response, nil
+	}
+
+	// First page, use list by filter normally
+	filter.Limit = int64(req.PageSize)
+
+	// Note: While sortBy and sortOrder are accepted in the request, our current
+	// repository implementation always sorts by created_at DESC, _id DESC.
+	// To support custom sorting, we would need to modify the repository layer.
+
+	// Execute the filtered list query
+	result, err := svc.userListByFilterUseCase.Execute(sessCtx, filter)
+	if err != nil {
+		svc.logger.Error("Failed to list users", slog.Any("error", err))
+		return nil, err
+	}
+
 	// Create response DTOs
-	userResponses := make([]*UserResponseDTO, len(users))
-	for i, u := range users {
+	userResponses := make([]*UserResponseDTO, len(result.Users))
+	for i, u := range result.Users {
 		userResponses[i] = &UserResponseDTO{
 			ID:                        u.ID,
 			Email:                     u.Email,
@@ -199,7 +248,7 @@ func (svc *listUsersServiceImpl) Execute(sessCtx mongo.SessionContext, req *List
 	// Build response
 	response := &ListUsersResponseDTO{
 		Users:       userResponses,
-		TotalCount:  totalCount,
+		TotalCount:  int64(totalCount),
 		TotalPages:  int(totalPages),
 		CurrentPage: req.Page,
 		HasNextPage: hasNextPage,

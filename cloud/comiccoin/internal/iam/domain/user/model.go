@@ -165,3 +165,36 @@ type UserClaimedCoinTransaction struct {
 	Timestamp time.Time          `bson:"timestamp,omitempty" json:"timestamp,omitempty"`
 	Amount    uint64             `bson:"amount,omitempty" json:"amount,omitempty"`
 }
+
+// UserFilter represents the filter criteria for listing users
+type UserFilter struct {
+	// Basic filters
+	Name   *string `json:"name,omitempty"`
+	Email  *string `json:"email,omitempty"`
+	Role   int8    `json:"role,omitempty"`
+	Status int8    `json:"status,omitempty"`
+
+	// Date range filters
+	CreatedAtStart *time.Time `json:"created_at_start,omitempty"`
+	CreatedAtEnd   *time.Time `json:"created_at_end,omitempty"`
+
+	// Pagination - cursor based
+	LastID        *primitive.ObjectID `json:"last_id,omitempty"`
+	LastCreatedAt *time.Time          `json:"last_created_at,omitempty"`
+	Limit         int64               `json:"limit,omitempty"`
+
+	// Profile verification status filter
+	ProfileVerificationStatus int8 `json:"profile_verification_status,omitempty"`
+
+	// Search term for text search across multiple fields
+	SearchTerm *string `json:"search_term,omitempty"`
+}
+
+// UserFilterResult represents the result of a filtered list operation
+type UserFilterResult struct {
+	Users         []*User            `json:"users"`
+	HasMore       bool               `json:"has_more"`
+	LastID        primitive.ObjectID `json:"last_id,omitempty"`
+	LastCreatedAt time.Time          `json:"last_created_at,omitempty"`
+	TotalCount    uint64             `json:"total_count,omitempty"`
+}

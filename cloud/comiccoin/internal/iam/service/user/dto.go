@@ -94,13 +94,14 @@ type UserResponseDTO struct {
 
 // ListUsersRequestDTO represents the request data for listing users
 type ListUsersRequestDTO struct {
-	Page       int    `json:"page"`
-	PageSize   int    `json:"page_size"`
-	SearchTerm string `json:"search_term,omitempty"`
-	Role       int8   `json:"role,omitempty"`
-	Status     int8   `json:"status,omitempty"`
-	SortBy     string `json:"sort_by,omitempty"`
-	SortOrder  string `json:"sort_order,omitempty"`
+	Page                      int    `json:"page"`
+	PageSize                  int    `json:"page_size"`
+	SearchTerm                string `json:"search_term,omitempty"`
+	Role                      int8   `json:"role,omitempty"`
+	Status                    int8   `json:"status,omitempty"`
+	ProfileVerificationStatus int8   `json:"profile_verification_status,omitempty"`
+	SortBy                    string `json:"sort_by,omitempty"`
+	SortOrder                 string `json:"sort_order,omitempty"`
 }
 
 // ListUsersResponseDTO represents the response data for listing users

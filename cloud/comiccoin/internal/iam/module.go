@@ -270,17 +270,24 @@ func NewModule(
 		userDeleteByIDUseCase,
 	)
 
-	listUsersService := svc_user.NewListUsersService(
+	userCountByFilterUseCase := uc_user.NewUserCountByFilterUseCase(
 		cfg,
 		logger,
-		dbClient,
+		userRepo,
+	)
+
+	userListByFilterUseCase := uc_user.NewUserListByFilterUseCase(
+		cfg,
+		logger,
+		userRepo,
 	)
 
 	_ = createUserService
 	_ = getUserService
 	_ = updateUserService
 	_ = deleteUserService
-	_ = listUsersService
+	_ = userListByFilterUseCase
+	_ = userCountByFilterUseCase
 
 	// --- Me ---
 
@@ -459,6 +466,14 @@ func NewModule(
 		cfg,
 		logger,
 		publicWalletGetByAddressUseCase,
+	)
+
+	// --- User ---
+	listUsersService := svc_user.NewListUsersService(
+		cfg,
+		logger,
+		userCountByFilterUseCase,
+		userListByFilterUseCase,
 	)
 
 	////
