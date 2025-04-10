@@ -10,6 +10,7 @@ import {
   Menu,
   X,
   Wallet,
+  Users,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
@@ -22,10 +23,7 @@ const AdminTopNavigation = () => {
   const isActive = (path) => {
     if (path === "/admin/dashboard" && location.pathname === "/admin/dashboard")
       return true;
-    if (
-      path === "/admin/public-wallets" &&
-      location.pathname === "/admin/public-wallets"
-    )
+    if (path === "/admin/users" && location.pathname === "/admin/users")
       return true;
     if (
       path === "/admin/transactions" &&
@@ -76,19 +74,17 @@ const AdminTopNavigation = () => {
               </Link>
 
               <Link
-                to="/admin/public-wallets"
+                to="/admin/users"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive("/admin/public-wallets")
+                  isActive("/admin/users")
                     ? "bg-purple-800 text-white"
                     : "text-purple-100 hover:bg-purple-600 hover:text-white"
                 }`}
-                aria-current={
-                  isActive("/admin/public-wallets") ? "page" : undefined
-                }
+                aria-current={isActive("/admin/users") ? "page" : undefined}
               >
                 <span className="flex items-center gap-2">
-                  <Wallet className="h-5 w-5" />
-                  Public Wallets
+                  <Users className="h-5 w-5" />
+                  User Management
                 </span>
               </Link>
 
@@ -165,17 +161,17 @@ const AdminTopNavigation = () => {
             </Link>
 
             <Link
-              to="/admin/public-wallets"
+              to="/admin/users"
               className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                isActive("/admin/public-wallets")
+                isActive("/admin/users")
                   ? "bg-purple-700 text-white"
                   : "text-purple-100 hover:bg-purple-700 hover:text-white"
               }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <span className="flex items-center gap-2">
-                <Wallet className="h-5 w-5" />
-                Public Wallets
+                <Users className="h-5 w-5" />
+                User Management
               </span>
             </Link>
 
