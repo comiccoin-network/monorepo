@@ -148,6 +148,10 @@ func (svc *createUserServiceImpl) Execute(sessCtx mongo.SessionContext, req *Cre
 		walletAddress = &addr
 	}
 
+	//
+	// Create in database.
+	//
+
 	// Create new user ID
 	newUserID := primitive.NewObjectID()
 

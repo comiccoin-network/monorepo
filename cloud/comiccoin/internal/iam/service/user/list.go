@@ -2,6 +2,7 @@
 package user
 
 import (
+	"errors"
 	"log/slog"
 	"strings"
 
@@ -10,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/user"
 )
 
@@ -39,7 +41,22 @@ func NewListUsersService(
 }
 
 // Execute processes the request to list users with pagination and filtering
-func (s *listUsersServiceImpl) Execute(sessCtx mongo.SessionContext, req *ListUsersRequestDTO) (*ListUsersResponseDTO, error) {
+func (svc *listUsersServiceImpl) Execute(sessCtx mongo.SessionContext, req *ListUsersRequestDTO) (*ListUsersResponseDTO, error) {
+	//
+	// Extract authenticated user information from context.
+	//
+
+	sessionUserRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
+	if sessionUserRole != user.UserRoleRoot {
+		svc.logger.Error("Wrong user permission",
+			slog.Any("error", "User is not root"))
+		return nil, errors.New("user is not administration")
+	}
+
+	//
+	// Santize and validate input fields.
+	//
+
 	// Validation
 	if req.Page < 1 {
 		req.Page = 1
@@ -50,7 +67,7 @@ func (s *listUsersServiceImpl) Execute(sessCtx mongo.SessionContext, req *ListUs
 	}
 
 	// Get user collection
-	collection := s.dbClient.Database(s.config.DB.IAMName).Collection("users")
+	collection := svc.dbClient.Database(svc.config.DB.IAMName).Collection("users")
 
 	// Build filter
 	filter := bson.M{}
@@ -105,6 +122,12 @@ func (s *listUsersServiceImpl) Execute(sessCtx mongo.SessionContext, req *ListUs
 		sortDir = 1
 	}
 
+	//
+	// Get users list from database
+	//
+
+	//TODO: REPLACE THE CODE BELOW WITH THE USE-CASE.
+
 	// Set up options
 	findOptions := options.Find().
 		SetSkip(int64(skip)).
@@ -114,14 +137,14 @@ func (s *listUsersServiceImpl) Execute(sessCtx mongo.SessionContext, req *ListUs
 	// Count total matching users
 	totalCount, err := collection.CountDocuments(sessCtx, filter)
 	if err != nil {
-		s.logger.Error("Failed to count users", slog.Any("error", err))
+		svc.logger.Error("Failed to count users", slog.Any("error", err))
 		return nil, err
 	}
 
 	// Execute the query
 	cursor, err := collection.Find(sessCtx, filter, findOptions)
 	if err != nil {
-		s.logger.Error("Failed to query users", slog.Any("error", err))
+		svc.logger.Error("Failed to query users", slog.Any("error", err))
 		return nil, err
 	}
 	defer cursor.Close(sessCtx)
@@ -129,7 +152,7 @@ func (s *listUsersServiceImpl) Execute(sessCtx mongo.SessionContext, req *ListUs
 	// Decode the results
 	var users []*user.User
 	if err = cursor.All(sessCtx, &users); err != nil {
-		s.logger.Error("Failed to decode users", slog.Any("error", err))
+		svc.logger.Error("Failed to decode users", slog.Any("error", err))
 		return nil, err
 	}
 

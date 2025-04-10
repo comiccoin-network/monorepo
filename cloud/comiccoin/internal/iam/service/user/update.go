@@ -2,8 +2,10 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -51,23 +53,80 @@ func NewUpdateUserService(
 }
 
 // Execute processes the request to update a user
-func (s *updateUserServiceImpl) Execute(sessCtx mongo.SessionContext, userID primitive.ObjectID, req *UpdateUserRequestDTO) (*UserResponseDTO, error) {
+func (svc *updateUserServiceImpl) Execute(sessCtx mongo.SessionContext, userID primitive.ObjectID, req *UpdateUserRequestDTO) (*UserResponseDTO, error) {
+
+	//
+	// Extract authenticated user information from context.
+	//
+
+	sessionUserID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	if !ok {
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return nil, errors.New("user id not found in context")
+	}
+	sessionUserName, _ := sessCtx.Value(constants.SessionUserName).(string)
+	userRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
+	if userRole != user.UserRoleRoot {
+		svc.logger.Error("Wrong user permission",
+			slog.Any("error", "User is not root"))
+		return nil, errors.New("user is not administration")
+	}
+
+	sessionUserIPAddress := sessCtx.Value(constants.SessionIPAddress).(string)
+
+	//
+	// Santize and validate input fields.
+	//
+
+	// Defensive Code: For security purposes we need to remove all whitespaces from the email and lower the characters.
+	req.Email = strings.ToLower(req.Email)
+	req.Email = strings.ReplaceAll(req.Email, " ", "")
+
+	e := make(map[string]string)
+
+	if req.Email == "" {
+		e["email"] = "Email is required"
+	}
+
+	if req.FirstName == "" {
+		e["first_name"] = "First name is required"
+	}
+
+	if req.LastName == "" {
+		e["last_name"] = "Last name is required"
+	}
+
+	if req.Password == "" {
+		e["password"] = "Password is required"
+	}
+
+	if req.Timezone == "" {
+		e["timezone"] = "Timezone is required"
+	}
+
+	if req.Role != user.UserRoleRoot && req.Role != user.UserRoleCompany && req.Role != user.UserRoleIndividual {
+		e["role"] = "Invalid role - must be 1 (Admin), 2 (Company), or 3 (Individual)"
+	}
+
+	if len(e) != 0 {
+		svc.logger.Warn("User creation validation failed", slog.Any("errors", e))
+		return nil, httperror.NewForBadRequest(&e)
+	}
+
 	// Validate userID
 	if userID.IsZero() {
 		return nil, httperror.NewForBadRequestWithSingleField("id", "User ID is required")
 	}
 
-	// Get admin user info from context for auditing
-	adminUser, ok := sessCtx.Value(constants.SessionUser).(*user.User)
-	if !ok || adminUser == nil {
-		s.logger.Error("Admin user not found in context")
-		return nil, httperror.NewForForbiddenWithSingleField("message", "Admin user not found")
-	}
+	//
+	// Fetch related records.
+	//
 
 	// Retrieve existing user
-	existingUser, err := s.userGetByIDUseCase.Execute(sessCtx, userID)
+	existingUser, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
 	if err != nil {
-		s.logger.Error("Failed to get user by ID",
+		svc.logger.Error("Failed to get user by ID",
 			slog.String("user_id", userID.Hex()),
 			slog.Any("error", err))
 		return nil, err
@@ -76,6 +135,10 @@ func (s *updateUserServiceImpl) Execute(sessCtx mongo.SessionContext, userID pri
 	if existingUser == nil {
 		return nil, httperror.NewForNotFoundWithSingleField("message", fmt.Sprintf("User with ID %s not found", userID.Hex()))
 	}
+
+	//
+	// Update database record.
+	//
 
 	// Update user fields if provided in request
 	if req.Email != "" {
@@ -100,18 +163,18 @@ func (s *updateUserServiceImpl) Execute(sessCtx mongo.SessionContext, userID pri
 	if req.Password != "" {
 		securePassword, err := sstring.NewSecureString(req.Password)
 		if err != nil {
-			s.logger.Error("Failed to create secure password", slog.Any("error", err))
+			svc.logger.Error("Failed to create secure password", slog.Any("error", err))
 			return nil, err
 		}
 
-		passwordHash, err := s.passwordProvider.GenerateHashFromPassword(securePassword)
+		passwordHash, err := svc.passwordProvider.GenerateHashFromPassword(securePassword)
 		if err != nil {
-			s.logger.Error("Failed to hash password", slog.Any("error", err))
+			svc.logger.Error("Failed to hash password", slog.Any("error", err))
 			return nil, err
 		}
 
 		existingUser.PasswordHash = passwordHash
-		existingUser.PasswordHashAlgorithm = s.passwordProvider.AlgorithmName()
+		existingUser.PasswordHashAlgorithm = svc.passwordProvider.AlgorithmName()
 	}
 
 	// Update role if specified
@@ -198,22 +261,22 @@ func (s *updateUserServiceImpl) Execute(sessCtx mongo.SessionContext, userID pri
 	}
 
 	// Update audit info
-	existingUser.ModifiedByUserID = adminUser.ID
+	existingUser.ModifiedByUserID = sessionUserID
 	existingUser.ModifiedAt = time.Now()
-	existingUser.ModifiedByName = adminUser.Name
-	existingUser.ModifiedFromIPAddress = "API" // Using API as the source
+	existingUser.ModifiedByName = sessionUserName
+	existingUser.ModifiedFromIPAddress = sessionUserIPAddress
 
 	// Save to database
-	err = s.userUpdateUseCase.Execute(sessCtx, existingUser)
+	err = svc.userUpdateUseCase.Execute(sessCtx, existingUser)
 	if err != nil {
-		s.logger.Error("Failed to update user",
+		svc.logger.Error("Failed to update user",
 			slog.String("user_id", userID.Hex()),
 			slog.Any("error", err))
 		return nil, err
 	}
 
-	s.logger.Info("Admin updated user",
-		slog.String("admin_id", adminUser.ID.Hex()),
+	svc.logger.Info("Admin updated user",
+		slog.String("admin_id", sessionUserID.Hex()),
 		slog.String("updated_user_id", existingUser.ID.Hex()),
 		slog.String("email", existingUser.Email))
 

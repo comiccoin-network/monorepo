@@ -2,7 +2,7 @@
 package user
 
 import (
-	"fmt"
+	"errors"
 	"log/slog"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -44,50 +44,52 @@ func NewDeleteUserService(
 }
 
 // Execute processes the request to delete a user
-func (s *deleteUserServiceImpl) Execute(sessCtx mongo.SessionContext, userID primitive.ObjectID) error {
+func (svc *deleteUserServiceImpl) Execute(sessCtx mongo.SessionContext, userID primitive.ObjectID) error {
+	//
+	// Extract authenticated user information from context.
+	//
+
+	sessionUserID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	if !ok {
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return errors.New("user id not found in context")
+	}
+	sessionUserRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
+	if sessionUserRole != user.UserRoleRoot {
+		svc.logger.Error("Wrong user permission",
+			slog.Any("error", "User is not root"))
+		return errors.New("user is not administration")
+	}
+
+	// Prevent admin from deleting themselves
+	if sessionUserID == userID {
+		return httperror.NewForBadRequestWithSingleField("message", "Cannot delete yourself")
+	}
+
+	//
+	// Santize and validate input fields.
+	//
+
 	// Validate userID
 	if userID.IsZero() {
 		return httperror.NewForBadRequestWithSingleField("id", "User ID is required")
 	}
 
-	// Get admin user info from context for auditing
-	adminUser, ok := sessCtx.Value(constants.SessionUser).(*user.User)
-	if !ok || adminUser == nil {
-		s.logger.Error("Admin user not found in context")
-		return httperror.NewForForbiddenWithSingleField("message", "Admin user not found")
-	}
-
-	// Verify user exists
-	existingUser, err := s.userGetByIDUseCase.Execute(sessCtx, userID)
-	if err != nil {
-		s.logger.Error("Failed to get user by ID",
-			slog.String("user_id", userID.Hex()),
-			slog.Any("error", err))
-		return err
-	}
-
-	if existingUser == nil {
-		return httperror.NewForNotFoundWithSingleField("message", fmt.Sprintf("User with ID %s not found", userID.Hex()))
-	}
-
-	// Prevent admin from deleting themselves
-	if existingUser.ID == adminUser.ID {
-		return httperror.NewForBadRequestWithSingleField("message", "Cannot delete yourself")
-	}
-
+	//
 	// Delete from database
-	err = s.userDeleteByIDUseCase.Execute(sessCtx, userID)
-	if err != nil {
-		s.logger.Error("Failed to delete user",
+	//
+
+	if err := svc.userDeleteByIDUseCase.Execute(sessCtx, userID); err != nil {
+		svc.logger.Error("Failed to delete user",
 			slog.String("user_id", userID.Hex()),
 			slog.Any("error", err))
 		return err
 	}
 
-	s.logger.Info("Admin deleted user",
-		slog.String("admin_id", adminUser.ID.Hex()),
-		slog.String("deleted_user_id", userID.Hex()),
-		slog.String("deleted_user_email", existingUser.Email))
+	svc.logger.Info("Admin deleted user",
+		slog.String("admin_id", sessionUserID.Hex()),
+		slog.String("deleted_user_id", userID.Hex()))
 
 	return nil
 }

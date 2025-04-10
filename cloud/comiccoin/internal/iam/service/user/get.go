@@ -2,6 +2,7 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -9,7 +10,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/user"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/user"
 )
 
@@ -43,16 +46,45 @@ func NewGetUserService(
 }
 
 // ExecuteByID retrieves a user by their ID
-func (s *getUserServiceImpl) ExecuteByID(sessCtx mongo.SessionContext, userID primitive.ObjectID) (*UserResponseDTO, error) {
-	// Validate input
+func (svc *getUserServiceImpl) ExecuteByID(sessCtx mongo.SessionContext, userID primitive.ObjectID) (*UserResponseDTO, error) {
+	//
+	// Extract authenticated user information from context.
+	//
+
+	sessionUserID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	if !ok {
+		svc.logger.Error("Failed getting local user id",
+			slog.Any("error", "Not found in context: user_id"))
+		return nil, errors.New("user id not found in context")
+	}
+	sessionUserRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
+	if sessionUserRole != user.UserRoleRoot {
+		svc.logger.Error("Wrong user permission",
+			slog.Any("error", "User is not root"))
+		return nil, errors.New("user is not administration")
+	}
+
+	// Prevent admin from deleting themselves
+	if sessionUserID == userID {
+		return nil, httperror.NewForBadRequestWithSingleField("message", "Cannot delete yourself")
+	}
+
+	//
+	// Santize and validate input fields.
+	//
+
+	// Validate userID
 	if userID.IsZero() {
 		return nil, httperror.NewForBadRequestWithSingleField("id", "User ID is required")
 	}
 
+	//
 	// Get user from database
-	user, err := s.userGetByIDUseCase.Execute(sessCtx, userID)
+	//
+
+	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
 	if err != nil {
-		s.logger.Error("Failed to get user by ID",
+		svc.logger.Error("Failed to get user by ID",
 			slog.String("user_id", userID.Hex()),
 			slog.Any("error", err))
 		return nil, err
@@ -96,16 +128,34 @@ func (s *getUserServiceImpl) ExecuteByID(sessCtx mongo.SessionContext, userID pr
 }
 
 // ExecuteByEmail retrieves a user by their email address
-func (s *getUserServiceImpl) ExecuteByEmail(sessCtx mongo.SessionContext, email string) (*UserResponseDTO, error) {
-	// Validate input
-	if email == "" {
-		return nil, httperror.NewForBadRequestWithSingleField("email", "Email is required")
+func (svc *getUserServiceImpl) ExecuteByEmail(sessCtx mongo.SessionContext, email string) (*UserResponseDTO, error) {
+	//
+	// Extract authenticated user information from context.
+	//
+
+	sessionUserRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
+	if sessionUserRole != user.UserRoleRoot {
+		svc.logger.Error("Wrong user permission",
+			slog.Any("error", "User is not root"))
+		return nil, errors.New("user is not administration")
 	}
 
+	//
+	// Santize and validate input fields.
+	//
+
+	// Validate userID
+	if email == "" {
+		return nil, httperror.NewForBadRequestWithSingleField("email", "User email is required")
+	}
+
+	//
 	// Get user from database
-	user, err := s.userGetByEmailUseCase.Execute(sessCtx, email)
+	//
+
+	user, err := svc.userGetByEmailUseCase.Execute(sessCtx, email)
 	if err != nil {
-		s.logger.Error("Failed to get user by email",
+		svc.logger.Error("Failed to get user by email",
 			slog.String("email", email),
 			slog.Any("error", err))
 		return nil, err
