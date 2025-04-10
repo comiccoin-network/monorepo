@@ -2,28 +2,34 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "../hooks/useAuth";
+import { USER_ROLE } from "../hooks/useUser"; // Import the USER_ROLE constants
 
 /**
- * Higher-Order Component that redirects authenticated users to the dashboard
+ * Higher-Order Component that redirects authenticated users based on their role
  * Use this for pages that should only be accessible to non-authenticated users
  * (like login, register, forgot password, etc.)
  *
  * @param {React.ComponentType} Component - The component to wrap
  * @param {Object} options - Configuration options
- * @param {string} options.redirectTo - The path to redirect to if authenticated (default: "/dashboard")
+ * @param {string} options.userRedirectTo - The path to redirect regular users to (default: "/dashboard")
+ * @param {string} options.adminRedirectTo - The path to redirect admin users to (default: "/admin/dashboard")
  * @returns {React.ComponentType} - The wrapped component with redirect logic
  */
 function withRedirectAuthenticated(Component, options = {}) {
-  const { redirectTo = "/dashboard" } = options;
+  const {
+    userRedirectTo = "/dashboard",
+    adminRedirectTo = "/admin/dashboard",
+  } = options;
 
   function WithRedirectAuthenticated(props) {
     const navigate = useNavigate();
     const location = useLocation();
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, user } = useAuth();
 
     console.log("🔒 withRedirectAuthenticated HOC running", {
       isAuthenticated,
       isLoading,
+      userRole: user?.role,
       path: location.pathname,
     });
 
@@ -31,20 +37,23 @@ function withRedirectAuthenticated(Component, options = {}) {
       // Only redirect if:
       // 1. Auth check is complete (not loading)
       // 2. User is authenticated
-      // 3. We're not already on the target redirect path
-      if (!isLoading && isAuthenticated && location.pathname !== redirectTo) {
-        console.log(
-          `🔄 User already authenticated, redirecting to ${redirectTo}`,
-        );
-        navigate(redirectTo);
-      }
-    }, [isAuthenticated, isLoading, navigate, location.pathname]);
+      if (!isLoading && isAuthenticated && user) {
+        // Determine redirect path based on user role
+        const redirectTo =
+          user.role === USER_ROLE.ROOT ? adminRedirectTo : userRedirectTo;
 
-    // If still loading auth state, could show a loading spinner here
-    // For now, we'll just render the component normally
+        // Only redirect if we're not already on the target path
+        if (location.pathname !== redirectTo) {
+          console.log(
+            `🔄 User authenticated as ${user.role === USER_ROLE.ROOT ? "admin" : "regular user"}, redirecting to ${redirectTo}`,
+          );
+          navigate(redirectTo);
+        }
+      }
+    }, [isAuthenticated, isLoading, navigate, location.pathname, user]);
 
     // Only render the wrapped component if user is not authenticated
-    // Alternatively, you could always render it, and let the useEffect handle redirection
+    // or if we're still loading auth state
     return !isAuthenticated || isLoading ? <Component {...props} /> : null;
   }
 

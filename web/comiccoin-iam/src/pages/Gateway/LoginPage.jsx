@@ -16,6 +16,7 @@ import { useAuth } from "../../hooks/useAuth";
 import Header from "../../components/IndexPage/Header";
 import Footer from "../../components/IndexPage/Footer";
 import withRedirectAuthenticated from "../../components/withRedirectAuthenticated";
+import { USER_ROLE } from "../../hooks/useUser"; // Import USER_ROLE constants
 
 function LoginPage() {
   console.log("🚀 LoginPage component initializing");
@@ -28,25 +29,37 @@ function LoginPage() {
   const [generalError, setGeneralError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { login, isAuthenticated } = useAuth();
-  console.log("🔐 Authentication state:", { isAuthenticated });
+  const { login, isAuthenticated, user } = useAuth(); // Get user object from auth context
+  console.log("🔐 Authentication state:", {
+    isAuthenticated,
+    userRole: user?.role,
+  });
 
   // Check if navigate is defined correctly
   const navigate = useNavigate();
   console.log("🧭 Navigate function available:", !!navigate);
 
-  // Move the navigation to useEffect instead of doing it during render
+  // Updated useEffect to handle role-based redirection
   useEffect(() => {
     console.log(
       "🔄 LoginPage useEffect running, isAuthenticated:",
       isAuthenticated,
+      "User:",
+      user,
     );
+
     // Only redirect if authenticated
-    if (isAuthenticated) {
-      console.log("👉 User is authenticated, redirecting to dashboard");
-      navigate("/dashboard");
+    if (isAuthenticated && user) {
+      // Check if user is a root/admin user
+      if (user.role === USER_ROLE.ROOT) {
+        console.log("👑 Root user detected, redirecting to admin dashboard");
+        navigate("/admin/dashboard");
+      } else {
+        console.log("👉 Regular user detected, redirecting to dashboard");
+        navigate("/dashboard");
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -72,9 +85,9 @@ function LoginPage() {
         password: formData.password,
       };
 
-      await login(loginRequest);
-      console.log("✅ Login successful");
-      // The redirect will happen in the useEffect when isAuthenticated changes
+      const userData = await login(loginRequest);
+      console.log("✅ Login successful, user data:", userData);
+      // The redirect will happen in the useEffect when isAuthenticated and user changes
     } catch (err) {
       console.error("❌ Login error:", err);
 
