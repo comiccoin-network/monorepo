@@ -142,7 +142,7 @@ const AdminDashboardPage = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/users?search=${encodeURIComponent(searchQuery)}`);
+      navigate(`/admin/users?search=${encodeURIComponent(searchQuery)}`);
     }
   };
 
@@ -221,7 +221,7 @@ const AdminDashboardPage = () => {
               Refresh
             </button>
             <Link
-              to="/users/add"
+              to="/admin/users/add"
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
             >
               <UserPlus className="h-4 w-4 mr-2" />
@@ -303,7 +303,7 @@ const AdminDashboardPage = () => {
                 </div>
                 <div className="px-6 py-3 bg-black bg-opacity-20">
                   <Link
-                    to="/users"
+                    to="/admin/users"
                     className="text-sm flex items-center hover:underline"
                   >
                     View all users <ChevronRight className="h-4 w-4 ml-1" />
@@ -334,7 +334,7 @@ const AdminDashboardPage = () => {
                 </div>
                 <div className="px-6 py-3 bg-black bg-opacity-20">
                   <Link
-                    to="/users?status=1"
+                    to="/admin/users?status=1"
                     className="text-sm flex items-center hover:underline"
                   >
                     View active users <ChevronRight className="h-4 w-4 ml-1" />
@@ -371,7 +371,7 @@ const AdminDashboardPage = () => {
                 </div>
                 <div className="px-6 py-3 bg-black bg-opacity-20">
                   <Link
-                    to="/users?profile_verification_status=3"
+                    to="/admin/users?profile_verification_status=3"
                     className="text-sm flex items-center hover:underline"
                   >
                     View verified users{" "}
@@ -770,7 +770,7 @@ const AdminDashboardPage = () => {
 
                 <div className="border-t border-gray-200 bg-gray-50 px-6 py-3">
                   <Link
-                    to="/users"
+                    to="/admin/users"
                     className="text-sm font-medium text-purple-600 hover:text-purple-800 flex items-center"
                   >
                     View full user analytics
@@ -797,7 +797,7 @@ const AdminDashboardPage = () => {
                       <div
                         key={user.id}
                         className="p-4 hover:bg-gray-50 cursor-pointer"
-                        onClick={() => navigate(`/users/${user.id}`)}
+                        onClick={() => navigate(`/admin/users/${user.id}`)}
                       >
                         <div className="flex items-center">
                           <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
@@ -832,7 +832,7 @@ const AdminDashboardPage = () => {
                 </div>
                 <div className="border-t border-gray-200 bg-gray-50 px-6 py-3">
                   <Link
-                    to="/users"
+                    to="/admin/users"
                     className="text-sm font-medium text-purple-600 hover:text-purple-800 flex items-center"
                   >
                     View all users
@@ -845,7 +845,7 @@ const AdminDashboardPage = () => {
             {/* Quick Actions */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
               <Link
-                to="/users/add"
+                to="/admin/users/add"
                 className="bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-shadow flex items-center"
               >
                 <div className="p-3 bg-purple-100 rounded-lg mr-4">
@@ -860,7 +860,7 @@ const AdminDashboardPage = () => {
               </Link>
 
               <Link
-                to={`/users?profile_verification_status=${PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW}`}
+                to={`/admin/users?profile_verification_status=${PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW}`}
                 className="bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-shadow flex items-center"
               >
                 <div className="p-3 bg-blue-100 rounded-lg mr-4">
@@ -882,7 +882,7 @@ const AdminDashboardPage = () => {
               </Link>
 
               <Link
-                to="/users?status=50"
+                to="/admin/users?status=50"
                 className="bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-shadow flex items-center"
               >
                 <div className="p-3 bg-red-100 rounded-lg mr-4">
