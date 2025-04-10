@@ -18,6 +18,10 @@ func IAMCmd() *cobra.Command {
 	cmd.AddCommand(GetCreateAdminUserCmd())
 	cmd.AddCommand(GetListUsersCmd())
 	cmd.AddCommand(GetUserCmd())
+	cmd.AddCommand(SendVerificationCodeCmd())
+	cmd.AddCommand(VerifyUserEmailCmd())
+	cmd.AddCommand(DeleteUserCmd())
+	cmd.AddCommand(VerifyProfileCmd())
 
 	return cmd
 }
