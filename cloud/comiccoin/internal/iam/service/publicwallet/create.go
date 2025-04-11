@@ -16,6 +16,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	dom "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/publicwallet"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/user"
 	uc "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/user"
 )
@@ -32,6 +33,9 @@ type CreatePublicWalletRequestIDO struct {
 
 	// The description of the public wallet's account.
 	Description string `json:"description"`
+
+	// UserID is the user to attach the public wallet to.
+	UserID primitive.ObjectID `json:"user_id,omitempty"`
 }
 
 type CreatePublicWalletResponseIDO struct {
@@ -82,6 +86,15 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 	}
 	userName, _ := sessCtx.Value(constants.SessionUserName).(string)
 	userIPAddress := sessCtx.Value(constants.SessionIPAddress).(string)
+
+	// Developers note:
+	// If the user is root user, check if optional UserID field is provided, and if UserID is provided then attach it to the request.
+	sessionUserRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
+	if sessionUserRole == dom_user.UserRoleRoot {
+		if !userID.IsZero() {
+			userID = req.UserID
+		}
+	}
 
 	//
 	// Santize and validate input fields.

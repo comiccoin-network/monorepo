@@ -1,6 +1,6 @@
 // src/pages/Admin/WalletManagement/AddWalletPage.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation, useParams } from "react-router";
 import {
   Wallet,
   Save,
@@ -37,10 +37,8 @@ const AdminAddWalletPage = () => {
   const location = useLocation();
   const formCardRef = useRef(null);
   const statusRef = useRef(null);
-
-  // Get userId from query params if available
-  const queryParams = new URLSearchParams(location.search);
-  const userIdFromQuery = queryParams.get("userId");
+  const { id } = useParams();
+  const userIdFromQuery = id;
 
   // Hooks for API operations
   const {
@@ -59,17 +57,10 @@ const AdminAddWalletPage = () => {
     userId: userIdFromQuery || "",
     status: WALLET_STATUS.ACTIVE,
     chainId: "1",
-    privacySetting: "public", // public, private, etc.
-    walletType: "ethereum", // ethereum, bitcoin, etc.
-    secret: "",
-    tags: "",
   });
 
   // State for the selected user (if userId is provided)
   const [selectedUser, setSelectedUser] = useState(null);
-
-  // State for password visibility (for secret field)
-  const [showSecret, setShowSecret] = useState(false);
 
   // State for form validation errors
   const [errors, setErrors] = useState({});
@@ -231,6 +222,7 @@ const AdminAddWalletPage = () => {
         tags: formData.tags
           ? formData.tags.split(",").map((tag) => tag.trim())
           : [],
+        chainId: parseInt(formData.chainId),
       };
 
       // Submit wallet data
@@ -498,44 +490,6 @@ const AdminAddWalletPage = () => {
                   )}
                 </div>
 
-                {/* Wallet Type */}
-                <div>
-                  <label
-                    htmlFor="walletType"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Wallet Type
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Hexagon className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <select
-                      id="walletType"
-                      name="walletType"
-                      value={formData.walletType}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
-                        hasError("walletType")
-                          ? "border-red-500 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <option value="ethereum">Ethereum</option>
-                      <option value="bitcoin">Bitcoin</option>
-                      <option value="polygon">Polygon</option>
-                      <option value="solana">Solana</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  {errors.walletType && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {errors.walletType}
-                    </p>
-                  )}
-                </div>
-
                 {/* Wallet Address */}
                 <div className="md:col-span-2">
                   <label
@@ -607,13 +561,7 @@ const AdminAddWalletPage = () => {
                           : "border-gray-300"
                       }`}
                     >
-                      <option value="1">Ethereum Mainnet (1)</option>
-                      <option value="56">Binance Smart Chain (56)</option>
-                      <option value="137">Polygon Mainnet (137)</option>
-                      <option value="43114">Avalanche C-Chain (43114)</option>
-                      <option value="42161">Arbitrum One (42161)</option>
-                      <option value="10">Optimism (10)</option>
-                      <option value="250">Fantom Opera (250)</option>
+                      <option value="1">ComicCoin Mainnet (1)</option>
                     </select>
                   </div>
                   {errors.chainId && (
@@ -622,171 +570,6 @@ const AdminAddWalletPage = () => {
                       {errors.chainId}
                     </p>
                   )}
-                </div>
-
-                {/* Status */}
-                <div>
-                  <label
-                    htmlFor="status"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Wallet Status
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <CheckCircle className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <select
-                      id="status"
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
-                        hasError("status")
-                          ? "border-red-500 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <option value={WALLET_STATUS.ACTIVE}>Active</option>
-                      <option value={WALLET_STATUS.LOCKED}>Locked</option>
-                      <option value={WALLET_STATUS.ARCHIVED}>Archived</option>
-                    </select>
-                  </div>
-                  {errors.status && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {errors.status}
-                    </p>
-                  )}
-                </div>
-
-                {/* Privacy Setting */}
-                <div>
-                  <label
-                    htmlFor="privacySetting"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Privacy Setting
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Eye className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <select
-                      id="privacySetting"
-                      name="privacySetting"
-                      value={formData.privacySetting}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
-                        hasError("privacySetting")
-                          ? "border-red-500 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <option value="public">Public (Anyone can view)</option>
-                      <option value="unlisted">
-                        Unlisted (Only with direct link)
-                      </option>
-                      <option value="private">
-                        Private (Only owner can view)
-                      </option>
-                    </select>
-                  </div>
-                  {errors.privacySetting && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {errors.privacySetting}
-                    </p>
-                  )}
-                </div>
-
-                {/* Secret Key (optional) */}
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor="secret"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Secret Key{" "}
-                    <span className="text-gray-400 text-xs">(optional)</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type={showSecret ? "text" : "password"}
-                      id="secret"
-                      name="secret"
-                      value={formData.secret}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                        hasError("secret")
-                          ? "border-red-500 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="Enter secret key (encrypted and only visible to administrators)"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                      onClick={() => setShowSecret(!showSecret)}
-                      tabIndex="-1"
-                    >
-                      {showSecret ? (
-                        <EyeOff className="h-5 w-5" aria-hidden="true" />
-                      ) : (
-                        <Eye className="h-5 w-5" aria-hidden="true" />
-                      )}
-                    </button>
-                  </div>
-                  {errors.secret && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {errors.secret}
-                    </p>
-                  )}
-                  <p className="mt-1 text-xs text-gray-500">
-                    Optional: Store an encrypted secret key for this wallet.
-                    This is encrypted and only accessible to administrators.
-                  </p>
-                </div>
-
-                {/* Tags */}
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor="tags"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Tags{" "}
-                    <span className="text-gray-400 text-xs">(optional)</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <LinkIcon className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      id="tags"
-                      name="tags"
-                      value={formData.tags}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                        hasError("tags")
-                          ? "border-red-500 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="crypto, ethereum, defi, savings"
-                    />
-                  </div>
-                  {errors.tags && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {errors.tags}
-                    </p>
-                  )}
-                  <p className="mt-1 text-xs text-gray-500">
-                    Optional: Add comma-separated tags to categorize this wallet
-                  </p>
                 </div>
               </div>
             </div>
