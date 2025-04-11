@@ -19,16 +19,12 @@ import {
   Info,
   Loader,
   Check,
-  Calendar,
   FileText,
   Wallet,
   BookOpen,
   RefreshCw,
   Eye,
   EyeOff,
-  CheckCircle,
-  XCircle,
-  ChevronRight,
   X,
 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -46,6 +42,9 @@ const AdminUpdateUserPage = () => {
   const navigate = useNavigate();
   const formCardRef = useRef(null);
   const statusRef = useRef(null);
+
+  // Force reset on any success/error to prevent auto-submission
+  const forceResetRef = useRef(null);
 
   const {
     fetchUserById,
@@ -66,6 +65,11 @@ const AdminUpdateUserPage = () => {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Critical flags to prevent automatic submissions
+  const [formInitialized, setFormInitialized] = useState(false);
+  const [userHasClickedSubmit, setUserHasClickedSubmit] = useState(false);
+  const [userModifiedForm, setUserModifiedForm] = useState(false);
 
   // Combined loading state
   const isLoading = isApiLoading || isLoadingUser || isUpdating;
@@ -110,6 +114,15 @@ const AdminUpdateUserPage = () => {
   const [originalData, setOriginalData] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
   const [showCancelWarning, setShowCancelWarning] = useState(false);
+
+  // IMPORTANT: Reset any previous success/error state on component mount
+  // to ensure we don't trigger any automatic redirects
+  useEffect(() => {
+    if (forceResetRef.current === null) {
+      forceResetRef.current = true;
+      reset(); // Reset any previous states from the hook
+    }
+  }, [reset]);
 
   // Auto-dismiss status messages after 5 seconds
   useEffect(() => {
@@ -172,6 +185,11 @@ const AdminUpdateUserPage = () => {
 
           setFormData(formattedData);
           setOriginalData(formattedData);
+
+          // Set form as initialized after data load
+          setTimeout(() => {
+            setFormInitialized(true);
+          }, 500);
         } else {
           setGeneralError("User not found");
           navigate("/admin/users");
@@ -213,6 +231,10 @@ const AdminUpdateUserPage = () => {
           "Failed to update user. Please check your input and try again.",
       });
 
+      // Reset the submission flag to allow trying again
+      setUserHasClickedSubmit(false);
+      setIsUpdating(false);
+
       // Check for response data with field validation errors
       if (apiError.response && apiError.response.data) {
         console.log("Response data:", apiError.response.data);
@@ -242,45 +264,49 @@ const AdminUpdateUserPage = () => {
       if (apiError.errors) {
         setErrors(apiError.errors);
       }
-    } else {
-      // Clear error when there's no error
-      setGeneralError("");
     }
   }, [apiError]);
 
-  // Detect form changes
+  // Detect form changes when user modifies the form
   useEffect(() => {
-    // Compare current form data with original data
-    const checkForChanges = () => {
-      for (const key in formData) {
-        // Skip password as it's always different (empty at first)
-        if (key === "password") continue;
+    // Only check for changes if form is initialized and user has made modifications
+    if (formInitialized && userModifiedForm) {
+      // Compare current form data with original data
+      const checkForChanges = () => {
+        for (const key in formData) {
+          // Skip password as it's always different (empty at first)
+          if (key === "password") continue;
 
-        if (formData[key] !== originalData[key]) {
-          return true;
+          if (formData[key] !== originalData[key]) {
+            return true;
+          }
         }
-      }
-      return false;
-    };
+        return false;
+      };
 
-    setHasChanges(checkForChanges());
-  }, [formData, originalData]);
+      setHasChanges(checkForChanges());
+    }
+  }, [formData, originalData, formInitialized, userModifiedForm]);
 
-  // Handle successful update
+  // Handle successful update ONLY if the user has clicked submit
   useEffect(() => {
-    if (success) {
+    if (success && userHasClickedSubmit) {
       toast.success("User updated successfully");
       setStatusMessage({
         type: "success",
         message: "User updated successfully!",
       });
 
+      // Clear submission state
+      setUserHasClickedSubmit(false);
+      setIsUpdating(false);
+
       // Wait briefly to show success message before navigating
       setTimeout(() => {
         navigate(`/admin/users/${id}`);
       }, 1500);
     }
-  }, [success, navigate, id]);
+  }, [success, navigate, id, userHasClickedSubmit]);
 
   // Scroll to form card when errors are detected
   useEffect(() => {
@@ -298,7 +324,7 @@ const AdminUpdateUserPage = () => {
     }
   }, [errors, generalError]);
 
-  // Refresh user data
+  // Refresh user data from the server
   const handleRefreshData = async () => {
     if (!id) return;
 
@@ -341,6 +367,10 @@ const AdminUpdateUserPage = () => {
         setFormData(formattedData);
         setOriginalData(formattedData);
 
+        // Reset user modification flag
+        setUserModifiedForm(false);
+        setHasChanges(false);
+
         setStatusMessage({
           type: "success",
           message: "User data refreshed successfully!",
@@ -362,6 +392,9 @@ const AdminUpdateUserPage = () => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
 
+    // Mark that user has modified form
+    setUserModifiedForm(true);
+
     setFormData((prev) => ({ ...prev, [name]: newValue }));
 
     // Clear error for this field when user starts typing
@@ -370,9 +403,12 @@ const AdminUpdateUserPage = () => {
     }
   };
 
-  // Handle form submission
+  // Handle form submission - ONLY triggers when user actually submits the form
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Set flag that user has clicked submit
+    setUserHasClickedSubmit(true);
 
     // Clear any previous errors
     setErrors({});
@@ -401,6 +437,9 @@ const AdminUpdateUserPage = () => {
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
 
+      // Reset submission state so user can try again
+      setUserHasClickedSubmit(false);
+
       // Set error status message
       setStatusMessage({
         type: "error",
@@ -425,12 +464,16 @@ const AdminUpdateUserPage = () => {
         delete dataToUpdate.password;
       }
 
+      // This is the key API call that actually updates the user
       await updateUser(id, dataToUpdate);
-      // Success is handled by the useEffect
+
+      // Success is handled by the useEffect when both success is true AND userHasClickedSubmit is true
     } catch (err) {
-      // Error is handled by the useEffect for error
+      // Error is handled by the API error useEffect
       console.error("Form submission error:", err);
-    } finally {
+
+      // Reset submission state
+      setUserHasClickedSubmit(false);
       setIsUpdating(false);
     }
   };
@@ -474,13 +517,6 @@ const AdminUpdateUserPage = () => {
       default:
         return "Unknown";
     }
-  };
-
-  // Get tab style based on active status
-  const getTabStyle = (isActive) => {
-    return isActive
-      ? "border-b-2 border-purple-500 text-purple-700 font-medium"
-      : "text-gray-500 hover:text-gray-700 hover:border-gray-300";
   };
 
   return (
@@ -605,7 +641,7 @@ const AdminUpdateUserPage = () => {
                   </div>
                 </div>
 
-                {hasChanges && (
+                {hasChanges && userModifiedForm && (
                   <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
                     <Info className="h-4 w-4 mr-1" />
                     Unsaved changes
@@ -1534,12 +1570,13 @@ const AdminUpdateUserPage = () => {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     type="submit"
-                    disabled={isLoading || !hasChanges}
+                    disabled={isLoading}
                     className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
-                      isLoading || !hasChanges
+                      isLoading
                         ? "bg-purple-300 cursor-not-allowed text-white"
                         : "bg-purple-600 hover:bg-purple-700 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                     }`}
+                    id="submit-button"
                   >
                     {isUpdating ? (
                       <>
