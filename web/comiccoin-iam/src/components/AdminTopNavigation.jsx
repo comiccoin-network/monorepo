@@ -45,7 +45,7 @@ const AdminTopNavigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo and Brand */}
-          <Link to="/dashboard" className="flex items-center space-x-3">
+          <Link to="/admin/dashboard" className="flex items-center space-x-3">
             <Globe
               className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white"
               aria-hidden="true"
