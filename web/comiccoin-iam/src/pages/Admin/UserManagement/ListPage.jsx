@@ -137,18 +137,18 @@ const UserListPage = () => {
 
   // Navigate to create user page
   const handleAddUser = () => {
-    navigate("/users/add");
+    navigate("/admin/users/add");
   };
 
   // Navigate to user detail page
   const handleViewUser = (id) => {
-    navigate(`/users/${id}`);
+    navigate(`/admin/users/${id}`);
   };
 
   // Navigate to edit user page
   const handleEditUser = (id, e) => {
     e.stopPropagation(); // Prevent row click event from firing
-    navigate(`/users/${id}/edit`);
+    navigate(`/admin/users/${id}/edit`);
   };
 
   // Show delete confirmation

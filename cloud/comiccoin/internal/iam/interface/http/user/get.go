@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -40,7 +39,7 @@ func NewGetUserHTTPHandler(
 	}
 }
 
-func (h *getUserHTTPHandlerImpl) Handle(w http.ResponseWriter, r *http.Request, idOrEmail string) {
+func (h *getUserHTTPHandlerImpl) Handle(w http.ResponseWriter, r *http.Request, idStr string) {
 	// Set response content type
 	w.Header().Set("Content-Type", "application/json")
 
@@ -62,19 +61,13 @@ func (h *getUserHTTPHandlerImpl) Handle(w http.ResponseWriter, r *http.Request, 
 		var err error
 
 		// Check if the parameter is an ObjectID or email
-		if strings.Contains(idOrEmail, "@") {
-			// Parameter appears to be an email
-			response, err = h.service.ExecuteByEmail(sessCtx, idOrEmail)
-		} else {
-			// Parameter appears to be an ID
-			id, convertErr := primitive.ObjectIDFromHex(idOrEmail)
-			if convertErr != nil {
-				h.logger.Error("invalid ID format",
-					slog.Any("error", convertErr))
-				return nil, httperror.NewForSingleField(http.StatusBadRequest, "id", "Invalid ID format")
-			}
-			response, err = h.service.ExecuteByID(sessCtx, id)
+		id, convertErr := primitive.ObjectIDFromHex(idStr)
+		if convertErr != nil {
+			h.logger.Error("invalid ID format",
+				slog.Any("error", convertErr))
+			return nil, httperror.NewForSingleField(http.StatusBadRequest, "id", "Invalid ID format")
 		}
+		response, err = h.service.ExecuteByID(sessCtx, id)
 
 		if err != nil {
 			h.logger.Error("failed to get user",

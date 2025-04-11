@@ -51,22 +51,18 @@ func (svc *getUserServiceImpl) ExecuteByID(sessCtx mongo.SessionContext, userID 
 	// Extract authenticated user information from context.
 	//
 
-	sessionUserID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
-	if !ok {
-		svc.logger.Error("Failed getting local user id",
-			slog.Any("error", "Not found in context: user_id"))
-		return nil, errors.New("user id not found in context")
-	}
+	// sessionUserID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	// if !ok {
+	// 	svc.logger.Error("Failed getting local user id",
+	// 		slog.Any("error", "Not found in context: user_id"))
+	// 	return nil, errors.New("user id not found in context")
+	// }
 	sessionUserRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
 	if sessionUserRole != user.UserRoleRoot {
 		svc.logger.Error("Wrong user permission",
+			slog.Any("role", sessionUserRole),
 			slog.Any("error", "User is not root"))
 		return nil, errors.New("user is not administration")
-	}
-
-	// Prevent admin from deleting themselves
-	if sessionUserID == userID {
-		return nil, httperror.NewForBadRequestWithSingleField("message", "Cannot delete yourself")
 	}
 
 	//

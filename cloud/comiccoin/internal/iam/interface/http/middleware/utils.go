@@ -2,6 +2,7 @@
 package middleware
 
 import (
+	"fmt"
 	"regexp"
 )
 
@@ -34,10 +35,10 @@ func init() {
 
 	// Pattern matches
 	patterns := []string{
-		"^/iam/api/v1/user/[0-9]+$",
-		"^/iam/api/v1/wallet/[0-9a-f]+$",
-		"^/iam/api/v1/public-wallets/0x[0-9a-fA-F]{40}$", // Regex designed for ethereum addresses
-		"^/iam/api/v1/user/[0-9a-f]+$",
+		"^/iam/api/v1/user/[0-9]+$",                      // Regex designed for non-zero integers.
+		"^/iam/api/v1/wallet/[0-9a-f]+$",                 // Regex designed for mongodb ids.
+		"^/iam/api/v1/public-wallets/0x[0-9a-fA-F]{40}$", // Regex designed for ethereum addresses.
+		"^/iam/api/v1/users/[0-9a-f]+$",                  // Regex designed for mongodb ids.
 	}
 
 	// Precompile patterns
@@ -55,14 +56,14 @@ func isProtectedPath(path string) bool {
 
 	// Check exact matches first (O(1) lookup)
 	if exactPaths[path] {
-		// fmt.Println("isProtectedPath - ✅ found") // For debugging purposes only.
+		fmt.Println("isProtectedPath - ✅ found via map") // For debugging purposes only.
 		return true
 	}
 
 	// Check patterns
 	for _, route := range patternRoutes {
 		if route.regex.MatchString(path) {
-			// fmt.Println("isProtectedPath - ✅ found") // For debugging purposes only.
+			fmt.Println("isProtectedPath - ✅ found via regex") // For debugging purposes only.
 			return true
 		}
 	}
