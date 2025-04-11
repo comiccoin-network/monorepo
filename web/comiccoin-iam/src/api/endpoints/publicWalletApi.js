@@ -186,6 +186,7 @@ export function prepareWalletForApi(wallet) {
     website_url: wallet.websiteURL,
     status: wallet.status,
     type: wallet.type,
+    user_id: wallet.userId,
   };
 }
 

@@ -478,7 +478,7 @@ const AdminAddWalletPage = () => {
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300"
                       }`}
-                      placeholder="My Ethereum Wallet"
+                      placeholder="My ComicCoin Wallet"
                       required
                     />
                   </div>
@@ -533,7 +533,7 @@ const AdminAddWalletPage = () => {
                     </p>
                   )}
                   <p className="mt-1 text-xs text-gray-500">
-                    Enter the public address of the wallet (e.g., Ethereum
+                    Enter the public address of the wallet (e.g., ComicCoin
                     address starting with 0x)
                   </p>
                 </div>

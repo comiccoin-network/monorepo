@@ -93,6 +93,9 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 	if sessionUserRole == dom_user.UserRoleRoot {
 		if !userID.IsZero() {
 			userID = req.UserID
+			svc.logger.Debug("Converted admin user id",
+				slog.Any("fromRequest", req.UserID),
+				slog.Any("fromSession", userID))
 		}
 	}
 
@@ -143,6 +146,9 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 
 	// Convert into our format.
 	walletAddress := common.HexToAddress(strings.ToLower(req.Address))
+	svc.logger.Debug("Converted",
+		slog.Any("fromAddress", req.Address),
+		slog.Any("toAddress", walletAddress))
 
 	//
 	// Retrieve related user information.
@@ -150,7 +156,9 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 
 	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
 	if err != nil {
-		svc.logger.Error("Failed retrieving user", slog.Any("error", err))
+		svc.logger.Error("Failed retrieving user",
+			slog.Any("userID", userID),
+			slog.Any("error", err))
 		return nil, err
 	}
 	if user == nil {
@@ -200,6 +208,38 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 			slog.Any("error", err))
 		return nil, err
 	}
+
+	svc.logger.Debug("Saved public wallet",
+		slog.Any("Type", pw.Type),
+		slog.Any("Address", pw.Address),
+		slog.Any("ChainID", pw.ChainID),
+		slog.Any("Name", pw.Name),
+		slog.Any("Name [req]", req.Name),
+		slog.Any("Description", pw.Description),
+		slog.Any("Description [req]", req.Description),
+		slog.Any("WebsiteURL", pw.WebsiteURL),
+		slog.Any("Phone", pw.Phone),
+		slog.Any("Country", pw.Country),
+		slog.Any("Region", pw.Region),
+		slog.Any("City", pw.City),
+		slog.Any("PostalCode", pw.PostalCode),
+		slog.Any("AddressLine1", pw.AddressLine1),
+		slog.Any("AddressLine2", pw.AddressLine2),
+		slog.Any("IsVerified", pw.IsVerified),
+		slog.Any("ThumbnailS3Key", pw.ThumbnailS3Key),
+		slog.Any("ViewCount", pw.ViewCount),
+		slog.Any("UniqueViewCount", pw.UniqueViewCount),
+		slog.Any("UniqueIPAddresses", pw.UniqueIPAddresses),
+		slog.Any("ID", pw.ID),
+		slog.Any("CreatedAt", pw.CreatedAt),
+		slog.Any("CreatedFromIPAddress", pw.CreatedFromIPAddress),
+		slog.Any("CreatedByUserID", pw.CreatedByUserID),
+		slog.Any("CreatedByName", pw.CreatedByName),
+		slog.Any("ModifiedAt", pw.ModifiedAt),
+		slog.Any("ModifiedFromIPAddress", pw.ModifiedFromIPAddress),
+		slog.Any("ModifiedByUserID", pw.ModifiedByUserID),
+		slog.Any("ModifiedByName", pw.ModifiedByName),
+		slog.Any("Status", pw.Status))
 
 	//
 	// Return the created public wallet unique identifier.
