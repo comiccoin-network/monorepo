@@ -1,4 +1,4 @@
-// src/pages/UserManagement/DetailsPage.jsx
+// src/pages/Admin/UserManagement/DetailsPage.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import {

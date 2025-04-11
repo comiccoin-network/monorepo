@@ -1,4 +1,4 @@
-// src/pages/UserManagement/AddPage.jsx
+// src/pages/Admin/UserManagement/AddPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import {
