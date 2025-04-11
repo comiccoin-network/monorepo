@@ -1,4 +1,4 @@
-// src/pages/UserManagement/EditPage.jsx
+// src/pages/Admin/UserManagement/UpdatePage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
@@ -20,11 +20,16 @@ import {
   Loader,
   Check,
   Calendar,
-  Type,
   FileText,
   Wallet,
   BookOpen,
   RefreshCw,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  ChevronRight,
+  X,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import AdminTopNavigation from "../../../components/AdminTopNavigation";
@@ -36,14 +41,17 @@ import {
   PROFILE_VERIFICATION_STATUS,
 } from "../../../hooks/useUser";
 
-const UserEditPage = () => {
+const AdminUpdateUserPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const formCardRef = useRef(null);
+  const statusRef = useRef(null);
+
   const {
     fetchUserById,
     updateUser,
     isLoading: isApiLoading,
-    error,
+    error: apiError,
     success,
     reset,
   } = useUser();
@@ -57,9 +65,19 @@ const UserEditPage = () => {
   // Loading states
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Combined loading state
   const isLoading = isApiLoading || isLoadingUser || isUpdating;
+
+  // Status message state
+  const [statusMessage, setStatusMessage] = useState({
+    type: null, // 'success' or 'error'
+    message: "",
+  });
+
+  // Password visibility state
+  const [showPassword, setShowPassword] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -88,8 +106,28 @@ const UserEditPage = () => {
     agreeToTrackingAcrossThirdPartyAppsAndServices: false,
   });
 
-  // Create ref for form card to scroll to on error
-  const formCardRef = useRef(null);
+  // Track original user data to display a warning if sensitive fields are changed
+  const [originalData, setOriginalData] = useState({});
+  const [hasChanges, setHasChanges] = useState(false);
+  const [showCancelWarning, setShowCancelWarning] = useState(false);
+
+  // Auto-dismiss status messages after 5 seconds
+  useEffect(() => {
+    let timer;
+
+    if (statusMessage.type) {
+      timer = setTimeout(() => {
+        setStatusMessage({ type: null, message: "" });
+      }, 5000);
+    }
+
+    // Cleanup timer to prevent memory leaks
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [statusMessage]);
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -101,7 +139,7 @@ const UserEditPage = () => {
         const userData = await fetchUserById(id);
         if (userData) {
           // Transform API response to form data format
-          setFormData({
+          const formattedData = {
             email: userData.email || "",
             firstName: userData.firstName || "",
             lastName: userData.lastName || "",
@@ -130,14 +168,22 @@ const UserEditPage = () => {
             agreePromotions: userData.agreePromotions || false,
             agreeToTrackingAcrossThirdPartyAppsAndServices:
               userData.agreeToTrackingAcrossThirdPartyAppsAndServices || false,
-          });
+          };
+
+          setFormData(formattedData);
+          setOriginalData(formattedData);
         } else {
           setGeneralError("User not found");
-          navigate("/users");
+          navigate("/admin/users");
         }
       } catch (err) {
         console.error("Failed to load user details:", err);
         setGeneralError("Failed to load user details. Please try again.");
+
+        setStatusMessage({
+          type: "error",
+          message: "Failed to load user details. Please try again.",
+        });
       } finally {
         setIsLoadingUser(false);
       }
@@ -152,48 +198,89 @@ const UserEditPage = () => {
 
   // Handle API errors when they occur
   useEffect(() => {
-    if (error) {
-      console.error("Error detected:", error);
+    if (apiError) {
+      console.error("Error detected:", apiError);
 
       // Set a general error message for display in the UI
       setGeneralError(
         "Failed to update user. Please check your input and try again.",
       );
 
+      setStatusMessage({
+        type: "error",
+        message:
+          apiError.message ||
+          "Failed to update user. Please check your input and try again.",
+      });
+
       // Check for response data with field validation errors
-      if (error.response && error.response.data) {
-        console.log("Response data:", error.response.data);
+      if (apiError.response && apiError.response.data) {
+        console.log("Response data:", apiError.response.data);
 
         // Handle object with field validation errors
         if (
-          typeof error.response.data === "object" &&
-          !Array.isArray(error.response.data)
+          typeof apiError.response.data === "object" &&
+          !Array.isArray(apiError.response.data)
         ) {
-          setErrors(error.response.data);
+          setErrors(apiError.response.data);
         }
         // Handle string error message
-        else if (typeof error.response.data === "string") {
-          setGeneralError(error.response.data);
+        else if (typeof apiError.response.data === "string") {
+          setGeneralError(apiError.response.data);
         }
         // Handle error with message property
-        else if (error.response.data.message) {
-          setGeneralError(error.response.data.message);
+        else if (apiError.response.data.message) {
+          setGeneralError(apiError.response.data.message);
         }
       }
       // Handle error with message property
-      else if (error.message && typeof error.message === "string") {
-        setGeneralError(error.message);
+      else if (apiError.message && typeof apiError.message === "string") {
+        setGeneralError(apiError.message);
       }
 
       // Set form field errors if available in the error object
-      if (error.errors) {
-        setErrors(error.errors);
+      if (apiError.errors) {
+        setErrors(apiError.errors);
       }
     } else {
       // Clear error when there's no error
       setGeneralError("");
     }
-  }, [error]);
+  }, [apiError]);
+
+  // Detect form changes
+  useEffect(() => {
+    // Compare current form data with original data
+    const checkForChanges = () => {
+      for (const key in formData) {
+        // Skip password as it's always different (empty at first)
+        if (key === "password") continue;
+
+        if (formData[key] !== originalData[key]) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    setHasChanges(checkForChanges());
+  }, [formData, originalData]);
+
+  // Handle successful update
+  useEffect(() => {
+    if (success) {
+      toast.success("User updated successfully");
+      setStatusMessage({
+        type: "success",
+        message: "User updated successfully!",
+      });
+
+      // Wait briefly to show success message before navigating
+      setTimeout(() => {
+        navigate(`/admin/users/${id}`);
+      }, 1500);
+    }
+  }, [success, navigate, id]);
 
   // Scroll to form card when errors are detected
   useEffect(() => {
@@ -211,13 +298,64 @@ const UserEditPage = () => {
     }
   }, [errors, generalError]);
 
-  // Handle successful update
-  useEffect(() => {
-    if (success) {
-      toast.success("User updated successfully");
-      navigate(`/users/${id}`);
+  // Refresh user data
+  const handleRefreshData = async () => {
+    if (!id) return;
+
+    setIsRefreshing(true);
+    try {
+      const userData = await fetchUserById(id);
+      if (userData) {
+        // Transform API response to form data format
+        const formattedData = {
+          email: userData.email || "",
+          firstName: userData.firstName || "",
+          lastName: userData.lastName || "",
+          password: "", // Leave blank for update
+          role: userData.role || USER_ROLE.INDIVIDUAL,
+          phone: userData.phone || "",
+          country: userData.country || "",
+          timezone: userData.timezone || "",
+          region: userData.region || "",
+          city: userData.city || "",
+          postalCode: userData.postalCode || "",
+          addressLine1: userData.addressLine1 || "",
+          addressLine2: userData.addressLine2 || "",
+          walletAddress: userData.walletAddress
+            ? userData.walletAddress.toString()
+            : "",
+          isEmailVerified: userData.wasEmailVerified || false,
+          profileVerificationStatus:
+            userData.profileVerificationStatus ||
+            PROFILE_VERIFICATION_STATUS.UNVERIFIED,
+          websiteURL: userData.websiteURL || "",
+          description: userData.description || "",
+          comicBookStoreName: userData.comicBookStoreName || "",
+          status: userData.status || USER_STATUS.ACTIVE,
+          agreeTermsOfService: userData.agreeTermsOfService || false,
+          agreePromotions: userData.agreePromotions || false,
+          agreeToTrackingAcrossThirdPartyAppsAndServices:
+            userData.agreeToTrackingAcrossThirdPartyAppsAndServices || false,
+        };
+
+        setFormData(formattedData);
+        setOriginalData(formattedData);
+
+        setStatusMessage({
+          type: "success",
+          message: "User data refreshed successfully!",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to refresh user details:", err);
+      setStatusMessage({
+        type: "error",
+        message: "Failed to refresh user data. Please try again.",
+      });
+    } finally {
+      setIsRefreshing(false);
     }
-  }, [success, navigate, id]);
+  };
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -262,6 +400,20 @@ const UserEditPage = () => {
     // If validation errors, set them and stop submission
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+
+      // Set error status message
+      setStatusMessage({
+        type: "error",
+        message: "Please correct the errors in the form before submitting.",
+      });
+
+      // Focus on the first field with an error
+      const firstErrorField = Object.keys(validationErrors)[0];
+      const errorElement = document.getElementById(firstErrorField);
+      if (errorElement) {
+        errorElement.focus();
+      }
+
       return;
     }
 
@@ -285,19 +437,34 @@ const UserEditPage = () => {
 
   // Handle cancel button
   const handleCancel = () => {
-    navigate(`/users/${id}`);
+    if (hasChanges) {
+      setShowCancelWarning(true);
+    } else {
+      navigate(`/admin/users/${id}`);
+    }
+  };
+
+  // Handle confirm cancel
+  const handleConfirmCancel = () => {
+    setShowCancelWarning(false);
+    navigate(`/admin/users/${id}`);
   };
 
   // Utility to check if a field has an error
   const hasError = (field) => Boolean(errors[field]);
 
   // Conditionally show/hide fields based on role
-  const isCompanyRole = formData.role === USER_ROLE.COMPANY;
-  const isRootUser = formData.role === USER_ROLE.ROOT;
+  const isCompanyRole =
+    formData.role === USER_ROLE.COMPANY.toString() ||
+    formData.role === USER_ROLE.COMPANY;
+  const isRootUser =
+    formData.role === USER_ROLE.ROOT.toString() ||
+    formData.role === USER_ROLE.ROOT;
 
   // Get role label
   const getRoleLabel = (roleCode) => {
-    switch (parseInt(roleCode, 10)) {
+    const role = parseInt(roleCode, 10);
+    switch (role) {
       case USER_ROLE.ROOT:
         return "Administrator";
       case USER_ROLE.COMPANY:
@@ -307,6 +474,13 @@ const UserEditPage = () => {
       default:
         return "Unknown";
     }
+  };
+
+  // Get tab style based on active status
+  const getTabStyle = (isActive) => {
+    return isActive
+      ? "border-b-2 border-purple-500 text-purple-700 font-medium"
+      : "text-gray-500 hover:text-gray-700 hover:border-gray-300";
   };
 
   return (
@@ -323,26 +497,89 @@ const UserEditPage = () => {
 
       <main
         id="main-content"
-        className="flex-grow container mx-auto px-4 py-8 max-w-4xl"
+        className="flex-grow container mx-auto px-4 py-8 max-w-5xl"
       >
         {/* Page Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-purple-900">Edit User</h1>
-          <button
-            onClick={handleCancel}
-            className="flex items-center text-gray-600 hover:text-gray-800"
-            aria-label="Return to user details"
-          >
-            <ArrowLeft className="h-5 w-5 mr-1" />
-            Cancel
-          </button>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center">
+            <button
+              onClick={handleCancel}
+              className="mr-3 text-purple-600 hover:text-purple-800 p-2 rounded-full hover:bg-purple-100 transition-colors"
+              aria-label="Return to user details"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-purple-900">
+                Update User
+              </h1>
+              {!isLoadingUser && (
+                <p className="text-gray-600">
+                  Modify information for {formData.firstName}{" "}
+                  {formData.lastName}
+                </p>
+              )}
+            </div>
+          </div>
+          <div>
+            <button
+              onClick={handleRefreshData}
+              disabled={isRefreshing}
+              className="px-3 py-2 border border-purple-300 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 flex items-center gap-1"
+              aria-label="Refresh user data"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+              />
+              <span className="hidden sm:inline">Refresh Data</span>
+            </button>
+          </div>
         </div>
+
+        {/* Status Message */}
+        {statusMessage.type && (
+          <div
+            ref={statusRef}
+            className={`
+              mb-6 p-4 rounded-lg flex items-center justify-between
+              ${statusMessage.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}
+              animate-fadeIn
+            `}
+            role="alert"
+            aria-live="polite"
+          >
+            <div className="flex items-center space-x-3">
+              {statusMessage.type === "success" ? (
+                <Check
+                  className="h-5 w-5 text-green-500 flex-shrink-0"
+                  aria-hidden="true"
+                />
+              ) : (
+                <AlertCircle
+                  className="h-5 w-5 text-red-500 flex-shrink-0"
+                  aria-hidden="true"
+                />
+              )}
+              <p className="font-medium text-sm">{statusMessage.message}</p>
+            </div>
+            <button
+              onClick={() => setStatusMessage({ type: null, message: "" })}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+              aria-label="Dismiss message"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoadingUser && (
-          <div className="bg-white rounded-xl shadow-md p-8 mb-6 flex flex-col items-center justify-center">
-            <Loader className="h-8 w-8 text-purple-600 animate-spin mb-4" />
-            <p className="text-gray-600">Loading user details...</p>
+          <div className="bg-white rounded-xl shadow-md p-8 flex flex-col items-center justify-center">
+            <div className="animate-pulse space-y-6 text-center">
+              <div className="h-12 w-12 mx-auto rounded-full bg-purple-200"></div>
+              <p className="text-gray-600 font-medium">Loading user data...</p>
+              <span className="sr-only">Loading user data</span>
+            </div>
           </div>
         )}
 
@@ -353,44 +590,57 @@ const UserEditPage = () => {
             className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 scroll-mt-16"
           >
             {/* Card Header */}
-            <div className="p-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center">
-              <User className="h-6 w-6 mr-3" aria-hidden="true" />
-              <div>
-                <h2 className="text-xl font-semibold">Edit User Information</h2>
-                <p className="text-sm text-purple-100">
-                  Update details for {formData.firstName} {formData.lastName}
-                </p>
+            <div className="p-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center">
+                  <User className="h-6 w-6 mr-3" aria-hidden="true" />
+                  <div>
+                    <h2 className="text-xl font-semibold">
+                      Edit User Information
+                    </h2>
+                    <p className="text-sm text-purple-100">
+                      Modify details for {formData.firstName}{" "}
+                      {formData.lastName}
+                    </p>
+                  </div>
+                </div>
+
+                {hasChanges && (
+                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
+                    <Info className="h-4 w-4 mr-1" />
+                    Unsaved changes
+                  </div>
+                )}
               </div>
             </div>
 
+            {/* Error Summary */}
+            {(Object.keys(errors).length > 0 || generalError) && (
+              <div className="p-4 m-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <div className="flex items-center gap-2 font-medium mb-2">
+                  <AlertCircle className="h-5 w-5" />
+                  <h3>Please correct the following errors:</h3>
+                </div>
+                {generalError && <p className="text-sm mb-2">{generalError}</p>}
+                {Object.keys(errors).length > 0 && (
+                  <ul className="list-disc ml-5 space-y-1 text-sm">
+                    {Object.entries(errors).map(
+                      ([field, message]) =>
+                        message && <li key={field}>{message}</li>,
+                    )}
+                  </ul>
+                )}
+              </div>
+            )}
+
             {/* Form Content */}
             <form onSubmit={handleSubmit} className="p-6 space-y-6" noValidate>
-              {/* Error Summary */}
-              {(Object.keys(errors).length > 0 || generalError) && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                  <div className="flex items-center gap-2 font-medium mb-2">
-                    <AlertCircle className="h-5 w-5" />
-                    <h3>Please correct the following errors:</h3>
-                  </div>
-                  {generalError && (
-                    <p className="text-sm mb-2">{generalError}</p>
-                  )}
-                  {Object.keys(errors).length > 0 && (
-                    <ul className="list-disc ml-5 space-y-1 text-sm">
-                      {Object.entries(errors).map(
-                        ([field, message]) =>
-                          message && <li key={field}>{message}</li>,
-                      )}
-                    </ul>
-                  )}
-                </div>
-              )}
-
               {/* Form Sections */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Information Section */}
-                <div className="md:col-span-2 border-b border-gray-200 pb-4">
-                  <h3 className="font-medium text-gray-800 mb-4">
+                <div className="md:col-span-2 border-b border-gray-200 pb-6">
+                  <h3 className="font-medium text-gray-800 mb-4 flex items-center">
+                    <UserCircle className="h-5 w-5 text-purple-600 mr-2" />
                     Basic Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -435,25 +685,39 @@ const UserEditPage = () => {
                         className="block text-sm font-medium text-gray-700 mb-1"
                       >
                         Password{" "}
-                        <span className="text-gray-400">(optional)</span>
+                        <span className="text-gray-400 text-xs">
+                          (optional)
+                        </span>
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <Lock className="h-5 w-5 text-gray-400" />
                         </div>
                         <input
-                          type="password"
+                          type={showPassword ? "text" : "password"}
                           id="password"
                           name="password"
                           value={formData.password}
                           onChange={handleInputChange}
-                          className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                             hasError("password")
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300"
                           }`}
                           placeholder="Leave blank to keep current password"
                         />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                          onClick={() => setShowPassword(!showPassword)}
+                          tabIndex="-1"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5" aria-hidden="true" />
+                          ) : (
+                            <Eye className="h-5 w-5" aria-hidden="true" />
+                          )}
+                        </button>
                       </div>
                       {errors.password && (
                         <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -579,12 +843,6 @@ const UserEditPage = () => {
                             </option>
                           </select>
                         )}
-                        <input
-                          type="hidden"
-                          name="role"
-                          value={formData.role}
-                          readOnly={isRootUser}
-                        />
                       </div>
                       {isRootUser && (
                         <p className="mt-1 text-xs text-gray-500">
@@ -616,13 +874,14 @@ const UserEditPage = () => {
                           type="tel"
                           id="phone"
                           name="phone"
-                          value={formData.phone}
+                          value={formData.phone || ""}
                           onChange={handleInputChange}
                           className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                             hasError("phone")
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300"
                           }`}
+                          placeholder="+1 (555) 123-4567"
                         />
                       </div>
                       {errors.phone && (
@@ -676,14 +935,6 @@ const UserEditPage = () => {
                             </option>
                           </select>
                         )}
-                        <input
-                          type="hidden"
-                          name="status"
-                          value={
-                            isRootUser ? USER_STATUS.ACTIVE : formData.status
-                          }
-                          readOnly={isRootUser}
-                        />
                       </div>
                       {isRootUser && (
                         <p className="mt-1 text-xs text-gray-500">
@@ -751,7 +1002,7 @@ const UserEditPage = () => {
                     </div>
 
                     {/* Email Verified Checkbox */}
-                    <div>
+                    <div className="md:col-span-2">
                       <div className="flex items-start mt-4">
                         <div className="flex items-center h-5">
                           <input
@@ -781,8 +1032,9 @@ const UserEditPage = () => {
 
                 {/* Business Information (Conditional) */}
                 {isCompanyRole && (
-                  <div className="md:col-span-2 border-b border-gray-200 pb-4">
-                    <h3 className="font-medium text-gray-800 mb-4">
+                  <div className="md:col-span-2 border-b border-gray-200 pb-6">
+                    <h3 className="font-medium text-gray-800 mb-4 flex items-center">
+                      <Building className="h-5 w-5 text-purple-600 mr-2" />
                       Business Information
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -809,6 +1061,7 @@ const UserEditPage = () => {
                                 ? "border-red-500 bg-red-50"
                                 : "border-gray-300"
                             }`}
+                            placeholder="Amazing Comics"
                           />
                         </div>
                         {errors.comicBookStoreName && (
@@ -842,6 +1095,7 @@ const UserEditPage = () => {
                                 ? "border-red-500 bg-red-50"
                                 : "border-gray-300"
                             }`}
+                            placeholder="https://example.com"
                           />
                         </div>
                         {errors.websiteURL && (
@@ -856,8 +1110,9 @@ const UserEditPage = () => {
                 )}
 
                 {/* Location Information */}
-                <div className="md:col-span-2 border-b border-gray-200 pb-4">
-                  <h3 className="font-medium text-gray-800 mb-4">
+                <div className="md:col-span-2 border-b border-gray-200 pb-6">
+                  <h3 className="font-medium text-gray-800 mb-4 flex items-center">
+                    <MapPin className="h-5 w-5 text-purple-600 mr-2" />
                     Location Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -885,6 +1140,7 @@ const UserEditPage = () => {
                               : "border-gray-300"
                           }`}
                           required
+                          placeholder="America/New_York"
                         />
                       </div>
                       {errors.timezone && (
@@ -918,6 +1174,7 @@ const UserEditPage = () => {
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300"
                           }`}
+                          placeholder="United States"
                         />
                       </div>
                       {errors.country && (
@@ -951,6 +1208,7 @@ const UserEditPage = () => {
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300"
                           }`}
+                          placeholder="New York"
                         />
                       </div>
                       {errors.city && (
@@ -984,6 +1242,7 @@ const UserEditPage = () => {
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300"
                           }`}
+                          placeholder="NY"
                         />
                       </div>
                       {errors.region && (
@@ -1017,6 +1276,7 @@ const UserEditPage = () => {
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300"
                           }`}
+                          placeholder="10001"
                         />
                       </div>
                       {errors.postalCode && (
@@ -1050,6 +1310,7 @@ const UserEditPage = () => {
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300"
                           }`}
+                          placeholder="123 Main St"
                         />
                       </div>
                       {errors.addressLine1 && (
@@ -1083,6 +1344,7 @@ const UserEditPage = () => {
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300"
                           }`}
+                          placeholder="Apt 4B"
                         />
                       </div>
                       {errors.addressLine2 && (
@@ -1096,8 +1358,9 @@ const UserEditPage = () => {
                 </div>
 
                 {/* Blockchain Information */}
-                <div className="md:col-span-2 border-b border-gray-200 pb-4">
-                  <h3 className="font-medium text-gray-800 mb-4">
+                <div className="md:col-span-2 border-b border-gray-200 pb-6">
+                  <h3 className="font-medium text-gray-800 mb-4 flex items-center">
+                    <Wallet className="h-5 w-5 text-purple-600 mr-2" />
                     Blockchain Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1124,6 +1387,7 @@ const UserEditPage = () => {
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300"
                           }`}
+                          placeholder="0x..."
                         />
                       </div>
                       {errors.walletAddress && (
@@ -1141,7 +1405,8 @@ const UserEditPage = () => {
 
                 {/* Additional Information */}
                 <div className="md:col-span-2">
-                  <h3 className="font-medium text-gray-800 mb-4">
+                  <h3 className="font-medium text-gray-800 mb-4 flex items-center">
+                    <FileText className="h-5 w-5 text-purple-600 mr-2" />
                     Additional Information
                   </h3>
                   <div>
@@ -1168,6 +1433,7 @@ const UserEditPage = () => {
                               ? "border-red-500 bg-red-50"
                               : "border-gray-300"
                           }`}
+                          placeholder="Brief description of the user or their business..."
                         />
                       </div>
                       {errors.description && (
@@ -1264,60 +1530,163 @@ const UserEditPage = () => {
               </div>
 
               {/* Form Actions */}
-              <div className="pt-4 flex flex-col sm:flex-row-reverse gap-3">
+              <div className="pt-6 flex flex-col sm:flex-row-reverse justify-between gap-3 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="submit"
+                    disabled={isLoading || !hasChanges}
+                    className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
+                      isLoading || !hasChanges
+                        ? "bg-purple-300 cursor-not-allowed text-white"
+                        : "bg-purple-600 hover:bg-purple-700 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                    }`}
+                  >
+                    {isUpdating ? (
+                      <>
+                        <Loader className="h-5 w-5 animate-spin" />
+                        Saving Changes...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-5 w-5" />
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    disabled={isLoading}
+                    className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
                 <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  type="button"
+                  onClick={handleRefreshData}
+                  disabled={isRefreshing || isUpdating}
+                  className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isUpdating ? (
+                  {isRefreshing ? (
                     <>
                       <Loader className="h-5 w-5 animate-spin" />
-                      Saving...
+                      Refreshing...
                     </>
                   ) : (
                     <>
-                      <Save className="h-5 w-5" />
-                      Save Changes
+                      <RefreshCw className="h-5 w-5" />
+                      Reset Form
                     </>
                   )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={isLoading}
-                  className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Cancel
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Helpful Information */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <h3 className="font-medium text-blue-800 mb-1">
-                User Account Management
-              </h3>
-              <p className="text-sm text-blue-700">
-                When updating a user's information, be careful with changing
-                their role or status as it may affect their access to the
-                system. Leave the password field blank to keep the current
-                password unchanged. Email changes may require the user to verify
-                their new email address.
-              </p>
+        {/* No User Found */}
+        {!isLoadingUser && !formData.email && !apiError && (
+          <div className="bg-white rounded-xl shadow-md p-8 text-center">
+            <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+              <AlertCircle className="h-8 w-8 text-yellow-500" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-700 mb-2">
+              User Not Found
+            </h2>
+            <p className="text-gray-600 mb-6">
+              We couldn't find a user with the ID: {id}
+            </p>
+            <button
+              onClick={() => navigate("/admin/users")}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center"
+            >
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Back to User List
+            </button>
+          </div>
+        )}
+
+        {/* Help Information */}
+        {!isLoadingUser && (
+          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium text-blue-800 mb-1">
+                  Editing User Account
+                </h3>
+                <p className="text-sm text-blue-700">
+                  When updating a user's information, be careful with changing
+                  role or status as it may affect their access. Leave the
+                  password field blank to keep the current password unchanged.
+                  Email changes may require the user to verify their new email
+                  address depending on your settings.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
 
       <AdminFooter />
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 animate-fadeIn">
+            <div className="text-center mb-4">
+              <div className="mx-auto h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center mb-4">
+                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Discard Changes?
+              </h3>
+              <p className="text-gray-600 mt-2">
+                You have unsaved changes that will be lost if you leave this
+                page. Are you sure you want to continue?
+              </p>
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowCancelWarning(false)}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors"
+              >
+                Continue Editing
+              </button>
+              <button
+                onClick={handleConfirmCancel}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Discard Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Animation styles */}
+      <style jsx="true">{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };
 
-export default UserEditPage;
+export default AdminUpdateUserPage;

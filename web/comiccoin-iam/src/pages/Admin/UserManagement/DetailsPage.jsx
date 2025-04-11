@@ -94,7 +94,7 @@ const UserDetailsPage = () => {
     try {
       await deleteUser(id);
       toast.success("User deleted successfully");
-      navigate("/users");
+      navigate("/admin/users");
     } catch (err) {
       console.error("Failed to delete user:", err);
       setGeneralError("Failed to delete user. Please try again.");
@@ -106,12 +106,12 @@ const UserDetailsPage = () => {
 
   // Navigate to edit page
   const handleEdit = () => {
-    navigate(`/users/${id}/edit`);
+    navigate(`/admin/users/${id}/edit`);
   };
 
   // Navigate back to list
   const handleBackToList = () => {
-    navigate("/users");
+    navigate("/admin/users");
   };
 
   // Format date for display

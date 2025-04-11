@@ -42,7 +42,7 @@ import AdminDashboardPage from "./pages/Admin/Dashboard/Page";
 import UserListPage from "./pages/Admin/UserManagement/ListPage";
 import UserDetailsPage from "./pages/Admin/UserManagement/DetailsPage";
 import UserAddPage from "./pages/Admin/UserManagement/AddPage";
-import UserEditPage from "./pages/Admin/UserManagement/EditPage";
+import AdminUpdateUserPage from "./pages/Admin/UserManagement/UpdatePage";
 // More
 import AdminMorePage from "./pages/Admin/More/Page";
 import AdminDeleteAccountPage from "./pages/Admin/More/DeleteAccountPage";
@@ -281,7 +281,7 @@ function App() {
               path="/admin/users/:id/edit"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <UserEditPage />
+                  <AdminUpdateUserPage />
                 </ProtectedRoute>
               }
             />
