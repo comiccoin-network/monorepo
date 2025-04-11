@@ -16,6 +16,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	dom "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/publicwallet"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/user"
 	svc "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/service/publicwallet"
 )
 
@@ -56,7 +57,21 @@ func (h *listPublicWalletsByFilterHTTPHandlerImpl) Handle(w http.ResponseWriter,
 		httperror.ResponseError(w, errors.New("test"))
 		return
 	}
-	filter.CreatedByUserID = userID
+
+	userRole, _ := ctx.Value(constants.SessionUserRole).(int8)
+	if userRole == dom_user.UserRoleRoot {
+		createdAtIDStr := r.URL.Query().Get("user_id")
+		if createdAtIDStr != "" {
+			createdAtID, err := primitive.ObjectIDFromHex(createdAtIDStr)
+			if err != nil {
+				httperror.ResponseError(w, err)
+				return
+			}
+			filter.CreatedByUserID = createdAtID
+		}
+	} else {
+		filter.CreatedByUserID = userID
+	}
 
 	// Parse created_at_start if provided
 	createdAtStartStr := r.URL.Query().Get("created_at_start")
