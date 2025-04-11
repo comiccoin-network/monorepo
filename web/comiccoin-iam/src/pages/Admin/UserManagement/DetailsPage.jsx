@@ -1143,7 +1143,7 @@ const UserDetailsPage = () => {
 
                       {/* Create New Wallet Link (opens in new window) */}
                       <a
-                        href={`/admin/wallets/add?userId=${id}`}
+                        href={`/admin/users/${id}/add-wallet`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700"

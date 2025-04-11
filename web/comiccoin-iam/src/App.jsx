@@ -43,6 +43,8 @@ import UserListPage from "./pages/Admin/UserManagement/ListPage";
 import UserDetailsPage from "./pages/Admin/UserManagement/DetailsPage";
 import UserAddPage from "./pages/Admin/UserManagement/AddPage";
 import AdminUpdateUserPage from "./pages/Admin/UserManagement/UpdatePage";
+import AdminAddWalletPage from "./pages/Admin/UserManagement/AddWalletPage";
+
 // More
 import AdminMorePage from "./pages/Admin/More/Page";
 import AdminDeleteAccountPage from "./pages/Admin/More/DeleteAccountPage";
@@ -282,6 +284,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminUpdateUserPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users/:id/add-wallet"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminAddWalletPage />
                 </ProtectedRoute>
               }
             />
