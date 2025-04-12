@@ -15,6 +15,10 @@ import {
   Info,
   Building,
   User,
+  CheckCircle,
+  Clock,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
@@ -62,6 +66,7 @@ const AdminUserPublicWalletUpdatePage = () => {
     status: 1, // Default to active
     type: 3, // Default to individual
     websiteURL: "", // Added website URL
+    isVerified: false, // Added isVerified boolean field
   });
 
   // Combine loading states
@@ -85,6 +90,12 @@ const AdminUserPublicWalletUpdatePage = () => {
       default:
         return "Unknown";
     }
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString || dateString === "0001-01-01T00:00:00Z") return "N/A";
+    return new Date(dateString).toLocaleString();
   };
 
   // Fetch wallet data on component mount
@@ -112,6 +123,8 @@ const AdminUserPublicWalletUpdatePage = () => {
             type: walletData.type || 3,
             websiteURL: walletData.websiteURL || "",
             viewCount: walletData.viewCount || 0,
+            isVerified: walletData.isVerified || false, // Initialize isVerified field
+            verifiedOn: walletData.verifiedOn || null, // Add verifiedOn to track when it was verified
           });
         } else {
           console.warn("No wallet data found");
@@ -201,8 +214,18 @@ const AdminUserPublicWalletUpdatePage = () => {
 
   // Handle input changes
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    const newValue = type === "checkbox" ? checked : value;
+
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
+
+    // If toggling isVerified to true, set the verified date to now
+    if (name === "isVerified" && newValue === true && !formData.isVerified) {
+      setFormData((prev) => ({
+        ...prev,
+        verifiedOn: new Date().toISOString(),
+      }));
+    }
 
     // Clear error for this field when user starts typing
     if (errors[name]) {
@@ -219,35 +242,100 @@ const AdminUserPublicWalletUpdatePage = () => {
     setErrors({});
     setGeneralError("");
 
-    // Set flag to indicate we've submitted the form
-    setHasSubmitted(true);
+    // Set updating state to true to show loading indicators and disable buttons
     setIsUpdating(true);
+    setHasSubmitted(true);
 
     try {
       console.log("Updating wallet with address:", address);
       console.log("Form data:", formData);
 
-      // Make sure the address is included in the data we're sending
-      const dataToUpdate = {
-        ...formData,
-        address: address, // Ensure address is explicitly included
+      // The issue is that prepareWalletForApi in publicWalletApi.js doesn't include
+      // is_verified in the data it sends to the API.
+      // Let's modify our approach to workaround this limitation
+
+      // First, create a direct axios call to update the wallet
+      // This bypasses the prepareWalletForApi function completely
+      const axiosClient = (await import("../../../../api/axiosClient")).default;
+
+      // Create payload with all fields, keeping the API's expected snake_case naming
+      const apiPayload = {
+        address: formData.address,
+        chain_id: formData.chainId,
+        name: formData.name,
+        description: formData.description,
+        thumbnail_s3_key: formData.thumbnailS3Key || "",
+        view_count: formData.viewCount || 0,
+        website_url: formData.websiteURL || "",
+        status: formData.status,
+        type: formData.type,
+        user_id: userId,
+        is_verified: formData.isVerified,
+        verified_on: formData.isVerified
+          ? formData.verifiedOn || new Date().toISOString()
+          : null,
       };
 
-      // Use the updatePublicWallet function from the usePublicWallet hook
-      const response = await updatePublicWallet(address, dataToUpdate);
-      console.log("Update response:", response);
+      console.log("Direct API payload:", apiPayload);
+
+      try {
+        // Make a direct API call to ensure all fields are sent correctly
+        const response = await axiosClient.put(
+          `/public-wallets/${address}`,
+          apiPayload,
+        );
+        console.log("Update response from direct API call:", response.data);
+
+        // Invalidate and refetch queries related to user wallets
+        // This ensures the user details page shows up-to-date wallet information
+        if (userId) {
+          queryClient.invalidateQueries(["user", userId]);
+          queryClient.invalidateQueries(["userWallets", userId]);
+          queryClient.invalidateQueries(["wallets"]);
+          queryClient.invalidateQueries(["publicWallets"]);
+        }
+
+        // Show success message
+        toast.success("Wallet updated successfully");
+
+        // Navigate back to user details page after successful update
+        navigate(`/admin/users/${userId}`);
+
+        return response.data.public_wallet;
+      } catch (apiError) {
+        console.error("Direct API call failed:", apiError);
+        // If direct API call fails, fall back to the hook method
+        console.log("Falling back to hook method");
+
+        try {
+          const response = await updatePublicWallet(address, formData);
+
+          // Show success message
+          toast.success("Wallet updated successfully");
+
+          // Navigate back to user details page after successful update
+          navigate(`/admin/users/${userId}`);
+
+          return response;
+        } catch (hookError) {
+          console.error("Hook method also failed:", hookError);
+          throw hookError; // Rethrow to be caught by outer catch block
+        }
+      }
 
       // Invalidate and refetch queries related to user wallets
       // This ensures the user details page shows up-to-date wallet information
       if (userId) {
-        // Invalidate any queries that might include this wallet
         queryClient.invalidateQueries(["user", userId]);
         queryClient.invalidateQueries(["userWallets", userId]);
         queryClient.invalidateQueries(["wallets"]);
         queryClient.invalidateQueries(["publicWallets"]);
       }
 
+      // Show success message
       toast.success("Wallet updated successfully");
+
+      // Navigate back to user details page after successful update
       navigate(`/admin/users/${userId}`);
     } catch (err) {
       // Log the error for debugging
@@ -295,6 +383,7 @@ const AdminUserPublicWalletUpdatePage = () => {
         setGeneralError(err.message);
       }
     } finally {
+      // Make sure we reset the loading state regardless of success or failure
       setIsUpdating(false);
     }
   };
@@ -412,6 +501,70 @@ const AdminUserPublicWalletUpdatePage = () => {
                   )}
                 </div>
               )}
+
+              {/* Verification Status Section */}
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h3 className="font-medium text-gray-800 mb-4 flex items-center">
+                  <CheckCircle className="h-5 w-5 text-purple-600 mr-2" />
+                  Verification Status
+                </h3>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center">
+                      <label
+                        htmlFor="isVerified"
+                        className="font-medium text-gray-700 cursor-pointer"
+                      >
+                        Wallet Verification
+                      </label>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {formData.isVerified
+                        ? "This wallet is marked as verified, increasing user trust"
+                        : "Mark this wallet as verified to increase user trust"}
+                    </p>
+                    {formData.verifiedOn && formData.isVerified && (
+                      <div className="flex items-center text-xs text-gray-500 mt-2">
+                        <Clock className="h-3 w-3 mr-1" />
+                        <span>
+                          Verified on: {formatDate(formData.verifiedOn)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    <label
+                      htmlFor="isVerified"
+                      className="inline-flex items-center cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        name="isVerified"
+                        id="isVerified"
+                        checked={formData.isVerified}
+                        onChange={handleInputChange}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`relative w-12 h-6 rounded-full transition-colors ${
+                          formData.isVerified ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                      >
+                        <div
+                          className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
+                            formData.isVerified ? "transform translate-x-6" : ""
+                          }`}
+                        ></div>
+                      </div>
+                      <span className="ml-2 text-sm font-medium text-gray-700">
+                        {formData.isVerified ? "Verified" : "Not Verified"}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
 
               {/* Wallet Address (read-only since it's the ID) */}
               <div>
@@ -659,10 +812,14 @@ const AdminUserPublicWalletUpdatePage = () => {
               <div className="pt-4 flex flex-col sm:flex-row-reverse gap-3">
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  disabled={isLoading || isUpdating}
+                  className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
+                    isLoading || isUpdating
+                      ? "bg-purple-400 cursor-not-allowed text-white"
+                      : "bg-purple-600 hover:bg-purple-700 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                  }`}
                 >
-                  {isLoading ? (
+                  {isLoading || isUpdating ? (
                     <>
                       <Loader className="h-5 w-5 animate-spin" />
                       Saving...
@@ -677,7 +834,7 @@ const AdminUserPublicWalletUpdatePage = () => {
                 <button
                   type="button"
                   onClick={handleCancel}
-                  disabled={isLoading}
+                  disabled={isLoading || isUpdating}
                   className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
@@ -697,9 +854,9 @@ const AdminUserPublicWalletUpdatePage = () => {
               </h3>
               <p className="text-sm text-blue-700">
                 Changes to your public wallet will be visible to others
-                immediately. Consider archiving wallets instead of deleting them
-                if you want to preserve your transaction history but don't want
-                the wallet to appear prominently in your profile.
+                immediately. The verification badge helps users identify trusted
+                wallets and increases confidence in transactions. Only
+                administrators can mark wallets as verified.
               </p>
             </div>
           </div>
