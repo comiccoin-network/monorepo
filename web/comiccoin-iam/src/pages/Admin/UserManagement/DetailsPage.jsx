@@ -36,6 +36,7 @@ import {
   ChevronRight,
   Plus,
   ArrowRight,
+  ExternalLink as ExternalLinkIcon,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { QRCodeSVG } from "qrcode.react";
@@ -1320,7 +1321,7 @@ const UserDetailsPage = () => {
                                   className="text-xs inline-flex items-center px-2 py-1 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded transition-colors"
                                 >
                                   View Details
-                                  <ArrowRight className="ml-1 h-3 w-3" />
+                                  <ExternalLinkIcon className="ml-1 h-3 w-3" />
                                 </button>
                               </div>
                             </div>
