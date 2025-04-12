@@ -16,8 +16,8 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import UserTopNavigation from "../../../../components/UserTopNavigation";
-import UserFooter from "../../../../components/UserFooter";
+import AdminTopNavigation from "../../../../components/AdminTopNavigation";
+import AdminFooter from "../../../../components/AdminFooter";
 import withProfileVerification from "../../../../components/withProfileVerification";
 import { usePublicWallet } from "../../../../hooks/usePublicWallet";
 
@@ -301,7 +301,7 @@ const AdminUserPublicWalletUpdatePage = () => {
         Skip to main content
       </a>
 
-      <UserTopNavigation />
+      <AdminTopNavigation />
 
       <main
         userId="main-content"
@@ -693,7 +693,7 @@ const AdminUserPublicWalletUpdatePage = () => {
         </div>
       </main>
 
-      <UserFooter />
+      <AdminFooter />
     </div>
   );
 };
