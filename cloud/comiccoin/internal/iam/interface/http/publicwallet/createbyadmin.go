@@ -1,4 +1,4 @@
-// cloud/comiccoin/internal/iam/interface/http/publicwallet/create.go
+// cloud/comiccoin/internal/iam/interface/http/publicwallet/createbyadmin.go
 package publicwallet
 
 import (

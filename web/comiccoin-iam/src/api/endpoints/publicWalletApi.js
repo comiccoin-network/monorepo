@@ -1,5 +1,4 @@
-// src/api/endpoints/publicWalletApi.js
-// src/api/endpoints/publicWalletApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/publicWalletApi.js
 import { usePrivateQuery, usePrivateMutation } from "../../hooks/useApi";
 import axiosClient from "../axiosClient";
 
@@ -53,6 +52,17 @@ export const useListPublicWallets = (filters = {}, options = {}) => {
  */
 export const useCreatePublicWallet = (options = {}) => {
   return usePrivateMutation("/public-wallets", "post", {
+    invalidateQueries: ["publicWallets"],
+    ...options,
+  });
+};
+
+/**
+ * Custom hook for creating a public wallet as an admin
+ * This endpoint accepts additional fields: user_id, status, and is_verified
+ */
+export const useCreatePublicWalletByAdmin = (options = {}) => {
+  return usePrivateMutation("/public-wallets-by-admin", "post", {
     invalidateQueries: ["publicWallets"],
     ...options,
   });
@@ -190,14 +200,36 @@ export function prepareWalletForApi(wallet) {
   };
 }
 
+/**
+ * Prepare wallet data for admin API submission
+ * Includes additional fields needed for admin creation
+ */
+export function prepareWalletForAdminApi(wallet) {
+  return {
+    address: wallet.address,
+    chain_id: wallet.chainId,
+    name: wallet.name,
+    description: wallet.description,
+    user_id: wallet.userId, // Required for admin creation
+    status: wallet.status || WALLET_STATUS.ACTIVE, // Default to active if not specified
+    is_verified: wallet.isVerified || false, // Default to false if not specified
+    // Optional fields
+    thumbnail_s3_key: wallet.thumbnailS3Key,
+    website_url: wallet.websiteURL,
+    type: wallet.type,
+  };
+}
+
 export default {
   getPublicWalletByAddress,
   useListPublicWallets,
   useCreatePublicWallet,
+  useCreatePublicWalletByAdmin,
   useUpdatePublicWalletByAddress,
   useDeletePublicWalletByAddress,
   transformPublicWallet,
   prepareWalletForApi,
+  prepareWalletForAdminApi,
   WALLET_STATUS,
   WALLET_TYPE,
 };

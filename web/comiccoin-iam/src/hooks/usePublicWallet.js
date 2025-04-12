@@ -4,11 +4,13 @@ import axiosClient from "../api/axiosClient";
 import {
   getPublicWalletByAddress,
   useCreatePublicWallet,
+  useCreatePublicWalletByAdmin,
   useUpdatePublicWalletByAddress,
   useDeletePublicWalletByAddress,
   useListPublicWallets,
   transformPublicWallet,
   prepareWalletForApi,
+  prepareWalletForAdminApi,
   WALLET_STATUS,
   WALLET_TYPE,
 } from "../api/endpoints/publicWalletApi";
@@ -23,6 +25,7 @@ export function usePublicWallet() {
 
   // Get API hooks
   const { mutateAsync: createWallet } = useCreatePublicWallet();
+  const { mutateAsync: createWalletByAdmin } = useCreatePublicWalletByAdmin();
   const updateWalletHook = useUpdatePublicWalletByAddress();
   const deleteWalletHook = useDeletePublicWalletByAddress();
 
@@ -95,6 +98,49 @@ export function usePublicWallet() {
       }
     },
     [createWallet, reset],
+  );
+
+  /**
+   * Create a new public wallet as admin
+   * This allows setting additional fields like user_id, status, and verification
+   */
+  const createPublicWalletByAdmin = useCallback(
+    async (walletData) => {
+      reset();
+      setIsLoading(true);
+
+      try {
+        console.log("🔄 Creating public wallet as admin");
+        console.log("With data:", walletData);
+
+        // Make sure required fields are present
+        if (!walletData.userId) {
+          throw new Error("User ID is required to create a wallet as admin");
+        }
+
+        // Prepare data for admin API
+        const apiData = prepareWalletForAdminApi(walletData);
+        console.log("Prepared admin API data:", apiData);
+
+        const response = await createWalletByAdmin(apiData);
+
+        // Extract wallet from response or handle if response structure is different
+        const wallet = response.public_wallet
+          ? transformPublicWallet(response.public_wallet)
+          : null;
+
+        setSuccess(true);
+        return wallet;
+      } catch (err) {
+        console.error("❌ Error creating wallet as admin:", err);
+
+        setError(new Error(err.message || "Failed to create wallet as admin"));
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [createWalletByAdmin, reset],
   );
 
   /**
@@ -188,6 +234,7 @@ export function usePublicWallet() {
   return {
     fetchWalletByAddress,
     createPublicWallet,
+    createPublicWalletByAdmin,
     updatePublicWallet,
     deletePublicWallet,
     isLoading,
