@@ -1,4 +1,4 @@
-// src/pages/PublicWalletDirectory/ListPage.jsx
+// src/pages/Anonymous/PublicWalletDirectory/ListPage.jsx
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router";
 import {
@@ -30,13 +30,13 @@ import {
   AlertTriangle,
   Loader,
 } from "lucide-react";
-import Header from "../../components/IndexPage/Header";
-import Footer from "../../components/IndexPage/Footer";
+import Header from "../../../components/IndexPage/Header";
+import Footer from "../../../components/IndexPage/Footer";
 import {
   usePublicWalletDirectoryList,
   usePublicWalletDirectory,
   WALLET_TYPE,
-} from "../../hooks/usePublicWalletDirectory";
+} from "../../../hooks/usePublicWalletDirectory";
 
 const PublicWalletDirectoryListPage = () => {
   const location = useLocation();

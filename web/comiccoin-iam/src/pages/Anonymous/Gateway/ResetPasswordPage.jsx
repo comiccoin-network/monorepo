@@ -1,4 +1,4 @@
-// src/pages/Gateway/ResetPasswordPage.jsx
+// src/pages/Anonymous/Gateway/ResetPasswordPage.jsx
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
 import {
@@ -13,9 +13,9 @@ import {
   Mail,
   Clock,
 } from "lucide-react";
-import Header from "../../components/IndexPage/Header";
-import Footer from "../../components/IndexPage/Footer";
-import { useResetPassword } from "../../hooks/useResetPassword";
+import Header from "../../../components/IndexPage/Header";
+import Footer from "../../../components/IndexPage/Footer";
+import { useResetPassword } from "../../../hooks/useResetPassword";
 
 // Countdown Timer Component
 const CountdownTimer = ({ expirationTime }) => {

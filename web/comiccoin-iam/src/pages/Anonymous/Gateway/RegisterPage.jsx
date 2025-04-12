@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/Gateway/RegisterPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Anonymous/Gateway/RegisterPage.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import {
@@ -18,9 +18,9 @@ import {
   AlertTriangle,
   KeyRound,
 } from "lucide-react";
-import { useRegistration } from "../../hooks/useRegistration";
-import Header from "../../components/IndexPage/Header";
-import Footer from "../../components/IndexPage/Footer";
+import { useRegistration } from "../../../hooks/useRegistration";
+import Header from "../../../components/IndexPage/Header";
+import Footer from "../../../components/IndexPage/Footer";
 
 const RegisterPage = () => {
   const navigate = useNavigate();

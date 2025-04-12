@@ -13,8 +13,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-import UserTopNavigation from "../components/UserTopNavigation";
-import UserFooter from "../components/UserFooter";
+import UserTopNavigation from "../../components/UserTopNavigation";
+import UserFooter from "../../components/UserFooter";
 
 // FAQ item component with HTML rendering support
 const FAQItem = ({ question, answer }) => {

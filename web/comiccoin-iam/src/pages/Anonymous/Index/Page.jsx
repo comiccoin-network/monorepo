@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/Index/Page.jsx
+// monorepo/web/comiccoin-iam/src/pages/Anonymous/Index/Page.jsx
 import { useState, useEffect } from "react";
 import {
   RefreshCw,
@@ -14,9 +14,9 @@ import {
   PlayCircle,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router";
-import Header from "../../components/IndexPage/Header";
-import Footer from "../../components/IndexPage/Footer";
-import withRedirectAuthenticated from "../../components/withRedirectAuthenticated";
+import Header from "../../../components/IndexPage/Header";
+import Footer from "../../../components/IndexPage/Footer";
+import withRedirectAuthenticated from "../../../components/withRedirectAuthenticated";
 
 const IndexPage = () => {
   const navigate = useNavigate(); // Use navigate for programmatic navigation

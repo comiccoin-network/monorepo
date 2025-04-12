@@ -1,4 +1,4 @@
-// src/pages/Gateway/EmailVerificationPage.jsx
+// src/pages/Anonymous/Gateway/EmailVerificationPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router";
 import {
@@ -12,7 +12,7 @@ import {
   Send,
 } from "lucide-react";
 
-import { useEmailVerification } from "../../hooks/useEmailVerification";
+import { useEmailVerification } from "../../../hooks/useEmailVerification";
 
 /**
  * EmailVerification component for handling email verification process

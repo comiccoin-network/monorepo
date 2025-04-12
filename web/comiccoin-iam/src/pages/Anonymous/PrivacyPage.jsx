@@ -2,8 +2,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router";
 import { ArrowLeft, Shield } from "lucide-react";
-import UserFooter from "../components/UserFooter";
-import UserTopNavigation from "../components/UserTopNavigation";
+import UserFooter from "../../components/UserFooter";
+import UserTopNavigation from "../../components/UserTopNavigation";
 
 function PrivacyPage() {
   const currentYear = new Date().getFullYear();

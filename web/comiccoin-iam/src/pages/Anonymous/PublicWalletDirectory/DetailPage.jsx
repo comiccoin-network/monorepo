@@ -1,4 +1,4 @@
-// src/pages/PublicWalletDirectory/DetailPage.jsx
+// src/pages/Anonymous/PublicWalletDirectory/DetailPage.jsx
 import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
@@ -30,9 +30,9 @@ import {
   useSinglePublicWalletFromDirectory,
   usePublicWalletDirectory,
   WALLET_TYPE,
-} from "../../hooks/usePublicWalletDirectory";
-import Header from "../../components/IndexPage/Header";
-import Footer from "../../components/IndexPage/Footer";
+} from "../../../hooks/usePublicWalletDirectory";
+import Header from "../../../components/IndexPage/Header";
+import Footer from "../../../components/IndexPage/Footer";
 
 const PublicWalletDirectoryDetailPage = () => {
   const { address } = useParams();

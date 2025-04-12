@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/Gateway/LoginPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Anonymous/Gateway/LoginPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import {
@@ -12,11 +12,11 @@ import {
   ArrowRight,
   HelpCircle, // Added for forgot password icon
 } from "lucide-react";
-import { useAuth } from "../../hooks/useAuth";
-import Header from "../../components/IndexPage/Header";
-import Footer from "../../components/IndexPage/Footer";
-import withRedirectAuthenticated from "../../components/withRedirectAuthenticated";
-import { USER_ROLE } from "../../hooks/useUser"; // Import USER_ROLE constants
+import { useAuth } from "../../../hooks/useAuth";
+import Header from "../../../components/IndexPage/Header";
+import Footer from "../../../components/IndexPage/Footer";
+import withRedirectAuthenticated from "../../../components/withRedirectAuthenticated";
+import { USER_ROLE } from "../../../hooks/useUser"; // Import USER_ROLE constants
 
 function LoginPage() {
   console.log("🚀 LoginPage component initializing");

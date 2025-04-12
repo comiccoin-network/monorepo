@@ -3,27 +3,30 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
 import { AuthProvider } from "./contexts/AuthContext";
-import IndexPage from "./pages/Index/Page";
-import PublicWalletDirectoryListPage from "./pages/PublicWalletDirectory/ListPage";
-import PublicWalletDirectoryDetailPage from "./pages/PublicWalletDirectory/DetailPage";
-import GetStartedPage from "./pages/Gateway/GetStartedPage";
-import LoginPage from "./pages/Gateway/LoginPage";
-import ForgotPasswordPage from "./pages/Gateway/ForgotPasswordPage";
-import ResetPasswordPage from "./pages/Gateway/ResetPasswordPage";
-import RegisterPage from "./pages/Gateway/RegisterPage";
-import RegistrationSuccessPage from "./pages/Gateway/RegistrationSuccessPage";
-import EmailVerificationPage from "./pages/Gateway/EmailVerificationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+
+import IndexPage from "./pages/Anonymous/Index/Page";
+import TermsPage from "./pages/Anonymous/TermsPage";
+import PrivacyPage from "./pages/Anonymous/PrivacyPage";
+import HelpAndSupportPage from "./pages/Anonymous/HelpAndSupportPage";
+import PublicWalletDirectoryListPage from "./pages/Anonymous/PublicWalletDirectory/ListPage";
+import PublicWalletDirectoryDetailPage from "./pages/Anonymous/PublicWalletDirectory/DetailPage";
+import GetStartedPage from "./pages/Anonymous/Gateway/GetStartedPage";
+import LoginPage from "./pages/Anonymous/Gateway/LoginPage";
+import ForgotPasswordPage from "./pages/Anonymous/Gateway/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/Anonymous/Gateway/ResetPasswordPage";
+import RegisterPage from "./pages/Anonymous/Gateway/RegisterPage";
+import RegistrationSuccessPage from "./pages/Anonymous/Gateway/RegistrationSuccessPage";
+import EmailVerificationPage from "./pages/Anonymous/Gateway/EmailVerificationPage";
+
 import VerificationLaunchpadPage from "./pages/Verification/LaunchpadPage";
 import VerificationIndividualPage from "./pages/Verification/IndividualPage";
 import VerificationBusinessPage from "./pages/Verification/BusinessPage";
 import VerificationRejectedPage from "./pages/Verification/RejectedPage";
 import VerificationApprovedPage from "./pages/Verification/ApprovedPage";
 import VerificationPendingPage from "./pages/Verification/PendingPage";
-import TermsPage from "./pages/TermsPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import HelpAndSupportPage from "./pages/HelpAndSupportPage";
 
 // User
 import UserDashboardPage from "./pages/User/Dashboard/Page";
