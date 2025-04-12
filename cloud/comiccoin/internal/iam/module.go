@@ -403,6 +403,14 @@ func NewModule(
 		userGetByIDUseCase,
 		userUpdateUseCase,
 	)
+	createPublicWalletByAdmin := svc_publicwallet.NewCreatePublicWalletByAdminService(
+		cfg,
+		logger,
+		publicWalletCreateUseCase,
+		publicWalletGetByAddressUseCase,
+		userGetByIDUseCase,
+		userUpdateUseCase,
+	)
 	getPublicWalletByIDService := svc_publicwallet.NewGetPublicWalletByIDService(
 		cfg,
 		logger,
@@ -564,6 +572,13 @@ func NewModule(
 		dbClient,
 		createPublicWalletService,
 	)
+	createPublicWalletByAdminHTTPHandler := http_publicwallet.NewCreatePublicWalletByAdminHTTPHandler(
+		cfg,
+		logger,
+		dbClient,
+		createPublicWalletByAdmin,
+	)
+
 	getPublicWalletByIDHTTPHandler := http_publicwallet.NewGetPublicWalletByIDHTTPHandler(
 		cfg,
 		logger,
@@ -720,6 +735,7 @@ func NewModule(
 		deleteMeHTTPHandler,
 		postVerifyProfileHTTPHandler,
 		createPublicWalletHTTPHandler,
+		createPublicWalletByAdminHTTPHandler,
 		getPublicWalletByIDHTTPHandler,
 		getPublicWalletByAddressHTTPHandler,
 		updatePublicWalletByIDHTTPHandler,

@@ -19,18 +19,19 @@ var (
 func init() {
 	// Exact matches
 	exactPaths = map[string]bool{
-		"/iam/api/v1/say-hello":         true,
-		"/iam/api/v1/token/introspect":  true,
-		"/iam/api/v1/profile":           true,
-		"/iam/api/v1/me":                true,
-		"/iam/api/v1/me/connect-wallet": true,
-		"/iam/api/v1/me/delete":         true,
-		"/iam/api/v1/dashboard":         true,
-		"/iam/api/v1/claim-coins":       true,
-		"/iam/api/v1/transactions":      true,
-		"/iam/api/v1/me/verify-profile": true,
-		"/iam/api/v1/public-wallets":    true,
-		"/iam/api/v1/users":             true,
+		"/iam/api/v1/say-hello":               true,
+		"/iam/api/v1/token/introspect":        true,
+		"/iam/api/v1/profile":                 true,
+		"/iam/api/v1/me":                      true,
+		"/iam/api/v1/me/connect-wallet":       true,
+		"/iam/api/v1/me/delete":               true,
+		"/iam/api/v1/dashboard":               true,
+		"/iam/api/v1/claim-coins":             true,
+		"/iam/api/v1/transactions":            true,
+		"/iam/api/v1/me/verify-profile":       true,
+		"/iam/api/v1/public-wallets":          true,
+		"/iam/api/v1/public-wallets-by-admin": true,
+		"/iam/api/v1/users":                   true,
 	}
 
 	// Pattern matches

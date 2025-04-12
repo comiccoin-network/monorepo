@@ -66,6 +66,7 @@ type httpServerImpl struct {
 	postVerifyProfileHTTPHandler   *http_me.PostVerifyProfileHTTPHandler
 
 	createPublicWalletHTTPHandler           http_publicwallet.CreatePublicWalletHTTPHandler
+	createPublicWalletByAdminHTTPHandler    http_publicwallet.CreatePublicWalletByAdminHTTPHandler
 	getPublicWalletByIDHTTPHandler          http_publicwallet.GetPublicWalletByIDHTTPHandler
 	getPublicWalletByAddressHTTPHandler     http_publicwallet.GetPublicWalletByAddressHTTPHandler
 	updatePublicWalletByIDHTTPHandler       http_publicwallet.UpdatePublicWalletByIDHTTPHandler
@@ -107,6 +108,7 @@ func NewHTTPServer(
 	deleteMeHTTPHandler *http_me.DeleteMeHTTPHandler,
 	postVerifyProfileHTTPHandler *http_me.PostVerifyProfileHTTPHandler,
 	createPublicWalletHTTPHandler http_publicwallet.CreatePublicWalletHTTPHandler,
+	createPublicWalletByAdminHTTPHandler http_publicwallet.CreatePublicWalletByAdminHTTPHandler,
 	getPublicWalletByIDHTTPHandler http_publicwallet.GetPublicWalletByIDHTTPHandler,
 	getPublicWalletByAddressHTTPHandler http_publicwallet.GetPublicWalletByAddressHTTPHandler,
 	updatePublicWalletByIDHTTPHandler http_publicwallet.UpdatePublicWalletByIDHTTPHandler,
@@ -145,6 +147,7 @@ func NewHTTPServer(
 		putUpdateMeHTTPHandler:                            putUpdateMeHTTPHandler,
 		postVerifyProfileHTTPHandler:                      postVerifyProfileHTTPHandler,
 		createPublicWalletHTTPHandler:                     createPublicWalletHTTPHandler,
+		createPublicWalletByAdminHTTPHandler:              createPublicWalletByAdminHTTPHandler,
 		getPublicWalletByIDHTTPHandler:                    getPublicWalletByIDHTTPHandler,
 		getPublicWalletByAddressHTTPHandler:               getPublicWalletByAddressHTTPHandler,
 		updatePublicWalletByIDHTTPHandler:                 updatePublicWalletByIDHTTPHandler,
@@ -237,6 +240,8 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 			port.listPublicWalletsByFilterHTTPHandler.Handle(w, r)
 		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodPost:
 			port.createPublicWalletHTTPHandler.Handle(w, r)
+		case n == 4 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets-by-admin" && r.Method == http.MethodPost:
+			port.createPublicWalletByAdminHTTPHandler.Handle(w, r)
 		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodGet:
 			port.getPublicWalletByAddressHTTPHandler.Handle(w, r, p[4])
 		case n == 5 && p[0] == "iam" && p[1] == "api" && p[2] == "v1" && p[3] == "public-wallets" && r.Method == http.MethodPut:

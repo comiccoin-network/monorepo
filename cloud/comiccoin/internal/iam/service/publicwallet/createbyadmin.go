@@ -21,7 +21,7 @@ import (
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/user"
 )
 
-type CreatePublicWalletRequestIDO struct {
+type CreatePublicWalletByAdminRequestIDO struct {
 	// The public address of the account.
 	Address string `json:"address"`
 
@@ -33,17 +33,26 @@ type CreatePublicWalletRequestIDO struct {
 
 	// The description of the public wallet's account.
 	Description string `json:"description"`
+
+	// UserID is the user to attach the public wallet to.
+	UserID primitive.ObjectID `json:"user_id,omitempty"`
+
+	// The status of the public wallet.
+	Status int8 `bson:"status" json:"status"`
+
+	// Status indicates that the someone from the ComicCoin Authority verified this user profile.
+	IsVerified bool `bson:"is_verified" json:"is_verified"`
 }
 
-type CreatePublicWalletResponseIDO struct {
+type CreatePublicWalletByAdminResponseIDO struct {
 	ID primitive.ObjectID `json:"id"`
 }
 
-type CreatePublicWalletService interface {
-	Create(sessCtx mongo.SessionContext, req *CreatePublicWalletRequestIDO) (*CreatePublicWalletResponseIDO, error)
+type CreatePublicWalletByAdminService interface {
+	Create(sessCtx mongo.SessionContext, req *CreatePublicWalletByAdminRequestIDO) (*CreatePublicWalletByAdminResponseIDO, error)
 }
 
-type createPublicWalletServiceImpl struct {
+type createPublicWalletByAdminImpl struct {
 	config                          *config.Configuration
 	logger                          *slog.Logger
 	publicWalletCreateUseCase       uc.PublicWalletCreateUseCase
@@ -52,15 +61,15 @@ type createPublicWalletServiceImpl struct {
 	userUpdateUseCase               uc_user.UserUpdateUseCase
 }
 
-func NewCreatePublicWalletService(
+func NewCreatePublicWalletByAdminService(
 	config *config.Configuration,
 	logger *slog.Logger,
 	uc1 uc.PublicWalletCreateUseCase,
 	uc2 uc.PublicWalletGetByAddressUseCase,
 	uc3 uc_user.UserGetByIDUseCase,
 	uc4 uc_user.UserUpdateUseCase,
-) CreatePublicWalletService {
-	return &createPublicWalletServiceImpl{
+) CreatePublicWalletByAdminService {
+	return &createPublicWalletByAdminImpl{
 		config:                          config,
 		logger:                          logger,
 		publicWalletCreateUseCase:       uc1,
@@ -70,7 +79,7 @@ func NewCreatePublicWalletService(
 	}
 }
 
-func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, req *CreatePublicWalletRequestIDO) (*CreatePublicWalletResponseIDO, error) {
+func (svc *createPublicWalletByAdminImpl) Create(sessCtx mongo.SessionContext, req *CreatePublicWalletByAdminRequestIDO) (*CreatePublicWalletByAdminResponseIDO, error) {
 	//
 	// Extract authenticated user information from context.
 	//
@@ -83,14 +92,11 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 	}
 	userName, _ := sessCtx.Value(constants.SessionUserName).(string)
 	userIPAddress := sessCtx.Value(constants.SessionIPAddress).(string)
-
-	// Developers note:
-	// Admins don't run this service!
 	sessionUserRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
-	if sessionUserRole == dom_user.UserRoleRoot {
-		svc.logger.Warn("admin is not allowed to run this service",
+	if sessionUserRole != dom_user.UserRoleRoot {
+		svc.logger.Warn("only admin is allowed to run this service",
 			slog.Any("error", ""))
-		return nil, httperror.NewForForbiddenWithSingleField("message", "admins do not have permission to create public wallets via this function")
+		return nil, httperror.NewForForbiddenWithSingleField("message", "admins are only allowed to create public wallets via this function")
 	}
 
 	//
@@ -132,6 +138,25 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 			e["chain_id"] = "Chain ID must match the blockchain chain ID"
 		}
 	}
+	if req.UserID.IsZero() {
+		e["user_id"] = "User ID is required"
+	} else {
+		user, err := svc.userGetByIDUseCase.Execute(sessCtx, req.UserID)
+		if err != nil {
+			e["user_id"] = fmt.Sprintf("User lookup generated error: %v", err)
+		} else if user == nil {
+			e["user_id"] = "User not found"
+		} else if user.ID != userID {
+			e["user_id"] = "User ID does not match session user ID"
+		}
+	}
+	if req.Status == 0 {
+		e["status"] = "Status is required"
+	} else {
+		if req.Status != 1 && req.Status != 2 && req.Status != 3 {
+			e["status"] = "Status must be active or inactive"
+		}
+	}
 	if len(e) != 0 {
 		svc.logger.Warn("Failed validation",
 			slog.Any("error", e))
@@ -148,15 +173,15 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 	// Retrieve related user information.
 	//
 
-	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
+	user, err := svc.userGetByIDUseCase.Execute(sessCtx, req.UserID)
 	if err != nil {
 		svc.logger.Error("Failed retrieving user",
-			slog.Any("userID", userID),
+			slog.Any("userID", req.UserID),
 			slog.Any("error", err))
 		return nil, err
 	}
 	if user == nil {
-		svc.logger.Error("User not found", slog.Any("userID", userID))
+		svc.logger.Error("User not found", slog.Any("userID", req.UserID))
 		return nil, httperror.NewForBadRequestWithSingleField("non_field_error", "User not found")
 	}
 
@@ -180,7 +205,7 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 		PostalCode:            user.PostalCode,
 		AddressLine1:          user.AddressLine1,
 		AddressLine2:          user.AddressLine2,
-		IsVerified:            false,
+		IsVerified:            req.IsVerified,
 		ThumbnailS3Key:        "",
 		ViewCount:             0,
 		UniqueViewCount:       0,
@@ -188,21 +213,25 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 		ID:                    id,
 		CreatedAt:             time.Now(),
 		CreatedFromIPAddress:  userIPAddress,
-		CreatedByUserID:       userID,
+		CreatedByUserID:       userID, // Created by admin
 		CreatedByName:         userName,
 		ModifiedAt:            time.Now(),
 		ModifiedFromIPAddress: userIPAddress,
-		ModifiedByUserID:      userID,
+		ModifiedByUserID:      userID, // Modified by admin
 		ModifiedByName:        userName,
-		Status:                dom.PublicWalletStatusActive,
+		Status:                req.Status,
 	}
+	if req.IsVerified {
+		pw.VerifiedOn = time.Now()
+	}
+
 	if err := svc.publicWalletCreateUseCase.Execute(sessCtx, pw); err != nil {
 		svc.logger.Error("failed to create public wallet",
 			slog.Any("error", err))
 		return nil, err
 	}
 
-	svc.logger.Debug("Saved public wallet",
+	svc.logger.Debug("Saved public wallet by admin",
 		slog.Any("Type", pw.Type),
 		slog.Any("Address", pw.Address),
 		slog.Any("ChainID", pw.ChainID),
@@ -238,7 +267,7 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 	// Return the created public wallet unique identifier.
 	//
 
-	return &CreatePublicWalletResponseIDO{
+	return &CreatePublicWalletByAdminResponseIDO{
 		ID: pw.ID,
 	}, nil
 }
