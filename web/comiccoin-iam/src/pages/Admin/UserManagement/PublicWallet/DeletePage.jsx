@@ -19,7 +19,9 @@ import {
 import { toast } from "react-toastify";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
+import withProfileVerification from "../../../../components/withProfileVerification";
 import { usePublicWallet } from "../../../../hooks/usePublicWallet";
+import axiosClient from "../../../../api/axiosClient";
 
 const AdminUserPublicWalletDeletePage = () => {
   const { userId, address } = useParams();
@@ -28,7 +30,6 @@ const AdminUserPublicWalletDeletePage = () => {
 
   const {
     fetchWalletByAddress,
-    deletePublicWallet,
     isLoading: isLoadingOperation,
     error: operationError,
     reset,
@@ -177,6 +178,22 @@ const AdminUserPublicWalletDeletePage = () => {
     setShowConfirmation(true);
   };
 
+  // Direct delete implementation to avoid hooks-in-hooks issue
+  const deleteWallet = async (walletAddress) => {
+    if (!walletAddress) {
+      throw new Error("Address is required to delete a wallet");
+    }
+
+    try {
+      // Use direct axios call instead of the hook
+      await axiosClient.delete(`/public-wallets/${walletAddress}`);
+      return true;
+    } catch (error) {
+      console.error("Error deleting wallet:", error);
+      throw error;
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!wallet || !address) return;
 
@@ -191,7 +208,8 @@ const AdminUserPublicWalletDeletePage = () => {
 
     setIsDeleting(true);
     try {
-      await deletePublicWallet(address);
+      // Delete the wallet using the direct method
+      await deleteWallet(address);
 
       toast.success("Wallet deleted successfully");
       setStatusMessage({
@@ -208,8 +226,14 @@ const AdminUserPublicWalletDeletePage = () => {
         }
       }, 1500);
     } catch (err) {
-      // Error is handled by the useEffect for operationError
       console.error("Delete error:", err);
+      setGeneralError(
+        err.message || "Failed to delete wallet. Please try again.",
+      );
+      setStatusMessage({
+        type: "error",
+        message: err.message || "Failed to delete wallet. Please try again.",
+      });
       setIsDeleting(false);
       setShowConfirmation(false);
     }
@@ -587,4 +611,5 @@ const AdminUserPublicWalletDeletePage = () => {
   );
 };
 
-export default AdminUserPublicWalletDeletePage;
+// Make sure we wrap with the withProfileVerification HOC
+export default withProfileVerification(AdminUserPublicWalletDeletePage);

@@ -36,8 +36,15 @@ type UpdatePublicWalletRequestIDO struct {
 	// The description of the public wallet's account.
 	Description string `json:"description"`
 
+	// Developers note: Only authenticated 👨‍💼 root users can update the following fields:
+	// - Status
+	// - IsVerified
+
 	// The status of the public wallet.
 	Status int8 `bson:"status" json:"status"`
+
+	// Status indicates that the someone from the ComicCoin Authority verified this user profile.
+	IsVerified bool `bson:"is_verified" json:"is_verified"`
 }
 
 type UpdatePublicWalletByAddressService interface {
@@ -124,11 +131,13 @@ func (svc *updatePublicWalletByAddressServiceImpl) UpdateByAddress(sessCtx mongo
 			e["chain_id"] = "Chain ID must match the blockchain chain ID"
 		}
 	}
-	if req.Status == 0 {
-		e["status"] = "Status is required"
-	} else {
-		if req.Status != 1 && req.Status != 2 {
-			e["status"] = "Status must be active or inactive"
+	if userRole == dom_user.UserRoleRoot {
+		if req.Status == 0 {
+			e["status"] = "Status is required"
+		} else {
+			if req.Status != 1 && req.Status != 2 {
+				e["status"] = "Status must be active or inactive"
+			}
 		}
 	}
 	if len(e) != 0 {
@@ -158,7 +167,7 @@ func (svc *updatePublicWalletByAddressServiceImpl) UpdateByAddress(sessCtx mongo
 		return httperror.NewForBadRequest(&e)
 	}
 	if existingPublicWallet.CreatedByUserID != userID {
-		// Developers note: System administrators are exempt from this check.
+		// Developers note: 👨‍💼 Root users are exempt from this check.
 		if userRole != dom_user.UserRoleRoot {
 			e["wallet_address"] = "Wallet address was already registered by another user"
 			svc.logger.Warn("Failed validation",
@@ -187,7 +196,6 @@ func (svc *updatePublicWalletByAddressServiceImpl) UpdateByAddress(sessCtx mongo
 	existingPublicWallet.ModifiedByUserID = userID
 	existingPublicWallet.Name = req.Name
 	existingPublicWallet.Description = req.Description
-	existingPublicWallet.Status = req.Status
 	existingPublicWallet.WebsiteURL = user.WebsiteURL
 	existingPublicWallet.Phone = user.Phone
 	existingPublicWallet.Country = user.Country
@@ -196,6 +204,24 @@ func (svc *updatePublicWalletByAddressServiceImpl) UpdateByAddress(sessCtx mongo
 	existingPublicWallet.PostalCode = user.PostalCode
 	existingPublicWallet.AddressLine1 = user.AddressLine1
 	existingPublicWallet.AddressLine2 = user.AddressLine2
+
+	// Developers note: Only authenticated 👨‍💼 root users can update the following fields:
+	// - Status
+	// - IsVerified
+	// - VerifiedOn
+	if userRole == dom_user.UserRoleRoot {
+		// If wallet "changed" from not verified to verified
+		if !existingPublicWallet.IsVerified && req.IsVerified {
+			existingPublicWallet.VerifiedOn = time.Now().UTC()
+		}
+
+		// If wallet "changed" from not verified to verified
+		if existingPublicWallet.IsVerified && !req.IsVerified {
+			existingPublicWallet.VerifiedOn = time.Time{}
+		}
+		existingPublicWallet.IsVerified = req.IsVerified
+		existingPublicWallet.Status = req.Status
+	}
 
 	if err := svc.publicWalletUpdateByAddressUseCase.Execute(sessCtx, existingPublicWallet); err != nil {
 		svc.logger.Error("failed to update public wallet",

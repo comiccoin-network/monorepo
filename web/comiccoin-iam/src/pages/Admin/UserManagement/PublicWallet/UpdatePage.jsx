@@ -1,6 +1,7 @@
 // monorepo/web/comiccoin-iam/src/pages/Admin/UserManagement/PublicWallet/UpdatePage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Wallet,
   Save,
@@ -24,6 +25,8 @@ import { usePublicWallet } from "../../../../hooks/usePublicWallet";
 const AdminUserPublicWalletUpdatePage = () => {
   const { userId, address } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const {
     fetchWalletByAddress,
     updatePublicWallet,
@@ -234,6 +237,16 @@ const AdminUserPublicWalletUpdatePage = () => {
       const response = await updatePublicWallet(address, dataToUpdate);
       console.log("Update response:", response);
 
+      // Invalidate and refetch queries related to user wallets
+      // This ensures the user details page shows up-to-date wallet information
+      if (userId) {
+        // Invalidate any queries that might include this wallet
+        queryClient.invalidateQueries(["user", userId]);
+        queryClient.invalidateQueries(["userWallets", userId]);
+        queryClient.invalidateQueries(["wallets"]);
+        queryClient.invalidateQueries(["publicWallets"]);
+      }
+
       toast.success("Wallet updated successfully");
       navigate(`/admin/users/${userId}`);
     } catch (err) {
@@ -304,7 +317,7 @@ const AdminUserPublicWalletUpdatePage = () => {
       <AdminTopNavigation />
 
       <main
-        userId="main-content"
+        id="main-content"
         className="flex-grow container mx-auto px-4 py-8 max-w-3xl"
       >
         {/* Page Header */}
@@ -414,7 +427,7 @@ const AdminUserPublicWalletUpdatePage = () => {
                   </div>
                   <input
                     type="text"
-                    userId="address"
+                    id="address"
                     name="address"
                     value={formData.address}
                     readOnly
@@ -440,7 +453,7 @@ const AdminUserPublicWalletUpdatePage = () => {
                   </div>
                   <input
                     type="text"
-                    userId="chainId"
+                    id="chainId"
                     name="chainId"
                     value={formData.chainId}
                     readOnly
@@ -477,7 +490,7 @@ const AdminUserPublicWalletUpdatePage = () => {
                   </div>
                   <input
                     type="text"
-                    userId="type"
+                    id="type"
                     name="type"
                     value={getWalletTypeLabel(formData.type)}
                     readOnly
@@ -503,7 +516,7 @@ const AdminUserPublicWalletUpdatePage = () => {
                   </div>
                   <input
                     type="text"
-                    userId="name"
+                    id="name"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
@@ -545,7 +558,7 @@ const AdminUserPublicWalletUpdatePage = () => {
                   </div>
                   <input
                     type="url"
-                    userId="websiteURL"
+                    id="websiteURL"
                     name="websiteURL"
                     value={formData.websiteURL || ""}
                     onChange={handleInputChange}
@@ -583,7 +596,7 @@ const AdminUserPublicWalletUpdatePage = () => {
                     <FileText className="h-5 w-5 text-gray-400" />
                   </div>
                   <textarea
-                    userId="description"
+                    id="description"
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
@@ -617,7 +630,7 @@ const AdminUserPublicWalletUpdatePage = () => {
                   Wallet Status <span className="text-red-500">*</span>
                 </label>
                 <select
-                  userId="status"
+                  id="status"
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
