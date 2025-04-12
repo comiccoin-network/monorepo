@@ -165,30 +165,6 @@ const UserDetailsPage = () => {
     window.open(`/directory/${address}`, "_blank");
   };
 
-  const handleDeleteWalletClick = (wallet) => {
-    setSelectedWallet(wallet);
-    setShowDeleteWalletConfirm(true);
-  };
-
-  const handleCancelDeleteWallet = () => {
-    setShowDeleteWalletConfirm(false);
-    setSelectedWallet(null);
-  };
-
-  const handleConfirmDeleteWallet = async () => {
-    if (!selectedWallet) return;
-
-    try {
-      await deletePublicWallet(selectedWallet.address);
-      toast.success("Wallet deleted successfully");
-      setShowDeleteWalletConfirm(false);
-      setSelectedWallet(null);
-      refetchWallets();
-    } catch (err) {
-      // Error is already handled by the hook
-    }
-  };
-
   const copyAddress = (address) => {
     navigator.clipboard
       .writeText(address)
@@ -1298,15 +1274,13 @@ const UserDetailsPage = () => {
                                   >
                                     <Share2 className="h-4 w-4" />
                                   </button>
-                                  <button
-                                    onClick={() =>
-                                      handleDeleteWalletClick(wallet)
-                                    }
+                                  <Link
+                                    to={`/admin/users/${user.id}/wallet/${wallet.address}/delete`}
                                     className="p-1 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded"
                                     aria-label="Delete wallet"
                                   >
                                     <Trash2 className="h-4 w-4" />
-                                  </button>
+                                  </Link>
                                 </div>
                                 <button
                                   onClick={() =>
@@ -1451,16 +1425,14 @@ const UserDetailsPage = () => {
                                     >
                                       <Share2 className="h-4 w-4" />
                                     </button>
-                                    <button
-                                      onClick={() =>
-                                        handleDeleteWalletClick(wallet)
-                                      }
+                                    <Link
+                                      to={`/admin/users/${user.id}/wallet/${wallet.address}/delete`}
                                       className="p-1 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded"
                                       aria-label="Delete wallet"
                                       title="Delete wallet"
                                     >
                                       <Trash2 className="h-4 w-4" />
-                                    </button>
+                                    </Link>
                                     <button
                                       onClick={() =>
                                         handleViewWallet(wallet.address)
