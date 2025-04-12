@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/User/Verification/ApprovedPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Individual/Verification/ApprovedPage.jsx
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {

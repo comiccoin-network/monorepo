@@ -24,20 +24,20 @@ import RegistrationSuccessPage from "./pages/Anonymous/Gateway/RegistrationSucce
 import EmailVerificationPage from "./pages/Anonymous/Gateway/EmailVerificationPage";
 
 // User
-import VerificationLaunchpadPage from "./pages/User/Verification/LaunchpadPage";
-import VerificationIndividualPage from "./pages/User/Verification/IndividualPage";
-import VerificationBusinessPage from "./pages/User/Verification/BusinessPage";
-import VerificationRejectedPage from "./pages/User/Verification/RejectedPage";
-import VerificationApprovedPage from "./pages/User/Verification/ApprovedPage";
-import VerificationPendingPage from "./pages/User/Verification/PendingPage";
-import UserDashboardPage from "./pages/User/Dashboard/Page";
-import UserMorePage from "./pages/User/More/Page";
-import UserDeleteAccountPage from "./pages/User/More/DeleteAccountPage";
-import UserSettingsPage from "./pages/User/More/SettingsPage";
-import PublicWalletListPage from "./pages/User/PublicWallet/ListPage";
-import PublicWalletAddPage from "./pages/User/PublicWallet/AddPage";
-import PublicWalletDetailsPage from "./pages/User/PublicWallet/DetailsPage";
-import PublicWalletUpdatePage from "./pages/User/PublicWallet/UpdatePage";
+import VerificationLaunchpadPage from "./pages/Individual/Verification/LaunchpadPage";
+import VerificationIndividualPage from "./pages/Individual/Verification/IndividualPage";
+import VerificationBusinessPage from "./pages/Individual/Verification/BusinessPage";
+import VerificationRejectedPage from "./pages/Individual/Verification/RejectedPage";
+import VerificationApprovedPage from "./pages/Individual/Verification/ApprovedPage";
+import VerificationPendingPage from "./pages/Individual/Verification/PendingPage";
+import UserDashboardPage from "./pages/Individual/Dashboard/Page";
+import UserMorePage from "./pages/Individual/More/Page";
+import UserDeleteAccountPage from "./pages/Individual/More/DeleteAccountPage";
+import UserSettingsPage from "./pages/Individual/More/SettingsPage";
+import PublicWalletListPage from "./pages/Individual/PublicWallet/ListPage";
+import PublicWalletAddPage from "./pages/Individual/PublicWallet/AddPage";
+import PublicWalletDetailsPage from "./pages/Individual/PublicWallet/DetailsPage";
+import PublicWalletUpdatePage from "./pages/Individual/PublicWallet/UpdatePage";
 
 // Admin
 import AdminDashboardPage from "./pages/Admin/Dashboard/Page";

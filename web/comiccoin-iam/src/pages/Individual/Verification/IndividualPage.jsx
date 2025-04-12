@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/User/Verification/BusinessPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Individual/Verification/IndividualPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import countryRegionData from "country-region-data/dist/data-umd";
@@ -6,27 +6,19 @@ import {
   ArrowLeft,
   ArrowRight,
   AlertCircle,
+  User,
   Home,
-  InfoIcon,
   Building,
   Truck,
-  Globe,
-  Store,
-  Briefcase,
-  Link as LinkIcon,
+  InfoIcon,
+  LinkIcon,
+  BookOpen,
 } from "lucide-react";
 
 import Header from "../../../components/IndexPage/Header";
 import Footer from "../../../components/IndexPage/Footer";
 import { useAuth } from "../../../hooks/useAuth";
 import { useVerifyProfile, USER_ROLE } from "../../../hooks/useVerifyProfile";
-
-const VERIFICATION_STATUS = {
-  UNVERIFIED: 1,
-  SUBMITTED_FOR_REVIEW: 2,
-  APPROVED: 3,
-  REJECTED: 4,
-};
 
 // Hook to handle localStorage
 const useLocalStorage = (key, initialValue) => {
@@ -53,10 +45,17 @@ const useLocalStorage = (key, initialValue) => {
   return [storedValue, setStoredValue];
 };
 
-const VerificationBusinessPage = () => {
+const VerificationIndividualPage = () => {
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
   const { submitVerification, isSubmitting, formErrors } = useVerifyProfile();
+
+  const VERIFICATION_STATUS = {
+    UNVERIFIED: 1,
+    SUBMITTED_FOR_REVIEW: 2,
+    APPROVED: 3,
+    REJECTED: 4,
+  };
 
   // Inline styles for select elements to fix Safari
   const selectStyles = {
@@ -72,20 +71,17 @@ const VerificationBusinessPage = () => {
 
   // State for form data (with localStorage persistence)
   const [formData, setFormData] = useLocalStorage(
-    "business_verification_data",
+    "individual_verification_data",
     {
-      comicBookStoreName: "",
       addressLine1: "",
       addressLine2: "",
       city: "",
       region: "",
       country: "",
+      country_other: "",
       postalCode: "",
       howDidYouHearAboutUs: 0,
       howDidYouHearAboutUsOther: "",
-      howLongStoreOperating: 0,
-      gradingComicsExperience: "",
-      comicCoinPartnershipReason: "",
       hasShippingAddress: false,
       shippingName: "",
       shippingPhone: "",
@@ -95,12 +91,15 @@ const VerificationBusinessPage = () => {
       shippingAddressLine1: "",
       shippingAddressLine2: "",
       shippingPostalCode: "",
-      retailPartnershipReason: "",
+      howLongCollectingComicBooksForGrading: 0,
+      hasPreviouslySubmittedComicBookForGrading: 0,
+      hasOwnedGradedComicBooks: 0,
+      hasRegularComicBookShop: 0,
+      hasPreviouslyPurchasedFromAuctionSite: 0,
+      hasPreviouslyPurchasedFromFacebookMarketplace: 0,
+      hasRegularlyAttendedComicConsOrCollectibleShows: 0,
       websiteURL: "",
-      estimatedSubmissionsPerMonth: "",
-      hasOtherGradingService: 0,
-      otherGradingServiceName: "",
-      requestWelcomePackage: 0,
+      description: "",
     },
   );
 
@@ -117,27 +116,10 @@ const VerificationBusinessPage = () => {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    let processedValue = value; // Default to string value
-
-    // These specific select fields use numeric values in their options
-    // and should be stored as numbers in the state.
-    const numericSelects = [
-      "howDidYouHearAboutUs",
-      "howLongStoreOperating",
-      "hasOtherGradingService",
-      "requestWelcomePackage",
-      "estimatedSubmissionsPerMonth",
-    ];
-
-    if (numericSelects.includes(name)) {
-      const parsedValue = parseInt(value, 10);
-      // Use the parsed number if valid, otherwise default (assuming 0 for empty/invalid selection)
-      processedValue = isNaN(parsedValue) ? 0 : parsedValue;
-    }
 
     setFormData((prev) => ({
       ...prev,
-      [name]: processedValue, // Use the original or parsed value
+      [name]: value,
     }));
 
     // Clear error when typing
@@ -266,93 +248,12 @@ const VerificationBusinessPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Client-side validation
-    const newErrors = {};
-
-    // Required fields validation
-    const requiredFields = [
-      { field: "comicBookStoreName", label: "Comic Book Store Name" },
-      { field: "addressLine1", label: "Address Line 1" },
-      { field: "city", label: "City" },
-      { field: "country", label: "Country" },
-      { field: "region", label: "State/Province" },
-      { field: "postalCode", label: "ZIP/Postal Code" },
-      { field: "howDidYouHearAboutUs", label: "How did you hear about us" },
-      { field: "howLongStoreOperating", label: "Store operation duration" },
-      { field: "gradingComicsExperience", label: "Grading comics experience" },
-      { field: "retailPartnershipReason", label: "Retail partnership reason" },
-      {
-        field: "estimatedSubmissionsPerMonth",
-        label: "Estimated submissions per month",
-      },
-      {
-        field: "hasOtherGradingService",
-        label: "Other grading service information",
-      },
-      { field: "requestWelcomePackage", label: "Welcome package request" },
-      { field: "websiteURL", label: "Website URL" },
-      { field: "description", label: "Description" },
-    ];
-
-    requiredFields.forEach(({ field, label }) => {
-      if (
-        !formData[field] ||
-        (typeof formData[field] === "number" && formData[field] === 0)
-      ) {
-        newErrors[field] = `${label} is required`;
-      }
-    });
-
-    // Validate "Other" field if "Other" is selected in the dropdown
-    if (
-      formData.howDidYouHearAboutUs === 6 &&
-      !formData.howDidYouHearAboutUsOther
-    ) {
-      newErrors.howDidYouHearAboutUsOther =
-        "Please specify how you heard about us";
-    }
-
-    // Validate grading service name if "Yes" is selected
-    if (
-      formData.hasOtherGradingService === 1 &&
-      !formData.otherGradingServiceName
-    ) {
-      newErrors.otherGradingServiceName = "Please specify the grading service";
-    }
-
-    // Validate shipping address fields if shipping address is enabled
-    if (formData.hasShippingAddress) {
-      const requiredShippingFields = [
-        { field: "shippingName", label: "Shipping name" },
-        { field: "shippingCountry", label: "Shipping country" },
-        { field: "shippingRegion", label: "Shipping state/province" },
-        { field: "shippingCity", label: "Shipping city" },
-        { field: "shippingAddressLine1", label: "Shipping address" },
-        { field: "shippingPostalCode", label: "Shipping postal code" },
-      ];
-
-      requiredShippingFields.forEach(({ field, label }) => {
-        if (!formData[field]) {
-          newErrors[field] = `${label} is required`;
-        }
-      });
-    }
-
-    // If there are errors, show them and don't proceed
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      // Scroll to the top to show errors
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
     try {
-      // Submit data to the API with explicit user role
-      // USER_ROLE.RETAILER = 2 in our backend (business/retailer user)
-      const success = await submitVerification(formData, USER_ROLE.RETAILER);
+      // Submit the form data to the backend with explicit user role
+      const success = await submitVerification(formData, USER_ROLE.CUSTOMER);
 
       if (success) {
-        // Update user verification status if available
+        // Use the updateUser from the component scope, not from inside this function
         if (user && updateUser) {
           updateUser({
             ...user,
@@ -361,20 +262,12 @@ const VerificationBusinessPage = () => {
           });
         }
 
-        // After successful submission, redirect to pending page
         // Use replace: true to prevent going back to the form
         navigate("/verification/pending", { replace: true });
       }
     } catch (error) {
-      console.error("Error submitting business verification:", error);
-
-      // Update our local errors with any formErrors from the hook
-      if (formErrors && Object.keys(formErrors).length > 0) {
-        setErrors((prev) => ({ ...prev, ...formErrors }));
-      }
-
-      // Scroll to the top to show errors
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      console.error("Error submitting verification:", error);
+      // Error handling is managed by the useVerifyProfile hook
     }
   };
 
@@ -383,14 +276,14 @@ const VerificationBusinessPage = () => {
     { value: 0, label: "Select an option..." },
     { value: 1, label: "Social Media" },
     { value: 2, label: "Search Engine" },
-    { value: 3, label: "Friend or Colleague" },
+    { value: 3, label: "Friend or Family" },
     { value: 4, label: "Comic Convention" },
-    { value: 5, label: "Industry Publication" },
+    { value: 5, label: "Comic Book Store" },
     { value: 6, label: "Other" },
   ];
 
-  // Years in operation options
-  const yearsInOperation = [
+  // Experience options
+  const experienceOptions = [
     { value: 0, label: "Select an option..." },
     { value: 1, label: "Less than 1 year" },
     { value: 2, label: "1-3 years" },
@@ -399,21 +292,10 @@ const VerificationBusinessPage = () => {
     { value: 5, label: "More than 10 years" },
   ];
 
-  // Yes/No options
+  // Yes/No options for radio buttons
   const yesNoOptions = [
-    { value: 0, label: "Select an option..." },
     { value: 1, label: "Yes" },
     { value: 2, label: "No" },
-  ];
-
-  // Estimated submissions per month options
-  const estimatedSubmissionsPerMonthOptions = [
-    { value: 0, label: "Select an option..." },
-    { value: 1, label: "1-10 submissions per month" },
-    { value: 2, label: "11-25 submissions per month" },
-    { value: 3, label: "26-50 submissions per month" },
-    { value: 4, label: "51-100 submissions per month" },
-    { value: 5, label: "More than 100 submissions per month" },
   ];
 
   return (
@@ -435,16 +317,16 @@ const VerificationBusinessPage = () => {
             {/* Form Header */}
             <div className="px-6 py-4 bg-purple-600 text-white">
               <div className="flex items-center">
-                <Building
+                <User
                   className="h-6 w-6 mr-3 flex-shrink-0"
                   aria-hidden="true"
                 />
                 <div>
                   <h1 className="text-xl font-medium">
-                    Business Verification Form
+                    Individual Verification Form
                   </h1>
                   <p className="text-sm text-purple-100 mt-0.5">
-                    Please provide your business information for verification
+                    Please provide your personal information for verification
                   </p>
                 </div>
               </div>
@@ -481,96 +363,16 @@ const VerificationBusinessPage = () => {
                     </div>
                   )}
 
-                  {/* Business Information Section */}
+                  {/* Primary Address Information Section */}
                   <div className="mb-6">
                     <div className="flex items-center mb-3">
-                      <Store
+                      <Home
                         className="h-5 w-5 text-purple-600 mr-2"
                         aria-hidden="true"
                       />
                       <h2 className="text-md font-medium text-gray-900">
-                        Business Information
+                        Primary Address Information
                       </h2>
-                    </div>
-
-                    {/* Comic Book Store Name */}
-                    <div className="mb-3">
-                      <label
-                        htmlFor="comicBookStoreName"
-                        className="block text-sm text-gray-700 mb-1"
-                      >
-                        Comic Book Store Name{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        id="comicBookStoreName"
-                        name="comicBookStoreName"
-                        value={formData.comicBookStoreName}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          errors.comicBookStoreName
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="Your store name"
-                        aria-required="true"
-                        aria-invalid={
-                          errors.comicBookStoreName ? "true" : "false"
-                        }
-                      />
-                      {errors.comicBookStoreName && (
-                        <p
-                          className="mt-1 text-xs text-red-600 flex items-center"
-                          aria-live="polite"
-                        >
-                          <AlertCircle
-                            className="h-3 w-3 mr-1"
-                            aria-hidden="true"
-                          />
-                          {errors.comicBookStoreName}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Description */}
-                    <div className="mb-3">
-                      <label
-                        htmlFor="description"
-                        className="block text-sm text-gray-700 mb-1"
-                      >
-                        Please write a brief description of the comic book store{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        id="description"
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        rows={3}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          errors.description
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        placeholder={
-                          "For example `Rare comic book shop for collectors and traders`, etc."
-                        }
-                        aria-required="true"
-                        aria-invalid={errors.description ? "true" : "false"}
-                      ></textarea>
-                      {errors.description && (
-                        <p
-                          className="mt-1 text-xs text-red-600 flex items-center"
-                          aria-live="polite"
-                        >
-                          <AlertCircle
-                            className="h-3 w-3 mr-1"
-                            aria-hidden="true"
-                          />
-                          {errors.description}
-                        </p>
-                      )}
                     </div>
 
                     {/* Address Line 1 */}
@@ -768,7 +570,7 @@ const VerificationBusinessPage = () => {
                     </div>
 
                     {/* ZIP/Postal Code */}
-                    <div className="mb-3">
+                    <div>
                       <label
                         htmlFor="postalCode"
                         className="block text-sm text-gray-700 mb-1"
@@ -803,338 +605,9 @@ const VerificationBusinessPage = () => {
                         </p>
                       )}
                     </div>
-
-                    {/* Website URL */}
-                    <div className="mt-3">
-                      <label
-                        htmlFor="websiteURL"
-                        className="block text-sm text-gray-700 mb-1"
-                      >
-                        Online Presence Link{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <div className="flex rounded-md shadow-sm">
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                          <LinkIcon className="h-4 w-4" aria-hidden="true" />
-                        </span>
-                        <input
-                          type="url"
-                          id="websiteURL"
-                          name="websiteURL"
-                          value={formData.websiteURL}
-                          onChange={handleInputChange}
-                          className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                            errors.websiteURL
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
-                          placeholder="e.g., https://linkedin.com/in/yourprofile"
-                          aria-required="true"
-                          aria-invalid={errors.websiteURL ? "true" : "false"}
-                          aria-describedby="websiteURL-help"
-                        />
-                      </div>
-                      <p
-                        id="websiteURL-help"
-                        className="mt-1 text-xs text-gray-500"
-                      >
-                        Please provide a link to your company website, parent
-                        company HQ website, or a public social media profile
-                        (like LinkedIn, Twitter, or Facebook). This helps us
-                        verify your identity and connection to the comic
-                        community.
-                      </p>
-                      {errors.websiteURL && (
-                        <p
-                          className="mt-1 text-xs text-red-600 flex items-center"
-                          aria-live="polite"
-                        >
-                          <AlertCircle
-                            className="h-3 w-3 mr-1"
-                            aria-hidden="true"
-                          />
-                          {errors.websiteURL}
-                        </p>
-                      )}
-                    </div>
                   </div>
 
-                  {/* Business Operations Section */}
-                  <div className="mb-6">
-                    <div className="flex items-center mb-3">
-                      <Briefcase
-                        className="h-5 w-5 text-purple-600 mr-2"
-                        aria-hidden="true"
-                      />
-                      <h2 className="text-md font-medium text-gray-900">
-                        Business Operations
-                      </h2>
-                    </div>
-
-                    {/* How long has your store been operating */}
-                    <div className="mb-3">
-                      <label
-                        htmlFor="howLongStoreOperating"
-                        className="block text-sm text-gray-700 mb-1"
-                      >
-                        How long has your store been operating?{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        id="howLongStoreOperating"
-                        name="howLongStoreOperating"
-                        value={formData.howLongStoreOperating}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          errors.howLongStoreOperating
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        style={selectStyles}
-                        aria-required="true"
-                        aria-invalid={
-                          errors.howLongStoreOperating ? "true" : "false"
-                        }
-                      >
-                        {yearsInOperation.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.howLongStoreOperating && (
-                        <p
-                          className="mt-1 text-xs text-red-600 flex items-center"
-                          aria-live="polite"
-                        >
-                          <AlertCircle
-                            className="h-3 w-3 mr-1"
-                            aria-hidden="true"
-                          />
-                          {errors.howLongStoreOperating}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Grading Experience */}
-                    <div className="mb-3">
-                      <label
-                        htmlFor="gradingComicsExperience"
-                        className="block text-sm text-gray-700 mb-1"
-                      >
-                        Describe your experience with grading comics{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        id="gradingComicsExperience"
-                        name="gradingComicsExperience"
-                        value={formData.gradingComicsExperience}
-                        onChange={handleInputChange}
-                        rows={3}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          errors.gradingComicsExperience
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="Please share your experience with comic grading services"
-                        aria-required="true"
-                        aria-invalid={
-                          errors.gradingComicsExperience ? "true" : "false"
-                        }
-                      ></textarea>
-                      {errors.gradingComicsExperience && (
-                        <p
-                          className="mt-1 text-xs text-red-600 flex items-center"
-                          aria-live="polite"
-                        >
-                          <AlertCircle
-                            className="h-3 w-3 mr-1"
-                            aria-hidden="true"
-                          />
-                          {errors.gradingComicsExperience}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Estimated Submissions Per Month */}
-                    <div className="mb-3">
-                      <label
-                        htmlFor="estimatedSubmissionsPerMonth"
-                        className="block text-sm text-gray-700 mb-1"
-                      >
-                        Estimated submissions per month of Comics for grading{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        id="estimatedSubmissionsPerMonth"
-                        name="estimatedSubmissionsPerMonth"
-                        value={formData.estimatedSubmissionsPerMonth}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          errors.estimatedSubmissionsPerMonth
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        style={selectStyles}
-                        aria-required="true"
-                        aria-invalid={
-                          errors.estimatedSubmissionsPerMonth ? "true" : "false"
-                        }
-                      >
-                        {estimatedSubmissionsPerMonthOptions.map((range) => (
-                          <option key={range.value} value={range.value}>
-                            {range.label}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.estimatedSubmissionsPerMonth && (
-                        <p
-                          className="mt-1 text-xs text-red-600 flex items-center"
-                          aria-live="polite"
-                        >
-                          <AlertCircle
-                            className="h-3 w-3 mr-1"
-                            aria-hidden="true"
-                          />
-                          {errors.estimatedSubmissionsPerMonth}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Other Grading Services */}
-                    <div className="mb-3">
-                      <label
-                        htmlFor="hasOtherGradingService"
-                        className="block text-sm text-gray-700 mb-1"
-                      >
-                        Do you currently use another grading service?{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        id="hasOtherGradingService"
-                        name="hasOtherGradingService"
-                        value={formData.hasOtherGradingService}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          errors.hasOtherGradingService
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        style={selectStyles}
-                        aria-required="true"
-                        aria-invalid={
-                          errors.hasOtherGradingService ? "true" : "false"
-                        }
-                      >
-                        {yesNoOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.hasOtherGradingService && (
-                        <p
-                          className="mt-1 text-xs text-red-600 flex items-center"
-                          aria-live="polite"
-                        >
-                          <AlertCircle
-                            className="h-3 w-3 mr-1"
-                            aria-hidden="true"
-                          />
-                          {errors.hasOtherGradingService}
-                        </p>
-                      )}
-
-                      {/* Conditional field for other grading service name */}
-                      {formData.hasOtherGradingService === 1 && (
-                        <div className="mt-3">
-                          <label
-                            htmlFor="otherGradingServiceName"
-                            className="block text-sm text-gray-700 mb-1"
-                          >
-                            Which grading service do you use?{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            id="otherGradingServiceName"
-                            name="otherGradingServiceName"
-                            value={formData.otherGradingServiceName}
-                            onChange={handleInputChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                              errors.otherGradingServiceName
-                                ? "border-red-300 bg-red-50"
-                                : "border-gray-300"
-                            }`}
-                            placeholder="Name of grading service"
-                            aria-required="true"
-                            aria-invalid={
-                              errors.otherGradingServiceName ? "true" : "false"
-                            }
-                          />
-                          {errors.otherGradingServiceName && (
-                            <p
-                              className="mt-1 text-xs text-red-600 flex items-center"
-                              aria-live="polite"
-                            >
-                              <AlertCircle
-                                className="h-3 w-3 mr-1"
-                                aria-hidden="true"
-                              />
-                              {errors.otherGradingServiceName}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Request Welcome Package */}
-                    <div className="mb-3">
-                      <label
-                        htmlFor="requestWelcomePackage"
-                        className="block text-sm text-gray-700 mb-1"
-                      >
-                        Would you like to receive a retailer welcome package?{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        id="requestWelcomePackage"
-                        name="requestWelcomePackage"
-                        value={formData.requestWelcomePackage}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          errors.requestWelcomePackage
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        style={selectStyles}
-                        aria-required="true"
-                        aria-invalid={
-                          errors.requestWelcomePackage ? "true" : "false"
-                        }
-                      >
-                        {yesNoOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.requestWelcomePackage && (
-                        <p
-                          className="mt-1 text-xs text-red-600 flex items-center"
-                          aria-live="polite"
-                        >
-                          <AlertCircle
-                            className="h-3 w-3 mr-1"
-                            aria-hidden="true"
-                          />
-                          {errors.requestWelcomePackage}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Partnership Details */}
+                  {/* Additional Information section */}
                   <div className="mb-6">
                     <div className="flex items-center mb-3">
                       <InfoIcon
@@ -1142,7 +615,7 @@ const VerificationBusinessPage = () => {
                         aria-hidden="true"
                       />
                       <h2 className="text-md font-medium text-gray-900">
-                        Partnership Details
+                        Additional Information
                       </h2>
                     </div>
 
@@ -1235,33 +708,33 @@ const VerificationBusinessPage = () => {
                       )}
                     </div>
 
-                    {/* Comic Coin Partnership Reason */}
+                    {/* Description */}
                     <div className="mb-3">
                       <label
-                        htmlFor="comicCoinPartnershipReason"
+                        htmlFor="description"
                         className="block text-sm text-gray-700 mb-1"
                       >
-                        Why are you interested in the ComicCoin Blockchain
-                        program?{" "}
-                        <span className="text-gray-400 text-xs">
-                          (Optional)
-                        </span>
+                        Please write a brief description of yourself{" "}
+                        <span className="text-red-500">*</span>
                       </label>
                       <textarea
-                        id="comicCoinPartnershipReason"
-                        name="comicCoinPartnershipReason"
-                        value={formData.comicCoinPartnershipReason}
+                        id="description"
+                        name="description"
+                        value={formData.description}
                         onChange={handleInputChange}
-                        rows={2}
+                        rows={3}
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          errors.comicCoinPartnershipReason
+                          errors.description
                             ? "border-red-300 bg-red-50"
                             : "border-gray-300"
                         }`}
-                        placeholder="Your reasons for interest in the ComicCoin Blockchain program"
-                        aria-required="false"
+                        placeholder={
+                          "For example `Rare comic book collector and trader` or `Comic artist and collector` or `Journalist and comic book enthusiast`, etc."
+                        }
+                        aria-required="true"
+                        aria-invalid={errors.description ? "true" : "false"}
                       ></textarea>
-                      {errors.comicCoinPartnershipReason && (
+                      {errors.description && (
                         <p
                           className="mt-1 text-xs text-red-600 flex items-center"
                           aria-live="polite"
@@ -1270,38 +743,51 @@ const VerificationBusinessPage = () => {
                             className="h-3 w-3 mr-1"
                             aria-hidden="true"
                           />
-                          {errors.comicCoinPartnershipReason}
+                          {errors.description}
                         </p>
                       )}
                     </div>
 
-                    {/* Retail Partnership Reason */}
-                    <div className="mb-3">
+                    {/* Website URL */}
+                    <div className="mt-3">
                       <label
-                        htmlFor="retailPartnershipReason"
+                        htmlFor="websiteURL"
                         className="block text-sm text-gray-700 mb-1"
                       >
-                        Why are you interested in becoming a retail partner?{" "}
+                        Online Presence Link{" "}
                         <span className="text-red-500">*</span>
                       </label>
-                      <textarea
-                        id="retailPartnershipReason"
-                        name="retailPartnershipReason"
-                        value={formData.retailPartnershipReason}
-                        onChange={handleInputChange}
-                        rows={3}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          errors.retailPartnershipReason
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="Please explain why you're interested in partnering with us"
-                        aria-required="true"
-                        aria-invalid={
-                          errors.retailPartnershipReason ? "true" : "false"
-                        }
-                      ></textarea>
-                      {errors.retailPartnershipReason && (
+                      <div className="flex rounded-md shadow-sm">
+                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                          <LinkIcon className="h-4 w-4" aria-hidden="true" />
+                        </span>
+                        <input
+                          type="url"
+                          id="websiteURL"
+                          name="websiteURL"
+                          value={formData.websiteURL}
+                          onChange={handleInputChange}
+                          className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                            errors.websiteURL
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="e.g., https://linkedin.com/in/yourprofile"
+                          aria-required="true"
+                          aria-invalid={errors.websiteURL ? "true" : "false"}
+                          aria-describedby="websiteURL-help"
+                        />
+                      </div>
+                      <p
+                        id="websiteURL-help"
+                        className="mt-1 text-xs text-gray-500"
+                      >
+                        Please provide a link to your personal website,
+                        portfolio, or a public social media profile (like
+                        LinkedIn, Twitter, or Facebook). This helps us verify
+                        your identity and connection to the comic community.
+                      </p>
+                      {errors.websiteURL && (
                         <p
                           className="mt-1 text-xs text-red-600 flex items-center"
                           aria-live="polite"
@@ -1310,9 +796,376 @@ const VerificationBusinessPage = () => {
                             className="h-3 w-3 mr-1"
                             aria-hidden="true"
                           />
-                          {errors.retailPartnershipReason}
+                          {errors.websiteURL}
                         </p>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Comic Book Collecting Experience Section */}
+                  <div className="mb-6">
+                    <div className="flex items-center mb-3">
+                      <BookOpen
+                        className="h-5 w-5 text-purple-600 mr-2"
+                        aria-hidden="true"
+                      />
+                      <h2 className="text-md font-medium text-gray-900">
+                        Comic Book Collecting Experience
+                      </h2>
+                    </div>
+
+                    {/* How long collecting comic books */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="howLongCollectingComicBooksForGrading"
+                        className="block text-sm text-gray-700 mb-1"
+                      >
+                        How long have you been collecting comic books for
+                        grading? <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="howLongCollectingComicBooksForGrading"
+                        name="howLongCollectingComicBooksForGrading"
+                        value={formData.howLongCollectingComicBooksForGrading}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          errors.howLongCollectingComicBooksForGrading
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        style={selectStyles}
+                        aria-required="true"
+                        aria-invalid={
+                          errors.howLongCollectingComicBooksForGrading
+                            ? "true"
+                            : "false"
+                        }
+                      >
+                        {experienceOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.howLongCollectingComicBooksForGrading && (
+                        <p
+                          className="mt-1 text-xs text-red-600 flex items-center"
+                          aria-live="polite"
+                        >
+                          <AlertCircle
+                            className="h-3 w-3 mr-1"
+                            aria-hidden="true"
+                          />
+                          {errors.howLongCollectingComicBooksForGrading}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Yes/No Questions with radio buttons */}
+                    <div className="space-y-4">
+                      {/* Previously submitted for grading */}
+                      <div>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Have you previously submitted comic books for
+                            grading? <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasPreviouslySubmittedComicBookForGrading-${option.value}`}
+                                  name="hasPreviouslySubmittedComicBookForGrading"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasPreviouslySubmittedComicBookForGrading ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasPreviouslySubmittedComicBookForGrading-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasPreviouslySubmittedComicBookForGrading && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.hasPreviouslySubmittedComicBookForGrading}
+                            </p>
+                          )}
+                        </fieldset>
+                      </div>
+
+                      {/* Owned graded comics */}
+                      <div>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Have you owned graded comic books?{" "}
+                            <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasOwnedGradedComicBooks-${option.value}`}
+                                  name="hasOwnedGradedComicBooks"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasOwnedGradedComicBooks ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasOwnedGradedComicBooks-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasOwnedGradedComicBooks && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.hasOwnedGradedComicBooks}
+                            </p>
+                          )}
+                        </fieldset>
+                      </div>
+
+                      {/* Regular comic book shop */}
+                      <div>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Do you have a regular comic book shop?{" "}
+                            <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasRegularComicBookShop-${option.value}`}
+                                  name="hasRegularComicBookShop"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasRegularComicBookShop ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasRegularComicBookShop-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasRegularComicBookShop && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.hasRegularComicBookShop}
+                            </p>
+                          )}
+                        </fieldset>
+                      </div>
+
+                      {/* Purchased from auction sites */}
+                      <div>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Have you purchased from auction sites?{" "}
+                            <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasPreviouslyPurchasedFromAuctionSite-${option.value}`}
+                                  name="hasPreviouslyPurchasedFromAuctionSite"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasPreviouslyPurchasedFromAuctionSite ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasPreviouslyPurchasedFromAuctionSite-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasPreviouslyPurchasedFromAuctionSite && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {errors.hasPreviouslyPurchasedFromAuctionSite}
+                            </p>
+                          )}
+                        </fieldset>
+                      </div>
+
+                      {/* Purchased from Facebook Marketplace */}
+                      <div>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Have you purchased from Facebook Marketplace?{" "}
+                            <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasPreviouslyPurchasedFromFacebookMarketplace-${option.value}`}
+                                  name="hasPreviouslyPurchasedFromFacebookMarketplace"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasPreviouslyPurchasedFromFacebookMarketplace ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasPreviouslyPurchasedFromFacebookMarketplace-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasPreviouslyPurchasedFromFacebookMarketplace && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {
+                                errors.hasPreviouslyPurchasedFromFacebookMarketplace
+                              }
+                            </p>
+                          )}
+                        </fieldset>
+                      </div>
+
+                      {/* Attended comic cons or collectible shows */}
+                      <div>
+                        <fieldset className="mb-3">
+                          <legend className="block text-sm text-gray-700 mb-2">
+                            Do you attend comic cons or collectible shows?{" "}
+                            <span className="text-red-500">*</span>
+                          </legend>
+                          <div className="flex space-x-6">
+                            {yesNoOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
+                                <input
+                                  id={`hasRegularlyAttendedComicConsOrCollectibleShows-${option.value}`}
+                                  name="hasRegularlyAttendedComicConsOrCollectibleShows"
+                                  type="radio"
+                                  value={option.value}
+                                  checked={
+                                    formData.hasRegularlyAttendedComicConsOrCollectibleShows ===
+                                    option.value
+                                  }
+                                  onChange={handleRadioChange}
+                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  aria-required="true"
+                                />
+                                <label
+                                  htmlFor={`hasRegularlyAttendedComicConsOrCollectibleShows-${option.value}`}
+                                  className="ml-2 block text-sm text-gray-700"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          {errors.hasRegularlyAttendedComicConsOrCollectibleShows && (
+                            <p
+                              className="mt-1 text-xs text-red-600 flex items-center"
+                              aria-live="polite"
+                            >
+                              <AlertCircle
+                                className="h-3 w-3 mr-1"
+                                aria-hidden="true"
+                              />
+                              {
+                                errors.hasRegularlyAttendedComicConsOrCollectibleShows
+                              }
+                            </p>
+                          )}
+                        </fieldset>
+                      </div>
                     </div>
                   </div>
 
@@ -1476,43 +1329,140 @@ const VerificationBusinessPage = () => {
                           />
                         </div>
 
-                        {/* Shipping City */}
-                        <div>
-                          <label
-                            htmlFor="shippingCity"
-                            className="block text-sm text-gray-700 mb-1"
-                          >
-                            City <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            id="shippingCity"
-                            name="shippingCity"
-                            value={formData.shippingCity}
-                            onChange={handleInputChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                              errors.shippingCity
-                                ? "border-red-300 bg-red-50"
-                                : "border-gray-300"
-                            }`}
-                            placeholder="City/Town"
-                            aria-required="true"
-                            aria-invalid={
-                              errors.shippingCity ? "true" : "false"
-                            }
-                          />
-                          {errors.shippingCity && (
-                            <p
-                              className="mt-1 text-xs text-red-600 flex items-center"
-                              aria-live="polite"
+                        {/* Shipping City, Region/State, ZIP/Postal Code in a grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {/* Shipping City */}
+                          <div>
+                            <label
+                              htmlFor="shippingCity"
+                              className="block text-sm text-gray-700 mb-1"
                             >
-                              <AlertCircle
-                                className="h-3 w-3 mr-1"
-                                aria-hidden="true"
-                              />
-                              {errors.shippingCity}
-                            </p>
-                          )}
+                              City <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              id="shippingCity"
+                              name="shippingCity"
+                              value={formData.shippingCity}
+                              onChange={handleInputChange}
+                              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                                errors.shippingCity
+                                  ? "border-red-300 bg-red-50"
+                                  : "border-gray-300"
+                              }`}
+                              placeholder="City/Town"
+                              aria-required="true"
+                              aria-invalid={
+                                errors.shippingCity ? "true" : "false"
+                              }
+                            />
+                            {errors.shippingCity && (
+                              <p
+                                className="mt-1 text-xs text-red-600 flex items-center"
+                                aria-live="polite"
+                              >
+                                <AlertCircle
+                                  className="h-3 w-3 mr-1"
+                                  aria-hidden="true"
+                                />
+                                {errors.shippingCity}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Shipping Region/State */}
+                          <div>
+                            <label
+                              htmlFor="shippingRegion"
+                              className="block text-sm text-gray-700 mb-1"
+                            >
+                              State/Province{" "}
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                              id="shippingRegion"
+                              name="shippingRegion"
+                              value={formData.shippingRegion}
+                              onChange={handleShippingRegionChange}
+                              disabled={!formData.shippingCountry}
+                              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                                errors.shippingRegion
+                                  ? "border-red-300 bg-red-50"
+                                  : "border-gray-300"
+                              } ${!formData.shippingCountry ? "bg-gray-100" : ""}`}
+                              style={selectStyles}
+                              aria-required="true"
+                              aria-invalid={
+                                errors.shippingRegion ? "true" : "false"
+                              }
+                            >
+                              <option value="">
+                                {formData.shippingCountry
+                                  ? "Select State/Province..."
+                                  : "Select Country First"}
+                              </option>
+                              {availableShippingRegions.map((region) => (
+                                <option
+                                  key={region.shortCode}
+                                  value={region.shortCode}
+                                >
+                                  {region.name}
+                                </option>
+                              ))}
+                            </select>
+                            {errors.shippingRegion && (
+                              <p
+                                className="mt-1 text-xs text-red-600 flex items-center"
+                                aria-live="polite"
+                              >
+                                <AlertCircle
+                                  className="h-3 w-3 mr-1"
+                                  aria-hidden="true"
+                                />
+                                {errors.shippingRegion}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Shipping Postal Code */}
+                          <div>
+                            <label
+                              htmlFor="shippingPostalCode"
+                              className="block text-sm text-gray-700 mb-1"
+                            >
+                              ZIP/Postal Code{" "}
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              id="shippingPostalCode"
+                              name="shippingPostalCode"
+                              value={formData.shippingPostalCode}
+                              onChange={handleInputChange}
+                              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                                errors.shippingPostalCode
+                                  ? "border-red-300 bg-red-50"
+                                  : "border-gray-300"
+                              }`}
+                              placeholder="ZIP or Postal Code"
+                              aria-required="true"
+                              aria-invalid={
+                                errors.shippingPostalCode ? "true" : "false"
+                              }
+                            />
+                            {errors.shippingPostalCode && (
+                              <p
+                                className="mt-1 text-xs text-red-600 flex items-center"
+                                aria-live="polite"
+                              >
+                                <AlertCircle
+                                  className="h-3 w-3 mr-1"
+                                  aria-hidden="true"
+                                />
+                                {errors.shippingPostalCode}
+                              </p>
+                            )}
+                          </div>
                         </div>
 
                         {/* Shipping Country */}
@@ -1562,100 +1512,6 @@ const VerificationBusinessPage = () => {
                             </p>
                           )}
                         </div>
-
-                        {/* Shipping Region/State */}
-                        <div>
-                          <label
-                            htmlFor="shippingRegion"
-                            className="block text-sm text-gray-700 mb-1"
-                          >
-                            State/Province{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            id="shippingRegion"
-                            name="shippingRegion"
-                            value={formData.shippingRegion}
-                            onChange={handleShippingRegionChange}
-                            disabled={!formData.shippingCountry}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                              errors.shippingRegion
-                                ? "border-red-300 bg-red-50"
-                                : "border-gray-300"
-                            } ${!formData.shippingCountry ? "bg-gray-100" : ""}`}
-                            style={selectStyles}
-                            aria-required="true"
-                            aria-invalid={
-                              errors.shippingRegion ? "true" : "false"
-                            }
-                          >
-                            <option value="">
-                              {formData.shippingCountry
-                                ? "Select State/Province..."
-                                : "Select Country First"}
-                            </option>
-                            {availableShippingRegions.map((region) => (
-                              <option
-                                key={region.shortCode}
-                                value={region.shortCode}
-                              >
-                                {region.name}
-                              </option>
-                            ))}
-                          </select>
-                          {errors.shippingRegion && (
-                            <p
-                              className="mt-1 text-xs text-red-600 flex items-center"
-                              aria-live="polite"
-                            >
-                              <AlertCircle
-                                className="h-3 w-3 mr-1"
-                                aria-hidden="true"
-                              />
-                              {errors.shippingRegion}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Shipping Postal Code */}
-                        <div>
-                          <label
-                            htmlFor="shippingPostalCode"
-                            className="block text-sm text-gray-700 mb-1"
-                          >
-                            ZIP/Postal Code{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            id="shippingPostalCode"
-                            name="shippingPostalCode"
-                            value={formData.shippingPostalCode}
-                            onChange={handleInputChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                              errors.shippingPostalCode
-                                ? "border-red-300 bg-red-50"
-                                : "border-gray-300"
-                            }`}
-                            placeholder="ZIP or Postal Code"
-                            aria-required="true"
-                            aria-invalid={
-                              errors.shippingPostalCode ? "true" : "false"
-                            }
-                          />
-                          {errors.shippingPostalCode && (
-                            <p
-                              className="mt-1 text-xs text-red-600 flex items-center"
-                              aria-live="polite"
-                            >
-                              <AlertCircle
-                                className="h-3 w-3 mr-1"
-                                aria-hidden="true"
-                              />
-                              {errors.shippingPostalCode}
-                            </p>
-                          )}
-                        </div>
                       </div>
                     )}
                   </div>
@@ -1698,4 +1554,4 @@ const VerificationBusinessPage = () => {
   );
 };
 
-export default VerificationBusinessPage;
+export default VerificationIndividualPage;

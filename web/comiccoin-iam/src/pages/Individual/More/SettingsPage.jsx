@@ -1,4 +1,4 @@
-// src/pages/User/More/SettingsPage.jsx
+// src/pages/Individual/More/SettingsPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import {

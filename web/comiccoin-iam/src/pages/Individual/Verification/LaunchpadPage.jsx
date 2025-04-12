@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/User/Verification/LaunchpadPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Individual/Verification/LaunchpadPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
