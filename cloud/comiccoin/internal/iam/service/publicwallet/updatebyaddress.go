@@ -15,6 +15,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/user"
 	uc "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/user"
 )
@@ -83,6 +84,7 @@ func (svc *updatePublicWalletByAddressServiceImpl) UpdateByAddress(sessCtx mongo
 	}
 	userName, _ := sessCtx.Value(constants.SessionUserName).(string)
 	userIPAddress := sessCtx.Value(constants.SessionIPAddress).(string)
+	userRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
 
 	//
 	// Santize and validate input fields.
@@ -156,10 +158,13 @@ func (svc *updatePublicWalletByAddressServiceImpl) UpdateByAddress(sessCtx mongo
 		return httperror.NewForBadRequest(&e)
 	}
 	if existingPublicWallet.CreatedByUserID != userID {
-		e["wallet_address"] = "Wallet address was already registered by another user"
-		svc.logger.Warn("Failed validation",
-			slog.Any("error", e))
-		return httperror.NewForBadRequest(&e)
+		// Developers note: System administrators are exempt from this check.
+		if userRole != dom_user.UserRoleRoot {
+			e["wallet_address"] = "Wallet address was already registered by another user"
+			svc.logger.Warn("Failed validation",
+				slog.Any("error", e))
+			return httperror.NewForBadRequest(&e)
+		}
 	}
 
 	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
