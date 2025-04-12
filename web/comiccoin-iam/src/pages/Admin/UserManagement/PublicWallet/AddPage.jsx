@@ -25,6 +25,8 @@ import {
   Landmark,
   Key,
   Lock,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
@@ -37,12 +39,13 @@ const AdminAddWalletPage = () => {
   const location = useLocation();
   const formCardRef = useRef(null);
   const statusRef = useRef(null);
-  const { id } = useParams();
-  const userIdFromQuery = id;
+  const { userId } = useParams();
+  const userIdFromQuery = userId;
 
   // Hooks for API operations
   const {
     createPublicWallet,
+    createPublicWalletByAdmin,
     isLoading: isWalletLoading,
     error: walletError,
     WALLET_STATUS,
@@ -57,6 +60,7 @@ const AdminAddWalletPage = () => {
     userId: userIdFromQuery || "",
     status: WALLET_STATUS.ACTIVE,
     chainId: "1",
+    isVerified: false, // New field for admin creation
   });
 
   // State for the selected user (if userId is provided)
@@ -182,6 +186,8 @@ const AdminAddWalletPage = () => {
     if (!formData.name) validationErrors.name = "Wallet name is required";
     if (!formData.address)
       validationErrors.address = "Wallet address is required";
+    if (userIdFromQuery && !formData.userId)
+      validationErrors.userId = "User ID is required for admin creation";
 
     // Ethereum address validation (if wallet type is ethereum)
     if (formData.walletType === "ethereum" && formData.address) {
@@ -226,7 +232,14 @@ const AdminAddWalletPage = () => {
       };
 
       // Submit wallet data
-      await createPublicWallet(walletData);
+      // If this is being created in the context of a user (admin flow), use the admin endpoint
+      if (userIdFromQuery) {
+        console.log("Creating wallet as admin for user:", userIdFromQuery);
+        await createPublicWalletByAdmin(walletData);
+      } else {
+        // Otherwise use the regular endpoint
+        await createPublicWallet(walletData);
+      }
 
       // Show success message
       toast.success("Wallet created successfully");
@@ -571,6 +584,44 @@ const AdminAddWalletPage = () => {
                     </p>
                   )}
                 </div>
+
+                {/* Status (for admin creation) */}
+                {userIdFromQuery && (
+                  <div>
+                    <label
+                      htmlFor="status"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Wallet Status
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        id="status"
+                        name="status"
+                        value={formData.status}
+                        onChange={handleInputChange}
+                        className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
+                          hasError("status")
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        <option value={WALLET_STATUS.ACTIVE}>Active</option>
+                        <option value={WALLET_STATUS.ARCHIVED}>Archived</option>
+                        <option value={WALLET_STATUS.LOCKED}>Locked</option>
+                      </select>
+                    </div>
+                    {errors.status && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-1" />
+                        {errors.status}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -615,6 +666,63 @@ const AdminAddWalletPage = () => {
               </div>
             </div>
 
+            {/* Verification Section (Admin Only) */}
+            {userIdFromQuery && (
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="font-medium text-gray-800 mb-4 flex items-center">
+                  <CheckCircle className="h-5 w-5 text-purple-600 mr-2" />
+                  Wallet Verification
+                </h3>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center">
+                      <label
+                        htmlFor="isVerified"
+                        className="font-medium text-gray-700 cursor-pointer"
+                      >
+                        Verified Status
+                      </label>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Mark this wallet as verified to indicate it has been
+                      reviewed and approved by ComicCoin
+                    </p>
+                  </div>
+
+                  <div className="relative">
+                    <label
+                      htmlFor="isVerified"
+                      className="inline-flex items-center cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        name="isVerified"
+                        id="isVerified"
+                        className="sr-only"
+                        checked={formData.isVerified}
+                        onChange={handleInputChange}
+                      />
+                      <div
+                        className={`relative w-12 h-6 rounded-full transition-colors ${
+                          formData.isVerified ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                      >
+                        <div
+                          className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
+                            formData.isVerified ? "transform translate-x-6" : ""
+                          }`}
+                        ></div>
+                      </div>
+                      <span className="ml-2 text-sm font-medium text-gray-700">
+                        {formData.isVerified ? "Verified" : "Not Verified"}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Form Actions */}
             <div className="pt-4 flex flex-col sm:flex-row-reverse gap-3 border-t border-gray-200">
               <button
@@ -634,7 +742,9 @@ const AdminAddWalletPage = () => {
                 ) : (
                   <>
                     <Save className="h-5 w-5" />
-                    Create Wallet
+                    {userIdFromQuery
+                      ? "Create Wallet as Admin"
+                      : "Create Wallet"}
                   </>
                 )}
               </button>
@@ -665,6 +775,14 @@ const AdminAddWalletPage = () => {
                 address is linked to the blockchain and cannot be changed once
                 created. Choose an appropriate name and description to help
                 users understand the purpose of this wallet.
+                {userIdFromQuery && (
+                  <span className="block mt-2">
+                    <strong>Admin features:</strong> As an admin, you can set
+                    the verification status and initial status of the wallet.
+                    Verified wallets will display a verification badge to users,
+                    indicating trustworthiness.
+                  </span>
+                )}
               </p>
             </div>
           </div>

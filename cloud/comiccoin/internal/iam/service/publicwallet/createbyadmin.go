@@ -146,8 +146,6 @@ func (svc *createPublicWalletByAdminImpl) Create(sessCtx mongo.SessionContext, r
 			e["user_id"] = fmt.Sprintf("User lookup generated error: %v", err)
 		} else if user == nil {
 			e["user_id"] = "User not found"
-		} else if user.ID != userID {
-			e["user_id"] = "User ID does not match session user ID"
 		}
 	}
 	if req.Status == 0 {
@@ -213,11 +211,11 @@ func (svc *createPublicWalletByAdminImpl) Create(sessCtx mongo.SessionContext, r
 		ID:                    id,
 		CreatedAt:             time.Now(),
 		CreatedFromIPAddress:  userIPAddress,
-		CreatedByUserID:       userID, // Created by admin
+		CreatedByUserID:       req.UserID, // Assigned by admin
 		CreatedByName:         userName,
 		ModifiedAt:            time.Now(),
 		ModifiedFromIPAddress: userIPAddress,
-		ModifiedByUserID:      userID, // Modified by admin
+		ModifiedByUserID:      req.UserID, // Assigned by admin
 		ModifiedByName:        userName,
 		Status:                req.Status,
 	}
@@ -232,6 +230,8 @@ func (svc *createPublicWalletByAdminImpl) Create(sessCtx mongo.SessionContext, r
 	}
 
 	svc.logger.Debug("Saved public wallet by admin",
+		slog.Any("userID", userID),
+		slog.Any("req.UserID", req.UserID),
 		slog.Any("Type", pw.Type),
 		slog.Any("Address", pw.Address),
 		slog.Any("ChainID", pw.ChainID),

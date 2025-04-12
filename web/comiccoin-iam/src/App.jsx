@@ -290,7 +290,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/users/:id/add-wallet"
+              path="/admin/users/:userId/add-wallet"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminAddWalletPage />
