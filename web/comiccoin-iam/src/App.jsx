@@ -43,6 +43,7 @@ import PublicWalletUpdatePage from "./pages/Individual/PublicWallet/UpdatePage";
 import AdminDashboardPage from "./pages/Admin/Dashboard/Page";
 import UserListPage from "./pages/Admin/UserManagement/ListPage";
 import UserDetailsPage from "./pages/Admin/UserManagement/DetailsPage";
+import AdminUserPublicWalletUpdatePage from "./pages/Admin/UserManagement/PublicWallet/UpdatePage";
 import UserAddPage from "./pages/Admin/UserManagement/AddPage";
 import AdminUpdateUserPage from "./pages/Admin/UserManagement/UpdatePage";
 import AdminAddWalletPage from "./pages/Admin/UserManagement/AddWalletPage";
@@ -292,6 +293,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminAddWalletPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users/:userId/wallet/:address/edit"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminUserPublicWalletUpdatePage />
                 </ProtectedRoute>
               }
             />

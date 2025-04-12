@@ -1,6 +1,6 @@
 // src/pages/Admin/UserManagement/DetailsPage.jsx
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Link } from "react-router";
 import {
   User,
   ArrowLeft,
@@ -163,10 +163,6 @@ const UserDetailsPage = () => {
   // Wallet functionality
   const handleViewWallet = (address) => {
     window.open(`/directory/${address}`, "_blank");
-  };
-
-  const handleEditWallet = (address) => {
-    window.open(`/admin/wallets/${address}/edit`, "_blank");
   };
 
   const handleDeleteWalletClick = (wallet) => {
@@ -1286,15 +1282,13 @@ const UserDetailsPage = () => {
                               {/* Action Buttons */}
                               <div className="flex mt-4 pt-3 border-t border-gray-100 justify-between">
                                 <div className="flex gap-2">
-                                  <button
-                                    onClick={() =>
-                                      handleEditWallet(wallet.address)
-                                    }
+                                  <Link
+                                    to={`/admin/users/${user.id}/wallet/${wallet.address}/edit`}
                                     className="p-1 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded"
                                     aria-label="Edit wallet"
                                   >
                                     <Edit2 className="h-4 w-4" />
-                                  </button>
+                                  </Link>
                                   <button
                                     onClick={() =>
                                       handleShareWallet(wallet.address)
