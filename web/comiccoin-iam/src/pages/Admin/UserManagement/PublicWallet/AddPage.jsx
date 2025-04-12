@@ -44,7 +44,6 @@ const AdminAddWalletPage = () => {
 
   // Hooks for API operations
   const {
-    createPublicWallet,
     createPublicWalletByAdmin,
     isLoading: isWalletLoading,
     error: walletError,
@@ -80,6 +79,9 @@ const AdminAddWalletPage = () => {
     type: null, // 'success' or 'error'
     message: "",
   });
+
+  // Combined loading state to properly disable the submit button
+  const isButtonDisabled = isSubmitting || isWalletLoading;
 
   // Load user data if userId is provided
   useEffect(() => {
@@ -181,6 +183,14 @@ const AdminAddWalletPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // If already submitting, prevent multiple submissions
+    if (isButtonDisabled) {
+      console.log(
+        "Submission already in progress, preventing duplicate submission",
+      );
+      return;
+    }
+
     // Basic validation
     const validationErrors = {};
     if (!formData.name) validationErrors.name = "Wallet name is required";
@@ -218,6 +228,7 @@ const AdminAddWalletPage = () => {
       return;
     }
 
+    // Set submitting flag to true immediately to prevent double submission
     setIsSubmitting(true);
 
     try {
@@ -231,15 +242,10 @@ const AdminAddWalletPage = () => {
         chainId: parseInt(formData.chainId),
       };
 
+      console.log("Submitting wallet data:", walletData);
+
       // Submit wallet data
-      // If this is being created in the context of a user (admin flow), use the admin endpoint
-      if (userIdFromQuery) {
-        console.log("Creating wallet as admin for user:", userIdFromQuery);
-        await createPublicWalletByAdmin(walletData);
-      } else {
-        // Otherwise use the regular endpoint
-        await createPublicWallet(walletData);
-      }
+      await createPublicWalletByAdmin(walletData);
 
       // Show success message
       toast.success("Wallet created successfully");
@@ -265,13 +271,18 @@ const AdminAddWalletPage = () => {
     } catch (err) {
       // Error handling is done in the useEffect for walletError
       console.error("Failed to create wallet:", err);
-    } finally {
+      // Make sure to reset the submitting state in case the error wasn't caught by the wallet hook
       setIsSubmitting(false);
     }
   };
 
   // Handle cancel button
   const handleCancel = () => {
+    // Prevent navigation during form submission
+    if (isButtonDisabled) {
+      return;
+    }
+
     if (userIdFromQuery) {
       // If came from user details, go back there
       navigate(`/admin/users/${userIdFromQuery}`);
@@ -283,6 +294,11 @@ const AdminAddWalletPage = () => {
 
   // Generate random wallet address (for testing/demo purposes)
   const generateRandomAddress = () => {
+    // Prevent action during form submission
+    if (isButtonDisabled) {
+      return;
+    }
+
     const characters = "0123456789abcdef";
     let address = "0x";
     for (let i = 0; i < 40; i++) {
@@ -319,7 +335,10 @@ const AdminAddWalletPage = () => {
           </h1>
           <button
             onClick={handleCancel}
-            className="flex items-center text-gray-600 hover:text-gray-800"
+            disabled={isButtonDisabled}
+            className={`flex items-center text-gray-600 hover:text-gray-800 ${
+              isButtonDisabled ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             aria-label="Go back"
           >
             <ArrowLeft className="h-5 w-5 mr-1" />
@@ -357,6 +376,7 @@ const AdminAddWalletPage = () => {
               onClick={() => setStatusMessage({ type: null, message: "" })}
               className="text-gray-500 hover:text-gray-700 transition-colors"
               aria-label="Dismiss message"
+              disabled={isButtonDisabled}
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -486,11 +506,12 @@ const AdminAddWalletPage = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
+                      disabled={isButtonDisabled}
                       className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                         hasError("name")
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300"
-                      }`}
+                      } ${isButtonDisabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
                       placeholder="My ComicCoin Wallet"
                       required
                     />
@@ -521,11 +542,12 @@ const AdminAddWalletPage = () => {
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
+                      disabled={isButtonDisabled}
                       className={`w-full pl-10 pr-12 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm ${
                         hasError("address")
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300"
-                      }`}
+                      } ${isButtonDisabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
                       placeholder="0x0000000000000000000000000000000000000000"
                       required
                     />
@@ -533,7 +555,12 @@ const AdminAddWalletPage = () => {
                       <button
                         type="button"
                         onClick={() => generateRandomAddress()}
-                        className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded transition-colors"
+                        disabled={isButtonDisabled}
+                        className={`text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded transition-colors ${
+                          isButtonDisabled
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
                       >
                         Generate
                       </button>
@@ -568,11 +595,12 @@ const AdminAddWalletPage = () => {
                       name="chainId"
                       value={formData.chainId}
                       onChange={handleInputChange}
+                      disabled={isButtonDisabled}
                       className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
                         hasError("chainId")
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300"
-                      }`}
+                      } ${isButtonDisabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     >
                       <option value="1">ComicCoin Mainnet (1)</option>
                     </select>
@@ -603,11 +631,12 @@ const AdminAddWalletPage = () => {
                         name="status"
                         value={formData.status}
                         onChange={handleInputChange}
+                        disabled={isButtonDisabled}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
                           hasError("status")
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
-                        }`}
+                        } ${isButtonDisabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
                       >
                         <option value={WALLET_STATUS.ACTIVE}>Active</option>
                         <option value={WALLET_STATUS.ARCHIVED}>Archived</option>
@@ -648,12 +677,13 @@ const AdminAddWalletPage = () => {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
+                    disabled={isButtonDisabled}
                     rows={4}
                     className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                       hasError("description")
                         ? "border-red-500 bg-red-50"
                         : "border-gray-300"
-                    }`}
+                    } ${isButtonDisabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     placeholder="Describe the purpose or usage of this wallet..."
                   />
                 </div>
@@ -693,7 +723,7 @@ const AdminAddWalletPage = () => {
                   <div className="relative">
                     <label
                       htmlFor="isVerified"
-                      className="inline-flex items-center cursor-pointer"
+                      className={`inline-flex items-center ${isButtonDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
                     >
                       <input
                         type="checkbox"
@@ -702,11 +732,12 @@ const AdminAddWalletPage = () => {
                         className="sr-only"
                         checked={formData.isVerified}
                         onChange={handleInputChange}
+                        disabled={isButtonDisabled}
                       />
                       <div
                         className={`relative w-12 h-6 rounded-full transition-colors ${
                           formData.isVerified ? "bg-green-500" : "bg-gray-300"
-                        }`}
+                        } ${isButtonDisabled ? "opacity-50" : ""}`}
                       >
                         <div
                           className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
@@ -714,7 +745,9 @@ const AdminAddWalletPage = () => {
                           }`}
                         ></div>
                       </div>
-                      <span className="ml-2 text-sm font-medium text-gray-700">
+                      <span
+                        className={`ml-2 text-sm font-medium text-gray-700 ${isButtonDisabled ? "opacity-50" : ""}`}
+                      >
                         {formData.isVerified ? "Verified" : "Not Verified"}
                       </span>
                     </label>
@@ -727,12 +760,13 @@ const AdminAddWalletPage = () => {
             <div className="pt-4 flex flex-col sm:flex-row-reverse gap-3 border-t border-gray-200">
               <button
                 type="submit"
-                disabled={isSubmitting || isWalletLoading}
+                disabled={isButtonDisabled}
                 className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
-                  isSubmitting || isWalletLoading
+                  isButtonDisabled
                     ? "bg-purple-300 cursor-not-allowed text-white"
                     : "bg-purple-600 hover:bg-purple-700 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                 }`}
+                aria-disabled={isButtonDisabled}
               >
                 {isSubmitting ? (
                   <>
@@ -752,8 +786,11 @@ const AdminAddWalletPage = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                disabled={isSubmitting || isWalletLoading}
-                className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isButtonDisabled}
+                className={`px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-sm ${
+                  isButtonDisabled ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                aria-disabled={isButtonDisabled}
               >
                 Cancel
               </button>
