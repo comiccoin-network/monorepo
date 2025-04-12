@@ -1,4 +1,4 @@
-// src/pages/Admin/WalletManagement/AddWalletPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Admin/UserManagement/PublicWallet/AddPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router";
 import {
@@ -27,10 +27,10 @@ import {
   Lock,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import AdminTopNavigation from "../../../components/AdminTopNavigation";
-import AdminFooter from "../../../components/AdminFooter";
-import { usePublicWallet } from "../../../hooks/usePublicWallet";
-import { useUser } from "../../../hooks/useUser";
+import AdminTopNavigation from "../../../../components/AdminTopNavigation";
+import AdminFooter from "../../../../components/AdminFooter";
+import { usePublicWallet } from "../../../../hooks/usePublicWallet";
+import { useUser } from "../../../../hooks/useUser";
 
 const AdminAddWalletPage = () => {
   const navigate = useNavigate();

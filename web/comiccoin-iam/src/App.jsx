@@ -46,7 +46,7 @@ import UserDetailsPage from "./pages/Admin/UserManagement/DetailsPage";
 import AdminUserPublicWalletUpdatePage from "./pages/Admin/UserManagement/PublicWallet/UpdatePage";
 import UserAddPage from "./pages/Admin/UserManagement/AddPage";
 import AdminUpdateUserPage from "./pages/Admin/UserManagement/UpdatePage";
-import AdminAddWalletPage from "./pages/Admin/UserManagement/AddWalletPage";
+import AdminAddWalletPage from "./pages/Admin/UserManagement/PublicWallet/AddPage";
 import AdminMorePage from "./pages/Admin/More/Page";
 import AdminDeleteAccountPage from "./pages/Admin/More/DeleteAccountPage";
 import AdminSettingsPage from "./pages/Admin/More/SettingsPage";
