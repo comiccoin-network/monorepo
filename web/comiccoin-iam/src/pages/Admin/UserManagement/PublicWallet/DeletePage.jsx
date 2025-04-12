@@ -1,6 +1,7 @@
 // monorepo/web/comiccoin-iam/src/pages/Admin/UserManagement/PublicWallet/DeletePage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Wallet,
   Trash2,
@@ -27,6 +28,7 @@ const AdminUserPublicWalletDeletePage = () => {
   const { userId, address } = useParams();
   const navigate = useNavigate();
   const statusRef = useRef(null);
+  const queryClient = useQueryClient(); // Get the query client instance
 
   const {
     fetchWalletByAddress,
@@ -194,6 +196,55 @@ const AdminUserPublicWalletDeletePage = () => {
     }
   };
 
+  // Function to invalidate all wallet-related queries
+  const invalidateWalletQueries = () => {
+    console.log("Invalidating wallet-related queries");
+
+    // First, try to use the more specific predicate approach
+    try {
+      // This approach is safer as it only invalidates relevant queries
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+
+          // Check if the query is related to wallets
+          if (Array.isArray(queryKey)) {
+            // Check if the first item in the query key is 'publicWallets' or 'wallets'
+            if (queryKey[0] === "publicWallets" || queryKey[0] === "wallets") {
+              return true;
+            }
+
+            // Check if it's a user query that might contain wallet info
+            if (queryKey[0] === "user" && queryKey[1] === userId) {
+              return true;
+            }
+          }
+
+          return false;
+        },
+      });
+
+      console.log("Successfully invalidated queries using predicate");
+    } catch (err) {
+      console.warn(
+        "Error using predicate invalidation, falling back to direct invalidation",
+        err,
+      );
+
+      // Fallback to direct invalidation
+      try {
+        queryClient.invalidateQueries("publicWallets");
+        queryClient.invalidateQueries("wallets");
+        if (userId) {
+          queryClient.invalidateQueries(["user", userId]);
+        }
+        console.log("Successfully invalidated queries directly");
+      } catch (err2) {
+        console.error("Failed to invalidate queries", err2);
+      }
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!wallet || !address) return;
 
@@ -210,6 +261,9 @@ const AdminUserPublicWalletDeletePage = () => {
     try {
       // Delete the wallet using the direct method
       await deleteWallet(address);
+
+      // Invalidate all wallet-related queries to update the UI
+      invalidateWalletQueries();
 
       toast.success("Wallet deleted successfully");
       setStatusMessage({
