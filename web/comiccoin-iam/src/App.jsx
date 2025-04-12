@@ -4,9 +4,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
+// Common
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// Anonymous
 import IndexPage from "./pages/Anonymous/Index/Page";
 import TermsPage from "./pages/Anonymous/TermsPage";
 import PrivacyPage from "./pages/Anonymous/PrivacyPage";
@@ -21,14 +23,13 @@ import RegisterPage from "./pages/Anonymous/Gateway/RegisterPage";
 import RegistrationSuccessPage from "./pages/Anonymous/Gateway/RegistrationSuccessPage";
 import EmailVerificationPage from "./pages/Anonymous/Gateway/EmailVerificationPage";
 
-import VerificationLaunchpadPage from "./pages/Verification/LaunchpadPage";
-import VerificationIndividualPage from "./pages/Verification/IndividualPage";
-import VerificationBusinessPage from "./pages/Verification/BusinessPage";
-import VerificationRejectedPage from "./pages/Verification/RejectedPage";
-import VerificationApprovedPage from "./pages/Verification/ApprovedPage";
-import VerificationPendingPage from "./pages/Verification/PendingPage";
-
 // User
+import VerificationLaunchpadPage from "./pages/User/Verification/LaunchpadPage";
+import VerificationIndividualPage from "./pages/User/Verification/IndividualPage";
+import VerificationBusinessPage from "./pages/User/Verification/BusinessPage";
+import VerificationRejectedPage from "./pages/User/Verification/RejectedPage";
+import VerificationApprovedPage from "./pages/User/Verification/ApprovedPage";
+import VerificationPendingPage from "./pages/User/Verification/PendingPage";
 import UserDashboardPage from "./pages/User/Dashboard/Page";
 import UserMorePage from "./pages/User/More/Page";
 import UserDeleteAccountPage from "./pages/User/More/DeleteAccountPage";
@@ -39,16 +40,12 @@ import PublicWalletDetailsPage from "./pages/User/PublicWallet/DetailsPage";
 import PublicWalletUpdatePage from "./pages/User/PublicWallet/UpdatePage";
 
 // Admin
-// Dashboard
 import AdminDashboardPage from "./pages/Admin/Dashboard/Page";
-// User Management Pages
 import UserListPage from "./pages/Admin/UserManagement/ListPage";
 import UserDetailsPage from "./pages/Admin/UserManagement/DetailsPage";
 import UserAddPage from "./pages/Admin/UserManagement/AddPage";
 import AdminUpdateUserPage from "./pages/Admin/UserManagement/UpdatePage";
 import AdminAddWalletPage from "./pages/Admin/UserManagement/AddWalletPage";
-
-// More
 import AdminMorePage from "./pages/Admin/More/Page";
 import AdminDeleteAccountPage from "./pages/Admin/More/DeleteAccountPage";
 import AdminSettingsPage from "./pages/Admin/More/SettingsPage";

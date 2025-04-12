@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/Verification/LaunchpadPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/User/Verification/LaunchpadPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
@@ -14,11 +14,11 @@ import {
   Loader,
 } from "lucide-react";
 
-import Header from "../../components/IndexPage/Header";
-import Footer from "../../components/IndexPage/Footer";
-import { useAuth } from "../../hooks/useAuth";
-import { useGetMe } from "../../hooks/useGetMe";
-import { useVerifyProfile } from "../../hooks/useVerifyProfile";
+import Header from "../../../components/IndexPage/Header";
+import Footer from "../../../components/IndexPage/Footer";
+import { useAuth } from "../../../hooks/useAuth";
+import { useGetMe } from "../../../hooks/useGetMe";
+import { useVerifyProfile } from "../../../hooks/useVerifyProfile";
 
 const VerificationLaunchpadPage = () => {
   const navigate = useNavigate();

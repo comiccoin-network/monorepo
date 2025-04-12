@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/Verification/ApprovedPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/User/Verification/ApprovedPage.jsx
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
@@ -16,10 +16,10 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import Header from "../../components/IndexPage/Header";
-import Footer from "../../components/IndexPage/Footer";
-import { useAuth } from "../../hooks/useAuth";
-import { useGetMe } from "../../hooks/useGetMe";
+import Header from "../../../components/IndexPage/Header";
+import Footer from "../../../components/IndexPage/Footer";
+import { useAuth } from "../../../hooks/useAuth";
+import { useGetMe } from "../../../hooks/useGetMe";
 
 const VerificationApprovedPage = () => {
   const navigate = useNavigate();
