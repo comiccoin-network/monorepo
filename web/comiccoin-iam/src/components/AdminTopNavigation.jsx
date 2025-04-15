@@ -18,27 +18,31 @@ const AdminTopNavigation = () => {
   const location = useLocation();
   const { logout, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const currentPath = location.pathname;
 
-  // Determine active tab based on current path
+  // Improved active tab detection logic
   const isActive = (path) => {
-    // For the dashboard, still require exact match
-    if (path === "/admin/dashboard")
-      return location.pathname === "/admin/dashboard";
+    // If we're checking for dashboard, only match exact path
+    if (path === "/admin/dashboard") {
+      return currentPath === "/admin/dashboard";
+    }
 
-    // For users section, check if the current path starts with /admin/users
-    if (path === "/admin/users")
-      return location.pathname.startsWith("/admin/users");
+    // For other sections, check if the current path starts with the given path
+    // But ensure we're not accidentally matching a different section that starts with the same characters
+    if (path === "/admin/users") {
+      return currentPath.startsWith("/admin/users");
+    }
 
-    // For transactions section, check if the current path starts with /admin/transactions
-    if (path === "/admin/transactions")
-      return location.pathname.startsWith("/admin/transactions");
+    if (path === "/admin/public-wallets") {
+      return currentPath.startsWith("/admin/public-wallets");
+    }
 
-    // For the more section
-    if (path === "/admin/more")
-      return location.pathname.startsWith("/admin/more");
+    if (path === "/admin/more") {
+      return currentPath.startsWith("/admin/more");
+    }
 
-    // Default case, exact match
-    return location.pathname === path;
+    // Default case - exact match
+    return currentPath === path;
   };
 
   // Toggle mobile menu
@@ -46,12 +50,21 @@ const AdminTopNavigation = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Close mobile menu when a navigation happens
+  const closeMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <header className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo and Brand */}
-          <Link to="/admin/dashboard" className="flex items-center space-x-3">
+          <Link
+            to="/admin/dashboard"
+            className="flex items-center space-x-3"
+            onClick={closeMenu}
+          >
             <Globe
               className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white"
               aria-hidden="true"
@@ -71,7 +84,6 @@ const AdminTopNavigation = () => {
                     ? "bg-purple-800 text-white"
                     : "text-purple-100 hover:bg-purple-600 hover:text-white"
                 }`}
-                aria-current={isActive("/admin/dashboard") ? "page" : undefined}
               >
                 <span className="flex items-center gap-2">
                   <Home className="h-5 w-5" />
@@ -86,11 +98,25 @@ const AdminTopNavigation = () => {
                     ? "bg-purple-800 text-white"
                     : "text-purple-100 hover:bg-purple-600 hover:text-white"
                 }`}
-                aria-current={isActive("/admin/users") ? "page" : undefined}
               >
                 <span className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
                   User Management
+                </span>
+              </Link>
+
+              {/* Wallet Management Link */}
+              <Link
+                to="/admin/public-wallets"
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive("/admin/public-wallets")
+                    ? "bg-purple-800 text-white"
+                    : "text-purple-100 hover:bg-purple-600 hover:text-white"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5" />
+                  Wallet Management
                 </span>
               </Link>
 
@@ -101,7 +127,6 @@ const AdminTopNavigation = () => {
                     ? "bg-purple-800 text-white"
                     : "text-purple-100 hover:bg-purple-600 hover:text-white"
                 }`}
-                aria-current={isActive("/admin/more") ? "page" : undefined}
               >
                 <span className="flex items-center gap-2">
                   <Ellipsis className="h-5 w-5" />
@@ -158,7 +183,7 @@ const AdminTopNavigation = () => {
                   ? "bg-purple-700 text-white"
                   : "text-purple-100 hover:bg-purple-700 hover:text-white"
               }`}
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={closeMenu}
             >
               <span className="flex items-center gap-2">
                 <Home className="h-5 w-5" />
@@ -173,11 +198,27 @@ const AdminTopNavigation = () => {
                   ? "bg-purple-700 text-white"
                   : "text-purple-100 hover:bg-purple-700 hover:text-white"
               }`}
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={closeMenu}
             >
               <span className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 User Management
+              </span>
+            </Link>
+
+            {/* Mobile Wallet Management Link */}
+            <Link
+              to="/admin/public-wallets"
+              className={`block px-3 py-2 rounded-lg text-base font-medium ${
+                isActive("/admin/public-wallets")
+                  ? "bg-purple-700 text-white"
+                  : "text-purple-100 hover:bg-purple-700 hover:text-white"
+              }`}
+              onClick={closeMenu}
+            >
+              <span className="flex items-center gap-2">
+                <Wallet className="h-5 w-5" />
+                Wallet Management
               </span>
             </Link>
 
@@ -188,7 +229,7 @@ const AdminTopNavigation = () => {
                   ? "bg-purple-700 text-white"
                   : "text-purple-100 hover:bg-purple-700 hover:text-white"
               }`}
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={closeMenu}
             >
               <span className="flex items-center gap-2">
                 <Ellipsis className="h-5 w-5" />
@@ -198,7 +239,7 @@ const AdminTopNavigation = () => {
 
             <button
               onClick={() => {
-                setIsMobileMenuOpen(false);
+                closeMenu();
                 logout();
               }}
               className="block w-full text-left px-3 py-2 rounded-lg text-base font-medium text-red-100 hover:bg-red-600 hover:text-white"
