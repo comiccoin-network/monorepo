@@ -21,17 +21,23 @@ const AdminTopNavigation = () => {
 
   // Determine active tab based on current path
   const isActive = (path) => {
-    if (path === "/admin/dashboard" && location.pathname === "/admin/dashboard")
-      return true;
-    if (path === "/admin/users" && location.pathname === "/admin/users")
-      return true;
-    if (
-      path === "/admin/transactions" &&
-      location.pathname === "/admin/transactions"
-    )
-      return true;
-    if (path === "/admin/more" && location.pathname === "/admin/more")
-      return true;
+    // For the dashboard, still require exact match
+    if (path === "/admin/dashboard")
+      return location.pathname === "/admin/dashboard";
+
+    // For users section, check if the current path starts with /admin/users
+    if (path === "/admin/users")
+      return location.pathname.startsWith("/admin/users");
+
+    // For transactions section, check if the current path starts with /admin/transactions
+    if (path === "/admin/transactions")
+      return location.pathname.startsWith("/admin/transactions");
+
+    // For the more section
+    if (path === "/admin/more")
+      return location.pathname.startsWith("/admin/more");
+
+    // Default case, exact match
     return location.pathname === path;
   };
 

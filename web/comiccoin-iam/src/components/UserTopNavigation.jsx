@@ -20,13 +20,21 @@ const UserTopNavigation = () => {
 
   // Determine active tab based on current path
   const isActive = (path) => {
-    if (path === "/dashboard" && location.pathname === "/dashboard")
-      return true;
-    if (path === "/public-wallets" && location.pathname === "/public-wallets")
-      return true;
-    if (path === "/transactions" && location.pathname === "/transactions")
-      return true;
-    if (path === "/more" && location.pathname === "/more") return true;
+    // For the dashboard, still require exact match
+    if (path === "/dashboard") return location.pathname === "/dashboard";
+
+    // For public wallets section, check if the current path starts with /public-wallets
+    if (path === "/public-wallets")
+      return location.pathname.startsWith("/public-wallets");
+
+    // For transactions section, check if the current path starts with /transactions
+    if (path === "/transactions")
+      return location.pathname.startsWith("/transactions");
+
+    // For the more section
+    if (path === "/more") return location.pathname.startsWith("/more");
+
+    // Default case, exact match
     return location.pathname === path;
   };
 
