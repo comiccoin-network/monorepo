@@ -119,7 +119,7 @@ const AdminPublicWalletListPage = () => {
 
   // Navigate to wallet detail page
   const handleViewWallet = (address) => {
-    navigate(`/admin/public-wallets/${address}/view`);
+    navigate(`/admin/public-wallets/${address}`);
   };
 
   // Navigate to edit wallet page
