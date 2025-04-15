@@ -53,6 +53,7 @@ import AdminDeleteAccountPage from "./pages/Admin/More/DeleteAccountPage";
 import AdminSettingsPage from "./pages/Admin/More/SettingsPage";
 import AdminPublicWalletListPage from "./pages/Admin/PublicWallet/ListPage";
 import AdminPublicWalletDetailPage from "./pages/Admin/PublicWallet/DetailPage";
+import AdminPublicWalletUpdatePage from "./pages/Admin/PublicWallet/UpdatePage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -330,6 +331,15 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminPublicWalletDetailPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/public-wallets/:address/edit"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminPublicWalletUpdatePage />
                 </ProtectedRoute>
               }
             />
