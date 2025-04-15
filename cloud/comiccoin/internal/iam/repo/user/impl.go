@@ -23,13 +23,13 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 	// ctx := context.Background()
 	uc := client.Database(appCfg.DB.IAMName).Collection("users")
 
-	// For debugging purposes only or if you are going to recreate new indexes.
-	if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
-		loggerp.Warn("failed deleting all indexes",
-			slog.Any("err", err))
+	// // For debugging purposes only or if you are going to recreate new indexes.
+	// if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
+	// 	loggerp.Warn("failed deleting all indexes",
+	// 		slog.Any("err", err))
 
-		// Do not crash app, just continue.
-	}
+	// 	// Do not crash app, just continue.
+	// }
 
 	// Note:
 	// * 1 for ascending
