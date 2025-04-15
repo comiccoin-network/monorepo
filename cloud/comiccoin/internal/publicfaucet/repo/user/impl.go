@@ -7,6 +7,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/publicfaucet/domain/user"
@@ -22,13 +23,13 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 	// ctx := context.Background()
 	uc := client.Database(appCfg.DB.PublicFaucetName).Collection("users")
 
-	// // For debugging purposes only or if you are going to recreate new indexes.
-	// if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
-	// 	loggerp.Warn("failed deleting all indexes",
-	// 		slog.Any("err", err))
-	//
-	// 	// Do not crash app, just continue.
-	// }
+	// For debugging purposes only or if you are going to recreate new indexes.
+	if _, err := uc.Indexes().DropAll(context.TODO()); err != nil {
+		loggerp.Warn("failed deleting all indexes",
+			slog.Any("err", err))
+
+		// Do not crash app, just continue.
+	}
 
 	// Note:
 	// * 1 for ascending
@@ -45,6 +46,10 @@ func NewRepository(appCfg *config.Configuration, loggerp *slog.Logger, client *m
 		{Keys: bson.D{
 			{Key: "created_at", Value: -1},
 		}},
+		{
+			Keys:    bson.D{{Key: "email", Value: -1}},
+			Options: options.Index().SetUnique(true),
+		},
 		{Keys: bson.D{
 			{Key: "status", Value: 1},
 			{Key: "created_at", Value: -1},
