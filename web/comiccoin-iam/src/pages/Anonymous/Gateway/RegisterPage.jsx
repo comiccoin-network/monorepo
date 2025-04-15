@@ -1,6 +1,7 @@
 // monorepo/web/comiccoin-iam/src/pages/Anonymous/Gateway/RegisterPage.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
+import countryRegionData from "country-region-data/dist/data-umd";
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,6 +18,7 @@ import {
   ArrowDown,
   AlertTriangle,
   KeyRound,
+  MapPin,
 } from "lucide-react";
 import { useRegistration } from "../../../hooks/useRegistration";
 import Header from "../../../components/IndexPage/Header";
@@ -45,12 +47,25 @@ const RegisterPage = () => {
     password_confirm: "",
     phone: "",
     country: "",
+    region: "", // Added region (state/province) field
     country_other: "",
     timezone: "",
     beta_access_code: "", // Temporary
     agree_terms_of_service: false,
     agree_promotions: false,
   });
+
+  // Inline styles for select elements to fix Safari
+  const selectStyles = {
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
+    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M6 9L12 15 18 9'%3e%3c/path%3e%3c/svg%3e")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 0.75rem center",
+    backgroundSize: "1em",
+    paddingRight: "2.5rem",
+  };
 
   // Field errors from API
   const [errors, setErrors] = useState({});
@@ -60,6 +75,20 @@ const RegisterPage = () => {
 
   // State to track if form has been submitted to prevent duplicate submissions
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Helper function to get regions for a country
+  const getRegionsForCountry = (countryCode) => {
+    if (!countryCode) return [];
+
+    const country = countryRegionData.find(
+      (country) => country.countryShortCode === countryCode,
+    );
+
+    return country ? country.regions : [];
+  };
+
+  // Get available regions based on selected country
+  const availableRegions = getRegionsForCountry(formData.country);
 
   // Effect to handle API errors when they change
   useEffect(() => {
@@ -142,6 +171,42 @@ const RegisterPage = () => {
     }
   };
 
+  // Handle country dropdown change
+  const handleCountryChange = (e) => {
+    const countryCode = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      country: countryCode,
+      region: "", // Reset region when country changes
+      country_other: "", // Reset the "other" field when a country is selected
+    }));
+
+    // Clear country error if it exists
+    if (errors.country) {
+      setErrors((prev) => ({
+        ...prev,
+        country: undefined,
+      }));
+    }
+  };
+
+  // Handle region dropdown change
+  const handleRegionChange = (e) => {
+    const regionCode = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      region: regionCode,
+    }));
+
+    // Clear region error if it exists
+    if (errors.region) {
+      setErrors((prev) => ({
+        ...prev,
+        region: undefined,
+      }));
+    }
+  };
+
   // Handle checkbox changes
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
@@ -183,19 +248,6 @@ const RegisterPage = () => {
       console.error("Registration error:", error);
     }
   };
-
-  // List of countries for the dropdown
-  const countries = [
-    { value: "", label: "Select Country..." },
-    { value: "us", label: "United States" },
-    { value: "ca", label: "Canada" },
-    { value: "uk", label: "United Kingdom" },
-    { value: "au", label: "Australia" },
-    { value: "fr", label: "France" },
-    { value: "de", label: "Germany" },
-    { value: "jp", label: "Japan" },
-    { value: "other", label: "Other (please specify)" },
-  ];
 
   // List of timezones for the dropdown (abbreviated for brevity)
   const timezones = [
@@ -523,19 +575,25 @@ const RegisterPage = () => {
                       id="country"
                       name="country"
                       value={formData.country}
-                      onChange={handleInputChange}
-                      className={`w-full h-10 px-3 py-2 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                      onChange={handleCountryChange}
+                      className={`w-full px-3 py-2 h-10 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                         errors.country
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300"
                       }`}
+                      style={selectStyles}
                       required
                     >
-                      {countries.map((country) => (
-                        <option key={country.value} value={country.value}>
-                          {country.label}
+                      <option value="">Select Country...</option>
+                      {countryRegionData.map((country) => (
+                        <option
+                          key={country.countryShortCode}
+                          value={country.countryShortCode}
+                        >
+                          {country.countryName}
                         </option>
                       ))}
+                      <option value="other">Other (please specify)</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <ArrowDown className="h-5 w-5 text-gray-400" />
@@ -580,6 +638,52 @@ const RegisterPage = () => {
                   </div>
                 )}
 
+                {/* State/Province - only shows when a country is selected and not "other" */}
+                {formData.country && formData.country !== "other" && (
+                  <div>
+                    <label
+                      htmlFor="region"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      State/Province <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="region"
+                        name="region"
+                        value={formData.region}
+                        onChange={handleRegionChange}
+                        className={`w-full px-3 py-2 h-10 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          errors.region
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        style={selectStyles}
+                        required
+                      >
+                        <option value="">Select State/Province...</option>
+                        {availableRegions.map((region) => (
+                          <option
+                            key={region.shortCode}
+                            value={region.shortCode}
+                          >
+                            {region.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                    {errors.region && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-1" />
+                        {errors.region}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Timezone */}
                 <div>
                   <label
@@ -602,6 +706,7 @@ const RegisterPage = () => {
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300"
                       }`}
+                      style={selectStyles}
                       required
                     >
                       {timezones.map((timezone) => (
