@@ -171,7 +171,7 @@ const AdminUpdateUserPage = () => {
               : "",
             isEmailVerified: userData.wasEmailVerified || false,
             profileVerificationStatus:
-              userData.profileVerificationStatus ||
+              parseInt(userData.profileVerificationStatus) ||
               PROFILE_VERIFICATION_STATUS.UNVERIFIED,
             websiteURL: userData.websiteURL || "",
             description: userData.description || "",
@@ -352,7 +352,7 @@ const AdminUpdateUserPage = () => {
             : "",
           isEmailVerified: userData.wasEmailVerified || false,
           profileVerificationStatus:
-            userData.profileVerificationStatus ||
+            parseInt(userData.profileVerificationStatus) ||
             PROFILE_VERIFICATION_STATUS.UNVERIFIED,
           websiteURL: userData.websiteURL || "",
           description: userData.description || "",
