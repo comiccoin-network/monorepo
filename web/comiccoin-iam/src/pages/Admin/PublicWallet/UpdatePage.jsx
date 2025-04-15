@@ -144,7 +144,6 @@ const AdminPublicWalletUpdatePage = () => {
             websiteURL: walletData.websiteURL || "",
             viewCount: walletData.viewCount || 0,
             isVerified: walletData.isVerified || false,
-            verifiedOn: walletData.verifiedOn || null,
             country: walletData.country || "",
             region: walletData.region || "",
             city: walletData.city || "",
@@ -324,6 +323,7 @@ const AdminPublicWalletUpdatePage = () => {
       const apiPayload = {
         address: formData.address,
         chain_id: parseInt(formData.chainId),
+        chainId: parseInt(formData.chainId),
         name: formData.name,
         description: formData.description,
         thumbnail_s3_key: formData.thumbnailS3Key || "",
@@ -343,7 +343,7 @@ const AdminPublicWalletUpdatePage = () => {
         address_line2: formData.addressLine2 || "",
       };
 
-      console.log("API payload:", apiPayload);
+      console.log("🚀 API payload:", apiPayload);
 
       // Update the wallet using the hook
       await updatePublicWallet(address, apiPayload);

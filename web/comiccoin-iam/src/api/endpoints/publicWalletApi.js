@@ -186,7 +186,7 @@ export function transformPublicWallet(wallet) {
  * Prepare wallet data for API submission
  */
 export function prepareWalletForApi(wallet) {
-  return {
+  const payload = {
     address: wallet.address,
     chain_id: wallet.chainId,
     name: wallet.name,
@@ -197,7 +197,12 @@ export function prepareWalletForApi(wallet) {
     status: wallet.status,
     type: wallet.type,
     user_id: wallet.userId,
+    is_verified: wallet.is_verified || wallet.isVerified,
+    verified_on: wallet.verified_on || wallet.verifiedOn,
   };
+  // console.log("🚀 prepareWalletForApi: wallet:", wallet);
+  // console.log("🚀 prepareWalletForApi: payload:", payload);
+  return payload;
 }
 
 /**
