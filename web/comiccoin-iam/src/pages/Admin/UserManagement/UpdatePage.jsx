@@ -433,6 +433,11 @@ const AdminUpdateUserPage = () => {
       validationErrors.password = "Password must be at least 8 characters long";
     }
 
+    // Minor fixes.
+    formData.profileVerificationStatus = parseInt(
+      formData.profileVerificationStatus,
+    ); // Our backend expects integers here.
+
     // If validation errors, set them and stop submission
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
