@@ -27,6 +27,9 @@ import {
   Archive,
   Globe,
   CheckCircle,
+  Bell,
+  Clock12,
+  XCircle,
 } from "lucide-react";
 import {
   useUserList,
@@ -78,7 +81,36 @@ const AdminDashboardPage = () => {
     { key: ["recent-users", refreshKey] },
   );
 
-  // Fetch recent wallets (last 5) - New addition
+  // Fetch pending verification users
+  const { users: pendingVerificationUsers, isLoading: isLoadingPendingUsers } =
+    useUserList(
+      {
+        pageSize: 5,
+        profileVerificationStatus:
+          PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW,
+        sortBy: "modified_at",
+        sortOrder: "desc",
+      },
+      { key: ["pending-users", refreshKey] },
+    );
+
+  // Fetch unverified wallets
+  const { wallets: unverifiedWallets, isLoading: isLoadingUnverifiedWallets } =
+    usePublicWalletList(
+      {
+        limit: 5,
+        status: WALLET_STATUS.ACTIVE,
+        isVerified: false,
+        sortBy: "created_at",
+        sortOrder: "desc",
+      },
+      {
+        key: ["unverified-wallets", refreshKey],
+        refetchOnWindowFocus: false,
+      },
+    );
+
+  // Fetch recent wallets (last 5)
   const {
     wallets: recentWallets,
     isLoading: isLoadingWallets,
@@ -161,6 +193,13 @@ const AdminDashboardPage = () => {
 
   const stats = calculateStats();
 
+  // Get the count of pending verification users and unverified wallets
+  const pendingVerificationCount =
+    stats?.verificationDistribution[
+      PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW
+    ] || 0;
+  const unverifiedWalletsCount = unverifiedWallets?.length || 0;
+
   // Handle refresh
   const handleRefresh = () => {
     setRefreshKey((prevKey) => prevKey + 1);
@@ -192,6 +231,8 @@ const AdminDashboardPage = () => {
         return "from-purple-500 to-purple-600";
       case "wallet":
         return "from-amber-500 to-amber-600";
+      case "pending":
+        return "from-orange-500 to-orange-600";
       default:
         return "from-gray-500 to-gray-600";
     }
@@ -225,7 +266,7 @@ const AdminDashboardPage = () => {
     }
   };
 
-  // Format wallet status - New addition
+  // Format wallet status
   const getWalletStatusDetails = (status) => {
     switch (status) {
       case WALLET_STATUS.ACTIVE:
@@ -255,7 +296,7 @@ const AdminDashboardPage = () => {
     }
   };
 
-  // Format wallet type - New addition
+  // Format wallet type
   const getWalletTypeLabel = (type) => {
     switch (type) {
       case WALLET_TYPE.INDIVIDUAL:
@@ -382,6 +423,43 @@ const AdminDashboardPage = () => {
                 </div>
               </div>
 
+              {/* Pending Verifications - EMPHASIZED */}
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg overflow-hidden text-white relative">
+                {pendingVerificationCount > 0 && (
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg border-2 border-white">
+                    {pendingVerificationCount}
+                  </div>
+                )}
+                <div className="p-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-semibold">Pending Reviews</h3>
+                    <Clock className="h-8 w-8 opacity-80" />
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-4xl font-bold">
+                      {
+                        stats.verificationDistribution[
+                          PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW
+                        ]
+                      }
+                    </p>
+                    <p className="mt-2 text-orange-100 flex items-center">
+                      <Bell className="h-4 w-4 mr-1" />
+                      Profiles awaiting verification
+                    </p>
+                  </div>
+                </div>
+                <div className="px-6 py-3 bg-black bg-opacity-20">
+                  <Link
+                    to={`/admin/users?profile_verification_status=${PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW}`}
+                    className="text-sm flex items-center hover:underline"
+                  >
+                    Review pending profiles{" "}
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </div>
+              </div>
+
               {/* Active Users */}
               <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg overflow-hidden text-white">
                 <div className="p-6">
@@ -413,507 +491,437 @@ const AdminDashboardPage = () => {
                 </div>
               </div>
 
-              {/* Verified Users */}
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg overflow-hidden text-white">
+              {/* Unverified Wallets - NEW CARD */}
+              <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg shadow-lg overflow-hidden text-white relative">
+                {unverifiedWalletsCount > 0 && (
+                  <div className="absolute -top-2 -right-2 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg border-2 border-white">
+                    {unverifiedWalletsCount}
+                  </div>
+                )}
                 <div className="p-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold">Verified Users</h3>
-                    <Shield className="h-8 w-8 opacity-80" />
+                    <h3 className="text-xl font-semibold">
+                      Unverified Wallets
+                    </h3>
+                    <Wallet className="h-8 w-8 opacity-80" />
                   </div>
                   <div className="mt-4">
                     <p className="text-4xl font-bold">
-                      {
-                        stats.verificationDistribution[
-                          PROFILE_VERIFICATION_STATUS.APPROVED
-                        ]
-                      }
+                      {unverifiedWalletsCount}
                     </p>
-                    <p className="mt-2 text-purple-100 flex items-center">
-                      <UserCheck className="h-4 w-4 mr-1" />
-                      {getPercentage(
-                        stats.verificationDistribution[
-                          PROFILE_VERIFICATION_STATUS.APPROVED
-                        ],
-                        stats.total,
-                      )}{" "}
-                      verified profiles
+                    <p className="mt-2 text-amber-100 flex items-center">
+                      <Clock12 className="h-4 w-4 mr-1" />
+                      Wallets awaiting verification
                     </p>
                   </div>
                 </div>
                 <div className="px-6 py-3 bg-black bg-opacity-20">
                   <Link
-                    to="/admin/users?profile_verification_status=3"
+                    to="/admin/public-wallets?isVerified=false"
                     className="text-sm flex items-center hover:underline"
                   >
-                    View verified users{" "}
+                    Review unverified wallets{" "}
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Link>
-                </div>
-              </div>
-
-              {/* Users with Wallets */}
-              <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg shadow-lg overflow-hidden text-white">
-                <div className="p-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold">Connected Wallets</h3>
-                    <Wallet className="h-8 w-8 opacity-80" />
-                  </div>
-                  <div className="mt-4">
-                    <p className="text-4xl font-bold">{stats.withWallet}</p>
-                    <p className="mt-2 text-amber-100 flex items-center">
-                      <Layers className="h-4 w-4 mr-1" />
-                      {getPercentage(stats.withWallet, stats.total)} have wallet
-                      connections
-                    </p>
-                  </div>
-                </div>
-                <div className="px-6 py-3 bg-black bg-opacity-20">
-                  <span className="text-sm flex items-center">
-                    {stats.withoutWallet} users without wallets
-                  </span>
                 </div>
               </div>
             </div>
 
             {/* Main Dashboard Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* User Distribution Charts */}
-              <div className="lg:col-span-2 bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="p-5 bg-gray-50 border-b">
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    User Distribution
-                  </h2>
+              {/* Pending Verification Section - NEW SECTION */}
+              <div className="lg:col-span-2 bg-white rounded-lg shadow-md overflow-hidden border-2 border-orange-300">
+                <div className="p-5 bg-orange-50 border-b border-orange-300 flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Clock className="h-5 w-5 text-orange-600 mr-2" />
+                    <h2 className="text-lg font-semibold text-gray-800">
+                      Pending Profile Verifications
+                    </h2>
+                  </div>
+                  <span className="px-2 py-1 bg-orange-100 text-orange-800 text-sm font-medium rounded-full">
+                    {pendingVerificationCount} pending
+                  </span>
                 </div>
 
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Role Distribution */}
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-md font-medium text-gray-700 flex items-center">
-                        <UserCircle className="h-5 w-5 text-blue-600 mr-2" />
-                        By Role
-                      </h3>
-                      <span className="text-xs text-gray-500">
-                        {stats.total} Users
-                      </span>
+                <div className="divide-y divide-gray-200">
+                  {isLoadingPendingUsers ? (
+                    <div className="p-6 text-center">
+                      <Loader className="h-8 w-8 text-orange-600 animate-spin mx-auto mb-2" />
+                      <p className="text-gray-500">
+                        Loading pending verification users...
+                      </p>
                     </div>
-
-                    {/* Role Distribution Bars */}
-                    <div className="space-y-4">
-                      {/* Root Users */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center">
-                            <Shield className="h-4 w-4 text-purple-600 mr-2" />
-                            <span className="text-sm font-medium text-gray-600">
-                              Administrators
-                            </span>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {stats.roleDistribution[USER_ROLE.ROOT]}
-                            <span className="text-xs ml-1 text-gray-400">
-                              (
-                              {getPercentage(
-                                stats.roleDistribution[USER_ROLE.ROOT],
-                                stats.total,
-                              )}
-                              )
-                            </span>
+                  ) : pendingVerificationUsers &&
+                    pendingVerificationUsers.length > 0 ? (
+                    pendingVerificationUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        className="p-4 hover:bg-orange-50 cursor-pointer flex items-center"
+                        onClick={() => navigate(`/admin/users/${user.id}`)}
+                      >
+                        <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center mr-3">
+                          {getUserIcon(user.role)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {user.fullName}
+                          </p>
+                          <p className="text-sm text-gray-500 truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                        <div className="ml-2">
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleClass(user.role)}`}
+                          >
+                            {getRoleLabel(user.role)}
                           </span>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Submitted: {formatDate(user.modifiedAt)}
+                          </p>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-purple-600 rounded-full"
-                            style={{
-                              width: getPercentage(
-                                stats.roleDistribution[USER_ROLE.ROOT],
-                                stats.total,
-                              ),
-                            }}
-                          ></div>
-                        </div>
+                        <ChevronRight className="h-5 w-5 text-gray-400 ml-2" />
                       </div>
-
-                      {/* Company Users */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center">
-                            <Building className="h-4 w-4 text-blue-600 mr-2" />
-                            <span className="text-sm font-medium text-gray-600">
-                              Businesses/Retailers
-                            </span>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {stats.roleDistribution[USER_ROLE.COMPANY]}
-                            <span className="text-xs ml-1 text-gray-400">
-                              (
-                              {getPercentage(
-                                stats.roleDistribution[USER_ROLE.COMPANY],
-                                stats.total,
-                              )}
-                              )
-                            </span>
-                          </span>
-                        </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-blue-600 rounded-full"
-                            style={{
-                              width: getPercentage(
-                                stats.roleDistribution[USER_ROLE.COMPANY],
-                                stats.total,
-                              ),
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      {/* Individual Users */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center">
-                            <User className="h-4 w-4 text-yellow-600 mr-2" />
-                            <span className="text-sm font-medium text-gray-600">
-                              Individuals
-                            </span>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {stats.roleDistribution[USER_ROLE.INDIVIDUAL]}
-                            <span className="text-xs ml-1 text-gray-400">
-                              (
-                              {getPercentage(
-                                stats.roleDistribution[USER_ROLE.INDIVIDUAL],
-                                stats.total,
-                              )}
-                              )
-                            </span>
-                          </span>
-                        </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-yellow-600 rounded-full"
-                            style={{
-                              width: getPercentage(
-                                stats.roleDistribution[USER_ROLE.INDIVIDUAL],
-                                stats.total,
-                              ),
-                            }}
-                          ></div>
-                        </div>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="p-6 text-center">
+                      <p className="text-gray-500">
+                        No pending verification requests
+                      </p>
                     </div>
-                  </div>
-
-                  {/* Status Distribution */}
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-md font-medium text-gray-700 flex items-center">
-                        <Shield className="h-5 w-5 text-green-600 mr-2" />
-                        By Status
-                      </h3>
-                      <span className="text-xs text-gray-500">
-                        {stats.total} Users
-                      </span>
-                    </div>
-
-                    {/* Status Distribution Bars */}
-                    <div className="space-y-4">
-                      {/* Active Users */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center">
-                            <span className="h-3 w-3 bg-green-500 rounded-full mr-2"></span>
-                            <span className="text-sm font-medium text-gray-600">
-                              Active
-                            </span>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {stats.statusDistribution[USER_STATUS.ACTIVE]}
-                            <span className="text-xs ml-1 text-gray-400">
-                              (
-                              {getPercentage(
-                                stats.statusDistribution[USER_STATUS.ACTIVE],
-                                stats.total,
-                              )}
-                              )
-                            </span>
-                          </span>
-                        </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-green-500 rounded-full"
-                            style={{
-                              width: getPercentage(
-                                stats.statusDistribution[USER_STATUS.ACTIVE],
-                                stats.total,
-                              ),
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      {/* Locked Users */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center">
-                            <span className="h-3 w-3 bg-red-500 rounded-full mr-2"></span>
-                            <span className="text-sm font-medium text-gray-600">
-                              Locked
-                            </span>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {stats.statusDistribution[USER_STATUS.LOCKED]}
-                            <span className="text-xs ml-1 text-gray-400">
-                              (
-                              {getPercentage(
-                                stats.statusDistribution[USER_STATUS.LOCKED],
-                                stats.total,
-                              )}
-                              )
-                            </span>
-                          </span>
-                        </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-red-500 rounded-full"
-                            style={{
-                              width: getPercentage(
-                                stats.statusDistribution[USER_STATUS.LOCKED],
-                                stats.total,
-                              ),
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      {/* Archived Users */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center">
-                            <span className="h-3 w-3 bg-gray-500 rounded-full mr-2"></span>
-                            <span className="text-sm font-medium text-gray-600">
-                              Archived
-                            </span>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {stats.statusDistribution[USER_STATUS.ARCHIVED]}
-                            <span className="text-xs ml-1 text-gray-400">
-                              (
-                              {getPercentage(
-                                stats.statusDistribution[USER_STATUS.ARCHIVED],
-                                stats.total,
-                              )}
-                              )
-                            </span>
-                          </span>
-                        </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gray-500 rounded-full"
-                            style={{
-                              width: getPercentage(
-                                stats.statusDistribution[USER_STATUS.ARCHIVED],
-                                stats.total,
-                              ),
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Verification Distribution - Full Width */}
-                  <div className="md:col-span-2 mt-2">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-md font-medium text-gray-700 flex items-center">
-                        <UserCheck className="h-5 w-5 text-purple-600 mr-2" />
-                        By Verification Status
-                      </h3>
-                    </div>
-
-                    <div className="flex flex-wrap gap-4">
-                      {/* Unverified */}
-                      <div className="flex-1 min-w-[150px] bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <div className="flex items-center mb-2">
-                          <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
-                          <h4 className="text-sm font-medium text-yellow-800">
-                            Unverified
-                          </h4>
-                        </div>
-                        <p className="text-2xl font-bold text-yellow-700">
-                          {
-                            stats.verificationDistribution[
-                              PROFILE_VERIFICATION_STATUS.UNVERIFIED
-                            ]
-                          }
-                        </p>
-                        <p className="text-xs text-yellow-600 mt-1">
-                          {getPercentage(
-                            stats.verificationDistribution[
-                              PROFILE_VERIFICATION_STATUS.UNVERIFIED
-                            ],
-                            stats.total,
-                          )}{" "}
-                          of users
-                        </p>
-                      </div>
-
-                      {/* Under Review */}
-                      <div className="flex-1 min-w-[150px] bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div className="flex items-center mb-2">
-                          <Clock className="h-5 w-5 text-blue-600 mr-2" />
-                          <h4 className="text-sm font-medium text-blue-800">
-                            Under Review
-                          </h4>
-                        </div>
-                        <p className="text-2xl font-bold text-blue-700">
-                          {
-                            stats.verificationDistribution[
-                              PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW
-                            ]
-                          }
-                        </p>
-                        <p className="text-xs text-blue-600 mt-1">
-                          {getPercentage(
-                            stats.verificationDistribution[
-                              PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW
-                            ],
-                            stats.total,
-                          )}{" "}
-                          of users
-                        </p>
-                      </div>
-
-                      {/* Approved */}
-                      <div className="flex-1 min-w-[150px] bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div className="flex items-center mb-2">
-                          <UserCheck className="h-5 w-5 text-green-600 mr-2" />
-                          <h4 className="text-sm font-medium text-green-800">
-                            Approved
-                          </h4>
-                        </div>
-                        <p className="text-2xl font-bold text-green-700">
-                          {
-                            stats.verificationDistribution[
-                              PROFILE_VERIFICATION_STATUS.APPROVED
-                            ]
-                          }
-                        </p>
-                        <p className="text-xs text-green-600 mt-1">
-                          {getPercentage(
-                            stats.verificationDistribution[
-                              PROFILE_VERIFICATION_STATUS.APPROVED
-                            ],
-                            stats.total,
-                          )}{" "}
-                          of users
-                        </p>
-                      </div>
-
-                      {/* Rejected */}
-                      <div className="flex-1 min-w-[150px] bg-red-50 border border-red-200 rounded-lg p-4">
-                        <div className="flex items-center mb-2">
-                          <UserX className="h-5 w-5 text-red-600 mr-2" />
-                          <h4 className="text-sm font-medium text-red-800">
-                            Rejected
-                          </h4>
-                        </div>
-                        <p className="text-2xl font-bold text-red-700">
-                          {
-                            stats.verificationDistribution[
-                              PROFILE_VERIFICATION_STATUS.REJECTED
-                            ]
-                          }
-                        </p>
-                        <p className="text-xs text-red-600 mt-1">
-                          {getPercentage(
-                            stats.verificationDistribution[
-                              PROFILE_VERIFICATION_STATUS.REJECTED
-                            ],
-                            stats.total,
-                          )}{" "}
-                          of users
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
-
-                <div className="border-t border-gray-200 bg-gray-50 px-6 py-3">
+                <div className="border-t border-orange-200 bg-orange-50 px-6 py-3">
                   <Link
-                    to="/admin/users"
-                    className="text-sm font-medium text-purple-600 hover:text-purple-800 flex items-center"
+                    to={`/admin/users?profile_verification_status=${PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW}`}
+                    className="text-sm font-medium text-orange-600 hover:text-orange-800 flex items-center"
                   >
-                    View full user analytics
+                    Review all pending profiles
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Link>
                 </div>
               </div>
 
-              {/* Recent Users */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="p-5 bg-gray-50 border-b">
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    Recently Added Users
-                  </h2>
+              {/* Unverified Wallets Section - NEW SECTION */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden border-2 border-amber-300">
+                <div className="p-5 bg-amber-50 border-b border-amber-300 flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Wallet className="h-5 w-5 text-amber-600 mr-2" />
+                    <h2 className="text-lg font-semibold text-gray-800">
+                      Unverified Wallets
+                    </h2>
+                  </div>
+                  <span className="px-2 py-1 bg-amber-100 text-amber-800 text-sm font-medium rounded-full">
+                    {unverifiedWalletsCount} pending
+                  </span>
                 </div>
+
                 <div className="divide-y divide-gray-200">
-                  {isLoadingRecent ? (
+                  {isLoadingUnverifiedWallets ? (
                     <div className="p-6 text-center">
-                      <Loader className="h-8 w-8 text-purple-600 animate-spin mx-auto mb-2" />
-                      <p className="text-gray-500">Loading recent users...</p>
+                      <Loader className="h-8 w-8 text-amber-600 animate-spin mx-auto mb-2" />
+                      <p className="text-gray-500">
+                        Loading unverified wallets...
+                      </p>
                     </div>
-                  ) : recentUsers && recentUsers.length > 0 ? (
-                    recentUsers.map((user) => (
+                  ) : unverifiedWallets && unverifiedWallets.length > 0 ? (
+                    unverifiedWallets.map((wallet) => (
                       <div
-                        key={user.id}
-                        className="p-4 hover:bg-gray-50 cursor-pointer"
-                        onClick={() => navigate(`/admin/users/${user.id}`)}
+                        key={wallet.id}
+                        className="p-4 hover:bg-amber-50 cursor-pointer"
+                        onClick={() =>
+                          navigate(
+                            `/admin/public-wallets/${wallet.address}/edit`,
+                          )
+                        }
                       >
                         <div className="flex items-center">
-                          <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-                            {getUserIcon(user.role)}
+                          <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center mr-3">
+                            <Wallet className="h-5 w-5 text-amber-600" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">
-                              {user.fullName}
+                              {wallet.name || "Unnamed Wallet"}
                             </p>
-                            <p className="text-sm text-gray-500 truncate">
-                              {user.email}
+                            <p className="text-xs text-gray-500 font-mono">
+                              {wallet.formattedAddress}
                             </p>
                           </div>
                           <div className="ml-2">
-                            <span
-                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleClass(user.role)}`}
-                            >
-                              {getRoleLabel(user.role)}
+                            <span className="text-xs text-gray-500">
+                              Created: {formatDate(wallet.createdAt)}
                             </span>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {formatDate(user.createdAt)}
-                            </p>
                           </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 ml-2" />
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="p-6 text-center">
-                      <p className="text-gray-500">No recent users found</p>
+                      <p className="text-gray-500">No unverified wallets</p>
                     </div>
                   )}
                 </div>
-                <div className="border-t border-gray-200 bg-gray-50 px-6 py-3">
+                <div className="border-t border-amber-200 bg-amber-50 px-6 py-3">
                   <Link
-                    to="/admin/users"
-                    className="text-sm font-medium text-purple-600 hover:text-purple-800 flex items-center"
+                    to="/admin/public-wallets?isVerified=false"
+                    className="text-sm font-medium text-amber-600 hover:text-amber-800 flex items-center"
                   >
-                    View all users
+                    View all unverified wallets
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Link>
                 </div>
               </div>
             </div>
 
-            {/* Recent Public Wallets Section - New Addition */}
+            {/* User Distribution Charts */}
+            <div className="mt-8 lg:col-span-2 bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="p-5 bg-gray-50 border-b">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  User Distribution
+                </h2>
+              </div>
+
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Role Distribution */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-md font-medium text-gray-700 flex items-center">
+                      <UserCircle className="h-5 w-5 text-blue-600 mr-2" />
+                      By Role
+                    </h3>
+                    <span className="text-xs text-gray-500">
+                      {stats.total} Users
+                    </span>
+                  </div>
+
+                  {/* Role Distribution Bars */}
+                  <div className="space-y-4">
+                    {/* Root Users */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center">
+                          <Shield className="h-4 w-4 text-purple-600 mr-2" />
+                          <span className="text-sm font-medium text-gray-600">
+                            Administrators
+                          </span>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {stats.roleDistribution[USER_ROLE.ROOT]}
+                          <span className="text-xs ml-1 text-gray-400">
+                            (
+                            {getPercentage(
+                              stats.roleDistribution[USER_ROLE.ROOT],
+                              stats.total,
+                            )}
+                            )
+                          </span>
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-purple-600 rounded-full"
+                          style={{
+                            width: getPercentage(
+                              stats.roleDistribution[USER_ROLE.ROOT],
+                              stats.total,
+                            ),
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Company Users */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center">
+                          <Building className="h-4 w-4 text-blue-600 mr-2" />
+                          <span className="text-sm font-medium text-gray-600">
+                            Businesses/Retailers
+                          </span>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {stats.roleDistribution[USER_ROLE.COMPANY]}
+                          <span className="text-xs ml-1 text-gray-400">
+                            (
+                            {getPercentage(
+                              stats.roleDistribution[USER_ROLE.COMPANY],
+                              stats.total,
+                            )}
+                            )
+                          </span>
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-blue-600 rounded-full"
+                          style={{
+                            width: getPercentage(
+                              stats.roleDistribution[USER_ROLE.COMPANY],
+                              stats.total,
+                            ),
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Individual Users */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center">
+                          <User className="h-4 w-4 text-yellow-600 mr-2" />
+                          <span className="text-sm font-medium text-gray-600">
+                            Individuals
+                          </span>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {stats.roleDistribution[USER_ROLE.INDIVIDUAL]}
+                          <span className="text-xs ml-1 text-gray-400">
+                            (
+                            {getPercentage(
+                              stats.roleDistribution[USER_ROLE.INDIVIDUAL],
+                              stats.total,
+                            )}
+                            )
+                          </span>
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-yellow-600 rounded-full"
+                          style={{
+                            width: getPercentage(
+                              stats.roleDistribution[USER_ROLE.INDIVIDUAL],
+                              stats.total,
+                            ),
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Distribution */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-md font-medium text-gray-700 flex items-center">
+                      <Shield className="h-5 w-5 text-green-600 mr-2" />
+                      By Status
+                    </h3>
+                    <span className="text-xs text-gray-500">
+                      {stats.total} Users
+                    </span>
+                  </div>
+
+                  {/* Status Distribution Bars */}
+                  <div className="space-y-4">
+                    {/* Active Users */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center">
+                          <span className="h-3 w-3 bg-green-500 rounded-full mr-2"></span>
+                          <span className="text-sm font-medium text-gray-600">
+                            Active
+                          </span>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {stats.statusDistribution[USER_STATUS.ACTIVE]}
+                          <span className="text-xs ml-1 text-gray-400">
+                            (
+                            {getPercentage(
+                              stats.statusDistribution[USER_STATUS.ACTIVE],
+                              stats.total,
+                            )}
+                            )
+                          </span>
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-green-500 rounded-full"
+                          style={{
+                            width: getPercentage(
+                              stats.statusDistribution[USER_STATUS.ACTIVE],
+                              stats.total,
+                            ),
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Locked Users */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center">
+                          <span className="h-3 w-3 bg-red-500 rounded-full mr-2"></span>
+                          <span className="text-sm font-medium text-gray-600">
+                            Locked
+                          </span>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {stats.statusDistribution[USER_STATUS.LOCKED]}
+                          <span className="text-xs ml-1 text-gray-400">
+                            (
+                            {getPercentage(
+                              stats.statusDistribution[USER_STATUS.LOCKED],
+                              stats.total,
+                            )}
+                            )
+                          </span>
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-red-500 rounded-full"
+                          style={{
+                            width: getPercentage(
+                              stats.statusDistribution[USER_STATUS.LOCKED],
+                              stats.total,
+                            ),
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Archived Users */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center">
+                          <span className="h-3 w-3 bg-gray-500 rounded-full mr-2"></span>
+                          <span className="text-sm font-medium text-gray-600">
+                            Archived
+                          </span>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {stats.statusDistribution[USER_STATUS.ARCHIVED]}
+                          <span className="text-xs ml-1 text-gray-400">
+                            (
+                            {getPercentage(
+                              stats.statusDistribution[USER_STATUS.ARCHIVED],
+                              stats.total,
+                            )}
+                            )
+                          </span>
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gray-500 rounded-full"
+                          style={{
+                            width: getPercentage(
+                              stats.statusDistribution[USER_STATUS.ARCHIVED],
+                              stats.total,
+                            ),
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Public Wallets Section */}
             <div className="mt-8 bg-white rounded-lg shadow-md overflow-hidden">
               <div className="p-5 bg-gray-50 border-b flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-gray-800 flex items-center">
@@ -961,6 +969,12 @@ const AdminDashboardPage = () => {
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
+                        Verified
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
                         Created
                       </th>
                       <th
@@ -980,14 +994,14 @@ const AdminDashboardPage = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {isLoadingWallets ? (
                       <tr>
-                        <td colSpan="7" className="px-6 py-4 text-center">
+                        <td colSpan="8" className="px-6 py-4 text-center">
                           <Loader className="h-5 w-5 text-purple-600 animate-spin mx-auto" />
                         </td>
                       </tr>
                     ) : walletsError ? (
                       <tr>
                         <td
-                          colSpan="7"
+                          colSpan="8"
                           className="px-6 py-4 text-center text-red-500"
                         >
                           Error loading wallets
@@ -1031,6 +1045,17 @@ const AdminDashboardPage = () => {
                               </span>
                             </span>
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {wallet.isVerified ? (
+                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-medium rounded-full bg-green-100 text-green-800">
+                                <CheckCircle className="h-4 w-4 mr-1" /> Yes
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-medium rounded-full bg-amber-100 text-amber-800">
+                                <XCircle className="h-4 w-4 mr-1" /> No
+                              </span>
+                            )}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {formatDate(wallet.createdAt)}
                           </td>
@@ -1058,7 +1083,7 @@ const AdminDashboardPage = () => {
                     ) : (
                       <tr>
                         <td
-                          colSpan="7"
+                          colSpan="8"
                           className="px-6 py-4 text-center text-gray-500"
                         >
                           No public wallets found
@@ -1068,78 +1093,6 @@ const AdminDashboardPage = () => {
                   </tbody>
                 </table>
               </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link
-                to="/admin/users/add"
-                className="bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-shadow flex items-center"
-              >
-                <div className="p-3 bg-purple-100 rounded-lg mr-4">
-                  <UserPlus className="h-6 w-6 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">Add New User</h3>
-                  <p className="text-sm text-gray-500">
-                    Create a new user account
-                  </p>
-                </div>
-              </Link>
-
-              {/* New wallet management quick action */}
-              <Link
-                to="/admin/public-wallets"
-                className="bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-shadow flex items-center"
-              >
-                <div className="p-3 bg-amber-100 rounded-lg mr-4">
-                  <Wallet className="h-6 w-6 text-amber-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">Manage Wallets</h3>
-                  <p className="text-sm text-gray-500">
-                    View and manage public wallets
-                  </p>
-                </div>
-              </Link>
-
-              <Link
-                to={`/admin/users?profile_verification_status=${PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW}`}
-                className="bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-shadow flex items-center"
-              >
-                <div className="p-3 bg-blue-100 rounded-lg mr-4">
-                  <Clock className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">
-                    Pending Verifications
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {
-                      stats.verificationDistribution[
-                        PROFILE_VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW
-                      ]
-                    }{" "}
-                    profiles awaiting review
-                  </p>
-                </div>
-              </Link>
-
-              <Link
-                to="/admin/users?status=50"
-                className="bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-shadow flex items-center"
-              >
-                <div className="p-3 bg-red-100 rounded-lg mr-4">
-                  <Shield className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">Locked Accounts</h3>
-                  <p className="text-sm text-gray-500">
-                    {stats.statusDistribution[USER_STATUS.LOCKED]} accounts
-                    currently locked
-                  </p>
-                </div>
-              </Link>
             </div>
           </>
         )}
