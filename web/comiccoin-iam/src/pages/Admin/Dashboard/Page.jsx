@@ -1,4 +1,4 @@
-// src/pages/AdminDashboardPage/Dashboard.jsx
+// src/pages/Admin/Dashboard/Page.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
@@ -22,6 +22,11 @@ import {
   Layers,
   List,
   RefreshCw,
+  ExternalLink,
+  Filter,
+  Archive,
+  Globe,
+  CheckCircle,
 } from "lucide-react";
 import {
   useUserList,
@@ -31,6 +36,13 @@ import {
 } from "../../../hooks/useUser";
 import AdminTopNavigation from "../../../components/AdminTopNavigation";
 import UserFooter from "../../../components/UserFooter";
+
+// Import wallet hooks
+import {
+  usePublicWalletList,
+  WALLET_STATUS,
+  WALLET_TYPE,
+} from "../../../hooks/usePublicWallet";
 
 const AdminDashboardPage = () => {
   const navigate = useNavigate();
@@ -64,6 +76,23 @@ const AdminDashboardPage = () => {
       sortOrder: "desc",
     },
     { key: ["recent-users", refreshKey] },
+  );
+
+  // Fetch recent wallets (last 5) - New addition
+  const {
+    wallets: recentWallets,
+    isLoading: isLoadingWallets,
+    error: walletsError,
+  } = usePublicWalletList(
+    {
+      limit: 5,
+      sortBy: "created_at",
+      sortOrder: "desc",
+    },
+    {
+      key: ["recent-wallets", refreshKey],
+      refetchOnWindowFocus: false,
+    },
   );
 
   // Calculate stats from users data
@@ -191,6 +220,48 @@ const AdminDashboardPage = () => {
         return "Business/Retailer";
       case USER_ROLE.INDIVIDUAL:
         return "Individual";
+      default:
+        return "Unknown";
+    }
+  };
+
+  // Format wallet status - New addition
+  const getWalletStatusDetails = (status) => {
+    switch (status) {
+      case WALLET_STATUS.ACTIVE:
+        return {
+          label: "Active",
+          icon: <CheckCircle className="h-4 w-4 text-green-500" />,
+          className: "bg-green-100 text-green-800",
+        };
+      case WALLET_STATUS.ARCHIVED:
+        return {
+          label: "Archived",
+          icon: <Archive className="h-4 w-4 text-gray-500" />,
+          className: "bg-gray-100 text-gray-800",
+        };
+      case WALLET_STATUS.LOCKED:
+        return {
+          label: "Locked",
+          icon: <AlertCircle className="h-4 w-4 text-red-500" />,
+          className: "bg-red-100 text-red-800",
+        };
+      default:
+        return {
+          label: "Unknown",
+          icon: <AlertCircle className="h-4 w-4 text-gray-500" />,
+          className: "bg-gray-100 text-gray-800",
+        };
+    }
+  };
+
+  // Format wallet type - New addition
+  const getWalletTypeLabel = (type) => {
+    switch (type) {
+      case WALLET_TYPE.INDIVIDUAL:
+        return "Individual";
+      case WALLET_TYPE.COMPANY:
+        return "Business";
       default:
         return "Unknown";
     }
@@ -842,6 +913,163 @@ const AdminDashboardPage = () => {
               </div>
             </div>
 
+            {/* Recent Public Wallets Section - New Addition */}
+            <div className="mt-8 bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="p-5 bg-gray-50 border-b flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-gray-800 flex items-center">
+                  <Wallet className="h-5 w-5 text-purple-600 mr-2" />
+                  Recent Public Wallets
+                </h2>
+                <Link
+                  to="/admin/public-wallets"
+                  className="text-sm text-purple-600 hover:text-purple-800 flex items-center"
+                >
+                  View All
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Wallet
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Owner
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Type
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Status
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Created
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Views
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {isLoadingWallets ? (
+                      <tr>
+                        <td colSpan="7" className="px-6 py-4 text-center">
+                          <Loader className="h-5 w-5 text-purple-600 animate-spin mx-auto" />
+                        </td>
+                      </tr>
+                    ) : walletsError ? (
+                      <tr>
+                        <td
+                          colSpan="7"
+                          className="px-6 py-4 text-center text-red-500"
+                        >
+                          Error loading wallets
+                        </td>
+                      </tr>
+                    ) : recentWallets && recentWallets.length > 0 ? (
+                      recentWallets.map((wallet) => (
+                        <tr key={wallet.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0">
+                                <Wallet className="h-5 w-5 text-purple-600" />
+                              </div>
+                              <div className="ml-3">
+                                <p className="text-sm font-medium text-gray-900">
+                                  {wallet.name || "Unnamed Wallet"}
+                                </p>
+                                <p className="text-xs text-gray-500 font-mono">
+                                  {wallet.formattedAddress}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <p className="text-sm text-gray-900">
+                              {wallet.createdByName || "Unknown"}
+                            </p>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-900">
+                              {getWalletTypeLabel(wallet.type)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 py-1 inline-flex text-xs leading-5 font-medium rounded-full ${getWalletStatusDetails(wallet.status).className}`}
+                            >
+                              {getWalletStatusDetails(wallet.status).icon}
+                              <span className="ml-1">
+                                {getWalletStatusDetails(wallet.status).label}
+                              </span>
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {formatDate(wallet.createdAt)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {wallet.viewCount || 0}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end space-x-3">
+                              <Link
+                                to={`/admin/public-wallets/${wallet.address}/view`}
+                                className="text-blue-600 hover:text-blue-900"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </Link>
+                              <Link
+                                to={`/admin/public-wallets/${wallet.address}/edit`}
+                                className="text-purple-600 hover:text-purple-900"
+                              >
+                                Edit
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="7"
+                          className="px-6 py-4 text-center text-gray-500"
+                        >
+                          No public wallets found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             {/* Quick Actions */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
               <Link
@@ -855,6 +1083,22 @@ const AdminDashboardPage = () => {
                   <h3 className="font-medium text-gray-900">Add New User</h3>
                   <p className="text-sm text-gray-500">
                     Create a new user account
+                  </p>
+                </div>
+              </Link>
+
+              {/* New wallet management quick action */}
+              <Link
+                to="/admin/public-wallets"
+                className="bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-shadow flex items-center"
+              >
+                <div className="p-3 bg-amber-100 rounded-lg mr-4">
+                  <Wallet className="h-6 w-6 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Manage Wallets</h3>
+                  <p className="text-sm text-gray-500">
+                    View and manage public wallets
                   </p>
                 </div>
               </Link>
