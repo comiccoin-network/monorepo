@@ -24,8 +24,11 @@ const UserTopNavigation = () => {
     if (path === "/dashboard") return location.pathname === "/dashboard";
 
     // For public wallets section, check if the current path starts with /public-wallets
-    if (path === "/public-wallets")
-      return location.pathname.startsWith("/public-wallets");
+    if (path === "/public-wallets" || path === "/public-wallet")
+      return (
+        location.pathname.startsWith("/public-wallets") ||
+        location.pathname.startsWith("/public-wallet")
+      );
 
     // For transactions section, check if the current path starts with /transactions
     if (path === "/transactions")
