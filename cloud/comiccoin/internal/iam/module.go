@@ -474,6 +474,7 @@ func NewModule(
 		cfg,
 		logger,
 		publicWalletGetByAddressUseCase,
+		publicWalletUpdateByAddressUseCase,
 	)
 
 	// --- User ---
