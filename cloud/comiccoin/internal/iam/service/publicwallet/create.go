@@ -184,7 +184,7 @@ func (svc *createPublicWalletServiceImpl) Create(sessCtx mongo.SessionContext, r
 		ThumbnailS3Key:        "",
 		ViewCount:             0,
 		UniqueViewCount:       0,
-		UniqueIPAddresses:     make([]string, 0),
+		UniqueIPAddresses:     make(map[string]bool, 0),
 		ID:                    id,
 		CreatedAt:             time.Now(),
 		CreatedFromIPAddress:  userIPAddress,
