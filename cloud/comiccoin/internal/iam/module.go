@@ -473,6 +473,7 @@ func NewModule(
 	getPublicWalletsFromDirectoryByAddressService := svc_publicwalletdirectory.NewGetPublicWalletsFromDirectoryByAddressService(
 		cfg,
 		logger,
+		dmutex,
 		publicWalletGetByAddressUseCase,
 		publicWalletUpdateByAddressUseCase,
 	)

@@ -2,24 +2,26 @@
 package publicwalletdirectory
 
 import (
-	"context"
 	"log/slog"
 
 	"github.com/ethereum/go-ethereum/common"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config/constants"
+	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/distributedmutex"
 	dom "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/publicwallet"
 	uc "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
 )
 
 type GetPublicWalletsFromDirectoryByAddressService interface {
-	GetByAddress(ctx context.Context, address *common.Address) (*dom.PublicWallet, error)
+	GetByAddress(sessCtx mongo.SessionContext, address *common.Address) (*dom.PublicWallet, error)
 }
 
 type getPublicWalletsFromDirectoryByAddressServiceImpl struct {
 	config            *config.Configuration
 	logger            *slog.Logger
+	dmutex            distributedmutex.Adapter
 	getByAddressUC    uc.PublicWalletGetByAddressUseCase
 	updateByAddressUC uc.PublicWalletUpdateByAddressUseCase
 }
@@ -27,22 +29,31 @@ type getPublicWalletsFromDirectoryByAddressServiceImpl struct {
 func NewGetPublicWalletsFromDirectoryByAddressService(
 	config *config.Configuration,
 	logger *slog.Logger,
+	dmutex distributedmutex.Adapter,
 	getByAddressUC uc.PublicWalletGetByAddressUseCase,
 	updateByAddressUC uc.PublicWalletUpdateByAddressUseCase,
 ) GetPublicWalletsFromDirectoryByAddressService {
 	return &getPublicWalletsFromDirectoryByAddressServiceImpl{
 		config:            config,
 		logger:            logger,
+		dmutex:            dmutex,
 		getByAddressUC:    getByAddressUC,
 		updateByAddressUC: updateByAddressUC,
 	}
 }
 
-func (s *getPublicWalletsFromDirectoryByAddressServiceImpl) GetByAddress(ctx context.Context, address *common.Address) (*dom.PublicWallet, error) {
+func (s *getPublicWalletsFromDirectoryByAddressServiceImpl) GetByAddress(sessCtx mongo.SessionContext, address *common.Address) (*dom.PublicWallet, error) {
 	s.logger.Debug("getting public wallet from directory by address", slog.String("address", address.Hex()))
 
+	// Developers Note: This function is used to get a public wallet from the directory by address.
+	// It uses a distributed mutex to ensure that only one request is processed at a time for a given address.
+	// This is important because the directory is a shared resource and we want to avoid race conditions.
+
+	s.dmutex.Acquire(sessCtx, address.Hex())
+	defer s.dmutex.Release(sessCtx, address.Hex())
+
 	// Get the public wallet
-	publicWallet, err := s.getByAddressUC.Execute(ctx, address)
+	publicWallet, err := s.getByAddressUC.Execute(sessCtx, address)
 	if err != nil {
 		s.logger.Error("failed to get public wallet by address",
 			slog.String("address", address.Hex()),
@@ -58,7 +69,7 @@ func (s *getPublicWalletsFromDirectoryByAddressServiceImpl) GetByAddress(ctx con
 	}
 
 	// Get the IP address from the context
-	ipAddress, ok := ctx.Value(constants.SessionIPAddress).(string)
+	ipAddress, ok := sessCtx.Value(constants.SessionIPAddress).(string)
 	if ok && ipAddress != "" {
 		// Increment the view count
 		publicWallet.ViewCount++
@@ -86,7 +97,7 @@ func (s *getPublicWalletsFromDirectoryByAddressServiceImpl) GetByAddress(ctx con
 			slog.Uint64("unique_view_count", publicWallet.UniqueViewCount))
 
 		// Update the public wallet in the database
-		if err := s.updateByAddressUC.Execute(ctx, publicWallet); err != nil {
+		if err := s.updateByAddressUC.Execute(sessCtx, publicWallet); err != nil {
 			s.logger.Error("failed to update public wallet view counts",
 				slog.String("address", address.Hex()),
 				slog.Any("error", err))
