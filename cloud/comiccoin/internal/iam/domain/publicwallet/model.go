@@ -62,7 +62,7 @@ type PublicWallet struct {
 	UniqueViewCount uint64 `bson:"unique_view_count" json:"unique_view_count"`
 
 	// The unique IP addresses map that have viewed this public wallet. (Do not show in API responses because of the `json:"-"`.)
-	UniqueIPAddresses map[string]bool `bson:"unique_ip_addresses" json:"-"`
+	UniqueIPAddresses map[string]time.Time `bson:"unique_ip_addresses" json:"-"`
 
 	ID                    primitive.ObjectID `bson:"_id" json:"id"`
 	CreatedFromIPAddress  string             `bson:"created_from_ip_address" json:"created_from_ip_address"`

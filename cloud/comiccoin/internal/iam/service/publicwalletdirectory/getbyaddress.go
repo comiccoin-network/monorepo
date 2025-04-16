@@ -3,6 +3,7 @@ package publicwalletdirectory
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,6 +14,10 @@ import (
 	dom "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/publicwallet"
 	uc "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/publicwallet"
 )
+
+// ViewThrottleDuration defines how often a view from the same IP will be counted
+// Set to 24 hours to only count one view per IP per day
+const ViewThrottleDuration = 24 * time.Hour
 
 type GetPublicWalletsFromDirectoryByAddressService interface {
 	GetByAddress(sessCtx mongo.SessionContext, address *common.Address) (*dom.PublicWallet, error)
@@ -76,32 +81,53 @@ func (s *getPublicWalletsFromDirectoryByAddressServiceImpl) GetByAddress(sessCtx
 
 		// Initialize the unique IP addresses map if it doesn't exist
 		if publicWallet.UniqueIPAddresses == nil {
-			publicWallet.UniqueIPAddresses = make(map[string]bool)
+			publicWallet.UniqueIPAddresses = make(map[string]time.Time)
 		}
 
 		// Check if this IP address has viewed this wallet before
-		if _, exists := publicWallet.UniqueIPAddresses[ipAddress]; !exists {
-			// This is a new unique viewer
-			publicWallet.UniqueIPAddresses[ipAddress] = true
+		lastViewTime, ipExists := publicWallet.UniqueIPAddresses[ipAddress]
+
+		// Get the current time.
+		nowDT := time.Now()
+
+		// If this is a new IP address, update the unique view count
+		if !ipExists {
+			// First time viewer
+			publicWallet.ViewCount++
+			publicWallet.UniqueIPAddresses[ipAddress] = nowDT
 			publicWallet.UniqueViewCount++
 
 			s.logger.Debug("new unique viewer",
 				slog.String("address", address.Hex()),
 				slog.String("ip_address", ipAddress),
 				slog.Uint64("unique_view_count", publicWallet.UniqueViewCount))
-		}
 
-		s.logger.Debug("updating view counts",
-			slog.String("address", address.Hex()),
-			slog.Uint64("view_count", publicWallet.ViewCount),
-			slog.Uint64("unique_view_count", publicWallet.UniqueViewCount))
+			// Update the public wallet in the database
+			if err := s.updateByAddressUC.Execute(sessCtx, publicWallet); err != nil {
+				s.logger.Error("failed to update public wallet view counts",
+					slog.String("address", address.Hex()),
+					slog.Any("error", err))
+				// Continue anyway to return the wallet, even if updating view counts failed
+			}
+		} else {
+			// Returning viewer - in a real implementation with timestamps we would do:
+			if nowDT.Sub(lastViewTime) > ViewThrottleDuration {
+				publicWallet.ViewCount++
+				publicWallet.UniqueIPAddresses[ipAddress] = nowDT
 
-		// Update the public wallet in the database
-		if err := s.updateByAddressUC.Execute(sessCtx, publicWallet); err != nil {
-			s.logger.Error("failed to update public wallet view counts",
-				slog.String("address", address.Hex()),
-				slog.Any("error", err))
-			// Continue anyway to return the wallet, even if updating view counts failed
+				s.logger.Debug("new unique viewer",
+					slog.String("address", address.Hex()),
+					slog.String("ip_address", ipAddress),
+					slog.Uint64("unique_view_count", publicWallet.UniqueViewCount))
+
+				// Update the public wallet in the database
+				if err := s.updateByAddressUC.Execute(sessCtx, publicWallet); err != nil {
+					s.logger.Error("failed to update public wallet view counts",
+						slog.String("address", address.Hex()),
+						slog.Any("error", err))
+					// Continue anyway to return the wallet, even if updating view counts failed
+				}
+			}
 		}
 	} else {
 		s.logger.Warn("could not get IP address from context",
