@@ -23,7 +23,7 @@ import { useAuth } from "../../../hooks/useAuth";
 
 const VerificationPendingPage = () => {
   const navigate = useNavigate();
-  const { user: authUser, logout } = useAuth();
+  const { user: authUser, updateUser, logout } = useAuth();
   const { user, isLoading, error, refetch } = useGetMe();
   const [lastRefreshTime, setLastRefreshTime] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -89,6 +89,53 @@ const VerificationPendingPage = () => {
   const handleLogout = () => {
     logout();
   };
+
+  useEffect(() => {
+    // Force set verification status to SUBMITTED_FOR_REVIEW if coming from form submission
+    if (
+      user &&
+      user.profile_verification_status !==
+        VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW
+    ) {
+      console.log(
+        "🔒 Forcing verification status to SUBMITTED_FOR_REVIEW in PendingPage",
+      );
+
+      // Update auth context
+      if (updateUser) {
+        updateUser({
+          ...user,
+          profile_verification_status: VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW,
+        });
+      }
+
+      // Also update localStorage to ensure consistency
+      try {
+        const AUTH_STORAGE_KEY = "auth_data";
+        const currentAuthData = JSON.parse(
+          localStorage.getItem(AUTH_STORAGE_KEY) || "{}",
+        );
+
+        if (currentAuthData.user) {
+          const updatedUser = {
+            ...currentAuthData.user,
+            profile_verification_status:
+              VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW,
+          };
+
+          localStorage.setItem(
+            AUTH_STORAGE_KEY,
+            JSON.stringify({
+              ...currentAuthData,
+              user: updatedUser,
+            }),
+          );
+        }
+      } catch (err) {
+        console.error("Error updating localStorage in PendingPage:", err);
+      }
+    }
+  }, [user, updateUser, VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW]);
 
   // Redirect if status is not pending
   useEffect(() => {

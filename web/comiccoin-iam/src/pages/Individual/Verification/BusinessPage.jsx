@@ -263,6 +263,7 @@ const VerificationBusinessPage = () => {
   };
 
   // Handle form submission
+  // Modified handleSubmit function for BusinessPage.jsx
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -303,6 +304,7 @@ const VerificationBusinessPage = () => {
       }
     });
 
+    // Other validation rules remain the same...
     // Validate "Other" field if "Other" is selected in the dropdown
     if (
       formData.howDidYouHearAboutUs === 6 &&
@@ -348,22 +350,49 @@ const VerificationBusinessPage = () => {
 
     try {
       // Submit data to the API with explicit user role
-      // USER_ROLE.RETAILER = 2 in our backend (business/retailer user)
       const success = await submitVerification(formData, USER_ROLE.RETAILER);
 
       if (success) {
-        // Update user verification status if available
-        if (user && updateUser) {
-          updateUser({
-            ...user,
-            profile_verification_status:
-              VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW,
-          });
+        // Force immediate redirect without waiting for state updates
+        console.log(
+          "🚀 Form submitted successfully, redirecting to pending page",
+        );
+
+        // We'll force localStorage update AND use window.location for a hard redirect
+        try {
+          const AUTH_STORAGE_KEY = "auth_data";
+          const currentAuthData = JSON.parse(
+            localStorage.getItem(AUTH_STORAGE_KEY) || "{}",
+          );
+
+          if (currentAuthData.user) {
+            console.log(
+              "🔄 Force updating verification status in localStorage to SUBMITTED_FOR_REVIEW (2)",
+            );
+
+            // Update the profile_verification_status in localStorage
+            const updatedUser = {
+              ...currentAuthData.user,
+              profile_verification_status:
+                VERIFICATION_STATUS.SUBMITTED_FOR_REVIEW,
+            };
+
+            // Save back to localStorage
+            localStorage.setItem(
+              AUTH_STORAGE_KEY,
+              JSON.stringify({
+                ...currentAuthData,
+                user: updatedUser,
+              }),
+            );
+          }
+        } catch (err) {
+          console.error("Error updating localStorage:", err);
         }
 
-        // After successful submission, redirect to pending page
-        // Use replace: true to prevent going back to the form
-        navigate("/verification/pending", { replace: true });
+        // Force hard redirect instead of using React Router
+        window.location.href = "/verification/pending";
+        return; // Important to prevent further execution
       }
     } catch (error) {
       console.error("Error submitting business verification:", error);
