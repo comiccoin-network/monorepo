@@ -5,6 +5,7 @@ import { Platform } from "react-native";
 interface Config {
   AUTHORITY_API_URL: string;
   IPFS_GATEWAY_URL: string;
+  IAM_API_URL: string;
   // Add other configuration values as needed
 }
 
@@ -32,16 +33,30 @@ const getDevelopmentIPFSUrl = (): string => {
   return "http://localhost:9000";
 };
 
+// Helper function to get IAM URL for development
+const getDevelopmentIAMUrl = (): string => {
+  if (__DEV__) {
+    if (Platform.OS === "android") {
+      return "http://10.0.2.2:9000";
+    } else if (Platform.OS === "ios" || Platform.OS === "web") {
+      return "http://localhost:9000";
+    }
+  }
+  return "http://localhost:9000";
+};
+
 // Development configuration
 const developmentConfig: Config = {
   AUTHORITY_API_URL: getDevelopmentBaseUrl(),
   IPFS_GATEWAY_URL: getDevelopmentIPFSUrl(),
+  IAM_API_URL: getDevelopmentIAMUrl(),
 };
 
 // Production configuration
 const productionConfig: Config = {
   AUTHORITY_API_URL: "https://comiccoin.net",
   IPFS_GATEWAY_URL: "https://nftstorage.com",
+  IAM_API_URL: "https://iam.comiccoin.net",
 };
 
 // Here we determine which configuration to use based on the environment
