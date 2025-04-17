@@ -13,6 +13,7 @@ import {
   Modal,
   KeyboardAvoidingView,
   Keyboard,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
@@ -28,6 +29,8 @@ import {
   CheckCircle,
   AlertTriangle,
   XCircle,
+  Globe,
+  ExternalLink,
 } from "lucide-react-native";
 import { CameraView } from "expo-camera";
 import { useCameraPermissions } from "expo-camera";
@@ -83,6 +86,7 @@ const SendScreen: React.FC = () => {
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
+  const [showWebsiteModal, setShowWebsiteModal] = useState(false);
 
   // Use the ComicCoin ID hook to lookup wallet details
   const { wallet: walletInfo, isLoading: isWalletInfoLoading } =
@@ -100,6 +104,28 @@ const SendScreen: React.FC = () => {
         staleTime: 0,
       },
     );
+
+  // Function to handle opening the website
+  const handleOpenWebsite = useCallback(async (url: string | undefined) => {
+    if (!url) {
+      Alert.alert("Error", "No website URL available for this wallet");
+      return;
+    }
+
+    // Make sure URL has proper protocol
+    const properUrl = url.startsWith("http") ? url : `https://${url}`;
+
+    try {
+      const canOpen = await Linking.canOpenURL(properUrl);
+      if (canOpen) {
+        await Linking.openURL(properUrl);
+      } else {
+        Alert.alert("Error", "Cannot open this website URL");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to open website");
+    }
+  }, []);
 
   useEffect(() => {
     const checkWalletSession = async () => {
@@ -215,7 +241,7 @@ const SendScreen: React.FC = () => {
     }
   };
 
-  // Updated renderRecipientField function with improved aesthetics
+  // Completely redesigned wallet info section
   const renderRecipientField = () => (
     <View style={styles.inputGroup}>
       <Text style={styles.inputLabel}>
@@ -251,7 +277,7 @@ const SendScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* ComicCoin ID Wallet Information Display - Redesigned */}
+      {/* Completely redesigned wallet info display */}
       {/^0x[a-fA-F0-9]{40}$/.test(formData.recipientAddress) && (
         <>
           {isWalletInfoLoading ? (
@@ -263,26 +289,28 @@ const SendScreen: React.FC = () => {
             </View>
           ) : walletInfo ? (
             <View style={styles.walletInfoCard}>
-              <View style={styles.walletNameRow}>
+              <View style={styles.walletInfoRow}>
                 {walletInfo.isVerified ? (
                   <CheckCircle
-                    size={18}
+                    size={20}
                     color="#10B981"
-                    style={{ marginRight: 8 }}
+                    style={styles.verificationIcon}
                   />
                 ) : (
                   <AlertTriangle
-                    size={18}
+                    size={20}
                     color="#F59E0B"
-                    style={{ marginRight: 8 }}
+                    style={styles.verificationIcon}
                   />
                 )}
+
                 <Text style={styles.walletNameText}>
                   {walletInfo.name || "Unknown Wallet"}
                 </Text>
+
                 <View
                   style={[
-                    styles.verificationBadge,
+                    styles.statusBadge,
                     walletInfo.isVerified
                       ? styles.verifiedBadge
                       : styles.unverifiedBadge,
@@ -290,7 +318,7 @@ const SendScreen: React.FC = () => {
                 >
                   <Text
                     style={[
-                      styles.verificationText,
+                      styles.statusText,
                       walletInfo.isVerified
                         ? styles.verifiedText
                         : styles.unverifiedText,
@@ -300,6 +328,16 @@ const SendScreen: React.FC = () => {
                   </Text>
                 </View>
               </View>
+
+              {walletInfo.websiteUrl && (
+                <TouchableOpacity
+                  style={styles.visitWebsiteButton}
+                  onPress={() => setShowWebsiteModal(true)}
+                >
+                  <ExternalLink size={16} color="#7C3AED" />
+                  <Text style={styles.visitWebsiteText}>Visit Website</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             <View style={styles.walletNotFoundCard}>
@@ -349,6 +387,55 @@ const SendScreen: React.FC = () => {
           <Text style={styles.scannerHelper}>
             Align QR code within the frame
           </Text>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // Website confirmation modal component
+  const renderWebsiteConfirmationModal = () => (
+    <Modal
+      visible={showWebsiteModal}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowWebsiteModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.websiteModalContent}>
+          <View style={styles.websiteModalHeader}>
+            <Globe size={28} color="#7C3AED" />
+            <Text style={styles.websiteModalTitle}>Visit Website</Text>
+          </View>
+
+          <Text style={styles.websiteModalText}>
+            You're about to visit an external website:{"\n"}
+            <Text style={styles.websiteUrl}>{walletInfo?.websiteUrl}</Text>
+          </Text>
+
+          <Text style={styles.websiteModalWarning}>
+            This link will open in your browser. Always verify you're visiting
+            the correct website.
+          </Text>
+
+          <View style={styles.websiteModalActions}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalCancelButton]}
+              onPress={() => setShowWebsiteModal(false)}
+            >
+              <Text style={styles.modalCancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalConfirmButton]}
+              onPress={() => {
+                setShowWebsiteModal(false);
+                handleOpenWebsite(walletInfo?.websiteUrl);
+              }}
+            >
+              <ExternalLink size={16} color="white" />
+              <Text style={styles.modalConfirmButtonText}>Visit Website</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -609,191 +696,198 @@ const SendScreen: React.FC = () => {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </SafeAreaView>
 
-      {/* Confirmation Modal */}
-      <Modal
-        visible={showConfirmation}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {
-          if (!transactionLoading) {
-            setShowConfirmation(false);
-          }
-        }}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
+        {/* Confirmation Modal */}
+        <Modal
+          visible={showConfirmation}
+          transparent
+          animationType="fade"
+          onRequestClose={() => {
             if (!transactionLoading) {
               setShowConfirmation(false);
             }
           }}
-          style={styles.modalOverlay}
         >
-          <View
-            style={styles.modalContent}
-            onStartShouldSetResponder={() => true}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              if (!transactionLoading) {
+                setShowConfirmation(false);
+              }
             }}
+            style={styles.modalOverlay}
           >
-            {/* Transaction Status Header */}
-            <View style={styles.modalHeader}>
-              {transactionLoading ? (
-                <>
-                  <ActivityIndicator size="large" color="#7C3AED" />
-                  <Text style={styles.modalHeaderTitle}>
-                    Processing Transaction
-                  </Text>
-                  <Text style={styles.modalHeaderSubtitle}>
-                    Please wait while we process your transaction...
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <Send size={32} color="#7C3AED" />
-                  <Text style={styles.modalHeaderTitle}>
-                    Review Transaction
-                  </Text>
-                  <Text style={styles.modalHeaderSubtitle}>
-                    Please verify all details before confirming
-                  </Text>
-                </>
-              )}
-            </View>
-
-            {/* Transaction Amount Card */}
-            <View style={styles.amountCard}>
-              <Text style={styles.amountLabel}>You're sending</Text>
-              <Text style={styles.amountValue}>{formData.amount} CC</Text>
-              <View style={styles.feeRow}>
-                <Text style={styles.feeLabel}>Network Fee</Text>
-                <Text style={styles.feeValue}>1 CC</Text>
-              </View>
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Total Amount</Text>
-                <Text style={styles.totalValue}>
-                  {parseInt(formData.amount) + 1} CC
-                </Text>
-              </View>
-            </View>
-
-            {/* Recipient Details */}
-            <View style={styles.detailsSection}>
-              <Text style={styles.detailsLabel}>To Address</Text>
-              <View style={styles.addressContainer}>
-                {walletInfo && (
-                  <View style={styles.modalWalletInfoContainer}>
-                    {walletInfo.isVerified ? (
-                      <CheckCircle
-                        size={16}
-                        color="#10B981"
-                        style={{ marginRight: 4 }}
-                      />
-                    ) : (
-                      <AlertTriangle
-                        size={16}
-                        color="#F59E0B"
-                        style={{ marginRight: 4 }}
-                      />
-                    )}
-                    <Text style={styles.modalWalletName}>
-                      {walletInfo.name}
-                    </Text>
-                    <View
-                      style={[
-                        styles.modalVerificationBadge,
-                        walletInfo.isVerified
-                          ? styles.verifiedBadge
-                          : styles.unverifiedBadge,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.modalVerificationText,
-                          walletInfo.isVerified
-                            ? styles.verifiedText
-                            : styles.unverifiedText,
-                        ]}
-                      >
-                        {walletInfo.isVerified ? "Verified" : "Unverified"}
-                      </Text>
-                    </View>
-                  </View>
-                )}
-                <Text style={styles.addressText} numberOfLines={1}>
-                  {formData.recipientAddress}
-                </Text>
-              </View>
-              {formData.note && (
-                <>
-                  <Text style={[styles.detailsLabel, styles.noteLabel]}>
-                    Message
-                  </Text>
-                  <Text style={styles.noteText}>{formData.note}</Text>
-                </>
-              )}
-            </View>
-
-            {/* Warning Notice */}
-            <View style={styles.warningContainer}>
-              <AlertCircle size={16} color="#D97706" />
-              <Text style={styles.warningText}>
-                This action cannot be undone. The transaction will be submitted
-                to the network immediately.
-              </Text>
-            </View>
-
-            {/* Action Buttons */}
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  styles.modalCancelButton,
-                  transactionLoading && styles.disabledButton,
-                ]}
-                onPress={() => setShowConfirmation(false)}
-                disabled={transactionLoading}
-              >
-                <Text
-                  style={[
-                    styles.modalCancelButtonText,
-                    transactionLoading && styles.disabledButtonText,
-                  ]}
-                >
-                  Cancel
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  styles.modalConfirmButton,
-                  transactionLoading && styles.disabledButton,
-                ]}
-                onPress={handleConfirmTransaction}
-                disabled={transactionLoading}
-              >
+            <View
+              style={styles.modalContent}
+              onStartShouldSetResponder={() => true}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              {/* Transaction Status Header */}
+              <View style={styles.modalHeader}>
                 {transactionLoading ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator color="white" size="small" />
-                    <Text style={styles.loadingButtonText}>Processing...</Text>
-                  </View>
+                  <>
+                    <ActivityIndicator size="large" color="#7C3AED" />
+                    <Text style={styles.modalHeaderTitle}>
+                      Processing Transaction
+                    </Text>
+                    <Text style={styles.modalHeaderSubtitle}>
+                      Please wait while we process your transaction...
+                    </Text>
+                  </>
                 ) : (
                   <>
-                    <Send size={16} color="white" />
-                    <Text style={styles.modalConfirmButtonText}>
-                      Confirm & Send
+                    <Send size={32} color="#7C3AED" />
+                    <Text style={styles.modalHeaderTitle}>
+                      Review Transaction
+                    </Text>
+                    <Text style={styles.modalHeaderSubtitle}>
+                      Please verify all details before confirming
                     </Text>
                   </>
                 )}
-              </TouchableOpacity>
+              </View>
+
+              {/* Transaction Amount Card */}
+              <View style={styles.amountCard}>
+                <Text style={styles.amountLabel}>You're sending</Text>
+                <Text style={styles.amountValue}>{formData.amount} CC</Text>
+                <View style={styles.feeRow}>
+                  <Text style={styles.feeLabel}>Network Fee</Text>
+                  <Text style={styles.feeValue}>1 CC</Text>
+                </View>
+                <View style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>Total Amount</Text>
+                  <Text style={styles.totalValue}>
+                    {parseInt(formData.amount) + 1} CC
+                  </Text>
+                </View>
+              </View>
+
+              {/* Recipient Details */}
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsLabel}>To Address</Text>
+                <View style={styles.addressContainer}>
+                  {walletInfo && (
+                    <View style={styles.modalWalletInfoContainer}>
+                      {walletInfo.isVerified ? (
+                        <CheckCircle
+                          size={16}
+                          color="#10B981"
+                          style={{ marginRight: 4 }}
+                        />
+                      ) : (
+                        <AlertTriangle
+                          size={16}
+                          color="#F59E0B"
+                          style={{ marginRight: 4 }}
+                        />
+                      )}
+                      <Text style={styles.modalWalletName}>
+                        {walletInfo.name}
+                      </Text>
+                      <View
+                        style={[
+                          styles.modalVerificationBadge,
+                          walletInfo.isVerified
+                            ? styles.verifiedBadge
+                            : styles.unverifiedBadge,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.modalVerificationText,
+                            walletInfo.isVerified
+                              ? styles.verifiedText
+                              : styles.unverifiedText,
+                          ]}
+                        >
+                          {walletInfo.isVerified ? "Verified" : "Unverified"}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                  <Text style={styles.addressText} numberOfLines={1}>
+                    {formData.recipientAddress}
+                  </Text>
+                </View>
+                {formData.note && (
+                  <>
+                    <Text style={[styles.detailsLabel, styles.noteLabel]}>
+                      Message
+                    </Text>
+                    <Text style={styles.noteText}>{formData.note}</Text>
+                  </>
+                )}
+              </View>
+
+              {/* Warning Notice */}
+              <View style={styles.warningContainer}>
+                <AlertCircle size={16} color="#D97706" />
+                <Text style={styles.warningText}>
+                  This action cannot be undone. The transaction will be
+                  submitted to the network immediately.
+                </Text>
+              </View>
+
+              {/* Action Buttons */}
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={[
+                    styles.modalButton,
+                    styles.modalCancelButton,
+                    transactionLoading && styles.disabledButton,
+                  ]}
+                  onPress={() => setShowConfirmation(false)}
+                  disabled={transactionLoading}
+                >
+                  <Text
+                    style={[
+                      styles.modalCancelButtonText,
+                      transactionLoading && styles.disabledButtonText,
+                    ]}
+                  >
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.modalButton,
+                    styles.modalConfirmButton,
+                    transactionLoading && styles.disabledButton,
+                  ]}
+                  onPress={handleConfirmTransaction}
+                  disabled={transactionLoading}
+                >
+                  {transactionLoading ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator color="white" size="small" />
+                      <Text style={styles.loadingButtonText}>
+                        Processing...
+                      </Text>
+                    </View>
+                  ) : (
+                    <>
+                      <Send size={16} color="white" />
+                      <Text style={styles.modalConfirmButtonText}>
+                        Confirm & Send
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-      {renderQRScannerModal()}
+          </TouchableOpacity>
+        </Modal>
+
+        {/* QR Scanner Modal */}
+        {renderQRScannerModal()}
+
+        {/* Website confirmation modal */}
+        {renderWebsiteConfirmationModal()}
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 };
@@ -1368,7 +1462,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
   },
 
-  // New styles for ComicCoin ID wallet info
+  // Brand new styling for wallet info section
   walletInfoLoadingContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -1385,11 +1479,11 @@ const styles = StyleSheet.create({
   },
   walletInfoCard: {
     marginTop: 12,
-    padding: 12,
-    backgroundColor: "#F9FAFB",
-    borderRadius: 12,
+    padding: 16,
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E5E7EB",
+    borderRadius: 12,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -1398,19 +1492,67 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
       },
       android: {
-        elevation: 1,
+        elevation: 2,
       },
     }),
   },
-  walletNameRow: {
+  walletInfoRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+  },
+  verificationIcon: {
+    marginRight: 8,
   },
   walletNameText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "600",
     color: "#111827",
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+    marginLeft: 8,
+  },
+  verifiedBadge: {
+    backgroundColor: "#ECFDF5",
+    borderWidth: 1,
+    borderColor: "#A7F3D0",
+  },
+  unverifiedBadge: {
+    backgroundColor: "#FFF7ED",
+    borderWidth: 1,
+    borderColor: "#FFEDD5",
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  verifiedText: {
+    color: "#059669",
+  },
+  unverifiedText: {
+    color: "#D97706",
+  },
+  visitWebsiteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F5F3FF",
+    borderWidth: 1,
+    borderColor: "#E0D7FF",
+    borderRadius: 8,
+    marginTop: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  visitWebsiteText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#7C3AED",
   },
   walletNotFoundCard: {
     flexDirection: "row",
@@ -1425,31 +1567,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
     color: "#6B7280",
-  },
-  verificationBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 16,
-  },
-  verifiedBadge: {
-    backgroundColor: "#ECFDF5",
-    borderWidth: 1,
-    borderColor: "#A7F3D0",
-  },
-  unverifiedBadge: {
-    backgroundColor: "#FFFBEB",
-    borderWidth: 1,
-    borderColor: "#FDE68A",
-  },
-  verificationText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  verifiedText: {
-    color: "#059669",
-  },
-  unverifiedText: {
-    color: "#D97706",
   },
 
   // Modal wallet info styles
@@ -1476,6 +1593,60 @@ const styles = StyleSheet.create({
   modalVerificationText: {
     fontSize: 11,
     fontWeight: "500",
+  },
+
+  // Website modal styles
+  websiteModalContent: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 20,
+    width: "90%",
+    maxWidth: 400,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
+  websiteModalHeader: {
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  websiteModalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#111827",
+    marginTop: 8,
+  },
+  websiteModalText: {
+    fontSize: 16,
+    color: "#4B5563",
+    textAlign: "center",
+    marginBottom: 12,
+    lineHeight: 24,
+  },
+  websiteUrl: {
+    fontWeight: "600",
+    color: "#2563EB",
+  },
+  websiteModalWarning: {
+    fontSize: 14,
+    color: "#92400E",
+    backgroundColor: "#FEF3C7",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+  },
+  websiteModalActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
   },
 });
 
