@@ -21,6 +21,7 @@ type UpdateMeRequestDTO struct {
 	LastName                                       string `bson:"last_name" json:"last_name"`
 	Phone                                          string `bson:"phone" json:"phone,omitempty"`
 	Country                                        string `bson:"country" json:"country,omitempty"`
+	Region                                         string `bson:"region" json:"region,omitempty"`
 	Timezone                                       string `bson:"timezone" json:"timezone"`
 	AgreePromotions                                bool   `bson:"agree_promotions" json:"agree_promotions,omitempty"`
 	AgreeToTrackingAcrossThirdPartyAppsAndServices bool   `bson:"agree_to_tracking_across_third_party_apps_and_services" json:"agree_to_tracking_across_third_party_apps_and_services,omitempty"`
@@ -109,6 +110,7 @@ func (svc *updateMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Updat
 	user.LexicalName = fmt.Sprintf("%v, %v", req.LastName, req.FirstName)
 	user.Phone = req.Phone
 	user.Country = req.Country
+	user.Region = req.Region
 	user.Timezone = req.Timezone
 	user.AgreePromotions = req.AgreePromotions
 	user.AgreeToTrackingAcrossThirdPartyAppsAndServices = req.AgreeToTrackingAcrossThirdPartyAppsAndServices
