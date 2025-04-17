@@ -77,7 +77,7 @@ class PublicWalletDirectoryService {
       }
 
       const response = await fetch(
-        `${this.BASE_URL}/public-wallets-directory/${address}`,
+        `${this.BASE_URL}/iam/api/v1/public-wallets-directory/${address}`,
         {
           method: "GET",
           headers: this.defaultHeaders,
@@ -161,7 +161,7 @@ class PublicWalletDirectoryService {
         queryParams.append("status", String(filters.status));
 
       const queryString = queryParams.toString();
-      const url = `${this.BASE_URL}/public-wallets-directory${queryString ? `?${queryString}` : ""}`;
+      const url = `${this.BASE_URL}/iam/api/v1/public-wallets-directory${queryString ? `?${queryString}` : ""}`;
 
       if (__DEV__) {
         console.log(`📞 Listing public wallets with URL: ${url}`);
@@ -215,7 +215,7 @@ class PublicWalletDirectoryService {
       }
 
       const response = await fetch(
-        `${this.BASE_URL}/public-wallets-directory?${params.toString()}`,
+        `${this.BASE_URL}/iam/api/v1/public-wallets-directory?${params.toString()}`,
         {
           method: "GET",
           headers: this.defaultHeaders,
@@ -250,7 +250,7 @@ class PublicWalletDirectoryService {
       }
 
       const response = await fetch(
-        `${this.BASE_URL}/public-wallets-directory/${address}/view`,
+        `${this.BASE_URL}/iam/api/v1/public-wallets-directory/${address}/view`,
         {
           method: "POST",
           headers: this.defaultHeaders,

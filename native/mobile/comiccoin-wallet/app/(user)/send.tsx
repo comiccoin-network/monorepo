@@ -25,6 +25,9 @@ import {
   Wallet,
   Coins,
   Camera,
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
 } from "lucide-react-native";
 import { CameraView } from "expo-camera";
 import { useCameraPermissions } from "expo-camera";
@@ -35,6 +38,7 @@ import { useWalletTransactions } from "../../hooks/useWalletTransactions";
 import { useCoinTransfer } from "../../hooks/useCoinTransfer";
 import walletService from "../../services/wallet/WalletService";
 import { base64ToHex } from "../../utils/byteUtils";
+import { useSinglePublicWalletFromDirectory } from "../../hooks/usePublicWalletDirectory";
 
 type RootStackParamList = {
   Login: undefined;
@@ -50,6 +54,15 @@ interface FormData {
   password: string;
 }
 
+// Define the form error type separately
+type FormErrorType = {
+  recipientAddress?: string;
+  amount?: string;
+  note?: string;
+  password?: string;
+  submit?: string;
+};
+
 const SendScreen: React.FC = () => {
   const router = useRouter();
   const navigation = useNavigation<NavigationProp>();
@@ -64,14 +77,29 @@ const SendScreen: React.FC = () => {
     note: "",
     password: "",
   });
-  const [formErrors, setFormErrors] = useState<
-    Partial<Record<keyof FormData | "submit", string>>
-  >({});
+  const [formErrors, setFormErrors] = useState<FormErrorType>({});
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
+
+  // Use the ComicCoin ID hook to lookup wallet details
+  const { wallet: walletInfo, isLoading: isWalletInfoLoading } =
+    useSinglePublicWalletFromDirectory(
+      // Only trigger lookup if address is in valid format
+      formData.recipientAddress &&
+        /^0x[a-fA-F0-9]{40}$/.test(formData.recipientAddress)
+        ? formData.recipientAddress
+        : null,
+      {
+        enabled:
+          !!formData.recipientAddress &&
+          /^0x[a-fA-F0-9]{40}$/.test(formData.recipientAddress),
+        // Refresh data if address changes
+        staleTime: 0,
+      },
+    );
 
   useEffect(() => {
     const checkWalletSession = async () => {
@@ -113,7 +141,7 @@ const SendScreen: React.FC = () => {
   };
 
   const validateForm = useCallback(() => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
+    const newErrors: FormErrorType = {};
 
     if (!formData.recipientAddress) {
       newErrors.recipientAddress = "Recipient address is required";
@@ -146,7 +174,7 @@ const SendScreen: React.FC = () => {
     (name: keyof FormData, value: string) => {
       setFormData((prev) => ({ ...prev, [name]: value }));
       if (formErrors[name]) {
-        setFormErrors((prev) => ({ ...prev, [name]: "" }));
+        setFormErrors((prev) => ({ ...prev, [name]: undefined }));
       }
     },
     [formErrors],
@@ -187,37 +215,7 @@ const SendScreen: React.FC = () => {
     }
   };
 
-  const renderQRScannerModal = () => (
-    <Modal visible={showScanner} transparent animationType="fade">
-      <View style={styles.modalOverlay}>
-        <View style={styles.scannerModalContent}>
-          <View style={styles.scannerHeader}>
-            <Text style={styles.scannerTitle}>Scan QR Code</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowScanner(false)}
-            >
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-
-          <CameraView
-            style={styles.scanner}
-            facing="back"
-            barcodeScannerSettings={{
-              barcodeTypes: "qr",
-            }}
-            onBarcodeScanned={({ data }) => handleScanComplete(data)}
-          />
-
-          <Text style={styles.scannerHelper}>
-            Align QR code within the frame
-          </Text>
-        </View>
-      </View>
-    </Modal>
-  );
-
+  // Updated renderRecipientField to include ComicCoin ID information
   const renderRecipientField = () => (
     <View style={styles.inputGroup}>
       <Text style={styles.inputLabel}>
@@ -252,6 +250,70 @@ const SendScreen: React.FC = () => {
           <Camera size={20} color="#7C3AED" />
         </TouchableOpacity>
       </View>
+
+      {/* ComicCoin ID Wallet Information Display */}
+      {/^0x[a-fA-F0-9]{40}$/.test(formData.recipientAddress) && (
+        <>
+          {isWalletInfoLoading ? (
+            <View style={styles.walletInfoContainer}>
+              <ActivityIndicator
+                size="small"
+                color="#7C3AED"
+                style={styles.walletInfoIcon}
+              />
+              <Text style={styles.walletInfoText}>
+                Looking up in ComicCoin ID...
+              </Text>
+            </View>
+          ) : walletInfo ? (
+            <View style={styles.walletInfoContainer}>
+              {walletInfo.isVerified ? (
+                <CheckCircle
+                  size={16}
+                  color="#10B981"
+                  style={styles.walletInfoIcon}
+                />
+              ) : (
+                <AlertTriangle
+                  size={16}
+                  color="#F59E0B"
+                  style={styles.walletInfoIcon}
+                />
+              )}
+              <Text style={styles.walletInfoName}>
+                {walletInfo.displayName}
+              </Text>
+              <View
+                style={[
+                  styles.verificationBadge,
+                  walletInfo.isVerified
+                    ? styles.verifiedBadge
+                    : styles.unverifiedBadge,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.verificationText,
+                    walletInfo.isVerified
+                      ? styles.verifiedText
+                      : styles.unverifiedText,
+                  ]}
+                >
+                  {walletInfo.isVerified ? "Verified" : "Unverified"}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.walletInfoContainer}>
+              <Info size={16} color="#9CA3AF" style={styles.walletInfoIcon} />
+              <Text style={styles.walletNotFoundText}>
+                Address not found in ComicCoin ID
+              </Text>
+            </View>
+          )}
+        </>
+      )}
+
       {formErrors.recipientAddress && (
         <View style={styles.fieldError}>
           <AlertCircle size={16} color="#DC2626" />
@@ -261,6 +323,37 @@ const SendScreen: React.FC = () => {
         </View>
       )}
     </View>
+  );
+
+  const renderQRScannerModal = () => (
+    <Modal visible={showScanner} transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.scannerModalContent}>
+          <View style={styles.scannerHeader}>
+            <Text style={styles.scannerTitle}>Scan QR Code</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowScanner(false)}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          <CameraView
+            style={styles.scanner}
+            facing="back"
+            barcodeScannerSettings={{
+              barcodeTypes: "qr",
+            }}
+            onBarcodeScanned={({ data }) => handleScanComplete(data)}
+          />
+
+          <Text style={styles.scannerHelper}>
+            Align QR code within the frame
+          </Text>
+        </View>
+      </View>
+    </Modal>
   );
 
   if (serviceLoading) {
@@ -326,11 +419,13 @@ const SendScreen: React.FC = () => {
                 <AlertCircle size={20} color="#DC2626" />
                 <View style={styles.errorContent}>
                   <Text style={styles.errorTitle}>Transaction Error</Text>
-                  {Object.values(formErrors).map((error, index) => (
-                    <Text key={index} style={styles.errorText}>
-                      • {error}
-                    </Text>
-                  ))}
+                  {Object.values(formErrors)
+                    .filter(Boolean)
+                    .map((error, index) => (
+                      <Text key={index} style={styles.errorText}>
+                        • {error}
+                      </Text>
+                    ))}
                 </View>
               </View>
             )}
@@ -590,6 +685,45 @@ const SendScreen: React.FC = () => {
             <View style={styles.detailsSection}>
               <Text style={styles.detailsLabel}>To Address</Text>
               <View style={styles.addressContainer}>
+                {walletInfo && (
+                  <View style={styles.modalWalletInfoContainer}>
+                    {walletInfo.isVerified ? (
+                      <CheckCircle
+                        size={16}
+                        color="#10B981"
+                        style={{ marginRight: 4 }}
+                      />
+                    ) : (
+                      <AlertTriangle
+                        size={16}
+                        color="#F59E0B"
+                        style={{ marginRight: 4 }}
+                      />
+                    )}
+                    <Text style={styles.modalWalletName}>
+                      {walletInfo.displayName}
+                    </Text>
+                    <View
+                      style={[
+                        styles.modalVerificationBadge,
+                        walletInfo.isVerified
+                          ? styles.verifiedBadge
+                          : styles.unverifiedBadge,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.modalVerificationText,
+                          walletInfo.isVerified
+                            ? styles.verifiedText
+                            : styles.unverifiedText,
+                        ]}
+                      >
+                        {walletInfo.isVerified ? "Verified" : "Unverified"}
+                      </Text>
+                    </View>
+                  </View>
+                )}
                 <Text style={styles.addressText} numberOfLines={1}>
                   {formData.recipientAddress}
                 </Text>
@@ -1234,6 +1368,84 @@ const styles = StyleSheet.create({
     textAlign: "center",
     padding: 16,
     color: "#6B7280",
+  },
+
+  // New styles for ComicCoin ID wallet info
+  walletInfoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+    paddingVertical: 6,
+  },
+  walletInfoIcon: {
+    marginRight: 8,
+  },
+  walletInfoText: {
+    fontSize: 14,
+    color: "#6B7280",
+  },
+  walletInfoName: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#111827",
+    marginRight: 8,
+  },
+  walletNotFoundText: {
+    fontSize: 14,
+    color: "#9CA3AF",
+  },
+  verificationBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  verifiedBadge: {
+    backgroundColor: "#D1FAE5",
+  },
+  unverifiedBadge: {
+    backgroundColor: "#FEF3C7",
+  },
+  rejectedBadge: {
+    backgroundColor: "#FEE2E2",
+  },
+  verificationText: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  verifiedText: {
+    color: "#065F46",
+  },
+  unverifiedText: {
+    color: "#92400E",
+  },
+  rejectedText: {
+    color: "#B91C1C",
+  },
+
+  // Modal wallet info styles
+  modalWalletInfoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  modalWalletName: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#111827",
+    marginRight: 8,
+    flex: 1,
+  },
+  modalVerificationBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 12,
+  },
+  modalVerificationText: {
+    fontSize: 11,
+    fontWeight: "500",
   },
 });
 

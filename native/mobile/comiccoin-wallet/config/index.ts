@@ -37,12 +37,12 @@ const getDevelopmentIPFSUrl = (): string => {
 const getDevelopmentIAMUrl = (): string => {
   if (__DEV__) {
     if (Platform.OS === "android") {
-      return "http://10.0.2.2:9000";
+      return "http://10.0.2.2:8000";
     } else if (Platform.OS === "ios" || Platform.OS === "web") {
-      return "http://localhost:9000";
+      return "http://localhost:8000";
     }
   }
-  return "http://localhost:9000";
+  return "http://localhost:8000";
 };
 
 // Development configuration
