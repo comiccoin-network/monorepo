@@ -49,7 +49,7 @@ const SettingsPageContent = () => {
   const [isManuallyLoading, setIsManuallyLoading] = useState(false);
 
   // Use the useAuth hook to get current user data
-  const { user, updateUser } = useAuth();
+  const { user, updateUser } = useAuth(); // updateUser might be unused, but kept for consistency
 
   // Use the new useGetMe hook to fetch latest user data
   const {
@@ -81,7 +81,7 @@ const SettingsPageContent = () => {
   const {
     updateMe,
     isLoading: isUpdating,
-    error: updateError,
+    error: updateError, // Capture the error object from the hook
     isSuccess,
   } = usePutUpdateMe();
 
@@ -117,11 +117,12 @@ const SettingsPageContent = () => {
     message: "",
   });
 
-  // Auto-dismiss status messages after 5 seconds
+  // Auto-dismiss error status messages after 5 seconds
   useEffect(() => {
     let timer;
 
-    if (statusMessage.type) {
+    // Only auto-dismiss error messages
+    if (statusMessage.type === "error") {
       timer = setTimeout(() => {
         setStatusMessage({ type: null, message: "" });
       }, 5000);
@@ -148,11 +149,11 @@ const SettingsPageContent = () => {
 
       setFormData({
         email: latestUserData.email || "",
-        first_name: latestUserData.first_name || "", // Correct: Assigns API first_name
+        first_name: latestUserData.first_name || "",
         last_name: latestUserData.last_name || "",
         phone: latestUserData.phone || "",
         country: countryCode || "",
-        region: latestUserData.region || "", // Region code should be stored directly
+        region: latestUserData.region || "",
         timezone: latestUserData.timezone || "",
         wallet_address: latestUserData.wallet_address || "",
       });
@@ -164,11 +165,11 @@ const SettingsPageContent = () => {
 
       setFormData({
         email: user.email || "",
-        first_name: user.firstName || "", // Correct: Assigns context firstName
+        first_name: user.firstName || "",
         last_name: user.lastName || "",
         phone: user.phone || "",
         country: countryCode || "",
-        region: user.region || "", // Region code should be stored directly
+        region: user.region || "",
         timezone: user.timezone || "",
         wallet_address: user.walletAddress || "",
       });
@@ -186,24 +187,37 @@ const SettingsPageContent = () => {
     }
   }, [userDataError]);
 
-  // Update status message based on API call results
+  // Update status message based on API call results and handle redirect
   useEffect(() => {
     if (isSuccess) {
       setStatusMessage({
         type: "success",
-        message: "Your settings have been updated successfully!",
+        message: "Settings updated successfully!", // Shorter success message
       });
 
-      // Refresh user data after successful update
+      // Refresh user data in the background
       refreshUserData();
+
+      // Set a timer to redirect after showing the success message
+      const redirectTimer = setTimeout(() => {
+        navigate("/admin/more"); // Redirect to /admin/more
+      }, 1500); // Redirect after 1.5 seconds
+
+      // Cleanup the timer if the component unmounts or dependencies change
+      return () => clearTimeout(redirectTimer);
     } else if (updateError) {
+      // Extract the error message from the server response if available
+      const errorMessage =
+        updateError?.response?.data?.message || // Check for typical Axios error structure
+        updateError?.message || // Standard JS error message
+        "Failed to update settings. Please try again."; // Fallback message
+
       setStatusMessage({
         type: "error",
-        message:
-          updateError.message || "Failed to update settings. Please try again.",
+        message: errorMessage,
       });
     }
-  }, [isSuccess, updateError, refreshUserData]);
+  }, [isSuccess, updateError, refreshUserData, navigate]);
 
   // Define form fields
   const personalFields = [
@@ -256,6 +270,10 @@ const SettingsPageContent = () => {
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+    // Clear general status message on input change
+    if (statusMessage.type === "error") {
+      setStatusMessage({ type: null, message: "" });
+    }
   };
 
   // Handle country dropdown change
@@ -274,6 +292,10 @@ const SettingsPageContent = () => {
         country: undefined,
       }));
     }
+    // Clear general status message on input change
+    if (statusMessage.type === "error") {
+      setStatusMessage({ type: null, message: "" });
+    }
   };
 
   // Handle region dropdown change
@@ -290,6 +312,10 @@ const SettingsPageContent = () => {
         ...prev,
         region: undefined,
       }));
+    }
+    // Clear general status message on input change
+    if (statusMessage.type === "error") {
+      setStatusMessage({ type: null, message: "" });
     }
   };
 
@@ -403,6 +429,8 @@ const SettingsPageContent = () => {
   // Handle form submission with comprehensive validation
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setStatusMessage({ type: null, message: "" }); // Clear previous messages
+    setFormErrors({}); // Clear previous form errors
 
     // Comprehensive validation across all required fields
     const errors = {};
@@ -454,18 +482,20 @@ const SettingsPageContent = () => {
       };
 
       // Attempt to update user profile
+      // The result (success/error) will be handled by the useEffect hook monitoring isSuccess and updateError
       await updateMe(updateData);
-      // Success message and status handling is done in the useEffect
     } catch (err) {
-      console.error("Update failed", err);
+      // This catch block might be redundant if usePutUpdateMe handles errors,
+      // but kept for safety to catch unexpected issues during the updateMe call itself.
+      console.error("Update initiation failed", err);
 
-      // Show error message if update fails
+      // Show a generic error message if the update call itself throws an error
       setStatusMessage({
         type: "error",
         message:
           err instanceof Error
             ? err.message
-            : "Failed to update profile. Please try again.",
+            : "An unexpected error occurred. Please try again.",
       });
     }
   };
@@ -555,8 +585,8 @@ const SettingsPageContent = () => {
               ${statusMessage.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}
               animate-fadeIn
             `}
-            role="alert"
-            aria-live="polite"
+            role={statusMessage.type === "error" ? "alert" : "status"} // Use 'alert' for errors, 'status' for success
+            aria-live={statusMessage.type === "error" ? "assertive" : "polite"}
           >
             <div className="flex items-center space-x-3">
               {statusMessage.type === "success" ? (
@@ -572,13 +602,16 @@ const SettingsPageContent = () => {
               )}
               <p className="font-medium text-sm">{statusMessage.message}</p>
             </div>
-            <button
-              onClick={() => setStatusMessage({ type: null, message: "" })}
-              className="text-gray-500 hover:text-gray-700 transition-colors"
-              aria-label="Dismiss message"
-            >
-              <X className="h-5 w-5" aria-hidden="true" />
-            </button>
+            {/* Only show dismiss button for error messages */}
+            {statusMessage.type === "error" && (
+              <button
+                onClick={() => setStatusMessage({ type: null, message: "" })}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+                aria-label="Dismiss message"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
+            )}
           </div>
         )}
 
@@ -741,6 +774,10 @@ const SettingsPageContent = () => {
                             : "border-gray-300"
                         }`}
                         required
+                        aria-invalid={!!formErrors.timezone}
+                        aria-describedby={
+                          formErrors.timezone ? "timezone-error" : undefined
+                        }
                       >
                         {timezones.map((timezone) => (
                           <option key={timezone.value} value={timezone.value}>
@@ -751,9 +788,17 @@ const SettingsPageContent = () => {
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <ArrowDown className="h-5 w-5 text-gray-400" />
                       </div>
+                      {formErrors.timezone && (
+                        <div className="absolute inset-y-0 right-9 flex items-center pr-3 pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
                     {formErrors.timezone && (
-                      <p className="text-red-500 text-xs mt-1 flex items-start gap-1">
+                      <p
+                        id="timezone-error"
+                        className="text-red-500 text-xs mt-1 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{formErrors.timezone}</span>
                       </p>
@@ -785,6 +830,10 @@ const SettingsPageContent = () => {
                             : "border-gray-300"
                         }`}
                         required
+                        aria-invalid={!!formErrors.timezone}
+                        aria-describedby={
+                          formErrors.timezone ? "timezone-error" : undefined
+                        }
                       >
                         {timezones.map((timezone) => (
                           <option key={timezone.value} value={timezone.value}>
@@ -795,9 +844,17 @@ const SettingsPageContent = () => {
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <ArrowDown className="h-5 w-5 text-gray-400" />
                       </div>
+                      {formErrors.timezone && (
+                        <div className="absolute inset-y-0 right-9 flex items-center pr-3 pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
                     {formErrors.timezone && (
-                      <p className="text-red-500 text-xs mt-1 flex items-start gap-1">
+                      <p
+                        id="timezone-error"
+                        className="text-red-500 text-xs mt-1 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{formErrors.timezone}</span>
                       </p>
@@ -813,22 +870,23 @@ const SettingsPageContent = () => {
                 <button
                   type="button"
                   onClick={handleBackToDashboard}
-                  className="w-full sm:w-auto px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  disabled={isUpdating} // Disable cancel while updating
+                  className="w-full sm:w-auto px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={isUpdating}
+                  disabled={isUpdating || isSuccess} // Disable if updating or if success message is showing before redirect
                   className={`
                     w-full sm:w-auto px-6 py-2.5 rounded-lg text-white transition-colors shadow-sm flex items-center justify-center text-sm font-medium
                     ${
-                      isUpdating
+                      isUpdating || isSuccess
                         ? "bg-purple-400 cursor-not-allowed"
                         : "bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                     }
                   `}
-                  aria-disabled={isUpdating}
+                  aria-disabled={isUpdating || isSuccess}
                 >
                   {isUpdating ? (
                     <>
