@@ -215,7 +215,7 @@ const SendScreen: React.FC = () => {
     }
   };
 
-  // Updated renderRecipientField to include ComicCoin ID information
+  // Updated renderRecipientField function with improved aesthetics
   const renderRecipientField = () => (
     <View style={styles.inputGroup}>
       <Text style={styles.inputLabel}>
@@ -251,59 +251,59 @@ const SendScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* ComicCoin ID Wallet Information Display */}
+      {/* ComicCoin ID Wallet Information Display - Redesigned */}
       {/^0x[a-fA-F0-9]{40}$/.test(formData.recipientAddress) && (
         <>
           {isWalletInfoLoading ? (
-            <View style={styles.walletInfoContainer}>
-              <ActivityIndicator
-                size="small"
-                color="#7C3AED"
-                style={styles.walletInfoIcon}
-              />
-              <Text style={styles.walletInfoText}>
+            <View style={styles.walletInfoLoadingContainer}>
+              <ActivityIndicator size="small" color="#7C3AED" />
+              <Text style={styles.walletInfoLoadingText}>
                 Looking up in ComicCoin ID...
               </Text>
             </View>
           ) : walletInfo ? (
-            <View style={styles.walletInfoContainer}>
-              {walletInfo.isVerified ? (
-                <CheckCircle
-                  size={16}
-                  color="#10B981"
-                  style={styles.walletInfoIcon}
-                />
-              ) : (
-                <AlertTriangle
-                  size={16}
-                  color="#F59E0B"
-                  style={styles.walletInfoIcon}
-                />
-              )}
-              <Text style={styles.walletInfoName}>{walletInfo.name}</Text>
-              <View
-                style={[
-                  styles.verificationBadge,
-                  walletInfo.isVerified
-                    ? styles.verifiedBadge
-                    : styles.unverifiedBadge,
-                ]}
-              >
-                <Text
+            <View style={styles.walletInfoCard}>
+              <View style={styles.walletNameRow}>
+                {walletInfo.isVerified ? (
+                  <CheckCircle
+                    size={18}
+                    color="#10B981"
+                    style={{ marginRight: 8 }}
+                  />
+                ) : (
+                  <AlertTriangle
+                    size={18}
+                    color="#F59E0B"
+                    style={{ marginRight: 8 }}
+                  />
+                )}
+                <Text style={styles.walletNameText}>
+                  {walletInfo.name || "Unknown Wallet"}
+                </Text>
+                <View
                   style={[
-                    styles.verificationText,
+                    styles.verificationBadge,
                     walletInfo.isVerified
-                      ? styles.verifiedText
-                      : styles.unverifiedText,
+                      ? styles.verifiedBadge
+                      : styles.unverifiedBadge,
                   ]}
                 >
-                  {walletInfo.isVerified ? "Verified" : "Unverified"}
-                </Text>
+                  <Text
+                    style={[
+                      styles.verificationText,
+                      walletInfo.isVerified
+                        ? styles.verifiedText
+                        : styles.unverifiedText,
+                    ]}
+                  >
+                    {walletInfo.isVerified ? "Verified" : "Unverified"}
+                  </Text>
+                </View>
               </View>
             </View>
           ) : (
-            <View style={styles.walletInfoContainer}>
-              <Info size={16} color="#9CA3AF" style={styles.walletInfoIcon} />
+            <View style={styles.walletNotFoundCard}>
+              <Info size={16} color="#9CA3AF" />
               <Text style={styles.walletNotFoundText}>
                 Address not found in ComicCoin ID
               </Text>
@@ -1369,55 +1369,87 @@ const styles = StyleSheet.create({
   },
 
   // New styles for ComicCoin ID wallet info
-  walletInfoContainer: {
+  walletInfoLoadingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 8,
-    paddingVertical: 6,
+    justifyContent: "center",
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: "#F5F3FF",
+    borderRadius: 8,
   },
-  walletInfoIcon: {
-    marginRight: 8,
-  },
-  walletInfoText: {
+  walletInfoLoadingText: {
+    marginLeft: 8,
     fontSize: 14,
     color: "#6B7280",
   },
-  walletInfoName: {
-    fontSize: 14,
-    fontWeight: "500",
+  walletInfoCard: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  walletNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  walletNameText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "600",
     color: "#111827",
-    marginRight: 8,
+  },
+  walletNotFoundCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 8,
   },
   walletNotFoundText: {
+    marginLeft: 8,
     fontSize: 14,
-    color: "#9CA3AF",
+    color: "#6B7280",
   },
   verificationBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
   },
   verifiedBadge: {
-    backgroundColor: "#D1FAE5",
+    backgroundColor: "#ECFDF5",
+    borderWidth: 1,
+    borderColor: "#A7F3D0",
   },
   unverifiedBadge: {
-    backgroundColor: "#FEF3C7",
-  },
-  rejectedBadge: {
-    backgroundColor: "#FEE2E2",
+    backgroundColor: "#FFFBEB",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
   },
   verificationText: {
     fontSize: 12,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   verifiedText: {
-    color: "#065F46",
+    color: "#059669",
   },
   unverifiedText: {
-    color: "#92400E",
-  },
-  rejectedText: {
-    color: "#B91C1C",
+    color: "#D97706",
   },
 
   // Modal wallet info styles
