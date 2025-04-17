@@ -31,6 +31,7 @@ var (
 	flagAdminLastName        string
 	flagAdminPhone           string
 	flagAdminCountry         string
+	flagAdminRegion          string
 	flagAdminTimezone        string
 	flagAdminPreVerified     bool
 )
@@ -65,6 +66,9 @@ func GetCreateAdminUserCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&flagAdminCountry, "country", "", "Admin user's country")
 	cmd.MarkFlagRequired("country")
+
+	cmd.Flags().StringVar(&flagAdminRegion, "region", "", "Admin user's region")
+	cmd.MarkFlagRequired("region")
 
 	cmd.Flags().StringVar(&flagAdminTimezone, "timezone", "", "Admin user's timezone")
 	cmd.MarkFlagRequired("timezone")
@@ -151,6 +155,7 @@ func doRunCreateAdminUser() {
 			Role:                      user.UserRoleRoot, // Set as Root/Admin user
 			Phone:                     flagAdminPhone,
 			Country:                   flagAdminCountry,
+			Region:                    flagAdminRegion,
 			Timezone:                  flagAdminTimezone,
 			WasEmailVerified:          flagAdminPreVerified, // Admin is automatically verified
 			AgreeTermsOfService:       true,                 // Admin users implicitly agree

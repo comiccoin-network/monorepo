@@ -309,7 +309,6 @@ func NewModule(
 	updateMeService := svc_me.NewUpdateMeService(
 		cfg,
 		logger,
-		userGetByWalletAddressUseCase,
 		userGetByIDUseCase,
 		userUpdateUseCase,
 	)

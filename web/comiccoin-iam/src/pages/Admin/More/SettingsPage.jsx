@@ -1,6 +1,7 @@
 // src/pages/Admin/More/SettingsPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
+import countryRegionData from "country-region-data/dist/data-umd";
 import {
   ArrowLeft,
   Check,
@@ -8,6 +9,9 @@ import {
   Info,
   X,
   RefreshCw,
+  Globe,
+  Clock,
+  ArrowDown,
 } from "lucide-react";
 
 import AdminTopNavigation from "../../../components/AdminTopNavigation";
@@ -16,18 +20,7 @@ import { usePutUpdateMe } from "../../../hooks/usePutUpdateMe";
 import { useAuth } from "../../../hooks/useAuth";
 import { useGetMe } from "../../../hooks/useGetMe";
 
-// Define country and timezone options for dropdown selection
-const countries = [
-  { value: "", label: "Select a country" },
-  { value: "us", label: "United States" },
-  { value: "ca", label: "Canada" },
-  { value: "gb", label: "United Kingdom" },
-  { value: "au", label: "Australia" },
-  { value: "de", label: "Germany" },
-  { value: "fr", label: "France" },
-  { value: "jp", label: "Japan" },
-];
-
+// Define timezone options for dropdown selection
 const timezones = [
   { value: "", label: "Select Timezone..." },
   { value: "UTC-12:00", label: "(UTC-12:00) International Date Line West" },
@@ -97,11 +90,26 @@ const SettingsPageContent = () => {
     email: "",
     first_name: "",
     last_name: "",
-    phone: null,
-    country: null,
+    phone: "",
+    country: "",
+    country_other: "",
+    region: "", // Added region field
     timezone: "",
     wallet_address: "",
   });
+
+  // Get available regions based on selected country
+  const getRegionsForCountry = (countryCode) => {
+    if (!countryCode) return [];
+
+    const country = countryRegionData.find(
+      (country) => country.countryShortCode === countryCode,
+    );
+
+    return country ? country.regions : [];
+  };
+
+  const availableRegions = getRegionsForCountry(formData.country);
 
   // State for form validation errors
   const [formErrors, setFormErrors] = useState({});
@@ -136,24 +144,34 @@ const SettingsPageContent = () => {
 
     // Use the latest user data from API if available
     if (latestUserData) {
+      // Convert country code to match the country-region-data format if needed
+      const countryCode = latestUserData.country
+        ? latestUserData.country.toLowerCase()
+        : "";
+
       setFormData({
         email: latestUserData.email || "",
-        first_name: latestUserData.first_name || "", // FIXED: Use snake_case from API
-        last_name: latestUserData.last_name || "", // FIXED: Use snake_case from API
-        phone: latestUserData.phone || null,
-        country: latestUserData.country || null,
+        first_name: latestUserData.first_name || "",
+        last_name: latestUserData.last_name || "",
+        phone: latestUserData.phone || "",
+        country: countryCode || "",
+        region: latestUserData.region || "",
         timezone: latestUserData.timezone || "",
-        wallet_address: latestUserData.wallet_address || "", // FIXED: Use snake_case from API
+        wallet_address: latestUserData.wallet_address || "",
       });
     }
     // Fall back to auth context user data if API data isn't available yet
     else if (user) {
+      // Convert country and handle camelCase to snake_case conversion
+      const countryCode = user.country ? user.country.toLowerCase() : "";
+
       setFormData({
         email: user.email || "",
         first_name: user.firstName || "",
         last_name: user.lastName || "",
-        phone: user.phone || null,
-        country: user.country || null,
+        phone: user.phone || "",
+        country: countryCode || "",
+        region: user.region || "",
         timezone: user.timezone || "",
         wallet_address: user.walletAddress || "",
       });
@@ -233,26 +251,51 @@ const SettingsPageContent = () => {
     },
   ];
 
-  const locationFields = [
-    {
-      id: "country",
-      label: "Country",
-      type: "select",
-      name: "country",
-      fieldKey: "country",
-      placeholder: "Select your country",
-      helperText: "Optional",
-    },
-    {
-      id: "timezone",
-      label: "Timezone",
-      type: "select",
-      name: "timezone",
-      fieldKey: "timezone",
-      placeholder: "Select your timezone",
-      required: true,
-    },
-  ];
+  // Handle input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear the error for this field when user starts typing
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  // Handle country dropdown change
+  const handleCountryChange = (e) => {
+    const countryCode = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      country: countryCode,
+      region: "", // Reset region when country changes
+      country_other: "", // Reset the "other" field when a country is selected
+    }));
+
+    // Clear country error if it exists
+    if (formErrors.country) {
+      setFormErrors((prev) => ({
+        ...prev,
+        country: undefined,
+      }));
+    }
+  };
+
+  // Handle region dropdown change
+  const handleRegionChange = (e) => {
+    const regionCode = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      region: regionCode,
+    }));
+
+    // Clear region error if it exists
+    if (formErrors.region) {
+      setFormErrors((prev) => ({
+        ...prev,
+        region: undefined,
+      }));
+    }
+  };
 
   // Comprehensive field rendering
   const renderField = (field) => {
@@ -313,11 +356,22 @@ const SettingsPageContent = () => {
               required={isRequired}
             >
               {field.fieldKey === "country"
-                ? countries.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))
+                ? [
+                    <option key="" value="">
+                      Select Country...
+                    </option>,
+                    countryRegionData.map((country) => (
+                      <option
+                        key={country.countryShortCode}
+                        value={country.countryShortCode}
+                      >
+                        {country.countryName}
+                      </option>
+                    )),
+                    <option key="other" value="other">
+                      Other (please specify)
+                    </option>,
+                  ]
                 : timezones.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
@@ -327,18 +381,7 @@ const SettingsPageContent = () => {
 
             {/* Dropdown arrow */}
             <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-              <svg
-                className="h-5 w-5 text-gray-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <ArrowDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
             </div>
 
             {/* Error indicator */}
@@ -351,47 +394,6 @@ const SettingsPageContent = () => {
               </div>
             )}
           </div>
-        ) : field.fieldKey === "wallet_address" ? (
-          <div className="relative">
-            <input
-              type="text"
-              id={field.id}
-              name={field.name}
-              value={formData[field.fieldKey]}
-              disabled={true}
-              className="w-full h-10 px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed font-mono text-sm"
-              placeholder={field.placeholder}
-            />
-            <button
-              type="button"
-              onClick={() => {
-                if (formData.wallet_address) {
-                  navigator.clipboard.writeText(formData.wallet_address);
-                  setStatusMessage({
-                    type: "success",
-                    message: "Wallet address copied to clipboard!",
-                  });
-                }
-              }}
-              className="absolute inset-y-0 right-0 px-3 flex items-center text-purple-600 hover:text-purple-800 transition-colors"
-              aria-label="Copy wallet address to clipboard"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
-            </button>
-          </div>
         ) : (
           <div className="relative">
             <input
@@ -403,46 +405,7 @@ const SettingsPageContent = () => {
                   ? formData.phone || ""
                   : formData[field.fieldKey]
               }
-              onChange={(e) => {
-                const value = e.target.value;
-                setFormData((prev) => ({
-                  ...prev,
-                  [field.fieldKey]:
-                    field.fieldKey === "phone" ? value || null : value,
-                }));
-
-                // Perform validation
-                let errorMessage = "";
-                switch (field.fieldKey) {
-                  case "email":
-                    if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                      errorMessage = "Please enter a valid email address";
-                    }
-                    break;
-                  case "first_name":
-                  case "last_name":
-                    if (value && value.length < 2) {
-                      errorMessage = `${field.label} must be at least 2 characters`;
-                    }
-                    break;
-                  case "phone":
-                    if (
-                      value &&
-                      !/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im.test(
-                        value,
-                      )
-                    ) {
-                      errorMessage = "Please enter a valid phone number";
-                    }
-                    break;
-                }
-
-                // Set or clear error
-                setFormErrors((prev) => ({
-                  ...prev,
-                  [field.fieldKey]: errorMessage,
-                }));
-              }}
+              onChange={field.onChange || handleInputChange}
               disabled={field.disabled}
               aria-invalid={hasError}
               placeholder={field.placeholder}
@@ -533,15 +496,21 @@ const SettingsPageContent = () => {
     }
 
     try {
-      // Prepare data for submission
+      // Prepare data for submission - include region if it exists
       const updateData = {
         email: formData.email,
         first_name: formData.first_name,
         last_name: formData.last_name,
         timezone: formData.timezone,
-        phone: formData.phone,
-        country: formData.country,
+        phone: formData.phone || null,
+        country: formData.country || null,
+        region: formData.region || null, // Include region
       };
+
+      // Handle "other" country if selected
+      if (formData.country === "other" && formData.country_other) {
+        updateData.country = formData.country_other;
+      }
 
       // Attempt to update user profile
       await updateMe(updateData);
@@ -722,34 +691,197 @@ const SettingsPageContent = () => {
               </div>
 
               <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
-                {locationFields.map(renderField)}
-              </div>
-            </section>
+                {/* Country dropdown */}
+                <div className="space-y-1">
+                  <label
+                    htmlFor="country"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Country
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Globe className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      id="country"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleCountryChange}
+                      className="w-full h-10 pl-10 pr-10 py-2 appearance-none border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Select Country...</option>
+                      {countryRegionData.map((country) => (
+                        <option
+                          key={country.countryShortCode}
+                          value={country.countryShortCode}
+                        >
+                          {country.countryName}
+                        </option>
+                      ))}
+                      <option value="other">Other (please specify)</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <ArrowDown className="h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+                  {formErrors.country && (
+                    <p className="text-red-500 text-xs mt-1 flex items-start gap-1">
+                      <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                      <span>{formErrors.country}</span>
+                    </p>
+                  )}
+                </div>
 
-            {/* Wallet Information Section */}
-            <section className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-              <div className="pb-1">
-                <h2 className="text-lg font-medium text-purple-800 mb-1">
-                  Wallet Information
-                </h2>
-                <p className="text-sm text-gray-600">
-                  Your ComicCoin wallet details
-                </p>
-              </div>
+                {/* Other Country - only shows if "other" is selected */}
+                {formData.country === "other" ? (
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="country_other"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Specify Country
+                    </label>
+                    <input
+                      type="text"
+                      id="country_other"
+                      name="country_other"
+                      value={formData.country_other}
+                      onChange={handleInputChange}
+                      className="w-full h-10 px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    {formErrors.country_other && (
+                      <p className="text-red-500 text-xs mt-1 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.country_other}</span>
+                      </p>
+                    )}
+                  </div>
+                ) : /* Show region selection if a country is selected and not "other" */
+                formData.country ? (
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="region"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      State/Province
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="region"
+                        name="region"
+                        value={formData.region}
+                        onChange={handleRegionChange}
+                        className="w-full h-10 px-3 py-2 appearance-none border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      >
+                        <option value="">Select State/Province...</option>
+                        {availableRegions.map((region) => (
+                          <option
+                            key={region.shortCode}
+                            value={region.shortCode}
+                          >
+                            {region.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                    {formErrors.region && (
+                      <p className="text-red-500 text-xs mt-1 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.region}</span>
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  /* Timezone field */
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="timezone"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Timezone <span className="text-red-500 ml-1">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Clock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        id="timezone"
+                        name="timezone"
+                        value={formData.timezone}
+                        onChange={handleInputChange}
+                        className={`w-full h-10 pl-10 pr-10 py-2 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          formErrors.timezone
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300"
+                        }`}
+                        required
+                      >
+                        {timezones.map((timezone) => (
+                          <option key={timezone.value} value={timezone.value}>
+                            {timezone.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                    {formErrors.timezone && (
+                      <p className="text-red-500 text-xs mt-1 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.timezone}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
 
-              <div className="space-y-4 sm:space-y-6">
-                {renderField({
-                  id: "wallet_address",
-                  label: "Wallet Address",
-                  type: "text",
-                  name: "wallet_address",
-                  fieldKey: "wallet_address",
-                  placeholder: "Wallet address",
-                  disabled: true,
-                  helperText:
-                    "Your wallet address is automatically generated and cannot be modified",
-                  customClasses: "font-mono text-sm",
-                })}
+                {/* Make sure Timezone is always shown if not in the grid above */}
+                {formData.country && (
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="timezone"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Timezone <span className="text-red-500 ml-1">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Clock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        id="timezone"
+                        name="timezone"
+                        value={formData.timezone}
+                        onChange={handleInputChange}
+                        className={`w-full h-10 pl-10 pr-10 py-2 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          formErrors.timezone
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300"
+                        }`}
+                        required
+                      >
+                        {timezones.map((timezone) => (
+                          <option key={timezone.value} value={timezone.value}>
+                            {timezone.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                    {formErrors.timezone && (
+                      <p className="text-red-500 text-xs mt-1 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.timezone}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </section>
 

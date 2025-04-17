@@ -9,7 +9,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -61,10 +60,6 @@ func (h *PutUpdateMeHTTPHandler) unmarshalRequest(
 		)
 		return nil, httperror.NewForSingleField(http.StatusBadRequest, "non_field_error", "payload structure is wrong")
 	}
-
-	// Defensive Code: For security purposes we need to remove all whitespaces from the email and lower the characters.
-	requestData.WalletAddress = strings.ToLower(requestData.WalletAddress)
-	requestData.WalletAddress = strings.ReplaceAll(requestData.WalletAddress, " ", "")
 
 	return &requestData, nil
 }
