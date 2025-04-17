@@ -13,6 +13,7 @@ export interface PublicWallet {
   location?: string;
   description?: string;
   avatarUrl?: string;
+  websiteUrl?: string;
   socialLinks?: Record<string, string>;
   // Add other fields as needed
 }
@@ -43,6 +44,7 @@ export const transformPublicWallet = (data: any): PublicWallet => {
     location: data.location,
     description: data.description,
     avatarUrl: data.avatar_url,
+    websiteUrl: data.website_url,
     socialLinks: data.social_links || {},
   };
 };
@@ -138,6 +140,7 @@ class PublicWalletDirectoryService {
         location: walletData.location,
         description: walletData.description,
         avatarUrl: walletData.avatar_url,
+        websiteUrl: walletData.website_url,
         socialLinks: walletData.social_links || {},
       };
     } catch (error) {
