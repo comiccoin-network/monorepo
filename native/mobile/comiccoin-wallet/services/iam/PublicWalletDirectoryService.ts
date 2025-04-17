@@ -70,25 +70,39 @@ class PublicWalletDirectoryService {
    */
   async getPublicWalletFromDirectoryByAddress(
     address: string,
+    options: { bypassCache?: boolean } = {},
   ): Promise<PublicWallet | null> {
     try {
       if (__DEV__) {
         console.log(`📞 Fetching public wallet for address: ${address}`);
       }
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      // Add cache-busting parameter if bypassCache is true
+      const cacheBuster = options.bypassCache ? `?cache=${Date.now()}` : "";
+
       const response = await fetch(
-        `${this.BASE_URL}/iam/api/v1/public-wallets-directory/${address}`,
+        `${this.BASE_URL}/iam/api/v1/public-wallets-directory/${address}${cacheBuster}`,
         {
           method: "GET",
           headers: this.defaultHeaders,
+          signal: controller.signal,
+          // Disable cache at the browser level too
+          cache: options.bypassCache ? "no-cache" : "default",
         },
       );
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          errorText || `Failed to fetch wallet (${response.status})`,
-        );
+        if (__DEV__) {
+          console.log(
+            `❌ API error (${response.status}): ${response.statusText}`,
+          );
+        }
+        return null;
       }
 
       const data = await response.json();
@@ -97,12 +111,40 @@ class PublicWalletDirectoryService {
         return null;
       }
 
-      return transformPublicWallet(data.public_wallet);
+      // Make sure we correctly parse the is_verified field
+      const walletData = data.public_wallet;
+
+      // Log the exact value we receive to debug
+      if (__DEV__) {
+        console.log("🔍 Wallet verification status:", {
+          raw: walletData.is_verified,
+          typeOf: typeof walletData.is_verified,
+          stringified: JSON.stringify(walletData.is_verified),
+        });
+      }
+
+      // Explicitly transform the wallet, converting is_verified to boolean
+      return {
+        id: walletData.id || "",
+        address: walletData.address || "",
+        name: walletData.name || walletData.display_name || "",
+        type: walletData.type || WALLET_TYPE.INDIVIDUAL,
+        status: walletData.status || WALLET_STATUS.ACTIVE,
+        createdAt: walletData.created_at || 0,
+        isVerified:
+          walletData.is_verified === true ||
+          walletData.is_verified === "true" ||
+          walletData.is_verified === 1,
+        location: walletData.location,
+        description: walletData.description,
+        avatarUrl: walletData.avatar_url,
+        socialLinks: walletData.social_links || {},
+      };
     } catch (error) {
       if (__DEV__) {
         console.log("❌ Error fetching public wallet:", error);
       }
-      throw error;
+      return null;
     }
   }
 

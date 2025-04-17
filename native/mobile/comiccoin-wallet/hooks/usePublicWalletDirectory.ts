@@ -240,40 +240,49 @@ export function usePublicWalletDirectoryList(
 /**
  * Custom hook for fetching a single wallet from directory by address
  */
+// hooks/usePublicWalletDirectory.ts
 export function useSinglePublicWalletFromDirectory(
   address: string | undefined | null,
   options: {
     enabled?: boolean;
     staleTime?: number;
     cacheTime?: number;
+    retryLimit?: number;
   } = {},
 ): UseSinglePublicWalletReturn {
   const queryClient = useQueryClient();
   const [error, setError] = useState<Error | null>(null);
 
+  // Add a state to force refetching
+  const [forceRefetch, setForceRefetch] = useState(0);
+
   const { data: wallet, isLoading } = useQuery({
-    queryKey: ["publicWalletDirectory", address],
+    queryKey: ["publicWalletDirectory", address, forceRefetch], // Add forceRefetch to key
     queryFn: async () => {
       if (!address) return null;
 
       try {
+        // Add a cache-busting parameter
         return await publicWalletDirectoryService.getPublicWalletFromDirectoryByAddress(
           address,
+          { bypassCache: true },
         );
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch wallet";
-        setError(new Error(errorMessage));
-        throw err;
+        console.log("Failed to fetch wallet directory data:", err);
+        return null;
       }
     },
     enabled: !!address && options.enabled !== false,
-    staleTime: options.staleTime || 5 * 60 * 1000, // 5 minutes default
-    cacheTime: options.cacheTime || 10 * 60 * 1000, // 10 minutes default
+    staleTime: 0, // Always consider data stale
+    cacheTime: 0, // Don't cache at all
+    retry: options.retryLimit || 1,
   });
 
   const refetch = async () => {
     if (address) {
+      // Force a refetch by incrementing state
+      setForceRefetch((prev) => prev + 1);
+      // Also invalidate any existing queries
       await queryClient.invalidateQueries(["publicWalletDirectory", address]);
     }
   };
