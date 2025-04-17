@@ -1,7 +1,6 @@
-// src/api/endpoints/publicWalletDirectoryApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/publicWalletDirectoryApi.js
 import { usePublicQuery } from "../../hooks/useApi";
 import axiosClient, { publicEndpoint } from "../axiosClient";
-import { transformPublicWallet } from "./publicWalletApi";
 
 // STATUS CONSTANTS
 export const WALLET_STATUS = {
