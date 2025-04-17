@@ -5,7 +5,7 @@ import config from "../../config";
 export interface PublicWallet {
   id: string;
   address: string;
-  displayName: string;
+  name: string;
   type: number;
   status: number;
   createdAt: number;
@@ -35,7 +35,7 @@ export const transformPublicWallet = (data: any): PublicWallet => {
   return {
     id: data.id || "",
     address: data.address || "",
-    displayName: data.display_name || "",
+    name: data.name || "",
     type: data.type || WALLET_TYPE.INDIVIDUAL,
     status: data.status || WALLET_STATUS.ACTIVE,
     createdAt: data.created_at || 0,

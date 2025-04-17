@@ -280,9 +280,7 @@ const SendScreen: React.FC = () => {
                   style={styles.walletInfoIcon}
                 />
               )}
-              <Text style={styles.walletInfoName}>
-                {walletInfo.displayName}
-              </Text>
+              <Text style={styles.walletInfoName}>{walletInfo.name}</Text>
               <View
                 style={[
                   styles.verificationBadge,
@@ -701,7 +699,7 @@ const SendScreen: React.FC = () => {
                       />
                     )}
                     <Text style={styles.modalWalletName}>
-                      {walletInfo.displayName}
+                      {walletInfo.name}
                     </Text>
                     <View
                       style={[
