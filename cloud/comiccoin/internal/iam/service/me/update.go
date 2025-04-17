@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -32,23 +33,26 @@ type UpdateMeService interface {
 }
 
 type updateMeServiceImpl struct {
-	config             *config.Configuration
-	logger             *slog.Logger
-	userGetByIDUseCase uc_user.UserGetByIDUseCase
-	userUpdateUseCase  uc_user.UserUpdateUseCase
+	config                *config.Configuration
+	logger                *slog.Logger
+	userGetByIDUseCase    uc_user.UserGetByIDUseCase
+	userGetByEmailUseCase uc_user.UserGetByEmailUseCase
+	userUpdateUseCase     uc_user.UserUpdateUseCase
 }
 
 func NewUpdateMeService(
 	config *config.Configuration,
 	logger *slog.Logger,
 	userGetByIDUseCase uc_user.UserGetByIDUseCase,
+	userGetByEmailUseCase uc_user.UserGetByEmailUseCase,
 	userUpdateUseCase uc_user.UserUpdateUseCase,
 ) UpdateMeService {
 	return &updateMeServiceImpl{
-		config:             config,
-		logger:             logger,
-		userGetByIDUseCase: userGetByIDUseCase,
-		userUpdateUseCase:  userUpdateUseCase,
+		config:                config,
+		logger:                logger,
+		userGetByIDUseCase:    userGetByIDUseCase,
+		userGetByEmailUseCase: userGetByEmailUseCase,
+		userUpdateUseCase:     userUpdateUseCase,
 	}
 }
 
@@ -74,8 +78,31 @@ func (svc *updateMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Updat
 	}
 
 	// Sanitization
+	req.Email = strings.ToLower(req.Email) // Ensure email is lowercase
 
 	e := make(map[string]string)
+	// Add any specific field validations here if needed. Example:
+	if req.FirstName == "" {
+		e["first_name"] = "First name is required"
+	}
+	if req.LastName == "" {
+		e["last_name"] = "Last name is required"
+	}
+	if req.Email == "" {
+		e["email"] = "Email is required"
+	}
+	if len(req.Email) > 255 {
+		e["email"] = "Email is too long"
+	}
+	if req.Phone == "" {
+		e["phone"] = "Phone confirm is required"
+	}
+	if req.Country == "" {
+		e["country"] = "Country is required"
+	}
+	if req.Timezone == "" {
+		e["timezone"] = "Password confirm is required"
+	}
 	if len(e) != 0 {
 		svc.logger.Warn("Failed validation",
 			slog.Any("error", e))
@@ -86,28 +113,59 @@ func (svc *updateMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Updat
 	// Get related records.
 	//
 
-	// Get the user account (aka "Me") and if it doesn't exist then we will
-	// create it immediately here and now.
+	// Get the user account (aka "Me").
 	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
 	if err != nil {
-		svc.logger.Error("Failed getting me", slog.Any("error", err))
+		// If it's a "not found" error, it's a critical issue since the ID came from the context.
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			err := fmt.Errorf("authenticated user does not exist for id: %v", userID.Hex())
+			svc.logger.Error("Failed getting authenticated user", slog.Any("error", err))
+			return nil, err
+		}
+		// Handle other potential errors during fetch.
+		svc.logger.Error("Failed getting user by ID", slog.Any("error", err))
 		return nil, err
 	}
+	// Defensive check, though GetByID should return ErrNoDocuments if not found.
 	if user == nil {
-		err := fmt.Errorf("User does not exist for id: %v", userID.Hex())
-		svc.logger.Error("Failed getting me", slog.Any("error", err))
+		err := fmt.Errorf("user is nil after lookup for id: %v", userID.Hex())
+		svc.logger.Error("Failed getting user", slog.Any("error", err))
 		return nil, err
+	}
+
+	//
+	// Check if the requested email is already taken by another user.
+	//
+	if req.Email != user.Email {
+		existingUser, err := svc.userGetByEmailUseCase.Execute(sessCtx, req.Email)
+		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+			svc.logger.Error("Failed checking existing email", slog.String("email", req.Email), slog.Any("error", err))
+			return nil, err // Internal Server Error
+		}
+		if existingUser != nil {
+			// Email exists. Check if it belongs to the *current* user (which shouldn't happen based on the outer if, but defensive check).
+			// The important check is implicit: if existingUser is not nil, the email is taken.
+			// We already know req.Email != user.Email, so if existingUser is found, it *must* be another user.
+			svc.logger.Warn("Attempted to update to an email already in use",
+				slog.String("user_id", userID.Hex()),
+				slog.String("existing_user_id", existingUser.ID.Hex()),
+				slog.String("email", req.Email))
+			e["email"] = "This email address is already in use."
+			return nil, httperror.NewForBadRequest(&e)
+		}
+		// If err is mongo.ErrNoDocuments or existingUser is nil, the email is available.
 	}
 
 	//
 	// Update local database.
 	//
 
+	// Apply changes from request DTO to the user object
 	user.Email = req.Email
 	user.FirstName = req.FirstName
 	user.LastName = req.LastName
-	user.Name = fmt.Sprintf("%v %v", req.FirstName, req.LastName)
-	user.LexicalName = fmt.Sprintf("%v, %v", req.LastName, req.FirstName)
+	user.Name = fmt.Sprintf("%s %s", req.FirstName, req.LastName)
+	user.LexicalName = fmt.Sprintf("%s, %s", req.LastName, req.FirstName)
 	user.Phone = req.Phone
 	user.Country = req.Country
 	user.Region = req.Region
@@ -115,14 +173,17 @@ func (svc *updateMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Updat
 	user.AgreePromotions = req.AgreePromotions
 	user.AgreeToTrackingAcrossThirdPartyAppsAndServices = req.AgreeToTrackingAcrossThirdPartyAppsAndServices
 
+	// Persist changes
 	if err := svc.userUpdateUseCase.Execute(sessCtx, user); err != nil {
-		svc.logger.Debug("Failed updating user", slog.Any("error", err))
+		svc.logger.Error("Failed updating user", slog.Any("error", err), slog.String("user_id", user.ID.Hex()))
+		// Consider mapping specific DB errors (like constraint violations) to HTTP errors if applicable
 		return nil, err
 	}
 
-	svc.logger.Debug("User updated ",
-		slog.Any("user_id", user.ID))
+	svc.logger.Debug("User updated successfully",
+		slog.String("user_id", user.ID.Hex()))
 
+	// Return updated user details
 	return &MeResponseDTO{
 		ID:              user.ID,
 		Email:           user.Email,
@@ -132,6 +193,7 @@ func (svc *updateMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Updat
 		LexicalName:     user.LexicalName,
 		Phone:           user.Phone,
 		Country:         user.Country,
+		Region:          user.Region, // Added Region
 		Timezone:        user.Timezone,
 		AgreePromotions: user.AgreePromotions,
 		AgreeToTrackingAcrossThirdPartyAppsAndServices: user.AgreeToTrackingAcrossThirdPartyAppsAndServices,

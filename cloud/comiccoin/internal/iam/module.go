@@ -310,6 +310,7 @@ func NewModule(
 		cfg,
 		logger,
 		userGetByIDUseCase,
+		userGetByEmailUseCase,
 		userUpdateUseCase,
 	)
 
