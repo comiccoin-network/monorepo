@@ -192,30 +192,92 @@ const SettingsPageContent = () => {
     if (isSuccess) {
       setStatusMessage({
         type: "success",
-        message: "Settings updated successfully!", // Shorter success message
+        message: "Settings updated successfully!",
       });
-
-      // Refresh user data in the background
       refreshUserData();
-
-      // Set a timer to redirect after showing the success message
       const redirectTimer = setTimeout(() => {
-        navigate("/admin/more"); // Redirect to /admin/more
-      }, 1500); // Redirect after 1.5 seconds
-
-      // Cleanup the timer if the component unmounts or dependencies change
+        navigate("/admin/more");
+      }, 1500);
       return () => clearTimeout(redirectTimer);
     } else if (updateError) {
-      // Extract the error message from the server response if available
-      const errorMessage =
-        updateError?.response?.data?.message || // Check for typical Axios error structure
-        updateError?.message || // Standard JS error message
-        "Failed to update settings. Please try again."; // Fallback message
+      let generalErrorMessage = "Failed to update settings. Please try again."; // Default fallback
+      let specificFieldErrors = {};
 
+      // Check if the error response has structured data (like Axios error)
+      if (updateError?.response?.data) {
+        const errorData = updateError.response.data;
+
+        // Case 1: Backend returns a structured object with field errors (e.g., { email: "...", field: "..." })
+        // Exclude objects that just have a 'message' key, treat those as general errors.
+        if (
+          typeof errorData === "object" &&
+          errorData !== null &&
+          !(Object.keys(errorData).length === 1 && errorData.message)
+        ) {
+          let firstFieldErrorMsg = null;
+          for (const key in errorData) {
+            if (Object.hasOwnProperty.call(errorData, key)) {
+              const errorValue = errorData[key];
+              let fieldMsg = null;
+              // Handle string or array of strings from backend
+              if (typeof errorValue === "string") {
+                fieldMsg = errorValue;
+              } else if (
+                Array.isArray(errorValue) &&
+                errorValue.length > 0 &&
+                typeof errorValue[0] === "string"
+              ) {
+                fieldMsg = errorValue[0]; // Take the first error if it's an array
+              }
+
+              if (fieldMsg) {
+                specificFieldErrors[key] = fieldMsg;
+                if (!firstFieldErrorMsg) {
+                  // Use the first identified field error for the general status message
+                  // Could also be a generic message like "Please correct the errors below."
+                  firstFieldErrorMsg = fieldMsg;
+                }
+              }
+            }
+          }
+          // If we found field errors, update the general message
+          if (Object.keys(specificFieldErrors).length > 0) {
+            generalErrorMessage =
+              firstFieldErrorMsg || "Please check the form for errors.";
+          }
+        }
+        // Case 2: Backend returns an object with a 'message' property (e.g., { message: "Error details" })
+        else if (errorData.message && typeof errorData.message === "string") {
+          generalErrorMessage = errorData.message;
+        }
+        // Case 3: Backend returns a simple string error
+        else if (typeof errorData === "string") {
+          generalErrorMessage = errorData;
+        }
+      }
+      // Case 4: Standard JavaScript error object without response data
+      else if (updateError?.message) {
+        generalErrorMessage = updateError.message;
+      }
+
+      // Update the states
       setStatusMessage({
         type: "error",
-        message: errorMessage,
+        message: generalErrorMessage,
       });
+
+      // Set field errors if they were found
+      if (Object.keys(specificFieldErrors).length > 0) {
+        setFormErrors((prev) => ({ ...prev, ...specificFieldErrors }));
+        // Optional: Focus the first field with a backend error
+        const firstErrorField = Object.keys(specificFieldErrors)[0];
+        // Ensure the ID matches the field key expected by the backend
+        const errorElement = document.getElementById(firstErrorField);
+        if (errorElement) {
+          // Small delay to allow React to render updates before focusing
+          setTimeout(() => errorElement.focus(), 100);
+        }
+      }
     }
   }, [isSuccess, updateError, refreshUserData, navigate]);
 
@@ -432,7 +494,7 @@ const SettingsPageContent = () => {
     setStatusMessage({ type: null, message: "" }); // Clear previous messages
     setFormErrors({}); // Clear previous form errors
 
-    // Comprehensive validation across all required fields
+    // Basic frontend validation (backend validation is handled by the useEffect hook)
     const errors = {};
 
     // Email validation
@@ -455,7 +517,7 @@ const SettingsPageContent = () => {
       errors.timezone = "Timezone is required";
     }
 
-    // If there are validation errors, prevent submission
+    // If there are frontend validation errors, prevent submission
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
 
@@ -482,11 +544,11 @@ const SettingsPageContent = () => {
       };
 
       // Attempt to update user profile
-      // The result (success/error) will be handled by the useEffect hook monitoring isSuccess and updateError
+      // The result (success/error including backend validation) will be handled by the useEffect hook monitoring isSuccess and updateError
       await updateMe(updateData);
     } catch (err) {
-      // This catch block might be redundant if usePutUpdateMe handles errors,
-      // but kept for safety to catch unexpected issues during the updateMe call itself.
+      // This catch block handles errors during the *initiation* of the updateMe call,
+      // not necessarily the backend response errors (which are handled in useEffect).
       console.error("Update initiation failed", err);
 
       // Show a generic error message if the update call itself throws an error
@@ -495,7 +557,7 @@ const SettingsPageContent = () => {
         message:
           err instanceof Error
             ? err.message
-            : "An unexpected error occurred. Please try again.",
+            : "An unexpected error occurred during submission. Please try again.",
       });
     }
   };
@@ -621,7 +683,7 @@ const SettingsPageContent = () => {
             onSubmit={handleSubmit}
             className="divide-y divide-gray-100"
             aria-labelledby="settings-heading"
-            noValidate
+            noValidate // Disable browser validation, rely on React state and backend
           >
             {/* Personal Information Section */}
             <section className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -682,7 +744,11 @@ const SettingsPageContent = () => {
                       name="country"
                       value={formData.country}
                       onChange={handleCountryChange}
-                      className="w-full h-10 pl-10 pr-10 py-2 appearance-none border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      aria-invalid={!!formErrors.country}
+                      aria-describedby={
+                        formErrors.country ? "country-error" : undefined
+                      }
+                      className={`w-full h-10 pl-10 pr-10 py-2 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${formErrors.country ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-purple-500"}`}
                     >
                       <option value="">Select Country...</option>
                       {countryRegionData.map((country) => (
@@ -698,9 +764,17 @@ const SettingsPageContent = () => {
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <ArrowDown className="h-5 w-5 text-gray-400" />
                     </div>
+                    {formErrors.country && (
+                      <div className="absolute inset-y-0 right-9 flex items-center pr-3 pointer-events-none">
+                        <AlertCircle className="h-5 w-5 text-red-500" />
+                      </div>
+                    )}
                   </div>
                   {formErrors.country && (
-                    <p className="text-red-500 text-xs mt-1 flex items-start gap-1">
+                    <p
+                      id="country-error"
+                      className="text-red-500 text-xs mt-1 flex items-start gap-1"
+                    >
                       <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                       <span>{formErrors.country}</span>
                     </p>
@@ -723,7 +797,11 @@ const SettingsPageContent = () => {
                         value={formData.region}
                         onChange={handleRegionChange}
                         disabled={!availableRegions.length} // Disable if no regions
-                        className={`w-full h-10 px-3 py-2 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${!availableRegions.length ? "bg-gray-100 cursor-not-allowed" : "border-gray-300"}`}
+                        aria-invalid={!!formErrors.region}
+                        aria-describedby={
+                          formErrors.region ? "region-error" : undefined
+                        }
+                        className={`w-full h-10 px-3 py-2 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${formErrors.region ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-purple-500"} ${!availableRegions.length ? "bg-gray-100 cursor-not-allowed" : ""}`}
                       >
                         <option value="">
                           {availableRegions.length
@@ -742,9 +820,17 @@ const SettingsPageContent = () => {
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <ArrowDown className="h-5 w-5 text-gray-400" />
                       </div>
+                      {formErrors.region && (
+                        <div className="absolute inset-y-0 right-9 flex items-center pr-3 pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
                     {formErrors.region && (
-                      <p className="text-red-500 text-xs mt-1 flex items-start gap-1">
+                      <p
+                        id="region-error"
+                        className="text-red-500 text-xs mt-1 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{formErrors.region}</span>
                       </p>
@@ -768,10 +854,10 @@ const SettingsPageContent = () => {
                         name="timezone"
                         value={formData.timezone}
                         onChange={handleInputChange}
-                        className={`w-full h-10 pl-10 pr-10 py-2 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                        className={`w-full h-10 pl-10 pr-10 py-2 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
                           formErrors.timezone
                             ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300"
+                            : "border-gray-300 focus:ring-purple-500"
                         }`}
                         required
                         aria-invalid={!!formErrors.timezone}
@@ -824,10 +910,10 @@ const SettingsPageContent = () => {
                         name="timezone"
                         value={formData.timezone}
                         onChange={handleInputChange}
-                        className={`w-full h-10 pl-10 pr-10 py-2 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                        className={`w-full h-10 pl-10 pr-10 py-2 appearance-none border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
                           formErrors.timezone
                             ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300"
+                            : "border-gray-300 focus:ring-purple-500"
                         }`}
                         required
                         aria-invalid={!!formErrors.timezone}
