@@ -106,7 +106,7 @@ func (svc *updateMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Updat
 	user.Email = req.Email
 	user.FirstName = req.FirstName
 	user.LastName = req.LastName
-	user.FirstName = fmt.Sprintf("%v %v", req.FirstName, req.LastName)
+	user.Name = fmt.Sprintf("%v %v", req.FirstName, req.LastName)
 	user.LexicalName = fmt.Sprintf("%v, %v", req.LastName, req.FirstName)
 	user.Phone = req.Phone
 	user.Country = req.Country

@@ -148,7 +148,7 @@ const SettingsPageContent = () => {
 
       setFormData({
         email: latestUserData.email || "",
-        first_name: latestUserData.first_name || "",
+        first_name: latestUserData.first_name || "", // Correct: Assigns API first_name
         last_name: latestUserData.last_name || "",
         phone: latestUserData.phone || "",
         country: countryCode || "",
@@ -164,7 +164,7 @@ const SettingsPageContent = () => {
 
       setFormData({
         email: user.email || "",
-        first_name: user.firstName || "",
+        first_name: user.firstName || "", // Correct: Assigns context firstName
         last_name: user.lastName || "",
         phone: user.phone || "",
         country: countryCode || "",
