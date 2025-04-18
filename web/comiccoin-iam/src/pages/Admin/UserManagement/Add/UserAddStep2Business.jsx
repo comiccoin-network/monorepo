@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
-import { Link, useHistory } from "react-router"; // <-- Import useHistory
+import { Link, useNavigate } from "react-router";
 
 // Define constants
 // Timezones for dropdown
@@ -100,8 +100,8 @@ const UserAddStep2Business = ({
   // nextStep, // Keep prop definition if parent uses it, but we won't call it for navigation
   formErrors = {}, // Provide default value for formErrors
 }) => {
-  const history = useHistory(); // <-- Get history object
   const [localErrors, setLocalErrors] = useState({});
+  const navigate = useNavigate();
 
   // <-- Load data from localStorage on component mount
   useEffect(() => {
@@ -331,7 +331,7 @@ const UserAddStep2Business = ({
         localStorage.setItem("userAddFormData", JSON.stringify(formData));
 
         // Navigate to the next step
-        history.push("/admin/users/add/role");
+        navigate("/admin/users/add/role");
       } catch (error) {
         console.error("Failed to save userAddFormData to localStorage", error);
         // Handle potential storage error (e.g., quota exceeded)
