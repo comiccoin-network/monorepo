@@ -250,11 +250,12 @@ export function prepareUserForApi(user) {
     address_line2: user.addressLine2,
     wallet_address: user.walletAddress,
     is_email_verified: user.wasEmailVerified,
-    profile_verification_status: user.profileVerificationStatus,
+    profile_verification_status: parseInt(user.profileVerificationStatus),
     website_url: user.websiteURL,
     description: user.description,
     comic_book_store_name: user.comicBookStoreName,
     status: user.status,
+    agree_terms_of_service: user.agreeTermsOfService,
     agree_promotions: user.agreePromotions,
     agree_to_tracking_across_third_party_apps_and_services:
       user.agreeToTrackingAcrossThirdPartyAppsAndServices,
