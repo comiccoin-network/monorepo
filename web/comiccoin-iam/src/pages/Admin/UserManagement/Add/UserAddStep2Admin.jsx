@@ -48,13 +48,14 @@ const timezones = [
 const UserAddStep2Admin = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
+    role: 1, // USER_ROLE.ROOT = 1
     email: "",
     password: "",
     firstName: "",
     lastName: "",
     phone: "",
     status: USER_STATUS.ACTIVE,
-    profileVerificationStatus: PROFILE_VERIFICATION_STATUS.UNVERIFIED,
+    profileVerificationStatus: PROFILE_VERIFICATION_STATUS.APPROVED,
     isEmailVerified: true,
     country: "",
     region: "",
