@@ -78,32 +78,6 @@ function MorePageContent() {
             </div>
           </button>
 
-          {/* Delete Account Card */}
-          <button
-            onClick={handleNavigateToDeleteAccount}
-            className="bg-white rounded-xl p-6 shadow-md border border-red-100 hover:shadow-lg transition-all duration-300 text-left w-full hover:border-red-400"
-            aria-label="Go to delete account page"
-          >
-            <div className="flex flex-col items-center text-center">
-              <div className="bg-red-100 rounded-full p-4 mb-4 transform transition-transform duration-300 hover:scale-110">
-                <Trash2 className="h-8 w-8 text-red-600" aria-hidden="true" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">
-                Delete Account
-              </h2>
-              <p className="text-gray-600 mb-4 flex-grow">
-                Permanently delete your account and all associated data
-              </p>
-              <div className="flex items-center text-red-600 font-medium group">
-                <span>Delete Account</span>
-                <ArrowRight
-                  className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform"
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-          </button>
-
           {/* Logout Card */}
           <button
             onClick={handleLogout}

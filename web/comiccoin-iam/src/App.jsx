@@ -49,7 +49,6 @@ import AdminUpdateUserPage from "./pages/Admin/UserManagement/UpdatePage";
 import AdminAddWalletPage from "./pages/Admin/UserManagement/PublicWallet/AddPage";
 import AdminUserPublicWalletDeletePage from "./pages/Admin/UserManagement/PublicWallet/DeletePage";
 import AdminMorePage from "./pages/Admin/More/Page";
-import AdminDeleteAccountPage from "./pages/Admin/More/DeleteAccountPage";
 import AdminSettingsPage from "./pages/Admin/More/SettingsPage";
 import AdminPublicWalletListPage from "./pages/Admin/PublicWallet/ListPage";
 import AdminPublicWalletDetailPage from "./pages/Admin/PublicWallet/DetailPage";
@@ -358,15 +357,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AdminSettingsPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/admin/delete-account"
-              element={
-                <ProtectedRoute>
-                  <AdminDeleteAccountPage />
                 </ProtectedRoute>
               }
             />
