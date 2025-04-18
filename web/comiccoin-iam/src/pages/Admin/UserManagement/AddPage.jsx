@@ -1,6 +1,7 @@
 // monorepo/web/comiccoin-iam/src/pages/Admin/UserManagement/AddPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
+import countryRegionData from "country-region-data/dist/data-umd";
 import {
   User,
   Save,
@@ -22,8 +23,9 @@ import {
   Calendar,
   Type,
   FileText,
-  Wallet,
   BookOpen,
+  Clock,
+  ArrowDown,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import AdminTopNavigation from "../../../components/AdminTopNavigation";
@@ -34,6 +36,29 @@ import {
   USER_STATUS,
   PROFILE_VERIFICATION_STATUS,
 } from "../../../hooks/useUser";
+
+// Define timezone options for dropdown selection - copied from SettingsPage
+const timezones = [
+  { value: "", label: "Select Timezone..." },
+  { value: "UTC-12:00", label: "(UTC-12:00) International Date Line West" },
+  { value: "UTC-11:00", label: "(UTC-11:00) Samoa" },
+  { value: "UTC-10:00", label: "(UTC-10:00) Hawaii" },
+  { value: "UTC-09:00", label: "(UTC-09:00) Alaska" },
+  { value: "UTC-08:00", label: "(UTC-08:00) Pacific Time (US & Canada)" },
+  { value: "UTC-07:00", label: "(UTC-07:00) Mountain Time (US & Canada)" },
+  { value: "UTC-06:00", label: "(UTC-06:00) Central Time (US & Canada)" },
+  { value: "UTC-05:00", label: "(UTC-05:00) Eastern Time (US & Canada)" },
+  { value: "UTC-04:00", label: "(UTC-04:00) Atlantic Time (Canada)" },
+  { value: "UTC-03:00", label: "(UTC-03:00) Brasilia" },
+  { value: "UTC+00:00", label: "(UTC+00:00) London, Dublin, Lisbon" },
+  { value: "UTC+01:00", label: "(UTC+01:00) Berlin, Paris, Rome, Madrid" },
+  { value: "UTC+02:00", label: "(UTC+02:00) Athens, Istanbul, Cairo" },
+  { value: "UTC+03:00", label: "(UTC+03:00) Moscow, Baghdad" },
+  { value: "UTC+05:30", label: "(UTC+05:30) New Delhi, Mumbai" },
+  { value: "UTC+08:00", label: "(UTC+08:00) Beijing, Singapore, Hong Kong" },
+  { value: "UTC+09:00", label: "(UTC+09:00) Tokyo, Seoul" },
+  { value: "UTC+10:00", label: "(UTC+10:00) Sydney, Melbourne" },
+];
 
 const UserAddPage = () => {
   const navigate = useNavigate();
@@ -53,14 +78,13 @@ const UserAddPage = () => {
     password: "",
     role: USER_ROLE.INDIVIDUAL,
     phone: "",
-    country: "",
+    country: "", // Will store country code (e.g., 'US', 'CA')
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
-    region: "",
+    region: "", // Will store region code
     city: "",
     postalCode: "",
     addressLine1: "",
     addressLine2: "",
-    walletAddress: "",
     isEmailVerified: false,
     profileVerificationStatus: PROFILE_VERIFICATION_STATUS.UNVERIFIED,
     websiteURL: "",
@@ -74,6 +98,18 @@ const UserAddPage = () => {
 
   // Create ref for form card to scroll to on error
   const formCardRef = useRef(null);
+
+  // Get available regions based on selected country
+  const getRegionsForCountry = (countryCode) => {
+    if (!countryCode) return [];
+    const country = countryRegionData.find(
+      (country) => country.countryShortCode === countryCode,
+    );
+    return country ? country.regions : [];
+  };
+
+  // Available regions for the selected country
+  const availableRegions = getRegionsForCountry(formData.country);
 
   // Reset state when navigating away
   useEffect(() => {
@@ -161,6 +197,41 @@ const UserAddPage = () => {
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  // Handle country dropdown change
+  const handleCountryChange = (e) => {
+    const countryCode = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      country: countryCode,
+      region: "", // Reset region when country changes
+    }));
+
+    // Clear country error if it exists
+    if (errors.country) {
+      setErrors((prev) => ({
+        ...prev,
+        country: undefined,
+      }));
+    }
+  };
+
+  // Handle region dropdown change
+  const handleRegionChange = (e) => {
+    const regionCode = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      region: regionCode,
+    }));
+
+    // Clear region error if it exists
+    if (errors.region) {
+      setErrors((prev) => ({
+        ...prev,
+        region: undefined,
+      }));
     }
   };
 
@@ -467,6 +538,9 @@ const UserAddPage = () => {
                         </option>
                         <option value={USER_ROLE.INDIVIDUAL}>Individual</option>
                       </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
                     </div>
                     {errors.role && (
                       <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -538,6 +612,9 @@ const UserAddPage = () => {
                         <option value={USER_STATUS.LOCKED}>Locked</option>
                         <option value={USER_STATUS.ARCHIVED}>Archived</option>
                       </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
                     </div>
                     {errors.status && (
                       <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -587,6 +664,9 @@ const UserAddPage = () => {
                           Rejected
                         </option>
                       </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
                     </div>
                     {errors.profileVerificationStatus && (
                       <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -709,7 +789,7 @@ const UserAddPage = () => {
                   Location Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Timezone */}
+                  {/* Timezone - Updated to dropdown */}
                   <div>
                     <label
                       htmlFor="timezone"
@@ -719,21 +799,29 @@ const UserAddPage = () => {
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Globe className="h-5 w-5 text-gray-400" />
+                        <Clock className="h-5 w-5 text-gray-400" />
                       </div>
-                      <input
-                        type="text"
+                      <select
                         id="timezone"
                         name="timezone"
                         value={formData.timezone}
                         onChange={handleInputChange}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                        className={`w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
                           hasError("timezone")
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
                         }`}
                         required
-                      />
+                      >
+                        {timezones.map((timezone) => (
+                          <option key={timezone.value} value={timezone.value}>
+                            {timezone.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
                     </div>
                     {errors.timezone && (
                       <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -743,7 +831,7 @@ const UserAddPage = () => {
                     )}
                   </div>
 
-                  {/* Country */}
+                  {/* Country - Updated to dropdown */}
                   <div>
                     <label
                       htmlFor="country"
@@ -755,19 +843,30 @@ const UserAddPage = () => {
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Globe className="h-5 w-5 text-gray-400" />
                       </div>
-                      <input
-                        type="text"
+                      <select
                         id="country"
                         name="country"
                         value={formData.country}
-                        onChange={handleInputChange}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                        onChange={handleCountryChange}
+                        className={`w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
                           hasError("country")
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
                         }`}
-                        placeholder="United States"
-                      />
+                      >
+                        <option value="">Select Country...</option>
+                        {countryRegionData.map((country) => (
+                          <option
+                            key={country.countryShortCode}
+                            value={country.countryShortCode}
+                          >
+                            {country.countryName}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
                     </div>
                     {errors.country && (
                       <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -811,7 +910,7 @@ const UserAddPage = () => {
                     )}
                   </div>
 
-                  {/* Region/State */}
+                  {/* Region/State - Updated to dynamic dropdown */}
                   <div>
                     <label
                       htmlFor="region"
@@ -823,19 +922,35 @@ const UserAddPage = () => {
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <MapPin className="h-5 w-5 text-gray-400" />
                       </div>
-                      <input
-                        type="text"
+                      <select
                         id="region"
                         name="region"
                         value={formData.region}
-                        onChange={handleInputChange}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                        onChange={handleRegionChange}
+                        disabled={!availableRegions.length} // Disable if no regions
+                        className={`w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
                           hasError("region")
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
-                        }`}
-                        placeholder="NY"
-                      />
+                        } ${!availableRegions.length ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                      >
+                        <option value="">
+                          {availableRegions.length
+                            ? "Select State/Province..."
+                            : "No states/provinces available"}
+                        </option>
+                        {availableRegions.map((region) => (
+                          <option
+                            key={region.shortCode}
+                            value={region.shortCode}
+                          >
+                            {region.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
                     </div>
                     {errors.region && (
                       <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -945,51 +1060,6 @@ const UserAddPage = () => {
                         {errors.addressLine2}
                       </p>
                     )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Blockchain Information */}
-              <div className="md:col-span-2 border-b border-gray-200 pb-4">
-                <h3 className="font-medium text-gray-800 mb-4">
-                  Blockchain Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Wallet Address */}
-                  <div>
-                    <label
-                      htmlFor="walletAddress"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Wallet Address
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Wallet className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        id="walletAddress"
-                        name="walletAddress"
-                        value={formData.walletAddress}
-                        onChange={handleInputChange}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                          hasError("walletAddress")
-                            ? "border-red-500 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="0x..."
-                      />
-                    </div>
-                    {errors.walletAddress && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.walletAddress}
-                      </p>
-                    )}
-                    <p className="mt-1 text-xs text-gray-500">
-                      ComicCoin wallet address (optional)
-                    </p>
                   </div>
                 </div>
               </div>
