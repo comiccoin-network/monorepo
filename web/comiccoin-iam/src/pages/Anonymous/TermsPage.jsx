@@ -265,7 +265,7 @@ function TermsPage() {
             </h2>
             <p className="text-gray-700 mb-6">
               Questions about the Terms of Service should be sent to us at
-              support@comiccoin.network.
+              hello@comiccoin.ca.
             </p>
           </div>
         </div>

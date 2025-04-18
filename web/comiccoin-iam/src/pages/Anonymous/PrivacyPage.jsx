@@ -224,7 +224,7 @@ function PrivacyPage() {
             </h2>
             <p className="text-gray-700 mb-6">
               If you have any questions or need help, simply email
-              support@comiccoin.network and we will be glad to assist.
+              hello@comiccoin.ca and we will be glad to assist.
             </p>
           </div>
         </div>
