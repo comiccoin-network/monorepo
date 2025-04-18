@@ -120,148 +120,14 @@ const UserAddPage = () => {
     };
   }, [reset]);
 
-  // Map snake_case backend field names to camelCase form field names
-  const mapBackendFieldToFormField = (backendField) => {
-    // Map of backend field names to form field names
-    const fieldMap = {
-      email: "email",
-      password: "password",
-      first_name: "firstName",
-      last_name: "lastName",
-      role: "role",
-      phone: "phone",
-      country: "country",
-      timezone: "timezone",
-      region: "region",
-      city: "city",
-      postal_code: "postalCode",
-      address_line1: "addressLine1",
-      address_line2: "addressLine2",
-      is_email_verified: "isEmailVerified",
-      profile_verification_status: "profileVerificationStatus",
-      website_url: "websiteURL",
-      description: "description",
-      comic_book_store_name: "comicBookStoreName",
-      status: "status",
-      agree_terms_of_service: "agreeTermsOfService",
-      agree_promotions: "agreePromotions",
-      agree_to_tracking_across_third_party_apps_and_services:
-        "agreeToTrackingAcrossThirdPartyAppsAndServices",
-    };
-
-    return fieldMap[backendField] || backendField; // Return mapped name or original if not found
-  };
-
-  // Handle API errors when they occur
+  // We'll handle errors directly in the form submission handler
+  // No need for error handling in useEffect which could conflict
   useEffect(() => {
-    if (error) {
-      console.error("Error detected:", error);
-
-      let errorMessages = []; // List to collect all error messages for the error box
-      let specificFieldErrors = {};
-
-      // Check for response data with field validation errors
-      if (error.response && error.response.data) {
-        console.log("Response data:", error.response.data);
-
-        // Handle object with field validation errors
-        if (
-          typeof error.response.data === "object" &&
-          !Array.isArray(error.response.data)
-        ) {
-          // Extract all field errors
-          for (const key in error.response.data) {
-            if (Object.hasOwnProperty.call(error.response.data, key)) {
-              // Skip the 'message' field if it's the only field in the object
-              if (
-                key === "message" &&
-                Object.keys(error.response.data).length === 1
-              ) {
-                errorMessages.push(error.response.data.message);
-                continue;
-              }
-
-              const errorValue = error.response.data[key];
-              let fieldMsg = null;
-
-              // Handle string or array of strings from backend
-              if (typeof errorValue === "string") {
-                fieldMsg = errorValue;
-              } else if (
-                Array.isArray(errorValue) &&
-                errorValue.length > 0 &&
-                typeof errorValue[0] === "string"
-              ) {
-                fieldMsg = errorValue[0]; // Take the first error if it's an array
-              }
-
-              if (fieldMsg) {
-                // Map backend field name to form field name
-                const formFieldName = mapBackendFieldToFormField(key);
-                specificFieldErrors[formFieldName] = fieldMsg;
-                errorMessages.push(fieldMsg);
-              }
-            }
-          }
-        }
-        // Handle error with message property
-        else if (
-          error.response.data.message &&
-          typeof error.response.data.message === "string"
-        ) {
-          errorMessages.push(error.response.data.message);
-        }
-        // Handle string error message
-        else if (typeof error.response.data === "string") {
-          errorMessages.push(error.response.data);
-        }
-      }
-      // Handle error with message property
-      else if (error.message && typeof error.message === "string") {
-        errorMessages.push(error.message);
-      }
-
-      // If we have no error messages, add a generic one
-      if (errorMessages.length === 0) {
-        errorMessages.push("Failed to create user. Please try again.");
-      }
-
-      // Update the states
-      setGeneralError(errorMessages.join(" • ")); // Join all errors with a bullet separator
-
-      // Set field errors if they were found
-      if (Object.keys(specificFieldErrors).length > 0) {
-        setFormErrors(specificFieldErrors);
-
-        // Focus the first field with a backend error
-        const firstErrorField = Object.keys(specificFieldErrors)[0];
-        // Ensure the ID matches the field key in the form (not the backend)
-        const errorElement = document.getElementById(firstErrorField);
-        if (errorElement && statusRef.current) {
-          // Small delay to allow React to render updates before scrolling and focusing
-          setTimeout(() => {
-            statusRef.current.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-            errorElement.focus();
-          }, 100);
-        }
-      } else if (formCardRef.current) {
-        // If no specific field errors but general error, scroll to the top
-        setTimeout(() => {
-          formCardRef.current.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }, 100);
-      }
-    } else {
-      // Clear errors when there's no error
-      setGeneralError("");
-      setFormErrors({});
+    if (success) {
+      toast.success("User created successfully");
+      navigate("/users");
     }
-  }, [error]);
+  }, [success, navigate]);
 
   // Handle successful creation
   useEffect(() => {
@@ -343,12 +209,71 @@ const UserAddPage = () => {
     setGeneralError("");
 
     try {
+      // Log what we're submitting
+      console.log("Submitting form data:", formData);
+
       // Submit form data directly without validation
       await createNewUser(formData);
       // Success is handled by the useEffect
     } catch (err) {
-      // Error is handled by the useEffect for error
+      // Process error response directly here instead of relying on useEffect
       console.error("Form submission error:", err);
+
+      // Convert backend snake_case field names to frontend camelCase names
+      const fieldMap = {
+        email: "email",
+        password: "password",
+        first_name: "firstName",
+        last_name: "lastName",
+        agree_terms_of_service: "agreeTermsOfService",
+        // Add others as needed
+      };
+
+      // Extract error data from response if it exists
+      const errorData = err.response?.data;
+      console.log("Raw error data from backend:", errorData);
+
+      if (errorData && typeof errorData === "object") {
+        // Collect all error messages for the summary box
+        const errorMessages = [];
+        const fieldErrors = {};
+
+        // Process each error field
+        Object.entries(errorData).forEach(([field, message]) => {
+          // Add to error messages list
+          if (typeof message === "string") {
+            errorMessages.push(message);
+
+            // Map field name and add to field errors
+            const formFieldName = fieldMap[field] || field;
+            fieldErrors[formFieldName] = message;
+          }
+        });
+
+        // Update error states
+        if (errorMessages.length > 0) {
+          setGeneralError(errorMessages.join(" • "));
+          setFormErrors(fieldErrors);
+
+          // Scroll to error message
+          if (statusRef.current) {
+            setTimeout(() => {
+              statusRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }, 100);
+          }
+        } else {
+          // Fallback error message if no specific messages found
+          setGeneralError(
+            "An error occurred. Please check your submission and try again.",
+          );
+        }
+      } else {
+        // Fallback for non-object error responses
+        setGeneralError(err.message || "An unexpected error occurred");
+      }
     }
   };
 
