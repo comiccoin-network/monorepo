@@ -1,6 +1,5 @@
 // UserAddStep2Individual.jsx
 import React, { useState } from "react";
-import { useUserWizard } from "./UserAddWizardContext";
 import countryRegionData from "country-region-data/dist/data-umd";
 import {
   ArrowLeft,
@@ -29,6 +28,7 @@ import {
 } from "../../../../hooks/useUser";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
+import { useNavigate } from "react-router";
 
 // Timezones for dropdown
 const timezones = [
@@ -82,14 +82,58 @@ const yesNoOptions = [
 ];
 
 const UserAddStep2Individual = () => {
-  const {
-    formData,
-    updateFormData,
-    prevStep,
-    nextStep,
-    formErrors,
-    setFormErrors,
-  } = useUserWizard();
+  const navigate = useNavigate();
+
+  // TODO: Replace the following placeholder variables/functions with actual implementations
+  // These were previously provided by useUserWizard
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    status: USER_STATUS.ACTIVE,
+    isEmailVerified: false,
+    description: "",
+    websiteURL: "",
+    howDidYouHearAboutUs: 0,
+    howDidYouHearAboutUsOther: "",
+    howLongCollectingComicBooksForGrading: 0,
+    hasPreviouslySubmittedComicBookForGrading: 0,
+    hasOwnedGradedComicBooks: 0,
+    hasRegularComicBookShop: 0,
+    hasPreviouslyPurchasedFromAuctionSite: 0,
+    hasPreviouslyPurchasedFromFacebookMarketplace: 0,
+    hasRegularlyAttendedComicConsOrCollectibleShows: 0,
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    country: "",
+    region: "",
+    postalCode: "",
+    timezone: "",
+    hasShippingAddress: false,
+    shippingName: "",
+    shippingPhone: "",
+    shippingAddressLine1: "",
+    shippingAddressLine2: "",
+    shippingCity: "",
+    shippingCountry: "",
+    shippingRegion: "",
+    shippingPostalCode: "",
+    agreeTermsOfService: false,
+    agreePromotions: false,
+    agreeToTrackingAcrossThirdPartyAppsAndServices: false,
+  });
+  const updateFormData = (newData) => {
+    setFormData((prev) => ({ ...prev, ...newData }));
+    console.log("Updating form data:", newData); // Placeholder
+  };
+  const prevStep = () => navigate(`/admin/users/add/role`);
+  const nextStep = () => console.log("Go to next step"); // Placeholder
+  const [formErrors, setFormErrors] = useState({});
+  // End of placeholder variables/functions
+
   const [localErrors, setLocalErrors] = useState({});
 
   // Inline styles for select elements to fix Safari issues
@@ -202,6 +246,12 @@ const UserAddStep2Individual = () => {
     if (!formData.lastName) errors.lastName = "Last name is required";
     if (!formData.description) errors.description = "Description is required";
     if (!formData.websiteURL) errors.websiteURL = "Website URL is required";
+    if (!formData.addressLine1) errors.addressLine1 = "Address is required";
+    if (!formData.city) errors.city = "City is required";
+    if (!formData.country) errors.country = "Country is required";
+    if (!formData.region) errors.region = "State/Province is required";
+    if (!formData.postalCode) errors.postalCode = "ZIP/Postal Code is required";
+    if (!formData.timezone) errors.timezone = "Timezone is required";
 
     // Password length
     if (formData.password && formData.password.length < 8) {
@@ -214,20 +264,58 @@ const UserAddStep2Individual = () => {
       errors.email = "Invalid email format";
     }
 
-    // Check experience fields
-    if (formData.howLongCollectingComicBooksForGrading === 0)
+    // Check experience fields (assuming 0 means 'select an option')
+    if (
+      !formData.howLongCollectingComicBooksForGrading ||
+      formData.howLongCollectingComicBooksForGrading === 0
+    )
       errors.howLongCollectingComicBooksForGrading = "This field is required";
 
-    if (formData.howDidYouHearAboutUs === 0)
+    if (!formData.howDidYouHearAboutUs || formData.howDidYouHearAboutUs === 0)
       errors.howDidYouHearAboutUs = "This field is required";
 
     if (
-      formData.howDidYouHearAboutUs === 6 &&
+      formData.howDidYouHearAboutUs === 6 && // 'Other' selected
       !formData.howDidYouHearAboutUsOther
     ) {
       errors.howDidYouHearAboutUsOther =
         "Please specify how you heard about us";
     }
+
+    // Check yes/no experience questions (assuming 0 means 'select an option')
+    if (
+      !formData.hasPreviouslySubmittedComicBookForGrading ||
+      formData.hasPreviouslySubmittedComicBookForGrading === 0
+    )
+      errors.hasPreviouslySubmittedComicBookForGrading =
+        "This field is required";
+    if (
+      !formData.hasOwnedGradedComicBooks ||
+      formData.hasOwnedGradedComicBooks === 0
+    )
+      errors.hasOwnedGradedComicBooks = "This field is required";
+    if (
+      !formData.hasRegularComicBookShop ||
+      formData.hasRegularComicBookShop === 0
+    )
+      errors.hasRegularComicBookShop = "This field is required";
+    if (
+      !formData.hasPreviouslyPurchasedFromAuctionSite ||
+      formData.hasPreviouslyPurchasedFromAuctionSite === 0
+    )
+      errors.hasPreviouslyPurchasedFromAuctionSite = "This field is required";
+    if (
+      !formData.hasPreviouslyPurchasedFromFacebookMarketplace ||
+      formData.hasPreviouslyPurchasedFromFacebookMarketplace === 0
+    )
+      errors.hasPreviouslyPurchasedFromFacebookMarketplace =
+        "This field is required";
+    if (
+      !formData.hasRegularlyAttendedComicConsOrCollectibleShows ||
+      formData.hasRegularlyAttendedComicConsOrCollectibleShows === 0
+    )
+      errors.hasRegularlyAttendedComicConsOrCollectibleShows =
+        "This field is required";
 
     // Check shipping address fields if provided
     if (formData.hasShippingAddress) {
@@ -238,8 +326,16 @@ const UserAddStep2Individual = () => {
       if (!formData.shippingCity) errors.shippingCity = "City is required";
       if (!formData.shippingCountry)
         errors.shippingCountry = "Country is required";
+      if (!formData.shippingRegion)
+        // Assuming shipping region is required if shipping country is selected
+        errors.shippingRegion = "State/Province is required";
       if (!formData.shippingPostalCode)
         errors.shippingPostalCode = "Postal code is required";
+    }
+
+    // Check Terms agreement
+    if (!formData.agreeTermsOfService) {
+      errors.agreeTermsOfService = "You must agree to the Terms of Service";
     }
 
     setLocalErrors(errors);
@@ -819,6 +915,7 @@ const UserAddStep2Individual = () => {
                             : "border-gray-300"
                         }`}
                         style={selectStyles}
+                        required
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -830,6 +927,16 @@ const UserAddStep2Individual = () => {
                         <ArrowDown className="h-5 w-5 text-gray-400" />
                       </div>
                     </div>
+                    {hasError("hasPreviouslySubmittedComicBookForGrading") && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>
+                          {getErrorMessage(
+                            "hasPreviouslySubmittedComicBookForGrading",
+                          )}
+                        </span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Owned graded comics */}
@@ -856,6 +963,7 @@ const UserAddStep2Individual = () => {
                             : "border-gray-300"
                         }`}
                         style={selectStyles}
+                        required
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -867,6 +975,14 @@ const UserAddStep2Individual = () => {
                         <ArrowDown className="h-5 w-5 text-gray-400" />
                       </div>
                     </div>
+                    {hasError("hasOwnedGradedComicBooks") && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>
+                          {getErrorMessage("hasOwnedGradedComicBooks")}
+                        </span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Regular comic book shop */}
@@ -893,6 +1009,7 @@ const UserAddStep2Individual = () => {
                             : "border-gray-300"
                         }`}
                         style={selectStyles}
+                        required
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -904,6 +1021,14 @@ const UserAddStep2Individual = () => {
                         <ArrowDown className="h-5 w-5 text-gray-400" />
                       </div>
                     </div>
+                    {hasError("hasRegularComicBookShop") && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>
+                          {getErrorMessage("hasRegularComicBookShop")}
+                        </span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Auction Sites */}
@@ -930,6 +1055,7 @@ const UserAddStep2Individual = () => {
                             : "border-gray-300"
                         }`}
                         style={selectStyles}
+                        required
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -941,6 +1067,16 @@ const UserAddStep2Individual = () => {
                         <ArrowDown className="h-5 w-5 text-gray-400" />
                       </div>
                     </div>
+                    {hasError("hasPreviouslyPurchasedFromAuctionSite") && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>
+                          {getErrorMessage(
+                            "hasPreviouslyPurchasedFromAuctionSite",
+                          )}
+                        </span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Facebook Marketplace */}
@@ -971,6 +1107,7 @@ const UserAddStep2Individual = () => {
                             : "border-gray-300"
                         }`}
                         style={selectStyles}
+                        required
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -982,6 +1119,18 @@ const UserAddStep2Individual = () => {
                         <ArrowDown className="h-5 w-5 text-gray-400" />
                       </div>
                     </div>
+                    {hasError(
+                      "hasPreviouslyPurchasedFromFacebookMarketplace",
+                    ) && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>
+                          {getErrorMessage(
+                            "hasPreviouslyPurchasedFromFacebookMarketplace",
+                          )}
+                        </span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Comic Cons */}
@@ -1012,6 +1161,7 @@ const UserAddStep2Individual = () => {
                             : "border-gray-300"
                         }`}
                         style={selectStyles}
+                        required
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -1023,6 +1173,18 @@ const UserAddStep2Individual = () => {
                         <ArrowDown className="h-5 w-5 text-gray-400" />
                       </div>
                     </div>
+                    {hasError(
+                      "hasRegularlyAttendedComicConsOrCollectibleShows",
+                    ) && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>
+                          {getErrorMessage(
+                            "hasRegularlyAttendedComicConsOrCollectibleShows",
+                          )}
+                        </span>
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
