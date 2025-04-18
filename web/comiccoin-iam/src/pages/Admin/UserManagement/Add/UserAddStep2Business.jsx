@@ -1,5 +1,5 @@
 // UserAddStep2Business.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // <-- Import useEffect
 import countryRegionData from "country-region-data/dist/data-umd";
 import {
   ArrowLeft,
@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
-import { Link } from "react-router";
+import { Link, useHistory } from "react-router"; // <-- Import useHistory
 
 // Define constants
 // Timezones for dropdown
@@ -97,11 +97,33 @@ const UserAddStep2Business = ({
   formData = {}, // <-- FIX: Provide default value for formData to prevent undefined error
   updateFormData,
   prevStep,
-  nextStep,
+  // nextStep, // Keep prop definition if parent uses it, but we won't call it for navigation
   formErrors = {}, // Provide default value for formErrors
 }) => {
-  // Removed: useUserWizard hook call
+  const history = useHistory(); // <-- Get history object
   const [localErrors, setLocalErrors] = useState({});
+
+  // <-- Load data from localStorage on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem("userAddFormData");
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        // Update form data only if it's an object and possibly has content
+        // You might want stricter validation depending on expected data structure
+        if (typeof parsedData === "object" && parsedData !== null) {
+          updateFormData(parsedData);
+        }
+      } catch (error) {
+        console.error(
+          "Failed to parse userAddFormData from localStorage",
+          error,
+        );
+        // Optionally clear invalid data from localStorage
+        // localStorage.removeItem('userAddFormData');
+      }
+    }
+  }, [updateFormData]); // <-- Dependency array includes updateFormData
 
   // Inline styles for select elements to fix Safari issues
   const selectStyles = {
@@ -244,29 +266,38 @@ const UserAddStep2Business = ({
 
     // Check other required fields from verification form
     // Assuming howLongStoreOperating uses 0 as "Select..."
-    if (!formData.howLongStoreOperating || formData.howLongStoreOperating === 0)
+    if (!formData.howLongStoreOperating || formData.howLongStoreOperating == 0)
+      // Use == for potential string/number mismatch from localStorage
       errors.howLongStoreOperating = "This field is required";
     if (!formData.gradingComicsExperience)
       errors.gradingComicsExperience = "Please describe your experience";
     // Assuming hasOtherGradingService uses 0/1/2, where 1 is 'Yes'
     if (
-      formData.hasOtherGradingService === 1 &&
+      formData.hasOtherGradingService == 1 && // Use == for potential string/number mismatch
       !formData.otherGradingServiceName
     ) {
       errors.otherGradingServiceName = "Please specify the grading service";
-    } else if (formData.hasOtherGradingService === 0) {
+    } else if (
+      formData.hasOtherGradingService == 0 ||
+      formData.hasOtherGradingService === undefined
+    ) {
+      // Use == for potential string/number mismatch and check undefined
       errors.hasOtherGradingService = "This field is required";
     }
     // Assuming estimatedSubmissionsPerMonth uses 0 as "Select..."
     if (
       !formData.estimatedSubmissionsPerMonth ||
-      formData.estimatedSubmissionsPerMonth === 0
+      formData.estimatedSubmissionsPerMonth == 0 // Use == for potential string/number mismatch
     )
       errors.estimatedSubmissionsPerMonth = "This field is required";
     if (!formData.retailPartnershipReason)
       errors.retailPartnershipReason = "This field is required";
     // Assuming requestWelcomePackage uses 0/1/2
-    if (formData.requestWelcomePackage === 0) {
+    if (
+      formData.requestWelcomePackage == 0 ||
+      formData.requestWelcomePackage === undefined
+    ) {
+      // Use == for potential string/number mismatch and check undefined
       errors.requestWelcomePackage = "This field is required";
     }
 
@@ -290,14 +321,25 @@ const UserAddStep2Business = ({
     return Object.keys(errors).length === 0;
   };
 
-  // Handle next step - Uses nextStep prop
+  // Handle next step - Updated to save to localStorage and navigate
   const handleNext = (e) => {
     e.preventDefault();
 
     if (validateForm()) {
-      // Optionally, clear local errors before proceeding if desired
-      // setLocalErrors({});
-      nextStep();
+      try {
+        // Save current form data to localStorage
+        localStorage.setItem("userAddFormData", JSON.stringify(formData));
+
+        // Navigate to the next step
+        history.push("/admin/users/add/role");
+      } catch (error) {
+        console.error("Failed to save userAddFormData to localStorage", error);
+        // Handle potential storage error (e.g., quota exceeded)
+        // Maybe show an error message to the user
+        setLocalErrors({
+          form: "Failed to save form progress. Please try again.",
+        });
+      }
     }
   };
 
@@ -1814,12 +1856,24 @@ const UserAddStep2Business = ({
                 </div>
               </div>
 
-              {/* Form Actions - Uses prevStep prop and handleNext */}
+              {/* Display general form error if any */}
+              {hasError("form") && (
+                <div className="bg-red-50 p-3 rounded-md border border-red-200">
+                  <p className="text-sm text-red-600 flex items-start gap-1">
+                    <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                    <span>{getErrorMessage("form")}</span>
+                  </p>
+                </div>
+              )}
+
+              {/* Form Actions - Uses prevStep prop (via Link) and handleNext */}
               <div className="flex justify-between pt-4 border-t border-gray-200">
                 <Link
                   type="button"
+                  // TODO: Link should likely go to previous step, not role selection
                   to="/admin/users/add/role"
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                  // onClick={prevStep} // Consider using prevStep prop if provided and suitable
                 >
                   <ArrowLeft className="h-5 w-5 inline mr-1" /> Back
                 </Link>

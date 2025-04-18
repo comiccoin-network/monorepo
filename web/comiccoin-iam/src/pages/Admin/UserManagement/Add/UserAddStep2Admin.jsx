@@ -55,10 +55,11 @@ const UserAddStep2Admin = () => {
     phone: "",
     status: USER_STATUS.ACTIVE,
     profileVerificationStatus: PROFILE_VERIFICATION_STATUS.UNVERIFIED,
-    isEmailVerified: false,
+    isEmailVerified: true,
     country: "",
     region: "",
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+    agreeTermsOfService: true,
   });
   const [localErrors, setLocalErrors] = useState({});
 
@@ -173,7 +174,7 @@ const UserAddStep2Admin = () => {
     if (validateForm()) {
       // Save form data to localStorage
       localStorage.setItem("userAddFormData", JSON.stringify(formData));
-      // Navigate to next step
+      // Navigate to next step (Role selection)
       navigate("/admin/users/add/review");
     }
   };
@@ -182,7 +183,7 @@ const UserAddStep2Admin = () => {
   const handlePrevious = () => {
     // Save form data before navigating
     localStorage.setItem("userAddFormData", JSON.stringify(formData));
-    navigate("/admin/users/add/role");
+    navigate("/admin/users/add/role"); // Assuming previous step is Role selection, adjust if needed
   };
 
   // Check if field has error

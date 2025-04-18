@@ -1,5 +1,5 @@
 // UserAddStep2Individual.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import countryRegionData from "country-region-data/dist/data-umd";
 import {
   ArrowLeft,
@@ -83,10 +83,9 @@ const yesNoOptions = [
 
 const UserAddStep2Individual = () => {
   const navigate = useNavigate();
+  const localStorageKey = "userAddFormData";
 
-  // TODO: Replace the following placeholder variables/functions with actual implementations
-  // These were previously provided by useUserWizard
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     email: "",
     password: "",
     firstName: "",
@@ -124,17 +123,53 @@ const UserAddStep2Individual = () => {
     agreeTermsOfService: false,
     agreePromotions: false,
     agreeToTrackingAcrossThirdPartyAppsAndServices: false,
-  });
-  const updateFormData = (newData) => {
-    setFormData((prev) => ({ ...prev, ...newData }));
-    console.log("Updating form data:", newData); // Placeholder
   };
-  const prevStep = () => navigate(`/admin/users/add/role`);
-  const nextStep = () => console.log("Go to next step"); // Placeholder
-  const [formErrors, setFormErrors] = useState({});
-  // End of placeholder variables/functions
 
+  const [formData, setFormData] = useState(initialFormData);
   const [localErrors, setLocalErrors] = useState({});
+  const [formErrors, setFormErrors] = useState({}); // Keep for potential future use from external validation
+
+  // Load data from local storage on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem(localStorageKey);
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        // Merge saved data with initial structure to ensure all fields are present
+        setFormData((prev) => ({ ...prev, ...parsedData }));
+      } catch (error) {
+        console.error("Failed to parse user data from local storage:", error);
+        localStorage.removeItem(localStorageKey); // Clear invalid data
+      }
+    }
+  }, []);
+
+  // Update form data state and local storage
+  const updateFormData = (newData) => {
+    setFormData((prev) => {
+      const updatedData = { ...prev, ...newData };
+      // Also save the updated data to local storage
+      try {
+        localStorage.setItem(localStorageKey, JSON.stringify(updatedData));
+      } catch (error) {
+        console.error("Failed to save user data to local storage:", error);
+      }
+      return updatedData;
+    });
+  };
+
+  const prevStep = () => navigate(`/admin/users/add/role`);
+
+  const nextStep = () => {
+    // Save final form data to local storage before navigating
+    try {
+      localStorage.setItem(localStorageKey, JSON.stringify(formData));
+      navigate(`/admin/users/add/summary`); // Corrected navigation target
+    } catch (error) {
+      console.error("Failed to save final user data to local storage:", error);
+      // Optionally show an error to the user
+    }
+  };
 
   // Inline styles for select elements to fix Safari issues
   const selectStyles = {
@@ -150,7 +185,22 @@ const UserAddStep2Individual = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const newValue = type === "checkbox" ? checked : value;
+    let newValue = type === "checkbox" ? checked : value;
+
+    // Convert numeric dropdown values back to numbers if needed
+    const numericFields = [
+      "howDidYouHearAboutUs",
+      "howLongCollectingComicBooksForGrading",
+      "hasPreviouslySubmittedComicBookForGrading",
+      "hasOwnedGradedComicBooks",
+      "hasRegularComicBookShop",
+      "hasPreviouslyPurchasedFromAuctionSite",
+      "hasPreviouslyPurchasedFromFacebookMarketplace",
+      "hasRegularlyAttendedComicConsOrCollectibleShows",
+    ];
+    if (numericFields.includes(name)) {
+      newValue = parseInt(value, 10) || 0; // Default to 0 if parsing fails
+    }
 
     updateFormData({ [name]: newValue });
 
@@ -271,65 +321,52 @@ const UserAddStep2Individual = () => {
     )
       errors.howLongCollectingComicBooksForGrading = "This field is required";
 
-    if (!formData.howDidYouHearAboutUs || formData.howDidYouHearAboutUs === 0)
+    if (formData.howDidYouHearAboutUs === 0)
       errors.howDidYouHearAboutUs = "This field is required";
 
+    // Ensure 'Other' explanation is provided if 'Other' is selected
+    const otherReferralValue = referralSources.find(
+      (s) => s.label === "Other",
+    )?.value;
     if (
-      formData.howDidYouHearAboutUs === 6 && // 'Other' selected
-      !formData.howDidYouHearAboutUsOther
+      formData.howDidYouHearAboutUs === otherReferralValue &&
+      !formData.howDidYouHearAboutUsOther?.trim()
     ) {
       errors.howDidYouHearAboutUsOther =
         "Please specify how you heard about us";
     }
 
     // Check yes/no experience questions (assuming 0 means 'select an option')
-    if (
-      !formData.hasPreviouslySubmittedComicBookForGrading ||
-      formData.hasPreviouslySubmittedComicBookForGrading === 0
-    )
+    if (formData.hasPreviouslySubmittedComicBookForGrading === 0)
       errors.hasPreviouslySubmittedComicBookForGrading =
         "This field is required";
-    if (
-      !formData.hasOwnedGradedComicBooks ||
-      formData.hasOwnedGradedComicBooks === 0
-    )
+    if (formData.hasOwnedGradedComicBooks === 0)
       errors.hasOwnedGradedComicBooks = "This field is required";
-    if (
-      !formData.hasRegularComicBookShop ||
-      formData.hasRegularComicBookShop === 0
-    )
+    if (formData.hasRegularComicBookShop === 0)
       errors.hasRegularComicBookShop = "This field is required";
-    if (
-      !formData.hasPreviouslyPurchasedFromAuctionSite ||
-      formData.hasPreviouslyPurchasedFromAuctionSite === 0
-    )
+    if (formData.hasPreviouslyPurchasedFromAuctionSite === 0)
       errors.hasPreviouslyPurchasedFromAuctionSite = "This field is required";
-    if (
-      !formData.hasPreviouslyPurchasedFromFacebookMarketplace ||
-      formData.hasPreviouslyPurchasedFromFacebookMarketplace === 0
-    )
+    if (formData.hasPreviouslyPurchasedFromFacebookMarketplace === 0)
       errors.hasPreviouslyPurchasedFromFacebookMarketplace =
         "This field is required";
-    if (
-      !formData.hasRegularlyAttendedComicConsOrCollectibleShows ||
-      formData.hasRegularlyAttendedComicConsOrCollectibleShows === 0
-    )
+    if (formData.hasRegularlyAttendedComicConsOrCollectibleShows === 0)
       errors.hasRegularlyAttendedComicConsOrCollectibleShows =
         "This field is required";
 
     // Check shipping address fields if provided
     if (formData.hasShippingAddress) {
-      if (!formData.shippingName)
+      if (!formData.shippingName?.trim())
         errors.shippingName = "Shipping name is required";
-      if (!formData.shippingAddressLine1)
+      if (!formData.shippingAddressLine1?.trim())
         errors.shippingAddressLine1 = "Shipping address is required";
-      if (!formData.shippingCity) errors.shippingCity = "City is required";
+      if (!formData.shippingCity?.trim())
+        errors.shippingCity = "City is required";
       if (!formData.shippingCountry)
         errors.shippingCountry = "Country is required";
       if (!formData.shippingRegion)
         // Assuming shipping region is required if shipping country is selected
         errors.shippingRegion = "State/Province is required";
-      if (!formData.shippingPostalCode)
+      if (!formData.shippingPostalCode?.trim())
         errors.shippingPostalCode = "Postal code is required";
     }
 
@@ -347,7 +384,14 @@ const UserAddStep2Individual = () => {
     e.preventDefault();
 
     if (validateForm()) {
-      nextStep();
+      nextStep(); // Will save to local storage and navigate
+    } else {
+      // Optionally scroll to the first error
+      const firstErrorField = Object.keys(localErrors)[0];
+      if (firstErrorField) {
+        const element = document.getElementById(firstErrorField);
+        element?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
   };
 
@@ -420,6 +464,10 @@ const UserAddStep2Individual = () => {
                         }`}
                         placeholder="user@example.com"
                         required
+                        aria-invalid={hasError("email")}
+                        aria-describedby={
+                          hasError("email") ? "email-error" : undefined
+                        }
                       />
                       {hasError("email") && (
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -428,7 +476,10 @@ const UserAddStep2Individual = () => {
                       )}
                     </div>
                     {hasError("email") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="email-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{getErrorMessage("email")}</span>
                       </p>
@@ -460,6 +511,12 @@ const UserAddStep2Individual = () => {
                         }`}
                         placeholder="••••••••"
                         required
+                        aria-invalid={hasError("password")}
+                        aria-describedby={
+                          hasError("password")
+                            ? "password-error"
+                            : "password-hint"
+                        }
                       />
                       {hasError("password") && (
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -468,12 +525,18 @@ const UserAddStep2Individual = () => {
                       )}
                     </div>
                     {hasError("password") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="password-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{getErrorMessage("password")}</span>
                       </p>
                     )}
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p
+                      id="password-hint"
+                      className="mt-1 text-xs text-gray-500"
+                    >
                       Password must be at least 8 characters
                     </p>
                   </div>
@@ -503,6 +566,10 @@ const UserAddStep2Individual = () => {
                         }`}
                         placeholder="John"
                         required
+                        aria-invalid={hasError("firstName")}
+                        aria-describedby={
+                          hasError("firstName") ? "firstName-error" : undefined
+                        }
                       />
                       {hasError("firstName") && (
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -511,7 +578,10 @@ const UserAddStep2Individual = () => {
                       )}
                     </div>
                     {hasError("firstName") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="firstName-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{getErrorMessage("firstName")}</span>
                       </p>
@@ -543,6 +613,10 @@ const UserAddStep2Individual = () => {
                         }`}
                         placeholder="Doe"
                         required
+                        aria-invalid={hasError("lastName")}
+                        aria-describedby={
+                          hasError("lastName") ? "lastName-error" : undefined
+                        }
                       />
                       {hasError("lastName") && (
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -551,7 +625,10 @@ const UserAddStep2Individual = () => {
                       )}
                     </div>
                     {hasError("lastName") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="lastName-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{getErrorMessage("lastName")}</span>
                       </p>
@@ -671,6 +748,12 @@ const UserAddStep2Individual = () => {
                       }`}
                       placeholder="For example: Comic book collector and enthusiast with a focus on Silver Age Marvel..."
                       required
+                      aria-invalid={hasError("description")}
+                      aria-describedby={
+                        hasError("description")
+                          ? "description-error"
+                          : undefined
+                      }
                     ></textarea>
                     {hasError("description") && (
                       <div className="absolute top-3 right-3 flex items-center pointer-events-none">
@@ -679,7 +762,10 @@ const UserAddStep2Individual = () => {
                     )}
                   </div>
                   {hasError("description") && (
-                    <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                    <p
+                      id="description-error"
+                      className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                    >
                       <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                       <span>{getErrorMessage("description")}</span>
                     </p>
@@ -694,36 +780,52 @@ const UserAddStep2Individual = () => {
                   >
                     Online Presence Link <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex rounded-md shadow-sm">
-                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                      <LinkIcon className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                    <input
-                      type="url"
-                      id="websiteURL"
-                      name="websiteURL"
-                      value={formData.websiteURL}
-                      onChange={handleInputChange}
-                      className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                        hasError("websiteURL")
-                          ? "border-red-500 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="e.g., https://linkedin.com/in/yourprofile"
-                      required
-                    />
-                    {hasError("websiteURL") && (
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <AlertCircle className="h-5 w-5 text-red-500" />
-                      </div>
-                    )}
+                  <div className="relative">
+                    <div className="flex rounded-md shadow-sm">
+                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                        <LinkIcon className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      <input
+                        type="url"
+                        id="websiteURL"
+                        name="websiteURL"
+                        value={formData.websiteURL}
+                        onChange={handleInputChange}
+                        className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                          hasError("websiteURL")
+                            ? "border-red-500 bg-red-50 pr-10"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="e.g., https://linkedin.com/in/yourprofile"
+                        required
+                        aria-invalid={hasError("websiteURL")}
+                        aria-describedby={
+                          hasError("websiteURL")
+                            ? "websiteURL-error"
+                            : "websiteURL-hint"
+                        }
+                      />
+                      {hasError("websiteURL") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none z-10">
+                          {" "}
+                          {/* z-10 to be above input */}
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p
+                    id="websiteURL-hint"
+                    className="mt-1 text-xs text-gray-500"
+                  >
                     Please provide a link to your personal website or a public
                     social media profile
                   </p>
                   {hasError("websiteURL") && (
-                    <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                    <p
+                      id="websiteURL-error"
+                      className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                    >
                       <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                       <span>{getErrorMessage("websiteURL")}</span>
                     </p>
@@ -755,6 +857,12 @@ const UserAddStep2Individual = () => {
                       }`}
                       style={selectStyles}
                       required
+                      aria-invalid={hasError("howDidYouHearAboutUs")}
+                      aria-describedby={
+                        hasError("howDidYouHearAboutUs")
+                          ? "howDidYouHearAboutUs-error"
+                          : undefined
+                      }
                     >
                       {referralSources.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -771,7 +879,10 @@ const UserAddStep2Individual = () => {
                     </div>
                   </div>
                   {hasError("howDidYouHearAboutUs") && (
-                    <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                    <p
+                      id="howDidYouHearAboutUs-error"
+                      className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                    >
                       <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                       <span>{getErrorMessage("howDidYouHearAboutUs")}</span>
                     </p>
@@ -779,7 +890,8 @@ const UserAddStep2Individual = () => {
                 </div>
 
                 {/* Conditional field for "Other" referral source */}
-                {formData.howDidYouHearAboutUs === 6 && (
+                {formData.howDidYouHearAboutUs ===
+                  referralSources.find((s) => s.label === "Other")?.value && (
                   <div className="mb-4">
                     <label
                       htmlFor="howDidYouHearAboutUsOther"
@@ -804,6 +916,12 @@ const UserAddStep2Individual = () => {
                         }`}
                         placeholder="Please specify"
                         required
+                        aria-invalid={hasError("howDidYouHearAboutUsOther")}
+                        aria-describedby={
+                          hasError("howDidYouHearAboutUsOther")
+                            ? "howDidYouHearAboutUsOther-error"
+                            : undefined
+                        }
                       />
                       {hasError("howDidYouHearAboutUsOther") && (
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -812,7 +930,10 @@ const UserAddStep2Individual = () => {
                       )}
                     </div>
                     {hasError("howDidYouHearAboutUsOther") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="howDidYouHearAboutUsOther-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>
                           {getErrorMessage("howDidYouHearAboutUsOther")}
@@ -860,6 +981,14 @@ const UserAddStep2Individual = () => {
                       }`}
                       style={selectStyles}
                       required
+                      aria-invalid={hasError(
+                        "howLongCollectingComicBooksForGrading",
+                      )}
+                      aria-describedby={
+                        hasError("howLongCollectingComicBooksForGrading")
+                          ? "howLongCollectingComicBooksForGrading-error"
+                          : undefined
+                      }
                     >
                       {experienceOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -876,7 +1005,10 @@ const UserAddStep2Individual = () => {
                     </div>
                   </div>
                   {hasError("howLongCollectingComicBooksForGrading") && (
-                    <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                    <p
+                      id="howLongCollectingComicBooksForGrading-error"
+                      className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                    >
                       <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                       <span>
                         {getErrorMessage(
@@ -916,6 +1048,14 @@ const UserAddStep2Individual = () => {
                         }`}
                         style={selectStyles}
                         required
+                        aria-invalid={hasError(
+                          "hasPreviouslySubmittedComicBookForGrading",
+                        )}
+                        aria-describedby={
+                          hasError("hasPreviouslySubmittedComicBookForGrading")
+                            ? "hasPreviouslySubmittedComicBookForGrading-error"
+                            : undefined
+                        }
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -924,11 +1064,20 @@ const UserAddStep2Individual = () => {
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError(
+                          "hasPreviouslySubmittedComicBookForGrading",
+                        ) ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
                     {hasError("hasPreviouslySubmittedComicBookForGrading") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="hasPreviouslySubmittedComicBookForGrading-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>
                           {getErrorMessage(
@@ -964,6 +1113,12 @@ const UserAddStep2Individual = () => {
                         }`}
                         style={selectStyles}
                         required
+                        aria-invalid={hasError("hasOwnedGradedComicBooks")}
+                        aria-describedby={
+                          hasError("hasOwnedGradedComicBooks")
+                            ? "hasOwnedGradedComicBooks-error"
+                            : undefined
+                        }
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -972,11 +1127,18 @@ const UserAddStep2Individual = () => {
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError("hasOwnedGradedComicBooks") ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
                     {hasError("hasOwnedGradedComicBooks") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="hasOwnedGradedComicBooks-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>
                           {getErrorMessage("hasOwnedGradedComicBooks")}
@@ -1010,6 +1172,12 @@ const UserAddStep2Individual = () => {
                         }`}
                         style={selectStyles}
                         required
+                        aria-invalid={hasError("hasRegularComicBookShop")}
+                        aria-describedby={
+                          hasError("hasRegularComicBookShop")
+                            ? "hasRegularComicBookShop-error"
+                            : undefined
+                        }
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -1018,11 +1186,18 @@ const UserAddStep2Individual = () => {
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError("hasRegularComicBookShop") ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
                     {hasError("hasRegularComicBookShop") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="hasRegularComicBookShop-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>
                           {getErrorMessage("hasRegularComicBookShop")}
@@ -1056,6 +1231,14 @@ const UserAddStep2Individual = () => {
                         }`}
                         style={selectStyles}
                         required
+                        aria-invalid={hasError(
+                          "hasPreviouslyPurchasedFromAuctionSite",
+                        )}
+                        aria-describedby={
+                          hasError("hasPreviouslyPurchasedFromAuctionSite")
+                            ? "hasPreviouslyPurchasedFromAuctionSite-error"
+                            : undefined
+                        }
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -1064,11 +1247,18 @@ const UserAddStep2Individual = () => {
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError("hasPreviouslyPurchasedFromAuctionSite") ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
                     {hasError("hasPreviouslyPurchasedFromAuctionSite") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="hasPreviouslyPurchasedFromAuctionSite-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>
                           {getErrorMessage(
@@ -1108,6 +1298,16 @@ const UserAddStep2Individual = () => {
                         }`}
                         style={selectStyles}
                         required
+                        aria-invalid={hasError(
+                          "hasPreviouslyPurchasedFromFacebookMarketplace",
+                        )}
+                        aria-describedby={
+                          hasError(
+                            "hasPreviouslyPurchasedFromFacebookMarketplace",
+                          )
+                            ? "hasPreviouslyPurchasedFromFacebookMarketplace-error"
+                            : undefined
+                        }
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -1116,13 +1316,22 @@ const UserAddStep2Individual = () => {
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError(
+                          "hasPreviouslyPurchasedFromFacebookMarketplace",
+                        ) ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
                     {hasError(
                       "hasPreviouslyPurchasedFromFacebookMarketplace",
                     ) && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="hasPreviouslyPurchasedFromFacebookMarketplace-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>
                           {getErrorMessage(
@@ -1162,6 +1371,16 @@ const UserAddStep2Individual = () => {
                         }`}
                         style={selectStyles}
                         required
+                        aria-invalid={hasError(
+                          "hasRegularlyAttendedComicConsOrCollectibleShows",
+                        )}
+                        aria-describedby={
+                          hasError(
+                            "hasRegularlyAttendedComicConsOrCollectibleShows",
+                          )
+                            ? "hasRegularlyAttendedComicConsOrCollectibleShows-error"
+                            : undefined
+                        }
                       >
                         {yesNoOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -1170,13 +1389,22 @@ const UserAddStep2Individual = () => {
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError(
+                          "hasRegularlyAttendedComicConsOrCollectibleShows",
+                        ) ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
                     {hasError(
                       "hasRegularlyAttendedComicConsOrCollectibleShows",
                     ) && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="hasRegularlyAttendedComicConsOrCollectibleShows-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>
                           {getErrorMessage(
@@ -1227,6 +1455,12 @@ const UserAddStep2Individual = () => {
                         }`}
                         placeholder="Street address, P.O. box, company name, c/o"
                         required
+                        aria-invalid={hasError("addressLine1")}
+                        aria-describedby={
+                          hasError("addressLine1")
+                            ? "addressLine1-error"
+                            : undefined
+                        }
                       />
                       {hasError("addressLine1") && (
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1235,7 +1469,10 @@ const UserAddStep2Individual = () => {
                       )}
                     </div>
                     {hasError("addressLine1") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="addressLine1-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{getErrorMessage("addressLine1")}</span>
                       </p>
@@ -1292,6 +1529,10 @@ const UserAddStep2Individual = () => {
                         }`}
                         placeholder="City/Town"
                         required
+                        aria-invalid={hasError("city")}
+                        aria-describedby={
+                          hasError("city") ? "city-error" : undefined
+                        }
                       />
                       {hasError("city") && (
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1300,7 +1541,10 @@ const UserAddStep2Individual = () => {
                       )}
                     </div>
                     {hasError("city") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="city-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{getErrorMessage("city")}</span>
                       </p>
@@ -1331,6 +1575,10 @@ const UserAddStep2Individual = () => {
                         }`}
                         style={selectStyles}
                         required
+                        aria-invalid={hasError("country")}
+                        aria-describedby={
+                          hasError("country") ? "country-error" : undefined
+                        }
                       >
                         <option value="">Select Country...</option>
                         {countryRegionData.map((country) => (
@@ -1351,7 +1599,10 @@ const UserAddStep2Individual = () => {
                       </div>
                     </div>
                     {hasError("country") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="country-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{getErrorMessage("country")}</span>
                       </p>
@@ -1383,6 +1634,10 @@ const UserAddStep2Individual = () => {
                         } ${!availableRegions.length ? "bg-gray-100 cursor-not-allowed" : ""}`}
                         style={selectStyles}
                         required
+                        aria-invalid={hasError("region")}
+                        aria-describedby={
+                          hasError("region") ? "region-error" : undefined
+                        }
                       >
                         <option value="">
                           {availableRegions.length
@@ -1407,7 +1662,10 @@ const UserAddStep2Individual = () => {
                       </div>
                     </div>
                     {hasError("region") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="region-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{getErrorMessage("region")}</span>
                       </p>
@@ -1439,6 +1697,12 @@ const UserAddStep2Individual = () => {
                         }`}
                         placeholder="ZIP or Postal Code"
                         required
+                        aria-invalid={hasError("postalCode")}
+                        aria-describedby={
+                          hasError("postalCode")
+                            ? "postalCode-error"
+                            : undefined
+                        }
                       />
                       {hasError("postalCode") && (
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1447,7 +1711,10 @@ const UserAddStep2Individual = () => {
                       )}
                     </div>
                     {hasError("postalCode") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="postalCode-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{getErrorMessage("postalCode")}</span>
                       </p>
@@ -1478,6 +1745,10 @@ const UserAddStep2Individual = () => {
                         }`}
                         style={selectStyles}
                         required
+                        aria-invalid={hasError("timezone")}
+                        aria-describedby={
+                          hasError("timezone") ? "timezone-error" : undefined
+                        }
                       >
                         {timezones.map((timezone) => (
                           <option key={timezone.value} value={timezone.value}>
@@ -1494,7 +1765,10 @@ const UserAddStep2Individual = () => {
                       </div>
                     </div>
                     {hasError("timezone") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <p
+                        id="timezone-error"
+                        className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                      >
                         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{getErrorMessage("timezone")}</span>
                       </p>
@@ -1565,6 +1839,12 @@ const UserAddStep2Individual = () => {
                             }`}
                             placeholder="Full Name"
                             required={formData.hasShippingAddress}
+                            aria-invalid={hasError("shippingName")}
+                            aria-describedby={
+                              hasError("shippingName")
+                                ? "shippingName-error"
+                                : undefined
+                            }
                           />
                           {hasError("shippingName") && (
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1573,7 +1853,10 @@ const UserAddStep2Individual = () => {
                           )}
                         </div>
                         {hasError("shippingName") && (
-                          <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                          <p
+                            id="shippingName-error"
+                            className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                          >
                             <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                             <span>{getErrorMessage("shippingName")}</span>
                           </p>
@@ -1635,6 +1918,12 @@ const UserAddStep2Individual = () => {
                             }`}
                             placeholder="Street address, P.O. box, company name, c/o"
                             required={formData.hasShippingAddress}
+                            aria-invalid={hasError("shippingAddressLine1")}
+                            aria-describedby={
+                              hasError("shippingAddressLine1")
+                                ? "shippingAddressLine1-error"
+                                : undefined
+                            }
                           />
                           {hasError("shippingAddressLine1") && (
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1643,7 +1932,10 @@ const UserAddStep2Individual = () => {
                           )}
                         </div>
                         {hasError("shippingAddressLine1") && (
-                          <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                          <p
+                            id="shippingAddressLine1-error"
+                            className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                          >
                             <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                             <span>
                               {getErrorMessage("shippingAddressLine1")}
@@ -1707,6 +1999,12 @@ const UserAddStep2Individual = () => {
                             }`}
                             placeholder="City/Town"
                             required={formData.hasShippingAddress}
+                            aria-invalid={hasError("shippingCity")}
+                            aria-describedby={
+                              hasError("shippingCity")
+                                ? "shippingCity-error"
+                                : undefined
+                            }
                           />
                           {hasError("shippingCity") && (
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1715,7 +2013,10 @@ const UserAddStep2Individual = () => {
                           )}
                         </div>
                         {hasError("shippingCity") && (
-                          <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                          <p
+                            id="shippingCity-error"
+                            className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                          >
                             <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                             <span>{getErrorMessage("shippingCity")}</span>
                           </p>
@@ -1746,6 +2047,12 @@ const UserAddStep2Individual = () => {
                             }`}
                             style={selectStyles}
                             required={formData.hasShippingAddress}
+                            aria-invalid={hasError("shippingCountry")}
+                            aria-describedby={
+                              hasError("shippingCountry")
+                                ? "shippingCountry-error"
+                                : undefined
+                            }
                           >
                             <option value="">Select Country...</option>
                             {countryRegionData.map((country) => (
@@ -1766,7 +2073,10 @@ const UserAddStep2Individual = () => {
                           </div>
                         </div>
                         {hasError("shippingCountry") && (
-                          <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                          <p
+                            id="shippingCountry-error"
+                            className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                          >
                             <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                             <span>{getErrorMessage("shippingCountry")}</span>
                           </p>
@@ -1798,6 +2108,12 @@ const UserAddStep2Individual = () => {
                             } ${!availableShippingRegions.length ? "bg-gray-100 cursor-not-allowed" : ""}`}
                             style={selectStyles}
                             required={formData.hasShippingAddress}
+                            aria-invalid={hasError("shippingRegion")}
+                            aria-describedby={
+                              hasError("shippingRegion")
+                                ? "shippingRegion-error"
+                                : undefined
+                            }
                           >
                             <option value="">
                               {availableShippingRegions.length
@@ -1822,7 +2138,10 @@ const UserAddStep2Individual = () => {
                           </div>
                         </div>
                         {hasError("shippingRegion") && (
-                          <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                          <p
+                            id="shippingRegion-error"
+                            className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                          >
                             <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                             <span>{getErrorMessage("shippingRegion")}</span>
                           </p>
@@ -1855,6 +2174,12 @@ const UserAddStep2Individual = () => {
                             }`}
                             placeholder="ZIP or Postal Code"
                             required={formData.hasShippingAddress}
+                            aria-invalid={hasError("shippingPostalCode")}
+                            aria-describedby={
+                              hasError("shippingPostalCode")
+                                ? "shippingPostalCode-error"
+                                : undefined
+                            }
                           />
                           {hasError("shippingPostalCode") && (
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1863,7 +2188,10 @@ const UserAddStep2Individual = () => {
                           )}
                         </div>
                         {hasError("shippingPostalCode") && (
-                          <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                          <p
+                            id="shippingPostalCode-error"
+                            className="mt-1 text-sm text-red-600 flex items-start gap-1"
+                          >
                             <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                             <span>{getErrorMessage("shippingPostalCode")}</span>
                           </p>
@@ -1896,6 +2224,12 @@ const UserAddStep2Individual = () => {
                         checked={formData.agreeTermsOfService}
                         onChange={handleInputChange}
                         required
+                        aria-invalid={hasError("agreeTermsOfService")}
+                        aria-describedby={
+                          hasError("agreeTermsOfService")
+                            ? "agreeTermsOfService-error"
+                            : undefined
+                        }
                       />
                     </div>
                     <div className="ml-3 text-sm">
@@ -1911,7 +2245,10 @@ const UserAddStep2Individual = () => {
                     </div>
                   </div>
                   {hasError("agreeTermsOfService") && (
-                    <p className="text-sm text-red-600 flex items-start gap-1 pl-7">
+                    <p
+                      id="agreeTermsOfService-error"
+                      className="text-sm text-red-600 flex items-start gap-1 pl-7"
+                    >
                       <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                       <span>{getErrorMessage("agreeTermsOfService")}</span>
                     </p>
