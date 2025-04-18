@@ -1,4 +1,4 @@
-// src/pages/Admin/Dashboard/Page.jsx
+// monorepo/web/comiccoin-iam/src/pages/Admin/Dashboard/Page.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {

@@ -1,4 +1,4 @@
-// src/pages/Admin/More/SettingsPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Admin/More/SettingsPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import countryRegionData from "country-region-data/dist/data-umd";

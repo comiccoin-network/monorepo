@@ -1,4 +1,4 @@
-// src/components/ProtectedRoute.jsx
+// monorepo/web/comiccoin-iam/src/components/ProtectedRoute.jsx
 import { Navigate } from "react-router"; // Using react-router
 import { useAuth } from "../hooks/useAuth";
 

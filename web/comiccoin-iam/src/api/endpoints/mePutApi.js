@@ -1,4 +1,4 @@
-// src/api/endpoints/mePutApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/mePutApi.js
 import { usePrivateQuery, usePrivateMutation } from "../../hooks/useApi";
 
 /**

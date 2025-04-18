@@ -1,4 +1,4 @@
-// src/api/endpoints/resetPasswordApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/resetPasswordApi.js
 import axios from "axios";
 import axiosClient, { publicEndpoint } from "../axiosClient";
 

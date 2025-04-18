@@ -1,4 +1,4 @@
-// src/App.jsx
+// monorepo/web/comiccoin-iam/src/App.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

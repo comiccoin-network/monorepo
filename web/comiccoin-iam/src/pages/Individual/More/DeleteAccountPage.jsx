@@ -1,4 +1,4 @@
-// src/pages/Individual/More/DeleteAccountPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Individual/More/DeleteAccountPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {

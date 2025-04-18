@@ -1,4 +1,4 @@
-// src/api/endpoints/deleteMeApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/deleteMeApi.js
 import { useState, useCallback } from "react";
 import { usePrivateMutation } from "../../hooks/useApi";
 import { useAuth } from "../../hooks/useAuth";

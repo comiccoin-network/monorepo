@@ -1,4 +1,4 @@
-// src/components/IndexPage/WalletStepCard.jsx
+// monorepo/web/comiccoin-iam/src/components/IndexPage/WalletStepCard.jsx
 import React from "react";
 import { Wallet, ExternalLink } from "lucide-react";
 

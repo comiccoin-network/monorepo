@@ -1,4 +1,4 @@
-// src/api/endpoints/walletApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/walletApi.js
 import { useState, useCallback } from "react";
 import { usePrivateMutation } from "../../hooks/useApi";
 

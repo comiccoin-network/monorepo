@@ -1,4 +1,4 @@
-// src/api/endpoints/verifyProfileApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/verifyProfileApi.js
 import { useState, useCallback } from "react";
 import { usePrivateMutation } from "../../hooks/useApi";
 import { useAuth } from "../../hooks/useAuth";

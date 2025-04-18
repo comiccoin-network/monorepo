@@ -1,4 +1,4 @@
-// src/api/endpoints/loginApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/loginApi.js
 import axios from "axios";
 import axiosClient, { publicEndpoint } from "../axiosClient";
 

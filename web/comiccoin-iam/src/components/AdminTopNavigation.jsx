@@ -1,4 +1,4 @@
-// src/components/AdminTopNavigation.jsx
+// monorepo/web/comiccoin-iam/src/components/AdminTopNavigation.jsx
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router";
 import {

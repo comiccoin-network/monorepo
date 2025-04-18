@@ -1,4 +1,4 @@
-// src/api/endpoints/emailVerificationApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/emailVerificationApi.js
 import axios from "axios";
 import axiosClient, { publicEndpoint } from "../axiosClient";
 

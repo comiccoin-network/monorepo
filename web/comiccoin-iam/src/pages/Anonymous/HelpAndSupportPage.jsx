@@ -1,4 +1,4 @@
-// src/pages/HelpAndSupportPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/HelpAndSupportPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import {

@@ -1,4 +1,4 @@
-// src/components/AdminFooter.jsx
+// monorepo/web/comiccoin-iam/src/components/AdminFooter.jsx
 import React from "react";
 import { Link, useLocation } from "react-router";
 import {

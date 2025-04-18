@@ -1,4 +1,4 @@
-// src/components/IndexPage/Footer.jsx
+// monorepo/web/comiccoin-iam/src/components/IndexPage/Footer.jsx
 import { Link } from "react-router";
 import {
   ExternalLink,

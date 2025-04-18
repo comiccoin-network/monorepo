@@ -1,4 +1,4 @@
-// src/pages/Anonymous/Gateway/GetStartedPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Anonymous/Gateway/GetStartedPage.jsx
 import React from "react";
 import { Link } from "react-router";
 import { UserPlus, LogIn, ArrowRight, Shield, Wallet } from "lucide-react";

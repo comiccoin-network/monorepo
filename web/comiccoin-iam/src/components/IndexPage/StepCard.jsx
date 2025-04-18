@@ -1,4 +1,4 @@
-// src/components/IndexPage/StepCard.jsx
+// monorepo/web/comiccoin-iam/src/components/IndexPage/StepCard.jsx
 import React from "react";
 import { Link } from "react-router";
 import {

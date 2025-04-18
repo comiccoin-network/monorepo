@@ -1,4 +1,4 @@
-// src/api/endpoints/userApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/userApi.js
 import { usePrivateQuery, usePrivateMutation } from "../../hooks/useApi";
 import axiosClient from "../axiosClient";
 

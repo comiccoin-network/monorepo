@@ -1,4 +1,4 @@
-// src/api/endpoints/meGetApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/meGetApi.js
 import { usePrivateQuery } from "../../hooks/useApi";
 
 /**

@@ -1,4 +1,4 @@
-// src/api/endpoints/faucetApi.js
+// monorepo/web/comiccoin-iam/src/api/endpoints/faucetApi.js
 import { usePublicQuery } from "../../hooks/useApi";
 
 // Custom hook for fetching faucet data (GET only)

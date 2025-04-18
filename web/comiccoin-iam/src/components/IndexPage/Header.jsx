@@ -1,5 +1,4 @@
 // monorepo/web/comiccoin-iam/src/components/IndexPage/Header.jsx
-// src/components/IndexPage/Header.jsx
 import React, { useState } from "react";
 import { Link } from "react-router";
 import {

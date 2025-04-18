@@ -1,4 +1,4 @@
-// src/components/withProfileVerification.jsx
+// monorepo/web/comiccoin-iam/src/components/withProfileVerification.jsx
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "../hooks/useAuth";

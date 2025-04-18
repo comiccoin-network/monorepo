@@ -1,4 +1,4 @@
-// src/pages/Individual/More/Page.jsx
+// monorepo/web/comiccoin-iam/src/pages/Individual/More/Page.jsx
 import React from "react";
 import { useNavigate } from "react-router";
 import { Settings, LogOut, Trash2, ArrowRight, Menu } from "lucide-react";

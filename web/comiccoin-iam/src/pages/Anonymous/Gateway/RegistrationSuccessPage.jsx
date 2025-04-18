@@ -1,4 +1,4 @@
-// src/pages/Gatway/RegistrationSuccessPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Gatway/RegistrationSuccessPage.jsx
 import { useState, useRef } from "react";
 import {
   Mail,

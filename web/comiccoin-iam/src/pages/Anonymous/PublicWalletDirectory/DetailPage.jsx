@@ -1,4 +1,4 @@
-// src/pages/Anonymous/PublicWalletDirectory/DetailPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Anonymous/PublicWalletDirectory/DetailPage.jsx
 import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";

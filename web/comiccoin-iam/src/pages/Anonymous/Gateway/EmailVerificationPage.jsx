@@ -1,4 +1,4 @@
-// src/pages/Anonymous/Gateway/EmailVerificationPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Anonymous/Gateway/EmailVerificationPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router";
 import {

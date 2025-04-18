@@ -1,4 +1,4 @@
-// src/pages/Anonymous/Gateway/ResetPasswordPage.jsx
+// monorepo/web/comiccoin-iam/src/pages/Anonymous/Gateway/ResetPasswordPage.jsx
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
 import {
