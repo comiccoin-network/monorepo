@@ -7,7 +7,7 @@ import {
   USER_ROLE,
   USER_STATUS,
   PROFILE_VERIFICATION_STATUS,
-} from "../../../hooks/useUser";
+} from "../../../../hooks/useUser";
 
 const UserAddStep3 = () => {
   const {
@@ -92,6 +92,115 @@ const UserAddStep3 = () => {
     } finally {
       setLocalIsSubmitting(false);
       setIsSubmitting(false);
+    }
+  };
+
+  // Get role-specific sections to display
+  const getRoleSpecificSections = () => {
+    switch (formData.role) {
+      case USER_ROLE.COMPANY:
+        return (
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">
+              Business Information
+            </h3>
+            <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">
+                  Business Name
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.comicBookStoreName)}
+                </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">
+                  Years Operating
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(
+                    formData.howLongStoreOperating === 1
+                      ? "Less than 1 year"
+                      : formData.howLongStoreOperating === 2
+                        ? "1-3 years"
+                        : formData.howLongStoreOperating === 3
+                          ? "3-5 years"
+                          : formData.howLongStoreOperating === 4
+                            ? "5-10 years"
+                            : formData.howLongStoreOperating === 5
+                              ? "More than 10 years"
+                              : "Not specified",
+                  )}
+                </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">Website</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.websiteURL)}
+                </dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="text-sm font-medium text-gray-500">
+                  Description
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.description)}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        );
+
+      case USER_ROLE.INDIVIDUAL:
+        return (
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">
+              Individual Information
+            </h3>
+            <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">
+                  Collecting Experience
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(
+                    formData.howLongCollectingComicBooksForGrading === 1
+                      ? "Less than 1 year"
+                      : formData.howLongCollectingComicBooksForGrading === 2
+                        ? "1-3 years"
+                        : formData.howLongCollectingComicBooksForGrading === 3
+                          ? "3-5 years"
+                          : formData.howLongCollectingComicBooksForGrading === 4
+                            ? "5-10 years"
+                            : formData.howLongCollectingComicBooksForGrading ===
+                                5
+                              ? "More than 10 years"
+                              : "Not specified",
+                  )}
+                </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">
+                  Website/Profile
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.websiteURL)}
+                </dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="text-sm font-medium text-gray-500">
+                  Description
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.description)}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
@@ -185,6 +294,9 @@ const UserAddStep3 = () => {
           </dl>
         </div>
 
+        {/* Role-specific information */}
+        {getRoleSpecificSections()}
+
         {/* Address Information - if provided */}
         {(formData.addressLine1 || formData.city || formData.country) && (
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -240,8 +352,72 @@ const UserAddStep3 = () => {
           </div>
         )}
 
-        {/* Role-specific information would be rendered here */}
-        {/* For brevity, I'm not including all possible fields */}
+        {/* Shipping Address - if enabled */}
+        {formData.hasShippingAddress && (
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">
+              Shipping Address
+            </h3>
+            <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">Name</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.shippingName)}
+                </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">Phone</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.shippingPhone)}
+                </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">
+                  Address Line 1
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.shippingAddressLine1)}
+                </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">
+                  Address Line 2
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.shippingAddressLine2)}
+                </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">City</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.shippingCity)}
+                </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">Country</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.shippingCountry)}
+                </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">
+                  State/Province
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.shippingRegion)}
+                </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">
+                  Postal Code
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatValue(formData.shippingPostalCode)}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        )}
 
         {/* Consent Information */}
         <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">

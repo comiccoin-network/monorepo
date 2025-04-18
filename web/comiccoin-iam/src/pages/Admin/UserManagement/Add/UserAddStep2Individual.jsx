@@ -1,4 +1,4 @@
-// UserAddStep2Business.jsx
+// UserAddStep2Individual.jsx
 import React, { useState } from "react";
 import { useUserWizard } from "./UserAddWizardContext";
 import countryRegionData from "country-region-data/dist/data-umd";
@@ -9,22 +9,19 @@ import {
   Lock,
   UserCircle,
   Shield,
-  Building,
   Phone,
   Globe,
-  Clock,
   MapPin,
   Home,
   Hash,
   Info,
-  Check,
+  Clock,
   AlertCircle,
-  Store,
-  LinkIcon,
+  Link as LinkIcon,
   BookOpen,
-  Calendar,
-  Truck,
+  Check,
   ArrowDown,
+  Truck,
 } from "lucide-react";
 import {
   USER_STATUS,
@@ -33,7 +30,6 @@ import {
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
 
-// Define constants
 // Timezones for dropdown
 const timezones = [
   { value: "", label: "Select Timezone..." },
@@ -57,25 +53,25 @@ const timezones = [
   { value: "UTC+10:00", label: "(UTC+10:00) Sydney, Melbourne" },
 ];
 
-// Referral sources
-const referralSources = [
-  { value: 0, label: "Select an option..." },
-  { value: 1, label: "Social Media" },
-  { value: 2, label: "Search Engine" },
-  { value: 3, label: "Friend or Colleague" },
-  { value: 4, label: "Comic Convention" },
-  { value: 5, label: "Industry Publication" },
-  { value: 6, label: "Other" },
-];
-
 // Experience options
-const yearsInOperation = [
+const experienceOptions = [
   { value: 0, label: "Select an option..." },
   { value: 1, label: "Less than 1 year" },
   { value: 2, label: "1-3 years" },
   { value: 3, label: "3-5 years" },
   { value: 4, label: "5-10 years" },
   { value: 5, label: "More than 10 years" },
+];
+
+// Referral sources
+const referralSources = [
+  { value: 0, label: "Select an option..." },
+  { value: 1, label: "Social Media" },
+  { value: 2, label: "Search Engine" },
+  { value: 3, label: "Friend or Family" },
+  { value: 4, label: "Comic Convention" },
+  { value: 5, label: "Comic Book Store" },
+  { value: 6, label: "Other" },
 ];
 
 // Yes/No options
@@ -85,17 +81,7 @@ const yesNoOptions = [
   { value: 2, label: "No" },
 ];
 
-// Estimated submissions per month options
-const estimatedSubmissionsPerMonthOptions = [
-  { value: 0, label: "Select an option..." },
-  { value: 1, label: "1-10 submissions per month" },
-  { value: 2, label: "11-25 submissions per month" },
-  { value: 3, label: "26-50 submissions per month" },
-  { value: 4, label: "51-100 submissions per month" },
-  { value: 5, label: "More than 100 submissions per month" },
-];
-
-const UserAddStep2Business = () => {
+const UserAddStep2Individual = () => {
   const {
     formData,
     updateFormData,
@@ -214,8 +200,8 @@ const UserAddStep2Business = () => {
     if (!formData.password) errors.password = "Password is required";
     if (!formData.firstName) errors.firstName = "First name is required";
     if (!formData.lastName) errors.lastName = "Last name is required";
-    if (!formData.comicBookStoreName)
-      errors.comicBookStoreName = "Comic Book Store Name is required";
+    if (!formData.description) errors.description = "Description is required";
+    if (!formData.websiteURL) errors.websiteURL = "Website URL is required";
 
     // Password length
     if (formData.password && formData.password.length < 8) {
@@ -228,21 +214,20 @@ const UserAddStep2Business = () => {
       errors.email = "Invalid email format";
     }
 
-    // Check other required fields from verification form
-    if (formData.howLongStoreOperating === 0)
-      errors.howLongStoreOperating = "This field is required";
-    if (!formData.gradingComicsExperience)
-      errors.gradingComicsExperience = "Please describe your experience";
+    // Check experience fields
+    if (formData.howLongCollectingComicBooksForGrading === 0)
+      errors.howLongCollectingComicBooksForGrading = "This field is required";
+
+    if (formData.howDidYouHearAboutUs === 0)
+      errors.howDidYouHearAboutUs = "This field is required";
+
     if (
-      formData.hasOtherGradingService === 1 &&
-      !formData.otherGradingServiceName
+      formData.howDidYouHearAboutUs === 6 &&
+      !formData.howDidYouHearAboutUsOther
     ) {
-      errors.otherGradingServiceName = "Please specify the grading service";
+      errors.howDidYouHearAboutUsOther =
+        "Please specify how you heard about us";
     }
-    if (formData.estimatedSubmissionsPerMonth === 0)
-      errors.estimatedSubmissionsPerMonth = "This field is required";
-    if (!formData.retailPartnershipReason)
-      errors.retailPartnershipReason = "This field is required";
 
     // Check shipping address fields if provided
     if (formData.hasShippingAddress) {
@@ -284,7 +269,7 @@ const UserAddStep2Business = () => {
         {/* Wizard Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-purple-900">Add New User</h1>
-          <p className="text-gray-600">Step 2 of 3: Business Information</p>
+          <p className="text-gray-600">Step 2 of 3: Individual Information</p>
 
           {/* Progress Bar */}
           <div className="w-full h-2 bg-gray-200 rounded-full mt-4">
@@ -299,10 +284,10 @@ const UserAddStep2Business = () => {
           <div className="p-6">
             <div className="text-center mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
-                Business Information
+                Individual Information
               </h2>
               <p className="text-gray-600 mt-1">
-                Enter information for the business account
+                Enter information for the individual account
               </p>
             </div>
 
@@ -337,7 +322,7 @@ const UserAddStep2Business = () => {
                             ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
-                        placeholder="business@example.com"
+                        placeholder="user@example.com"
                         required
                       />
                       {hasError("email") && (
@@ -502,6 +487,36 @@ const UserAddStep2Business = () => {
                     </div>
                   </div>
 
+                  {/* Status */}
+                  <div>
+                    <label
+                      htmlFor="status"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Account Status <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Shield className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        id="status"
+                        name="status"
+                        value={formData.status}
+                        onChange={handleInputChange}
+                        className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none"
+                        style={selectStyles}
+                      >
+                        <option value={USER_STATUS.ACTIVE}>Active</option>
+                        <option value={USER_STATUS.LOCKED}>Locked</option>
+                        <option value={USER_STATUS.ARCHIVED}>Archived</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Email Verification Checkbox */}
                   <div className="flex items-start">
                     <div className="flex items-center h-5">
@@ -529,352 +544,19 @@ const UserAddStep2Business = () => {
                 </div>
               </div>
 
-              {/* Business Information */}
+              {/* Personal Information */}
               <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex items-center mb-3">
-                  <Store
-                    className="h-5 w-5 text-purple-600 mr-2"
-                    aria-hidden="true"
-                  />
-                  <h3 className="text-md font-medium text-gray-900">
-                    Business Details
-                  </h3>
-                </div>
+                <h3 className="text-md font-medium text-gray-900 mb-4">
+                  Personal Information
+                </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Comic Book Store Name */}
-                  <div>
-                    <label
-                      htmlFor="comicBookStoreName"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Comic Book Store Name{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <BookOpen className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        id="comicBookStoreName"
-                        name="comicBookStoreName"
-                        value={formData.comicBookStoreName}
-                        onChange={handleInputChange}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                          hasError("comicBookStoreName")
-                            ? "border-red-500 bg-red-50 pr-10"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="Amazing Comics"
-                        required
-                      />
-                      {hasError("comicBookStoreName") && (
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <AlertCircle className="h-5 w-5 text-red-500" />
-                        </div>
-                      )}
-                    </div>
-                    {hasError("comicBookStoreName") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
-                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                        <span>{getErrorMessage("comicBookStoreName")}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  {/* How long has the store been operating */}
-                  <div>
-                    <label
-                      htmlFor="howLongStoreOperating"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      How long has your store been operating?{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Calendar className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <select
-                        id="howLongStoreOperating"
-                        name="howLongStoreOperating"
-                        value={formData.howLongStoreOperating}
-                        onChange={handleInputChange}
-                        className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                          hasError("howLongStoreOperating")
-                            ? "border-red-500 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        style={selectStyles}
-                        required
-                      >
-                        {yearsInOperation.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        {hasError("howLongStoreOperating") ? (
-                          <AlertCircle className="h-5 w-5 text-red-500" />
-                        ) : (
-                          <ArrowDown className="h-5 w-5 text-gray-400" />
-                        )}
-                      </div>
-                    </div>
-                    {hasError("howLongStoreOperating") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
-                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                        <span>{getErrorMessage("howLongStoreOperating")}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Website URL */}
-                  <div>
-                    <label
-                      htmlFor="websiteURL"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Online Presence Link{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex rounded-md shadow-sm">
-                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                        <LinkIcon className="h-4 w-4" aria-hidden="true" />
-                      </span>
-                      <input
-                        type="url"
-                        id="websiteURL"
-                        name="websiteURL"
-                        value={formData.websiteURL}
-                        onChange={handleInputChange}
-                        className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                          hasError("websiteURL")
-                            ? "border-red-500 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="e.g., https://yourcomicshop.com"
-                        required
-                      />
-                      {hasError("websiteURL") && (
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <AlertCircle className="h-5 w-5 text-red-500" />
-                        </div>
-                      )}
-                    </div>
-                    <p className="mt-1 text-xs text-gray-500">
-                      Please provide a link to your company website or a public
-                      social media profile
-                    </p>
-                    {hasError("websiteURL") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
-                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                        <span>{getErrorMessage("websiteURL")}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Estimated Submissions Per Month */}
-                  <div>
-                    <label
-                      htmlFor="estimatedSubmissionsPerMonth"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Estimated submissions per month{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Calendar className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <select
-                        id="estimatedSubmissionsPerMonth"
-                        name="estimatedSubmissionsPerMonth"
-                        value={formData.estimatedSubmissionsPerMonth}
-                        onChange={handleInputChange}
-                        className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                          hasError("estimatedSubmissionsPerMonth")
-                            ? "border-red-500 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        style={selectStyles}
-                        required
-                      >
-                        {estimatedSubmissionsPerMonthOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        {hasError("estimatedSubmissionsPerMonth") ? (
-                          <AlertCircle className="h-5 w-5 text-red-500" />
-                        ) : (
-                          <ArrowDown className="h-5 w-5 text-gray-400" />
-                        )}
-                      </div>
-                    </div>
-                    {hasError("estimatedSubmissionsPerMonth") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
-                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                        <span>
-                          {getErrorMessage("estimatedSubmissionsPerMonth")}
-                        </span>
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Other Grading Services */}
-                  <div>
-                    <label
-                      htmlFor="hasOtherGradingService"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Do you currently use another grading service?{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Check className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <select
-                        id="hasOtherGradingService"
-                        name="hasOtherGradingService"
-                        value={formData.hasOtherGradingService}
-                        onChange={handleInputChange}
-                        className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                          hasError("hasOtherGradingService")
-                            ? "border-red-500 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        style={selectStyles}
-                        required
-                      >
-                        {yesNoOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        {hasError("hasOtherGradingService") ? (
-                          <AlertCircle className="h-5 w-5 text-red-500" />
-                        ) : (
-                          <ArrowDown className="h-5 w-5 text-gray-400" />
-                        )}
-                      </div>
-                    </div>
-                    {hasError("hasOtherGradingService") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
-                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                        <span>{getErrorMessage("hasOtherGradingService")}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Conditional field for other grading service name */}
-                  {formData.hasOtherGradingService === 1 && (
-                    <div>
-                      <label
-                        htmlFor="otherGradingServiceName"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Which grading service do you use?{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Building className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                          type="text"
-                          id="otherGradingServiceName"
-                          name="otherGradingServiceName"
-                          value={formData.otherGradingServiceName}
-                          onChange={handleInputChange}
-                          className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                            hasError("otherGradingServiceName")
-                              ? "border-red-500 bg-red-50 pr-10"
-                              : "border-gray-300"
-                          }`}
-                          placeholder="Name of grading service"
-                        />
-                        {hasError("otherGradingServiceName") && (
-                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <AlertCircle className="h-5 w-5 text-red-500" />
-                          </div>
-                        )}
-                      </div>
-                      {hasError("otherGradingServiceName") && (
-                        <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
-                          <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                          <span>
-                            {getErrorMessage("otherGradingServiceName")}
-                          </span>
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Request Welcome Package */}
-                  <div>
-                    <label
-                      htmlFor="requestWelcomePackage"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Would you like to receive a retailer welcome package?{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Check className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <select
-                        id="requestWelcomePackage"
-                        name="requestWelcomePackage"
-                        value={formData.requestWelcomePackage}
-                        onChange={handleInputChange}
-                        className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                          hasError("requestWelcomePackage")
-                            ? "border-red-500 bg-red-50"
-                            : "border-gray-300"
-                        }`}
-                        style={selectStyles}
-                        required
-                      >
-                        {yesNoOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        {hasError("requestWelcomePackage") ? (
-                          <AlertCircle className="h-5 w-5 text-red-500" />
-                        ) : (
-                          <ArrowDown className="h-5 w-5 text-gray-400" />
-                        )}
-                      </div>
-                    </div>
-                    {hasError("requestWelcomePackage") && (
-                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
-                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                        <span>{getErrorMessage("requestWelcomePackage")}</span>
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Description of business */}
-                <div className="mt-4">
+                {/* Description */}
+                <div className="mb-4">
                   <label
                     htmlFor="description"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Please write a brief description of the comic book store{" "}
-                    <span className="text-red-500">*</span>
+                    Personal Description <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <div className="absolute top-3 left-3 flex items-start pointer-events-none">
@@ -891,7 +573,7 @@ const UserAddStep2Business = () => {
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300"
                       }`}
-                      placeholder="For example: Rare comic book shop for collectors and traders..."
+                      placeholder="For example: Comic book collector and enthusiast with a focus on Silver Age Marvel..."
                       required
                     ></textarea>
                     {hasError("description") && (
@@ -908,86 +590,440 @@ const UserAddStep2Business = () => {
                   )}
                 </div>
 
-                {/* Grading Experience */}
-                <div className="mt-4">
+                {/* Website URL */}
+                <div className="mb-4">
                   <label
-                    htmlFor="gradingComicsExperience"
+                    htmlFor="websiteURL"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Describe your experience with grading comics{" "}
-                    <span className="text-red-500">*</span>
+                    Online Presence Link <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative">
-                    <div className="absolute top-3 left-3 flex items-start pointer-events-none">
-                      <Info className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <textarea
-                      id="gradingComicsExperience"
-                      name="gradingComicsExperience"
-                      value={formData.gradingComicsExperience}
+                  <div className="flex rounded-md shadow-sm">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                      <LinkIcon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <input
+                      type="url"
+                      id="websiteURL"
+                      name="websiteURL"
+                      value={formData.websiteURL}
                       onChange={handleInputChange}
-                      rows={3}
-                      className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                        hasError("gradingComicsExperience")
+                      className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                        hasError("websiteURL")
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300"
                       }`}
-                      placeholder="Please share your experience with comic grading services"
+                      placeholder="e.g., https://linkedin.com/in/yourprofile"
                       required
-                    ></textarea>
-                    {hasError("gradingComicsExperience") && (
-                      <div className="absolute top-3 right-3 flex items-center pointer-events-none">
+                    />
+                    {hasError("websiteURL") && (
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <AlertCircle className="h-5 w-5 text-red-500" />
                       </div>
                     )}
                   </div>
-                  {hasError("gradingComicsExperience") && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Please provide a link to your personal website or a public
+                    social media profile
+                  </p>
+                  {hasError("websiteURL") && (
                     <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
                       <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                      <span>{getErrorMessage("gradingComicsExperience")}</span>
+                      <span>{getErrorMessage("websiteURL")}</span>
                     </p>
                   )}
                 </div>
 
-                {/* Retail Partnership Reason */}
-                <div className="mt-4">
+                {/* How did you hear about us */}
+                <div className="mb-4">
                   <label
-                    htmlFor="retailPartnershipReason"
+                    htmlFor="howDidYouHearAboutUs"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Why are you interested in becoming a retail partner?{" "}
+                    How did you hear about us?{" "}
                     <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute top-3 left-3 flex items-start pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Info className="h-5 w-5 text-gray-400" />
                     </div>
-                    <textarea
-                      id="retailPartnershipReason"
-                      name="retailPartnershipReason"
-                      value={formData.retailPartnershipReason}
+                    <select
+                      id="howDidYouHearAboutUs"
+                      name="howDidYouHearAboutUs"
+                      value={formData.howDidYouHearAboutUs}
                       onChange={handleInputChange}
-                      rows={3}
-                      className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                        hasError("retailPartnershipReason")
+                      className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                        hasError("howDidYouHearAboutUs")
                           ? "border-red-500 bg-red-50"
                           : "border-gray-300"
                       }`}
-                      placeholder="Please explain why you're interested in partnering with us"
+                      style={selectStyles}
                       required
-                    ></textarea>
-                    {hasError("retailPartnershipReason") && (
-                      <div className="absolute top-3 right-3 flex items-center pointer-events-none">
+                    >
+                      {referralSources.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      {hasError("howDidYouHearAboutUs") ? (
                         <AlertCircle className="h-5 w-5 text-red-500" />
-                      </div>
-                    )}
+                      ) : (
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      )}
+                    </div>
                   </div>
-                  {hasError("retailPartnershipReason") && (
+                  {hasError("howDidYouHearAboutUs") && (
                     <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
                       <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                      <span>{getErrorMessage("retailPartnershipReason")}</span>
+                      <span>{getErrorMessage("howDidYouHearAboutUs")}</span>
                     </p>
                   )}
+                </div>
+
+                {/* Conditional field for "Other" referral source */}
+                {formData.howDidYouHearAboutUs === 6 && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="howDidYouHearAboutUsOther"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Please specify <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Info className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        id="howDidYouHearAboutUsOther"
+                        name="howDidYouHearAboutUsOther"
+                        value={formData.howDidYouHearAboutUsOther}
+                        onChange={handleInputChange}
+                        className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          hasError("howDidYouHearAboutUsOther")
+                            ? "border-red-500 bg-red-50 pr-10"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="Please specify"
+                        required
+                      />
+                      {hasError("howDidYouHearAboutUsOther") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
+                    </div>
+                    {hasError("howDidYouHearAboutUsOther") && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>
+                          {getErrorMessage("howDidYouHearAboutUsOther")}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Collecting Experience */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center mb-3">
+                  <BookOpen
+                    className="h-5 w-5 text-purple-600 mr-2"
+                    aria-hidden="true"
+                  />
+                  <h3 className="text-md font-medium text-gray-900">
+                    Comic Book Collecting Experience
+                  </h3>
+                </div>
+
+                {/* How long collecting */}
+                <div className="mb-4">
+                  <label
+                    htmlFor="howLongCollectingComicBooksForGrading"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    How long have you been collecting comic books for grading?{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Clock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      id="howLongCollectingComicBooksForGrading"
+                      name="howLongCollectingComicBooksForGrading"
+                      value={formData.howLongCollectingComicBooksForGrading}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                        hasError("howLongCollectingComicBooksForGrading")
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                      style={selectStyles}
+                      required
+                    >
+                      {experienceOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      {hasError("howLongCollectingComicBooksForGrading") ? (
+                        <AlertCircle className="h-5 w-5 text-red-500" />
+                      ) : (
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      )}
+                    </div>
+                  </div>
+                  {hasError("howLongCollectingComicBooksForGrading") && (
+                    <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                      <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                      <span>
+                        {getErrorMessage(
+                          "howLongCollectingComicBooksForGrading",
+                        )}
+                      </span>
+                    </p>
+                  )}
+                </div>
+
+                {/* Experience questions */}
+                <div className="space-y-4">
+                  {/* Previously submitted for grading */}
+                  <div>
+                    <label
+                      htmlFor="hasPreviouslySubmittedComicBookForGrading"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Have you previously submitted comic books for grading?{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Check className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        id="hasPreviouslySubmittedComicBookForGrading"
+                        name="hasPreviouslySubmittedComicBookForGrading"
+                        value={
+                          formData.hasPreviouslySubmittedComicBookForGrading
+                        }
+                        onChange={handleInputChange}
+                        className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          hasError("hasPreviouslySubmittedComicBookForGrading")
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        style={selectStyles}
+                      >
+                        {yesNoOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Owned graded comics */}
+                  <div>
+                    <label
+                      htmlFor="hasOwnedGradedComicBooks"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Have you owned graded comic books?{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Check className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        id="hasOwnedGradedComicBooks"
+                        name="hasOwnedGradedComicBooks"
+                        value={formData.hasOwnedGradedComicBooks}
+                        onChange={handleInputChange}
+                        className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          hasError("hasOwnedGradedComicBooks")
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        style={selectStyles}
+                      >
+                        {yesNoOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Regular comic book shop */}
+                  <div>
+                    <label
+                      htmlFor="hasRegularComicBookShop"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Do you have a regular comic book shop?{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Check className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        id="hasRegularComicBookShop"
+                        name="hasRegularComicBookShop"
+                        value={formData.hasRegularComicBookShop}
+                        onChange={handleInputChange}
+                        className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          hasError("hasRegularComicBookShop")
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        style={selectStyles}
+                      >
+                        {yesNoOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Auction Sites */}
+                  <div>
+                    <label
+                      htmlFor="hasPreviouslyPurchasedFromAuctionSite"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Have you purchased from auction sites?{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Check className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        id="hasPreviouslyPurchasedFromAuctionSite"
+                        name="hasPreviouslyPurchasedFromAuctionSite"
+                        value={formData.hasPreviouslyPurchasedFromAuctionSite}
+                        onChange={handleInputChange}
+                        className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          hasError("hasPreviouslyPurchasedFromAuctionSite")
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        style={selectStyles}
+                      >
+                        {yesNoOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Facebook Marketplace */}
+                  <div>
+                    <label
+                      htmlFor="hasPreviouslyPurchasedFromFacebookMarketplace"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Have you purchased from Facebook Marketplace?{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Check className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        id="hasPreviouslyPurchasedFromFacebookMarketplace"
+                        name="hasPreviouslyPurchasedFromFacebookMarketplace"
+                        value={
+                          formData.hasPreviouslyPurchasedFromFacebookMarketplace
+                        }
+                        onChange={handleInputChange}
+                        className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          hasError(
+                            "hasPreviouslyPurchasedFromFacebookMarketplace",
+                          )
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        style={selectStyles}
+                      >
+                        {yesNoOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Comic Cons */}
+                  <div>
+                    <label
+                      htmlFor="hasRegularlyAttendedComicConsOrCollectibleShows"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Do you attend comic cons or collectible shows?{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Check className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        id="hasRegularlyAttendedComicConsOrCollectibleShows"
+                        name="hasRegularlyAttendedComicConsOrCollectibleShows"
+                        value={
+                          formData.hasRegularlyAttendedComicConsOrCollectibleShows
+                        }
+                        onChange={handleInputChange}
+                        className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          hasError(
+                            "hasRegularlyAttendedComicConsOrCollectibleShows",
+                          )
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                        style={selectStyles}
+                      >
+                        {yesNoOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -999,7 +1035,7 @@ const UserAddStep2Business = () => {
                     aria-hidden="true"
                   />
                   <h3 className="text-md font-medium text-gray-900">
-                    Store Location
+                    Address Information
                   </h3>
                 </div>
 
@@ -1800,4 +1836,4 @@ const UserAddStep2Business = () => {
   );
 };
 
-export default UserAddStep2Business;
+export default UserAddStep2Individual;

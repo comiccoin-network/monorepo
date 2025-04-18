@@ -44,7 +44,6 @@ import AdminDashboardPage from "./pages/Admin/Dashboard/Page";
 import UserListPage from "./pages/Admin/UserManagement/ListPage";
 import UserDetailsPage from "./pages/Admin/UserManagement/DetailsPage";
 import AdminUserPublicWalletUpdatePage from "./pages/Admin/UserManagement/PublicWallet/UpdatePage";
-import UserAddPage from "./pages/Admin/UserManagement/AddPage";
 import AdminUpdateUserPage from "./pages/Admin/UserManagement/UpdatePage";
 import AdminAddWalletPage from "./pages/Admin/UserManagement/PublicWallet/AddPage";
 import AdminUserPublicWalletDeletePage from "./pages/Admin/UserManagement/PublicWallet/DeletePage";
@@ -53,6 +52,15 @@ import AdminSettingsPage from "./pages/Admin/More/SettingsPage";
 import AdminPublicWalletListPage from "./pages/Admin/PublicWallet/ListPage";
 import AdminPublicWalletDetailPage from "./pages/Admin/PublicWallet/DetailPage";
 import AdminPublicWalletUpdatePage from "./pages/Admin/PublicWallet/UpdatePage";
+
+// Simplified imports in App.jsx
+import UserAddStep0 from "./pages/Admin/UserManagement/Add/UserAddStep0";
+import UserAddStep1 from "./pages/Admin/UserManagement/Add/UserAddStep1";
+import UserAddStep2Admin from "./pages/Admin/UserManagement/Add/UserAddStep2Admin";
+import UserAddStep2Business from "./pages/Admin/UserManagement/Add/UserAddStep2Business";
+import UserAddStep2Individual from "./pages/Admin/UserManagement/Add/UserAddStep2Individual";
+import UserAddStep3 from "./pages/Admin/UserManagement/Add/UserAddStep3";
+import { UserWizardProvider } from "./pages/Admin/UserManagement/Add/UserAddWizardContext";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -275,14 +283,73 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
-              path="/admin/users/add"
+              path="/admin/users/add/0"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <UserAddPage />
+                  <UserWizardProvider>
+                    <UserAddStep0 />
+                  </UserWizardProvider>
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="/admin/users/add/role"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <UserWizardProvider>
+                    <UserAddStep1 />
+                  </UserWizardProvider>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/users/add/details/admin"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <UserWizardProvider>
+                    <UserAddStep2Admin />
+                  </UserWizardProvider>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/users/add/details/business"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <UserWizardProvider>
+                    <UserAddStep2Business />
+                  </UserWizardProvider>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/users/add/details/individual"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <UserWizardProvider>
+                    <UserAddStep2Individual />
+                  </UserWizardProvider>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/users/add/review"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <UserWizardProvider>
+                    <UserAddStep3 />
+                  </UserWizardProvider>
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/admin/users/:id/edit"
               element={

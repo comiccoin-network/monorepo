@@ -1,21 +1,20 @@
-// monorepo/web/comiccoin-iam/src/pages/Admin/UserManagement/Add/UserAddWizard.jsx
+// UserAddWizard.jsx - Simplified
 import React, { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import { useUserWizard } from "./UserAddWizardContext";
-import AdminTopNavigation from "../../../components/AdminTopNavigation";
-import AdminFooter from "../../../components/AdminFooter";
+import AdminTopNavigation from "../../../../components/AdminTopNavigation";
+import AdminFooter from "../../../../components/AdminFooter";
 import UserAddStep0 from "./UserAddStep0";
 import UserAddStep1 from "./UserAddStep1";
 import UserAddStep2Admin from "./UserAddStep2Admin";
 import UserAddStep2Business from "./UserAddStep2Business";
 import UserAddStep2Individual from "./UserAddStep2Individual";
 import UserAddStep3 from "./UserAddStep3";
-import { USER_ROLE } from "../../../hooks/useUser";
+import { USER_ROLE } from "../../../../hooks/useUser";
 
-// This is the main container component for the user add wizard
 const UserAddWizard = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { step } = useParams();
   const {
     currentStep,
     setCurrentStep,
@@ -24,51 +23,48 @@ const UserAddWizard = () => {
     createdUserId,
   } = useUserWizard();
 
-  // If the form was submitted successfully, redirect to the user details page
+  // If submitted successfully, redirect to user details
   useEffect(() => {
     if (formSubmitted && createdUserId) {
-      navigate(`/users/${createdUserId}`);
+      navigate(`/admin/users/${createdUserId}`);
     }
   }, [formSubmitted, createdUserId, navigate]);
 
-  // Sync the URL with the current step
+  // Sync URL param with state
   useEffect(() => {
-    const step = parseInt(location.pathname.split("/").pop(), 10);
-    if (!isNaN(step) && step >= 0 && step <= 3 && step !== currentStep) {
-      setCurrentStep(step);
+    const stepNum = parseInt(step, 10);
+    if (!isNaN(stepNum) && stepNum >= 0 && stepNum <= 3) {
+      setCurrentStep(stepNum);
     }
-  }, [location, setCurrentStep, currentStep]);
+  }, [step, setCurrentStep]);
 
-  // Update the URL when the step changes
+  // Update URL when step changes
   useEffect(() => {
-    navigate(`/users/add/${currentStep}`, { replace: true });
+    navigate(`/admin/users/add/${currentStep}`, { replace: true });
   }, [currentStep, navigate]);
 
-  // Determine which step component to render based on role and current step
+  // Render the current step component
   const renderStepComponent = () => {
-    if (currentStep === 0) return <UserAddStep0 />;
-    if (currentStep === 1) return <UserAddStep1 />;
-
-    if (currentStep === 2) {
-      if (formData.role === USER_ROLE.ROOT) {
-        return <UserAddStep2Admin />;
-      } else if (formData.role === USER_ROLE.COMPANY) {
-        return <UserAddStep2Business />;
-      } else if (formData.role === USER_ROLE.INDIVIDUAL) {
-        return <UserAddStep2Individual />;
-      } else {
-        // If no valid role, go back to step 1
-        navigate("/users/add/1");
-        return null;
-      }
+    switch (currentStep) {
+      case 0:
+        return <UserAddStep0 />;
+      case 1:
+        return <UserAddStep1 />;
+      case 2:
+        if (formData.role === USER_ROLE.ROOT) return <UserAddStep2Admin />;
+        if (formData.role === USER_ROLE.COMPANY)
+          return <UserAddStep2Business />;
+        if (formData.role === USER_ROLE.INDIVIDUAL)
+          return <UserAddStep2Individual />;
+        return <UserAddStep1 />; // Fallback to role selection if no valid role
+      case 3:
+        return <UserAddStep3 />;
+      default:
+        return <UserAddStep0 />;
     }
-
-    if (currentStep === 3) return <UserAddStep3 />;
-
-    return null;
   };
 
-  // Function to get the step name based on current step
+  // Get step name for display
   const getStepName = () => {
     switch (currentStep) {
       case 0:
@@ -93,7 +89,7 @@ const UserAddWizard = () => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-purple-900">Add New User</h1>
           <p className="text-gray-600">
-            Step {currentStep} of 3: {getStepName()}
+            Step {currentStep === 0 ? 1 : currentStep} of 3: {getStepName()}
           </p>
 
           {/* Progress Bar */}
@@ -105,7 +101,7 @@ const UserAddWizard = () => {
           </div>
         </div>
 
-        {/* The current step component */}
+        {/* Current step component */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
           {renderStepComponent()}
         </div>

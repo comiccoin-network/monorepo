@@ -1,4 +1,4 @@
-// monorepo/web/comiccoin-iam/src/pages/Admin/UserManagement/Add/UserAddWizardContext.js
+// Simplified UserAddWizardContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 const UserAddWizardContext = createContext();
@@ -10,113 +10,48 @@ export const UserWizardProvider = ({ children }) => {
     firstName: "",
     lastName: "",
     password: "",
-    role: "", // Will be set in Step 1
+    role: "",
     phone: "",
     status: 1, // Active by default
     profileVerificationStatus: 1, // Unverified by default
     isEmailVerified: false,
-
-    // Common fields for all roles
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    country: "",
-    region: "",
-    postalCode: "",
-
-    // Fields for shipping address
-    hasShippingAddress: false,
-    shippingName: "",
-    shippingPhone: "",
-    shippingAddressLine1: "",
-    shippingAddressLine2: "",
-    shippingCity: "",
-    shippingCountry: "",
-    shippingRegion: "",
-    shippingPostalCode: "",
-
-    // Business-specific fields
-    comicBookStoreName: "",
-    howLongStoreOperating: 0,
-    gradingComicsExperience: "",
-    retailPartnershipReason: "",
-    estimatedSubmissionsPerMonth: 0,
-    hasOtherGradingService: 0,
-    otherGradingServiceName: "",
-    requestWelcomePackage: 0,
-    websiteURL: "",
-    description: "",
-
-    // Individual-specific fields
-    howLongCollectingComicBooksForGrading: 0,
-    hasPreviouslySubmittedComicBookForGrading: 0,
-    hasOwnedGradedComicBooks: 0,
-    hasRegularComicBookShop: 0,
-    hasPreviouslyPurchasedFromAuctionSite: 0,
-    hasPreviouslyPurchasedFromFacebookMarketplace: 0,
-    hasRegularlyAttendedComicConsOrCollectibleShows: 0,
-
-    // Referral and consent fields
-    howDidYouHearAboutUs: 0,
-    howDidYouHearAboutUsOther: "",
-    agreeTermsOfService: true,
-    agreePromotions: false,
-    agreeToTrackingAcrossThirdPartyAppsAndServices: false,
+    // Other fields...
   };
 
   const [formData, setFormData] = useState(initialFormData);
-  const [currentStep, setCurrentStep] = useState(0);
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [createdUserId, setCreatedUserId] = useState(null);
 
-  // Load data from localStorage on initial load
+  // Load data from localStorage on init
   useEffect(() => {
     const savedData = localStorage.getItem("userAddWizardData");
     if (savedData) {
       try {
-        const parsedData = JSON.parse(savedData);
-        setFormData(parsedData);
-        setCurrentStep(
-          parseInt(localStorage.getItem("userAddWizardStep") || "0"),
-        );
+        setFormData(JSON.parse(savedData));
       } catch (error) {
-        console.error("Error parsing saved form data:", error);
-        // Clear invalid data
-        clearWizardData();
+        console.error("Error loading saved data:", error);
       }
     }
   }, []);
 
   // Save data to localStorage when it changes
   useEffect(() => {
-    if (currentStep > 0) {
-      localStorage.setItem("userAddWizardData", JSON.stringify(formData));
-      localStorage.setItem("userAddWizardStep", currentStep.toString());
-    }
-  }, [formData, currentStep]);
+    localStorage.setItem("userAddWizardData", JSON.stringify(formData));
+  }, [formData]);
 
+  // Reset all data
   const clearWizardData = () => {
     localStorage.removeItem("userAddWizardData");
-    localStorage.removeItem("userAddWizardStep");
     setFormData(initialFormData);
-    setCurrentStep(0);
     setFormErrors({});
-    setIsSubmitting(false);
     setFormSubmitted(false);
     setCreatedUserId(null);
   };
 
-  const nextStep = () => {
-    setCurrentStep((prev) => prev + 1);
-  };
-
-  const prevStep = () => {
-    setCurrentStep((prev) => Math.max(0, prev - 1));
-  };
-
+  // Update form data
   const updateFormData = (newData) => {
     setFormData((prev) => ({
       ...prev,
@@ -129,10 +64,6 @@ export const UserWizardProvider = ({ children }) => {
       value={{
         formData,
         updateFormData,
-        currentStep,
-        setCurrentStep,
-        nextStep,
-        prevStep,
         clearWizardData,
         formErrors,
         setFormErrors,
