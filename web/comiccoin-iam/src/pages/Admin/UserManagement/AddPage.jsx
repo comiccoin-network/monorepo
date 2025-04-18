@@ -26,6 +26,7 @@ import {
   BookOpen,
   Clock,
   ArrowDown,
+  X,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import AdminTopNavigation from "../../../components/AdminTopNavigation";
@@ -63,12 +64,13 @@ const timezones = [
 const UserAddPage = () => {
   const navigate = useNavigate();
   const { createNewUser, isLoading, error, success, reset } = useUser();
+  const statusRef = useRef(null);
 
   // State for general error message
   const [generalError, setGeneralError] = useState("");
 
   // Form validation errors
-  const [errors, setErrors] = useState({});
+  const [formErrors, setFormErrors] = useState({});
 
   // Form state
   const [formData, setFormData] = useState({
@@ -118,15 +120,45 @@ const UserAddPage = () => {
     };
   }, [reset]);
 
+  // Map snake_case backend field names to camelCase form field names
+  const mapBackendFieldToFormField = (backendField) => {
+    // Map of backend field names to form field names
+    const fieldMap = {
+      email: "email",
+      password: "password",
+      first_name: "firstName",
+      last_name: "lastName",
+      role: "role",
+      phone: "phone",
+      country: "country",
+      timezone: "timezone",
+      region: "region",
+      city: "city",
+      postal_code: "postalCode",
+      address_line1: "addressLine1",
+      address_line2: "addressLine2",
+      is_email_verified: "isEmailVerified",
+      profile_verification_status: "profileVerificationStatus",
+      website_url: "websiteURL",
+      description: "description",
+      comic_book_store_name: "comicBookStoreName",
+      status: "status",
+      agree_terms_of_service: "agreeTermsOfService",
+      agree_promotions: "agreePromotions",
+      agree_to_tracking_across_third_party_apps_and_services:
+        "agreeToTrackingAcrossThirdPartyAppsAndServices",
+    };
+
+    return fieldMap[backendField] || backendField; // Return mapped name or original if not found
+  };
+
   // Handle API errors when they occur
   useEffect(() => {
     if (error) {
       console.error("Error detected:", error);
 
-      // Set a general error message for display in the UI
-      setGeneralError(
-        "Failed to create user. Please check your input and try again.",
-      );
+      let errorMessages = []; // List to collect all error messages for the error box
+      let specificFieldErrors = {};
 
       // Check for response data with field validation errors
       if (error.response && error.response.data) {
@@ -137,47 +169,99 @@ const UserAddPage = () => {
           typeof error.response.data === "object" &&
           !Array.isArray(error.response.data)
         ) {
-          setErrors(error.response.data);
+          // Extract all field errors
+          for (const key in error.response.data) {
+            if (Object.hasOwnProperty.call(error.response.data, key)) {
+              // Skip the 'message' field if it's the only field in the object
+              if (
+                key === "message" &&
+                Object.keys(error.response.data).length === 1
+              ) {
+                errorMessages.push(error.response.data.message);
+                continue;
+              }
+
+              const errorValue = error.response.data[key];
+              let fieldMsg = null;
+
+              // Handle string or array of strings from backend
+              if (typeof errorValue === "string") {
+                fieldMsg = errorValue;
+              } else if (
+                Array.isArray(errorValue) &&
+                errorValue.length > 0 &&
+                typeof errorValue[0] === "string"
+              ) {
+                fieldMsg = errorValue[0]; // Take the first error if it's an array
+              }
+
+              if (fieldMsg) {
+                // Map backend field name to form field name
+                const formFieldName = mapBackendFieldToFormField(key);
+                specificFieldErrors[formFieldName] = fieldMsg;
+                errorMessages.push(fieldMsg);
+              }
+            }
+          }
+        }
+        // Handle error with message property
+        else if (
+          error.response.data.message &&
+          typeof error.response.data.message === "string"
+        ) {
+          errorMessages.push(error.response.data.message);
         }
         // Handle string error message
         else if (typeof error.response.data === "string") {
-          setGeneralError(error.response.data);
-        }
-        // Handle error with message property
-        else if (error.response.data.message) {
-          setGeneralError(error.response.data.message);
+          errorMessages.push(error.response.data);
         }
       }
       // Handle error with message property
       else if (error.message && typeof error.message === "string") {
-        setGeneralError(error.message);
+        errorMessages.push(error.message);
       }
 
-      // Set form field errors if available in the error object
-      if (error.errors) {
-        setErrors(error.errors);
+      // If we have no error messages, add a generic one
+      if (errorMessages.length === 0) {
+        errorMessages.push("Failed to create user. Please try again.");
+      }
+
+      // Update the states
+      setGeneralError(errorMessages.join(" • ")); // Join all errors with a bullet separator
+
+      // Set field errors if they were found
+      if (Object.keys(specificFieldErrors).length > 0) {
+        setFormErrors(specificFieldErrors);
+
+        // Focus the first field with a backend error
+        const firstErrorField = Object.keys(specificFieldErrors)[0];
+        // Ensure the ID matches the field key in the form (not the backend)
+        const errorElement = document.getElementById(firstErrorField);
+        if (errorElement && statusRef.current) {
+          // Small delay to allow React to render updates before scrolling and focusing
+          setTimeout(() => {
+            statusRef.current.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+            errorElement.focus();
+          }, 100);
+        }
+      } else if (formCardRef.current) {
+        // If no specific field errors but general error, scroll to the top
+        setTimeout(() => {
+          formCardRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 100);
       }
     } else {
-      // Clear error when there's no error
+      // Clear errors when there's no error
       setGeneralError("");
+      setFormErrors({});
     }
   }, [error]);
-
-  // Scroll to form card when errors are detected
-  useEffect(() => {
-    if (
-      (Object.keys(errors).length > 0 || generalError) &&
-      formCardRef.current
-    ) {
-      // Small timeout to ensure DOM has updated
-      setTimeout(() => {
-        formCardRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 100);
-    }
-  }, [errors, generalError]);
 
   // Handle successful creation
   useEffect(() => {
@@ -195,8 +279,13 @@ const UserAddPage = () => {
     setFormData((prev) => ({ ...prev, [name]: newValue }));
 
     // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+
+    // Clear general status message on input change
+    if (generalError) {
+      setGeneralError("");
     }
   };
 
@@ -210,11 +299,16 @@ const UserAddPage = () => {
     }));
 
     // Clear country error if it exists
-    if (errors.country) {
-      setErrors((prev) => ({
+    if (formErrors.country) {
+      setFormErrors((prev) => ({
         ...prev,
         country: undefined,
       }));
+    }
+
+    // Clear general error message on input change
+    if (generalError) {
+      setGeneralError("");
     }
   };
 
@@ -227,49 +321,29 @@ const UserAddPage = () => {
     }));
 
     // Clear region error if it exists
-    if (errors.region) {
-      setErrors((prev) => ({
+    if (formErrors.region) {
+      setFormErrors((prev) => ({
         ...prev,
         region: undefined,
       }));
     }
+
+    // Clear general error message on input change
+    if (generalError) {
+      setGeneralError("");
+    }
   };
 
-  // Handle form submission
+  // Handle form submission - No client-side validation
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Clear any previous errors
-    setErrors({});
+    setFormErrors({});
     setGeneralError("");
 
-    // Basic validation
-    const validationErrors = {};
-    if (!formData.email) validationErrors.email = "Email is required";
-    if (!formData.firstName)
-      validationErrors.firstName = "First name is required";
-    if (!formData.lastName) validationErrors.lastName = "Last name is required";
-    if (!formData.password) validationErrors.password = "Password is required";
-    if (!formData.timezone) validationErrors.timezone = "Timezone is required";
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
-      validationErrors.email = "Please enter a valid email address";
-    }
-
-    // Password strength validation
-    if (formData.password && formData.password.length < 8) {
-      validationErrors.password = "Password must be at least 8 characters long";
-    }
-
-    // If validation errors, set them and stop submission
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
     try {
+      // Submit form data directly without validation
       await createNewUser(formData);
       // Success is handled by the useEffect
     } catch (err) {
@@ -284,7 +358,7 @@ const UserAddPage = () => {
   };
 
   // Utility to check if a field has an error
-  const hasError = (field) => Boolean(errors[field]);
+  const hasError = (field) => Boolean(formErrors[field]);
 
   // Conditionally show/hide fields based on role
   const isCompanyRole = formData.role === USER_ROLE.COMPANY;
@@ -339,21 +413,36 @@ const UserAddPage = () => {
           {/* Form Content */}
           <form onSubmit={handleSubmit} className="p-6 space-y-6" noValidate>
             {/* Error Summary */}
-            {(Object.keys(errors).length > 0 || generalError) && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                <div className="flex items-center gap-2 font-medium mb-2">
-                  <AlertCircle className="h-5 w-5" />
-                  <h3>Please correct the following errors:</h3>
+            {generalError && (
+              <div
+                ref={statusRef}
+                className="mb-4 p-4 rounded-lg bg-red-50 text-red-800 border border-red-200 animate-fadeIn"
+                role="alert"
+                aria-live="assertive"
+              >
+                <div className="flex justify-between mb-2">
+                  <div className="flex items-center">
+                    <AlertCircle
+                      className="h-5 w-5 text-red-500 flex-shrink-0 mr-2"
+                      aria-hidden="true"
+                    />
+                    <h3 className="font-medium">
+                      Please correct the following errors:
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setGeneralError("")}
+                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                    aria-label="Dismiss message"
+                  >
+                    <X className="h-5 w-5" aria-hidden="true" />
+                  </button>
                 </div>
-                {generalError && <p className="text-sm mb-2">{generalError}</p>}
-                {Object.keys(errors).length > 0 && (
-                  <ul className="list-disc ml-5 space-y-1 text-sm">
-                    {Object.entries(errors).map(
-                      ([field, message]) =>
-                        message && <li key={field}>{message}</li>,
-                    )}
-                  </ul>
-                )}
+                <ul className="list-disc pl-5 space-y-1 text-sm">
+                  {generalError.split(" • ").map((msg, idx) => (
+                    <li key={idx}>{msg}</li>
+                  ))}
+                </ul>
               </div>
             )}
 
@@ -385,17 +474,22 @@ const UserAddPage = () => {
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("email")
-                            ? "border-red-500 bg-red-50"
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="user@example.com"
                         required
                       />
+                      {hasError("email") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                    {errors.email && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.email}
+                    {formErrors.email && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.email}</span>
                       </p>
                     )}
                   </div>
@@ -420,17 +514,22 @@ const UserAddPage = () => {
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("password")
-                            ? "border-red-500 bg-red-50"
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="••••••••"
                         required
                       />
+                      {hasError("password") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                    {errors.password && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.password}
+                    {formErrors.password && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.password}</span>
                       </p>
                     )}
                     <p className="mt-1 text-xs text-gray-500">
@@ -458,17 +557,22 @@ const UserAddPage = () => {
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("firstName")
-                            ? "border-red-500 bg-red-50"
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="John"
                         required
                       />
+                      {hasError("firstName") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                    {errors.firstName && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.firstName}
+                    {formErrors.firstName && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.firstName}</span>
                       </p>
                     )}
                   </div>
@@ -493,17 +597,22 @@ const UserAddPage = () => {
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("lastName")
-                            ? "border-red-500 bg-red-50"
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="Doe"
                         required
                       />
+                      {hasError("lastName") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                    {errors.lastName && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.lastName}
+                    {formErrors.lastName && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.lastName}</span>
                       </p>
                     )}
                   </div>
@@ -525,7 +634,7 @@ const UserAddPage = () => {
                         name="role"
                         value={formData.role}
                         onChange={handleInputChange}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
+                        className={`w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
                           hasError("role")
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
@@ -539,13 +648,17 @@ const UserAddPage = () => {
                         <option value={USER_ROLE.INDIVIDUAL}>Individual</option>
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError("role") ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
-                    {errors.role && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.role}
+                    {formErrors.role && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.role}</span>
                       </p>
                     )}
                   </div>
@@ -570,16 +683,21 @@ const UserAddPage = () => {
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("phone")
-                            ? "border-red-500 bg-red-50"
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="+1 (555) 123-4567"
                       />
+                      {hasError("phone") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                    {errors.phone && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.phone}
+                    {formErrors.phone && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.phone}</span>
                       </p>
                     )}
                   </div>
@@ -601,7 +719,7 @@ const UserAddPage = () => {
                         name="status"
                         value={formData.status}
                         onChange={handleInputChange}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
+                        className={`w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
                           hasError("status")
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
@@ -613,13 +731,17 @@ const UserAddPage = () => {
                         <option value={USER_STATUS.ARCHIVED}>Archived</option>
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError("status") ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
-                    {errors.status && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.status}
+                    {formErrors.status && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.status}</span>
                       </p>
                     )}
                   </div>
@@ -641,7 +763,7 @@ const UserAddPage = () => {
                         name="profileVerificationStatus"
                         value={formData.profileVerificationStatus}
                         onChange={handleInputChange}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
+                        className={`w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none ${
                           hasError("profileVerificationStatus")
                             ? "border-red-500 bg-red-50"
                             : "border-gray-300"
@@ -665,13 +787,17 @@ const UserAddPage = () => {
                         </option>
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError("profileVerificationStatus") ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
-                    {errors.profileVerificationStatus && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.profileVerificationStatus}
+                    {formErrors.profileVerificationStatus && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.profileVerificationStatus}</span>
                       </p>
                     )}
                   </div>
@@ -701,6 +827,12 @@ const UserAddPage = () => {
                         </p>
                       </div>
                     </div>
+                    {formErrors.isEmailVerified && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.isEmailVerified}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -732,16 +864,21 @@ const UserAddPage = () => {
                           onChange={handleInputChange}
                           className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                             hasError("comicBookStoreName")
-                              ? "border-red-500 bg-red-50"
+                              ? "border-red-500 bg-red-50 pr-10"
                               : "border-gray-300"
                           }`}
                           placeholder="Amazing Comics"
                         />
+                        {hasError("comicBookStoreName") && (
+                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <AlertCircle className="h-5 w-5 text-red-500" />
+                          </div>
+                        )}
                       </div>
-                      {errors.comicBookStoreName && (
-                        <p className="mt-1 text-sm text-red-600 flex items-center">
-                          <AlertCircle className="h-4 w-4 mr-1" />
-                          {errors.comicBookStoreName}
+                      {formErrors.comicBookStoreName && (
+                        <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                          <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                          <span>{formErrors.comicBookStoreName}</span>
                         </p>
                       )}
                     </div>
@@ -766,16 +903,21 @@ const UserAddPage = () => {
                           onChange={handleInputChange}
                           className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                             hasError("websiteURL")
-                              ? "border-red-500 bg-red-50"
+                              ? "border-red-500 bg-red-50 pr-10"
                               : "border-gray-300"
                           }`}
                           placeholder="https://example.com"
                         />
+                        {hasError("websiteURL") && (
+                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <AlertCircle className="h-5 w-5 text-red-500" />
+                          </div>
+                        )}
                       </div>
-                      {errors.websiteURL && (
-                        <p className="mt-1 text-sm text-red-600 flex items-center">
-                          <AlertCircle className="h-4 w-4 mr-1" />
-                          {errors.websiteURL}
+                      {formErrors.websiteURL && (
+                        <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                          <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                          <span>{formErrors.websiteURL}</span>
                         </p>
                       )}
                     </div>
@@ -820,13 +962,17 @@ const UserAddPage = () => {
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError("timezone") ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
-                    {errors.timezone && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.timezone}
+                    {formErrors.timezone && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.timezone}</span>
                       </p>
                     )}
                   </div>
@@ -865,13 +1011,17 @@ const UserAddPage = () => {
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError("country") ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
-                    {errors.country && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.country}
+                    {formErrors.country && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.country}</span>
                       </p>
                     )}
                   </div>
@@ -896,16 +1046,21 @@ const UserAddPage = () => {
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("city")
-                            ? "border-red-500 bg-red-50"
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="New York"
                       />
+                      {hasError("city") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                    {errors.city && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.city}
+                    {formErrors.city && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.city}</span>
                       </p>
                     )}
                   </div>
@@ -949,13 +1104,17 @@ const UserAddPage = () => {
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ArrowDown className="h-5 w-5 text-gray-400" />
+                        {hasError("region") ? (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <ArrowDown className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
                     </div>
-                    {errors.region && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.region}
+                    {formErrors.region && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.region}</span>
                       </p>
                     )}
                   </div>
@@ -980,16 +1139,21 @@ const UserAddPage = () => {
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("postalCode")
-                            ? "border-red-500 bg-red-50"
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="10001"
                       />
+                      {hasError("postalCode") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                    {errors.postalCode && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.postalCode}
+                    {formErrors.postalCode && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.postalCode}</span>
                       </p>
                     )}
                   </div>
@@ -1014,16 +1178,21 @@ const UserAddPage = () => {
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("addressLine1")
-                            ? "border-red-500 bg-red-50"
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="123 Main St"
                       />
+                      {hasError("addressLine1") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                    {errors.addressLine1 && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.addressLine1}
+                    {formErrors.addressLine1 && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.addressLine1}</span>
                       </p>
                     )}
                   </div>
@@ -1048,16 +1217,21 @@ const UserAddPage = () => {
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("addressLine2")
-                            ? "border-red-500 bg-red-50"
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="Apt 4B"
                       />
+                      {hasError("addressLine2") && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                    {errors.addressLine2 && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.addressLine2}
+                    {formErrors.addressLine2 && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.addressLine2}</span>
                       </p>
                     )}
                   </div>
@@ -1090,16 +1264,21 @@ const UserAddPage = () => {
                         rows={4}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("description")
-                            ? "border-red-500 bg-red-50"
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="Brief description of the user or their business..."
                       />
+                      {hasError("description") && (
+                        <div className="absolute top-3 right-3 flex items-center pointer-events-none">
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                    {errors.description && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.description}
+                    {formErrors.description && (
+                      <p className="mt-1 text-sm text-red-600 flex items-start gap-1">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.description}</span>
                       </p>
                     )}
                   </div>
@@ -1112,9 +1291,13 @@ const UserAddPage = () => {
                           id="agreeTermsOfService"
                           name="agreeTermsOfService"
                           type="checkbox"
+                          className={`focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded ${
+                            hasError("agreeTermsOfService")
+                              ? "border-red-500 bg-red-50"
+                              : ""
+                          }`}
                           checked={formData.agreeTermsOfService}
                           onChange={handleInputChange}
-                          className="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
                           required
                         />
                       </div>
@@ -1131,6 +1314,12 @@ const UserAddPage = () => {
                         </p>
                       </div>
                     </div>
+                    {formErrors.agreeTermsOfService && (
+                      <p className="text-sm text-red-600 flex items-start gap-1 pl-7">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.agreeTermsOfService}</span>
+                      </p>
+                    )}
 
                     <div className="flex items-start">
                       <div className="flex items-center h-5">
@@ -1138,9 +1327,13 @@ const UserAddPage = () => {
                           id="agreePromotions"
                           name="agreePromotions"
                           type="checkbox"
+                          className={`focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded ${
+                            hasError("agreePromotions")
+                              ? "border-red-500 bg-red-50"
+                              : ""
+                          }`}
                           checked={formData.agreePromotions}
                           onChange={handleInputChange}
-                          className="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
                         />
                       </div>
                       <div className="ml-3 text-sm">
@@ -1155,6 +1348,12 @@ const UserAddPage = () => {
                         </p>
                       </div>
                     </div>
+                    {formErrors.agreePromotions && (
+                      <p className="text-sm text-red-600 flex items-start gap-1 pl-7">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{formErrors.agreePromotions}</span>
+                      </p>
+                    )}
 
                     <div className="flex items-start">
                       <div className="flex items-center h-5">
@@ -1162,11 +1361,17 @@ const UserAddPage = () => {
                           id="agreeToTrackingAcrossThirdPartyAppsAndServices"
                           name="agreeToTrackingAcrossThirdPartyAppsAndServices"
                           type="checkbox"
+                          className={`focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded ${
+                            hasError(
+                              "agreeToTrackingAcrossThirdPartyAppsAndServices",
+                            )
+                              ? "border-red-500 bg-red-50"
+                              : ""
+                          }`}
                           checked={
                             formData.agreeToTrackingAcrossThirdPartyAppsAndServices
                           }
                           onChange={handleInputChange}
-                          className="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
                         />
                       </div>
                       <div className="ml-3 text-sm">
@@ -1182,6 +1387,16 @@ const UserAddPage = () => {
                         </p>
                       </div>
                     </div>
+                    {formErrors.agreeToTrackingAcrossThirdPartyAppsAndServices && (
+                      <p className="text-sm text-red-600 flex items-start gap-1 pl-7">
+                        <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>
+                          {
+                            formErrors.agreeToTrackingAcrossThirdPartyAppsAndServices
+                          }
+                        </span>
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1237,6 +1452,17 @@ const UserAddPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Add global styles for animations */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-in-out;
+        }
+      `}</style>
 
       <AdminFooter />
     </div>
