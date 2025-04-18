@@ -1,8 +1,8 @@
 // UserAddStep2Admin.jsx
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
-import React, { useState } from "react";
-import { useUserWizard } from "./UserAddWizardContext";
 import {
   ArrowLeft,
   ArrowRight,
@@ -46,22 +46,47 @@ const timezones = [
 ];
 
 const UserAddStep2Admin = () => {
-  const {
-    formData,
-    updateFormData,
-    prevStep,
-    nextStep,
-    formErrors,
-    setFormErrors,
-  } = useUserWizard();
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    status: USER_STATUS.ACTIVE,
+    profileVerificationStatus: PROFILE_VERIFICATION_STATUS.UNVERIFIED,
+    isEmailVerified: false,
+    country: "",
+    region: "",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+  });
   const [localErrors, setLocalErrors] = useState({});
+
+  // Load existing form data from localStorage
+  useEffect(() => {
+    const savedData = localStorage.getItem("userAddFormData");
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        setFormData((prevData) => ({
+          ...prevData,
+          ...parsedData,
+        }));
+      } catch (error) {
+        console.error("Error loading saved form data:", error);
+      }
+    }
+  }, []);
 
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
 
-    updateFormData({ [name]: newValue });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: newValue,
+    }));
 
     // Clear error when user types
     if (localErrors[name]) {
@@ -86,10 +111,11 @@ const UserAddStep2Admin = () => {
   // Handle country change
   const handleCountryChange = (e) => {
     const countryCode = e.target.value;
-    updateFormData({
+    setFormData((prev) => ({
+      ...prev,
       country: countryCode,
       region: "", // Reset region when country changes
-    });
+    }));
 
     // Clear country error
     if (localErrors.country) {
@@ -102,7 +128,10 @@ const UserAddStep2Admin = () => {
   // Handle region change
   const handleRegionChange = (e) => {
     const regionCode = e.target.value;
-    updateFormData({ region: regionCode });
+    setFormData((prev) => ({
+      ...prev,
+      region: regionCode,
+    }));
 
     // Clear region error
     if (localErrors.region) {
@@ -142,15 +171,25 @@ const UserAddStep2Admin = () => {
     e.preventDefault();
 
     if (validateForm()) {
-      nextStep();
+      // Save form data to localStorage
+      localStorage.setItem("userAddFormData", JSON.stringify(formData));
+      // Navigate to next step
+      navigate("/admin/users/add/review");
     }
   };
 
+  // Handle previous step
+  const handlePrevious = () => {
+    // Save form data before navigating
+    localStorage.setItem("userAddFormData", JSON.stringify(formData));
+    navigate("/admin/users/add/role");
+  };
+
   // Check if field has error
-  const hasError = (field) => Boolean(localErrors[field] || formErrors[field]);
+  const hasError = (field) => Boolean(localErrors[field]);
 
   // Get error message for a field
-  const getErrorMessage = (field) => localErrors[field] || formErrors[field];
+  const getErrorMessage = (field) => localErrors[field];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
@@ -471,7 +510,7 @@ const UserAddStep2Admin = () => {
               <div className="flex justify-between pt-4 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={prevStep}
+                  onClick={handlePrevious}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                 >
                   <ArrowLeft className="h-5 w-5 inline mr-1" /> Back

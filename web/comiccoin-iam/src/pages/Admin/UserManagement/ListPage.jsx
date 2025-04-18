@@ -137,7 +137,7 @@ const UserListPage = () => {
 
   // Navigate to create user page
   const handleAddUser = () => {
-    navigate("/admin/users/add/0");
+    navigate("/admin/users/add/init");
   };
 
   // Navigate to user detail page

@@ -53,14 +53,12 @@ import AdminPublicWalletListPage from "./pages/Admin/PublicWallet/ListPage";
 import AdminPublicWalletDetailPage from "./pages/Admin/PublicWallet/DetailPage";
 import AdminPublicWalletUpdatePage from "./pages/Admin/PublicWallet/UpdatePage";
 
-// Simplified imports in App.jsx
 import UserAddStep0 from "./pages/Admin/UserManagement/Add/UserAddStep0";
 import UserAddStep1 from "./pages/Admin/UserManagement/Add/UserAddStep1";
 import UserAddStep2Admin from "./pages/Admin/UserManagement/Add/UserAddStep2Admin";
 import UserAddStep2Business from "./pages/Admin/UserManagement/Add/UserAddStep2Business";
 import UserAddStep2Individual from "./pages/Admin/UserManagement/Add/UserAddStep2Individual";
 import UserAddStep3 from "./pages/Admin/UserManagement/Add/UserAddStep3";
-import { UserWizardProvider } from "./pages/Admin/UserManagement/Add/UserAddWizardContext";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -285,67 +283,50 @@ function App() {
             />
 
             <Route
-              path="/admin/users/add/0"
+              path="/admin/users/add/init"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <UserWizardProvider>
-                    <UserAddStep0 />
-                  </UserWizardProvider>
+                  <UserAddStep0 />
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/admin/users/add/role"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <UserWizardProvider>
-                    <UserAddStep1 />
-                  </UserWizardProvider>
+                  <UserAddStep1 />
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/admin/users/add/details/admin"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <UserWizardProvider>
-                    <UserAddStep2Admin />
-                  </UserWizardProvider>
+                  <UserAddStep2Admin />
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/admin/users/add/details/business"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <UserWizardProvider>
-                    <UserAddStep2Business />
-                  </UserWizardProvider>
+                  <UserAddStep2Business />
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/admin/users/add/details/individual"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <UserWizardProvider>
-                    <UserAddStep2Individual />
-                  </UserWizardProvider>
+                  <UserAddStep2Individual />
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/admin/users/add/review"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <UserWizardProvider>
-                    <UserAddStep3 />
-                  </UserWizardProvider>
+                  <UserAddStep3 />
                 </ProtectedRoute>
               }
             />

@@ -1,7 +1,6 @@
 // UserAddStep1.jsx
 import React from "react";
 import { useNavigate } from "react-router";
-import { useUserWizard } from "./UserAddWizardContext";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
 import { Shield, Building, User, ArrowRight } from "lucide-react";
@@ -9,10 +8,19 @@ import { USER_ROLE } from "../../../../hooks/useUser";
 
 const UserAddStep1 = () => {
   const navigate = useNavigate();
-  const { updateFormData } = useUserWizard();
 
   const handleRoleSelect = (role) => {
-    updateFormData({ role });
+    // Get existing form data or initialize if none exists
+    let formData = JSON.parse(localStorage.getItem("userAddFormData") || "{}");
+
+    // Update with selected role
+    formData = {
+      ...formData,
+      role,
+    };
+
+    // Save to localStorage
+    localStorage.setItem("userAddFormData", JSON.stringify(formData));
 
     // Navigate based on role
     if (role === USER_ROLE.ROOT) {

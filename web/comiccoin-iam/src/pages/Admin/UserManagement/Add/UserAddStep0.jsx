@@ -1,19 +1,17 @@
 // UserAddStep0.jsx
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useUserWizard } from "./UserAddWizardContext";
 import { Loader } from "lucide-react";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
 
 const UserAddStep0 = () => {
   const navigate = useNavigate();
-  const { clearWizardData } = useUserWizard();
 
   // Run effect only once with empty dependency array
   useEffect(() => {
-    // Clear wizard data
-    clearWizardData();
+    // Clear any stored form data
+    localStorage.removeItem("userAddFormData");
 
     // Simple timeout to show loading indicator then navigate
     const timer = setTimeout(() => {
