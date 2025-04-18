@@ -13,6 +13,7 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/httperror"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/password"
 	sstring "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/securestring"
+	dom_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/domain/user"
 	uc_user "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/iam/usecase/user"
 )
 
@@ -72,25 +73,33 @@ func (svc *deleteMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Delet
 	// STEP 2: Get required from context.
 	//
 
-	userID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
+	sessionUserID, ok := sessCtx.Value(constants.SessionUserID).(primitive.ObjectID)
 	if !ok {
 		svc.logger.Error("Failed getting local user id",
 			slog.Any("error", "Not found in context: user_id"))
 		return errors.New("user id not found in context")
 	}
 
+	// Defend against admin deleting themselves
+	sessionUserRole, _ := sessCtx.Value(constants.SessionUserRole).(int8)
+	if sessionUserRole == dom_user.UserRoleRoot {
+		svc.logger.Warn("admin is not allowed to delete themselves",
+			slog.Any("error", ""))
+		return httperror.NewForForbiddenWithSingleField("message", "admins do not have permission to delete themselves")
+	}
+
 	//
 	// STEP 3: Get user from database.
 	//
 
-	user, err := svc.userGetByIDUseCase.Execute(sessCtx, userID)
+	user, err := svc.userGetByIDUseCase.Execute(sessCtx, sessionUserID)
 	if err != nil {
 		svc.logger.Error("Failed getting user", slog.Any("error", err))
 		return err
 	}
 	if user == nil {
 		errMsg := "User does not exist"
-		svc.logger.Error(errMsg, slog.Any("user_id", userID))
+		svc.logger.Error(errMsg, slog.Any("user_id", sessionUserID))
 		return httperror.NewForBadRequestWithSingleField("message", errMsg)
 	}
 
@@ -114,12 +123,12 @@ func (svc *deleteMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Delet
 	// STEP 5: Delete user.
 	//
 
-	err = svc.userDeleteByIDUseCase.Execute(sessCtx, userID)
+	err = svc.userDeleteByIDUseCase.Execute(sessCtx, sessionUserID)
 	if err != nil {
 		svc.logger.Error("Failed to delete user", slog.Any("error", err))
 		return err
 	}
 
-	svc.logger.Info("User successfully deleted", slog.Any("user_id", userID))
+	svc.logger.Info("User successfully deleted", slog.Any("user_id", sessionUserID))
 	return nil
 }
