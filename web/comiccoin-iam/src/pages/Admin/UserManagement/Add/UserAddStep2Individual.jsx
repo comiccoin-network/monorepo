@@ -95,6 +95,7 @@ const UserAddStep2Individual = () => {
     lastName: "",
     phone: "",
     status: USER_STATUS.ACTIVE,
+    profileVerificationStatus: PROFILE_VERIFICATION_STATUS.APPROVED,
     isEmailVerified: false,
     description: "",
     websiteURL: "",

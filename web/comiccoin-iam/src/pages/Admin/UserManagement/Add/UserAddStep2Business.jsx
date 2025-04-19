@@ -28,7 +28,11 @@ import {
 } from "lucide-react";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
-import { USER_ROLE, USER_STATUS } from "../../../../hooks/useUser";
+import {
+  USER_ROLE,
+  USER_STATUS,
+  PROFILE_VERIFICATION_STATUS,
+} from "../../../../hooks/useUser";
 
 // Timezones for dropdown
 const timezones = [
@@ -104,6 +108,7 @@ const UserAddStep2Business = () => {
     lastName: "",
     phone: "",
     status: USER_STATUS.ACTIVE,
+    profileVerificationStatus: PROFILE_VERIFICATION_STATUS.APPROVED,
     isEmailVerified: false,
     comicBookStoreName: "",
     howLongStoreOperating: 0,
