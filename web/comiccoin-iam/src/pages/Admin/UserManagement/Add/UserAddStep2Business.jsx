@@ -1,5 +1,6 @@
 // UserAddStep2Business.jsx
-import React, { useState, useEffect } from "react"; // <-- Import useEffect
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import countryRegionData from "country-region-data/dist/data-umd";
 import {
   ArrowLeft,
@@ -7,7 +8,7 @@ import {
   Mail,
   Lock,
   UserCircle,
-  Shield, // Note: Shield is unused, keep as per instruction
+  Shield,
   Building,
   Phone,
   Globe,
@@ -27,9 +28,8 @@ import {
 } from "lucide-react";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
-import { Link, useNavigate } from "react-router";
+import { USER_ROLE, USER_STATUS } from "../../../../hooks/useUser";
 
-// Define constants
 // Timezones for dropdown
 const timezones = [
   { value: "", label: "Select Timezone..." },
@@ -55,7 +55,6 @@ const timezones = [
 
 // Referral sources
 const referralSources = [
-  // Note: Unused, keep as per instruction
   { value: 0, label: "Select an option..." },
   { value: 1, label: "Social Media" },
   { value: 2, label: "Search Engine" },
@@ -92,38 +91,74 @@ const estimatedSubmissionsPerMonthOptions = [
   { value: 5, label: "More than 100 submissions per month" },
 ];
 
-// Updated component signature to accept props
-const UserAddStep2Business = ({
-  formData = {}, // <-- FIX: Provide default value for formData to prevent undefined error
-  updateFormData,
-  prevStep,
-  // nextStep, // Keep prop definition if parent uses it, but we won't call it for navigation
-  formErrors = {}, // Provide default value for formErrors
-}) => {
-  const [localErrors, setLocalErrors] = useState({});
+const UserAddStep2Business = () => {
   const navigate = useNavigate();
+  const localStorageKey = "userAddFormData";
 
-  // <-- Load data from localStorage on component mount
+  // Initial form state with default values
+  const initialFormData = {
+    role: USER_ROLE.COMPANY, // Default to business/company role
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    status: USER_STATUS.ACTIVE,
+    isEmailVerified: false,
+    comicBookStoreName: "",
+    howLongStoreOperating: 0,
+    websiteURL: "",
+    estimatedSubmissionsPerMonth: 0,
+    hasOtherGradingService: 0,
+    otherGradingServiceName: "",
+    requestWelcomePackage: 0,
+    description: "",
+    gradingComicsExperience: "",
+    retailPartnershipReason: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    country: "",
+    region: "",
+    postalCode: "",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+    hasShippingAddress: false,
+    shippingName: "",
+    shippingPhone: "",
+    shippingAddressLine1: "",
+    shippingAddressLine2: "",
+    shippingCity: "",
+    shippingCountry: "",
+    shippingRegion: "",
+    shippingPostalCode: "",
+    agreeTermsOfService: false,
+    agreePromotions: false,
+    agreeToTrackingAcrossThirdPartyAppsAndServices: false,
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+  const [localErrors, setLocalErrors] = useState({});
+  const [showSummaryErrors, setShowSummaryErrors] = useState(false);
+
+  // Load data from localStorage on component mount
   useEffect(() => {
-    const savedData = localStorage.getItem("userAddFormData");
+    const savedData = localStorage.getItem(localStorageKey);
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData);
-        // Update form data only if it's an object and possibly has content
-        // You might want stricter validation depending on expected data structure
-        if (typeof parsedData === "object" && parsedData !== null) {
-          updateFormData(parsedData);
-        }
+        // Make sure role is COMPANY
+        parsedData.role = USER_ROLE.COMPANY;
+        setFormData((prev) => ({ ...prev, ...parsedData }));
       } catch (error) {
         console.error(
           "Failed to parse userAddFormData from localStorage",
           error,
         );
-        // Optionally clear invalid data from localStorage
-        // localStorage.removeItem('userAddFormData');
+        // Optional: Clear invalid data
+        // localStorage.removeItem(localStorageKey);
       }
     }
-  }, [updateFormData]); // <-- Dependency array includes updateFormData
+  }, []);
 
   // Inline styles for select elements to fix Safari issues
   const selectStyles = {
@@ -136,12 +171,15 @@ const UserAddStep2Business = ({
     paddingRight: "2.5rem",
   };
 
-  // Handle input changes - Uses updateFormData prop
+  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
 
-    updateFormData({ [name]: newValue });
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: newValue,
+    }));
 
     // Clear error when user types
     if (localErrors[name]) {
@@ -149,12 +187,9 @@ const UserAddStep2Business = ({
       delete newErrors[name];
       setLocalErrors(newErrors);
     }
-    // Clear global errors passed via props as well if they exist for this field
-    // Note: This assumes the parent component clears formErrors when data changes.
-    // Alternatively, pass a clearFormError function as a prop.
   };
 
-  // Get available regions based on selected country - Uses formData prop
+  // Get available regions based on selected country
   const getRegionsForCountry = (countryCode) => {
     if (!countryCode) return [];
     const country = countryRegionData.find(
@@ -163,22 +198,22 @@ const UserAddStep2Business = ({
     return country ? country.regions : [];
   };
 
-  // Available regions for the selected countries - Uses formData prop
-  // Now safe because formData defaults to {} if not provided
+  // Available regions for the selected countries
   const availableRegions = getRegionsForCountry(formData.country);
   const availableShippingRegions = getRegionsForCountry(
     formData.shippingCountry,
   );
 
-  // Handle country changes - Uses updateFormData prop
+  // Handle country changes
   const handleCountryChange = (e) => {
     const countryCode = e.target.value;
-    updateFormData({
+    setFormData((prevData) => ({
+      ...prevData,
       country: countryCode,
       region: "", // Reset region when country changes
-    });
+    }));
 
-    // Clear local country error
+    // Clear country error
     if (localErrors.country) {
       const newErrors = { ...localErrors };
       delete newErrors.country;
@@ -186,12 +221,15 @@ const UserAddStep2Business = ({
     }
   };
 
-  // Handle region changes - Uses updateFormData prop
+  // Handle region changes
   const handleRegionChange = (e) => {
     const regionCode = e.target.value;
-    updateFormData({ region: regionCode });
+    setFormData((prevData) => ({
+      ...prevData,
+      region: regionCode,
+    }));
 
-    // Clear local region error
+    // Clear region error
     if (localErrors.region) {
       const newErrors = { ...localErrors };
       delete newErrors.region;
@@ -199,15 +237,16 @@ const UserAddStep2Business = ({
     }
   };
 
-  // Handle shipping country changes - Uses updateFormData prop
+  // Handle shipping country changes
   const handleShippingCountryChange = (e) => {
     const countryCode = e.target.value;
-    updateFormData({
+    setFormData((prevData) => ({
+      ...prevData,
       shippingCountry: countryCode,
       shippingRegion: "", // Reset region when country changes
-    });
+    }));
 
-    // Clear local country error
+    // Clear country error
     if (localErrors.shippingCountry) {
       const newErrors = { ...localErrors };
       delete newErrors.shippingCountry;
@@ -215,12 +254,15 @@ const UserAddStep2Business = ({
     }
   };
 
-  // Handle shipping region changes - Uses updateFormData prop
+  // Handle shipping region changes
   const handleShippingRegionChange = (e) => {
     const regionCode = e.target.value;
-    updateFormData({ shippingRegion: regionCode });
+    setFormData((prevData) => ({
+      ...prevData,
+      shippingRegion: regionCode,
+    }));
 
-    // Clear local region error
+    // Clear region error
     if (localErrors.shippingRegion) {
       const newErrors = { ...localErrors };
       delete newErrors.shippingRegion;
@@ -228,7 +270,7 @@ const UserAddStep2Business = ({
     }
   };
 
-  // Basic validation before proceeding - Uses formData prop
+  // Basic validation before proceeding
   const validateForm = () => {
     const errors = {};
 
@@ -265,15 +307,13 @@ const UserAddStep2Business = ({
     }
 
     // Check other required fields from verification form
-    // Assuming howLongStoreOperating uses 0 as "Select..."
     if (!formData.howLongStoreOperating || formData.howLongStoreOperating == 0)
-      // Use == for potential string/number mismatch from localStorage
       errors.howLongStoreOperating = "This field is required";
     if (!formData.gradingComicsExperience)
       errors.gradingComicsExperience = "Please describe your experience";
-    // Assuming hasOtherGradingService uses 0/1/2, where 1 is 'Yes'
+
     if (
-      formData.hasOtherGradingService == 1 && // Use == for potential string/number mismatch
+      formData.hasOtherGradingService == 1 &&
       !formData.otherGradingServiceName
     ) {
       errors.otherGradingServiceName = "Please specify the grading service";
@@ -281,23 +321,21 @@ const UserAddStep2Business = ({
       formData.hasOtherGradingService == 0 ||
       formData.hasOtherGradingService === undefined
     ) {
-      // Use == for potential string/number mismatch and check undefined
       errors.hasOtherGradingService = "This field is required";
     }
-    // Assuming estimatedSubmissionsPerMonth uses 0 as "Select..."
+
     if (
       !formData.estimatedSubmissionsPerMonth ||
-      formData.estimatedSubmissionsPerMonth == 0 // Use == for potential string/number mismatch
+      formData.estimatedSubmissionsPerMonth == 0
     )
       errors.estimatedSubmissionsPerMonth = "This field is required";
     if (!formData.retailPartnershipReason)
       errors.retailPartnershipReason = "This field is required";
-    // Assuming requestWelcomePackage uses 0/1/2
+
     if (
       formData.requestWelcomePackage == 0 ||
       formData.requestWelcomePackage === undefined
     ) {
-      // Use == for potential string/number mismatch and check undefined
       errors.requestWelcomePackage = "This field is required";
     }
 
@@ -316,38 +354,59 @@ const UserAddStep2Business = ({
         errors.shippingPostalCode = "Postal code is required";
     }
 
-    setLocalErrors(errors); // Set local errors for immediate feedback
-    // Removed: setFormErrors(errors); - Parent component should handle setting global errors if needed
+    setLocalErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // Handle next step - Updated to save to localStorage and navigate
+  // Handle next step
   const handleNext = (e) => {
     e.preventDefault();
 
     if (validateForm()) {
       try {
         // Save current form data to localStorage
-        localStorage.setItem("userAddFormData", JSON.stringify(formData));
+        localStorage.setItem(localStorageKey, JSON.stringify(formData));
 
         // Navigate to the next step
-        navigate("/admin/users/add/role");
+        navigate("/admin/users/add/review");
       } catch (error) {
         console.error("Failed to save userAddFormData to localStorage", error);
-        // Handle potential storage error (e.g., quota exceeded)
-        // Maybe show an error message to the user
         setLocalErrors({
           form: "Failed to save form progress. Please try again.",
         });
       }
+    } else {
+      // Show summary of errors
+      setShowSummaryErrors(true);
+
+      // Scroll to the top where the error summary will be displayed
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     }
   };
 
-  // Check if field has error - Uses localErrors and formErrors prop
-  const hasError = (field) => Boolean(localErrors[field] || formErrors[field]);
+  // Handle previous step
+  const handlePrevious = () => {
+    // Save form data before navigating
+    localStorage.setItem(localStorageKey, JSON.stringify(formData));
+    navigate("/admin/users/add/role");
+  };
 
-  // Get error message for a field - Uses localErrors and formErrors prop
-  const getErrorMessage = (field) => localErrors[field] || formErrors[field];
+  // Check if field has error
+  const hasError = (field) => Boolean(localErrors[field]);
+
+  // Get error message for a field
+  const getErrorMessage = (field) => localErrors[field];
+
+  // Helper to get a list of all errors for summary
+  const getErrorSummary = () => {
+    return Object.entries(localErrors).map(([field, message]) => ({
+      field,
+      message,
+    }));
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
@@ -363,7 +422,7 @@ const UserAddStep2Business = ({
           <div className="w-full h-2 bg-gray-200 rounded-full mt-4">
             <div
               className="h-full bg-purple-600 rounded-full"
-              style={{ width: "60%" }} // Assuming this width is correct for step 2
+              style={{ width: "60%" }}
             ></div>
           </div>
         </div>
@@ -379,7 +438,25 @@ const UserAddStep2Business = ({
               </p>
             </div>
 
-            {/* Uses handleNext for submission */}
+            {/* Error Summary */}
+            {showSummaryErrors && Object.keys(localErrors).length > 0 && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-start">
+                  <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2" />
+                  <div>
+                    <h3 className="text-sm font-medium text-red-800">
+                      Please correct the following errors:
+                    </h3>
+                    <ul className="mt-2 text-sm text-red-700 list-disc pl-5 space-y-1">
+                      {getErrorSummary().map((error, index) => (
+                        <li key={index}>{error.message}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleNext} className="space-y-6">
               {/* Basic Account Information */}
               <div className="bg-gray-50 p-4 rounded-lg">
@@ -388,7 +465,7 @@ const UserAddStep2Business = ({
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Email - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Email */}
                   <div>
                     <label
                       htmlFor="email"
@@ -428,7 +505,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Password - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Password */}
                   <div>
                     <label
                       htmlFor="password"
@@ -471,7 +548,7 @@ const UserAddStep2Business = ({
                     </p>
                   </div>
 
-                  {/* First Name - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* First Name */}
                   <div>
                     <label
                       htmlFor="firstName"
@@ -511,7 +588,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Last Name - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Last Name */}
                   <div>
                     <label
                       htmlFor="lastName"
@@ -551,7 +628,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Phone - Uses formData, handleInputChange */}
+                  {/* Phone */}
                   <div>
                     <label
                       htmlFor="phone"
@@ -576,7 +653,7 @@ const UserAddStep2Business = ({
                     </div>
                   </div>
 
-                  {/* Email Verification Checkbox - Uses formData, handleInputChange */}
+                  {/* Email Verification Checkbox */}
                   <div className="flex items-start">
                     <div className="flex items-center h-5">
                       <input
@@ -616,7 +693,7 @@ const UserAddStep2Business = ({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Comic Book Store Name - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Comic Book Store Name */}
                   <div>
                     <label
                       htmlFor="comicBookStoreName"
@@ -657,7 +734,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* How long has the store been operating - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* How long has the store been operating */}
                   <div>
                     <label
                       htmlFor="howLongStoreOperating"
@@ -705,7 +782,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Website URL - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Website URL */}
                   <div>
                     <label
                       htmlFor="websiteURL"
@@ -716,7 +793,6 @@ const UserAddStep2Business = ({
                     </label>
                     <div className="relative flex rounded-md shadow-sm">
                       {" "}
-                      {/* Added relative for error icon positioning */}
                       <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                         <LinkIcon className="h-4 w-4" aria-hidden="true" />
                       </span>
@@ -728,7 +804,7 @@ const UserAddStep2Business = ({
                         onChange={handleInputChange}
                         className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:outline-none focus:ring-1 focus:ring-purple-500 ${
                           hasError("websiteURL")
-                            ? "border-red-500 bg-red-50 pr-10" // Added padding for icon
+                            ? "border-red-500 bg-red-50 pr-10"
                             : "border-gray-300"
                         }`}
                         placeholder="e.g., https://yourcomicshop.com"
@@ -752,7 +828,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Estimated Submissions Per Month - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Estimated Submissions Per Month */}
                   <div>
                     <label
                       htmlFor="estimatedSubmissionsPerMonth"
@@ -802,7 +878,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Other Grading Services - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Other Grading Services */}
                   <div>
                     <label
                       htmlFor="hasOtherGradingService"
@@ -818,7 +894,7 @@ const UserAddStep2Business = ({
                       <select
                         id="hasOtherGradingService"
                         name="hasOtherGradingService"
-                        value={formData.hasOtherGradingService || 0} // Default to 0 if undefined
+                        value={formData.hasOtherGradingService || 0}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("hasOtherGradingService")
@@ -850,8 +926,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Conditional field for other grading service name - Uses formData, handleInputChange, hasError, getErrorMessage */}
-                  {/* Ensure values are compared correctly (e.g., number 1, not string "1") */}
+                  {/* Conditional field for other grading service name */}
                   {Number(formData.hasOtherGradingService) === 1 && (
                     <div>
                       <label
@@ -879,7 +954,7 @@ const UserAddStep2Business = ({
                           placeholder="Name of grading service"
                           required={
                             Number(formData.hasOtherGradingService) === 1
-                          } // Conditionally required
+                          }
                         />
                         {hasError("otherGradingServiceName") && (
                           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -898,7 +973,7 @@ const UserAddStep2Business = ({
                     </div>
                   )}
 
-                  {/* Request Welcome Package - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Request Welcome Package */}
                   <div>
                     <label
                       htmlFor="requestWelcomePackage"
@@ -914,7 +989,7 @@ const UserAddStep2Business = ({
                       <select
                         id="requestWelcomePackage"
                         name="requestWelcomePackage"
-                        value={formData.requestWelcomePackage || 0} // Default to 0 if undefined
+                        value={formData.requestWelcomePackage || 0}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("requestWelcomePackage")
@@ -947,7 +1022,7 @@ const UserAddStep2Business = ({
                   </div>
                 </div>
 
-                {/* Description of business - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                {/* Description of business */}
                 <div className="mt-4">
                   <label
                     htmlFor="description"
@@ -968,7 +1043,7 @@ const UserAddStep2Business = ({
                       rows={3}
                       className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                         hasError("description")
-                          ? "border-red-500 bg-red-50 pr-10" // Added padding for icon
+                          ? "border-red-500 bg-red-50 pr-10"
                           : "border-gray-300"
                       }`}
                       placeholder="For example: Rare comic book shop for collectors and traders..."
@@ -988,7 +1063,7 @@ const UserAddStep2Business = ({
                   )}
                 </div>
 
-                {/* Grading Experience - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                {/* Grading Experience */}
                 <div className="mt-4">
                   <label
                     htmlFor="gradingComicsExperience"
@@ -1009,7 +1084,7 @@ const UserAddStep2Business = ({
                       rows={3}
                       className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                         hasError("gradingComicsExperience")
-                          ? "border-red-500 bg-red-50 pr-10" // Added padding for icon
+                          ? "border-red-500 bg-red-50 pr-10"
                           : "border-gray-300"
                       }`}
                       placeholder="Please share your experience with comic grading services"
@@ -1029,7 +1104,7 @@ const UserAddStep2Business = ({
                   )}
                 </div>
 
-                {/* Retail Partnership Reason - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                {/* Retail Partnership Reason */}
                 <div className="mt-4">
                   <label
                     htmlFor="retailPartnershipReason"
@@ -1050,7 +1125,7 @@ const UserAddStep2Business = ({
                       rows={3}
                       className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                         hasError("retailPartnershipReason")
-                          ? "border-red-500 bg-red-50 pr-10" // Added padding for icon
+                          ? "border-red-500 bg-red-50 pr-10"
                           : "border-gray-300"
                       }`}
                       placeholder="Please explain why you're interested in partnering with us"
@@ -1084,7 +1159,7 @@ const UserAddStep2Business = ({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Address Line 1 - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Address Line 1 */}
                   <div>
                     <label
                       htmlFor="addressLine1"
@@ -1124,7 +1199,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Address Line 2 - Uses formData, handleInputChange */}
+                  {/* Address Line 2 */}
                   <div>
                     <label
                       htmlFor="addressLine2"
@@ -1149,7 +1224,7 @@ const UserAddStep2Business = ({
                     </div>
                   </div>
 
-                  {/* City - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* City */}
                   <div>
                     <label
                       htmlFor="city"
@@ -1189,7 +1264,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Country - Uses formData, handleCountryChange, hasError, getErrorMessage */}
+                  {/* Country */}
                   <div>
                     <label
                       htmlFor="country"
@@ -1240,7 +1315,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Region/State - Uses formData, handleRegionChange, availableRegions, hasError, getErrorMessage */}
+                  {/* Region/State */}
                   <div>
                     <label
                       htmlFor="region"
@@ -1296,7 +1371,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Postal Code - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Postal Code */}
                   <div>
                     <label
                       htmlFor="postalCode"
@@ -1336,7 +1411,7 @@ const UserAddStep2Business = ({
                     )}
                   </div>
 
-                  {/* Timezone - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Timezone */}
                   <div>
                     <label
                       htmlFor="timezone"
@@ -1385,7 +1460,7 @@ const UserAddStep2Business = ({
                 </div>
               </div>
 
-              {/* Shipping Address Section - Uses formData, handleInputChange */}
+              {/* Shipping Address Section */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center">
@@ -1422,7 +1497,7 @@ const UserAddStep2Business = ({
                   <div className="space-y-4 border-l-2 border-purple-100 pl-3 mt-4">
                     {/* Shipping Name and Phone */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Shipping Name - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                      {/* Shipping Name */}
                       <div>
                         <label
                           htmlFor="shippingName"
@@ -1446,7 +1521,7 @@ const UserAddStep2Business = ({
                                 : "border-gray-300"
                             }`}
                             placeholder="Full Name"
-                            required={!!formData.hasShippingAddress} // Conditionally required
+                            required={!!formData.hasShippingAddress}
                           />
                           {hasError("shippingName") && (
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1462,7 +1537,7 @@ const UserAddStep2Business = ({
                         )}
                       </div>
 
-                      {/* Shipping Phone - Uses formData, handleInputChange */}
+                      {/* Shipping Phone */}
                       <div>
                         <label
                           htmlFor="shippingPhone"
@@ -1492,7 +1567,7 @@ const UserAddStep2Business = ({
 
                     {/* Shipping Address Lines */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Shipping Address Line 1 - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                      {/* Shipping Address Line 1 */}
                       <div>
                         <label
                           htmlFor="shippingAddressLine1"
@@ -1516,7 +1591,7 @@ const UserAddStep2Business = ({
                                 : "border-gray-300"
                             }`}
                             placeholder="Street address, P.O. box, company name, c/o"
-                            required={!!formData.hasShippingAddress} // Conditionally required
+                            required={!!formData.hasShippingAddress}
                           />
                           {hasError("shippingAddressLine1") && (
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1534,7 +1609,7 @@ const UserAddStep2Business = ({
                         )}
                       </div>
 
-                      {/* Shipping Address Line 2 - Uses formData, handleInputChange */}
+                      {/* Shipping Address Line 2 */}
                       <div>
                         <label
                           htmlFor="shippingAddressLine2"
@@ -1564,7 +1639,7 @@ const UserAddStep2Business = ({
 
                     {/* Shipping City, Country, Region, Postal Code */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Shipping City - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                      {/* Shipping City */}
                       <div>
                         <label
                           htmlFor="shippingCity"
@@ -1588,7 +1663,7 @@ const UserAddStep2Business = ({
                                 : "border-gray-300"
                             }`}
                             placeholder="City/Town"
-                            required={!!formData.hasShippingAddress} // Conditionally required
+                            required={!!formData.hasShippingAddress}
                           />
                           {hasError("shippingCity") && (
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1604,7 +1679,7 @@ const UserAddStep2Business = ({
                         )}
                       </div>
 
-                      {/* Shipping Country - Uses formData, handleShippingCountryChange, hasError, getErrorMessage */}
+                      {/* Shipping Country */}
                       <div>
                         <label
                           htmlFor="shippingCountry"
@@ -1627,7 +1702,7 @@ const UserAddStep2Business = ({
                                 : "border-gray-300"
                             }`}
                             style={selectStyles}
-                            required={!!formData.hasShippingAddress} // Conditionally required
+                            required={!!formData.hasShippingAddress}
                           >
                             <option value="">Select Country...</option>
                             {countryRegionData.map((country) => (
@@ -1655,7 +1730,7 @@ const UserAddStep2Business = ({
                         )}
                       </div>
 
-                      {/* Shipping Region - Uses formData, handleShippingRegionChange, availableShippingRegions, hasError, getErrorMessage */}
+                      {/* Shipping Region */}
                       <div>
                         <label
                           htmlFor="shippingRegion"
@@ -1679,7 +1754,7 @@ const UserAddStep2Business = ({
                                 : "border-gray-300"
                             } ${!availableShippingRegions.length ? "bg-gray-100 cursor-not-allowed" : ""}`}
                             style={selectStyles}
-                            required={!!formData.hasShippingAddress} // Conditionally required
+                            required={!!formData.hasShippingAddress}
                           >
                             <option value="">
                               {availableShippingRegions.length
@@ -1711,7 +1786,7 @@ const UserAddStep2Business = ({
                         )}
                       </div>
 
-                      {/* Shipping Postal Code - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                      {/* Shipping Postal Code */}
                       <div>
                         <label
                           htmlFor="shippingPostalCode"
@@ -1736,7 +1811,7 @@ const UserAddStep2Business = ({
                                 : "border-gray-300"
                             }`}
                             placeholder="ZIP or Postal Code"
-                            required={!!formData.hasShippingAddress} // Conditionally required
+                            required={!!formData.hasShippingAddress}
                           />
                           {hasError("shippingPostalCode") && (
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1763,7 +1838,7 @@ const UserAddStep2Business = ({
                 </h3>
 
                 <div className="space-y-3">
-                  {/* Terms of Service - Uses formData, handleInputChange, hasError, getErrorMessage */}
+                  {/* Terms of Service */}
                   <div className="flex items-start">
                     <div className="flex items-center h-5">
                       <input
@@ -1772,7 +1847,7 @@ const UserAddStep2Business = ({
                         type="checkbox"
                         className={`focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded ${
                           hasError("agreeTermsOfService")
-                            ? "border-red-500" // Just border, no bg change needed for checkbox
+                            ? "border-red-500"
                             : ""
                         }`}
                         checked={!!formData.agreeTermsOfService}
@@ -1794,14 +1869,12 @@ const UserAddStep2Business = ({
                   </div>
                   {hasError("agreeTermsOfService") && (
                     <p className="text-sm text-red-600 flex items-start gap-1 pl-7">
-                      {" "}
-                      {/* Adjusted padding */}
                       <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                       <span>{getErrorMessage("agreeTermsOfService")}</span>
                     </p>
                   )}
 
-                  {/* Marketing Communications - Uses formData, handleInputChange */}
+                  {/* Marketing Communications */}
                   <div className="flex items-start">
                     <div className="flex items-center h-5">
                       <input
@@ -1826,7 +1899,7 @@ const UserAddStep2Business = ({
                     </div>
                   </div>
 
-                  {/* Third-Party Tracking - Uses formData, handleInputChange */}
+                  {/* Third-Party Tracking */}
                   <div className="flex items-start">
                     <div className="flex items-center h-5">
                       <input
@@ -1866,19 +1939,17 @@ const UserAddStep2Business = ({
                 </div>
               )}
 
-              {/* Form Actions - Uses prevStep prop (via Link) and handleNext */}
+              {/* Form Actions */}
               <div className="flex justify-between pt-4 border-t border-gray-200">
-                <Link
+                <button
                   type="button"
-                  // TODO: Link should likely go to previous step, not role selection
-                  to="/admin/users/add/role"
+                  onClick={handlePrevious}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                  // onClick={prevStep} // Consider using prevStep prop if provided and suitable
                 >
                   <ArrowLeft className="h-5 w-5 inline mr-1" /> Back
-                </Link>
+                </button>
                 <button
-                  type="submit" // Submission handled by onSubmit on form tag which calls handleNext
+                  type="submit"
                   className="px-4 py-2 bg-purple-600 text-white rounded-lg shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                 >
                   Next <ArrowRight className="h-5 w-5 inline ml-1" />
