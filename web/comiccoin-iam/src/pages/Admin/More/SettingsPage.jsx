@@ -788,7 +788,7 @@ const SettingsPageContent = () => {
                       htmlFor="region"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      State/Province
+                      Region
                     </label>
                     <div className="relative">
                       <select
@@ -805,8 +805,8 @@ const SettingsPageContent = () => {
                       >
                         <option value="">
                           {availableRegions.length
-                            ? "Select State/Province..."
-                            : "No states/provinces available"}
+                            ? "Select Region..."
+                            : "No regions available"}
                         </option>
                         {availableRegions.map((region) => (
                           <option

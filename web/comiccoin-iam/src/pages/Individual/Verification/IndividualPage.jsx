@@ -547,13 +547,13 @@ const VerificationIndividualPage = () => {
                       )}
                     </div>
 
-                    {/* State/Province Dropdown */}
+                    {/* Region Dropdown */}
                     <div className="mb-3">
                       <label
                         htmlFor="region"
                         className="block text-sm text-gray-700 mb-1"
                       >
-                        State/Province <span className="text-red-500">*</span>
+                        Region <span className="text-red-500">*</span>
                       </label>
                       <select
                         id="region"
@@ -572,7 +572,7 @@ const VerificationIndividualPage = () => {
                       >
                         <option value="">
                           {formData.country
-                            ? "Select State/Province..."
+                            ? "Select Region..."
                             : "Select Country First"}
                         </option>
                         {availableRegions.map((region) => (
@@ -1405,8 +1405,7 @@ const VerificationIndividualPage = () => {
                               htmlFor="shippingRegion"
                               className="block text-sm text-gray-700 mb-1"
                             >
-                              State/Province{" "}
-                              <span className="text-red-500">*</span>
+                              Region <span className="text-red-500">*</span>
                             </label>
                             <select
                               id="shippingRegion"
@@ -1427,7 +1426,7 @@ const VerificationIndividualPage = () => {
                             >
                               <option value="">
                                 {formData.shippingCountry
-                                  ? "Select State/Province..."
+                                  ? "Select Region..."
                                   : "Select Country First"}
                               </option>
                               {availableShippingRegions.map((region) => (

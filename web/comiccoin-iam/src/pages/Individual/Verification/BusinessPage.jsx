@@ -276,7 +276,7 @@ const VerificationBusinessPage = () => {
       { field: "addressLine1", label: "Address Line 1" },
       { field: "city", label: "City" },
       { field: "country", label: "Country" },
-      { field: "region", label: "State/Province" },
+      { field: "region", label: "Region" },
       { field: "postalCode", label: "ZIP/Postal Code" },
       { field: "howDidYouHearAboutUs", label: "How did you hear about us" },
       { field: "howLongStoreOperating", label: "Store operation duration" },
@@ -327,7 +327,7 @@ const VerificationBusinessPage = () => {
       const requiredShippingFields = [
         { field: "shippingName", label: "Shipping name" },
         { field: "shippingCountry", label: "Shipping country" },
-        { field: "shippingRegion", label: "Shipping state/province" },
+        { field: "shippingRegion", label: "Shipping region" },
         { field: "shippingCity", label: "Shipping city" },
         { field: "shippingAddressLine1", label: "Shipping address" },
         { field: "shippingPostalCode", label: "Shipping postal code" },
@@ -745,13 +745,13 @@ const VerificationBusinessPage = () => {
                       )}
                     </div>
 
-                    {/* State/Province Dropdown */}
+                    {/* Region Dropdown */}
                     <div className="mb-3">
                       <label
                         htmlFor="region"
                         className="block text-sm text-gray-700 mb-1"
                       >
-                        State/Province <span className="text-red-500">*</span>
+                        Region <span className="text-red-500">*</span>
                       </label>
                       <select
                         id="region"
@@ -770,7 +770,7 @@ const VerificationBusinessPage = () => {
                       >
                         <option value="">
                           {formData.country
-                            ? "Select State/Province..."
+                            ? "Select Region..."
                             : "Select Country First"}
                         </option>
                         {availableRegions.map((region) => (
@@ -1598,8 +1598,7 @@ const VerificationBusinessPage = () => {
                             htmlFor="shippingRegion"
                             className="block text-sm text-gray-700 mb-1"
                           >
-                            State/Province{" "}
-                            <span className="text-red-500">*</span>
+                            Region <span className="text-red-500">*</span>
                           </label>
                           <select
                             id="shippingRegion"
@@ -1620,7 +1619,7 @@ const VerificationBusinessPage = () => {
                           >
                             <option value="">
                               {formData.shippingCountry
-                                ? "Select State/Province..."
+                                ? "Select Region..."
                                 : "Select Country First"}
                             </option>
                             {availableShippingRegions.map((region) => (

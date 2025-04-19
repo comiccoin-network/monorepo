@@ -290,7 +290,7 @@ const UserAddStep2Business = () => {
       errors.addressLine1 = "Address Line 1 is required";
     if (!formData.city) errors.city = "City is required";
     if (!formData.country) errors.country = "Country is required";
-    if (!formData.region) errors.region = "State/Province is required";
+    if (!formData.region) errors.region = "Region is required";
     if (!formData.postalCode) errors.postalCode = "ZIP/Postal Code is required";
     if (!formData.timezone) errors.timezone = "Timezone is required";
     if (!formData.description)
@@ -354,7 +354,7 @@ const UserAddStep2Business = () => {
       if (!formData.shippingCountry)
         errors.shippingCountry = "Country is required";
       if (!formData.shippingRegion)
-        errors.shippingRegion = "State/Province is required";
+        errors.shippingRegion = "Region is required";
       if (!formData.shippingPostalCode)
         errors.shippingPostalCode = "Postal code is required";
     }
@@ -1326,7 +1326,7 @@ const UserAddStep2Business = () => {
                       htmlFor="region"
                       className="block text-sm font-medium text-gray-700 mb-1"
                     >
-                      State/Province <span className="text-red-500">*</span>
+                      Region <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1348,7 +1348,7 @@ const UserAddStep2Business = () => {
                       >
                         <option value="">
                           {availableRegions.length
-                            ? "Select State/Province..."
+                            ? "Select Region..."
                             : "Select Country First"}
                         </option>
                         {availableRegions.map((region) => (
@@ -1741,7 +1741,7 @@ const UserAddStep2Business = () => {
                           htmlFor="shippingRegion"
                           className="block text-sm font-medium text-gray-700 mb-1"
                         >
-                          State/Province <span className="text-red-500">*</span>
+                          Region <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1763,7 +1763,7 @@ const UserAddStep2Business = () => {
                           >
                             <option value="">
                               {availableShippingRegions.length
-                                ? "Select State/Province..."
+                                ? "Select Region..."
                                 : "Select Country First"}
                             </option>
                             {availableShippingRegions.map((region) => (

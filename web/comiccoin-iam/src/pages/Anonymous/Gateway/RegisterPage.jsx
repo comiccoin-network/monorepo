@@ -47,7 +47,7 @@ const RegisterPage = () => {
     password_confirm: "",
     phone: "",
     country: "",
-    region: "", // Added region (state/province) field
+    region: "", // Added region (region) field
     country_other: "",
     timezone: "",
     beta_access_code: "", // Temporary
@@ -638,14 +638,14 @@ const RegisterPage = () => {
                   </div>
                 )}
 
-                {/* State/Province - only shows when a country is selected and not "other" */}
+                {/* Region - only shows when a country is selected and not "other" */}
                 {formData.country && formData.country !== "other" && (
                   <div>
                     <label
                       htmlFor="region"
                       className="block text-sm font-medium text-gray-700 mb-1"
                     >
-                      State/Province <span className="text-red-500">*</span>
+                      Region <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <select
@@ -661,7 +661,7 @@ const RegisterPage = () => {
                         style={selectStyles}
                         required
                       >
-                        <option value="">Select State/Province...</option>
+                        <option value="">Select Region...</option>
                         {availableRegions.map((region) => (
                           <option
                             key={region.shortCode}

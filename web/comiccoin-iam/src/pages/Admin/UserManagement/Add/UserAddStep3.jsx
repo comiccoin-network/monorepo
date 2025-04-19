@@ -376,7 +376,7 @@ const UserAddStep3 = () => {
                     </div>
                     <div className="sm:col-span-1">
                       <dt className="text-sm font-medium text-gray-500">
-                        State/Province
+                        Region
                       </dt>
                       <dd className="mt-1 text-sm text-gray-900">
                         {formatValue(formData.region)}
@@ -459,7 +459,7 @@ const UserAddStep3 = () => {
                     </div>
                     <div className="sm:col-span-1">
                       <dt className="text-sm font-medium text-gray-500">
-                        State/Province
+                        Region
                       </dt>
                       <dd className="mt-1 text-sm text-gray-900">
                         {formatValue(formData.shippingRegion)}
