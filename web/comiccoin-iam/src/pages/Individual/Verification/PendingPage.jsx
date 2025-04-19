@@ -309,7 +309,7 @@ const VerificationPendingPage = () => {
                       </h3>
                       <p className="mt-1 text-sm text-gray-500">
                         Our team is reviewing your verification details. This
-                        typically takes 1-2 business days.
+                        typically takes 3-5 business days.
                       </p>
                       {!isOverdue && hoursRemaining > 0 && (
                         <p className="mt-1 text-sm font-medium text-purple-600">
