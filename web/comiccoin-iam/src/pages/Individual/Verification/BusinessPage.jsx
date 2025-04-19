@@ -79,7 +79,7 @@ const VerificationBusinessPage = () => {
       addressLine2: "",
       city: "",
       region: "",
-      country: "",
+      country: "CA", // Default to the country of "Canada".
       postalCode: "",
       howDidYouHearAboutUs: 0,
       howDidYouHearAboutUsOther: "",

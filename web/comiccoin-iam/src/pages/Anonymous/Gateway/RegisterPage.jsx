@@ -46,7 +46,7 @@ const RegisterPage = () => {
     password: "",
     password_confirm: "",
     phone: "",
-    country: "",
+    country: "CA", // Default to the country of "Canada".
     region: "", // Added region (region) field
     country_other: "",
     timezone: "",

@@ -77,7 +77,7 @@ const VerificationIndividualPage = () => {
       addressLine2: "",
       city: "",
       region: "",
-      country: "",
+      country: "CA", // Default to the country of "Canada".
       country_other: "",
       postalCode: "",
       howDidYouHearAboutUs: 0,
