@@ -529,14 +529,13 @@ const RegisterPage = () => {
                   )}
                 </div>
 
-                {/* Phone (Optional) */}
+                {/* Phone */}
                 <div>
                   <label
                     htmlFor="phone"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Phone Number{" "}
-                    <span className="text-gray-500 text-xs">(Optional)</span>
+                    Phone Number <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -550,9 +549,16 @@ const RegisterPage = () => {
                       onChange={handleInputChange}
                       className="w-full pl-10 pr-3 py-2 h-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                       placeholder="+1 (555) 123-4567"
+                      required
                     />
                   </div>
                 </div>
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.phone}
+                  </p>
+                )}
               </div>
 
               {/* Location Information */}
