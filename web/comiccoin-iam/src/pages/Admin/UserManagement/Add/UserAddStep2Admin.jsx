@@ -1,4 +1,4 @@
-// UserAddStep2Admin.jsx
+// monorepo/web/comiccoin-iam/src/pages/Admin/UserManagement/Add/UserAddStep2Admin.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";

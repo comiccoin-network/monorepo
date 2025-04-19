@@ -1,4 +1,4 @@
-// UserAddWizard.jsx - Simplified
+// monorepo/web/comiccoin-iam/src/pages/Admin/UserManagement/Add/UserAddWizard.jsx
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useUserWizard } from "./UserAddWizardContext";

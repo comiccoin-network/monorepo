@@ -1,4 +1,4 @@
-// UserAddStep2Individual.jsx
+// monorepo/web/comiccoin-iam/src/pages/Admin/UserManagement/Add/UserAddStep2Individual.jsx
 import React, { useState, useEffect } from "react";
 import countryRegionData from "country-region-data/dist/data-umd";
 import {
