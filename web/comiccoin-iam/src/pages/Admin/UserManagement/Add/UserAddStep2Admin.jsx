@@ -57,7 +57,7 @@ const UserAddStep2Admin = () => {
     status: USER_STATUS.ACTIVE,
     profileVerificationStatus: PROFILE_VERIFICATION_STATUS.APPROVED,
     isEmailVerified: true,
-    country: "",
+    country: "CA", // Set default to Canada.
     region: "",
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
     agreeTermsOfService: true,

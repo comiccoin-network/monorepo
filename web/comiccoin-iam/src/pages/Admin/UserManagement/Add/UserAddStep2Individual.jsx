@@ -111,7 +111,7 @@ const UserAddStep2Individual = () => {
     addressLine1: "",
     addressLine2: "",
     city: "",
-    country: "",
+    country: "CA", // Set default to Canada.
     region: "",
     postalCode: "",
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",

@@ -16,6 +16,7 @@ export const UserWizardProvider = ({ children }) => {
     profileVerificationStatus: 1, // Unverified by default
     isEmailVerified: false,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+    country: "CA", // Set default to Canada.
     // Other fields...
   };
 
