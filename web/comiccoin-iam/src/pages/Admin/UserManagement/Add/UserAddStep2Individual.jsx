@@ -1,5 +1,6 @@
-// monorepo/web/comiccoin-iam/src/pages/Admin/UserManagement/Add/UserAddStep2Individual.jsx
+// UserAddStep2Individual.jsx
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import countryRegionData from "country-region-data/dist/data-umd";
 import {
   ArrowLeft,
@@ -16,7 +17,7 @@ import {
   Info,
   Clock,
   AlertCircle,
-  Link as LinkIcon,
+  LinkIcon,
   BookOpen,
   Check,
   ArrowDown,
@@ -24,11 +25,11 @@ import {
 } from "lucide-react";
 import {
   USER_STATUS,
+  USER_ROLE,
   PROFILE_VERIFICATION_STATUS,
 } from "../../../../hooks/useUser";
 import AdminTopNavigation from "../../../../components/AdminTopNavigation";
 import AdminFooter from "../../../../components/AdminFooter";
-import { useNavigate } from "react-router";
 
 // Timezones for dropdown
 const timezones = [
@@ -85,7 +86,9 @@ const UserAddStep2Individual = () => {
   const navigate = useNavigate();
   const localStorageKey = "userAddFormData";
 
+  // Initial form state with default values
   const initialFormData = {
+    role: USER_ROLE.INDIVIDUAL, // Default to individual role
     email: "",
     password: "",
     firstName: "",
@@ -110,7 +113,7 @@ const UserAddStep2Individual = () => {
     country: "",
     region: "",
     postalCode: "",
-    timezone: "",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
     hasShippingAddress: false,
     shippingName: "",
     shippingPhone: "",
@@ -127,49 +130,25 @@ const UserAddStep2Individual = () => {
 
   const [formData, setFormData] = useState(initialFormData);
   const [localErrors, setLocalErrors] = useState({});
-  const [formErrors, setFormErrors] = useState({}); // Keep for potential future use from external validation
+  const [showSummaryErrors, setShowSummaryErrors] = useState(false);
 
-  // Load data from local storage on component mount
+  // Load data from localStorage on component mount
   useEffect(() => {
     const savedData = localStorage.getItem(localStorageKey);
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData);
-        // Merge saved data with initial structure to ensure all fields are present
+        // Make sure role is INDIVIDUAL
+        parsedData.role = USER_ROLE.INDIVIDUAL;
         setFormData((prev) => ({ ...prev, ...parsedData }));
       } catch (error) {
-        console.error("Failed to parse user data from local storage:", error);
-        localStorage.removeItem(localStorageKey); // Clear invalid data
+        console.error(
+          "Failed to parse userAddFormData from localStorage",
+          error,
+        );
       }
     }
   }, []);
-
-  // Update form data state and local storage
-  const updateFormData = (newData) => {
-    setFormData((prev) => {
-      const updatedData = { ...prev, ...newData };
-      // Also save the updated data to local storage
-      try {
-        localStorage.setItem(localStorageKey, JSON.stringify(updatedData));
-      } catch (error) {
-        console.error("Failed to save user data to local storage:", error);
-      }
-      return updatedData;
-    });
-  };
-
-  const prevStep = () => navigate(`/admin/users/add/role`);
-
-  const nextStep = () => {
-    // Save final form data to local storage before navigating
-    try {
-      localStorage.setItem(localStorageKey, JSON.stringify(formData));
-      navigate(`/admin/users/add/summary`); // Corrected navigation target
-    } catch (error) {
-      console.error("Failed to save final user data to local storage:", error);
-      // Optionally show an error to the user
-    }
-  };
 
   // Inline styles for select elements to fix Safari issues
   const selectStyles = {
@@ -185,24 +164,12 @@ const UserAddStep2Individual = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    let newValue = type === "checkbox" ? checked : value;
+    const newValue = type === "checkbox" ? checked : value;
 
-    // Convert numeric dropdown values back to numbers if needed
-    const numericFields = [
-      "howDidYouHearAboutUs",
-      "howLongCollectingComicBooksForGrading",
-      "hasPreviouslySubmittedComicBookForGrading",
-      "hasOwnedGradedComicBooks",
-      "hasRegularComicBookShop",
-      "hasPreviouslyPurchasedFromAuctionSite",
-      "hasPreviouslyPurchasedFromFacebookMarketplace",
-      "hasRegularlyAttendedComicConsOrCollectibleShows",
-    ];
-    if (numericFields.includes(name)) {
-      newValue = parseInt(value, 10) || 0; // Default to 0 if parsing fails
-    }
-
-    updateFormData({ [name]: newValue });
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: newValue,
+    }));
 
     // Clear error when user types
     if (localErrors[name]) {
@@ -230,10 +197,11 @@ const UserAddStep2Individual = () => {
   // Handle country changes
   const handleCountryChange = (e) => {
     const countryCode = e.target.value;
-    updateFormData({
+    setFormData((prevData) => ({
+      ...prevData,
       country: countryCode,
       region: "", // Reset region when country changes
-    });
+    }));
 
     // Clear country error
     if (localErrors.country) {
@@ -246,7 +214,10 @@ const UserAddStep2Individual = () => {
   // Handle region changes
   const handleRegionChange = (e) => {
     const regionCode = e.target.value;
-    updateFormData({ region: regionCode });
+    setFormData((prevData) => ({
+      ...prevData,
+      region: regionCode,
+    }));
 
     // Clear region error
     if (localErrors.region) {
@@ -259,10 +230,11 @@ const UserAddStep2Individual = () => {
   // Handle shipping country changes
   const handleShippingCountryChange = (e) => {
     const countryCode = e.target.value;
-    updateFormData({
+    setFormData((prevData) => ({
+      ...prevData,
       shippingCountry: countryCode,
       shippingRegion: "", // Reset region when country changes
-    });
+    }));
 
     // Clear country error
     if (localErrors.shippingCountry) {
@@ -275,7 +247,10 @@ const UserAddStep2Individual = () => {
   // Handle shipping region changes
   const handleShippingRegionChange = (e) => {
     const regionCode = e.target.value;
-    updateFormData({ shippingRegion: regionCode });
+    setFormData((prevData) => ({
+      ...prevData,
+      shippingRegion: regionCode,
+    }));
 
     // Clear region error
     if (localErrors.shippingRegion) {
@@ -314,10 +289,10 @@ const UserAddStep2Individual = () => {
       errors.email = "Invalid email format";
     }
 
-    // Check experience fields (assuming 0 means 'select an option')
+    // Check experience fields
     if (
       !formData.howLongCollectingComicBooksForGrading ||
-      formData.howLongCollectingComicBooksForGrading === 0
+      formData.howLongCollectingComicBooksForGrading == 0
     )
       errors.howLongCollectingComicBooksForGrading = "This field is required";
 
@@ -336,7 +311,7 @@ const UserAddStep2Individual = () => {
         "Please specify how you heard about us";
     }
 
-    // Check yes/no experience questions (assuming 0 means 'select an option')
+    // Check yes/no experience questions
     if (formData.hasPreviouslySubmittedComicBookForGrading === 0)
       errors.hasPreviouslySubmittedComicBookForGrading =
         "This field is required";
@@ -364,7 +339,6 @@ const UserAddStep2Individual = () => {
       if (!formData.shippingCountry)
         errors.shippingCountry = "Country is required";
       if (!formData.shippingRegion)
-        // Assuming shipping region is required if shipping country is selected
         errors.shippingRegion = "State/Province is required";
       if (!formData.shippingPostalCode?.trim())
         errors.shippingPostalCode = "Postal code is required";
@@ -384,22 +358,50 @@ const UserAddStep2Individual = () => {
     e.preventDefault();
 
     if (validateForm()) {
-      nextStep(); // Will save to local storage and navigate
-    } else {
-      // Optionally scroll to the first error
-      const firstErrorField = Object.keys(localErrors)[0];
-      if (firstErrorField) {
-        const element = document.getElementById(firstErrorField);
-        element?.scrollIntoView({ behavior: "smooth", block: "center" });
+      try {
+        // Save current form data to localStorage
+        localStorage.setItem(localStorageKey, JSON.stringify(formData));
+
+        // Navigate to the next step
+        navigate("/admin/users/add/review");
+      } catch (error) {
+        console.error("Failed to save userAddFormData to localStorage", error);
+        setLocalErrors({
+          form: "Failed to save form progress. Please try again.",
+        });
       }
+    } else {
+      // Show summary of errors
+      setShowSummaryErrors(true);
+
+      // Scroll to the top where the error summary will be displayed
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     }
   };
 
+  // Handle previous step
+  const handlePrevious = () => {
+    // Save form data before navigating
+    localStorage.setItem(localStorageKey, JSON.stringify(formData));
+    navigate("/admin/users/add/role");
+  };
+
   // Check if field has error
-  const hasError = (field) => Boolean(localErrors[field] || formErrors[field]);
+  const hasError = (field) => Boolean(localErrors[field]);
 
   // Get error message for a field
-  const getErrorMessage = (field) => localErrors[field] || formErrors[field];
+  const getErrorMessage = (field) => localErrors[field];
+
+  // Helper to get a list of all errors for summary
+  const getErrorSummary = () => {
+    return Object.entries(localErrors).map(([field, message]) => ({
+      field,
+      message,
+    }));
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-100 to-white">
@@ -431,6 +433,25 @@ const UserAddStep2Individual = () => {
               </p>
             </div>
 
+            {/* Error Summary */}
+            {showSummaryErrors && Object.keys(localErrors).length > 0 && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-start">
+                  <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2" />
+                  <div>
+                    <h3 className="text-sm font-medium text-red-800">
+                      Please correct the following errors:
+                    </h3>
+                    <ul className="mt-2 text-sm text-red-700 list-disc pl-5 space-y-1">
+                      {getErrorSummary().map((error, index) => (
+                        <li key={index}>{error.message}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleNext} className="space-y-6">
               {/* Basic Account Information */}
               <div className="bg-gray-50 p-4 rounded-lg">
@@ -455,7 +476,7 @@ const UserAddStep2Individual = () => {
                         type="email"
                         id="email"
                         name="email"
-                        value={formData.email}
+                        value={formData.email || ""}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("email")
@@ -502,7 +523,7 @@ const UserAddStep2Individual = () => {
                         type="password"
                         id="password"
                         name="password"
-                        value={formData.password}
+                        value={formData.password || ""}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("password")
@@ -557,7 +578,7 @@ const UserAddStep2Individual = () => {
                         type="text"
                         id="firstName"
                         name="firstName"
-                        value={formData.firstName}
+                        value={formData.firstName || ""}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("firstName")
@@ -604,7 +625,7 @@ const UserAddStep2Individual = () => {
                         type="text"
                         id="lastName"
                         name="lastName"
-                        value={formData.lastName}
+                        value={formData.lastName || ""}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("lastName")
@@ -652,7 +673,7 @@ const UserAddStep2Individual = () => {
                         type="tel"
                         id="phone"
                         name="phone"
-                        value={formData.phone}
+                        value={formData.phone || ""}
                         onChange={handleInputChange}
                         className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="+1 (555) 123-4567"
@@ -698,7 +719,7 @@ const UserAddStep2Individual = () => {
                         name="isEmailVerified"
                         type="checkbox"
                         className="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
-                        checked={formData.isEmailVerified}
+                        checked={!!formData.isEmailVerified}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -738,7 +759,7 @@ const UserAddStep2Individual = () => {
                     <textarea
                       id="description"
                       name="description"
-                      value={formData.description}
+                      value={formData.description || ""}
                       onChange={handleInputChange}
                       rows={3}
                       className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
@@ -789,7 +810,7 @@ const UserAddStep2Individual = () => {
                         type="url"
                         id="websiteURL"
                         name="websiteURL"
-                        value={formData.websiteURL}
+                        value={formData.websiteURL || ""}
                         onChange={handleInputChange}
                         className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:outline-none focus:ring-1 focus:ring-purple-500 ${
                           hasError("websiteURL")
@@ -807,8 +828,6 @@ const UserAddStep2Individual = () => {
                       />
                       {hasError("websiteURL") && (
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none z-10">
-                          {" "}
-                          {/* z-10 to be above input */}
                           <AlertCircle className="h-5 w-5 text-red-500" />
                         </div>
                       )}
@@ -848,7 +867,7 @@ const UserAddStep2Individual = () => {
                     <select
                       id="howDidYouHearAboutUs"
                       name="howDidYouHearAboutUs"
-                      value={formData.howDidYouHearAboutUs}
+                      value={formData.howDidYouHearAboutUs || 0}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                         hasError("howDidYouHearAboutUs")
@@ -890,8 +909,7 @@ const UserAddStep2Individual = () => {
                 </div>
 
                 {/* Conditional field for "Other" referral source */}
-                {formData.howDidYouHearAboutUs ===
-                  referralSources.find((s) => s.label === "Other")?.value && (
+                {Number(formData.howDidYouHearAboutUs) === 6 && (
                   <div className="mb-4">
                     <label
                       htmlFor="howDidYouHearAboutUsOther"
@@ -907,7 +925,7 @@ const UserAddStep2Individual = () => {
                         type="text"
                         id="howDidYouHearAboutUsOther"
                         name="howDidYouHearAboutUsOther"
-                        value={formData.howDidYouHearAboutUsOther}
+                        value={formData.howDidYouHearAboutUsOther || ""}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("howDidYouHearAboutUsOther")
@@ -972,7 +990,9 @@ const UserAddStep2Individual = () => {
                     <select
                       id="howLongCollectingComicBooksForGrading"
                       name="howLongCollectingComicBooksForGrading"
-                      value={formData.howLongCollectingComicBooksForGrading}
+                      value={
+                        formData.howLongCollectingComicBooksForGrading || 0
+                      }
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                         hasError("howLongCollectingComicBooksForGrading")
@@ -1038,7 +1058,8 @@ const UserAddStep2Individual = () => {
                         id="hasPreviouslySubmittedComicBookForGrading"
                         name="hasPreviouslySubmittedComicBookForGrading"
                         value={
-                          formData.hasPreviouslySubmittedComicBookForGrading
+                          formData.hasPreviouslySubmittedComicBookForGrading ||
+                          0
                         }
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
@@ -1104,7 +1125,7 @@ const UserAddStep2Individual = () => {
                       <select
                         id="hasOwnedGradedComicBooks"
                         name="hasOwnedGradedComicBooks"
-                        value={formData.hasOwnedGradedComicBooks}
+                        value={formData.hasOwnedGradedComicBooks || 0}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("hasOwnedGradedComicBooks")
@@ -1163,7 +1184,7 @@ const UserAddStep2Individual = () => {
                       <select
                         id="hasRegularComicBookShop"
                         name="hasRegularComicBookShop"
-                        value={formData.hasRegularComicBookShop}
+                        value={formData.hasRegularComicBookShop || 0}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("hasRegularComicBookShop")
@@ -1222,7 +1243,9 @@ const UserAddStep2Individual = () => {
                       <select
                         id="hasPreviouslyPurchasedFromAuctionSite"
                         name="hasPreviouslyPurchasedFromAuctionSite"
-                        value={formData.hasPreviouslyPurchasedFromAuctionSite}
+                        value={
+                          formData.hasPreviouslyPurchasedFromAuctionSite || 0
+                        }
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("hasPreviouslyPurchasedFromAuctionSite")
@@ -1286,7 +1309,8 @@ const UserAddStep2Individual = () => {
                         id="hasPreviouslyPurchasedFromFacebookMarketplace"
                         name="hasPreviouslyPurchasedFromFacebookMarketplace"
                         value={
-                          formData.hasPreviouslyPurchasedFromFacebookMarketplace
+                          formData.hasPreviouslyPurchasedFromFacebookMarketplace ||
+                          0
                         }
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
@@ -1359,7 +1383,8 @@ const UserAddStep2Individual = () => {
                         id="hasRegularlyAttendedComicConsOrCollectibleShows"
                         name="hasRegularlyAttendedComicConsOrCollectibleShows"
                         value={
-                          formData.hasRegularlyAttendedComicConsOrCollectibleShows
+                          formData.hasRegularlyAttendedComicConsOrCollectibleShows ||
+                          0
                         }
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
@@ -1446,7 +1471,7 @@ const UserAddStep2Individual = () => {
                         type="text"
                         id="addressLine1"
                         name="addressLine1"
-                        value={formData.addressLine1}
+                        value={formData.addressLine1 || ""}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("addressLine1")
@@ -1496,7 +1521,7 @@ const UserAddStep2Individual = () => {
                         type="text"
                         id="addressLine2"
                         name="addressLine2"
-                        value={formData.addressLine2}
+                        value={formData.addressLine2 || ""}
                         onChange={handleInputChange}
                         className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="Apartment, suite, unit, building, floor, etc."
@@ -1520,7 +1545,7 @@ const UserAddStep2Individual = () => {
                         type="text"
                         id="city"
                         name="city"
-                        value={formData.city}
+                        value={formData.city || ""}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("city")
@@ -1566,7 +1591,7 @@ const UserAddStep2Individual = () => {
                       <select
                         id="country"
                         name="country"
-                        value={formData.country}
+                        value={formData.country || ""}
                         onChange={handleCountryChange}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("country")
@@ -1624,7 +1649,7 @@ const UserAddStep2Individual = () => {
                       <select
                         id="region"
                         name="region"
-                        value={formData.region}
+                        value={formData.region || ""}
                         onChange={handleRegionChange}
                         disabled={!availableRegions.length}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
@@ -1688,7 +1713,7 @@ const UserAddStep2Individual = () => {
                         type="text"
                         id="postalCode"
                         name="postalCode"
-                        value={formData.postalCode}
+                        value={formData.postalCode || ""}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("postalCode")
@@ -1736,7 +1761,7 @@ const UserAddStep2Individual = () => {
                       <select
                         id="timezone"
                         name="timezone"
-                        value={formData.timezone}
+                        value={formData.timezone || ""}
                         onChange={handleInputChange}
                         className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                           hasError("timezone")
@@ -1794,7 +1819,7 @@ const UserAddStep2Individual = () => {
                       type="checkbox"
                       id="hasShippingAddress"
                       name="hasShippingAddress"
-                      checked={formData.hasShippingAddress}
+                      checked={!!formData.hasShippingAddress}
                       onChange={handleInputChange}
                       className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                       aria-labelledby="shipping-address-label"
@@ -1830,7 +1855,7 @@ const UserAddStep2Individual = () => {
                             type="text"
                             id="shippingName"
                             name="shippingName"
-                            value={formData.shippingName}
+                            value={formData.shippingName || ""}
                             onChange={handleInputChange}
                             className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                               hasError("shippingName")
@@ -1882,7 +1907,7 @@ const UserAddStep2Individual = () => {
                             type="tel"
                             id="shippingPhone"
                             name="shippingPhone"
-                            value={formData.shippingPhone}
+                            value={formData.shippingPhone || ""}
                             onChange={handleInputChange}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                             placeholder="+1 (555) 123-4567"
@@ -1909,7 +1934,7 @@ const UserAddStep2Individual = () => {
                             type="text"
                             id="shippingAddressLine1"
                             name="shippingAddressLine1"
-                            value={formData.shippingAddressLine1}
+                            value={formData.shippingAddressLine1 || ""}
                             onChange={handleInputChange}
                             className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                               hasError("shippingAddressLine1")
@@ -1963,7 +1988,7 @@ const UserAddStep2Individual = () => {
                             type="text"
                             id="shippingAddressLine2"
                             name="shippingAddressLine2"
-                            value={formData.shippingAddressLine2}
+                            value={formData.shippingAddressLine2 || ""}
                             onChange={handleInputChange}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                             placeholder="Apartment, suite, unit, building, floor, etc."
@@ -1990,7 +2015,7 @@ const UserAddStep2Individual = () => {
                             type="text"
                             id="shippingCity"
                             name="shippingCity"
-                            value={formData.shippingCity}
+                            value={formData.shippingCity || ""}
                             onChange={handleInputChange}
                             className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                               hasError("shippingCity")
@@ -2038,7 +2063,7 @@ const UserAddStep2Individual = () => {
                           <select
                             id="shippingCountry"
                             name="shippingCountry"
-                            value={formData.shippingCountry}
+                            value={formData.shippingCountry || ""}
                             onChange={handleShippingCountryChange}
                             className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                               hasError("shippingCountry")
@@ -2098,7 +2123,7 @@ const UserAddStep2Individual = () => {
                           <select
                             id="shippingRegion"
                             name="shippingRegion"
-                            value={formData.shippingRegion}
+                            value={formData.shippingRegion || ""}
                             onChange={handleShippingRegionChange}
                             disabled={!availableShippingRegions.length}
                             className={`w-full pl-10 pr-10 py-2 border appearance-none rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
@@ -2165,7 +2190,7 @@ const UserAddStep2Individual = () => {
                             type="text"
                             id="shippingPostalCode"
                             name="shippingPostalCode"
-                            value={formData.shippingPostalCode}
+                            value={formData.shippingPostalCode || ""}
                             onChange={handleInputChange}
                             className={`w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                               hasError("shippingPostalCode")
@@ -2221,7 +2246,7 @@ const UserAddStep2Individual = () => {
                             ? "border-red-500 bg-red-50"
                             : ""
                         }`}
-                        checked={formData.agreeTermsOfService}
+                        checked={!!formData.agreeTermsOfService}
                         onChange={handleInputChange}
                         required
                         aria-invalid={hasError("agreeTermsOfService")}
@@ -2262,7 +2287,7 @@ const UserAddStep2Individual = () => {
                         name="agreePromotions"
                         type="checkbox"
                         className="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
-                        checked={formData.agreePromotions}
+                        checked={!!formData.agreePromotions}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -2288,7 +2313,7 @@ const UserAddStep2Individual = () => {
                         type="checkbox"
                         className="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
                         checked={
-                          formData.agreeToTrackingAcrossThirdPartyAppsAndServices
+                          !!formData.agreeToTrackingAcrossThirdPartyAppsAndServices
                         }
                         onChange={handleInputChange}
                       />
@@ -2309,11 +2334,21 @@ const UserAddStep2Individual = () => {
                 </div>
               </div>
 
+              {/* Display general form error if any */}
+              {hasError("form") && (
+                <div className="bg-red-50 p-3 rounded-md border border-red-200">
+                  <p className="text-sm text-red-600 flex items-start gap-1">
+                    <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                    <span>{getErrorMessage("form")}</span>
+                  </p>
+                </div>
+              )}
+
               {/* Form Actions */}
               <div className="flex justify-between pt-4 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={prevStep}
+                  onClick={handlePrevious}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                 >
                   <ArrowLeft className="h-5 w-5 inline mr-1" /> Back
