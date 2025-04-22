@@ -97,10 +97,6 @@ func (svc *updateUserServiceImpl) Execute(sessCtx mongo.SessionContext, userID p
 		e["last_name"] = "Last name is required"
 	}
 
-	if req.Password == "" {
-		e["password"] = "Password is required"
-	}
-
 	if req.Timezone == "" {
 		e["timezone"] = "Timezone is required"
 	}
