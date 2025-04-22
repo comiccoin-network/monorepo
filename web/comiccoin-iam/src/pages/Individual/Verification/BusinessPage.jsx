@@ -1084,7 +1084,7 @@ const VerificationBusinessPage = () => {
                             htmlFor="otherGradingServiceName"
                             className="block text-sm text-gray-700 mb-1"
                           >
-                            Which grading service do you use?{" "}
+                            Which grading service do you use the most?{" "}
                             <span className="text-red-500">*</span>
                           </label>
                           <input
