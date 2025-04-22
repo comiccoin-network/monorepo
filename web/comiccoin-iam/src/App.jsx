@@ -49,6 +49,7 @@ import AdminAddWalletPage from "./pages/Admin/UserManagement/PublicWallet/AddPag
 import AdminUserPublicWalletDeletePage from "./pages/Admin/UserManagement/PublicWallet/DeletePage";
 import AdminMorePage from "./pages/Admin/More/Page";
 import AdminSettingsPage from "./pages/Admin/More/SettingsPage";
+import AdminPublicWalletCreatePage from "./pages/Admin/PublicWallet/CreatePage";
 import AdminPublicWalletListPage from "./pages/Admin/PublicWallet/ListPage";
 import AdminPublicWalletDetailPage from "./pages/Admin/PublicWallet/DetailPage";
 import AdminPublicWalletUpdatePage from "./pages/Admin/PublicWallet/UpdatePage";
@@ -378,6 +379,15 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminPublicWalletDetailPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/public-wallets/create"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminPublicWalletCreatePage />
                 </ProtectedRoute>
               }
             />
