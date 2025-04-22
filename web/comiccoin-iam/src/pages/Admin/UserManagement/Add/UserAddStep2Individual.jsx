@@ -839,7 +839,10 @@ const UserAddStep2Individual = () => {
                     className="mt-1 text-xs text-gray-500"
                   >
                     Please provide a link to your personal website or a public
-                    social media profile
+                    social media profile.
+                    <span className="block font-medium mt-1">
+                      Must begin with https:// or http://
+                    </span>
                   </p>
                   {hasError("websiteURL") && (
                     <p
