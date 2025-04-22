@@ -113,43 +113,26 @@ const AdminPublicWalletCreatePage = () => {
   // Handle API errors when they occur
   useEffect(() => {
     if (operationError) {
-      console.error("Error detected:", operationError);
-      setGeneralError(
-        "Failed to create wallet. Please check your input and try again.",
-      );
-
+      // Only show backend error messages - no technical details
       if (operationError.response && operationError.response.data) {
         if (
           typeof operationError.response.data === "object" &&
           !Array.isArray(operationError.response.data)
         ) {
-          const fieldErrors = {};
-          Object.entries(operationError.response.data).forEach(
-            ([field, message]) => {
-              fieldErrors[field] = message;
-            },
-          );
+          // Set the backend errors directly as they come from the server
+          setErrors(operationError.response.data);
 
-          if (Object.keys(fieldErrors).length > 0) {
-            setErrors(fieldErrors);
+          // If there's a general error message in the response
+          if (operationError.response.data.general) {
+            setGeneralError(operationError.response.data.general);
           }
         } else if (typeof operationError.response.data === "string") {
           setGeneralError(operationError.response.data);
-        } else if (operationError.response.data.message) {
-          setGeneralError(operationError.response.data.message);
         }
-      } else if (
-        operationError.message &&
-        typeof operationError.message === "string"
-      ) {
-        setGeneralError(operationError.message);
-      }
-
-      if (operationError.errors) {
-        setErrors(operationError.errors);
       }
     } else {
       setGeneralError("");
+      setErrors({});
     }
   }, [operationError]);
 
@@ -201,58 +184,27 @@ const AdminPublicWalletCreatePage = () => {
     setErrors({});
     setGeneralError("");
 
-    // Basic validation
-    const validationErrors = {};
-    if (!formData.name.trim())
-      validationErrors.name = "Wallet name is required";
-    if (!formData.address.trim())
-      validationErrors.address = "Wallet address is required";
-    if (!formData.userId)
-      validationErrors.userId = "User selection is required";
-
-    // Validate Ethereum address format (basic check)
-    if (formData.address && !/^0x[a-fA-F0-9]{40}$/.test(formData.address)) {
-      validationErrors.address =
-        "Invalid Ethereum address format (must start with 0x and be 42 characters)";
-    }
-
-    // If validation errors, set them and stop submission
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      setStatusMessage({
-        type: "error",
-        message: "Please correct the errors in the form before submitting.",
-      });
-
-      const firstErrorField = Object.keys(validationErrors)[0];
-      const errorElement = document.getElementById(firstErrorField);
-      if (errorElement) {
-        errorElement.focus();
-      }
-
-      return;
-    }
-
     setHasSubmitted(true);
 
     try {
+      // Send data to backend without any client-side validation
       const apiPayload = {
-        address: formData.address.trim(),
+        address: formData.address,
         chainId: parseInt(formData.chainId),
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        thumbnailS3Key: formData.thumbnailS3Key.trim(),
+        name: formData.name,
+        description: formData.description,
+        thumbnailS3Key: formData.thumbnailS3Key,
         status: parseInt(formData.status),
         type: parseInt(formData.type),
-        websiteURL: formData.websiteURL.trim(),
+        websiteURL: formData.websiteURL,
         isVerified: formData.isVerified,
         userId: formData.userId,
-        country: formData.country.trim(),
-        region: formData.region.trim(),
-        city: formData.city.trim(),
-        postalCode: formData.postalCode.trim(),
-        addressLine1: formData.addressLine1.trim(),
-        addressLine2: formData.addressLine2.trim(),
+        country: formData.country,
+        region: formData.region,
+        city: formData.city,
+        postalCode: formData.postalCode,
+        addressLine1: formData.addressLine1,
+        addressLine2: formData.addressLine2,
       };
 
       await createPublicWalletByAdmin(apiPayload);
@@ -277,33 +229,22 @@ const AdminPublicWalletCreatePage = () => {
       console.error("Form submission error:", err);
       setHasSubmitted(false);
 
-      setGeneralError(
-        "Failed to create wallet. Please check your input and try again.",
-      );
-
+      // Only set the field-specific errors from the backend response
       if (err.response && err.response.data) {
         if (
           typeof err.response.data === "object" &&
           !Array.isArray(err.response.data)
         ) {
-          const fieldErrors = {};
-          Object.entries(err.response.data).forEach(([field, message]) => {
-            fieldErrors[field] = message;
-          });
+          // Set the backend errors directly
+          setErrors(err.response.data);
 
-          if (Object.keys(fieldErrors).length > 0) {
-            setErrors(fieldErrors);
+          // If there's a general error message in the response
+          if (err.response.data.general) {
+            setGeneralError(err.response.data.general);
           }
         } else if (typeof err.response.data === "string") {
           setGeneralError(err.response.data);
-        } else if (err.response.data.error) {
-          setErrors({ address: err.response.data.error });
-          setGeneralError(err.response.data.error);
-        } else if (err.response.data.message) {
-          setGeneralError(err.response.data.message);
         }
-      } else if (err.message) {
-        setGeneralError(err.message);
       }
     }
   };
@@ -402,21 +343,27 @@ const AdminPublicWalletCreatePage = () => {
           <form onSubmit={handleSubmit} className="p-6 space-y-6" noValidate>
             {/* Error Summary */}
             {(Object.keys(errors).length > 0 || generalError) && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                <div className="flex items-center gap-2 font-medium mb-2">
-                  <AlertCircle className="h-5 w-5" />
-                  <h3>Please correct the following errors:</h3>
-                </div>
-                {generalError && <p className="text-sm mb-2">{generalError}</p>}
-                {Object.keys(errors).length > 0 && (
-                  <ul className="list-disc ml-5 space-y-1 text-sm">
-                    {Object.entries(errors).map(
-                      ([field, message]) =>
-                        message && <li key={field}>{message}</li>,
+              <>
+                {generalError && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                    <div className="flex items-center gap-2 font-medium mb-2">
+                      <AlertCircle className="h-5 w-5" />
+                      <h3>Please correct the following errors:</h3>
+                    </div>
+                    {generalError && (
+                      <p className="text-sm mb-2">{generalError}</p>
                     )}
-                  </ul>
+                    {Object.keys(errors).length > 0 && (
+                      <ul className="list-disc ml-5 space-y-1 text-sm">
+                        {Object.entries(errors).map(
+                          ([field, message]) =>
+                            message && <li key={field}>{message}</li>,
+                        )}
+                      </ul>
+                    )}
+                  </div>
                 )}
-              </div>
+              </>
             )}
 
             {/* User Selection Section */}
@@ -431,7 +378,7 @@ const AdminPublicWalletCreatePage = () => {
                   htmlFor="userId"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Select User <span className="text-red-500">*</span>
+                  Select User
                 </label>
                 <select
                   id="userId"
@@ -478,7 +425,7 @@ const AdminPublicWalletCreatePage = () => {
                   htmlFor="address"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  ComicCoin Address <span className="text-red-500">*</span>
+                  ComicCoin Address
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -576,7 +523,7 @@ const AdminPublicWalletCreatePage = () => {
                   htmlFor="name"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Wallet Name <span className="text-red-500">*</span>
+                  Wallet Name
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1059,10 +1006,7 @@ const AdminPublicWalletCreatePage = () => {
                 <li>
                   Choose the correct wallet type based on the user's profile
                 </li>
-                <li>
-                  Verify the Ethereum address format is correct (42 characters
-                  starting with 0x)
-                </li>
+                <li>Enter the complete wallet address</li>
                 <li>
                   Only mark wallets as verified if they meet all verification
                   criteria
