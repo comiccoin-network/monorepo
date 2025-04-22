@@ -110,6 +110,7 @@ func (s *gatewayLoginServiceImpl) Execute(sessCtx mongo.SessionContext, req *Gat
 		s.logger.Error("database error", slog.Any("err", err))
 		return nil, err
 	}
+	defer securePassword.Wipe()
 
 	// Verify the inputted password and hashed password match.
 	passwordMatch, _ := s.passwordProvider.ComparePasswordAndHash(securePassword, u.PasswordHash)

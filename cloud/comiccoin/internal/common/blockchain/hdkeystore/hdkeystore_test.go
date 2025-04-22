@@ -41,6 +41,7 @@ func TestOpenWallet(t *testing.T) {
 		assert.NoError(t, err)
 
 		secureMnemonic, err := sstring.NewSecureString(mnemonic)
+		defer secureMnemonic.Wipe()
 		assert.NoError(t, err)
 
 		account, wallet, err := adapter.OpenWallet(secureMnemonic, validPath)

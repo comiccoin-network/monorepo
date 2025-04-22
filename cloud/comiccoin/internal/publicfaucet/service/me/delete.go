@@ -103,6 +103,7 @@ func (svc *deleteMeServiceImpl) Execute(sessCtx mongo.SessionContext, req *Delet
 		svc.logger.Error("Failed to create secure string", slog.Any("error", err))
 		return err
 	}
+	defer securePassword.Wipe()
 
 	passwordMatch, _ := svc.passwordProvider.ComparePasswordAndHash(securePassword, user.PasswordHash)
 	if !passwordMatch {

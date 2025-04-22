@@ -95,7 +95,7 @@ func doRunNewAccount() {
 	if err != nil {
 		log.Fatalf("Failed securing: %v\n", err)
 	}
-	// defer mnemonic.Wipe() // Developers Note: Commented out b/c they are causing the hang in the program to exit?
+	defer mnemonic.Wipe()
 
 	////
 	//// Start the transaction.

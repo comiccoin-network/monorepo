@@ -131,6 +131,7 @@ func (s *gatewayResetPasswordServiceImpl) Execute(sessCtx mongo.SessionContext, 
 		s.logger.Error("password securing error", slog.Any("err", err))
 		return nil, err
 	}
+	defer password.Wipe()
 
 	passwordHash, err := s.passwordProvider.GenerateHashFromPassword(password)
 	if err != nil {

@@ -226,6 +226,7 @@ func (s *gatewayUserRegisterServiceImpl) createCustomerUserForRequest(sessCtx mo
 		s.logger.Error("password securing error", slog.Any("err", err))
 		return nil, err
 	}
+	defer password.Wipe()
 
 	passwordHash, err := s.passwordProvider.GenerateHashFromPassword(password)
 	if err != nil {

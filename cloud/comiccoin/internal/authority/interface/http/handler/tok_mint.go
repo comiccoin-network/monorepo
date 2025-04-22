@@ -104,6 +104,7 @@ func (h *TokenMintServiceHTTPHandler) Execute(w http.ResponseWriter, r *http.Req
 		httperror.ResponseError(w, err)
 		return
 	}
+	defer apiKeyPayloadSecure.Wipe()
 
 	// Verify the api key secret and project hashed secret match.
 	passwordMatch, _ := h.passwordProvider.ComparePasswordAndHash(apiKeyPayloadSecure, h.config.App.AdministrationSecretKey.String())

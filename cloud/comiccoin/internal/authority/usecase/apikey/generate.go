@@ -45,6 +45,7 @@ func (uc *generateAPIKeyUseCaseImpl) Execute(chainID uint16) (*NFTStoreAppCreden
 		)
 		return nil, err
 	}
+	defer randomSecretSecure.Wipe()
 
 	randomSecretHash, err := uc.password.GenerateHashFromPassword(randomSecretSecure)
 	if err != nil {

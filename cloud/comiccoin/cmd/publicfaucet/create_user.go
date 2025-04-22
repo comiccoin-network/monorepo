@@ -159,6 +159,7 @@ func doRunCreateUser() {
 			logger.Error("password securing error", slog.Any("err", err))
 			return nil, err
 		}
+		defer securePassword.Wipe()
 
 		// Generate password hash
 		passwordHash, err := passp.GenerateHashFromPassword(securePassword)
