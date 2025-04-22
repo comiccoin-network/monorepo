@@ -873,7 +873,7 @@ const VerificationBusinessPage = () => {
                         verify your identity and connection to the comic
                         community.
                         <span className="block font-medium mt-1">
-                          Must begin with https:// or http://
+                          <b>Must begin with https:// or http://</b>
                         </span>
                       </p>
                       {errors.websiteURL && (

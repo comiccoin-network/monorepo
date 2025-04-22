@@ -825,7 +825,7 @@ const UserAddStep2Business = () => {
                       Please provide a link to your company website or a public
                       social media profile.
                       <span className="block font-medium mt-1">
-                        Must begin with https:// or http://
+                        <b>Must begin with https:// or http://</b>
                       </span>
                     </p>
                     {hasError("websiteURL") && (
