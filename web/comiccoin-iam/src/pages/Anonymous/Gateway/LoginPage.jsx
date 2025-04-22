@@ -87,6 +87,12 @@ function LoginPage() {
 
       const userData = await login(loginRequest);
       console.log("✅ Login successful, user data:", userData);
+
+      // Clear verification data (see: monorepo/web/comiccoin-iam/src/pages/Individual/Verification/IndividualPage.jsx and monorepo/web/comiccoin-iam/src/pages/Individual/Verification/BusinessPage.jsx) from localStorage after successful login
+      console.log("🧹 Clearing verification data from localStorage");
+      localStorage.removeItem("individual_verification_data");
+      localStorage.removeItem("business_verification_data");
+
       // The redirect will happen in the useEffect when isAuthenticated and user changes
     } catch (err) {
       console.error("❌ Login error:", err);
