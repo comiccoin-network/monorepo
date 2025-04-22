@@ -51,15 +51,21 @@ func NewProvider() Provider {
 
 // GenerateHashFromPassword function takes the plaintext string and returns an Argon2 hashed string.
 func (p *passwordProvider) GenerateHashFromPassword(password *sstring.SecureString) (string, error) {
-	// DEVELOPERS NOTE:
-	// The following code was copy and pasted from: "How to Hash and Verify Passwords With Argon2 in Go" via https://www.alexedwards.net/blog/how-to-hash-and-verify-passwords-with-argon2-in-go
+	fmt.Println("GenerateHashFromPassword: Starting")
 
 	salt, err := generateRandomBytes(p.saltLength)
 	if err != nil {
+		fmt.Printf("GenerateHashFromPassword: Failed to generate salt: %v\n", err)
 		return "", err
 	}
+	fmt.Println("GenerateHashFromPassword: Salt generated")
 
-	hash := argon2.IDKey(password.Bytes(), salt, p.iterations, p.memory, p.parallelism, p.keyLength)
+	passwordBytes := password.Bytes()
+	fmt.Printf("GenerateHashFromPassword: Getting password bytes, length: %d\n", len(passwordBytes))
+
+	fmt.Println("GenerateHashFromPassword: Calling argon2.IDKey...")
+	hash := argon2.IDKey(passwordBytes, salt, p.iterations, p.memory, p.parallelism, p.keyLength)
+	fmt.Println("GenerateHashFromPassword: argon2.IDKey completed")
 
 	// Base64 encode the salt and hashed password.
 	b64Salt := base64.RawStdEncoding.EncodeToString(salt)
@@ -68,6 +74,7 @@ func (p *passwordProvider) GenerateHashFromPassword(password *sstring.SecureStri
 	// Return a string using the standard encoded hash representation.
 	encodedHash := fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, p.memory, p.iterations, p.parallelism, b64Salt, b64Hash)
 
+	fmt.Println("GenerateHashFromPassword: Completed")
 	return encodedHash, nil
 }
 

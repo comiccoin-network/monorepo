@@ -2,7 +2,6 @@
 package middleware
 
 import (
-	"fmt"
 	"regexp"
 )
 
@@ -57,14 +56,14 @@ func isProtectedPath(path string) bool {
 
 	// Check exact matches first (O(1) lookup)
 	if exactPaths[path] {
-		fmt.Println("isProtectedPath - ✅ found via map") // For debugging purposes only.
+		// fmt.Println("isProtectedPath - ✅ found via map") // For debugging purposes only.
 		return true
 	}
 
 	// Check patterns
 	for _, route := range patternRoutes {
 		if route.regex.MatchString(path) {
-			fmt.Println("isProtectedPath - ✅ found via regex") // For debugging purposes only.
+			// fmt.Println("isProtectedPath - ✅ found via regex") // For debugging purposes only.
 			return true
 		}
 	}

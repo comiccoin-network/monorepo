@@ -94,44 +94,52 @@ func (s *gatewayLoginServiceImpl) Execute(sessCtx mongo.SessionContext, req *Gat
 	// Lookup the user in our database, else return a `400 Bad Request` error.
 	u, err := s.userGetByEmailUseCase.Execute(sessCtx, req.Email)
 	if err != nil {
-		s.logger.Error("database error", slog.Any("err", err))
+		s.logger.Error("database error",
+			slog.String("email", req.Email),
+			slog.Any("err", err))
 		return nil, err
 	}
 	if u == nil {
-		s.logger.Warn("user does not exist validation error")
+		s.logger.Warn("user does not exist validation error",
+			slog.String("email", req.Email))
 		return nil, httperror.NewForBadRequestWithSingleField("email", "Email address does not exist")
 	}
 
 	s.logger.Debug("attempting to confirm correct password submission for the existing user...",
-		slog.Any("user_id", u.ID.Hex()))
+		slog.String("email", req.Email))
 
 	securePassword, err := sstring.NewSecureString(req.Password)
 	if err != nil {
-		s.logger.Error("database error", slog.Any("err", err))
+		s.logger.Error("database error",
+			slog.String("email", req.Email),
+			slog.Any("err", err))
 		return nil, err
 	}
+	defer securePassword.Wipe()
 
 	s.logger.Debug("attempting to compare password hashes...",
-		slog.Any("user_id", u.ID.Hex()))
+		slog.String("email", req.Email))
 
 	// Verify the inputted password and hashed password match.
 	passwordMatch, _ := s.passwordProvider.ComparePasswordAndHash(securePassword, u.PasswordHash)
 	if passwordMatch == false {
-		s.logger.Warn("password check validation error")
+		s.logger.Warn("password check validation error",
+			slog.String("email", req.Email))
 		return nil, httperror.NewForBadRequestWithSingleField("password", "Password does not match with record")
 	}
 
 	s.logger.Debug("attempting to confirm existing user has a verified email address...",
-		slog.Any("user_id", u.ID.Hex()))
+		slog.String("email", req.Email))
 
 	// Enforce the verification code of the email.
 	if u.WasEmailVerified == false {
-		s.logger.Warn("email verification validation error", slog.Any("u", u))
+		s.logger.Warn("email verification validation error",
+			slog.String("email", req.Email))
 		return nil, httperror.NewForBadRequestWithSingleField("email", "Email address was not verified")
 	}
 
 	s.logger.Debug("login confirmed correct password and verified email for existing user...",
-		slog.Any("user_id", u.ID.Hex()))
+		slog.String("email", req.Email))
 
 	// // Enforce 2FA if enabled.
 	if u.OTPEnabled {
@@ -141,6 +149,7 @@ func (s *gatewayLoginServiceImpl) Execute(sessCtx mongo.SessionContext, req *Gat
 		u.ModifiedAt = time.Now()
 		if err := s.userUpdateUseCase.Execute(sessCtx, u); err != nil {
 			s.logger.Error("failed updating user during login",
+				slog.String("email", req.Email),
 				slog.Any("err", err))
 			return nil, err
 		}

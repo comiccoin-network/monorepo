@@ -166,6 +166,7 @@ func (svc *updateUserServiceImpl) Execute(sessCtx mongo.SessionContext, userID p
 			svc.logger.Error("Failed to create secure password", slog.Any("error", err))
 			return nil, err
 		}
+		defer securePassword.Wipe()
 
 		passwordHash, err := svc.passwordProvider.GenerateHashFromPassword(securePassword)
 		if err != nil {
