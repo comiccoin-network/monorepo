@@ -96,17 +96,17 @@ func (r *BlockchainStateRepo) DeleteByChainID(ctx context.Context, chainID uint1
 }
 
 func (r *BlockchainStateRepo) OpenTransaction() error {
-	defer log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	defer log.Fatal("Unsupported feature in the `comiccoin` repository.")
 	return nil
 }
 
 func (r *BlockchainStateRepo) CommitTransaction() error {
-	defer log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	defer log.Fatal("Unsupported feature in the `comiccoin` repository.")
 	return nil
 }
 
 func (r *BlockchainStateRepo) DiscardTransaction() {
-	log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	log.Fatal("Unsupported feature in the `comiccoin` repository.")
 }
 
 func (r *BlockchainStateRepo) getUpdateChangeStream(ctx context.Context) (*mongo.ChangeStream, error) {

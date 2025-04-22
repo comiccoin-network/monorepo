@@ -1,4 +1,4 @@
-// monorepo/cloud/comiccoin-authority/domain/tx.go
+// monorepo/cloud/comiccoin/domain/tx.go
 package domain
 
 import (

@@ -48,6 +48,7 @@ tasks:
   vendor:
     desc: Save all the libraries into our code repository
     cmds:
+      - go mod tidy
       - go mod download
       - go mod vendor
 

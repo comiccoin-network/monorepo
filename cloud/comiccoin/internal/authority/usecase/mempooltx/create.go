@@ -1,4 +1,4 @@
-// monorepo/cloud/comiccoin-authority/usecase/mempooltx/create.go
+// monorepo/cloud/comiccoin/usecase/mempooltx/create.go
 package mempooltx
 
 import (

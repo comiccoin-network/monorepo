@@ -50,7 +50,7 @@ The **⚖️ ComicCoin Blockchain Authority** is a central server implementing t
 2. **Save the Database File:** Save the downloaded file in the `static` folder:
 
     ```bash
-    ./monorepo/cloud/comiccoin-authority/static/GeoLite2-Country.mmdb
+    ./monorepo/cloud/comiccoin/static/GeoLite2-Country.mmdb
     ```
 
 3. **Update the `.env` File:** Set the correct paths in the `.env` file:
@@ -187,7 +187,7 @@ Share the `api_key` with your **System Administrator** for further configuration
 
 ### Step 6: Restart the Server
 
-Restart the `comiccoin-authority` server to apply the new API credentials:
+Restart the `comiccoin` server to apply the new API credentials:
 
 ```bash
 task restart

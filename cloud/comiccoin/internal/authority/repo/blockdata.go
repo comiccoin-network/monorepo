@@ -721,15 +721,15 @@ func truncateAddress(addr string) string {
 }
 
 func (r *BlockDataRepo) OpenTransaction() error {
-	defer log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	defer log.Fatal("Unsupported feature in the `comiccoin` repository.")
 	return nil
 }
 
 func (r *BlockDataRepo) CommitTransaction() error {
-	defer log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	defer log.Fatal("Unsupported feature in the `comiccoin` repository.")
 	return nil
 }
 
 func (r *BlockDataRepo) DiscardTransaction() {
-	log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	log.Fatal("Unsupported feature in the `comiccoin` repository.")
 }

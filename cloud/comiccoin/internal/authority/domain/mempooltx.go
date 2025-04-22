@@ -1,4 +1,4 @@
-// monorepo/cloud/comiccoin-authority/domain/mempooltx.go
+// monorepo/cloud/comiccoin/domain/mempooltx.go
 package domain
 
 import (

@@ -173,17 +173,17 @@ func (r *TokenRepo) HashStateByChainID(ctx context.Context, chainID uint16) (str
 }
 
 func (r *TokenRepo) OpenTransaction() error {
-	defer log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	defer log.Fatal("Unsupported feature in the `comiccoin` repository.")
 	return nil
 }
 
 func (r *TokenRepo) CommitTransaction() error {
-	defer log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	defer log.Fatal("Unsupported feature in the `comiccoin` repository.")
 	return nil
 }
 
 func (r *TokenRepo) DiscardTransaction() {
-	log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	log.Fatal("Unsupported feature in the `comiccoin` repository.")
 }
 
 // =============================================================================

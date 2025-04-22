@@ -126,16 +126,16 @@ func (r *WalletRepo) DeleteByAddress(ctx context.Context, address *common.Addres
 }
 
 func (r *WalletRepo) OpenTransaction() error {
-	defer log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	defer log.Fatal("Unsupported feature in the `comiccoin` repository.")
 	return nil
 }
 
 func (r *WalletRepo) CommitTransaction() error {
-	defer log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	defer log.Fatal("Unsupported feature in the `comiccoin` repository.")
 	return nil
 }
 
 func (r *WalletRepo) DiscardTransaction() {
-	log.Fatal("Unsupported feature in the `comiccoin-authority` repository.")
+	log.Fatal("Unsupported feature in the `comiccoin` repository.")
 
 }

@@ -1,4 +1,4 @@
-// monorepo/cloud/comiccoin-authority/service/mempooltx/receivedto.go
+// monorepo/cloud/comiccoin/service/mempooltx/receivedto.go
 package mempooltx
 
 import (
