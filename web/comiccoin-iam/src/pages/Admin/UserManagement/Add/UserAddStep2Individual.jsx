@@ -841,7 +841,7 @@ const UserAddStep2Individual = () => {
                     Please provide a link to your personal website or a public
                     social media profile.
                     <span className="block font-medium mt-1">
-                      <b>Must begin with https:// or http://</b>
+                      <strong>Must begin with https:// or http://</strong>
                     </span>
                   </p>
                   {hasError("websiteURL") && (

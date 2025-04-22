@@ -816,7 +816,7 @@ const VerificationIndividualPage = () => {
                         LinkedIn, Twitter, or Facebook). This helps us verify
                         your identity and connection to the comic community.
                         <span className="block font-medium mt-1">
-                          <b>Must begin with https:// or http://</b>
+                          <strong>Must begin with https:// or http://</strong>
                         </span>
                       </p>
                       {errors.websiteURL && (
