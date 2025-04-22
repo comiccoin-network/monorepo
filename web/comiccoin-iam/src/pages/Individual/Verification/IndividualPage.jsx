@@ -1402,6 +1402,54 @@ const VerificationIndividualPage = () => {
                             )}
                           </div>
 
+                          {/* Shipping Country */}
+                          <div>
+                            <label
+                              htmlFor="shippingCountry"
+                              className="block text-sm text-gray-700 mb-1"
+                            >
+                              Country <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                              id="shippingCountry"
+                              name="shippingCountry"
+                              value={formData.shippingCountry}
+                              onChange={handleShippingCountryChange}
+                              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                                errors.shippingCountry
+                                  ? "border-red-300 bg-red-50"
+                                  : "border-gray-300"
+                              }`}
+                              style={selectStyles}
+                              aria-required="true"
+                              aria-invalid={
+                                errors.shippingCountry ? "true" : "false"
+                              }
+                            >
+                              <option value="">Select Country...</option>
+                              {countryRegionData.map((country) => (
+                                <option
+                                  key={country.countryShortCode}
+                                  value={country.countryShortCode}
+                                >
+                                  {country.countryName}
+                                </option>
+                              ))}
+                            </select>
+                            {errors.shippingCountry && (
+                              <p
+                                className="mt-1 text-xs text-red-600 flex items-center"
+                                aria-live="polite"
+                              >
+                                <AlertCircle
+                                  className="h-3 w-3 mr-1"
+                                  aria-hidden="true"
+                                />
+                                {errors.shippingCountry}
+                              </p>
+                            )}
+                          </div>
+
                           {/* Shipping Region/State */}
                           <div>
                             <label
@@ -1494,54 +1542,6 @@ const VerificationIndividualPage = () => {
                               </p>
                             )}
                           </div>
-                        </div>
-
-                        {/* Shipping Country */}
-                        <div>
-                          <label
-                            htmlFor="shippingCountry"
-                            className="block text-sm text-gray-700 mb-1"
-                          >
-                            Country <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            id="shippingCountry"
-                            name="shippingCountry"
-                            value={formData.shippingCountry}
-                            onChange={handleShippingCountryChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 ${
-                              errors.shippingCountry
-                                ? "border-red-300 bg-red-50"
-                                : "border-gray-300"
-                            }`}
-                            style={selectStyles}
-                            aria-required="true"
-                            aria-invalid={
-                              errors.shippingCountry ? "true" : "false"
-                            }
-                          >
-                            <option value="">Select Country...</option>
-                            {countryRegionData.map((country) => (
-                              <option
-                                key={country.countryShortCode}
-                                value={country.countryShortCode}
-                              >
-                                {country.countryName}
-                              </option>
-                            ))}
-                          </select>
-                          {errors.shippingCountry && (
-                            <p
-                              className="mt-1 text-xs text-red-600 flex items-center"
-                              aria-live="polite"
-                            >
-                              <AlertCircle
-                                className="h-3 w-3 mr-1"
-                                aria-hidden="true"
-                              />
-                              {errors.shippingCountry}
-                            </p>
-                          )}
                         </div>
                       </div>
                     )}
