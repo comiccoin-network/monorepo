@@ -2,14 +2,14 @@
   "expo": {
     "name": "ComicCoin Wallet",
     "slug": "comiccoin-wallet",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "buildNumber": "2",
+      "buildNumber": "1",
       "infoPlist": {
         "CFBundleDisplayName": "ComicCoin Wallet"
       },
@@ -32,7 +32,7 @@
       "appStoreUrl": "https://apps.apple.com/ca/app/comiccoin-wallet/id6741118881"
     },
     "android": {
-      "versionCode": 10,
+      "versionCode": 11,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#e5e5e5"
