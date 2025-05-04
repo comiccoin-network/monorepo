@@ -712,6 +712,63 @@ func (r *BlockDataRepo) ListOwnedTokenBlockTransactionsByAddress(ctx context.Con
 
 }
 
+// ListLatestBlockTransactions lists the most recent transactions across all blocks,
+// limited by the specified count.
+func (r *BlockDataRepo) ListLatestBlockTransactions(ctx context.Context, limit int64) ([]*domain.BlockTransaction, error) {
+	// Define the aggregation pipeline to:
+	// 1. Unwind the transactions in all blocks
+	// 2. Sort them by timestamp in descending order
+	// 3. Limit the results to the specified count
+	pipeline := []bson.M{
+		{"$match": bson.M{"header.chain_id": r.config.Blockchain.ChainID}},
+		{"$unwind": "$trans"},
+		{"$sort": bson.M{"trans.timestamp": -1}},
+		{"$limit": limit},
+		{"$replaceRoot": bson.M{"newRoot": "$trans"}},
+	}
+
+	// Execute the aggregation
+	cursor, err := r.collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute aggregation: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	// Decode the results
+	var transactions []*domain.BlockTransaction
+	for cursor.Next(ctx) {
+		var tx domain.BlockTransaction
+		if err := cursor.Decode(&tx); err != nil {
+			return nil, fmt.Errorf("failed to decode transaction: %v", err)
+		}
+
+		// Add string representations for various fields
+		if !tx.SignedTransaction.Transaction.IsNonceZero() {
+			tx.SignedTransaction.Transaction.NonceString = tx.SignedTransaction.Transaction.GetNonce().String()
+		}
+
+		if !tx.SignedTransaction.Transaction.IsTokenIDZero() {
+			tx.SignedTransaction.Transaction.TokenIDString = tx.SignedTransaction.Transaction.GetTokenID().String()
+		}
+
+		if !tx.SignedTransaction.Transaction.IsTokenNonceZero() {
+			tx.SignedTransaction.Transaction.TokenNonceString = tx.SignedTransaction.Transaction.GetTokenNonce().String()
+		}
+
+		if tx.SignedTransaction.Transaction.Data != nil {
+			tx.SignedTransaction.Transaction.DataString = string(tx.SignedTransaction.Transaction.Data)
+		}
+
+		transactions = append(transactions, &tx)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return transactions, nil
+}
+
 // Helper function to truncate addresses for cleaner logging
 func truncateAddress(addr string) string {
 	if len(addr) <= 10 {

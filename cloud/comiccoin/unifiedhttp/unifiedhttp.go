@@ -139,6 +139,11 @@ func (port *unifiedHTTPServerImpl) handleRequests(w http.ResponseWriter, r *http
 
 	// Handle the request based on the URL path tokens.
 	switch {
+	case n == 0 || (n == 1 && p[0] == ""): // Authority will handle root path `/`, a.k.a. the index page.
+		// Forward to authority module for the index page
+		port.authorityHTTPServer.HandleIncomingHTTPRequest(w, r)
+		return
+
 	case n == 1 && p[0] == "version" && r.Method == http.MethodGet:
 		port.getVersionHTTPHandler.Execute(w, r)
 

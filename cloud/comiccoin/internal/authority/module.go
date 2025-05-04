@@ -152,6 +152,11 @@ func NewModule(
 		logger,
 		bdRepo,
 	)
+	listLatestBlockTransactionsUseCase := uc_blocktx.NewListLatestBlockTransactionsUseCase(
+		cfg,
+		logger,
+		bdRepo,
+	)
 
 	// Wallet Utils
 	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
@@ -299,6 +304,11 @@ func NewModule(
 		logger,
 		getLatestBlockTransactionsByAddressUseCase,
 	)
+	listLatestBlockTransactionsService := sv_blocktx.NewListLatestBlockTransactionsService(
+		cfg,
+		logger,
+		listLatestBlockTransactionsUseCase,
+	)
 
 	// Coins
 	signedTransactionSubmissionService := sv_signedtx.NewSignedTransactionSubmissionService(
@@ -394,6 +404,11 @@ func NewModule(
 	)
 
 	// --- HTTP --- //
+	indexHTTPHandler := httphandler.NewIndexHTTPHandler(
+		cfg,
+		logger,
+		listLatestBlockTransactionsService,
+	)
 	getVersionHTTPHandler := httphandler.NewGetVersionHTTPHandler(
 		logger)
 	getHealthCheckHTTPHandler := httphandler.NewGetHealthCheckHTTPHandler(
@@ -478,6 +493,7 @@ func NewModule(
 		tokenListByOwnerHTTPHandler,
 		tokenMintServiceHTTPHandler,
 		getAccountBalance,
+		indexHTTPHandler,
 	)
 
 	return &AuthorityModule{

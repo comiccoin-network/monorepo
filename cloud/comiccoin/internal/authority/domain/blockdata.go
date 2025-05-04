@@ -72,6 +72,8 @@ type BlockDataRepository interface {
 
 	ListOwnedTokenBlockTransactionsByAddress(ctx context.Context, address *common.Address) ([]*BlockTransaction, error)
 
+	ListLatestBlockTransactions(ctx context.Context, limit int64) ([]*BlockTransaction, error)
+
 	OpenTransaction() error
 	CommitTransaction() error
 	DiscardTransaction()

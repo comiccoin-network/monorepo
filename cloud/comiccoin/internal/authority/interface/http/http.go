@@ -31,6 +31,7 @@ type httpServerImpl struct {
 
 	middleware mid.Middleware
 
+	indexHTTPHandler                                              *handler.IndexHTTPHandler
 	getVersionHTTPHandler                                         *handler.GetVersionHTTPHandler
 	getHealthCheckHTTPHandler                                     *handler.GetHealthCheckHTTPHandler
 	getGenesisBlockDataHTTPHandler                                *handler.GetGenesisBlockDataHTTPHandler
@@ -72,6 +73,7 @@ func NewHTTPServer(
 	http15 *handler.TokenListByOwnerHTTPHandler,
 	http16 *handler.TokenMintServiceHTTPHandler,
 	http17 *handler.GetAccountBalanceHTTPHandler,
+	http18 *handler.IndexHTTPHandler,
 ) HTTPServer {
 	// Check if the HTTP address is set in the configuration.
 	if cfg.App.IP == "" {
@@ -103,6 +105,7 @@ func NewHTTPServer(
 		tokenListByOwnerHTTPHandler:                                   http15,
 		tokenMintServiceHTTPHandler:                                   http16,
 		getAccountBalanceHTTPHandler:                                  http17,
+		indexHTTPHandler:                                              http18,
 	}
 
 	return port
@@ -138,6 +141,12 @@ func (port *httpServerImpl) HandleIncomingHTTPRequest(w http.ResponseWriter, r *
 
 		// Handle the request based on the URL path tokens.
 		switch {
+		// Add case for root path
+		case n == 0 || (n == 1 && p[0] == "") || (n == 1 && p[0] == "authority" && r.Method == http.MethodGet): // Authority will handle root path `/`, a.k.a. the index page.
+			// Override content-type for HTML response
+			w.Header().Del("Content-Type")
+			port.indexHTTPHandler.Execute(w, r)
+
 		case n == 4 && p[0] == "authority" && p[1] == "api" && p[2] == "v1" && p[3] == "genesis" && r.Method == http.MethodGet:
 			port.getGenesisBlockDataHTTPHandler.Execute(w, r)
 
