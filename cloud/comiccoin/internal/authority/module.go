@@ -363,6 +363,7 @@ func NewModule(
 		getLatestTokenIDUseCase,
 		getBlockDataUseCase,
 		mempoolTransactionCreateUseCase,
+		proofOfAuthorityConsensusMechanismService,
 	)
 
 	// Stream Latest Blockchain State Change

@@ -12,9 +12,13 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/repo"
 	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/poa"
 	sv_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/token"
+	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/account"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/blockdata"
+	uc_genesisblockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/genesisblockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltx"
+	uc_pow "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/pow"
+	uc_token "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/token"
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/walletutil"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/blockchain/hdkeystore"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/distributedmutex"
@@ -52,64 +56,38 @@ func doRunMintToken() {
 	dmutex := distributedmutex.NewAdapter(logger, cachep.GetRedisClient())
 
 	// ------ Repository ------
-	// walletRepo := repo.NewWalletRepo(cfg, logger, dbClient)
-	// accountRepo := repo.NewAccountRepo(cfg, logger, dbClient)
+	accountRepo := repo.NewAccountRepo(cfg, logger, dbClient)
 	blockchainStateRepo := repo.NewBlockchainStateRepo(cfg, logger, dbClient)
-	// tokRepo := repo.NewTokenRepo(cfg, logger, dbClient)
-	// gbdRepo := repo.NewGenesisBlockDataRepo(cfg, logger, dbClient)
+	tokRepo := repo.NewTokenRepo(cfg, logger, dbClient)
+	gbdRepo := repo.NewGenesisBlockDataRepo(cfg, logger, dbClient)
 	bdRepo := repo.NewBlockDataRepo(cfg, logger, dbClient)
 	mempoolTxRepo := repo.NewMempoolTransactionRepo(cfg, logger, dbClient)
 
-	// // ------ Use-case ------
-	// // Wallet
-	// walletEncryptKeyUseCase := usecase.NewWalletEncryptKeyUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	keystore,
-	// 	walletRepo,
-	// )
-	// _ = walletEncryptKeyUseCase
+	// ------ Use-case ------
+	// Wallet Utils
 	privateKeyFromHDWalletUseCase := uc_walletutil.NewPrivateKeyFromHDWalletUseCase(
 		cfg,
 		logger,
 		keystore,
 	)
-	// createWalletUseCase := usecase.NewCreateWalletUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	walletRepo,
-	// )
-	// _ = createWalletUseCase
-	// getWalletUseCase := uc_wallet.NewGetWalletUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	walletRepo,
-	// )
 
-	// // Account
-	// createAccountUseCase := usecase.NewCreateAccountUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	accountRepo,
-	// )
-	// _ = createAccountUseCase
-	// getAccountUseCase := usecase.NewGetAccountUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	accountRepo,
-	// )
-	// _ = getAccountUseCase
-	// upsertAccountUseCase := usecase.NewUpsertAccountUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	accountRepo,
-	// )
-	// getAccountsHashStateUseCase := usecase.NewGetAccountsHashStateUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	accountRepo,
-	// )
-	//
+	// Account
+	getAccountUseCase := uc_account.NewGetAccountUseCase(
+		cfg,
+		logger,
+		accountRepo,
+	)
+	getAccountsHashStateUseCase := uc_account.NewGetAccountsHashStateUseCase(
+		cfg,
+		logger,
+		accountRepo,
+	)
+	upsertAccountUseCase := uc_account.NewUpsertAccountUseCase(
+		cfg,
+		logger,
+		accountRepo,
+	)
+
 	// Blockchain State
 	getBlockchainStateUseCase := uc_blockchainstate.NewGetBlockchainStateUseCase(
 		cfg,
@@ -121,27 +99,12 @@ func doRunMintToken() {
 		logger,
 		blockchainStateRepo,
 	)
+	blockchainStatePublishUseCase := uc_blockchainstate.NewBlockchainStatePublishUseCase(
+		logger,
+		cachep,
+	)
 
-	// // Token
-	// upsertTokenIfPreviousTokenNonceGTEUseCase := usecase.NewUpsertTokenIfPreviousTokenNonceGTEUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	tokRepo,
-	// )
-	// getTokensHashStateUseCase := usecase.NewGetTokensHashStateUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	tokRepo,
-	// )
-	//
-	// // Genesis BlockData
-	// upsertGenesisBlockDataUseCase := usecase.NewUpsertGenesisBlockDataUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	gbdRepo,
-	// )
-	//
-	// BlockData
+	// Block Data
 	getBlockDataUseCase := uc_blockdata.NewGetBlockDataUseCase(
 		cfg,
 		logger,
@@ -152,17 +115,41 @@ func doRunMintToken() {
 		logger,
 		bdRepo,
 	)
-	// upsertBlockDataUseCase := usecase.NewUpsertBlockDataUseCase(
-	// 	cfg,
-	// 	logger,
-	// 	bdRepo,
-	// )
-	//
-	// // Proof of Work
-	// proofOfWorkUseCase := usecase.NewProofOfWorkUseCase(
-	// 	cfg,
-	// 	logger,
-	// )
+	upsertBlockDataUseCase := uc_blockdata.NewUpsertBlockDataUseCase(
+		cfg,
+		logger,
+		bdRepo,
+	)
+
+	// Genesis Block Data
+	getGenesisBlockDataUseCase := uc_genesisblockdata.NewGetGenesisBlockDataUseCase(
+		cfg,
+		logger,
+		gbdRepo,
+	)
+
+	// Token
+	getTokenUseCase := uc_token.NewGetTokenUseCase(
+		cfg,
+		logger,
+		tokRepo,
+	)
+	getTokensHashStateUseCase := uc_token.NewGetTokensHashStateUseCase(
+		cfg,
+		logger,
+		tokRepo,
+	)
+	upsertTokenIfPreviousTokenNonceGTEUseCase := uc_token.NewUpsertTokenIfPreviousTokenNonceGTEUseCase(
+		cfg,
+		logger,
+		tokRepo,
+	)
+
+	// Proof of Work
+	proofOfWorkUseCase := uc_pow.NewProofOfWorkUseCase(
+		cfg,
+		logger,
+	)
 
 	// Mempool Transaction
 	mempoolTransactionCreateUseCase := uc_mempooltx.NewMempoolTransactionCreateUseCase(
@@ -170,24 +157,56 @@ func doRunMintToken() {
 		logger,
 		mempoolTxRepo,
 	)
+	mempoolTransactionDeleteByIDUseCase := uc_mempooltx.NewMempoolTransactionDeleteByIDUseCase(
+		cfg,
+		logger,
+		mempoolTxRepo,
+	)
 
 	// ------ Service ------
+	// Create PoA service for private key access
 	getProofOfAuthorityPrivateKeyService := sv_poa.NewGetProofOfAuthorityPrivateKeyService(
 		cfg,
 		logger,
 		privateKeyFromHDWalletUseCase,
 	)
+
+	// Create PoA consensus mechanism service
+	proofOfAuthorityConsensusMechanismService := sv_poa.NewProofOfAuthorityConsensusMechanismService(
+		cfg,
+		logger,
+		dmutex,
+		dbClient,
+		getProofOfAuthorityPrivateKeyService,
+		mempoolTransactionDeleteByIDUseCase,
+		getBlockchainStateUseCase,
+		upsertBlockchainStateUseCase,
+		getGenesisBlockDataUseCase,
+		getBlockDataUseCase,
+		getAccountUseCase,
+		getAccountsHashStateUseCase,
+		upsertAccountUseCase,
+		getTokenUseCase,
+		getTokensHashStateUseCase,
+		upsertTokenIfPreviousTokenNonceGTEUseCase,
+		proofOfWorkUseCase,
+		upsertBlockDataUseCase,
+		blockchainStatePublishUseCase,
+	)
+
+	// Token Mint service with direct PoA submission
 	tokenMintService := sv_token.NewTokenMintService(
 		cfg,
 		logger,
 		dmutex,
-		dbClient, // Note: Used for mongoDB transaction handling.
+		dbClient,
 		getProofOfAuthorityPrivateKeyService,
 		getBlockchainStateUseCase,
 		upsertBlockchainStateUseCase,
 		getLatestTokenIDUseCase,
 		getBlockDataUseCase,
 		mempoolTransactionCreateUseCase,
+		proofOfAuthorityConsensusMechanismService, // Add the PoA service
 	)
 
 	// Execution
