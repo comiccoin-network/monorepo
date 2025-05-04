@@ -14,6 +14,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
+	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/poa"
 	uc_blockchainstate "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/blockchainstate"
 	uc_blockdata "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/blockdata"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltx"
@@ -34,16 +35,17 @@ type TokenBurnService interface {
 }
 
 type tokenBurnServiceImpl struct {
-	config                          *config.Configuration
-	logger                          *slog.Logger
-	kmutex                          kmutexutil.KMutexProvider
-	dbClient                        *mongo.Client
-	privateKeyFromHDWalletUseCase   uc_walletutil.PrivateKeyFromHDWalletUseCase
-	getBlockchainStateUseCase       uc_blockchainstate.GetBlockchainStateUseCase
-	upsertBlockchainStateUseCase    uc_blockchainstate.UpsertBlockchainStateUseCase
-	getBlockDataUseCase             uc_blockdata.GetBlockDataUseCase
-	getTokenUseCase                 uc_token.GetTokenUseCase
-	mempoolTransactionCreateUseCase uc_mempooltx.MempoolTransactionCreateUseCase
+	config                                    *config.Configuration
+	logger                                    *slog.Logger
+	kmutex                                    kmutexutil.KMutexProvider
+	dbClient                                  *mongo.Client
+	privateKeyFromHDWalletUseCase             uc_walletutil.PrivateKeyFromHDWalletUseCase
+	getBlockchainStateUseCase                 uc_blockchainstate.GetBlockchainStateUseCase
+	upsertBlockchainStateUseCase              uc_blockchainstate.UpsertBlockchainStateUseCase
+	getBlockDataUseCase                       uc_blockdata.GetBlockDataUseCase
+	getTokenUseCase                           uc_token.GetTokenUseCase
+	mempoolTransactionCreateUseCase           uc_mempooltx.MempoolTransactionCreateUseCase
+	proofOfAuthorityConsensusMechanismService sv_poa.ProofOfAuthorityConsensusMechanismService
 }
 
 func NewTokenBurnService(
@@ -57,8 +59,21 @@ func NewTokenBurnService(
 	uc4 uc_blockdata.GetBlockDataUseCase,
 	uc5 uc_token.GetTokenUseCase,
 	uc6 uc_mempooltx.MempoolTransactionCreateUseCase,
+	poaService sv_poa.ProofOfAuthorityConsensusMechanismService,
 ) TokenBurnService {
-	return &tokenBurnServiceImpl{cfg, logger, kmutex, client, uc1, uc2, uc3, uc4, uc5, uc6}
+	return &tokenBurnServiceImpl{
+		cfg,
+		logger,
+		kmutex,
+		client,
+		uc1,
+		uc2,
+		uc3,
+		uc4,
+		uc5,
+		uc6,
+		poaService,
+	}
 }
 
 func (s *tokenBurnServiceImpl) Execute(
@@ -67,7 +82,7 @@ func (s *tokenBurnServiceImpl) Execute(
 	tokenOwnerAddress *common.Address,
 	accountWalletMnemonic *sstring.SecureString,
 	accountWalletPath string) error {
-	// Lock the mining service until it has completed executing (or errored).
+	// Lock the service until it has completed executing (or errored).
 	s.kmutex.Acquire("token-services")
 	defer s.kmutex.Release("token-services")
 
@@ -94,184 +109,137 @@ func (s *tokenBurnServiceImpl) Execute(
 		return httperror.NewForBadRequest(&e)
 	}
 
-	////
-	//// Start the transaction.
-	////
+	//
+	// STEP 2: Get related records.
+	//
 
-	session, err := s.dbClient.StartSession()
+	blockchainState, err := s.getBlockchainStateUseCase.Execute(ctx, s.config.Blockchain.ChainID)
 	if err != nil {
-		s.logger.Error("start session error",
+		s.logger.Error("Failed getting blockchain state.",
 			slog.Any("error", err))
-		return fmt.Errorf("Failed executing: %v\n", err)
+		return err
 	}
-	defer session.EndSession(ctx)
+	if blockchainState == nil {
+		s.logger.Error("Blockchain state does not exist.")
+		return fmt.Errorf("Blockchain state does not exist")
+	}
 
-	// Define a transaction function with a series of operations
-	transactionFunc := func(sessCtx mongo.SessionContext) (interface{}, error) {
-		s.logger.Debug("Transaction started")
+	privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
+	if err != nil {
+		s.logger.Error("failed getting wallet key",
+			slog.Any("error", err))
+		return fmt.Errorf("failed getting wallet key: %s", err)
+	}
 
-		//
-		// STEP 2:
-		// Get related records.
-		//
+	recentBlockData, err := s.getBlockDataUseCase.ExecuteByHash(ctx, blockchainState.LatestHash)
+	if err != nil {
+		s.logger.Error("Failed getting latest block block.",
+			slog.Any("error", err))
+		return err
+	}
+	if recentBlockData == nil {
+		s.logger.Error("Latest block data does not exist.")
+		return fmt.Errorf("Latest block data does not exist")
+	}
 
-		blockchainState, err := s.getBlockchainStateUseCase.Execute(sessCtx, s.config.Blockchain.ChainID)
-		if err != nil {
-			s.logger.Error("Failed getting blockchain state.",
-				slog.Any("error", err))
-			return nil, err
-		}
-		if blockchainState == nil {
-			s.logger.Error("Blockchain state does not exist.")
-			return nil, fmt.Errorf("Blockchain state does not exist")
-		}
-
-		privateKey, err := s.privateKeyFromHDWalletUseCase.Execute(ctx, accountWalletMnemonic, accountWalletPath)
-		if err != nil {
-			s.logger.Error("failed getting wallet key",
-				slog.Any("error", err))
-			return nil, fmt.Errorf("failed getting wallet key: %s", err)
-		}
-
-		recentBlockData, err := s.getBlockDataUseCase.ExecuteByHash(sessCtx, blockchainState.LatestHash)
-		if err != nil {
-			s.logger.Error("Failed getting latest block block.",
-				slog.Any("error", err))
-			return nil, err
-		}
-		if recentBlockData == nil {
-			s.logger.Error("Latest block data does not exist.")
-			return nil, fmt.Errorf("Latest block data does not exist")
-		}
-
-		token, err := s.getTokenUseCase.Execute(sessCtx, tokenID)
-		if err != nil {
-			if !strings.Contains(err.Error(), "does not exist") {
-				s.logger.Error("failed getting token",
-					slog.Any("token_id", tokenID),
-					slog.Any("error", err))
-				return nil, err
-			}
-		}
-		if token == nil {
-			s.logger.Warn("failed getting token",
+	token, err := s.getTokenUseCase.Execute(ctx, tokenID)
+	if err != nil {
+		if !strings.Contains(err.Error(), "does not exist") {
+			s.logger.Error("failed getting token",
 				slog.Any("token_id", tokenID),
-				slog.Any("error", "token does not exist"))
-			return nil, fmt.Errorf("failed getting token: does not exist for ID: %v", tokenID)
-		}
-
-		//
-		// STEP 3:
-		// Verify the account owns the token
-		//
-
-		if tokenOwnerAddress.Hex() != token.Owner.Hex() {
-			s.logger.Warn("permission failed",
-				slog.Any("token_id", tokenID))
-			return nil, fmt.Errorf("permission denied: token address is %v but your address is %v", token.Owner.Hex(), tokenOwnerAddress.Hex())
-		}
-
-		//
-		// STEP 4:
-		// Increment token `nonce` - this is very important as it tells the
-		// blockchain that we are commiting a transaction and hence the miner will
-		// execute the burn. If we do not increment the nonce then no
-		// transaction happens!
-		//
-
-		nonce := token.GetNonce()
-		nonce.Add(nonce, big.NewInt(1))
-		token.SetNonce(nonce)
-
-		//
-		// STEP 4:
-		// Create our pending transaction and sign it with the accounts private key.
-		//
-
-		// Burn an NFT by setting its owner to the burn address
-		burnAddress := common.HexToAddress("0x0000000000000000000000000000000000000000")
-
-		tx := &domain.Transaction{
-			ChainID:          s.config.Blockchain.ChainID,
-			NonceBytes:       big.NewInt(time.Now().Unix()).Bytes(),
-			From:             tokenOwnerAddress,
-			To:               &burnAddress,
-			Value:            s.config.Blockchain.TransactionFee, // Note: This value gets reclaimed by the us, so it's fully recirculating when authority calls this.
-			Data:             make([]byte, 0),
-			Type:             domain.TransactionTypeToken,
-			TokenIDBytes:     token.IDBytes,
-			TokenMetadataURI: token.MetadataURI,
-			TokenNonceBytes:  nonce.Bytes(), // Burned tokens must increment nonce.
-		}
-
-		stx, signingErr := tx.Sign(privateKey)
-		if signingErr != nil {
-			s.logger.Debug("Failed to sign the token burn transaction",
-				slog.Any("error", signingErr))
-			return nil, signingErr
-		}
-
-		// Defensive Coding.
-		if err := stx.Validate(s.config.Blockchain.ChainID, true); err != nil {
-			s.logger.Debug("Failed to validate signature of the signed transaction",
-				slog.Any("error", signingErr))
-			return nil, signingErr
-		}
-
-		s.logger.Debug("Pending token burn transaction signed successfully",
-			slog.Any("tx_token_id", stx.GetTokenID()))
-
-		mempoolTx := &domain.MempoolTransaction{
-			ID:                primitive.NewObjectID(),
-			SignedTransaction: stx,
-		}
-
-		// Defensive Coding.
-		if err := mempoolTx.Validate(s.config.Blockchain.ChainID, true); err != nil {
-			s.logger.Debug("Failed to validate signature of mempool transaction",
-				slog.Any("error", signingErr))
-			return nil, signingErr
-		}
-
-		// s.logger.Debug("Mempool transaction ready for submission",
-		// 	slog.Any("Transaction", stx.Transaction),
-		// 	slog.Any("tx_sig_v_bytes", stx.VBytes),
-		// 	slog.Any("tx_sig_r_bytes", stx.RBytes),
-		// 	slog.Any("tx_sig_s_bytes", stx.SBytes))
-
-		//
-		// STEP 3
-		// Send our pending signed transaction to the authority's mempool to wait
-		// in a queue to be processed.
-		//
-
-		if err := s.mempoolTransactionCreateUseCase.Execute(sessCtx, mempoolTx); err != nil {
-			s.logger.Error("Failed to broadcast to the blockchain network",
 				slog.Any("error", err))
-			return nil, err
+			return err
 		}
-
-		s.logger.Info("Pending signed transaction for coin burn submitted to the authority",
-			slog.Any("tx_nonce", stx.GetNonce()))
-
-		s.logger.Debug("Committing transaction")
-		if err := sessCtx.CommitTransaction(ctx); err != nil {
-			s.logger.Error("Failed comming transaction",
-				slog.Any("error", err))
-			return nil, err
-		}
-		s.logger.Debug("Transaction committed")
-
-		// return tok, nil
-		return nil, nil
+	}
+	if token == nil {
+		s.logger.Warn("failed getting token",
+			slog.Any("token_id", tokenID),
+			slog.Any("error", "token does not exist"))
+		return fmt.Errorf("failed getting token: does not exist for ID: %v", tokenID)
 	}
 
-	// Start a transaction
-	if _, err := session.WithTransaction(ctx, transactionFunc); err != nil {
-		s.logger.Error("session failed error",
+	//
+	// STEP 3: Verify the account owns the token
+	//
+
+	if tokenOwnerAddress.Hex() != token.Owner.Hex() {
+		s.logger.Warn("permission failed",
+			slog.Any("token_id", tokenID))
+		return fmt.Errorf("permission denied: token address is %v but your address is %v", token.Owner.Hex(), tokenOwnerAddress.Hex())
+	}
+
+	//
+	// STEP 4: Increment token `nonce` - this is very important as it tells the
+	// blockchain that we are commiting a transaction and hence the miner will
+	// execute the burn. If we do not increment the nonce then no
+	// transaction happens!
+	//
+
+	nonce := token.GetNonce()
+	nonce.Add(nonce, big.NewInt(1))
+	token.SetNonce(nonce)
+
+	//
+	// STEP 5: Create the burn transaction and sign it
+	//
+
+	// Burn an NFT by setting its owner to the burn address
+	burnAddress := common.HexToAddress("0x0000000000000000000000000000000000000000")
+
+	tx := &domain.Transaction{
+		ChainID:          s.config.Blockchain.ChainID,
+		NonceBytes:       big.NewInt(time.Now().Unix()).Bytes(),
+		From:             tokenOwnerAddress,
+		To:               &burnAddress,
+		Value:            s.config.Blockchain.TransactionFee, // Transaction fee gets reclaimed by the authority
+		Data:             make([]byte, 0),
+		Type:             domain.TransactionTypeToken,
+		TokenIDBytes:     token.IDBytes,
+		TokenMetadataURI: token.MetadataURI,
+		TokenNonceBytes:  nonce.Bytes(), // Burned tokens must increment nonce
+	}
+
+	stx, signingErr := tx.Sign(privateKey)
+	if signingErr != nil {
+		s.logger.Debug("Failed to sign the token burn transaction",
+			slog.Any("error", signingErr))
+		return signingErr
+	}
+
+	// Defensive Coding: Validate the signed transaction
+	if err := stx.Validate(s.config.Blockchain.ChainID, true); err != nil {
+		s.logger.Debug("Failed to validate signature of the signed transaction",
+			slog.Any("error", signingErr))
+		return signingErr
+	}
+
+	s.logger.Debug("Token burn transaction signed successfully",
+		slog.Any("tx_token_id", stx.GetTokenID()))
+
+	mempoolTx := &domain.MempoolTransaction{
+		ID:                primitive.NewObjectID(),
+		SignedTransaction: stx,
+	}
+
+	// Defensive Coding: Validate the mempool transaction
+	if err := mempoolTx.Validate(s.config.Blockchain.ChainID, true); err != nil {
+		s.logger.Debug("Failed to validate signature of mempool transaction",
+			slog.Any("error", signingErr))
+		return signingErr
+	}
+
+	//
+	// STEP 6: Submit directly to PoA consensus mechanism instead of adding to mempool
+	//
+
+	if err := s.proofOfAuthorityConsensusMechanismService.Execute(ctx, mempoolTx); err != nil {
+		s.logger.Error("Failed to process transaction through consensus mechanism",
 			slog.Any("error", err))
-		return fmt.Errorf("Failed creating account: %v\n", err)
+		return err
 	}
+
+	s.logger.Info("Token burn transaction successfully processed through PoA consensus",
+		slog.Any("tx_nonce", stx.GetNonce()))
 
 	return nil
 }
