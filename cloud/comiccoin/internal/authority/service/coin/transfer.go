@@ -12,6 +12,7 @@ import (
 
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/domain"
+	sv_poa "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/service/poa"
 	uc_account "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/account"
 	uc_mempooltx "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/mempooltx"
 	uc_walletutil "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/usecase/walletutil"
@@ -32,11 +33,12 @@ type CoinTransferService interface {
 }
 
 type coinTransferServiceImpl struct {
-	config                          *config.Configuration
-	logger                          *slog.Logger
-	getAccountUseCase               uc_account.GetAccountUseCase
-	privateKeyFromHDWalletUseCase   uc_walletutil.PrivateKeyFromHDWalletUseCase
-	mempoolTransactionCreateUseCase uc_mempooltx.MempoolTransactionCreateUseCase
+	config                                    *config.Configuration
+	logger                                    *slog.Logger
+	getAccountUseCase                         uc_account.GetAccountUseCase
+	privateKeyFromHDWalletUseCase             uc_walletutil.PrivateKeyFromHDWalletUseCase
+	mempoolTransactionCreateUseCase           uc_mempooltx.MempoolTransactionCreateUseCase
+	proofOfAuthorityConsensusMechanismService sv_poa.ProofOfAuthorityConsensusMechanismService
 }
 
 func NewCoinTransferService(
@@ -45,8 +47,9 @@ func NewCoinTransferService(
 	uc1 uc_account.GetAccountUseCase,
 	uc2 uc_walletutil.PrivateKeyFromHDWalletUseCase,
 	uc3 uc_mempooltx.MempoolTransactionCreateUseCase,
+	poaService sv_poa.ProofOfAuthorityConsensusMechanismService,
 ) CoinTransferService {
-	return &coinTransferServiceImpl{cfg, logger, uc1, uc2, uc3}
+	return &coinTransferServiceImpl{cfg, logger, uc1, uc2, uc3, poaService}
 }
 
 func (s *coinTransferServiceImpl) Execute(
@@ -187,25 +190,18 @@ func (s *coinTransferServiceImpl) Execute(
 		return signingErr
 	}
 
-	// s.logger.Debug("Mempool transaction ready for submission",
-	// 	slog.Any("Transaction", stx.Transaction),
-	// 	slog.Any("tx_sig_v_bytes", stx.VBytes),
-	// 	slog.Any("tx_sig_r_bytes", stx.RBytes),
-	// 	slog.Any("tx_sig_s_bytes", stx.SBytes))
-
 	//
-	// STEP 3
-	// Send our pending signed transaction to the authority's mempool to wait
-	// in a queue to be processed.
+	// STEP 5: Direct submission to ProofOfAuthorityConsensusMechanismService
+	// Instead of submitting to mempool, directly process through consensus
 	//
 
-	if err := s.mempoolTransactionCreateUseCase.Execute(ctx, mempoolTx); err != nil {
-		s.logger.Error("Failed to broadcast to the blockchain network",
+	if err := s.proofOfAuthorityConsensusMechanismService.Execute(ctx, mempoolTx); err != nil {
+		s.logger.Error("Failed to process transaction through consensus mechanism",
 			slog.Any("error", err))
 		return err
 	}
 
-	s.logger.Info("Pending signed transaction for coin transfer submitted to the authority",
+	s.logger.Info("Transaction successfully processed through PoA consensus",
 		slog.Any("tx_nonce", stx.GetNonce()))
 
 	return nil

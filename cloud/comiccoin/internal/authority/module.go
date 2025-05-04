@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/config"
 	httpserver "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/http"
 	httphandler "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/authority/interface/http/handler"
@@ -37,7 +39,6 @@ import (
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/jwt"
 	"github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/security/password"
 	cache "github.com/comiccoin-network/monorepo/cloud/comiccoin/internal/common/storage/memory/redis"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type AuthorityModule struct {
