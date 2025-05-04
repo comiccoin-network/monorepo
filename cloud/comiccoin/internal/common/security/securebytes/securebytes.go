@@ -2,6 +2,7 @@ package securebytes
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/awnumar/memguard"
 )
@@ -19,21 +20,36 @@ func NewSecureBytes(b []byte) (*SecureBytes, error) {
 
 	buffer := memguard.NewBuffer(len(b))
 
-	copy(buffer.Bytes(), b)
-
-	buffer.Lock()
+	// Check if buffer was created successfully
+	if buffer == nil {
+		return nil, errors.New("failed to create buffer")
+	}
 
 	return &SecureBytes{buffer: buffer}, nil
 }
 
 // Bytes returns the securely stored byte slice.
 func (sb *SecureBytes) Bytes() []byte {
+	if sb.buffer == nil {
+		fmt.Println("Bytes(): buffer is nil")
+		return nil
+	}
+	if !sb.buffer.IsAlive() {
+		fmt.Println("Bytes(): buffer is not alive")
+		return nil
+	}
 	return sb.buffer.Bytes()
 }
 
 // Wipe removes the byte slice from memory and makes it unrecoverable.
 func (sb *SecureBytes) Wipe() error {
-	sb.buffer.Wipe()
+	if sb.buffer != nil {
+		if sb.buffer.IsAlive() {
+			sb.buffer.Destroy()
+			fmt.Println("Wipe(): Buffer destroyed")
+		}
+	}
+
 	sb.buffer = nil
 	return nil
 }

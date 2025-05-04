@@ -60,3 +60,12 @@ $RECYCLE.BIN/
 cloud/archive
 native/archive
 web/archive
+
+# Do not share developer's private notebook
+private.txt
+private_prod.md
+private.md
+private_*.md
+todo.txt
+private_docs
+private_docs/*
