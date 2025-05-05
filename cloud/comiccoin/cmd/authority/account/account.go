@@ -21,6 +21,7 @@ func AccountCmd() *cobra.Command {
 	cmd.AddCommand(NewAccountCmd())
 	cmd.AddCommand(GetAccountCmd())
 	cmd.AddCommand(ListAccountCmd())
+	cmd.AddCommand(GenerateWalletsCmd())
 
 	return cmd
 }
