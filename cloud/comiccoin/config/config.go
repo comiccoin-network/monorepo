@@ -34,7 +34,6 @@ type AppConfig struct {
 	AdministrationSecretKey  *sstring.SecureString
 	GeoLiteDBPath            string
 	BannedCountries          []string
-	BetaAccessCode           string
 }
 
 // BlockchainConfig represents the configuration for the blockchain.
@@ -110,7 +109,6 @@ func NewProvider() *Configuration {
 	c.App.AdministrationSecretKey = getSecureStringEnv("COMICCOIN_APP_ADMINISTRATION_SECRET_KEY", false)
 	c.App.GeoLiteDBPath = getEnv("COMICCOIN_APP_GEOLITE_DB_PATH", false)
 	c.App.BannedCountries = getStringsArrEnv("COMICCOIN_APP_BANNED_COUNTRIES", false)
-	c.App.BetaAccessCode = getEnv("COMICCOIN_APP_BETA_ACCESS_CODE", false)
 
 	// --- Blockchain section ---
 	// Authority only.

@@ -58,7 +58,6 @@ func NewGatewayUserRegisterService(
 }
 
 type RegisterCustomerRequestIDO struct {
-	BetaAccessCode                                 string `json:"beta_access_code"` // Temporary code for beta access
 	FirstName                                      string `json:"first_name"`
 	LastName                                       string `json:"last_name"`
 	Email                                          string `json:"email"`
@@ -108,13 +107,6 @@ func (s *gatewayUserRegisterServiceImpl) Execute(
 	//
 
 	e := make(map[string]string)
-	if req.BetaAccessCode == "" {
-		e["beta_access_code"] = "Beta access code is required"
-	} else {
-		if req.BetaAccessCode != s.config.App.BetaAccessCode {
-			e["beta_access_code"] = "Invalid beta access code"
-		}
-	}
 	if req.FirstName == "" {
 		e["first_name"] = "First name is required"
 	}

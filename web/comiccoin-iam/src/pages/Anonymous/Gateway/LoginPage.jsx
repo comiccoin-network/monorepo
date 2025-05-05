@@ -167,33 +167,6 @@ function LoginPage() {
           </div>
         </div>
 
-        {/* Beta Access Notice */}
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-          <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 rounded-md">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <Shield
-                  className="h-5 w-5 text-indigo-600"
-                  aria-hidden="true"
-                />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-indigo-800">
-                  Private Beta Access
-                </h3>
-                <div className="mt-2 text-sm text-indigo-700">
-                  <p>
-                    ComicCoin Digital ID is currently in private beta. If you
-                    don't have an account yet, you'll need an access code to
-                    register. Contact our team to request access.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* end Beta Access Notice */}
-
         {/* Form Content */}
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-white rounded-xl shadow-lg border border-purple-100 overflow-hidden mb-8">
